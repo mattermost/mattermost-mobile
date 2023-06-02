@@ -152,9 +152,9 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, i
                     <PostWithChannelInfo
                         appsEnabled={appsEnabled}
                         customEmojiNames={customEmojiNames}
-                        key={item.value.id}
+                        key={item.value.currentPost.id}
                         location={Screens.SAVED_MESSAGES}
-                        post={item.value}
+                        post={item.value.currentPost}
                         testID='saved_messages.post_list'
                         skipSavedPostsHighlight={true}
                     />

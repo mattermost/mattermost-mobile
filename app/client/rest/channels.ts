@@ -43,7 +43,7 @@ export interface ClientChannelsMix {
     searchArchivedChannels: (teamId: string, term: string) => Promise<Channel[]>;
     searchAllChannels: (term: string, teamIds: string[], archivedOnly?: boolean) => Promise<Channel[]>;
     updateChannelMemberSchemeRoles: (channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean) => Promise<any>;
-    getMemberInChannel: (channelId: string, userId: string) => Promise<any>;
+    getMemberInChannel: (channelId: string, userId: string) => Promise<ChannelMembership>;
 }
 
 const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {

@@ -17,7 +17,7 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useModalPosition} from '@hooks/device';
+import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
@@ -116,13 +116,13 @@ export default function CreateDirectMessage({
     const {formatMessage} = intl;
 
     const mainView = useRef<View>(null);
-    const modalPosition = useModalPosition(mainView);
+    const [containerHeight, setContainerHeight] = useState(0);
+    const keyboardOverlap = useKeyboardOverlap(mainView, containerHeight);
 
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const [showToast, setShowToast] = useState(false);
-    const [containerHeight, setContainerHeight] = useState(0);
     const selectedCount = Object.keys(selectedIds).length;
 
     const clearSearch = useCallback(() => {
@@ -327,8 +327,7 @@ export default function CreateDirectMessage({
                 createFilter={createUserFilter}
             />
             <SelectedUsers
-                containerHeight={containerHeight}
-                modalPosition={modalPosition}
+                keyboardOverlap={keyboardOverlap}
                 showToast={showToast}
                 setShowToast={setShowToast}
                 toastIcon={'check'}
