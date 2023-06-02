@@ -66,6 +66,20 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetchPosts(
                         }
                     }
 
+                    fun findNeededUsernames(text: String?) {
+                        if (text == null) {
+                            return
+                        }
+
+                        val matchResults = regex.findAll(text)
+                        matchResults.iterator().forEach {
+                            val username = it.value.removePrefix("@")
+                            if (!usernames.contains(username) && currentUsername != username && !specialMentions.contains(username)) {
+                                usernames.add(username)
+                            }
+                        }
+                    }
+
                     while (iterator.hasNextKey()) {
                         val key = iterator.nextKey()
                         val post = posts.getMap(key)
@@ -73,16 +87,21 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetchPosts(
                         if (userId != null && userId != currentUserId && !userIdsAlreadyLoaded.contains(userId) && !userIds.contains(userId)) {
                             userIds.add(userId)
                         }
+
                         val message = post?.getString("message")
-                        if (message != null) {
-                            val matchResults = regex.findAll(message)
-                            matchResults.iterator().forEach {
-                                val username = it.value.removePrefix("@")
-                                if (!usernames.contains(username) && currentUsername != username && !specialMentions.contains(username)) {
-                                    usernames.add(username)
-                                }
+                        findNeededUsernames(message)
+                        val props = post?.getMap("props")
+                        val attachments = props?.getArray("attachments")
+                        if (attachments != null) {
+                            for (i in 0 until attachments.size()) {
+                                val attachment = attachments.getMap(i)
+                                val pretext = attachment.getString("pretext")
+                                val text = attachment.getString("text")
+                                findNeededUsernames(pretext)
+                                findNeededUsernames(text)
                             }
                         }
+
 
                         if (isCRTEnabled) {
                             // Add root post as a thread
