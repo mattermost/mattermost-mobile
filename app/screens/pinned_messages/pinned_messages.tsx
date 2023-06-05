@@ -132,9 +132,9 @@ function SavedMessages({
                         highlightPinnedOrSaved={false}
                         isCRTEnabled={isCRTEnabled}
                         location={Screens.PINNED_MESSAGES}
-                        key={item.value.id}
+                        key={item.value.currentPost.id}
                         nextPost={undefined}
-                        post={item.value}
+                        post={item.value.currentPost}
                         previousPost={undefined}
                         showAddReaction={false}
                         shouldRenderReplyButton={false}

@@ -38,7 +38,7 @@ type Props = {
     channelsMatchStart: ChannelModel[];
     currentTeamId: string;
     isCRTEnabled: boolean;
-    keyboardHeight: number;
+    keyboardOverlap: number;
     loading: boolean;
     onLoading: (loading: boolean) => void;
     restrictDirectMessage: boolean;
@@ -75,7 +75,7 @@ const sortByUserOrChannel = <T extends Channel |UserModel>(locale: string, teamm
 
 const FilteredList = ({
     archivedChannels, close, channelsMatch, channelsMatchStart, currentTeamId,
-    isCRTEnabled, keyboardHeight, loading, onLoading, restrictDirectMessage, showTeamName,
+    isCRTEnabled, keyboardOverlap, loading, onLoading, restrictDirectMessage, showTeamName,
     teamIds, teammateDisplayNameSetting, term, usersMatch, usersMatchStart, testID,
 }: Props) => {
     const bounce = useRef<DebouncedFunc<() => void>>();
@@ -83,7 +83,7 @@ const FilteredList = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const {locale, formatMessage} = useIntl();
-    const flatListStyle = useMemo(() => ({flexGrow: 1, paddingBottom: keyboardHeight}), [keyboardHeight]);
+    const flatListStyle = useMemo(() => ({flexGrow: 1, paddingBottom: keyboardOverlap}), [keyboardOverlap]);
     const [remoteChannels, setRemoteChannels] = useState<RemoteChannels>({archived: [], startWith: [], matches: []});
 
     const totalLocalResults = channelsMatchStart.length + channelsMatch.length + usersMatchStart.length;

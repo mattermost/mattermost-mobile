@@ -72,7 +72,7 @@ export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel' | 'C
         case 'Connection':
             message = intl.formatMessage({
                 id: 'notification.no_connection',
-                defaultMessage: 'The server is unreachable and we were not able to retrieve the notification channel / team.',
+                defaultMessage: 'The server is unreachable and it was not possible to retrieve the specific message information for the notification.',
             });
             break;
     }

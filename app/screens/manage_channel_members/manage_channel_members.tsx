@@ -8,18 +8,18 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannelMemberships} from '@actions/remote/channel';
 import {fetchUsersByIds, searchProfiles} from '@actions/remote/user';
+import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import Search from '@components/search';
 import UserList from '@components/user_list';
 import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {openAsBottomSheet, setButtons} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
-import {filterProfilesMatchingTerm} from '@utils/user';
+import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -30,6 +30,7 @@ type Props = {
     currentTeamId: string;
     currentUserId: string;
     tutorialWatched: boolean;
+    teammateDisplayNameSetting: string;
 }
 
 const styles = StyleSheet.create({
@@ -54,6 +55,12 @@ const messages = defineMessages({
     },
 });
 
+const sortUsers = (a: UserProfile, b: UserProfile, locale: string, teammateDisplayNameSetting: string) => {
+    const aName = displayUsername(a, locale, teammateDisplayNameSetting);
+    const bName = displayUsername(b, locale, teammateDisplayNameSetting);
+    return aName.localeCompare(bName, locale);
+};
+
 const MANAGE_BUTTON = 'manage-button';
 const EMPTY: UserProfile[] = [];
 const EMPTY_MEMBERS: ChannelMembership[] = [];
@@ -68,46 +75,28 @@ export default function ManageChannelMembers({
     currentTeamId,
     currentUserId,
     tutorialWatched,
+    teammateDisplayNameSetting,
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const {formatMessage} = useIntl();
+    const {formatMessage, locale} = useIntl();
 
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const mounted = useRef(false);
 
     const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
+    const hasMoreProfiles = useRef(false);
     const [channelMembers, setChannelMembers] = useState<ChannelMembership[]>(EMPTY_MEMBERS);
     const [searchResults, setSearchResults] = useState<UserProfile[]>(EMPTY);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [term, setTerm] = useState('');
-
-    const loadedProfiles = (users: UserProfile[], members: ChannelMembership[]) => {
-        if (mounted.current) {
-            setLoading(false);
-            setProfiles(users);
-            setChannelMembers(members);
-        }
-    };
+    const [searchedTerm, setSearchedTerm] = useState('');
 
     const clearSearch = useCallback(() => {
         setTerm('');
         setSearchResults(EMPTY);
     }, []);
-
-    const getProfiles = useCallback(debounce(async () => {
-        const hasTerm = Boolean(term);
-        if (!loading && !hasTerm && mounted.current) {
-            setLoading(true);
-            const options = {sort: 'admin', active: true};
-            const {users, members} = await fetchChannelMemberships(serverUrl, channelId, options, true);
-            if (users.length) {
-                loadedProfiles(users, members);
-            }
-            setLoading(false);
-        }
-    }, 100), [channelId, loading, serverUrl, term]);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
         if (profile.id === currentUserId && isManageMode) {
@@ -133,15 +122,19 @@ export default function ManageChannelMembers({
     }, [canManageAndRemoveMembers, channelId, isManageMode, currentUserId]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
+        setSearchedTerm(searchTerm);
+        if (!hasMoreProfiles.current) {
+            return;
+        }
         const lowerCasedTerm = searchTerm.toLowerCase();
         setLoading(true);
 
         const options: SearchUserOptions = {team_id: currentTeamId, in_channel_id: channelId, allow_inactive: false};
         const {data = EMPTY} = await searchProfiles(serverUrl, lowerCasedTerm, options);
 
-        setSearchResults(data);
+        setSearchResults(data.sort((a, b) => sortUsers(a, b, locale, teammateDisplayNameSetting)));
         setLoading(false);
-    }, [serverUrl, channelId, currentTeamId]);
+    }, [serverUrl, channelId, currentTeamId, locale, teammateDisplayNameSetting]);
 
     const search = useCallback(() => {
         searchUsers(term);
@@ -210,19 +203,44 @@ export default function ManageChannelMembers({
         setChannelMembers(clone);
     }, [channelMembers]);
 
+    const sortedProfiles = useMemo(() => [...profiles].sort((a, b) => {
+        return sortUsers(a, b, locale, teammateDisplayNameSetting);
+    }), [profiles, locale, teammateDisplayNameSetting]);
+
     const data = useMemo(() => {
-        const isSearch = Boolean(term);
+        const isSearch = Boolean(searchedTerm);
         if (isSearch) {
-            return filterProfilesMatchingTerm(searchResults, term);
+            return filterProfilesMatchingTerm(searchResults.length ? searchResults : sortedProfiles, searchedTerm);
         }
         return profiles;
-    }, [term, searchResults, profiles]);
+    }, [searchResults, profiles, searchedTerm, sortedProfiles]);
+
+    useEffect(() => {
+        if (!term) {
+            setSearchResults(EMPTY);
+            setSearchedTerm('');
+        }
+    }, [Boolean(term)]);
 
     useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
 
     useEffect(() => {
         mounted.current = true;
-        getProfiles();
+        const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT};
+        fetchChannelMemberships(serverUrl, channelId, options, true).then(({users, members}) => {
+            if (!mounted.current) {
+                return;
+            }
+
+            if (users.length >= PER_PAGE_DEFAULT) {
+                hasMoreProfiles.current = true;
+            }
+            if (users.length) {
+                setProfiles(users);
+                setChannelMembers(members);
+            }
+            setLoading(false);
+        });
         return () => {
             mounted.current = false;
         };
@@ -272,7 +290,7 @@ export default function ManageChannelMembers({
                 selectedIds={EMPTY_IDS}
                 showManageMode={canManageAndRemoveMembers && isManageMode}
                 showNoResults={!loading}
-                term={term}
+                term={searchedTerm}
                 testID='manage_members.user_list'
                 tutorialWatched={tutorialWatched}
                 includeUserMargin={true}
