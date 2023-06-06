@@ -125,6 +125,7 @@ const PostList = ({
     const [enableRefreshControl, setEnableRefreshControl] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
+    const [lastPostId, setLastPostId] = useState<string>(posts[0].id);
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const orderedPosts = useMemo(() => {
@@ -134,6 +135,10 @@ const PostList = ({
     const initialIndex = useMemo(() => {
         return orderedPosts.findIndex((i) => i.type === 'start-of-new-messages');
     }, [orderedPosts]);
+
+    const isReply = useMemo(() => {
+        return posts[0].id !== lastPostId;
+    }, [posts[0].id, lastPostId]);
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -182,8 +187,11 @@ const PostList = ({
         if (Platform.OS === 'android') {
             setEnableRefreshControl(y === 0);
         }
+        if (y === 0) {
+            setLastPostId(posts[0].id);
+        }
         setShowScrollToEndBtn(y > CONTENT_OFFSET_THRESHOLD);
-    }, []);
+    }, [posts[0].id]);
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
         const index = Math.min(info.highestMeasuredFrameIndex, info.index);
@@ -376,6 +384,7 @@ const PostList = ({
             <ScrollToEndView
                 onScrollToEnd={onScrollToEnd}
                 isNewMessage={initialIndex > -1}
+                isReply={isReply}
                 showScrollToEndBtn={showScrollToEndBtn}
                 location={location}
             />
