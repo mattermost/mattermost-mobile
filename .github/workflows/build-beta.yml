@@ -4,7 +4,7 @@ name: build-beta
 on:
   push:
     branches:
-      - build-\d+$
+      - build-beta-\d+$
       - build-ios-\d+$
       - build-ios-beta-\d+$
       - build-ios-sim-\d+$
