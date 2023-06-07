@@ -1054,7 +1054,7 @@
     "post_priority.picker.label.request_ack.description": "收件人每五分钟收到通知, 直到他们确认或回复为止.",
     "snack.bar.unfollow.thread": "线程取消关注",
     "persistent_notifications.error.max_recipients.description": "您可以向最多 {max} 个收件人发送持久通知. 您的消息中提到了 {count} 个收件人. 在发送之前. 你需要更改你所提到的人.",
-    "persistent_notifications.confirm.description": "@提到的收件人将每 {interval, plural}, 一个 {minute}} 被通知, 其他 {{interval}minutes}} 被通知, 直到他们已经确认或回复消息.",
+    "persistent_notifications.confirm.description": "@提到的收件人将每 {interval, number}分钟被通知, 直到他们已经确认或回复消息.",
     "post_priority.picker.label.persistent_notifications.description": "收件人每五分钟收到通知，直到他们确认或回复为止.",
     "post_priority.picker.label.request_ack": "请求确认"
 }
