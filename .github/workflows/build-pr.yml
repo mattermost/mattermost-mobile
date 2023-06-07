@@ -3,9 +3,9 @@ name: build-pr
 on:
   push:
     branches:
-      - "build-pr-*"
-      - "ios-pr-*"
-      - "android-pr-*"
+      - build-pr-*
+      - build-pr-android-*
+      - build-pr-ios-*
 
 env:
   NODE_VERSION: 18.7.0
@@ -22,7 +22,7 @@ jobs:
 
   build-ios-pr:
     runs-on: macos-12
-    if: ${{ !startsWith(github.ref_name, 'android') }}
+    if: ${{ !contains(github.ref_name, 'android') }}
     needs:
       - test
     steps:
@@ -64,7 +64,7 @@ jobs:
 
   build-android-pr:
     runs-on: ubuntu-22.04
-    if: ${{ !startsWith(github.ref_name, 'ios') }}
+    if: ${{ !contains(github.ref_name, 'ios') }}
     needs:
       - test
     steps:
