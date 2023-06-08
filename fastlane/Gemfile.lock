@@ -222,6 +222,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  dotenv
   fastlane
   fastlane-plugin-android_change_package_identifier
   fastlane-plugin-android_change_string_app_name
