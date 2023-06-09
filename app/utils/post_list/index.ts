@@ -66,17 +66,17 @@ function combineUserActivityPosts(orderedPosts: PostList) {
             combinedCount = 0;
 
             continue;
-        } else if (item.type === 'post' && item.value.deleteAt) {
+        } else if (item.type === 'post' && item.value.currentPost.deleteAt) {
             out.push(item);
 
             lastPostIsUserActivity = false;
             combinedCount = 0;
         } else {
-            const postIsUserActivity = item.type === 'post' && Post.USER_ACTIVITY_POST_TYPES.includes(item.value.type);
+            const postIsUserActivity = item.type === 'post' && Post.USER_ACTIVITY_POST_TYPES.includes(item.value.currentPost.type);
             if (postIsUserActivity && lastPostIsUserActivity && combinedCount < MAX_COMBINED_SYSTEM_POSTS) {
-                out[out.length - 1].value += '_' + item.value.id;
+                out[out.length - 1].value += '_' + item.value.currentPost.id;
             } else if (postIsUserActivity) {
-                out.push({type: 'user-activity', value: `${COMBINED_USER_ACTIVITY}${item.value.id}`});
+                out.push({type: 'user-activity', value: `${COMBINED_USER_ACTIVITY}${item.value.currentPost.id}`});
                 combinedCount = 1;
                 changed = true;
             } else {
@@ -193,8 +193,8 @@ export function selectOrderedPosts(
 
     // Iterating through the posts from oldest to newest
     for (let i = posts.length - 1; i >= 0; i--) {
-        const post: PostWithPrevAndNext = posts[i];
-        post.isSaved = savedPostIds.has(post.id);
+        const post: PostWithPrevAndNext = {currentPost: posts[i]};
+        post.isSaved = savedPostIds.has(post.currentPost.id);
         if (includePrevNext) {
             post.nextPost = posts[i - 1];
             if (!isThreadScreen || out[out.length - 1]?.type !== 'thread-overview') {
@@ -204,25 +204,25 @@ export function selectOrderedPosts(
 
         if (
             !post ||
-            (post.type === Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL && !isThreadScreen)
+            (post.currentPost.type === Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL && !isThreadScreen)
         ) {
             continue;
         }
 
         // Filter out join/leave messages if necessary
-        if (shouldFilterJoinLeavePost(post, showJoinLeave, currentUsername)) {
+        if (shouldFilterJoinLeavePost(post.currentPost, showJoinLeave, currentUsername)) {
             continue;
         }
 
         // Push on a date header if the last post was on a different day than the current one
-        const postDate = new Date(post.createAt);
+        const postDate = new Date(post.currentPost.createAt);
         if (timezoneEnabled) {
             const currentOffset = toMilliseconds({minutes: postDate.getTimezoneOffset()});
             if (currentTimezone) {
                 const zone = moment.tz.zone(currentTimezone);
                 if (zone) {
-                    const timezoneOffset = toMilliseconds({minutes: zone.utcOffset(post.createAt)});
-                    postDate.setTime(post.createAt + (currentOffset - timezoneOffset));
+                    const timezoneOffset = toMilliseconds({minutes: zone.utcOffset(post.currentPost.createAt)});
+                    postDate.setTime(post.currentPost.createAt + (currentOffset - timezoneOffset));
                 }
             }
         }
@@ -235,8 +235,8 @@ export function selectOrderedPosts(
 
         if (
             lastViewedAt &&
-            post.createAt > lastViewedAt &&
-            (post.userId !== currentUserId || isFromWebhook(post)) &&
+            post.currentPost.createAt > lastViewedAt &&
+            (post.currentPost.userId !== currentUserId || isFromWebhook(post.currentPost)) &&
             !addedNewMessagesIndicator &&
             indicateNewMessages
         ) {
