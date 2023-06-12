@@ -20,6 +20,7 @@ type Props = SearchProps & {
     hasSearch?: boolean;
     isLargeTitle?: boolean;
     leftComponent?: React.ReactElement;
+    rightComponent?: React.ReactElement;
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
@@ -45,6 +46,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
     hasSearch = false,
     isLargeTitle = false,
     leftComponent,
+    rightComponent,
     onBackPress,
     onTitlePress,
     rightButtons,
@@ -98,6 +100,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
                     isLargeTitle={isLargeTitle}
                     heightOffset={heightOffset.value}
                     leftComponent={leftComponent}
+                    rightComponent={rightComponent}
                     onBackPress={onBackPress}
                     onTitlePress={onTitlePress}
                     rightButtons={rightButtons}

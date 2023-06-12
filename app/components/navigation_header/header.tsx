@@ -28,6 +28,7 @@ type Props = {
     isLargeTitle: boolean;
     heightOffset: number;
     leftComponent?: React.ReactElement;
+    rightComponent?: React.ReactElement;
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
@@ -131,6 +132,7 @@ const Header = ({
     isLargeTitle,
     heightOffset,
     leftComponent,
+    rightComponent,
     onBackPress,
     onTitlePress,
     rightButtons,
@@ -234,6 +236,7 @@ const Header = ({
                 </TouchableWithFeedback>
             </Animated.View>
             <Animated.View style={styles.rightContainer}>
+                {rightComponent}
                 {Boolean(rightButtons?.length) &&
                 rightButtons?.map((r, i) => (
                     <TouchableWithFeedback
