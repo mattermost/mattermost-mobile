@@ -3,8 +3,7 @@
 
 import {Alert} from 'react-native';
 
-import {hasMicrophonePermission, joinCall, unmuteMyself} from '@calls/actions';
-import {leaveCallPopCallScreen} from '@calls/actions/calls';
+import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {
     getCallsConfig,
@@ -265,7 +264,7 @@ export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
                 defaultMessage: 'Leave',
             }),
             onPress: async () => {
-                await leaveCallPopCallScreen();
+                await leaveCall();
             },
             style: 'destructive',
         },
