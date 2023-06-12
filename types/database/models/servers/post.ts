@@ -42,6 +42,11 @@ declare class PostModel extends Model {
     /** message : Message in the post */
     message: string;
 
+    /** messageSource : will contain the message as submitted by the user if Message has been modified
+	by Mattermost for presentation (e.g if an image proxy is being used). It should be used to
+	populate edit boxes if present. */
+    messageSource: string;
+
     /** metadata: All the extra data associated with this Post */
     metadata: PostMetadata | null;
 

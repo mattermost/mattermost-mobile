@@ -87,7 +87,7 @@ function SavedMessages({
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
             if (isViewable && item.type === 'post') {
-                acc[`${Screens.PINNED_MESSAGES}-${item.value.id}`] = true;
+                acc[`${Screens.PINNED_MESSAGES}-${item.value.currentPost.id}`] = true;
             }
             return acc;
         }, {});
@@ -132,9 +132,9 @@ function SavedMessages({
                         highlightPinnedOrSaved={false}
                         isCRTEnabled={isCRTEnabled}
                         location={Screens.PINNED_MESSAGES}
-                        key={item.value.id}
+                        key={item.value.currentPost.id}
                         nextPost={undefined}
-                        post={item.value}
+                        post={item.value.currentPost}
                         previousPost={undefined}
                         showAddReaction={false}
                         shouldRenderReplyButton={false}

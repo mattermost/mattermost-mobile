@@ -3,8 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View} from 'react-native';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
@@ -13,7 +12,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
+import {useKeyboardOverlap} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useInputPropagation} from '@hooks/input';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
@@ -56,8 +55,9 @@ type EditPostProps = {
     canDelete: boolean;
 }
 const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttached, canDelete}: EditPostProps) => {
-    const [postMessage, setPostMessage] = useState(post.message);
-    const [cursorPosition, setCursorPosition] = useState(post.message.length);
+    const editingMessage = post.messageSource || post.message;
+    const [postMessage, setPostMessage] = useState(editingMessage);
+    const [cursorPosition, setCursorPosition] = useState(editingMessage.length);
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [isUpdating, setIsUpdating] = useState(false);
@@ -65,27 +65,15 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
     const mainView = useRef<View>(null);
-    const modalPosition = useModalPosition(mainView);
 
     const postInputRef = useRef<EditPostInputRef>(null);
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
-    const keyboardHeight = useKeyboardHeight();
-    const insets = useSafeAreaInsets();
-    const dimensions = useWindowDimensions();
-    const isTablet = useIsTablet();
 
     useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [{
-                color: theme.sidebarHeaderTextColor,
-                text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
-                ...RIGHT_BUTTON,
-                enabled: false,
-            }],
-        });
+        toggleSaveButton(false);
     }, []);
 
     useEffect(() => {
@@ -133,8 +121,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             setErrorLine(line);
             setErrorExtra(extra);
         }
-        toggleSaveButton(post.message !== message);
-    }, [intl, maxPostSize, post.message, toggleSaveButton]);
+        toggleSaveButton(editingMessage !== message);
+    }, [intl, maxPostSize, editingMessage, toggleSaveButton]);
 
     const onAutocompleteChangeText = useCallback((message: string) => {
         setPostMessage(message);
@@ -175,7 +163,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 onPress: () => {
                     setIsUpdating(false);
                     toggleSaveButton();
-                    setPostMessage(post.message);
+                    setPostMessage(editingMessage);
                 },
             }, {
                 text: intl.formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
@@ -186,7 +174,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 },
             }],
         );
-    }, [serverUrl, post.message]);
+    }, [serverUrl, editingMessage]);
 
     const onSavePostMessage = useCallback(async () => {
         setIsUpdating(true);
@@ -210,11 +198,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
     useAndroidHardwareBackHandler(componentId, onClose);
 
-    const bottomSpace = (dimensions.height - containerHeight - modalPosition);
-    const autocompletePosition = Platform.select({
-        ios: isTablet ? Math.max(0, keyboardHeight - bottomSpace) : keyboardHeight || insets.bottom,
-        default: 0,
-    }) + AUTOCOMPLETE_SEPARATION;
+    const overlap = useKeyboardOverlap(mainView, containerHeight);
+    const autocompletePosition = overlap + AUTOCOMPLETE_SEPARATION;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);

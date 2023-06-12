@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 20,
     },
     header: {
-        color: theme.mentionColor,
+        color: theme.centerChannelColor,
         marginBottom: 12,
         ...typography('Heading', 1000, 'SemiBold'),
     },

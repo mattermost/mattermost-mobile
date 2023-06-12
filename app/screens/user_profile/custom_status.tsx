@@ -26,6 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     description: {
         color: theme.centerChannelColor,
+        flex: 1,
         ...typography('Body', 200),
     },
     title: {

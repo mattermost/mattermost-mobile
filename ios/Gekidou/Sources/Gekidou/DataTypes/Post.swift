@@ -12,8 +12,9 @@ public struct Post: Codable {
     let rootId: String
     let originalId: String
     let message: String
+    let messageSource: String
     let type: String
-    let props: String
+    let props: [String: Any]
     let pendingPostId: String
     let metadata: String
     var prevPostId: String
@@ -25,6 +26,7 @@ public struct Post: Codable {
     
     public enum PostKeys: String, CodingKey {
         case id, message, type, props, metadata, participants
+        case messageSource = "message_source"
         case createAt = "create_at"
         case updateAt = "update_at"
         case deleteAt = "delete_at"
@@ -56,6 +58,7 @@ public struct Post: Codable {
         rootId = values.decodeIfPresent(forKey: .rootId, defaultValue: "")
         originalId = values.decodeIfPresent(forKey: .originalId, defaultValue: "")
         message = values.decodeIfPresent(forKey: .message, defaultValue: "")
+        messageSource = values.decodeIfPresent(forKey: .messageSource, defaultValue: "")
         type = values.decodeIfPresent(forKey: .type, defaultValue: "")
         pendingPostId = values.decodeIfPresent(forKey: .pendingPostId, defaultValue: "")
         lastReplyAt = values.decodeIfPresent(forKey: .lastReplyAt, defaultValue: 0)
@@ -71,9 +74,9 @@ public struct Post: Codable {
         }
         
         if let propsData = try? values.decode([String:Any].self, forKey: .props) {
-            props = Database.default.json(from: propsData) ?? "{}"
+            props = propsData
         } else {
-            props = "{}"
+            props = [:]
         }
     }
     
@@ -90,6 +93,7 @@ public struct Post: Codable {
         try container.encode(self.rootId, forKey: .rootId)
         try container.encode(self.originalId, forKey: .originalId)
         try container.encode(self.message, forKey: .message)
+        try container.encodeIfPresent(self.messageSource, forKey: .messageSource)
         try container.encode(self.type, forKey: .type)
         try container.encode(self.props, forKey: .props)
         try container.encode(self.pendingPostId, forKey: .pendingPostId)

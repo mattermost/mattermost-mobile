@@ -17,9 +17,8 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useModalPosition} from '@hooks/device';
+import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {t} from '@i18n';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
@@ -30,19 +29,19 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 const messages = defineMessages({
     dm: {
-        id: t('mobile.open_dm.error'),
+        id: 'mobile.open_dm.error',
         defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
     },
     gm: {
-        id: t('mobile.open_gm.error'),
+        id: 'mobile.open_gm.error',
         defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
     },
     buttonText: {
-        id: t('mobile.create_direct_message.start'),
+        id: 'mobile.create_direct_message.start',
         defaultMessage: 'Start Conversation',
     },
     toastMessage: {
-        id: t('mobile.create_direct_message.max_limit_reached'),
+        id: 'mobile.create_direct_message.max_limit_reached',
         defaultMessage: 'Group messages are limited to {maxCount} members',
     },
 });
@@ -117,13 +116,13 @@ export default function CreateDirectMessage({
     const {formatMessage} = intl;
 
     const mainView = useRef<View>(null);
-    const modalPosition = useModalPosition(mainView);
+    const [containerHeight, setContainerHeight] = useState(0);
+    const keyboardOverlap = useKeyboardOverlap(mainView, containerHeight);
 
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const [showToast, setShowToast] = useState(false);
-    const [containerHeight, setContainerHeight] = useState(0);
     const selectedCount = Object.keys(selectedIds).length;
 
     const clearSearch = useCallback(() => {
@@ -328,8 +327,7 @@ export default function CreateDirectMessage({
                 createFilter={createUserFilter}
             />
             <SelectedUsers
-                containerHeight={containerHeight}
-                modalPosition={modalPosition}
+                keyboardOverlap={keyboardOverlap}
                 showToast={showToast}
                 setShowToast={setShowToast}
                 toastIcon={'check'}

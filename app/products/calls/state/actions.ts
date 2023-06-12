@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {mosThreshold} from '@mattermost/calls/lib/rtc_monitor';
+import {Navigation} from 'react-native-navigation';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
@@ -27,7 +28,7 @@ import {
     DefaultCurrentCall,
     type ReactionStreamEmoji,
 } from '@calls/types/calls';
-import {Calls} from '@constants';
+import {Calls, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getThreadById} from '@queries/servers/thread';
@@ -217,6 +218,10 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
 
 export const myselfLeftCall = () => {
     setCurrentCall(null);
+
+    // Remove the call screen, and in some situations it needs to be removed twice before actually being removed.
+    Navigation.pop(Screens.CALL).catch(() => null);
+    Navigation.pop(Screens.CALL).catch(() => null);
 };
 
 export const callStarted = async (serverUrl: string, call: Call) => {

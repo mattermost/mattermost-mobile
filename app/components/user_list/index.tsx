@@ -13,7 +13,6 @@ import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
-import {t} from '@i18n';
 import {openAsBottomSheet} from '@screens/navigation';
 import {
     changeOpacity,
@@ -31,11 +30,11 @@ const SCROLL_EVENT_THROTTLE = 60;
 
 const messages = defineMessages({
     admins: {
-        id: t('mobile.manage_members.section_title_admins'),
+        id: 'mobile.manage_members.section_title_admins',
         defaultMessage: 'CHANNEL ADMINS',
     },
     members: {
-        id: t('mobile.manage_members.section_title_members'),
+        id: 'mobile.manage_members.section_title_members',
         defaultMessage: 'MEMBERS',
     },
 });
@@ -100,12 +99,14 @@ export function createProfilesSections(intl: IntlShape, profiles: UserProfile[],
     const results = [];
     let index = 0;
     for (const [k, v] of sections) {
-        results.push({
-            first: index === 0,
-            id: k,
-            data: v,
-        });
-        index++;
+        if (v.length) {
+            results.push({
+                first: index === 0,
+                id: k,
+                data: v,
+            });
+            index++;
+        }
     }
     return results;
 }
@@ -159,6 +160,7 @@ type Props = {
     testID?: string;
     term?: string;
     tutorialWatched: boolean;
+    includeUserMargin?: boolean;
 }
 
 export default function UserList({
@@ -175,6 +177,7 @@ export default function UserList({
     term,
     testID,
     tutorialWatched,
+    includeUserMargin,
 }: Props) {
     const intl = useIntl();
     const theme = useTheme();
@@ -247,9 +250,10 @@ export default function UserList({
                 testID='create_direct_message.user_list.user_item'
                 tutorialWatched={tutorialWatched}
                 user={item}
+                includeMargin={includeUserMargin}
             />
         );
-    }, [selectedIds, handleSelectProfile, showManageMode, manageMode, tutorialWatched]);
+    }, [selectedIds, handleSelectProfile, showManageMode, manageMode, tutorialWatched, includeUserMargin]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {

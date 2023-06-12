@@ -10,7 +10,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {getLocaleFromLanguage, t} from '@i18n';
+import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
@@ -56,7 +56,7 @@ const MANAGE_ICON_HEIGHT = 72;
 
 const messages = defineMessages({
     manageMember: {
-        id: t('mobile.manage_members.manage_member'),
+        id: 'mobile.manage_members.manage_member',
         defaultMessage: 'Manage member',
     },
 });
