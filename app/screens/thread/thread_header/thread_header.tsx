@@ -9,7 +9,6 @@ import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
-import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {popTopScreen} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
@@ -34,7 +33,6 @@ const ThreadHeader = ({
     isCRTEnabled,
 }: ChannelProps) => {
     const intl = useIntl();
-    const isTablet = useIsTablet();
     const defaultHeight = useDefaultHeaderHeight();
     const contextStyle = useMemo(() => ({
         top: defaultHeight,
@@ -44,12 +42,8 @@ const ThreadHeader = ({
     const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
 
     const leftComponent = useMemo(() => {
-        if (isTablet || !channelId) {
-            return undefined;
-        }
-
         return (<OtherMentionsBadge channelId={isChannelScreenMounted ? channelId : ''}/>);
-    }, [isTablet, channelId, isChannelScreenMounted]);
+    }, [channelId, isChannelScreenMounted]);
 
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
@@ -69,7 +63,7 @@ const ThreadHeader = ({
                 leftComponent={leftComponent}
                 onBackPress={onBackPress}
                 rightComponent={followButton}
-                showBackButton={!isTablet}
+                showBackButton={true}
                 subtitle={subtitle}
                 title={title}
             />
