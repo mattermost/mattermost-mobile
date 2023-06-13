@@ -155,7 +155,6 @@ const EditProfile = ({
             }
 
             close();
-            return;
         } catch (e) {
             resetScreen(e);
         }
