@@ -46,7 +46,7 @@ target 'Mattermost' do
 
   pod 'React-jsi', :path => '../node_modules/react-native/ReactCommon/jsi', :modular_headers => true
   pod 'React-jsc', :path => '../node_modules/react-native/ReactCommon/jsc', :modular_headers => true
-  pod 'simdjson', path: '../node_modules/@nozbe/simdjson'
+  pod 'simdjson', path: '../node_modules/@nozbe/simdjson', :modular_headers => true
 
   # TODO: Remove this once upstream PR https://github.com/daltoniam/Starscream/pull/871 is merged
   pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => '9575b6781d1262247096af73617ae3acb2b139a0'

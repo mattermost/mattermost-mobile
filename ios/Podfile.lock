@@ -582,14 +582,14 @@ PODS:
   - Sentry/HybridSDK (8.7.3):
     - SentryPrivate (= 8.7.3)
   - SentryPrivate (8.7.3)
-  - simdjson (1.0.0)
+  - simdjson (3.1.0-wmelon1)
   - SocketRocket (0.6.0)
   - Starscream (4.0.4)
   - SwiftyJSON (5.0.1)
   - Swime (3.0.6)
-  - WatermelonDB (0.25.5):
+  - WatermelonDB (0.26.0):
     - React
-    - React-jsi
+    - simdjson
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
@@ -999,15 +999,15 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: c7a86f43510a7d5678d4de28d78c28ab351d295b
   SentryPrivate: 2eaabf598a46d4b9b8822aef766df2a84caf2e6f
-  simdjson: c96317b3a50dff3468a42f586ab7ed22c6ab2fd9
+  simdjson: e6bfae9ce4bcdc80452d388d593816f1ca2106f3
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
   SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
-  WatermelonDB: 6ae836b52d11281d87187ff2283480e44b111771
+  WatermelonDB: cd71a1085182aca9e5d2164b7af9ef2a3aaca571
   Yoga: f7decafdc5e8c125e6fa0da38a687e35238420fa
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 980bb39822b2de4def552692a288a1913387b1fb
+PODFILE CHECKSUM: 25f07cb9e5eed8c84db8e8723000e8470c349058
 
 COCOAPODS: 1.11.3
