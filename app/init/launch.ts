@@ -42,7 +42,9 @@ export const initialLaunch = async () => {
         tapped = delivered.find((d) => (d as unknown as NotificationData).ack_id === notification?.payload.ack_id) == null;
     }
     if (initialNotificationTypes.includes(notification?.payload?.type) && tapped) {
-        return launchAppFromNotification(convertToNotificationData(notification!), true);
+        const notificationData = convertToNotificationData(notification!);
+        EphemeralStore.setProcessingNotification(notificationData.identifier);
+        return launchAppFromNotification(notificationData, true);
     }
 
     const coldStart = notification ? (tapped || AppState.currentState === 'active') : true;
