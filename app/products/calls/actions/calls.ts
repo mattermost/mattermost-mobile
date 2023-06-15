@@ -208,6 +208,7 @@ export const joinCall = async (
     userId: string,
     hasMicPermission: boolean,
     title?: string,
+    rootId?: string,
 ): Promise<{ error?: unknown; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
@@ -226,7 +227,7 @@ export const joinCall = async (
     try {
         connection = await newConnection(serverUrl, channelId, () => {
             myselfLeftCall();
-        }, setScreenShareURL, hasMicPermission, title);
+        }, setScreenShareURL, hasMicPermission, title, rootId);
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error);
         return {error};
@@ -417,7 +418,7 @@ export const stopCallRecording = async (serverUrl: string, callId: string) => {
 };
 
 // handleCallsSlashCommand will return true if the slash command was handled
-export const handleCallsSlashCommand = async (value: string, serverUrl: string, channelId: string, currentUserId: string, intl: IntlShape):
+export const handleCallsSlashCommand = async (value: string, serverUrl: string, channelId: string, rootId: string, currentUserId: string, intl: IntlShape):
     Promise<{ handled?: boolean; error?: string }> => {
     const tokens = value.split(' ');
     if (tokens.length < 2 || tokens[0] !== '/call') {
@@ -438,12 +439,14 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
                 };
             }
             const title = tokens.length > 2 ? tokens.slice(2).join(' ') : undefined;
-            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title);
+            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
             return {handled: true};
         }
-        case 'join':
-            await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+        case 'join': {
+            const title = tokens.length > 2 ? tokens.slice(2).join(' ') : undefined;
+            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
             return {handled: true};
+        }
         case 'leave':
             if (getCurrentCall()?.channelId === channelId) {
                 await leaveCall();
