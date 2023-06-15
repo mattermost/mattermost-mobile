@@ -67,6 +67,7 @@ export const SSO = 'SSO';
 export const TABLE = 'Table';
 export const TERMS_OF_SERVICE = 'TermsOfService';
 export const THREAD = 'Thread';
+export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
 
@@ -137,6 +138,7 @@ export default {
     TABLE,
     TERMS_OF_SERVICE,
     THREAD,
+    THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
 } as const;

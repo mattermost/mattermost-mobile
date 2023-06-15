@@ -3,8 +3,9 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {ActionType, Navigation, Screens} from '@constants';
+import {ActionType, General, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
+import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, setCurrentTeamAndChannelId} from '@queries/servers/system';
@@ -16,6 +17,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
+import {changeOpacity} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
 
@@ -113,8 +115,36 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             }
         }
 
+        // Get translation by user locale
+        const translations = getTranslations(user.locale);
+
+        // Get title translation or default title message
+        const title = translations[t('thread.header.thread')] || 'Thread';
+
+        let subtitle = '';
+        if (channel?.type === General.DM_CHANNEL) {
+            subtitle = channel.displayName;
+        } else {
+            // Get translation or default message
+            subtitle = translations[t('thread.header.thread_in')] || 'in {channelName}';
+            subtitle = subtitle.replace('{channelName}', channel.displayName);
+        }
+
         goToScreen(Screens.THREAD, '', {rootId}, {
-            topBar: {visible: false},
+            topBar: {
+                title: {
+                    text: title,
+                },
+                subtitle: {
+                    color: changeOpacity(EphemeralStore.theme!.sidebarHeaderTextColor, 0.72),
+                    text: subtitle,
+                },
+                noBorder: true,
+                scrollEdgeAppearance: {
+                    noBorder: true,
+                    active: true,
+                },
+            },
         });
 
         return {};
