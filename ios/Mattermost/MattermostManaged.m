@@ -153,6 +153,10 @@ RCT_EXPORT_METHOD(removeListeners:(double)count) {
   // Keep: Required for RN built in Event Emitter Calls.
 }
 
+RCT_EXPORT_METHOD(invalidateKeychainCache:(NSString *) serverUrl)
+{
+  [[GekidouWrapper default] invalidateTokenFor:serverUrl]
+}
 
 RCT_EXPORT_METHOD(createThumbnail:(NSDictionary *)config findEventsWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {

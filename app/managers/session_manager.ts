@@ -7,6 +7,7 @@ import FastImage from 'react-native-fast-image';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
+import {invalidateKeychainCache} from '@app/utils/mattermost_managed';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
@@ -115,6 +116,7 @@ class SessionManager {
     private terminateSession = async (serverUrl: string, removeServer: boolean) => {
         cancelSessionNotification(serverUrl);
         await removeServerCredentials(serverUrl);
+        invalidateKeychainCache(serverUrl);
         PushNotifications.removeServerNotifications(serverUrl);
 
         NetworkManager.invalidateClient(serverUrl);
