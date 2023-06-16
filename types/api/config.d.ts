@@ -159,6 +159,7 @@ interface ClientConfig {
     PersistentNotificationMaxRecipients: string;
     PersistentNotificationInterval: string;
     AllowPersistentNotificationsForGuests: string;
+    PersistentNotificationIntervalMinutes: string;
     PrivacyPolicyLink: string;
     ReportAProblemLink: string;
     RequireEmailVerification: string;
