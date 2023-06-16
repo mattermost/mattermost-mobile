@@ -1,7 +1,7 @@
 PODS:
   - Alamofire (5.6.4)
   - boost (1.76.0)
-  - BVLinearGradient (2.7.1):
+  - BVLinearGradient (2.7.2):
     - React-Core
   - CocoaAsyncSocket (7.6.5)
   - CocoaLumberjack (3.8.0):
@@ -902,7 +902,7 @@ CHECKOUT OPTIONS:
 SPEC CHECKSUMS:
   Alamofire: 4e95d97098eacb88856099c4fc79b526a299e48c
   boost: 57d2868c099736d80fcd648bf211b4431e51a558
-  BVLinearGradient: 5ef53377b2a3c983f190ce6dfdab6b42478286b3
+  BVLinearGradient: 252e4a39d23d69d2d89b55b165c8900f7caf93fc
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CocoaLumberjack: 78abfb691154e2a9df8ded4350d504ee19d90732
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
