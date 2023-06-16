@@ -7,7 +7,6 @@ import FastImage from 'react-native-fast-image';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
-import {invalidateKeychainCache} from '@app/utils/mattermost_managed';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
@@ -23,6 +22,7 @@ import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
+import {invalidateKeychainCache} from '@utils/mattermost_managed';
 import {addNewServer} from '@utils/server';
 
 import type {LaunchType} from '@typings/launch';
