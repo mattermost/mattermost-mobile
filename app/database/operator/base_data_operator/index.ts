@@ -190,7 +190,7 @@ export default class BaseDataOperator {
                 }, description);
             }
         } catch (e) {
-            logWarning('batchRecords error ', e as Error, description, models.length);
+            logWarning('batchRecords error ', description, e as Error);
         }
     }
 
