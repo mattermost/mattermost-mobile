@@ -45,6 +45,7 @@ jobs:
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           path: Mattermost-unsigned.ipa
+          name: Mattermost-unsigned.ipa
 
   build-android-unsigned:
     runs-on: ubuntu-22.04
@@ -70,6 +71,7 @@ jobs:
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           path: Mattermost-unsigned.apk
+          name: Mattermost-unsigned.apk
 
   release:
     runs-on: ubuntu-22.04
