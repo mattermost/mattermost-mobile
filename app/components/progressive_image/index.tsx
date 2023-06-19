@@ -7,6 +7,7 @@ import FastImage, {type ResizeMode} from 'react-native-fast-image';
 import Animated, {interpolate, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';
+import {emptyFunction} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Thumbnail from './thumbnail';
@@ -24,6 +25,7 @@ type Props = ProgressiveImageProps & {
     imageStyle?: StyleProp<ImageStyle>;
     isBackgroundImage?: boolean;
     onError: () => void;
+    onSucess?: () => void;
     resizeMode?: ResizeMode;
     style?: StyleProp<ViewStyle>;
     tintDefaultSource?: boolean;
@@ -45,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 const ProgressiveImage = ({
     children, defaultSource, forwardRef, id, imageStyle, imageUri, inViewPort, isBackgroundImage,
-    onError, resizeMode = 'contain', style = {}, thumbnailUri, tintDefaultSource,
+    onError, onSucess, resizeMode = 'contain', style = {}, thumbnailUri, tintDefaultSource,
 }: Props) => {
     const [showHighResImage, setShowHighResImage] = useState(false);
     const theme = useTheme();
@@ -62,6 +64,7 @@ const ProgressiveImage = ({
 
     const onLoadImageEnd = () => {
         intensity.value = withTiming(100, {duration: 300});
+        onSucess?.();
     };
 
     const animatedOpacity = useAnimatedStyle(() => ({
@@ -153,8 +156,9 @@ const ProgressiveImage = ({
         <Animated.View
             style={[styles.defaultImageContainer, style, containerStyle]}
         >
+            {Boolean(thumbnailUri) &&
             <Thumbnail
-                onError={onError}
+                onError={emptyFunction}
                 opacity={defaultOpacity}
                 source={{uri: thumbnailUri}}
                 style={[
@@ -163,6 +167,7 @@ const ProgressiveImage = ({
                 ]}
                 tintColor={thumbnailUri ? undefined : theme.centerChannelColor}
             />
+            }
             {image}
         </Animated.View>
     );
