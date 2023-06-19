@@ -9,7 +9,7 @@ import {MM_TABLES} from '@constants/database';
 
 import {queryGroupsByNames} from './group';
 import {querySavedPostsPreferences} from './preference';
-import {getConfigValue, observeConfigBooleanValue, observeConfigIntValue, observeConfigValue} from './system';
+import {getConfigValue, observeConfigBooleanValue} from './system';
 import {queryUsersByUsername, observeUser, observeCurrentUser} from './user';
 
 import type PostModel from '@typings/database/models/servers/post';
