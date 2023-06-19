@@ -16,8 +16,8 @@ import {requestNotifications} from 'react-native-permissions';
 
 import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
+import {updateThread} from '@actions/local/thread';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
-import {markThreadAsRead} from '@actions/remote/thread';
 import {Device, Events, Navigation, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
@@ -90,7 +90,12 @@ class PushNotifications {
                 if (isCRTEnabled && payload.root_id) {
                     const thread = await getThreadById(database, payload.root_id);
                     if (thread?.isFollowing) {
-                        markThreadAsRead(serverUrl, payload.team_id, payload.root_id);
+                        const data: Partial<ThreadWithViewedAt> = {
+                            unread_mentions: 0,
+                            unread_replies: 0,
+                            last_viewed_at: Date.now(),
+                        };
+                        updateThread(serverUrl, payload.root_id, data);
                     }
                 } else {
                     markChannelAsViewed(serverUrl, payload.channel_id);
