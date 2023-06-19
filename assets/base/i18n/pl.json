@@ -742,7 +742,7 @@
     "permalink.error.cancel": "Anuluj",
     "permalink.error.access.title": "Wiadomość nie jest widoczna",
     "permalink.error.access.text": "Wiadomość, którą próbujesz wyświetlić, znajduje się na kanale, do którego nie masz dostępu lub została usunięta.",
-    "password_send.return": "Wróć do logowania",
+    "password_send.return": "Powrót do logowania",
     "password_send.reset": "Zmień swoje hasło",
     "password_send.link.title": "Link resetujący wysłany",
     "password_send.generic_error": "Nie udało nam się wysłać do Ciebie linku resetującego hasło. Prosimy o kontakt z Administratorem Systemu w celu uzyskania pomocy.",
