@@ -25,7 +25,6 @@ type Props = ProgressiveImageProps & {
     imageStyle?: StyleProp<ImageStyle>;
     isBackgroundImage?: boolean;
     onError: () => void;
-    onSucess?: () => void;
     resizeMode?: ResizeMode;
     style?: StyleProp<ViewStyle>;
     tintDefaultSource?: boolean;
@@ -47,7 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 const ProgressiveImage = ({
     children, defaultSource, forwardRef, id, imageStyle, imageUri, inViewPort, isBackgroundImage,
-    onError, onSucess, resizeMode = 'contain', style = {}, thumbnailUri, tintDefaultSource,
+    onError, resizeMode = 'contain', style = {}, thumbnailUri, tintDefaultSource,
 }: Props) => {
     const [showHighResImage, setShowHighResImage] = useState(false);
     const theme = useTheme();
@@ -64,7 +63,6 @@ const ProgressiveImage = ({
 
     const onLoadImageEnd = () => {
         intensity.value = withTiming(100, {duration: 300});
-        onSucess?.();
     };
 
     const animatedOpacity = useAnimatedStyle(() => ({
