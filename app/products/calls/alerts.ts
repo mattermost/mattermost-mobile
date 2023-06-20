@@ -3,8 +3,7 @@
 
 import {Alert} from 'react-native';
 
-import {hasMicrophonePermission, joinCall, unmuteMyself} from '@calls/actions';
-import {leaveCallPopCallScreen} from '@calls/actions/calls';
+import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {
     getCallsConfig,
@@ -73,6 +72,7 @@ export const leaveAndJoinWithAlert = async (
     joinServerUrl: string,
     joinChannelId: string,
     title?: string,
+    rootId?: string,
 ) => {
     let leaveChannelName = '';
     let joinChannelName = '';
@@ -133,13 +133,13 @@ export const leaveAndJoinWithAlert = async (
                         id: 'mobile.leave_and_join_confirmation',
                         defaultMessage: 'Leave & Join',
                     }),
-                    onPress: () => doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title),
+                    onPress: () => doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId),
                     style: 'cancel',
                 },
             ],
         );
     } else {
-        doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title);
+        doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId);
     }
 };
 
@@ -150,6 +150,7 @@ const doJoinCall = async (
     newCall: boolean,
     intl: IntlShape,
     title?: string,
+    rootId?: string,
 ) => {
     const {formatMessage} = intl;
 
@@ -198,7 +199,7 @@ const doJoinCall = async (
     const hasPermission = await hasMicrophonePermission();
     setMicPermissionsGranted(hasPermission);
 
-    const res = await joinCall(serverUrl, channelId, user.id, hasPermission, title);
+    const res = await joinCall(serverUrl, channelId, user.id, hasPermission, title, rootId);
     if (res.error) {
         const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);
@@ -265,7 +266,7 @@ export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
                 defaultMessage: 'Leave',
             }),
             onPress: async () => {
-                await leaveCallPopCallScreen();
+                await leaveCall();
             },
             style: 'destructive',
         },

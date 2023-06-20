@@ -85,11 +85,22 @@ extension Network {
         var userIdsToLoad: Set<String> = Set()
         var usernamesToLoad: Set<String> = Set()
         
+        func findNeededUsernames(text: String?) {
+            if let text = text {
+                for username in self.matchUsername(in: text) {
+                    if username != currentUser.username && !threadParticipantUsernames.contains(username) && !usernamesToLoad.contains(username) {
+                        usernamesToLoad.insert(username)
+                    }
+                }
+            }
+        }
+
         if let postsWithKeys = postResponse?.posts {
             let posts = Array(postsWithKeys.values)
             for post in posts {
                 let authorId = post.userId
                 let message = post.message
+                let attachments = post.props["attachments"] as? [[String: Any]]
                 
                 if isCRTEnabled && post.rootId.isEmpty {
                     if threads == nil {
@@ -118,12 +129,14 @@ extension Network {
                 if (authorId != currentUser.id && !alreadyLoadedUserIds.contains(authorId) && !threadParticipantUserIds.contains(authorId) && !userIdsToLoad.contains(authorId)) {
                     userIdsToLoad.insert(authorId)
                 }
-                
-                if !message.isEmpty {
-                    for username in self.matchUsername(in: message) {
-                        if username != currentUser.username && !threadParticipantUsernames.contains(username) && !usernamesToLoad.contains(username) {
-                            usernamesToLoad.insert(username)
-                        }
+
+                findNeededUsernames(text: message)
+                if let attachments = attachments {
+                    for attachment in attachments {
+                        let pretext = attachment["pretext"] as? String
+                        let text = attachment["text"] as? String
+                        findNeededUsernames(text: pretext)
+                        findNeededUsernames(text: text)
                     }
                 }
             }

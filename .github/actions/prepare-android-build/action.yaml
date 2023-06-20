@@ -1,0 +1,49 @@
+name: prepare-android-build
+description: Action to prepare environment for android build
+
+inputs:
+  sign:
+    description: Flag to enable android package signing
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: ci/prepare-mobile-build
+      uses: ./.github/actions/prepare-mobile-build
+
+    # Disable this since we are not caching anything for now
+    # - name: ci/install-gradle-dependencies
+    #   shell: bash
+    #   working-directory: android
+    #   run: |
+    #     echo "::group::install-gradle-dependencies"
+    #     ./gradlew dependencies
+    #     echo "::endgroup::"
+
+    - name: ci/jetify-android-libraries
+      shell: bash
+      run: |
+        echo "::group::jetify-android-libraries"
+        ./node_modules/.bin/jetify
+        echo "::endgroup::"
+
+    - name: ci/checkout-private-repo
+      if: ${{ inputs.sign == 'true' }}
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      with:
+        repository: mattermost/mattermost-mobile-private
+        token: ${{ env.MATTERMOST_BUILD_GH_TOKEN }}
+        path: ${{ github.workspace }}/mattermost-mobile-private
+
+    - name: ci/append-keystore-to-android-build-for-signing
+      if: ${{ inputs.sign == 'true' }}
+      shell: bash
+      run: |
+        echo "::group::append-keystore-to-android-build-for-signing"
+        cp ${{ github.workspace }}/mattermost-mobile-private/android/${STORE_FILE} android/app/${STORE_FILE}
+        echo "" | tee -a android/gradle.properties > /dev/null
+        echo MATTERMOST_RELEASE_STORE_FILE=${STORE_FILE} | tee -a android/gradle.properties > /dev/null
+        echo ${STORE_ALIAS} | tee -a android/gradle.properties > /dev/null
+        echo ${STORE_PASSWORD} | tee -a android/gradle.properties > /dev/null
+        echo "::endgroup::"

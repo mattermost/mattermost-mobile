@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import Badge from '@components/badge';
+import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeMentionsByServer} from '@database/subscription/unreads';
 
@@ -27,9 +29,9 @@ const styles = StyleSheet.create({
     },
 });
 
-const subscriptions: Map<string, UnreadSubscription> = new Map();
-
 const OtherMentionsBadge = ({channelId}: Props) => {
+    const currentServerUrl = useServerUrl();
+    const subscriptions: Map<string, UnreadSubscription> = useRef(new Map()).current;
     const [count, setCount] = useState(0);
 
     const updateCount = () => {
@@ -50,7 +52,10 @@ const OtherMentionsBadge = ({channelId}: Props) => {
                 }
             }
 
-            unreads.mentions = mentions + threadMentionCount;
+            unreads.mentions = mentions;
+            if (serverUrl !== currentServerUrl || channelId !== Screens.GLOBAL_THREADS) {
+                unreads.mentions += threadMentionCount;
+            }
             subscriptions.set(serverUrl, unreads);
             updateCount();
         }

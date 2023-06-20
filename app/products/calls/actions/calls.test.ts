@@ -89,6 +89,13 @@ jest.mock('@queries/servers/thread', () => ({
 }));
 
 jest.mock('@calls/alerts');
+jest.mock('react-native-navigation', () => ({
+    Navigation: {
+        pop: jest.fn(() => Promise.resolve({
+            catch: jest.fn(),
+        })),
+    },
+}));
 
 const addFakeCall = (serverUrl: string, channelId: string) => {
     const call = {
