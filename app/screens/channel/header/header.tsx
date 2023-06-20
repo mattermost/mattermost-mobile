@@ -11,6 +11,7 @@ import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import NavigationHeader from '@components/navigation_header';
 import {ITEM_HEIGHT} from '@components/option_item';
+import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {General, Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -23,7 +24,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import OtherMentionsBadge from './other_mentions_badge';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
 import type {HeaderRightButton} from '@components/navigation_header/header';
