@@ -75,6 +75,14 @@ jest.mock('@queries/servers/thread', () => ({
     })),
 }));
 
+jest.mock('react-native-navigation', () => ({
+    Navigation: {
+        pop: jest.fn(() => Promise.resolve({
+            catch: jest.fn(),
+        })),
+    },
+}));
+
 const call1: Call = {
     participants: {
         'user-1': {id: 'user-1', muted: false, raisedHand: 0},

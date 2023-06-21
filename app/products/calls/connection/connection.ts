@@ -31,6 +31,7 @@ export async function newConnection(
     setScreenShareURL: (url: string) => void,
     hasMicPermission: boolean,
     title?: string,
+    rootId?: string,
 ) {
     let peer: RTCPeer | null = null;
     let stream: MediaStream;
@@ -323,6 +324,7 @@ export async function newConnection(
             ws.send('join', {
                 channelID,
                 title,
+                threadID: rootId,
             });
         }
     });

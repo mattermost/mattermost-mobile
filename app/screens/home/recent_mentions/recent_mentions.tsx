@@ -115,7 +115,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
             if (isViewable && item.type === 'post') {
-                acc[`${Screens.MENTIONS}-${item.value.id}`] = true;
+                acc[`${Screens.MENTIONS}-${item.value.currentPost.id}`] = true;
             }
             return acc;
         }, {});

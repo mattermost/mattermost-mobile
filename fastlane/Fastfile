@@ -14,11 +14,11 @@ before_all do
   ENV['SPACESHIP_SKIP_2FA_UPGRADE'] = '1'
 
   is_build_pr = ENV['BUILD_PR'] == 'true'
-  if is_build_pr && ENV['CIRCLECI'] == 'true'
-    ENV['BRANCH_TO_BUILD'] = ENV['CIRCLE_BRANCH']
+  if is_build_pr && ENV['CI'] == 'true'
+    ENV['BRANCH_TO_BUILD'] = ENV['GITHUB_REF_NAME']
   end
 
-  if ENV['CIRCLECI'] != 'true'
+  if ENV['CI'] != 'true'
     # Raises an error is git is not clean
     if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
       ensure_git_status_clean
@@ -46,9 +46,9 @@ before_all do
 end
 
 after_all do |lane|
-  if ENV['CIRCLECI'] != 'true'
+  if ENV['CI'] != 'true'
     if ENV['RESET_GIT_BRANCH'] == 'true'
-      branch = ENV['BRANCH_TO_BUILD'] || 'master'
+      branch = ENV['BRANCH_TO_BUILD'] || 'main'
       package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
       beta_dir = '../android/app/src/main/java/com/mattermost/rnbeta'
       release_dir = "../android/app/src/main/java/#{package_id.gsub '.', '/'}"
@@ -68,7 +68,7 @@ after_all do |lane|
         sh "git branch -D #{local_branch}"
         UI.success("Deleted working branch \"#{local_branch}\"")
         if lane.to_s == 'build_pr'
-          sh 'git checkout master'
+          sh 'git checkout main'
           ## Remove the branch for the PR
           sh "git branch -D #{branch}"
           UI.success("Deleted PR branch \"#{branch}\"")
@@ -320,7 +320,7 @@ end
 
 desc 'Create GitHub release'
 lane :github do
-  tag = ENV['CIRCLE_TAG'] || ENV['TAG']
+  tag = ENV['GITHUB_REF_NAME'] || ENV['TAG']
 
   if tag
     version = android_get_version_name(gradle_file: './android/app/build.gradle')
@@ -350,8 +350,8 @@ end
 
 platform :ios do
   before_all do
-    if ENV['CIRCLECI'] == 'true'
-      setup_circle_ci
+    if ENV['CI'] == 'true'
+      setup_ci
     end
   end
 
