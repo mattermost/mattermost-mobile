@@ -890,7 +890,7 @@
     "mobile.calls_host_rec_stopped_title": "Die Aufnahme wurde gestoppt. Verarbeitung...",
     "mobile.calls_host_rec_stopped": "Du kannst die Aufzeichnung in der Unterhaltung dieses Anrufs finden, sobald die Verarbeitung abgeschlossen ist.",
     "share_extension.upload_disabled": "Datei-Uploads sind für den gewählten Server deaktiviert",
-    "share_extension.share_screen.title": "In Mattermost teilen",
+    "share_extension.share_screen.title": "Teilen mit {applicationName}",
     "share_extension.servers_screen.title": "Server auswählen",
     "share_extension.server_label": "Server",
     "share_extension.multiple_label": "{count, number} Anhänge",
@@ -1056,5 +1056,9 @@
     "mobile.calls_tablet": "Tablett",
     "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 { hob eine Hand} other {+# mehr hoben eine Hand}}</bold>",
     "mobile.calls_quality_warning": "Die Gesprächsqualität kann sich aufgrund instabiler Netzbedingungen verschlechtern.",
-    "mobile.calls_name_is_talking_postfix": "spricht..."
+    "mobile.calls_name_is_talking_postfix": "spricht...",
+    "share_extension.channels_screen.title": "Kanal auswählen",
+    "share_extension.error_screen.label": "Ein Fehler ist aufgetreten",
+    "share_extension.error_screen.reason": "Grund: {reason}",
+    "share_extension.error_screen.description": "Beim Versuch, den Inhalt mit {applicationName} zu teilen, ist ein Fehler aufgetreten."
 }
