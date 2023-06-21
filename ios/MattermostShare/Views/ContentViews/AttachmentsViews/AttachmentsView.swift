@@ -15,16 +15,30 @@ struct AttachmentsView: View {
   var error: String? {
     if let server = shareViewModel.server {
       if server.uploadsDisabled {
-        return "File uploads are disabled for the selected server"
+        return NSLocalizedString("share_extension.upload_disabled",
+          value: "File uploads are disabled for the selected server",
+          comment: ""
+        )
       }
       let sizeError = attachments.contains { $0.sizeError(server: server)}
       let resolutionError = attachments.contains { $0.resolutionError(server: server)}
       if sizeError && attachments.count == 1 {
-        return "File must be less than \(server.maxFileSize.formattedFileSize)"
+        return NSLocalizedString("share_extension.file_limit.single",
+          value: "File must be less than {size}",
+          comment: ""
+        )
+        .replacingOccurrences(of: "{size}", with: server.maxFileSize.formattedFileSize)
       } else if sizeError {
-        return "Each file must be less than \(server.maxFileSize.formattedFileSize)"
+        return NSLocalizedString("share_extension.file_limit.multiple",
+          value: "Each file must be less than {size}",
+          comment: ""
+        )
+        .replacingOccurrences(of: "{size}", with: server.maxFileSize.formattedFileSize)
       } else if resolutionError {
-        return "Image exceeds maximum dimensions of 7680 x 4320 px"
+        return NSLocalizedString("share_extension.max_resolution",
+          value: "Image exceeds maximum dimensions of 7680 x 4320 px",
+          comment: ""
+        )
       }
     }
     

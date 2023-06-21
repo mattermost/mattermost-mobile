@@ -19,9 +19,9 @@
 	<key>CFBundlePackageType</key>
 	<string>XPC!</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.5.0</string>
+	<string>2.5.1</string>
 	<key>CFBundleVersion</key>
-	<string>475</string>
+	<string>476</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-Bold.ttf</string>
@@ -77,5 +77,7 @@
 	<string>$(SENTRY_DSN_IOS)</string>
 	<key>SENTRY_ENABLED</key>
 	<string>$(SENTRY_ENABLED)</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.</string>
 </dict>
 </plist>
