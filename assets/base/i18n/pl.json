@@ -893,7 +893,7 @@
     "extension.no_memberships.title": "Nie jest jeszcze członkiem żadnego zespołu",
     "extension.no_memberships.description": "Aby udostępniać treści, musisz być członkiem zespołu na serwerze Mattermost.",
     "share_extension.upload_disabled": "Wysyłanie plików jest wyłączone dla wybranego serwera",
-    "share_extension.share_screen.title": "Udostępnij w Mattermost",
+    "share_extension.share_screen.title": "Udostępnij w {applicationName}",
     "share_extension.servers_screen.title": "Wybierz serwer",
     "share_extension.server_label": "Serwer",
     "share_extension.multiple_label": "{count, number} załączników",
@@ -1056,5 +1056,9 @@
     "mobile.calls_tablet": "Tablet",
     "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# więcej}}</bold>zgłosiło się",
     "mobile.calls_quality_warning": "Jakość połączenia może ulec pogorszeniu z powodu niestabilnych warunków sieciowych.",
-    "mobile.calls_name_is_talking_postfix": "mówi..."
+    "mobile.calls_name_is_talking_postfix": "mówi...",
+    "share_extension.error_screen.label": "Wystąpił błąd",
+    "share_extension.channels_screen.title": "Wybierz kanał",
+    "share_extension.error_screen.description": "Podczas próby udostępnienia zawartości na stronie {applicationName} wystąpił błąd.",
+    "share_extension.error_screen.reason": "Powód: {reason}"
 }
