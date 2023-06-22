@@ -26,6 +26,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         currentUserId,
         locale,
         teammateNameDisplay,
+        hideGuestTags: observeConfigBooleanValue(database, 'HideGuestTags'),
     };
 });
 

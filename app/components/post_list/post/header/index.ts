@@ -51,6 +51,7 @@ const withHeaderProps = withObservables(
             isTimezoneEnabled,
             rootPostAuthor,
             teammateNameDisplay,
+            hideGuestTags: observeConfigBooleanValue(database, 'HideGuestTags'),
         };
     });
 

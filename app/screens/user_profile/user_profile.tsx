@@ -45,6 +45,7 @@ type Props = {
     user: UserModel;
     userIconOverride?: string;
     usernameOverride?: string;
+    hideGuestTags: boolean;
 }
 
 const TITLE_HEIGHT = 118;
@@ -84,6 +85,7 @@ const UserProfile = ({
     user,
     userIconOverride,
     usernameOverride,
+    hideGuestTags,
 }: Props) => {
     const {formatMessage, locale} = useIntl();
     const serverUrl = useServerUrl();
@@ -175,6 +177,7 @@ const UserProfile = ({
                     user={user}
                     userIconOverride={userIconOverride}
                     usernameOverride={usernameOverride}
+                    hideGuestTags={hideGuestTags}
                 />
                 {showUserProfileOptions &&
                     <UserProfileOptions

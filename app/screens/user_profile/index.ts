@@ -70,6 +70,7 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
         teammateDisplayName,
         user,
         canChangeMemberRoles,
+        hideGuestTags: observeConfigBooleanValue(database, 'HideGuestTags'),
     };
 });
 
