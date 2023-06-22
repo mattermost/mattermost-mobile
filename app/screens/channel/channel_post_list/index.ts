@@ -18,6 +18,7 @@ import {observeIsCRTEnabled} from '@queries/servers/thread';
 import ChannelPostList from './channel_post_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import { logDebug } from '@app/utils/log';
 
 const enhanced = withObservables(['channelId'], ({database, channelId}: {channelId: string} & WithDatabaseArgs) => {
     const isCRTEnabledObserver = observeIsCRTEnabled(database);
@@ -36,6 +37,7 @@ const enhanced = withObservables(['channelId'], ({database, channelId}: {channel
                 }
 
                 const {earliest, latest} = postsInChannel[0];
+                logDebug('using as posts in channels', {earliest, latest, now: Date.now()});
                 return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId, isCRTEnabled ? '' : undefined).observe();
             }),
         ),
