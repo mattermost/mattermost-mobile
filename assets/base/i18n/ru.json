@@ -837,7 +837,7 @@
     "smobile.search.recent_title": "Последние поиски в {teamName}",
     "share_feedback.button.no": "Нет, спасибо",
     "share_extension.upload_disabled": "Загрузка файлов отключена для выбранного сервера",
-    "share_extension.share_screen.title": "Поделиться с Mattermost",
+    "share_extension.share_screen.title": "Поделиться с {applicationName}",
     "share_extension.servers_screen.title": "Выберите сервер",
     "share_extension.channel_error": "Вы не являетесь членом команды на выбранном сервере. Выберите другой сервер или откройте Mattermost, чтобы присоединиться к команде.",
     "settings.save": "Сохранить",
@@ -1056,5 +1056,9 @@
     "mobile.calls_quality_warning": "Качество звонков может ухудшиться из-за нестабильной работы сети.",
     "mobile.calls_name_is_talking_postfix": "говорит...",
     "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# несколько участников}}</bold>подняло руку",
-    "mobile.calls_tablet": "Планшет"
+    "mobile.calls_tablet": "Планшет",
+    "share_extension.channels_screen.title": "Выбрать канал",
+    "share_extension.error_screen.description": "При попытке поделиться содержимым на {applicationName} произошла ошибка.",
+    "share_extension.error_screen.label": "Произошла ошибка",
+    "share_extension.error_screen.reason": "Причина: {reason}"
 }
