@@ -14,11 +14,11 @@ import {observeMyChannel} from '@queries/servers/channel';
 import {queryPostsBetween, queryPostsInChannel} from '@queries/servers/post';
 import {queryAdvanceSettingsPreferences} from '@queries/servers/preference';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
+import {logDebug} from '@utils/log';
 
 import ChannelPostList from './channel_post_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import { logDebug } from '@app/utils/log';
 
 const enhanced = withObservables(['channelId'], ({database, channelId}: {channelId: string} & WithDatabaseArgs) => {
     const isCRTEnabledObserver = observeIsCRTEnabled(database);
