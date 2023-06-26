@@ -195,7 +195,7 @@
     "pod-install": "react-native setup-ios-permissions && cd ios && pod install",
     "pod-install-m1": "react-native setup-ios-permissions && cd ios && arch -x86_64 pod install",
     "postinstall": "patch-package && ./scripts/postinstall.sh",
-    "preinstall": "./scripts/preinstall.sh",
+    "preinstall": "./scripts/preinstall.sh && npx solidarity",
     "start": "react-native start",
     "test": "jest --forceExit --runInBand",
     "test:coverage": "jest --coverage",
