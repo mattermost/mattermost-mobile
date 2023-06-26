@@ -166,7 +166,7 @@ export default function SendHandler({
 
     const sendCommand = useCallback(async () => {
         if (value.trim().startsWith('/call')) {
-            const {handled, error} = await handleCallsSlashCommand(value.trim(), serverUrl, channelId, currentUserId, intl);
+            const {handled, error} = await handleCallsSlashCommand(value.trim(), serverUrl, channelId, rootId, currentUserId, intl);
             if (handled) {
                 setSendingMessage(false);
                 clearDraft();

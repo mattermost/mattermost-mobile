@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo, useState} from 'react';
+import {useNavigation} from '@react-navigation/native';
+import React, {useEffect, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import SearchBar from '@components/search';
@@ -39,6 +41,14 @@ const Channels = ({theme}: Props) => {
     const styles = getStyles(theme);
     const [term, setTerm] = useState('');
     const color = useMemo(() => changeOpacity(theme.centerChannelColor, 0.72), [theme]);
+    const navigator = useNavigation();
+    const intl = useIntl();
+
+    useEffect(() => {
+        navigator.setOptions({
+            title: intl.formatMessage({id: 'share_extension.channels_screen.title', defaultMessage: 'Select channel'}),
+        });
+    }, [intl.locale]);
 
     const cancelButtonProps = useMemo(() => ({
         color,

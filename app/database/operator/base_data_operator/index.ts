@@ -186,11 +186,11 @@ export default class BaseDataOperator {
         try {
             if (models.length > 0) {
                 await this.database.write(async (writer) => {
-                    await writer.batch(models);
+                    await writer.batch(...models);
                 }, description);
             }
         } catch (e) {
-            logWarning('batchRecords error ', e as Error);
+            logWarning('batchRecords error ', description, e as Error);
         }
     }
 

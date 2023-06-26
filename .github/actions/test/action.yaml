@@ -1,0 +1,27 @@
+name: test
+description: Common tests for mobile repo
+
+runs:
+  using: composite
+  steps:
+    - name: ci/prepare-node-deps
+      uses: ./.github/actions/prepare-node-deps
+
+    - name: ci/check-styles
+      shell: bash
+      run: |
+        echo "::group::check-styles"
+        npm run check
+        echo "::endgroup::"
+    - name: ci/run-tests
+      shell: bash
+      run: |
+        echo "::group::run-tests"
+        npm test
+        echo "::endgroup::"
+    - name: ci/check-i18n
+      shell: bash
+      run: |
+        echo "::group::check-i18n"
+        ./scripts/precommit/i18n.sh
+        echo "::endgroup::"
