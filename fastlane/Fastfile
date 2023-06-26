@@ -8,7 +8,6 @@ skip_docs
 
 configured = false
 is_build_pr = false
-releases_domain = 'https://releases.mattermost.com'
 
 # Executes before anything else use to setup the script
 before_all do
@@ -274,7 +273,7 @@ lane :upload_file_to_s3 do |options|
           puts "[#{Thread.current["file_number"]}/#{total_files}] #{filename} uploading..."
           s3_file = s3_bucket.object("#{s3_folder}/#{filename}")
           s3_file.upload_file("#{file}")
-          links.push("#{releases_domain}/#{s3_folder}/#{filename}")
+          links.push("https://#{s3_bucket_name}/#{s3_folder}/#{filename}")
         end
       }
     end
@@ -328,14 +327,14 @@ lane :github do
     build = android_get_version_code(gradle_file: './android/app/build.gradle')
     changelog = File.read("metadata/changelog")
     android = [
-      "    * [Mattermost arm64-v8a](#{releases_domain}/mattermost-mobile/#{version}/#{build}/Mattermost-arm64-v8a.apk)",
-      "    * [Mattermost armeabi-v7a](#{releases_domain}/mattermost-mobile/#{version}/#{build}/Mattermost-armeabi-v7a.apk)",
-      "    * [Mattermost Universal](#{releases_domain}/mattermost-mobile/#{version}/#{build}/Mattermost-universal.apk)",
-      "    * [Mattermost x86](#{releases_domain}/mattermost-mobile/#{version}/#{build}/Mattermost-x86.apk)",
-      "    * [Mattermost x86_64](#{releases_domain}/mattermost-mobile/#{version}/#{build}/Mattermost-x86_64.apk)",
+      "    * [Mattermost arm64-v8a](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-arm64-v8a.apk)",
+      "    * [Mattermost armeabi-v7a](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-armeabi-v7a.apk)",
+      "    * [Mattermost Universal](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-universal.apk)",
+      "    * [Mattermost x86](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-x86.apk)",
+      "    * [Mattermost x86_64](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-x86_64.apk)",
     ]
     changelog.concat("* Android\n#{android.join("\n")}\n")
-    changelog.concat("* iOS\n    * [Mattermost](#{releases_domain}/mattermost-mobile/#{version}/#{build}/Mattermost.ipa)")
+    changelog.concat("* iOS\n    * [Mattermost](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost.ipa)")
 
     github_release = set_github_release(
       repository_name: "mattermost/mattermost-mobile",
