@@ -1,0 +1,245 @@
+diff --git a/node_modules/@nozbe/watermelondb/Database/index.js b/node_modules/@nozbe/watermelondb/Database/index.js
+index fa82516..97ba290 100644
+--- a/node_modules/@nozbe/watermelondb/Database/index.js
++++ b/node_modules/@nozbe/watermelondb/Database/index.js
+@@ -91,7 +91,9 @@ var Database = /*#__PURE__*/function () {
+         var preparedState = record._preparedState;
+         if (!preparedState) {
+           (0, _common.invariant)('disposable' !== record._raw._status, "Cannot batch a disposable record");
+-          throw new Error("Cannot batch a record that doesn't have a prepared create/update/delete");
++          // throw new Error("Cannot batch a record that doesn't have a prepared create/update/delete");
++          console.debug('Trying to batch a record with no prepared state on table', record.constructor.table);
++          return;
+         }
+         var raw = record._raw;
+         var {
+@@ -122,6 +124,10 @@ var Database = /*#__PURE__*/function () {
+           // subsequent changes to the record don't trip up the invariant
+           // TODO: What if this fails?
+           record._preparedState = null;
++
++          if ('update' === preparedState) {
++            record.__original = null;
++          }
+         }
+         if (!changeNotifications[table]) {
+           changeNotifications[table] = [];
+diff --git a/node_modules/@nozbe/watermelondb/Model/index.d.ts b/node_modules/@nozbe/watermelondb/Model/index.d.ts
+index 96114ec..ecfe3c1 100644
+--- a/node_modules/@nozbe/watermelondb/Model/index.d.ts
++++ b/node_modules/@nozbe/watermelondb/Model/index.d.ts
+@@ -61,6 +61,8 @@ export default class Model {
+   // database.batch()
+   prepareUpdate(recordUpdater?: (_: this) => void): this
+ 
++  cancelPrepareUpdate(): void
++
+   prepareMarkAsDeleted(): this
+ 
+   prepareDestroyPermanently(): this
+diff --git a/node_modules/@nozbe/watermelondb/Model/index.js b/node_modules/@nozbe/watermelondb/Model/index.js
+index 10ee0a5..3d0bf77 100644
+--- a/node_modules/@nozbe/watermelondb/Model/index.js
++++ b/node_modules/@nozbe/watermelondb/Model/index.js
+@@ -80,7 +80,17 @@ var Model = /*#__PURE__*/function () {
+    */;
+   _proto.prepareUpdate = function prepareUpdate(recordUpdater = _noop.default) {
+     var _this = this;
+-    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes");
++    if ('deleted' === this._raw._status) {
++      console.debug("Updating a deleted record in table " + _this.table);
++      return this;
++    }
++
++    // (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes");
++    if (this._preparedState) {
++      console.debug("Updating a record with pending changes in table " + _this.table)
++    } else {
++      this.__original = Object.assign({}, this._raw);
++    }
+     this.__ensureNotDisposable("Model.prepareUpdate()");
+     this._isEditing = true;
+ 
+@@ -125,6 +135,21 @@ var Model = /*#__PURE__*/function () {
+     }.bind(this));
+   }
+ 
++  _proto.cancelPrepareUpdate = function cancelPrepareUpdate() {
++    var _this = this;
++
++    if ('test' !== process.env.NODE_ENV && 'undefined' !== typeof process && process) {
++      (0, _invariant.default)('update' === _this._preparedState, "Cannot cancel an update on a model that has not been prepared in table " + _this.table);
++    }
++
++    this.__changes = null;
++    this._preparedState = null;
++    if (this.__original) {
++      this._raw = this.__original;
++    }
++    this.__original = undefined;
++  }
++
+   /**
+    * Prepares record to be marked as deleted
+    *
+@@ -173,7 +198,10 @@ var Model = /*#__PURE__*/function () {
+    * @see {Database#batch}
+    */;
+   _proto.prepareDestroyPermanently = function prepareDestroyPermanently() {
+-    (0, _invariant.default)(!this._preparedState, "Cannot destroy permanently a record with pending changes");
++    // (0, _invariant.default)(!this._preparedState, "Cannot destroy permanently a record with pending changes");
++    if (this._preparedState) {
++      console.debug("Deleting a record with pending changes in table " + this.table);
++    }
+     this.__ensureNotDisposable("Model.prepareDestroyPermanently()");
+     this._raw._status = 'deleted';
+     this._preparedState = 'destroyPermanently';
+diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
+index b7f750d..56dd558 100644
+--- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
++++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
+@@ -19,8 +19,7 @@ class Database private constructor(private val db: SQLiteDatabase) {
+         fun getInstance(
+             name: String,
+             context: Context,
+-            openFlags: Int = SQLiteDatabase.CREATE_IF_NECESSARY or
+-                SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING
++            openFlags: Int = SQLiteDatabase.CREATE_IF_NECESSARY
+         ): Database =
+             synchronized(this) {
+                 if (INSTANCES[name]?.isOpen != true) {
+@@ -37,8 +36,7 @@ class Database private constructor(private val db: SQLiteDatabase) {
+         fun buildDatabase(
+             name: String,
+             context: Context,
+-            openFlags: Int = SQLiteDatabase.CREATE_IF_NECESSARY or
+-                SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING
++            openFlags: Int = SQLiteDatabase.CREATE_IF_NECESSARY
+         ) = Database(createSQLiteDatabase(name, context, openFlags))
+ 
+         private fun createSQLiteDatabase(
+@@ -50,6 +48,21 @@ class Database private constructor(private val db: SQLiteDatabase) {
+                 if (name == ":memory:" || name.contains("mode=memory")) {
+                     context.cacheDir.delete()
+                     File(context.cacheDir, name).path
++                } else if (name.contains("/") || name.contains("file")) {
++                    // Extracts the database name from the path
++                    val dbName = name.substringAfterLast("/")
++
++                    // Extracts the real path where the *.db file will be created
++                    val truePath = name.substringAfterLast("file://").substringBeforeLast("/")
++
++                    // Creates the directory
++                    if (!truePath.contains("databases")) {
++                        val fileObj = File(truePath, "databases")
++                        fileObj.mkdir()
++                        File("${truePath}/databases", dbName).path
++                    } else {
++                        File(truePath, dbName).path
++                    }
+                 } else {
+                     // On some systems there is some kind of lock on `/databases` folder ¯\_(ツ)_/¯
+                     context.getDatabasePath("$name.db").path.replace("/databases", "")
+diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java
+index 2f170e0..01e7450 100644
+--- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java
++++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java
+@@ -11,6 +11,8 @@ import java.util.Arrays;
+ import java.util.HashMap;
+ import java.util.Map;
+ 
++import kotlin.text.StringsKt;
++
+ public class WMDatabase {
+     private final SQLiteDatabase db;
+ 
+@@ -21,7 +23,7 @@ public class WMDatabase {
+     public static Map<String, WMDatabase> INSTANCES = new HashMap<>();
+ 
+     public static WMDatabase getInstance(String name, Context context) {
+-        return getInstance(name, context, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING);
++        return getInstance(name, context, SQLiteDatabase.CREATE_IF_NECESSARY);
+     }
+ 
+     public static WMDatabase getInstance(String name, Context context, int openFlags) {
+@@ -47,6 +49,22 @@ public class WMDatabase {
+         if (name.equals(":memory:") || name.contains("mode=memory")) {
+             context.getCacheDir().delete();
+             path = new File(context.getCacheDir(), name).getPath();
++        } else if (name.contains("/") || name.contains("file")) {
++            // Extracts the database name from the path
++            String dbName = StringsKt.substringAfterLast(name, "/", "");
++
++            // Extracts the real path where the *.db file will be created
++            String truePath = StringsKt.substringAfterLast(name, "file://", "");
++            truePath = StringsKt.substringBeforeLast(truePath, "/", "");
++
++            // Creates the directory
++            if (!truePath.contains("databases")) {
++                File fileObj = new File(truePath, "databases");
++                fileObj.mkdir();
++                path = new File("" + truePath + "/databases", dbName).getPath();
++            } else {
++                path = new File(truePath, dbName).getPath();
++            }
+         } else {
+             // On some systems there is some kind of lock on `/databases` folder ¯\_(ツ)_/¯
+             path = context.getDatabasePath("" + name + ".db").getPath().replace("/databases", "");
+diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseDriver.java b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseDriver.java
+index 1534830..d9a5217 100644
+--- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseDriver.java
++++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseDriver.java
+@@ -55,11 +55,9 @@ public class WMDatabaseDriver {
+ 
+     public WMDatabaseDriver(Context context, String dbName, boolean unsafeNativeReuse) {
+         this.database = unsafeNativeReuse ? WMDatabase.getInstance(dbName, context,
+-                SQLiteDatabase.CREATE_IF_NECESSARY |
+-                        SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING) :
++                SQLiteDatabase.CREATE_IF_NECESSARY) :
+                 WMDatabase.buildDatabase(dbName, context,
+-                        SQLiteDatabase.CREATE_IF_NECESSARY |
+-                                SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING);
++                        SQLiteDatabase.CREATE_IF_NECESSARY);
+         if (BuildConfig.DEBUG) {
+             this.log = Logger.getLogger("DB_Driver");
+         } else {
+diff --git a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
+index 8a4e9b4..06acfb1 100644
+--- a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
++++ b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
+@@ -20,7 +20,7 @@ Database::Database(jsi::Runtime *runtime, std::string path, bool usesExclusiveLo
+     initSql += "pragma temp_store = memory;";
+     #endif
+ 
+-    initSql += "pragma journal_mode = WAL;";
++    // initSql += "pragma journal_mode = WAL;";
+ 
+     // set timeout before SQLITE_BUSY error is returned
+     initSql += "pragma busy_timeout = 5000;";
+diff --git a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.cpp b/node_modules/@nozbe/watermelondb/native/shared/Sqlite.cpp
+index e08153b..2fca075 100644
+--- a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.cpp
++++ b/node_modules/@nozbe/watermelondb/native/shared/Sqlite.cpp
+@@ -72,6 +72,10 @@ void SqliteDb::destroy() {
+     consoleLog("Database closed.");
+ }
+ 
++void SqliteDb::markAsDestroyed() {
++    isDestroyed_ = true;
++}
++
+ SqliteDb::~SqliteDb() {
+     destroy();
+ }
+diff --git a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h b/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h
+index 22cffa7..4b74a7f 100644
+--- a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h
++++ b/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h
+@@ -11,6 +11,7 @@ public:
+     SqliteDb(std::string path);
+     ~SqliteDb();
+     void destroy();
++    void markAsDestroyed();
+ 
+     sqlite3 *sqlite;
+ 

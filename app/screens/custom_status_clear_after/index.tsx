@@ -68,7 +68,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 class ClearAfterModal extends NavigationComponent<Props, State> {
     private backListener: NativeEventSubscription | undefined;
     constructor(props: Props) {
-        super(props);
+        super({...props, componentName: 'ClearAfterModal'});
 
         const options: Options = {
             topBar: {

@@ -110,7 +110,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, i
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
             if (isViewable && item.type === 'post') {
-                acc[`${Screens.SAVED_MESSAGES}-${item.value.id}`] = true;
+                acc[`${Screens.SAVED_MESSAGES}-${item.value.currentPost.id}`] = true;
             }
             return acc;
         }, {});

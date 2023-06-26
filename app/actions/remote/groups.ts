@@ -17,7 +17,7 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const license = await getLicense(database);
-        if (!license || !license.IsLicensed) {
+        if (!license || license.IsLicensed !== 'true') {
             return [];
         }
 
@@ -40,7 +40,7 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const license = await getLicense(database);
-        if (!license || !license.IsLicensed) {
+        if (!license || license.IsLicensed !== 'true') {
             return [];
         }
 
@@ -70,7 +70,7 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const license = await getLicense(database);
-        if (!license || !license.IsLicensed) {
+        if (!license || license.IsLicensed !== 'true') {
             return {groups: [], groupChannels: []};
         }
 
@@ -102,7 +102,7 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetc
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const license = await getLicense(database);
-        if (!license || !license.IsLicensed) {
+        if (!license || license.IsLicensed !== 'true') {
             return {groups: [], groupTeams: []};
         }
 
@@ -133,7 +133,7 @@ export const fetchGroupsForMember = async (serverUrl: string, userId: string, fe
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const license = await getLicense(database);
-        if (!license || !license.IsLicensed) {
+        if (!license || license.IsLicensed !== 'true') {
             return {groups: [], groupMemberships: []};
         }
 

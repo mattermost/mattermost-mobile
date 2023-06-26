@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {type StyleProp, StyleSheet, useWindowDimensions, View, type ViewStyle} from 'react-native';
+import {StyleSheet, useWindowDimensions, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import {buildFilePreviewUrl, buildFileThumbnailUrl} from '@actions/remote/file';
@@ -59,15 +59,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     imagePreview: {
         ...StyleSheet.absoluteFillObject,
     },
-    smallImageBorder: {
-        borderRadius: 5,
-    },
-    smallImageOverlay: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 4,
-        position: 'absolute',
-    },
     singleSmallImageWrapper: {
         height: SMALL_IMAGE_MAX_HEIGHT,
         width: SMALL_IMAGE_MAX_WIDTH,
@@ -117,56 +108,9 @@ const ImageFile = ({
         return props;
     };
 
-    const imageDimensions = getImageDimensions();
-    if (imageDimensions && (imageDimensions.height <= SMALL_IMAGE_MAX_HEIGHT || imageDimensions.width <= SMALL_IMAGE_MAX_WIDTH)) {
-        let wrapperStyle: StyleProp<ViewStyle> = style.fileImageWrapper;
-        if (isSingleImage) {
-            wrapperStyle = style.singleSmallImageWrapper;
-
-            if (file.width > SMALL_IMAGE_MAX_WIDTH) {
-                wrapperStyle = [wrapperStyle, {width: '100%'}];
-            }
-        }
-
-        image = (
-            <ProgressiveImage
-                id={file.id!}
-                forwardRef={forwardRef}
-                style={{height: file.height, width: file.width}}
-                tintDefaultSource={!file.localPath && !failed}
-                onError={handleError}
-                resizeMode={'contain'}
-                {...imageProps()}
-            />
-        );
-
-        if (failed) {
-            image = (
-                <FileIcon
-                    failed={failed}
-                    file={file}
-                    backgroundColor={backgroundColor}
-                />
-            );
-        }
-
-        return (
-            <View
-                style={[
-                    wrapperStyle,
-                    style.smallImageBorder,
-                    {
-                        borderColor: changeOpacity(theme.centerChannelColor, 0.4),
-                        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-                    },
-                ]}
-            >
-                {!isSingleImage && <View style={style.boxPlaceholder}/>}
-                <View style={style.smallImageOverlay}>
-                    {image}
-                </View>
-            </View>
-        );
+    let imageDimensions = getImageDimensions();
+    if (isSingleImage && (!imageDimensions || (imageDimensions?.height === 0 && imageDimensions?.width === 0))) {
+        imageDimensions = style.singleSmallImageWrapper;
     }
 
     image = (

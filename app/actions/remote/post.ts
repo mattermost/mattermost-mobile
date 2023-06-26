@@ -339,7 +339,7 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
     const promises = [];
     for (const member of memberships) {
         const channel = channels.find((c) => c.id === member.channel_id);
-        if (channel && (channel.total_msg_count - member.msg_count) > 0 && channel.id !== excludeChannelId) {
+        if (channel && !channel.delete_at && (channel.total_msg_count - member.msg_count) > 0 && channel.id !== excludeChannelId) {
             promises.push(fetchPostsForChannel(serverUrl, channel.id));
         }
     }
