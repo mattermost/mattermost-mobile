@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 
-function getCocoaPodsFormacOS() {
+function installPods() {
     echo "Getting Cocoapods dependencies"
     npm run pod-install
 }
 
-function getCocoaPodsFormacOSM1() {
+function installPodsM1() {
     echo "Getting Cocoapods dependencies"
     npm run pod-install-m1
 }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
   if [[ $(uname -p) == 'arm' ]]; then
-    getCocoaPodsFormacOSM1
+    installPodsM1
   else
-    getCocoaPodsFormacOS
+    installPods
   fi
 fi
 

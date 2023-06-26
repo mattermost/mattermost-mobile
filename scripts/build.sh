@@ -37,18 +37,18 @@ function ipa() {
   esac
 }
 
-function ios() {
+function installGemsAndPods() {
     echo "Installing Gems"
-    npm run ios-gems &> /dev/null
+    npm run ios-gems
     echo "Getting Cocoapods dependencies"
-    npm run pod-install &> /dev/null
+    npm run pod-install
 }
 
-function iosM1() {
+function installGemsAndPodsM1() {
     echo "Installing Gems"
-    npm run ios-gems-m1 &> /dev/null || exit 1
+    npm run ios-gems-m1
     echo "Getting Cocoapods dependencies"
-    npm run pod-install-m1 &> /dev/null || exit 1
+    npm run pod-install-m1
 }
 
 function setup() {
@@ -60,9 +60,9 @@ function setup() {
 
         if [[ "$1" == "ios"* ]]; then
           if [[ $(uname -p) == 'arm' ]]; then
-            iosM1 || exit 1
+            installGemsAndPodsM1 || exit 1
           else
-            ios || exit 1
+            installGemsAndPods || exit 1
           fi
         fi
 
