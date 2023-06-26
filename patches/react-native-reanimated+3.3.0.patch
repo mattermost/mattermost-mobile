@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-reanimated/src/reanimated2/mutables.ts b/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
-index ec14293..3c34327 100644
+index 90de1f1..ae59355 100644
 --- a/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
 +++ b/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
-@@ -96,25 +96,25 @@ export function makeMutable<T>(
+@@ -95,25 +95,25 @@ export function makeMutable<T>(
        }
        return value;
      },
@@ -46,4 +46,4 @@ index ec14293..3c34327 100644
 +    // },
      modify: (modifier: (value: T) => T) => {
        runOnUI(() => {
-         'worklet';
+         mutable.value = modifier(mutable.value);

@@ -57,7 +57,7 @@ fun DatabaseHelper.getDatabaseForServer(context: Context?, serverUrl: String): D
             if (cursor.count == 1) {
                 cursor.moveToFirst()
                 val databasePath = cursor.getString(0)
-                return Database(databasePath, context!!)
+                return Database.getInstance(databasePath, context!!)
             }
         }
     } catch (e: Exception) {

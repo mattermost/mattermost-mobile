@@ -61,7 +61,17 @@ struct InitialView: View {
       }
     }
     .accentColor(.white)
-    .navigationBarTitle("Share to Mattermost", displayMode: .inline)
+    .navigationBarTitle(
+      NSLocalizedString("share_extension.share_screen.title",
+        value: "Share to {applicationName}",
+        comment: ""
+      )
+      .replacingOccurrences(
+        of: "{applicationName}",
+        with: Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? "Mattermost Beta"
+      ),
+      displayMode: .inline
+    )
     .navigationBarItems(
       leading: CancelButton(attachments: attachments),
       trailing: PostButton(

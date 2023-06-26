@@ -9,12 +9,16 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
+import {autoUpdateTimezone} from '@actions/remote/user';
 import ServerVersion from '@components/server_version';
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {useAppState} from '@hooks/device';
+import {getAllServers} from '@queries/app/servers';
 import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {handleDeepLink} from '@utils/deep_link';
+import {logError} from '@utils/log';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
 
@@ -40,9 +44,23 @@ type HomeProps = LaunchProps & {
 
 const Tab = createBottomTabNavigator();
 
+const updateTimezoneIfNeeded = async () => {
+    try {
+        const servers = await getAllServers();
+        for (const server of servers) {
+            if (server.url && server.lastActiveAt > 0) {
+                autoUpdateTimezone(server.url);
+            }
+        }
+    } catch (e) {
+        logError('Localize change', e);
+    }
+};
+
 export default function HomeScreen(props: HomeProps) {
     const theme = useTheme();
     const intl = useIntl();
+    const appState = useAppState();
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel' | 'Post' | 'Connection') => {
@@ -94,6 +112,12 @@ export default function HomeScreen(props: HomeProps) {
             listener.remove();
         };
     }, [intl.locale]);
+
+    useEffect(() => {
+        if (appState === 'active') {
+            updateTimezoneIfNeeded();
+        }
+    }, [appState]);
 
     useEffect(() => {
         if (props.launchType === 'deeplink') {

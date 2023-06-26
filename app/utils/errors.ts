@@ -28,7 +28,8 @@ export function isErrorWithDetails(obj: unknown): obj is {details: Error} {
     return (
         typeof obj === 'object' &&
         obj !== null &&
-        'details' in obj
+        'details' in obj &&
+        typeof obj.details !== 'undefined'
     );
 }
 

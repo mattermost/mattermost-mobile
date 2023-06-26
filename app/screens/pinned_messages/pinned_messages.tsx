@@ -87,7 +87,7 @@ function SavedMessages({
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
             if (isViewable && item.type === 'post') {
-                acc[`${Screens.PINNED_MESSAGES}-${item.value.id}`] = true;
+                acc[`${Screens.PINNED_MESSAGES}-${item.value.currentPost.id}`] = true;
             }
             return acc;
         }, {});
