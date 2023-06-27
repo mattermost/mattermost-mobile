@@ -16,7 +16,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 4,
         },
         text: {
-            paddingHorizontal: 16,
+            paddingHorizontal: 12,
             paddingVertical: 8,
             ...typography('Body', 200, 'SemiBold'),
         },

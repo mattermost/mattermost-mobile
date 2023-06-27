@@ -122,7 +122,7 @@ const Header = ({
         });
     }, [onFilterChanged, selectedFilter]);
 
-    const filterStyle = useMemo(() => ({marginRight: teams.length > 1 ? 0 : 10}), [teams.length > 1]);
+    const filterStyle = useMemo(() => ({marginRight: teams.length > 1 ? 0 : 8}), [teams.length > 1]);
 
     return (
         <View style={styles.container}>
@@ -138,31 +138,34 @@ const Header = ({
                     text={`${filesText} (${numberFiles})`}
                 />
                 <View style={styles.iconsContainer}>
-                    {showFilterIcon &&
-                    <View style={filterStyle}>
-                        <CompassIcon
-                            name={'filter-variant'}
-                            size={24}
-                            color={changeOpacity(theme.centerChannelColor, 0.56)}
-                            onPress={handleFilterPress}
+                    {showFilterIcon && (
+                        <View style={filterStyle}>
+                            <CompassIcon
+                                name={'filter-variant'}
+                                size={24}
+                                color={changeOpacity(
+                                    theme.centerChannelColor,
+                                    0.56,
+                                )}
+                                onPress={handleFilterPress}
+                            />
+                            <Badge
+                                style={styles.badge}
+                                visible={hasFilters}
+                                testID={'search.filters.badge'}
+                                value={-1}
+                            />
+                        </View>
+                    )}
+                    {teams.length > 1 && (
+                        <TeamPickerIcon
+                            size={32}
+                            divider={true}
+                            setTeamId={setTeamId}
+                            teamId={teamId}
+                            teams={teams}
                         />
-                        <Badge
-                            style={styles.badge}
-                            visible={hasFilters}
-                            testID={'search.filters.badge'}
-                            value={-1}
-                        />
-                    </View>
-                    }
-                    {teams.length > 1 &&
-                    <TeamPickerIcon
-                        size={32}
-                        divider={true}
-                        setTeamId={setTeamId}
-                        teamId={teamId}
-                        teams={teams}
-                    />
-                    }
+                    )}
                 </View>
             </View>
         </View>
@@ -170,4 +173,3 @@ const Header = ({
 };
 
 export default Header;
-
