@@ -273,7 +273,7 @@ lane :upload_file_to_s3 do |options|
           puts "[#{Thread.current["file_number"]}/#{total_files}] #{filename} uploading..."
           s3_file = s3_bucket.object("#{s3_folder}/#{filename}")
           s3_file.upload_file("#{file}")
-          links.push(s3_file.public_url)
+          links.push("https://#{s3_bucket_name}/#{s3_folder}/#{filename}")
         end
       }
     end
