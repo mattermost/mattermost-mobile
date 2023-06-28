@@ -8,7 +8,7 @@ import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 
-import {initialize, start} from './app/init/app';
+import {start} from './app/init/app';
 import setFontFamily from './app/utils/font_family';
 import {logInfo} from './app/utils/log';
 
@@ -59,6 +59,5 @@ if (Platform.OS === 'android') {
 }
 
 Navigation.events().registerAppLaunchedListener(async () => {
-    await initialize();
     start();
 });
