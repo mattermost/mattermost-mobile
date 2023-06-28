@@ -14,6 +14,7 @@ import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import {logError} from '@utils/log';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
@@ -449,6 +450,11 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     const componentId = NavigationStore.getVisibleScreen();
+    if (!componentId) {
+        logError('Trying to go to screen without any screen on the navigation store');
+        return '';
+    }
+
     const defaultOptions: Options = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,

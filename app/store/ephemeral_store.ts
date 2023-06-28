@@ -38,6 +38,16 @@ class EphemeralStore {
     private notificationTapped = false;
     private enablingCRT = false;
 
+    // There are some corner cases where the react context is not loaded (and therefore
+    // launch will be called) but the notification callbacks are registered. This is used
+    // so the notification is processed only once (preferably on launch).
+    private processingNotification = '';
+
+    setProcessingNotification = (v: string) => {
+        this.processingNotification = v;
+    };
+    getProcessingNotification = () => this.processingNotification;
+
     addLoadingMessagesForChannel = (serverUrl: string, channelId: string) => {
         if (!this.loadingMessagesForChannel[serverUrl]) {
             this.loadingMessagesForChannel[serverUrl] = new Set();
