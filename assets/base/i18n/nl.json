@@ -891,7 +891,7 @@
     "share_feedback.button.yes": "Ja",
     "share_feedback.button.no": "Nee, dank je",
     "share_extension.upload_disabled": "Bestandsuploads zijn uitgeschakeld voor de geselecteerde server",
-    "share_extension.share_screen.title": "Delen met Mattermost",
+    "share_extension.share_screen.title": "Deel naar {applicationName}",
     "share_extension.servers_screen.title": "Server selecteren",
     "share_extension.server_label": "Server",
     "share_extension.multiple_label": "{count, number} bijlagen",
@@ -1032,9 +1032,9 @@
     "persistent_notifications.error.no_mentions.title": "Ontvangers moeten @vermeld worden",
     "persistent_notifications.confirm.description": "@mentioned ontvangers zullen elke {interval, plural, one {minuut} other {{interval} minuten}} verwittigd worden tot zij het bericht bevestigen of beantwoorden.",
     "requested_ack.title": "Bevestigingen vragen",
-    "post_priority.picker.label.request_ack.description": "Ontvangers worden elke vijf minuten verwittigd, tot zij bevestigen of antwoorden.",
+    "post_priority.picker.label.request_ack.description": "Er verschijnt een bevestigingsknop bij jouw bericht",
     "post_priority.picker.label.request_ack": "Bevesting vragen",
-    "post_priority.picker.label.persistent_notifications.description": "Ontvangers ontvangen elke vijf minuten een melding tot zij bevestigen of antwoorden.",
+    "post_priority.picker.label.persistent_notifications.description": "Ontvangers worden elke {interval, plural, one {1 minuut} other {{interval} minuten}}op de hoogte gebracht totdat zij bevestigen of antwoorden",
     "post_priority.picker.label.persistent_notifications": "Stuur blijvende meldingen",
     "post_priority.picker.cancel": "Annuleren",
     "post_priority.picker.apply": "Toepassen",
@@ -1056,5 +1056,6 @@
     "mobile.calls_tablet": "Tablet",
     "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {stak} other {+# meer staken }}</bold> een handje op",
     "mobile.calls_quality_warning": "De gesprekskwaliteit kan slechter zijn door onstabiele netwerkomstandigheden.",
-    "mobile.calls_name_is_talking_postfix": "spreekt…"
+    "mobile.calls_name_is_talking_postfix": "spreekt…",
+    "share_extension.channels_screen.title": "Kanaal selecteren"
 }
