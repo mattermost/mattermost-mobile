@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
+import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle, Text} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import NoResults from '@components/files_search/no_results';
@@ -20,6 +20,8 @@ import {
 import {openGalleryAtIndex} from '@utils/gallery';
 import {TabTypes} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import {showMobileOptionsBottomSheet} from './file_options/mobile_options';
 import Toasts from './file_options/toasts';
@@ -27,6 +29,14 @@ import FileResult from './file_result';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type {GalleryAction} from '@typings/screens/gallery';
+
+const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
+    resultsNumber: {
+        ...typography('Heading', 300),
+        padding: 20,
+        color: theme.centerChannelColor,
+    },
+}));
 
 type Props = {
     canDownloadFiles: boolean;
@@ -52,6 +62,7 @@ const FileResults = ({
     isFilterEnabled,
 }: Props) => {
     const theme = useTheme();
+    const styles = getStyles(theme);
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
 
@@ -141,6 +152,11 @@ const FileResults = ({
     return (
         <>
             <FlatList
+                ListHeaderComponent={
+                    <Text style={styles.resultsNumber}>
+                        {`${orderedFileInfos.length} search results`}
+                    </Text>
+                }
                 ListEmptyComponent={noResults}
                 contentContainerStyle={containerStyle}
                 data={orderedFileInfos}

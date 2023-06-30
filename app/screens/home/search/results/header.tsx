@@ -27,8 +27,6 @@ type Props = {
     onFilterChanged: (filter: FileFilter) => void;
     selectedTab: TabType;
     selectedFilter: FileFilter;
-    numberMessages: number;
-    numberFiles: number;
     setTeamId: (id: string) => void;
     teamId: string;
     teams: TeamModel[];
@@ -65,8 +63,6 @@ const Header = ({
     setTeamId,
     onTabSelect,
     onFilterChanged,
-    numberMessages,
-    numberFiles,
     selectedTab,
     selectedFilter,
     teams,
@@ -130,12 +126,12 @@ const Header = ({
                 <SelectButton
                     selected={selectedTab === TabTypes.MESSAGES}
                     onPress={handleMessagesPress}
-                    text={`${messagesText} (${numberMessages})`}
+                    text={messagesText}
                 />
                 <SelectButton
                     selected={selectedTab === TabTypes.FILES}
                     onPress={handleFilesPress}
-                    text={`${filesText} (${numberFiles})`}
+                    text={filesText}
                 />
                 <View style={styles.iconsContainer}>
                     {showFilterIcon && (
