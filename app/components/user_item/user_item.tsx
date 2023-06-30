@@ -17,7 +17,7 @@ import {displayUsername, getUserCustomStatus, isBot, isCustomStatusExpired, isGu
 
 import type UserModel from '@typings/database/models/servers/user';
 
-type AtMentionItemProps = {
+type Props = {
     FooterComponent?: ReactNode;
     user: UserProfile | UserModel;
     containerStyle?: StyleProp<ViewStyle>;
@@ -35,6 +35,7 @@ type AtMentionItemProps = {
     disabled?: boolean;
     viewRef?: React.LegacyRef<View>;
     padding?: number;
+    hideGuestTags: boolean;
 }
 
 const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
@@ -107,7 +108,8 @@ const UserItem = ({
     viewRef,
     padding,
     includeMargin,
-}: AtMentionItemProps) => {
+    hideGuestTags,
+}: Props) => {
     const theme = useTheme();
     const style = getThemedStyles(theme);
     const intl = useIntl();
@@ -198,7 +200,7 @@ const UserItem = ({
                                 style={nonThemedStyles.tag}
                             />
                         )}
-                        {showBadges && guest && (
+                        {showBadges && guest && !hideGuestTags && (
                             <GuestTag
                                 testID={`${userItemTestId}.guest.tag`}
                                 style={nonThemedStyles.tag}

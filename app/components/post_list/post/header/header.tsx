@@ -42,6 +42,7 @@ type HeaderProps = {
     showPostPriority: boolean;
     shouldRenderReplyButton?: boolean;
     teammateNameDisplay: string;
+    hideGuestTags: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -74,7 +75,7 @@ const Header = (props: HeaderProps) => {
     const {
         author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
         isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isTimezoneEnabled, isWebHook,
-        location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton, teammateNameDisplay,
+        location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton, teammateNameDisplay, hideGuestTags,
     } = props;
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -111,7 +112,7 @@ const Header = (props: HeaderProps) => {
                     <HeaderTag
                         isAutoResponder={isAutoResponse}
                         isAutomation={isWebHook || author?.isBot}
-                        isGuest={author?.isGuest}
+                        showGuestTag={author?.isGuest && !hideGuestTags}
                     />
                     }
                     <FormattedTime
