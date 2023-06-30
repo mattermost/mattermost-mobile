@@ -244,7 +244,7 @@ export const getIsPostAcknowledgementsEnabled = async (database: Database) => {
 };
 
 export const observeIsPostPriorityEnabled = (database: Database) => {
-     return observeConfigBooleanValue(database, 'PostPriority');
+    return observeConfigBooleanValue(database, 'PostPriority');
 };
 
 export const observeIsPostAcknowledgementsEnabled = (database: Database) => {
