@@ -5,7 +5,10 @@ import Emm from '@mattermost/react-native-emm';
 import {Alert, AppState, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
+import {getLastViewed} from '@actions/app/last_viewed';
+import {switchToChannelById} from '@actions/remote/channel';
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import LocalConfig from '@assets/config.json';
 import {DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -172,6 +175,16 @@ const launchToHome = async (props: LaunchProps) => {
         }
         case Launch.Normal:
             if (props.coldStart) {
+                const lastViewed = await getLastViewed();
+
+                if (lastViewed.channel_id) {
+                    switchToChannelById(props.serverUrl!, lastViewed.channel_id);
+                }
+
+                if (lastViewed.thread_id) {
+                    fetchAndSwitchToThread(props.serverUrl!, lastViewed.thread_id);
+                }
+
                 appEntry(props.serverUrl!);
             }
             break;

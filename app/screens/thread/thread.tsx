@@ -6,6 +6,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {removeLastViewedThread, setLastViewedThread} from '@actions/app/last_viewed';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
@@ -80,7 +81,10 @@ const Thread = ({
     }, [componentId, rootId, isCRTEnabled]);
 
     useEffect(() => {
+        setLastViewedThread(rootId);
+
         return () => {
+            removeLastViewedThread();
             if (rootId === EphemeralStore.getCurrentThreadId()) {
                 EphemeralStore.setCurrentThreadId('');
             }
