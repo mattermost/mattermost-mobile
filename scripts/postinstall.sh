@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 
-function ios() {
+function installPods() {
     echo "Getting Cocoapods dependencies"
-    npm run pod-install &> /dev/null
+    npm run pod-install
 }
 
-function iosM1() {
+function installPodsM1() {
     echo "Getting Cocoapods dependencies"
-    npm run pod-install-m1 &> /dev/null
+    npm run pod-install-m1
 }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
   if [[ $(uname -p) == 'arm' ]]; then
-    iosM1
+    installPodsM1
   else
-    ios
+    installPods
   fi
 fi
 

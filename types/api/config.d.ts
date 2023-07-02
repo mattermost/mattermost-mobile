@@ -127,6 +127,7 @@ interface ClientConfig {
     GuestAccountsEnforceMultifactorAuthentication: string;
     HasImageProxy: string;
     HelpLink: string;
+    HideGuestTags: string;
     IosAppDownloadLink: string;
     IosLatestVersion: string;
     IosMinVersion: string;
@@ -159,6 +160,7 @@ interface ClientConfig {
     PersistentNotificationMaxRecipients: string;
     PersistentNotificationInterval: string;
     AllowPersistentNotificationsForGuests: string;
+    PersistentNotificationIntervalMinutes: string;
     PrivacyPolicyLink: string;
     ReportAProblemLink: string;
     RequireEmailVerification: string;

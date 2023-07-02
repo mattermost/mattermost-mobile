@@ -180,6 +180,13 @@ export const backgroundNotification = async (serverUrl: string, notification: No
 };
 
 export const openNotification = async (serverUrl: string, notification: NotificationWithData) => {
+    // Wait for initial launch to kick in if needed
+    await new Promise((r) => setTimeout(r, 500));
+
+    if (EphemeralStore.getProcessingNotification() === notification.identifier) {
+        return {};
+    }
+
     EphemeralStore.setNotificationTapped(true);
 
     const channelId = notification.payload!.channel_id!;
