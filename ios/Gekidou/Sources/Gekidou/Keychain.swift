@@ -100,6 +100,10 @@ public class Keychain: NSObject {
         
         return nil
     }
+
+    public func invalidateToken(for serverUrl: String) {
+        tokenCache.removeValue(forKey: serverUrl)
+    }
     
     private func buildIdentityQuery(for host: String) throws -> [CFString: Any] {
         guard let hostData = host.data(using: .utf8) else {

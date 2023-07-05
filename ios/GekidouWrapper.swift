@@ -42,4 +42,8 @@ import Gekidou
     
     return nil
   }
+
+  @objc func invalidateToken(for url: String) {
+    Keychain.default.invalidateToken(for: url)
+  }
 }
