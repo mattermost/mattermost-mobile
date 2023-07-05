@@ -213,7 +213,10 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
                 onLongPress={handleLongPress}
                 testID='markdown_code_block'
             >
-                <View style={style.container}>
+                <View
+                    style={style.container}
+                    pointerEvents='none'
+                >
                     <View>
                         <View style={style.code}>
                             <SyntaxHighlighter
