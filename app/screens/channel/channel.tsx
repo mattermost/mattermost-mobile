@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {removeLastViewedChannel, setLastViewedChannel} from '@actions/app/last_viewed';
+import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
@@ -84,12 +84,12 @@ const Channel = ({
             EphemeralStore.removeSwitchingToChannel(channelId);
         }, 500);
 
-        setLastViewedChannel(channelId);
+        storeLastViewedChannelIdAndServer(channelId);
 
         return () => {
             cancelAnimationFrame(raf);
             clearTimeout(t);
-            removeLastViewedChannel();
+            removeLastViewedChannelIdAndServer();
             EphemeralStore.removeSwitchingToChannel(channelId);
         };
     }, [channelId]);
