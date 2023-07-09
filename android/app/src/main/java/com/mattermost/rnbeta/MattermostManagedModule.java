@@ -221,6 +221,11 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void invalidateKeychainCache(String serverUrl) {
+        // Not using cache
+    }
+
     private static class SaveDataTask extends GuardedResultAsyncTask<Object> {
         private final WeakReference<Context> weakContext;
         private final String fromFile;
