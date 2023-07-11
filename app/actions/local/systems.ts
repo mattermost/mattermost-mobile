@@ -9,12 +9,12 @@ import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getConfig, getLicense, getGlobalDataRetentionPolicy, getGranularDataRetentionPolicies, getLastGlobalDataRetentionRun, getIsDataRetentionEnabled} from '@queries/servers/system';
+import PostModel from '@typings/database/models/servers/post';
 import {logError} from '@utils/log';
 
 import {deletePosts} from './post';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
-import type PostModel from '@typings/database/models/servers/post';
 
 const {SERVER: {POST}} = MM_TABLES;
 
@@ -127,11 +127,6 @@ export async function dataRetentionCleanup(serverUrl: string) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
-        if (!isDataRetentionEnabled) {
-            return {error: undefined};
-        }
-
         const lastRunAt = await getLastGlobalDataRetentionRun(database);
         const lastCleanedToday = new Date(lastRunAt).toDateString() === new Date().toDateString();
 
@@ -140,6 +135,25 @@ export async function dataRetentionCleanup(serverUrl: string) {
             return {error: undefined};
         }
 
+        const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
+        const result = await (isDataRetentionEnabled ? dataRetentionPolicyCleanup(serverUrl) : dataRetentionWithoutPolicyCleanup(serverUrl));
+
+        if (!result.error) {
+            await updateLastDataRetentionRun(serverUrl);
+        }
+
+        await database.unsafeVacuum();
+
+        return result;
+    } catch (error) {
+        logError('An error occurred while performing data retention cleanup', error);
+        return {error};
+    }
+}
+
+async function dataRetentionPolicyCleanup(serverUrl: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const globalPolicy = await getGlobalDataRetentionPolicy(database);
         const granularPoliciesData = await getGranularDataRetentionPolicies(database);
 
@@ -196,30 +210,48 @@ export async function dataRetentionCleanup(serverUrl: string) {
             Q.unsafeSqlQuery(`SELECT * FROM ${POST} where ${conditions.join(' OR ')}`),
         ).fetchIds();
 
-        if (postIds.length) {
-            const batchSize = 1000;
-            const deletePromises = [];
-            for (let i = 0; i < postIds.length; i += batchSize) {
-                const batch = postIds.slice(i, batchSize);
-                deletePromises.push(
-                    deletePosts(serverUrl, batch),
-                );
-            }
-            const deleteResult = await Promise.all(deletePromises);
-            for (const {error} of deleteResult) {
-                if (error) {
-                    return {error};
-                }
-            }
-        }
-
-        await updateLastDataRetentionRun(serverUrl);
-
-        return {error: undefined};
+        return dataRetentionCleanPosts(serverUrl, postIds);
     } catch (error) {
-        logError('An error occurred while performing data retention cleanup', error);
+        logError('An error occurred while performing data retention policy cleanup', error);
         return {error};
     }
+}
+
+async function dataRetentionWithoutPolicyCleanup(serverUrl: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const cutoff = getDataRetentionPolicyCutoff(14); // 14 days
+
+        const postIds = await database.get<PostModel>(POST).query(
+            Q.where('create_at', Q.lt(cutoff)),
+        ).fetchIds();
+
+        return dataRetentionCleanPosts(serverUrl, postIds);
+    } catch (error) {
+        logError('An error occurred while performing data retention without policy cleanup', error);
+        return {error};
+    }
+}
+
+async function dataRetentionCleanPosts(serverUrl: string, postIds: string[]) {
+    if (postIds.length) {
+        const batchSize = 1000;
+        const deletePromises = [];
+        for (let i = 0; i < postIds.length; i += batchSize) {
+            const batch = postIds.slice(i, batchSize);
+            deletePromises.push(
+                deletePosts(serverUrl, batch),
+            );
+        }
+        const deleteResult = await Promise.all(deletePromises);
+        for (const {error} of deleteResult) {
+            if (error) {
+                return {error};
+            }
+        }
+    }
+
+    return {error: undefined};
 }
 
 // Returns cutoff time based on the policy's post_duration
