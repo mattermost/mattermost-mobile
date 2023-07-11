@@ -22,6 +22,9 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     button: {
         marginTop: 5,
+        minWidth: 120,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     rowIcon: {
         color: theme.buttonColor,
@@ -32,6 +35,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     nextButtonText: {
         flexDirection: 'row',
         position: 'absolute',
+        justifyContent: 'center',
+        minWidth: 100,
     },
     signInButtonText: {
         flexDirection: 'row',
