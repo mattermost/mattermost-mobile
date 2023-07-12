@@ -234,6 +234,10 @@ export function isShared(user: UserProfile | UserModel): boolean {
     return ('remoteId' in user) ? Boolean(user.remoteId) : Boolean(user.remote_id);
 }
 
+export function isDeactivated(user: UserProfile | UserModel): boolean {
+    return Boolean('deleteAt' in user ? user.deleteAt : user.delete_at);
+}
+
 export function removeUserFromList(userId: string, originalList: UserProfile[]): UserProfile[] {
     const list = [...originalList];
     for (let i = list.length - 1; i >= 0; i--) {
