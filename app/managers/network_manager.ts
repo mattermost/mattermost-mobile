@@ -7,6 +7,7 @@ import {
     type APIClientErrorEventHandler,
     getOrCreateAPIClient,
     RetryTypes,
+    type APIClientConfiguration,
 } from '@mattermost/react-native-network-client';
 import {DeviceEventEmitter} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
@@ -26,7 +27,7 @@ const CLIENT_CERTIFICATE_MISSING_ERROR_CODE = -200;
 class NetworkManager {
     private clients: Record<string, Client> = {};
 
-    private DEFAULT_CONFIG = {
+    private DEFAULT_CONFIG: APIClientConfiguration = {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             ...LocalConfig.CustomRequestHeaders,
@@ -34,8 +35,6 @@ class NetworkManager {
         sessionConfiguration: {
             allowsCellularAccess: true,
             waitsForConnectivity: false,
-            timeoutIntervalForRequest: 30000,
-            timeoutIntervalForResource: 30000,
             httpMaximumConnectionsPerHost: 10,
             cancelRequestsOnUnauthorized: true,
         },
@@ -107,8 +106,8 @@ class NetworkManager {
             ...this.DEFAULT_CONFIG,
             sessionConfiguration: {
                 ...this.DEFAULT_CONFIG.sessionConfiguration,
-                timeoutIntervalForRequest: managedConfig?.timeout ? parseInt(managedConfig.timeout, 10) : this.DEFAULT_CONFIG.sessionConfiguration.timeoutIntervalForRequest,
-                timeoutIntervalForResource: managedConfig?.timeoutVPN ? parseInt(managedConfig.timeoutVPN, 10) : this.DEFAULT_CONFIG.sessionConfiguration.timeoutIntervalForResource,
+                timeoutIntervalForRequest: managedConfig?.timeout ? parseInt(managedConfig.timeout, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForRequest,
+                timeoutIntervalForResource: managedConfig?.timeoutVPN ? parseInt(managedConfig.timeoutVPN, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForResource,
                 waitsForConnectivity: managedConfig?.useVPN === 'true',
             },
             headers,
