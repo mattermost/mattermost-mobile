@@ -116,7 +116,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             setErrorLine(line);
             setErrorExtra(extra);
         }
-        toggleSaveButton(editingMessage !== message);
+        toggleSaveButton(editingMessage !== message && !tooLong);
     }, [intl, maxPostSize, editingMessage, toggleSaveButton]);
 
     const onAutocompleteChangeText = useCallback((message: string) => {
