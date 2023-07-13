@@ -177,10 +177,10 @@ const launchToHome = async (props: LaunchProps) => {
                 const lastViewedChannel = await getLastViewedChannelIdAndServer();
                 const lastViewedThread = await getLastViewedThreadIdAndServer();
 
-                if (lastViewedChannel && lastViewedChannel.server_url === props.serverUrl && lastViewedChannel.channel_id) {
-                    switchToChannelById(props.serverUrl!, lastViewedChannel.channel_id);
-                } else if (lastViewedThread && lastViewedThread.server_url === props.serverUrl && lastViewedThread.thread_id) {
+                if (lastViewedThread && lastViewedThread.server_url === props.serverUrl && lastViewedThread.thread_id) {
                     fetchAndSwitchToThread(props.serverUrl!, lastViewedThread.thread_id);
+                } else if (lastViewedChannel && lastViewedChannel.server_url === props.serverUrl && lastViewedChannel.channel_id) {
+                    switchToChannelById(props.serverUrl!, lastViewedChannel.channel_id);
                 }
 
                 appEntry(props.serverUrl!);
