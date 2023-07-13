@@ -6,7 +6,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
+import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
@@ -19,6 +19,7 @@ import useDidUpdate from '@hooks/did_update';
 import {useKeyboardTrackingPaused} from '@hooks/keyboard_tracking';
 import {popTopScreen, setButtons} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 
 import ThreadPostList from './thread_post_list';
 
@@ -81,9 +82,11 @@ const Thread = ({
     }, [componentId, rootId, isCRTEnabled]);
 
     useEffect(() => {
-        if (isCRTEnabled) {
+        // when opened from notification, first screen in stack is HOME
+        // if last screen was global thread or thread opened from notification, store the last viewed thread id
+        const isFromGlobalOrNotification = NavigationStore.getScreensInStack()[1] === Screens.GLOBAL_THREADS || NavigationStore.getScreensInStack()[1] === Screens.HOME;
+        if (isCRTEnabled && isFromGlobalOrNotification) {
             storeLastViewedThreadIdAndServer(rootId);
-            removeLastViewedChannelIdAndServer();
         }
 
         return () => {
