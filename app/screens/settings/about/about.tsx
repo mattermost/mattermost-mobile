@@ -197,7 +197,7 @@ const About = ({componentId, config, license}: AboutProps) => {
             const copiedString = `${appVersion}\n${server}\n${database} \n${databaseSchemaVersion}`;
             Clipboard.setString(copiedString);
         },
-        [intl],
+        [intl, config],
     );
 
     return (
