@@ -340,7 +340,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
                 endAdornment={endAdornment}
             />
 
-            {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink === 'true' && (
+            {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (
                 <Button
                     onPress={onPressForgotPassword}
                     containerStyle={[styles.forgotPasswordBtn, error ? styles.forgotPasswordError : undefined]}
