@@ -81,11 +81,15 @@ const Thread = ({
     }, [componentId, rootId, isCRTEnabled]);
 
     useEffect(() => {
-        storeLastViewedThreadIdAndServer(rootId);
-        removeLastViewedChannelIdAndServer();
+        if (isCRTEnabled) {
+            storeLastViewedThreadIdAndServer(rootId);
+            removeLastViewedChannelIdAndServer();
+        }
 
         return () => {
-            removeLastViewedThreadIdAndServer();
+            if (isCRTEnabled) {
+                removeLastViewedThreadIdAndServer();
+            }
             if (rootId === EphemeralStore.getCurrentThreadId()) {
                 EphemeralStore.setCurrentThreadId('');
             }
