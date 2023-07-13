@@ -8,7 +8,7 @@ import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
 import Button from 'react-native-button';
 
 import {login} from '@actions/remote/session';
-import {tryOpenURL} from '@app/utils/url';
+import {tryOpenURL} from '@utils/url';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
