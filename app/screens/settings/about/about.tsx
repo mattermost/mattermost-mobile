@@ -186,15 +186,13 @@ const About = ({componentId, config, license}: AboutProps) => {
 
     const copyToClipboard = useCallback(
         () => {
-            const appVersion = `${intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version:'})} ${intl.formatMessage({id: 'settings.about.build', defaultMessage: '{version} (Build {number})'},
-                {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()})}`;
-            const server = `${intl.formatMessage({id: 'settings.about.server.version.desc', defaultMessage: 'Server Version:'})} ${intl.formatMessage({id: serverVersion.id, defaultMessage: serverVersion.defaultMessage}, serverVersion.values)}`;
-            const database = `${intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database:'})}  ${intl.formatMessage({id: 'settings.about.database.value', defaultMessage: `${config.SQLDriverName}`})}`;
-            const databaseSchemaVersion = `${intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version:'})} ${intl.formatMessage({
-                id: 'settings.about.database.schema.value',
-                defaultMessage: `${config.SchemaVersion}`,
-            })}`;
-            const copiedString = `${appVersion}\n${server}\n${database} \n${databaseSchemaVersion}`;
+            const appVersion = intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version: {version} (Build {number})'}, {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()});
+            const buildNumber = config.BuildNumber;
+            const version = config.Version;
+            const server = buildNumber === version ? intl.formatMessage({id: 'settings.about.serverVersionNoBuild', defaultMessage: 'Server Version: {version}'}, {version}) : intl.formatMessage({id: 'settings.about.serverVersion', defaultMessage: 'Server Version: {version} (Build {buildNumber}'}, {version, buildNumber});
+            const database = intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database: {driverName}'}, {driverName: config.SQLDriverName});
+            const databaseSchemaVersion = intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version: {version}'}, {version: config.SchemaVersion});
+            const copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
             Clipboard.setString(copiedString);
         },
         [intl, config],
@@ -260,7 +258,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                         style={styles.rightHeading}
                         testID='about.database.value'
                     >
-                        {intl.formatMessage({id: 'settings.about.database.value', defaultMessage: `${config.SQLDriverName}`})}
+                        {intl.formatMessage({id: 'settings.about.database.value', defaultMessage: '$: any{config.SQLDriverName}'})}
                     </Text>
                 </View>
                 <View style={styles.group}>
