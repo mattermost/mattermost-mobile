@@ -8,6 +8,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannelMemberships} from '@actions/remote/channel';
 import {fetchUsersByIds, searchProfiles} from '@actions/remote/user';
+import useAndroidHardwareBackHandler from '@app/hooks/android_back_handler';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import Search from '@components/search';
 import UserList from '@components/user_list';
@@ -15,7 +16,7 @@ import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {openAsBottomSheet, setButtons} from '@screens/navigation';
+import {openAsBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -97,6 +98,14 @@ export default function ManageChannelMembers({
         setTerm('');
         setSearchResults(EMPTY);
     }, []);
+
+    const close = () => {
+        if (componentId) {
+            popTopScreen(componentId);
+        }
+    };
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
         if (profile.id === currentUserId && isManageMode) {
