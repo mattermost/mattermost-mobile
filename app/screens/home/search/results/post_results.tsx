@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle, Text} from 'react-native';
+import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import NoResultsWithTerm from '@components/no_results_with_term';
@@ -103,14 +103,12 @@ const PostResults = ({
     return (
         <FlatList
             ListHeaderComponent={
-                <Text style={styles.resultsNumber}>
-                    <FormattedText
-                        style={styles.resultsNumber}
-                        id='mobile.search.results'
-                        defaultMessage='{count} search {count, plural, one {result} other {results}}'
-                        values={{count: posts.length}}
-                    />
-                </Text>
+                <FormattedText
+                    style={styles.resultsNumber}
+                    id='mobile.search.results'
+                    defaultMessage='{count} search {count, plural, one {result} other {results}}'
+                    values={{count: posts.length}}
+                />
             }
             ListEmptyComponent={noResults}
             contentContainerStyle={[paddingTop, containerStyle]}
