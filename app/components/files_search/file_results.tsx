@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle, Text} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -62,6 +63,7 @@ const FileResults = ({
     isFilterEnabled,
 }: Props) => {
     const theme = useTheme();
+    const intl = useIntl();
     const styles = getStyles(theme);
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
@@ -154,7 +156,13 @@ const FileResults = ({
             <FlatList
                 ListHeaderComponent={
                     <Text style={styles.resultsNumber}>
-                        {`${orderedFileInfos.length} search results`}
+                        {intl.formatMessage(
+                            {
+                                id: 'mobile.search.results',
+                                defaultMessage: '{results} search results',
+                            },
+                            {results: orderedFileInfos.length},
+                        )}
                     </Text>
                 }
                 ListEmptyComponent={noResults}

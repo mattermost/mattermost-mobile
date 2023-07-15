@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
+import {useIntl} from 'react-intl';
 import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle, Text} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
@@ -49,6 +50,7 @@ const PostResults = ({
     searchValue,
 }: Props) => {
     const theme = useTheme();
+    const intl = useIntl();
     const styles = getStyles(theme);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
     const containerStyle = useMemo(() => ({top: posts.length ? 4 : 8, flexGrow: 1}), [posts]);
@@ -103,7 +105,13 @@ const PostResults = ({
         <FlatList
             ListHeaderComponent={
                 <Text style={styles.resultsNumber}>
-                    {`${posts.length} search results`}
+                    {intl.formatMessage(
+                        {
+                            id: 'mobile.search.results',
+                            defaultMessage: '{results} search results',
+                        },
+                        {results: posts.length},
+                    )}
                 </Text>
             }
             ListEmptyComponent={noResults}
