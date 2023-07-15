@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
 import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle, Text} from 'react-native';
 
+import FormattedText from '@components/formatted_text';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
@@ -50,7 +50,6 @@ const PostResults = ({
     searchValue,
 }: Props) => {
     const theme = useTheme();
-    const intl = useIntl();
     const styles = getStyles(theme);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
     const containerStyle = useMemo(() => ({top: posts.length ? 4 : 8, flexGrow: 1}), [posts]);
@@ -105,13 +104,12 @@ const PostResults = ({
         <FlatList
             ListHeaderComponent={
                 <Text style={styles.resultsNumber}>
-                    {intl.formatMessage(
-                        {
-                            id: 'mobile.search.results',
-                            defaultMessage: '{results} search results',
-                        },
-                        {results: posts.length},
-                    )}
+                    <FormattedText
+                        style={styles.resultsNumber}
+                        id='mobile.search.results'
+                        defaultMessage='{count} search {count, plural, one {result} other {results}}'
+                        values={{count: posts.length}}
+                    />
                 </Text>
             }
             ListEmptyComponent={noResults}

@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle, Text} from 'react-native';
+import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import NoResults from '@components/files_search/no_results';
+import FormattedText from '@components/formatted_text';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -63,7 +63,6 @@ const FileResults = ({
     isFilterEnabled,
 }: Props) => {
     const theme = useTheme();
-    const intl = useIntl();
     const styles = getStyles(theme);
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
@@ -155,15 +154,12 @@ const FileResults = ({
         <>
             <FlatList
                 ListHeaderComponent={
-                    <Text style={styles.resultsNumber}>
-                        {intl.formatMessage(
-                            {
-                                id: 'mobile.search.results',
-                                defaultMessage: '{results} search results',
-                            },
-                            {results: orderedFileInfos.length},
-                        )}
-                    </Text>
+                    <FormattedText
+                        style={styles.resultsNumber}
+                        id='mobile.search.results'
+                        defaultMessage='{count} search {count, plural, one {result} other {results}}'
+                        values={{count: orderedFileInfos.length}}
+                    />
                 }
                 ListEmptyComponent={noResults}
                 contentContainerStyle={containerStyle}

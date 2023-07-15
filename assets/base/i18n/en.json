@@ -681,7 +681,7 @@
   "mobile.search.show_less": "Show less",
   "mobile.search.show_more": "Show more",
   "mobile.search.team.select": "Select a team to search",
-  "mobile.search.results": "{results} search results",
+  "mobile.search.results": "{count} search {count, plural, one {result} other {results}}",
   "mobile.server_identifier.exists": "You are already connected to this server.",
   "mobile.server_link.error.text": "The link could not be found on this server.",
   "mobile.server_link.error.title": "Link Error",
