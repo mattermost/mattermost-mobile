@@ -742,7 +742,7 @@
   "notification_settings.mentions_replies": "Mentions and Replies",
   "notification_settings.mentions..keywordsDescription": "Other words that trigger a mention",
   "notification_settings.mentions.channelWide": "Channel-wide mentions",
-  "notification_settings.mentions.keywords": "Keywords",
+  "notification_settings.mentions.keywords": "Enter other keywords",
   "notification_settings.mentions.keywords_mention": "Keywords that trigger mentions",
   "notification_settings.mentions.keywordsLabel": "Keywords are not case-sensitive. Separate keywords with commas.",
   "notification_settings.mentions.sensitiveName": "Your case sensitive first name",

@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
 
 import {updateMe} from '@actions/remote/user';
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextChipsInput from '@components/floating_text_chips_input';
 import SettingBlock from '@components/settings/block';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
@@ -52,36 +52,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const getMentionProps = (currentUser?: UserModel) => {
-    const notifyProps = getNotificationProps(currentUser);
-    const mKeys = (notifyProps.mention_keys || '').split(',');
-
-    const usernameMentionIndex = currentUser ? mKeys.indexOf(currentUser.username) : -1;
-    if (usernameMentionIndex > -1) {
-        mKeys.splice(usernameMentionIndex, 1);
-    }
-
-    return {
-        mentionKeywords: mKeys.join(','),
-        usernameMention: usernameMentionIndex > -1,
-        channel: notifyProps.channel === 'true',
-        first_name: notifyProps.first_name === 'true',
-        comments: notifyProps.comments,
-        notifyProps,
-    };
-};
-
-type MentionSectionProps = {
+type Props = {
     componentId: AvailableScreens;
     currentUser?: UserModel;
     isCRTEnabled: boolean;
-}
-const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectionProps) => {
+};
+
+const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     const serverUrl = useServerUrl();
     const mentionProps = useMemo(() => getMentionProps(currentUser), []);
     const notifyProps = mentionProps.notifyProps;
 
     const [mentionKeywords, setMentionKeywords] = useState(mentionProps.mentionKeywords);
+    const [mentionKeywordsInput, setMentionKeywordsInput] = useState('');
     const [channelMentionOn, setChannelMentionOn] = useState(mentionProps.channel);
     const [firstNameMentionOn, setFirstNameMentionOn] = useState(mentionProps.first_name);
     const [usernameMentionOn, setUsernameMentionOn] = useState(mentionProps.usernameMention);
@@ -93,36 +76,33 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
 
     const close = () => popTopScreen(componentId);
 
-    const canSaveSettings = useCallback(() => {
-        const channelChanged = channelMentionOn !== mentionProps.channel;
-        const replyChanged = replyNotificationType !== mentionProps.comments;
-        const fNameChanged = firstNameMentionOn !== mentionProps.first_name;
-        const mnKeysChanged = mentionProps.mentionKeywords !== mentionKeywords;
-        const userNameChanged = usernameMentionOn !== mentionProps.usernameMention;
-
-        return fNameChanged || userNameChanged || channelChanged || mnKeysChanged || replyChanged;
-    }, [firstNameMentionOn, channelMentionOn, usernameMentionOn, mentionKeywords, notifyProps, replyNotificationType]);
-
     const saveMention = useCallback(() => {
         if (!currentUser) {
             return;
         }
 
-        const canSave = canSaveSettings();
+        const canSave = canSaveSettings({
+            channelMentionOn,
+            replyNotificationType,
+            firstNameMentionOn,
+            usernameMentionOn,
+            mentionKeywords,
+            mentionProps,
+        });
 
         if (canSave) {
-            const mention_keys = [];
-            if (mentionKeywords.length > 0) {
-                mentionKeywords.split(',').forEach((m) => mention_keys.push(m.replace(/\s/g, '')));
-            }
-
+            let mention_keys = [];
             if (usernameMentionOn) {
                 mention_keys.push(`${currentUser.username}`);
             }
+
+            mention_keys = [...mention_keys, ...mentionKeywords];
+            console.log('mention_keys', mention_keys);
+
             const notify_props: UserNotifyProps = {
                 ...notifyProps,
-                first_name: `${firstNameMentionOn}`,
-                channel: `${channelMentionOn}`,
+                first_name: firstNameMentionOn ? 'true' : 'false',
+                channel: channelMentionOn ? 'true' : 'false',
                 mention_keys: mention_keys.join(','),
                 comments: replyNotificationType,
             };
@@ -131,13 +111,15 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
 
         close();
     }, [
-        canSaveSettings,
         channelMentionOn,
         firstNameMentionOn,
+        usernameMentionOn,
         mentionKeywords,
         notifyProps,
+        mentionProps,
         replyNotificationType,
         serverUrl,
+        currentUser,
     ]);
 
     const onToggleFirstName = useCallback(() => {
@@ -177,8 +159,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                         />
                         <SettingSeparator/>
                     </>
-                )
-                }
+                )}
                 {Boolean(currentUser?.username) && (
                     <SettingOption
                         action={onToggleUserName}
@@ -199,32 +180,39 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                     type='toggle'
                 />
                 <SettingSeparator/>
-                <FloatingTextInput
+                {/* TODO change here for UI of chips */}
+                <FloatingTextChipsInput
                     allowFontScaling={true}
                     autoCapitalize='none'
                     autoCorrect={false}
                     blurOnSubmit={true}
                     containerStyle={styles.containerStyle}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    label={intl.formatMessage({id: 'notification_settings.mentions.keywords', defaultMessage: 'Keywords'})}
+                    label={intl.formatMessage({
+                        id: 'notification_settings.mentions.keywords',
+                        defaultMessage: 'Enter other keywords',
+                    })}
                     multiline={true}
                     onChangeText={onChangeText}
-                    placeholder={intl.formatMessage({id: 'notification_settings.mentions..keywordsDescription', defaultMessage: 'Other words that trigger a mention'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                     returnKeyType='done'
                     testID='mention_notification_settings.keywords.input'
                     textInputStyle={styles.input}
                     textAlignVertical='top'
                     theme={theme}
                     underlineColorAndroid='transparent'
-                    value={mentionKeywords}
+                    chipsValues={mentionKeywords}
+                    inputValue={mentionKeywordsInput}
                     labelTextStyle={styles.labelTextStyle}
                 />
                 <Text
                     style={styles.keywordLabelStyle}
                     testID='mention_notification_settings.keywords.input.description'
                 >
-                    {intl.formatMessage({id: 'notification_settings.mentions.keywordsLabel', defaultMessage: 'Keywords are not case-sensitive. Separate keywords with commas.'})}
+                    {intl.formatMessage({
+                        id: 'notification_settings.mentions.keywordsLabel',
+                        defaultMessage:
+                            'Keywords are not case-sensitive. Separate keywords with commas.',
+                    })}
                 </Text>
             </SettingBlock>
             {!isCRTEnabled && (
@@ -236,5 +224,63 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
         </>
     );
 };
+
+export function getMentionProps(currentUser?: UserModel) {
+    const notifyProps = getNotificationProps(currentUser);
+    const mentionKeys = notifyProps?.mention_keys ?? '';
+
+    let mentionKeywords: string[] = [];
+    let usernameMention = false;
+    mentionKeys.split(',').forEach((mentionKey) => {
+        if (currentUser && mentionKey === currentUser.username) {
+            usernameMention = true;
+        } else if (mentionKey) {
+            mentionKeywords = [...mentionKeywords, mentionKey];
+        }
+    });
+
+    return {
+        mentionKeywords,
+        usernameMention,
+        channel: notifyProps.channel === 'true',
+        first_name: notifyProps.first_name === 'true',
+        comments: notifyProps.comments || '',
+        notifyProps,
+    };
+}
+
+export type CanSaveSettings = {
+    channelMentionOn: boolean;
+    replyNotificationType: string;
+    firstNameMentionOn: boolean;
+    mentionKeywords: string[];
+    usernameMentionOn: boolean;
+    mentionProps: ReturnType<typeof getMentionProps>;
+}
+
+export function canSaveSettings({channelMentionOn, replyNotificationType, firstNameMentionOn, mentionKeywords, usernameMentionOn, mentionProps}: CanSaveSettings) {
+    const channelChanged = channelMentionOn !== mentionProps.channel;
+    const replyChanged = replyNotificationType !== mentionProps.comments;
+    const firstNameChanged = firstNameMentionOn !== mentionProps.first_name;
+    const userNameChanged = usernameMentionOn !== mentionProps.usernameMention;
+    const mentionKeywordsChanged = stringArraysAreNotEqual(mentionKeywords, mentionProps.mentionKeywords);
+
+    return channelChanged || replyChanged || firstNameChanged || userNameChanged || mentionKeywordsChanged;
+}
+
+export function stringArraysAreNotEqual(a: string[], b: string[]) {
+    if (a.length !== b.length) {
+        return true;
+    }
+
+    if (a.length === 0 && b.length === 0) {
+        return false;
+    }
+
+    const aSorted = a.sort();
+    const bSorted = b.sort();
+    const isEqual = aSorted.every((value, index) => value === bSorted[index]);
+    return !isEqual;
+}
 
 export default MentionSettings;
