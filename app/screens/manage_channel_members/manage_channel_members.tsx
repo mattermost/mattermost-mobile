@@ -14,8 +14,9 @@ import UserList from '@components/user_list';
 import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {openAsBottomSheet, setButtons} from '@screens/navigation';
+import {openAsBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -97,6 +98,12 @@ export default function ManageChannelMembers({
         setTerm('');
         setSearchResults(EMPTY);
     }, []);
+
+    const close = useCallback(() => {
+        popTopScreen(componentId);
+    }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
         if (profile.id === currentUserId && isManageMode) {
