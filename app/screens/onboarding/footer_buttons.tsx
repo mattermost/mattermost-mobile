@@ -22,7 +22,6 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     button: {
         marginTop: 5,
-        minWidth: 120,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -36,7 +35,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         position: 'absolute',
         justifyContent: 'center',
-        minWidth: 100,
+        width: 120,
     },
     signInButtonText: {
         flexDirection: 'row',
@@ -52,7 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const AnimatedButton = Animated.createAnimatedComponent(Pressable);
-const BUTTON_SIZE = 100;
+const BUTTON_SIZE = 120;
 
 const FooterButtons = ({
     theme,
