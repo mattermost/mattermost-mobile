@@ -33,7 +33,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         input: {
             color: theme.centerChannelColor,
-            height: 150,
             paddingHorizontal: 15,
             ...typography('Body', 100, 'Regular'),
         },
@@ -97,7 +96,6 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
             }
 
             mention_keys = [...mention_keys, ...mentionKeywords];
-            console.log('mention_keys', mention_keys);
 
             const notify_props: UserNotifyProps = {
                 ...notifyProps,
@@ -122,21 +120,39 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
         currentUser,
     ]);
 
-    const onToggleFirstName = useCallback(() => {
-        setFirstNameMentionOn((prev) => !prev);
-    }, []);
+    function handleFirstNameToggle() {
+        setFirstNameMentionOn(!firstNameMentionOn);
+    }
 
-    const onToggleUserName = useCallback(() => {
-        setUsernameMentionOn((prev) => !prev);
-    }, []);
+    function handleUsernameToggle() {
+        setUsernameMentionOn(!usernameMentionOn);
+    }
 
-    const onToggleChannel = useCallback(() => {
-        setChannelMentionOn((prev) => !prev);
-    }, []);
+    function handleChannelToggle() {
+        setChannelMentionOn(!channelMentionOn);
+    }
 
-    const onChangeText = useCallback((text: string) => {
-        setMentionKeywords(text);
-    }, []);
+    function handleMentionKeywordsInputChanged(text: string) {
+        // Temp fix remove later >>>>>>>>>>>
+        if (text[text.length - 1] === ',') {
+            setMentionKeywordsInput('');
+        } else {
+            setMentionKeywordsInput(text);
+        }
+    }
+
+    function handleMentionKeywordEntered() {
+        // Check if the keyword is not empty and not already in the list
+        if (mentionKeywordsInput.length > 0 && !mentionKeywords.includes(mentionKeywordsInput)) {
+            const formattedKeyword = mentionKeywordsInput.trim().replace(/ /g, '');
+            setMentionKeywords([...mentionKeywords, formattedKeyword]);
+            setMentionKeywordsInput('');
+        }
+    }
+
+    function handleMentionKeywordRemoved(keyword: string) {
+        setMentionKeywords(mentionKeywords.filter((item) => item !== keyword));
+    }
 
     useBackNavigation(saveMention);
 
@@ -150,7 +166,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                 {Boolean(currentUser?.firstName) && (
                     <>
                         <SettingOption
-                            action={onToggleFirstName}
+                            action={handleFirstNameToggle}
                             description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
                             label={currentUser!.firstName}
                             selected={firstNameMentionOn}
@@ -162,7 +178,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                 )}
                 {Boolean(currentUser?.username) && (
                     <SettingOption
-                        action={onToggleUserName}
+                        action={handleUsernameToggle}
                         description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
                         label={currentUser!.username}
                         selected={usernameMentionOn}
@@ -172,7 +188,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                 )}
                 <SettingSeparator/>
                 <SettingOption
-                    action={onToggleChannel}
+                    action={handleChannelToggle}
                     description={intl.formatMessage({id: 'notification_settings.mentions.channelWide', defaultMessage: 'Channel-wide mentions'})}
                     label='@channel, @all, @here'
                     selected={channelMentionOn}
@@ -180,7 +196,6 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                     type='toggle'
                 />
                 <SettingSeparator/>
-                {/* TODO change here for UI of chips */}
                 <FloatingTextChipsInput
                     allowFontScaling={true}
                     autoCapitalize='none'
@@ -192,8 +207,8 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                         id: 'notification_settings.mentions.keywords',
                         defaultMessage: 'Enter other keywords',
                     })}
-                    multiline={true}
-                    onChangeText={onChangeText}
+                    onTextInputChange={handleMentionKeywordsInputChanged}
+                    onChipRemove={handleMentionKeywordRemoved}
                     returnKeyType='done'
                     testID='mention_notification_settings.keywords.input'
                     textInputStyle={styles.input}
@@ -201,7 +216,8 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                     theme={theme}
                     underlineColorAndroid='transparent'
                     chipsValues={mentionKeywords}
-                    inputValue={mentionKeywordsInput}
+                    textInputValue={mentionKeywordsInput}
+                    onTextInputSubmitted={handleMentionKeywordEntered}
                     labelTextStyle={styles.labelTextStyle}
                 />
                 <Text

@@ -1,20 +1,42 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// Note: This file has been adapted from the library https://github.com/csath/react-native-reanimated-text-input
-
-import {debounce} from 'lodash';
-import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useCallback} from 'react';
-import {type GestureResponderEvent, type LayoutChangeEvent, type NativeSyntheticEvent, type StyleProp, type TargetedEvent, Text, TextInput, type TextInputFocusEventData, type TextInputProps, type TextStyle, TouchableWithoutFeedback, View, type ViewStyle} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming, Easing} from 'react-native-reanimated';
+import React, {
+    useState,
+    useRef,
+    useImperativeHandle,
+    forwardRef,
+    useMemo,
+    useCallback,
+} from 'react';
+import {
+    type GestureResponderEvent,
+    type LayoutChangeEvent,
+    type NativeSyntheticEvent,
+    type StyleProp,
+    type TargetedEvent,
+    Text,
+    TextInput,
+    type TextInputFocusEventData,
+    type TextInputProps,
+    type TextStyle,
+    TouchableWithoutFeedback,
+    View,
+    type ViewStyle,
+    Pressable,
+} from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    withTiming,
+    Easing,
+} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
-import SelectedChip from '@components/selected_chip';
+import SelectedChip, {USER_CHIP_HEIGHT} from '@components/selected_chip';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {getLabelPositions, onExecution} from './utils';
 
-const DEFAULT_INPUT_HEIGHT = 48;
 const BORDER_DEFAULT_WIDTH = 1;
 const BORDER_FOCUSED_WIDTH = 2;
 
@@ -45,10 +67,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     input: {
         backgroundColor: 'transparent',
         borderWidth: 0,
-        flex: 1,
         paddingHorizontal: 0,
         paddingTop: 0,
         paddingBottom: 0,
+        height: USER_CHIP_HEIGHT,
+        flexGrow: 1,
+        flexShrink: 0,
+        flexBasis: 'auto',
+        alignSelf: 'stretch',
     },
     label: {
         position: 'absolute',
@@ -66,7 +92,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontSize: 10,
     },
     textInput: {
+        display: 'flex',
         flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'flex-start',
+        alignContent: 'flex-start',
+        alignItems: 'flex-start',
+        textAlignVertical: 'top',
         fontFamily: 'OpenSans',
         fontSize: 16,
         paddingTop: 12,
@@ -78,15 +110,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderWidth: BORDER_DEFAULT_WIDTH,
         backgroundColor: theme.centerChannelBg,
     },
+    chipContainer: {
+        flexGrow: 0,
+        flexShrink: 1,
+        flexBasis: 'auto',
+        alignSelf: 'auto',
+    },
 }));
 
-export type FloatingTextChipsInputRef = {
+export type Ref = {
     blur: () => void;
     focus: () => void;
     isFocused: () => boolean;
 }
 
-type Props = TextInputProps & {
+type TextInputPropsFiltered = Omit<TextInputProps, 'value' | 'defaultValue' | 'onChange'>;
+
+type Props = TextInputPropsFiltered & {
     containerStyle?: ViewStyle;
     editable?: boolean;
     error?: string;
@@ -94,7 +134,6 @@ type Props = TextInputProps & {
     isKeyboardInput?: boolean;
     label: string;
     labelTextStyle?: TextStyle;
-    multiline?: boolean;
     onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
     onFocus?: (e: NativeSyntheticEvent<TargetedEvent>) => void;
     onLayout?: (e: LayoutChangeEvent) => void;
@@ -104,40 +143,50 @@ type Props = TextInputProps & {
     testID?: string;
     textInputStyle?: TextStyle;
     theme: Theme;
-    value?: string;
-    inputValue?: string;
     chipsValues?: string[];
+    textInputValue: string;
+    onTextInputChange: TextInputProps['onChangeText'];
+    onChipRemove: (value: string) => void;
+    onTextInputSubmitted: () => void;
 }
 
-const FloatingTextChipsInput = forwardRef<FloatingTextChipsInputRef, Props>(({
-    containerStyle,
-    editable = true,
-    error,
-    errorIcon = 'alert-outline',
-    isKeyboardInput = true,
-    label = '',
-    labelTextStyle,
-    multiline,
-    onBlur,
-    onFocus,
-    onLayout,
-    onPress,
-    placeholder,
-    showErrorIcon = true,
-    testID,
-    textInputStyle,
-    theme,
-    value,
-    ...props
-}: Props, ref) => {
+const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
+    const {
+        textInputValue,
+        textInputStyle,
+        onTextInputChange,
+        onTextInputSubmitted,
+        chipsValues,
+        onChipRemove,
+        theme,
+        containerStyle,
+        editable = true,
+        error,
+        errorIcon = 'alert-outline',
+        isKeyboardInput = true,
+        label = '',
+        labelTextStyle,
+        onBlur,
+        onFocus,
+        onLayout,
+        onPress,
+        placeholder,
+        showErrorIcon = true,
+        testID,
+        ...restProps
+    } = props;
+
     const [focused, setIsFocused] = useState(false);
     const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>();
     const inputRef = useRef<TextInput>(null);
-    const debouncedOnFocusTextInput = debounce(setIsFocusLabel, 500, {leading: true, trailing: false});
     const styles = getStyleSheet(theme);
 
     const positions = useMemo(() => getLabelPositions(styles.textInput, styles.label, styles.smallLabel), [styles]);
     const size = useMemo(() => [styles.textInput.fontSize, styles.smallLabel.fontSize], [styles]);
+
+    const hasValues = textInputValue.length > 0 || (chipsValues?.length ?? 0) > 0;
+
+    const shouldShowError = !focused && error;
 
     // Exposes the blur, focus and isFocused methods to the parent component
     useImperativeHandle(ref, () => ({
@@ -146,22 +195,13 @@ const FloatingTextChipsInput = forwardRef<FloatingTextChipsInputRef, Props>(({
         isFocused: () => inputRef.current?.isFocused() || false,
     }), [inputRef]);
 
-    useEffect(
-        () => {
-            if (!focusedLabel && (value || props.defaultValue)) {
-                debouncedOnFocusTextInput(true);
-            }
-        },
-        [value, props.defaultValue],
-    );
-
     const onTextInputBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
         () => {
-            setIsFocusLabel(Boolean(value));
+            setIsFocusLabel(hasValues);
             setIsFocused(false);
         },
         onBlur,
-    ), [onBlur]);
+    ), [onBlur, hasValues]);
 
     const onTextInputFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
         () => {
@@ -171,31 +211,26 @@ const FloatingTextChipsInput = forwardRef<FloatingTextChipsInputRef, Props>(({
         onFocus,
     ), [onFocus]);
 
-    const onAnimatedTextPress = useCallback(() => {
-        return focused ? null : inputRef?.current?.focus();
-    }, [focused]);
+    function handlePressOnContainer() {
+        if (!focused) {
+            inputRef?.current?.focus();
+        }
+    }
 
-    const shouldShowError = (!focused && error);
-    const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
+    function handleTouchableOnPress(event: GestureResponderEvent) {
+        if (!isKeyboardInput && editable && onPress) {
+            onPress(event);
+        }
+    }
 
-    const combinedContainerStyle = useMemo(() => {
-        return [styles.container, containerStyle];
-    }, [styles, containerStyle]);
-
-    const combinedTextInputContainerStyle = useMemo(() => {
+    const containerStyles = useMemo(() => {
         const res: StyleProp<TextStyle> = [styles.textInput];
         if (!editable) {
             res.push(styles.readOnly);
         }
         res.push({
             borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
-            height: DEFAULT_INPUT_HEIGHT + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            flexGrow: 1,
-            flexShrink: 1,
-            flexBasis: 0,
+            minHeight: (USER_CHIP_HEIGHT * 2) + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
         });
 
         if (focused) {
@@ -205,26 +240,11 @@ const FloatingTextChipsInput = forwardRef<FloatingTextChipsInputRef, Props>(({
         }
 
         res.push(textInputStyle);
-
-        if (multiline) {
-            res.push({minHeight: 100, textAlignVertical: 'top'});
-        }
-
         return res;
-    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
-
-    const combinedTextInputStyle = useMemo(() => {
-        const res: StyleProp<TextStyle> = [styles.textInput, styles.input, textInputStyle];
-
-        if (multiline) {
-            res.push({height: 32, textAlignVertical: 'top', width: '100%'});
-        }
-
-        return res;
-    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
+    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, editable]);
 
     const textAnimatedTextStyle = useAnimatedStyle(() => {
-        const inputText = placeholder || value || props.defaultValue;
+        const inputText = placeholder || hasValues;
         const index = inputText || focusedLabel ? 1 : 0;
         const toValue = positions[index];
         const toSize = size[index];
@@ -247,42 +267,57 @@ const FloatingTextChipsInput = forwardRef<FloatingTextChipsInputRef, Props>(({
 
     return (
         <TouchableWithoutFeedback
-            onPress={onPressAction}
+            onPress={handleTouchableOnPress}
             onLayout={onLayout}
         >
-            <View style={combinedContainerStyle}>
-                <Animated.Text
-                    onPress={onAnimatedTextPress}
-                    style={[styles.label, labelTextStyle, textAnimatedTextStyle]}
-                    suppressHighlighting={true}
-                    numberOfLines={1}
-                >
-                    {label}
-                </Animated.Text>
-                <View style={combinedTextInputContainerStyle}>
-                    {props.chipsValues && props.chipsValues?.length > 0 && props.chipsValues.map((chipValue) => (
-                        <SelectedChip
-                            key={chipValue}
-                            id={chipValue}
-                            text={chipValue}
-                            onRemove={(id) => {console.log('remove', id)}}
+            <View style={[styles.container, containerStyle]}>
+                <Pressable onPress={handlePressOnContainer}>
+                    <Animated.Text
+                        style={[styles.label, labelTextStyle, textAnimatedTextStyle]}
+                        suppressHighlighting={true}
+                        numberOfLines={1}
+                    >
+                        {label}
+                    </Animated.Text>
+                    <View
+                        style={containerStyles}
+                    >
+                        {props.chipsValues && props.chipsValues?.length > 0 && props.chipsValues.map((chipValue) => (
+                            <SelectedChip
+                                key={chipValue}
+                                id={chipValue}
+                                text={chipValue}
+                                onRemove={onChipRemove}
+                                containerStyle={styles.chipContainer}
+                            />
+                        ))}
+                        <TextInput
+                            {...restProps}
+                            ref={inputRef}
+                            testID={testID}
+                            placeholder={placeholder}
+                            placeholderTextColor={styles.label.color}
+                            pointerEvents={isKeyboardInput ? 'auto' : 'none'}
+                            underlineColorAndroid='transparent'
+                            editable={isKeyboardInput && editable}
+                            multiline={false}
+                            style={[styles.textInput, styles.input, textInputStyle]}
+                            onFocus={onTextInputFocus}
+                            onBlur={onTextInputBlur}
+                            onChangeText={onTextInputChange}
+                            onKeyPress={(e) => {
+                            // Temp fix remove later >>>>>>>>>>>
+                                if (e.nativeEvent.key === ',') {
+                                    inputRef?.current?.clear();
+                                    onTextInputSubmitted();
+                                    e.preventDefault();
+                                }
+                            }}
+                            onSubmitEditing={onTextInputSubmitted}
+                            value={textInputValue}
                         />
-                    ))}
-                    <TextInput
-                        {...props}
-                        editable={isKeyboardInput && editable}
-                        style={combinedTextInputStyle}
-                        placeholder={placeholder}
-                        placeholderTextColor={styles.label.color}
-                        value={props.inputValue}
-                        pointerEvents={isKeyboardInput ? 'auto' : 'none'}
-                        onFocus={onTextInputFocus}
-                        onBlur={onTextInputBlur}
-                        ref={inputRef}
-                        underlineColorAndroid='transparent'
-                        testID={testID}
-                    />
-                </View>
+                    </View>
+                </Pressable>
                 {Boolean(error) && (
                     <View style={styles.errorContainer}>
                         {showErrorIcon && errorIcon &&
