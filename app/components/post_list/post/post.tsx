@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode, useEffect, useMemo, useRef, useState} from 'react';
+import React, {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from 'react-native';
+import {Keyboard, Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
 
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
@@ -39,7 +39,7 @@ import type {SearchPattern} from '@typings/global/markdown';
 type PostProps = {
     appsEnabled: boolean;
     canDelete: boolean;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     customEmojiNames: string[];
     differentThreadSequence: boolean;
     hasFiles: boolean;
@@ -51,6 +51,7 @@ type PostProps = {
     isCRTEnabled?: boolean;
     isEphemeral: boolean;
     isFirstReply?: boolean;
+    isPostAcknowledgementEnabled?: boolean;
     isSaved?: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
@@ -109,7 +110,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Post = ({
     appsEnabled, canDelete, currentUser, customEmojiNames, differentThreadSequence, hasFiles, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
-    isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isLastReply, isPostAddChannelMember, isPostPriorityEnabled,
+    isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isLastReply, isPostAcknowledgementEnabled, isPostAddChannelMember, isPostPriorityEnabled,
     location, post, rootId, hasReactions, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, thread, previousPost,
 }: PostProps) => {
@@ -312,6 +313,7 @@ const Post = ({
                 isJumboEmoji={isJumboEmoji}
                 isLastReply={isLastReply}
                 isPendingOrFailed={isPendingOrFailed}
+                isPostAcknowledgementEnabled={isPostAcknowledgementEnabled}
                 isPostAddChannelMember={isPostAddChannelMember}
                 location={location}
                 post={post}

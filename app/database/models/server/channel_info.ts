@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -36,6 +36,9 @@ export default class ChannelInfoModel extends Model implements ChannelInfoInterf
 
     /** pinned_post_count : The number of post pinned in this channel */
     @field('pinned_post_count') pinnedPostCount!: number;
+
+    /** files_count : The number of files in this channel */
+    @field('files_count') filesCount!: number;
 
     /** purpose: The intention behind this channel */
     @field('purpose') purpose!: string;

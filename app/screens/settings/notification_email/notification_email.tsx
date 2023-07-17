@@ -55,7 +55,7 @@ const emailFooterCRTText = {
 
 type NotificationEmailProps = {
     componentId: AvailableScreens;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     emailInterval: string;
     enableEmailBatching: boolean;
     isCRTEnabled: boolean;
@@ -63,7 +63,7 @@ type NotificationEmailProps = {
 }
 
 const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmailBatching, isCRTEnabled, sendEmailNotifications}: NotificationEmailProps) => {
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
     const initialInterval = useMemo(
         () => getEmailInterval(sendEmailNotifications && notifyProps?.email === 'true', enableEmailBatching, parseInt(emailInterval, 10)).toString(),
         [/* dependency array should remain empty */],
@@ -81,6 +81,10 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
     const close = () => popTopScreen(componentId);
 
     const saveEmail = useCallback(() => {
+        if (!currentUser) {
+            return;
+        }
+
         const canSaveSetting = notifyInterval !== initialInterval || emailThreads !== initialEmailThreads;
         if (canSaveSetting) {
             const promises = [];
@@ -106,7 +110,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
             Promise.all(promises);
         }
         close();
-    }, [notifyProps, notifyInterval, emailThreads, serverUrl, currentUser.id, sendEmailNotifications]);
+    }, [notifyProps, notifyInterval, emailThreads, serverUrl, currentUser?.id, sendEmailNotifications]);
 
     useAndroidHardwareBackHandler(componentId, saveEmail);
 

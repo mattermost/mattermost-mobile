@@ -4,7 +4,7 @@
 import {useEffect, useState} from 'react';
 import {BehaviorSubject} from 'rxjs';
 
-import {DefaultGlobalCallsState, GlobalCallsState} from '@calls/types/calls';
+import {DefaultGlobalCallsState, type GlobalCallsState} from '@calls/types/calls';
 
 const globalStateSubject = new BehaviorSubject(DefaultGlobalCallsState);
 

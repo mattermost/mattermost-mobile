@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Insets, Text, TouchableWithoutFeedback, View} from 'react-native';
+import {type Insets, Text, TouchableWithoutFeedback, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -12,6 +12,7 @@ import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
+import {HOME_PADDING} from '@constants/view';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -266,7 +267,7 @@ const ChannelListHeader = ({
     }
 
     return (
-        <Animated.View style={animatedStyle}>
+        <Animated.View style={[animatedStyle, HOME_PADDING]}>
             {header}
         </Animated.View>
     );

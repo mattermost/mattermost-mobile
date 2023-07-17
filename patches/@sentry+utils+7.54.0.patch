@@ -1,0 +1,70 @@
+diff --git a/node_modules/@sentry/utils/cjs/object.js b/node_modules/@sentry/utils/cjs/object.js
+index eb89fb8..0716abb 100644
+--- a/node_modules/@sentry/utils/cjs/object.js
++++ b/node_modules/@sentry/utils/cjs/object.js
+@@ -198,7 +198,11 @@ function dropUndefinedKeys(inputValue) {
+   return _dropUndefinedKeys(inputValue, memoizationMap);
+ }
+ 
+-function _dropUndefinedKeys(inputValue, memoizationMap) {
++function _dropUndefinedKeys(inputValue, memoizationMap, depth = 0) {
++  if (depth >= 5) {
++    return inputValue;
++  }
++
+   if (is.isPlainObject(inputValue)) {
+     // If this node has already been visited due to a circular reference, return the object it was mapped to in the new object
+     const memoVal = memoizationMap.get(inputValue);
+@@ -212,7 +216,7 @@ function _dropUndefinedKeys(inputValue, memoizationMap) {
+ 
+     for (const key of Object.keys(inputValue)) {
+       if (typeof inputValue[key] !== 'undefined') {
+-        returnValue[key] = _dropUndefinedKeys(inputValue[key], memoizationMap);
++        returnValue[key] = _dropUndefinedKeys(inputValue[key], memoizationMap, depth + 1);
+       }
+     }
+ 
+@@ -231,7 +235,7 @@ function _dropUndefinedKeys(inputValue, memoizationMap) {
+     memoizationMap.set(inputValue, returnValue);
+ 
+     inputValue.forEach((item) => {
+-      returnValue.push(_dropUndefinedKeys(item, memoizationMap));
++      returnValue.push(_dropUndefinedKeys(item, memoizationMap, depth + 1));
+     });
+ 
+     return returnValue ;
+diff --git a/node_modules/@sentry/utils/esm/object.js b/node_modules/@sentry/utils/esm/object.js
+index 0f5c411..1a8b5c9 100644
+--- a/node_modules/@sentry/utils/esm/object.js
++++ b/node_modules/@sentry/utils/esm/object.js
+@@ -196,7 +196,11 @@ function dropUndefinedKeys(inputValue) {
+   return _dropUndefinedKeys(inputValue, memoizationMap);
+ }
+ 
+-function _dropUndefinedKeys(inputValue, memoizationMap) {
++function _dropUndefinedKeys(inputValue, memoizationMap, depth = 0) {
++  if (depth >= 5) {
++    return inputValue;
++  }
++
+   if (isPlainObject(inputValue)) {
+     // If this node has already been visited due to a circular reference, return the object it was mapped to in the new object
+     const memoVal = memoizationMap.get(inputValue);
+@@ -210,7 +214,7 @@ function _dropUndefinedKeys(inputValue, memoizationMap) {
+ 
+     for (const key of Object.keys(inputValue)) {
+       if (typeof inputValue[key] !== 'undefined') {
+-        returnValue[key] = _dropUndefinedKeys(inputValue[key], memoizationMap);
++        returnValue[key] = _dropUndefinedKeys(inputValue[key], memoizationMap, depth + 1);
+       }
+     }
+ 
+@@ -229,7 +233,7 @@ function _dropUndefinedKeys(inputValue, memoizationMap) {
+     memoizationMap.set(inputValue, returnValue);
+ 
+     inputValue.forEach((item) => {
+-      returnValue.push(_dropUndefinedKeys(item, memoizationMap));
++      returnValue.push(_dropUndefinedKeys(item, memoizationMap, depth + 1));
+     });
+ 
+     return returnValue ;

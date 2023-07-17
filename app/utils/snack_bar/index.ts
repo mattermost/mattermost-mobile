@@ -5,11 +5,13 @@ import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {showOverlay} from '@screens/navigation';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
+import type {PrimitiveType} from 'react-intl';
 
-type ShowSnackBarArgs = {
+export type ShowSnackBarArgs = {
     barType: keyof typeof SNACK_BAR_TYPE;
     onAction?: () => void;
     sourceScreen?: AvailableScreens;
+    messageValues?: Record<string, PrimitiveType>;
 };
 
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {
@@ -31,9 +33,24 @@ export const showFavoriteChannelSnackbar = (favorited: boolean, onAction: () => 
     });
 };
 
+export const showAddChannelMembersSnackbar = (count: number) => {
+    return showSnackBar({
+        barType: SNACK_BAR_TYPE.ADD_CHANNEL_MEMBERS,
+        sourceScreen: Screens.CHANNEL_ADD_MEMBERS,
+        messageValues: {numMembers: count},
+    });
+};
+
 export const showRemoveChannelUserSnackbar = () => {
     return showSnackBar({
         barType: SNACK_BAR_TYPE.REMOVE_CHANNEL_USER,
         sourceScreen: Screens.MANAGE_CHANNEL_MEMBERS,
+    });
+};
+
+export const showThreadFollowingSnackbar = (following: boolean, onAction: () => void) => {
+    return showSnackBar({
+        onAction,
+        barType: following ? SNACK_BAR_TYPE.FOLLOW_THREAD : SNACK_BAR_TYPE.UNFOLLOW_THREAD,
     });
 };

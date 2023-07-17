@@ -24,7 +24,7 @@ type Props = {
     channelId: string;
     layoutWidth?: number;
     location: string;
-    metadata?: PostMetadata;
+    metadata?: PostMetadata | null;
     postId: string;
     theme: Theme;
 }
@@ -142,7 +142,7 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
                 {Boolean(metadata?.images?.[attachment.image_url]) &&
                     <AttachmentImage
                         imageUrl={attachment.image_url}
-                        imageMetadata={metadata!.images![attachment.image_url]}
+                        imageMetadata={metadata!.images![attachment.image_url]!}
                         layoutWidth={layoutWidth}
                         location={location}
                         postId={postId}

@@ -7,7 +7,7 @@ import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {observeChannel} from '@queries/servers/channel';
-import {observeCurrentUserId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {getUserIdFromChannelName} from '@utils/user';
 
@@ -36,6 +36,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     return {
         currentUserId,
         user,
+        hideGuestTags: observeConfigBooleanValue(database, 'HideGuestTags'),
     };
 });
 

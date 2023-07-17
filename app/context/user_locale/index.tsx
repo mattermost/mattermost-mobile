@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
-import React, {ComponentType, createContext} from 'react';
+import React, {type ComponentType, createContext} from 'react';
 import {IntlProvider} from 'react-intl';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';

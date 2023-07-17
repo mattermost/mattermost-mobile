@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
-import React, {Children, ReactElement, useCallback} from 'react';
+import React, {Children, type ReactElement, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, StyleSheet, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';

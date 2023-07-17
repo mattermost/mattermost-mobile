@@ -1,0 +1,49 @@
+diff --git a/node_modules/react-native-reanimated/src/reanimated2/mutables.ts b/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
+index 90de1f1..ae59355 100644
+--- a/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
++++ b/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
+@@ -95,25 +95,25 @@ export function makeMutable<T>(
+       }
+       return value;
+     },
+-    set _value(newValue: T) {
+-      if (NativeReanimatedModule.native) {
+-        throw new Error(
+-          'Setting `_value` directly is only possible on the UI runtime'
+-        );
+-      }
+-      value = newValue;
+-      listeners!.forEach((listener) => {
+-        listener(newValue);
+-      });
+-    },
+-    get _value(): T {
+-      if (NativeReanimatedModule.native) {
+-        throw new Error(
+-          'Reading from `_value` directly is only possible on the UI runtime'
+-        );
+-      }
+-      return value;
+-    },
++    // set _value(newValue: T) {
++    //   if (NativeReanimatedModule.native) {
++    //     throw new Error(
++    //       'Setting `_value` directly is only possible on the UI runtime'
++    //     );
++    //   }
++    //   value = newValue;
++    //   listeners!.forEach((listener) => {
++    //     listener(newValue);
++    //   });
++    // },
++    // get _value(): T {
++    //   if (NativeReanimatedModule.native) {
++    //     throw new Error(
++    //       'Reading from `_value` directly is only possible on the UI runtime'
++    //     );
++    //   }
++    //   return value;
++    // },
+     modify: (modifier: (value: T) => T) => {
+       runOnUI(() => {
+         mutable.value = modifier(mutable.value);

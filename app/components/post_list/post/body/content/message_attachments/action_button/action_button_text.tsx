@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, View, StyleSheet, StyleProp, TextStyle} from 'react-native';
+import {Text, View, StyleSheet, type StyleProp, type TextStyle} from 'react-native';
 
 import Emoji from '@components/emoji';
 import {reEmoji, reEmoticon, reMain} from '@constants/emoji';

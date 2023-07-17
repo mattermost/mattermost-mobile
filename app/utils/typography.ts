@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {StyleSheet, TextStyle} from 'react-native';
+import {StyleSheet, type TextStyle} from 'react-native';
 
 // type FontFamilies = 'OpenSans' | 'Metropolis';
 type FontTypes = 'Heading' | 'Body';

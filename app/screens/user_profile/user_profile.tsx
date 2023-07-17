@@ -10,13 +10,13 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {getLocaleFromLanguage, t} from '@i18n';
+import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import ManageUserOptions, {DIVIDER_MARGIN} from './manage_user_options';
-import UserProfileOptions, {OptionsType} from './options';
+import UserProfileOptions, {type OptionsType} from './options';
 import UserProfileTitle, {HEADER_TEXT_HEIGHT} from './title';
 import UserInfo from './user_info';
 
@@ -45,6 +45,7 @@ type Props = {
     user: UserModel;
     userIconOverride?: string;
     usernameOverride?: string;
+    hideGuestTags: boolean;
 }
 
 const TITLE_HEIGHT = 118;
@@ -56,7 +57,7 @@ const MANAGE_ICON_HEIGHT = 72;
 
 const messages = defineMessages({
     manageMember: {
-        id: t('mobile.manage_members.manage_member'),
+        id: 'mobile.manage_members.manage_member',
         defaultMessage: 'Manage member',
     },
 });
@@ -84,6 +85,7 @@ const UserProfile = ({
     user,
     userIconOverride,
     usernameOverride,
+    hideGuestTags,
 }: Props) => {
     const {formatMessage, locale} = useIntl();
     const serverUrl = useServerUrl();
@@ -175,6 +177,7 @@ const UserProfile = ({
                     user={user}
                     userIconOverride={userIconOverride}
                     usernameOverride={usernameOverride}
+                    hideGuestTags={hideGuestTags}
                 />
                 {showUserProfileOptions &&
                     <UserProfileOptions

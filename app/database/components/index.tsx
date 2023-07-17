@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
-import React, {ComponentType, useEffect, useState} from 'react';
+import React, {type ComponentType, useEffect, useState} from 'react';
 
 import ServerProvider from '@context/server';
 import ThemeProvider from '@context/theme';

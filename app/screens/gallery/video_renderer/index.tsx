@@ -3,9 +3,9 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, Platform, StyleSheet, useWindowDimensions} from 'react-native';
-import Animated, {Easing, useAnimatedRef, useAnimatedStyle, useSharedValue, withTiming, WithTimingConfig} from 'react-native-reanimated';
+import Animated, {Easing, useAnimatedRef, useAnimatedStyle, useSharedValue, withTiming, type WithTimingConfig} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Video, {OnPlaybackRateData} from 'react-native-video';
+import Video, {type OnPlaybackRateData} from 'react-native-video';
 
 import {updateLocalFilePath} from '@actions/local/file';
 import CompassIcon from '@components/compass_icon';

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {LayoutChangeEvent, ScrollView, useWindowDimensions, View} from 'react-native';
+import {type LayoutChangeEvent, ScrollView, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import Markdown from '@components/markdown';
@@ -19,7 +19,7 @@ import type UserModel from '@typings/database/models/servers/user';
 import type {SearchPattern} from '@typings/global/markdown';
 
 type MessageProps = {
-    currentUser: UserModel;
+    currentUser?: UserModel;
     highlight: boolean;
     isEdited: boolean;
     isPendingOrFailed: boolean;
@@ -63,7 +63,7 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
     const textStyles = getMarkdownTextStyles(theme);
 
     const mentionKeys = useMemo(() => {
-        return currentUser.mentionKeys;
+        return currentUser?.mentionKeys;
     }, [currentUser]);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);

@@ -12,6 +12,8 @@ import {truncateCrtRelatedTables} from '@queries/servers/entry';
 import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import {forceLogoutIfNecessary} from './session';
@@ -22,42 +24,32 @@ export type MyPreferencesRequest = {
 };
 
 export const fetchMyPreferences = async (serverUrl: string, fetchOnly = false): Promise<MyPreferencesRequest> => {
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
         const preferences = await client.getMyPreferences();
 
         if (!fetchOnly) {
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            if (operator) {
-                await operator.handlePreferences({
-                    prepareRecordsOnly: false,
-                    preferences,
-                    sync: true,
-                });
-            }
+            await operator.handlePreferences({
+                prepareRecordsOnly: false,
+                preferences,
+                sync: true,
+            });
         }
 
         return {preferences};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchMyPreferences', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const saveFavoriteChannel = async (serverUrl: string, channelId: string, isFavorite: boolean) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
-        const userId = await getCurrentUserId(operator.database);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const userId = await getCurrentUserId(database);
         const favPref: PreferenceType = {
             category: Preferences.CATEGORIES.FAVORITE_CHANNEL,
             name: channelId,
@@ -71,13 +63,10 @@ export const saveFavoriteChannel = async (serverUrl: string, channelId: string, 
 };
 
 export const savePostPreference = async (serverUrl: string, postId: string) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
-        const userId = await getCurrentUserId(operator.database);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const userId = await getCurrentUserId(database);
         const pref: PreferenceType = {
             user_id: userId,
             category: Preferences.CATEGORIES.SAVED_POST,
@@ -91,20 +80,11 @@ export const savePostPreference = async (serverUrl: string, postId: string) => {
 };
 
 export const savePreference = async (serverUrl: string, preferences: PreferenceType[]) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
-        const userId = await getCurrentUserId(operator.database);
+        const userId = await getCurrentUserId(database);
         client.savePreferences(userId, preferences);
         await operator.handlePreferences({
             preferences,
@@ -113,7 +93,8 @@ export const savePreference = async (serverUrl: string, preferences: PreferenceT
 
         return {preferences};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on savePreference', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
@@ -141,18 +122,15 @@ export const deleteSavedPost = async (serverUrl: string, postId: string) => {
             preference: pref,
         };
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on deleteSavedPost', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const setDirectChannelVisible = async (serverUrl: string, channelId: string, visible = true) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const channel = await getChannelById(database, channelId);
         if (channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL) {
             const userId = await getCurrentUserId(database);
@@ -168,9 +146,9 @@ export const setDirectChannelVisible = async (serverUrl: string, channelId: stri
             return savePreference(serverUrl, [pref]);
         }
 
-        return {error: undefined};
+        return {};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };

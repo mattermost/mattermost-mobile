@@ -172,6 +172,7 @@ export const gqlToClientChannelStats = (s: Partial<GQLChannel>): ChannelStats =>
         guest_count: s.stats?.guestCount || 0,
         member_count: s.stats?.memberCount || 0,
         pinnedpost_count: s.stats?.pinnePostCount || 0,
+        files_count: s.stats?.filesCount || 0,
     };
 };
 

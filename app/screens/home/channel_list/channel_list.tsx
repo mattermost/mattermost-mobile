@@ -7,8 +7,9 @@ import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {refetchCurrentUser} from '@actions/remote/user';
 import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
 import TeamSidebar from '@components/team_sidebar';
@@ -29,13 +30,16 @@ import Servers from './servers';
 import type {LaunchType} from '@typings/launch';
 
 type ChannelProps = {
-    channelsCount: number;
+    hasChannels: boolean;
     isCRTEnabled: boolean;
-    teamsCount: number;
+    hasTeams: boolean;
+    hasMoreThanOneTeam: boolean;
     isLicensed: boolean;
     showToS: boolean;
     launchType: LaunchType;
     coldStart?: boolean;
+    currentUserId?: string;
+    hasCurrentUser: boolean;
 };
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -126,10 +130,10 @@ const ChannelListScreen = (props: ChannelProps) => {
     }, [theme, insets.top]);
 
     useEffect(() => {
-        if (!props.teamsCount) {
+        if (!props.hasTeams) {
             resetToTeams();
         }
-    }, [Boolean(props.teamsCount)]);
+    }, [Boolean(props.hasTeams)]);
 
     useEffect(() => {
         const back = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
@@ -145,6 +149,12 @@ const ChannelListScreen = (props: ChannelProps) => {
             openToS();
         }
     }, [props.showToS]);
+
+    useEffect(() => {
+        if (!props.hasCurrentUser || !props.currentUserId) {
+            refetchCurrentUser(serverUrl, props.currentUserId);
+        }
+    }, [props.currentUserId, props.hasCurrentUser]);
 
     // Init the rate app. Only run the effect on the first render if ToS is not open
     useEffect(() => {
@@ -176,13 +186,13 @@ const ChannelListScreen = (props: ChannelProps) => {
                     >
                         <TeamSidebar
                             iconPad={canAddOtherServers}
-                            teamsCount={props.teamsCount}
+                            hasMoreThanOneTeam={props.hasMoreThanOneTeam}
                         />
                         <CategoriesList
-                            iconPad={canAddOtherServers && props.teamsCount <= 1}
+                            iconPad={canAddOtherServers && !props.hasMoreThanOneTeam}
                             isCRTEnabled={props.isCRTEnabled}
-                            teamsCount={props.teamsCount}
-                            channelsCount={props.channelsCount}
+                            moreThanOneTeam={props.hasMoreThanOneTeam}
+                            hasChannels={props.hasChannels}
                         />
                         {isTablet &&
                             <AdditionalTabletView/>

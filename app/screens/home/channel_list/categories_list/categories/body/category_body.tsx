@@ -7,6 +7,7 @@ import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 're
 
 import {fetchDirectChannelsInfo} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
+import {ROW_HEIGHT as CHANNEL_ROW_HEIGHT} from '@components/channel_item/channel_item';
 import {useServerUrl} from '@context/server';
 import {isDMorGM} from '@utils/channel';
 
@@ -16,7 +17,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 type Props = {
     sortedChannels: ChannelModel[];
     category: CategoryModel;
-    onChannelSwitch: (channelId: string) => void;
+    onChannelSwitch: (channel: Channel | ChannelModel) => void;
     unreadIds: Set<string>;
     unreadsOnTop: boolean;
 };
@@ -46,6 +47,9 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChan
                 onPress={onChannelSwitch}
                 key={item.id}
                 testID={`channel_list.category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_item`}
+                shouldHighlightActive={true}
+                shouldHighlightState={true}
+                isOnHome={true}
             />
         );
     }, [onChannelSwitch]);
@@ -62,8 +66,8 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChan
         }
     }, [directChannels.length]);
 
-    const height = ids.length ? ids.length * 40 : 0;
-    const unreadHeight = unreadChannels.length ? unreadChannels.length * 40 : 0;
+    const height = ids.length ? ids.length * CHANNEL_ROW_HEIGHT : 0;
+    const unreadHeight = unreadChannels.length ? unreadChannels.length * CHANNEL_ROW_HEIGHT : 0;
 
     const animatedStyle = useAnimatedStyle(() => {
         const opacity = unreadHeight > 0 ? 1 : 0;
@@ -74,7 +78,7 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChan
         };
     }, [height, unreadHeight]);
 
-    const listHeight = useMemo(() => ({
+    const listStyle = useMemo(() => ({
         height: category.collapsed ? unreadHeight : height,
     }), [category.collapsed, height, unreadHeight]);
 
@@ -87,7 +91,7 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChan
 
                 // @ts-expect-error strictMode not exposed on the types
                 strictMode={true}
-                style={listHeight}
+                style={listStyle}
             />
         </Animated.View>
     );

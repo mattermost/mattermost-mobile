@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, AppStateStatus} from 'react-native';
+import {AppState, type AppStateStatus} from 'react-native';
 
 import {updateDraftFile} from '@actions/local/draft';
 import {uploadFile} from '@actions/remote/file';
 import {PROGRESS_TIME_TO_STORE} from '@constants/files';
+import {getFullErrorMessage} from '@utils/errors';
 
 import type {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 
@@ -63,7 +64,7 @@ class DraftUploadManager {
 
         const {error, cancel} = uploadFile(serverUrl, file, channelId, onProgress, onComplete, onError, skipBytes);
         if (error) {
-            this.handleError(error.message, file.clientId!);
+            this.handleError(getFullErrorMessage(error), file.clientId!);
             return;
         }
         this.handlers[file.clientId!].cancel = cancel;

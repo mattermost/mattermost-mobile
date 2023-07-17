@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
-import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
+import {Alert, AppState, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
@@ -42,10 +42,13 @@ export const initialLaunch = async () => {
         tapped = delivered.find((d) => (d as unknown as NotificationData).ack_id === notification?.payload.ack_id) == null;
     }
     if (initialNotificationTypes.includes(notification?.payload?.type) && tapped) {
-        return launchAppFromNotification(convertToNotificationData(notification!), true);
+        const notificationData = convertToNotificationData(notification!);
+        EphemeralStore.setProcessingNotification(notificationData.identifier);
+        return launchAppFromNotification(notificationData, true);
     }
 
-    return launchApp({launchType: Launch.Normal, coldStart: notification ? tapped : true});
+    const coldStart = notification ? (tapped || AppState.currentState === 'active') : true;
+    return launchApp({launchType: Launch.Normal, coldStart});
 };
 
 const launchAppFromDeepLink = async (deepLinkUrl: string, coldStart = false) => {

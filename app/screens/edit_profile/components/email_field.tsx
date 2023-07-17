@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {RefObject} from 'react';
+import React, {type RefObject} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 

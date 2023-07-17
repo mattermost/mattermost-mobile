@@ -3,7 +3,7 @@
 
 import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, StatusBar, StatusBarStyle, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Platform, StatusBar, type StatusBarStyle, StyleSheet, TouchableOpacity, View} from 'react-native';
 import FileViewer from 'react-native-file-viewer';
 import FileSystem from 'react-native-fs';
 import tinyColor from 'tinycolor2';
@@ -14,8 +14,10 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@managers/network_manager';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
+import {getFullErrorMessage, isErrorWithMessage} from '@utils/errors';
 import {fileExists, getLocalFilePathFromFile} from '@utils/file';
 import {emptyFunction} from '@utils/general';
+import {logDebug} from '@utils/log';
 
 import FileIcon from './file_icon';
 
@@ -90,7 +92,8 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
             setDownloading(false);
             setProgress(0);
 
-            if ((error as Error).message !== 'cancelled') {
+            if (!isErrorWithMessage(error) || error.message !== 'cancelled') {
+                logDebug('error on downloadAndPreviewFile', getFullErrorMessage(error));
                 alertDownloadFailed(intl);
             }
         }

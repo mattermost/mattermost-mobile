@@ -10,7 +10,7 @@ import useHeaderHeight, {MAX_OVERSCROLL} from '@hooks/header';
 import {clamp} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import Header, {HeaderRightButton} from './header';
+import Header, {type HeaderRightButton} from './header';
 import NavigationHeaderLargeTitle from './large';
 import NavigationSearch from './search';
 

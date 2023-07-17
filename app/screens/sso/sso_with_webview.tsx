@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CookieManager, {Cookies} from '@react-native-cookies/cookies';
+import CookieManager, {type Cookies} from '@react-native-cookies/cookies';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, Text, View} from 'react-native';

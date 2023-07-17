@@ -62,14 +62,14 @@ import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleUserRemovedFromChannelEvent} from './channel';
 import {handleGroupMemberAddEvent, handleGroupMemberDeleteEvent, handleGroupReceivedEvent, handleGroupTeamAssociatedEvent, handleGroupTeamDissociateEvent} from './group';
 import {handleOpenDialogEvent} from './integrations';
-import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
+import {handleNewPostEvent, handlePostAcknowledgementAdded, handlePostAcknowledgementRemoved, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent, handleTeamArchived, handleTeamRestored} from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
-import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
+import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent} from './users';
 
 export async function handleFirstConnect(serverUrl: string) {
     registerDeviceToken(serverUrl);
@@ -177,6 +177,13 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handlePostUnread(serverUrl, msg);
             break;
 
+        case WebsocketEvents.POST_ACKNOWLEDGEMENT_ADDED:
+            handlePostAcknowledgementAdded(serverUrl, msg);
+            break;
+        case WebsocketEvents.POST_ACKNOWLEDGEMENT_REMOVED:
+            handlePostAcknowledgementRemoved(serverUrl, msg);
+            break;
+
         case WebsocketEvents.LEAVE_TEAM:
             handleLeaveTeamEvent(serverUrl, msg);
             break;
@@ -270,9 +277,8 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.STATUS_CHANGED:
+            handleStatusChangedEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleStatusChangedEvent(msg));
         case WebsocketEvents.TYPING:
             handleUserTypingEvent(serverUrl, msg);
             break;

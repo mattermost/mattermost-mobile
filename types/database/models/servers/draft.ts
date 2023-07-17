@@ -25,6 +25,8 @@ declare class DraftModel extends Model {
 
     /** files : The files field will hold an array of files object that have not yet been uploaded and persisted within the FILE table */
     files: FileInfo[];
+
+    metadata?: PostMetadata;
 }
 
 export default DraftModel;

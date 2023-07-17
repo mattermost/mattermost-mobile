@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
+import {fetchProfiles, searchProfiles} from '@actions/remote/user';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
 import ServerUserList from '@components/server_user_list';
@@ -117,7 +118,6 @@ export type Props = {
     isMultiselect?: boolean;
     selected: SelectedDialogValue;
     theme: Theme;
-    teammateNameDisplay: string;
     componentId: AvailableScreens;
 }
 
@@ -164,7 +164,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 function IntegrationSelector(
     {dataSource, data, isMultiselect = false, selected, handleSelect,
-        currentTeamId, currentUserId, componentId, getDynamicOptions, options, teammateNameDisplay}: Props) {
+        currentTeamId, currentUserId, componentId, getDynamicOptions, options}: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
@@ -516,18 +516,51 @@ function IntegrationSelector(
         );
     }, [multiselectSelected, selectedIds, style, theme]);
 
+    const userFetchFunction = useCallback(async (userFetchPage: number) => {
+        const result = await fetchProfiles(serverUrl, userFetchPage, General.PROFILE_CHUNK_SIZE);
+        if (result.users?.length) {
+            return result.users;
+        }
+
+        return [];
+    }, [serverUrl]);
+
+    const userSearchFunction = useCallback(async (searchTerm: string) => {
+        const lowerCasedTerm = searchTerm.toLowerCase();
+        const results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: false});
+
+        if (results.data) {
+            return results.data;
+        }
+
+        return [];
+    }, [serverUrl]);
+
+    const createUserFilter = useCallback((exactMatches: UserProfile[], searchTerm: string) => {
+        return (p: UserProfile) => {
+            if (p.username === searchTerm || p.username.startsWith(searchTerm)) {
+                exactMatches.push(p);
+                return false;
+            }
+
+            return true;
+        };
+    }, []);
+
     const renderDataTypeList = () => {
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
                 return (
                     <ServerUserList
-                        currentTeamId={currentTeamId}
                         currentUserId={currentUserId}
-                        teammateNameDisplay={teammateNameDisplay}
                         term={term}
                         tutorialWatched={true}
                         handleSelectProfile={handleSelectProfile}
                         selectedIds={selectedIds as {[id: string]: UserProfile}}
+                        fetchFunction={userFetchFunction}
+                        searchFunction={userSearchFunction}
+                        createFilter={createUserFilter}
+                        testID={'integration_selector.user_list'}
                     />
                 );
             default:

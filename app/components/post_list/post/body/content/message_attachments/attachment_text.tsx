@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {LayoutChangeEvent, useWindowDimensions, ScrollView, StyleProp, StyleSheet, TextStyle, View} from 'react-native';
+import {type LayoutChangeEvent, useWindowDimensions, ScrollView, type StyleProp, StyleSheet, type TextStyle, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import Markdown from '@components/markdown';
@@ -17,7 +17,7 @@ type Props = {
     channelId: string;
     hasThumbnail?: boolean;
     location: string;
-    metadata?: PostMetadata;
+    metadata?: PostMetadata | null;
     textStyles?: MarkdownTextStyles;
     theme: Theme;
     value?: string;

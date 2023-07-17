@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactElement, ReactNode} from 'react';
-import {StyleProp, View, ViewStyle} from 'react-native';
+import React, {type ReactElement, type ReactNode} from 'react';
+import {type StyleProp, View, type ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

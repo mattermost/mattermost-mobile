@@ -4,8 +4,8 @@
 import {Alert, NativeModules, Platform, StatusBar} from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DeviceInfo from 'react-native-device-info';
-import DocumentPicker, {DocumentPickerResponse} from 'react-native-document-picker';
-import {Asset, CameraOptions, ImageLibraryOptions, ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import DocumentPicker, {type DocumentPickerResponse} from 'react-native-document-picker';
+import {type Asset, type CameraOptions, type ImageLibraryOptions, type ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
 import {dismissBottomSheet} from '@screens/navigation';
@@ -16,7 +16,7 @@ import type {IntlShape} from 'react-intl';
 
 const MattermostManaged = NativeModules.MattermostManaged;
 
-type PermissionSource = 'camera' | 'storage' | 'denied_android' | 'denied_ios' | 'photo';
+type PermissionSource = 'camera' | 'storage' | 'photo_android' | 'photo_ios' | 'photo';
 
 export default class FilePickerUtil {
     private readonly uploadFiles: (files: ExtractedFileInfo[]) => void;
@@ -64,7 +64,7 @@ export default class FilePickerUtil {
                         'Upload files to your server. Open Settings to grant {applicationName} Read and Write access to files on this device.',
                 }, {applicationName}),
             },
-            denied_ios: {
+            photo_ios: {
                 title: formatMessage(
                     {
                         id: 'mobile.ios.photos_permission_denied_title',
@@ -79,7 +79,7 @@ export default class FilePickerUtil {
                         'Upload photos and videos to your server or save them to your device. Open Settings to grant {applicationName} Read and Write access to your photo and video library.',
                 }, {applicationName}),
             },
-            denied_android: {
+            photo_android: {
                 title: formatMessage(
                     {
                         id: 'mobile.android.photos_permission_denied_title',
@@ -109,8 +109,8 @@ export default class FilePickerUtil {
     };
 
     private getPermissionDeniedMessage = (source?: PermissionSource) => {
-        const sources = ['camera', 'storage', 'photo'];
-        const deniedSource: PermissionSource = Platform.select({android: 'denied_android', ios: 'denied_ios'})!;
+        const sources = ['camera', 'storage'];
+        const deniedSource: PermissionSource = Platform.select({android: 'photo_android', ios: 'photo_ios'})!;
         const msgForSource = source && sources.includes(source) ? source : deniedSource;
 
         return this.getPermissionMessages(msgForSource);
@@ -223,6 +223,42 @@ export default class FilePickerUtil {
         return true;
     };
 
+    private hasWriteStoragePermission = async () => {
+        if (Platform.OS === 'android' && Platform.Version <= 28) {
+            const storagePermission = Permissions.PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
+            let permissionRequest;
+            const hasPermissionToStorage = await Permissions.check(storagePermission);
+            switch (hasPermissionToStorage) {
+                case Permissions.RESULTS.DENIED:
+                    permissionRequest = await Permissions.request(storagePermission);
+                    return permissionRequest === Permissions.RESULTS.GRANTED;
+                case Permissions.RESULTS.BLOCKED: {
+                    const {title, text} = this.getPermissionDeniedMessage('storage');
+
+                    Alert.alert(title, text, [
+                        {
+                            text: this.intl.formatMessage({
+                                id: 'mobile.permission_denied_dismiss',
+                                defaultMessage: "Don't Allow",
+                            }),
+                        },
+                        {
+                            text: this.intl.formatMessage({
+                                id: 'mobile.permission_denied_retry',
+                                defaultMessage: 'Settings',
+                            }),
+                            onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                        },
+                    ]);
+                    return false;
+                }
+                default: return true;
+            }
+        }
+
+        return true;
+    };
+
     private buildUri = async (doc: DocumentPickerResponse) => {
         let uri: string = doc.uri;
 
@@ -256,7 +292,13 @@ export default class FilePickerUtil {
         }
 
         const hasCameraPermission = await this.hasPhotoPermission('camera');
-        if (hasCameraPermission) {
+
+        let hasWriteToStoragePermission = true;
+        if (Platform.OS === 'android' && Platform.Version <= 28) {
+            hasWriteToStoragePermission = await this.hasWriteStoragePermission();
+        }
+
+        if (hasCameraPermission && hasWriteToStoragePermission) {
             launchCamera(options, async (response: ImagePickerResponse) => {
                 StatusBar.setHidden(false);
 

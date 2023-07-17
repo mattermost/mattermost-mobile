@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode} from 'react';
+import React, {type ReactNode} from 'react';
 import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
 
@@ -20,7 +20,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type AddMembersProps = {
     channelType: string | null;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     location: string;
     post: PostModel;
     theme: Theme;
@@ -58,7 +58,7 @@ const AddMembers = ({channelType, currentUser, location, post, theme}: AddMember
     }
 
     const handleAddChannelMember = () => {
-        if (post && post.channelId) {
+        if (post && post.channelId && currentUser) {
             addMembersToChannel(serverUrl, post.channelId, userIds, post.rootId, false);
             if (post.rootId) {
                 const messages = usernames.map((addedUsername) => {

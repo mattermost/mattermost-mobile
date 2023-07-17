@@ -6,17 +6,36 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeThreadById} from '@queries/servers/thread';
+import {observeTeamIdByThreadId, observeThreadById} from '@queries/servers/thread';
+import EphemeralStore from '@store/ephemeral_store';
 
 import ThreadFollowButton from './thread_follow_button';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables(['threadId'], ({threadId, database}: {threadId: string} & WithDatabaseArgs) => {
-    return {
-        isFollowing: observeThreadById(database, threadId).pipe(
+type Props = WithDatabaseArgs & {
+    threadId?: string;
+};
+
+const enhanced = withObservables(['threadId'], ({threadId, database}: Props) => {
+    const thId = threadId || EphemeralStore.getCurrentThreadId();
+    let tId = of$('');
+    let isFollowing = of$(false);
+
+    if (thId) {
+        tId = observeTeamIdByThreadId(database, thId).pipe(
+            switchMap((t) => of$(t || '')),
+        );
+
+        isFollowing = observeThreadById(database, thId).pipe(
             switchMap((thread) => of$(thread?.isFollowing)),
-        ),
+        );
+    }
+
+    return {
+        isFollowing,
+        threadId: of$(thId),
+        teamId: tId,
     };
 });
 

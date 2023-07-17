@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
-import General from '@constants/general';
 import DatabaseManager from '@database/manager';
 import {getRecentCustomStatuses} from '@queries/servers/system';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
@@ -13,7 +12,7 @@ import {addRecentReaction} from './reactions';
 import type Model from '@nozbe/watermelondb/Model';
 import type UserModel from '@typings/database/models/servers/user';
 
-export async function setCurrentUserStatusOffline(serverUrl: string) {
+export async function setCurrentUserStatus(serverUrl: string, status: string) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const user = await getCurrentUser(database);
@@ -21,7 +20,7 @@ export async function setCurrentUserStatusOffline(serverUrl: string) {
             throw new Error(`No current user for ${serverUrl}`);
         }
 
-        user.prepareStatus(General.OFFLINE);
+        user.prepareStatus(status);
         await operator.batchRecords([user], 'setCurrentUserStatusOffline');
         return null;
     } catch (error) {

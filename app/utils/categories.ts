@@ -3,7 +3,7 @@
 
 import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
-import {getPreferenceAsBool, getPreferenceValue} from '@helpers/api/preference';
+import {getPreferenceAsBool} from '@helpers/api/preference';
 import {isDMorGM} from '@utils/channel';
 import {getUserIdFromChannelName} from '@utils/user';
 
@@ -24,7 +24,7 @@ export function makeCategoryChannelId(teamId: string, channelId: string) {
 
 export const isUnreadChannel = (myChannel: MyChannelModel, notifyProps?: Partial<ChannelNotifyProps>, lastUnreadChannelId?: string) => {
     const isMuted = notifyProps?.mark_unread === General.MENTION;
-    return (isMuted && myChannel.mentionsCount) || (!isMuted && myChannel.isUnread) || (myChannel.id === lastUnreadChannelId);
+    return myChannel.mentionsCount || (!isMuted && myChannel.isUnread) || (myChannel.id === lastUnreadChannelId);
 };
 
 export const filterArchivedChannels = (channelsWithMyChannel: ChannelWithMyChannel[], currentChannelId: string) => {
@@ -42,15 +42,18 @@ export const filterAutoclosedDMs = (
         // Only autoclose DMs that haven't been assigned to a category
         return channelsWithMyChannel;
     }
-
+    const prefMap = preferences.reduce((acc, v) => {
+        const existing = acc.get(v.name);
+        acc.set(v.name, Math.max((v.value as unknown as number) || 0, existing || 0));
+        return acc;
+    }, new Map<string, number>());
     const getLastViewedAt = (cwm: ChannelWithMyChannel) => {
         // The server only ever sets the last_viewed_at to the time of the last post in channel, so we may need
         // to use the preferences added for the previous version of autoclosing DMs.
         const id = cwm.channel.id;
         return Math.max(
             cwm.myChannel.lastViewedAt,
-            getPreferenceValue<number>(preferences, Preferences.CATEGORIES.CHANNEL_APPROXIMATE_VIEW_TIME, id, 0),
-            getPreferenceValue<number>(preferences, Preferences.CATEGORIES.CHANNEL_OPEN_TIME, id, 0),
+            prefMap.get(id) || 0,
         );
     };
 
@@ -178,7 +181,7 @@ export const sortChannels = (sorting: CategorySorting, channelsWithMyChannel: Ch
         }).map((cwm) => cwm.channel);
     } else if (sorting === 'manual') {
         return channelsWithMyChannel.sort((cwmA, cwmB) => {
-            return cwmB.sortOrder - cwmA.sortOrder;
+            return cwmA.sortOrder - cwmB.sortOrder;
         }).map((cwm) => cwm.channel);
     }
 
@@ -188,7 +191,7 @@ export const sortChannels = (sorting: CategorySorting, channelsWithMyChannel: Ch
 
 export const getUnreadIds = (cwms: ChannelWithMyChannel[], notifyPropsPerChannel: Record<string, Partial<ChannelNotifyProps>>, lastUnreadId?: string) => {
     return cwms.reduce<Set<string>>((result, cwm) => {
-        if (isUnreadChannel(cwm.myChannel, notifyPropsPerChannel, lastUnreadId)) {
+        if (isUnreadChannel(cwm.myChannel, notifyPropsPerChannel[cwm.channel.id], lastUnreadId)) {
             result.add(cwm.channel.id);
         }
 

@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, AlertButton} from 'react-native';
+import {Alert, type AlertButton} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens, Sso, SupportedServer, Launch} from '@constants';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
-import {getErrorMessage} from '@utils/client_error';
+import {getErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {changeOpacity} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
@@ -175,7 +175,7 @@ export async function alertServerRemove(displayName: string, onPress: () => void
     );
 }
 
-export function alertServerError(intl: IntlShape, error: ClientErrorProps) {
+export function alertServerError(intl: IntlShape, error: unknown) {
     const message = getErrorMessage(error, intl);
     Alert.alert(
         intl.formatMessage({

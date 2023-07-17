@@ -3,14 +3,27 @@
 
 /* eslint-disable react/no-multi-comp */
 
+import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 import * as ReactNative from 'react-native';
 import 'react-native-gesture-handler/jestSetup';
 import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
+import {v4 as uuidv4} from 'uuid';
 
 import type {ReadDirItem, StatResult} from 'react-native-fs';
 
-require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
+setGenerator(uuidv4);
+
 require('isomorphic-fetch');
+
+const WebViewMock = () => {
+    return null;
+};
+
+jest.mock('react-native-webview', () => ({
+    WebView: WebViewMock,
+}));
+
+jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 
 /* eslint-disable no-console */
 jest.mock('@database/manager');
@@ -18,7 +31,6 @@ jest.doMock('react-native', () => {
     const {
         Platform,
         StyleSheet,
-        PermissionsAndroid,
         requireNativeComponent,
         Alert: RNAlert,
         InteractionManager: RNInteractionManager,
@@ -75,7 +87,6 @@ jest.doMock('react-native', () => {
         RNDocumentPicker: {
             pick: jest.fn(),
         },
-        RNPermissions: {},
         RNFastStorage: {
             setupLibrary: jest.fn(),
             setStringAsync: jest.fn(),
@@ -160,7 +171,6 @@ jest.doMock('react-native', () => {
             },
         },
         StyleSheet,
-        PermissionsAndroid,
         requireNativeComponent,
         Alert,
         InteractionManager,
@@ -372,6 +382,9 @@ jest.mock('@mattermost/react-native-emm', () => ({
 }));
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
+
+jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
+jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
 declare const global: {requestAnimationFrame: (callback: any) => void};
 global.requestAnimationFrame = (callback) => {

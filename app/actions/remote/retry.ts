@@ -15,12 +15,12 @@ import {prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
 
-import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, type MyChannelsRequest} from './channel';
 import {fetchPostsForChannel} from './post';
-import {fetchMyPreferences, MyPreferencesRequest} from './preference';
+import {fetchMyPreferences, type MyPreferencesRequest} from './preference';
 import {fetchRolesIfNeeded} from './role';
-import {ConfigAndLicenseRequest, fetchConfigAndLicense} from './systems';
-import {fetchMyTeams, MyTeamsRequest} from './team';
+import {type ConfigAndLicenseRequest, fetchConfigAndLicense} from './systems';
+import {fetchMyTeams, type MyTeamsRequest} from './team';
 
 import type {Model} from '@nozbe/watermelondb';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -30,7 +30,6 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-
     const {database} = operator;
 
     try {
@@ -139,7 +138,6 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-
     const {database} = operator;
 
     try {

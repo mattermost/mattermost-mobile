@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Image, ImageSourcePropType, Text, View} from 'react-native';
+import {Image, type ImageSourcePropType, Text, View} from 'react-native';
 import Button from 'react-native-button';
 
 import CompassIcon from '@components/compass_icon';
@@ -100,15 +100,6 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                 <View
                     style={styles.buttonTextContainer}
                 >
-                    {ssoOnly && (
-                        <Text
-                            key={'pretext' + text}
-                            style={styles.buttonText}
-                            testID={'pretext' + text}
-                        >
-                            {text}
-                        </Text>
-                    )}
                     <Text
                         key={ssoType}
                         style={styles.buttonText}

@@ -4,7 +4,7 @@
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import Fuse from 'fuse.js';
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useIsTablet} from '@hooks/device';

@@ -3,7 +3,7 @@
 
 import base64 from 'base-64';
 import React, {useCallback, useMemo} from 'react';
-import {Text, View} from 'react-native';
+import {Image, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgXml} from 'react-native-svg';
@@ -37,12 +37,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             paddingBottom: 8,
-            paddingHorizontal: 16,
             overflow: 'hidden',
         },
         slashIcon: {
             height: 16,
             width: 10,
+            tintColor: theme.centerChannelColor,
         },
         suggestionContainer: {
             flex: 1,
@@ -106,8 +106,7 @@ const SlashSuggestionItem = ({
     }
 
     let image = (
-        <FastImage
-            tintColor={theme.centerChannelColor}
+        <Image
             style={style.slashIcon}
             source={slashIcon}
         />

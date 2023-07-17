@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {SafeAreaView, Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView, type Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';

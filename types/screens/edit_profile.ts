@@ -18,7 +18,7 @@ export interface UserInfo extends Record<string, string | undefined | null| bool
 
 export type EditProfileProps = {
     componentId: AvailableScreens;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     isModal?: boolean;
     isTablet?: boolean;
     lockedFirstName: boolean;

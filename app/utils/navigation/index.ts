@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from 'react-native';
-import {Navigation, Options} from 'react-native-navigation';
+import {Navigation, type Options} from 'react-native-navigation';
 
 import {Screens, ServerErrors} from '@constants';
-import {isServerError} from '@utils/errors';
+import {isErrorWithMessage, isServerError} from '@utils/errors';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {IntlShape} from 'react-intl';
@@ -85,7 +85,7 @@ export function alertTeamAddError(error: unknown, intl: IntlShape) {
                 id: 'join_team.error.group_error',
                 defaultMessage: 'You need to be a member of a linked group to join this team.',
             });
-        } else if (error.message) {
+        } else if (isErrorWithMessage(error) && error.message) {
             errMsg = error.message;
         }
     }

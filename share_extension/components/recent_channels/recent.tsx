@@ -3,7 +3,7 @@
 
 import {useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
-import {SectionList, SectionListRenderItemInfo} from 'react-native';
+import {SectionList, type SectionListRenderItemInfo} from 'react-native';
 
 import ChannelItem from '@share/components/channel_item';
 import {setShareExtensionChannelId} from '@share/state';

@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import FastImage, {ImageStyle, Source} from 'react-native-fast-image';
-import Animated, {SharedValue} from 'react-native-reanimated';
-
-import type {ColorValue, StyleProp} from 'react-native';
+import {Image, type ColorValue, type StyleProp, type ImageStyle} from 'react-native';
+import FastImage, {type Source} from 'react-native-fast-image';
+import Animated, {type SharedValue} from 'react-native-reanimated';
 
 // @ts-expect-error FastImage does work with Animated.createAnimatedComponent
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 type ThumbnailProps = {
     onError: () => void;
@@ -32,13 +32,12 @@ const Thumbnail = ({onError, opacity, style, source, tintColor}: ThumbnailProps)
     }
 
     return (
-        <AnimatedFastImage
+        <AnimatedImage
             resizeMode='contain'
             onError={onError}
             source={require('@assets/images/thumb.png')}
-            style={[style, {opacity: opacity?.value}]}
+            style={[style, {opacity: opacity?.value, tintColor}]}
             testID='progressive_image.thumbnail'
-            tintColor={tintColor}
         />
     );
 };

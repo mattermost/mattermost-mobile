@@ -4,30 +4,23 @@
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
+import {getLicense} from '@queries/servers/system';
 import {getTeamById} from '@queries/servers/team';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 
-export const fetchGroup = async (serverUrl: string, id: string, fetchOnly = false) => {
-    try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const client: Client = NetworkManager.getClient(serverUrl);
-
-        const group = await client.getGroup(id);
-
-        // Save locally
-        return operator.handleGroups({groups: [group], prepareRecordsOnly: fetchOnly});
-    } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        return {error};
-    }
-};
-
 export const fetchGroupsForAutocomplete = async (serverUrl: string, query: string, fetchOnly = false) => {
     try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const license = await getLicense(database);
+        if (!license || license.IsLicensed !== 'true') {
+            return [];
+        }
+
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getGroups({query, includeMemberCount: true});
 
@@ -37,14 +30,19 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
 
         return operator.handleGroups({groups: response, prepareRecordsOnly: fetchOnly});
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchGroupsForAutocomplete', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const fetchGroupsByNames = async (serverUrl: string, names: string[], fetchOnly = false) => {
     try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const license = await getLicense(database);
+        if (!license || license.IsLicensed !== 'true') {
+            return [];
+        }
 
         const client: Client = NetworkManager.getClient(serverUrl);
         const promises: Array <Promise<Group[]>> = [];
@@ -62,14 +60,20 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
 
         return operator.handleGroups({groups, prepareRecordsOnly: fetchOnly});
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchGroupsByNames', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const fetchGroupsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false) => {
     try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const license = await getLicense(database);
+        if (!license || license.IsLicensed !== 'true') {
+            return {groups: [], groupChannels: []};
+        }
+
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToChannel(channelId);
 
@@ -88,14 +92,19 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
 
         return {groups, groupChannels};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchGroupsForChannel', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetchOnly = false) => {
     try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const license = await getLicense(database);
+        if (!license || license.IsLicensed !== 'true') {
+            return {groups: [], groupTeams: []};
+        }
 
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToTeam(teamId);
@@ -115,13 +124,18 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetc
 
         return {groups, groupTeams};
     } catch (error) {
+        logDebug('error on fetchGroupsForTeam', getFullErrorMessage(error));
         return {error};
     }
 };
 
 export const fetchGroupsForMember = async (serverUrl: string, userId: string, fetchOnly = false) => {
     try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const license = await getLicense(database);
+        if (!license || license.IsLicensed !== 'true') {
+            return {groups: [], groupMemberships: []};
+        }
 
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToMembership(userId);
@@ -141,36 +155,25 @@ export const fetchGroupsForMember = async (serverUrl: string, userId: string, fe
 
         return {groups, groupMemberships};
     } catch (error) {
+        logDebug('error on fetchGroupsForMember', getFullErrorMessage(error));
         return {error};
     }
 };
 
 export const fetchFilteredTeamGroups = async (serverUrl: string, searchTerm: string, teamId: string) => {
-    try {
-        const groups = await fetchGroupsForTeam(serverUrl, teamId);
-
-        if (groups && Array.isArray(groups)) {
-            return groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
-        }
-
-        throw groups.error;
-    } catch (error) {
-        return {error};
+    const res = await fetchGroupsForTeam(serverUrl, teamId);
+    if ('error' in res) {
+        return {error: res.error};
     }
+    return res.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
 };
 
 export const fetchFilteredChannelGroups = async (serverUrl: string, searchTerm: string, channelId: string) => {
-    try {
-        const groups = await fetchGroupsForChannel(serverUrl, channelId);
-
-        if (groups && Array.isArray(groups)) {
-            return groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
-        }
-
-        throw groups.error;
-    } catch (error) {
-        return {error};
+    const res = await fetchGroupsForChannel(serverUrl, channelId);
+    if ('error' in res) {
+        return {error: res.error};
     }
+    return res.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
 };
 
 export const fetchGroupsForTeamIfConstrained = async (serverUrl: string, teamId: string, fetchOnly = false) => {

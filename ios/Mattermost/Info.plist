@@ -21,7 +21,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.1.0</string>
+	<string>2.6.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -37,7 +37,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>460</string>
+	<string>479</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -58,31 +58,27 @@
 		</dict>
 	</dict>
 	<key>NSAppleMusicUsageDescription</key>
-	<string>Let $(PRODUCT_NAME) access your Media files</string>
+	<string>Enabling access to your media library means you can attach files from your media library to your messages in $(PRODUCT_NAME).</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Share post data across devices with $(PRODUCT_NAME)</string>
+	<string>Enabling access to Bluetooth means we can synchronize content across your devices and clients.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Share post data across devices with $(PRODUCT_NAME)</string>
-	<key>NSCalendarsUsageDescription</key>
-	<string>Share contacts within $(PRODUCT_NAME)</string>
+	<string>Enabling access to Bluetooth means we can connect to audio peripherals for calls, and synchronize content across your devices and clients.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Take a photo or video and upload it to $(PRODUCT_NAME)</string>
+	<string>Enabling access to your device cameras means you can take photos or videos and upload them to $(PRODUCT_NAME).</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>$(PRODUCT_NAME) uses Face ID to restrict unauthorized users from accessing the app.</string>
+	<string>Enabling access to your Face ID means we can restrict unauthorized users from accessing $(PRODUCT_NAME) on your device.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Send your current location to $(PRODUCT_NAME)</string>
+	<string>Enabling access to your location data means we can add location metadata to pictures and videos you share in $(PRODUCT_NAME).</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Send your current location to $(PRODUCT_NAME)</string>
+	<string>Enabling access to your location data means we can add location metadata to pictures and videos you share in $(PRODUCT_NAME).</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Capture audio when making a call or recording a video to share within $(PRODUCT_NAME)</string>
-	<key>NSMotionUsageDescription</key>
-	<string>Share your route in your $(PRODUCT_NAME) workspace</string>
+	<string>Enabling access to your device's microphones means you can capture audio for calls or videos to share in $(PRODUCT_NAME).</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Save downloaded photos and videos from $(PRODUCT_NAME) to your device</string>
+	<string>Enabling write access to your photo library means you can save downloaded photos and videos from $(PRODUCT_NAME) to your device.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Upload photos and videos from your device to $(PRODUCT_NAME)</string>
+	<string>Enabling read access to your photo library means you can upload photos and videos from your device to $(PRODUCT_NAME).</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Send voice messages to $(PRODUCT_NAME)</string>
+	<string>Enabling your device to send user data to Apple means you can send voice messages to $(PRODUCT_NAME).</string>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>INSendMessageIntent</string>

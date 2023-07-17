@@ -3,7 +3,7 @@
 
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, TouchableOpacity, View} from 'react-native';
+import {Keyboard, TouchableOpacity} from 'react-native';
 
 import {addReaction, removeReaction} from '@actions/remote/reactions';
 import CompassIcon from '@components/compass_icon';
@@ -49,13 +49,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 4,
             paddingHorizontal: 6,
             width: 36,
-        },
-        reactionsContainer: {
-            flex: 1,
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            alignContent: 'flex-start',
-            marginTop: 12,
         },
     };
 });
@@ -171,7 +164,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     }
 
     return (
-        <View style={styles.reactionsContainer}>
+        <>
             {
                 Array.from(sortedReactions).map((r) => {
                     const reaction = reactionsByName.get(r);
@@ -189,7 +182,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
                 })
             }
             {addMoreReactions}
-        </View>
+        </>
     );
 };
 

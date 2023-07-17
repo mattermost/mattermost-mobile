@@ -5,7 +5,7 @@ import {storeConfigAndLicense} from '@actions/local/systems';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {fetchDataRetentionPolicy} from '@actions/remote/systems';
-import {MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
+import {type MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, fetchProfilesInGroupChannels, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
@@ -17,14 +17,14 @@ import {queryAllChannels, queryAllChannelsForTeam} from '@queries/servers/channe
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getConfig, getIsDataRetentionEnabled} from '@queries/servers/system';
+import {getFullErrorMessage} from '@utils/errors';
 import {filterAndTransformRoles, getMemberChannelsFromGQLQuery, getMemberTeamsFromGQLQuery, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientSidebarCategory, gqlToClientTeamMembership, gqlToClientUser} from '@utils/graphql';
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
-import {teamsToRemove, FETCH_UNREADS_TIMEOUT, entryRest, EntryResponse, entryInitialChannelId, restDeferredAppEntryActions, getRemoveTeamIds} from './common';
+import {teamsToRemove, FETCH_UNREADS_TIMEOUT, entryRest, type EntryResponse, entryInitialChannelId, restDeferredAppEntryActions, getRemoveTeamIds} from './common';
 
 import type {MyChannelsRequest} from '@actions/remote/channel';
-import type ClientError from '@client/rest/error';
 import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
@@ -141,7 +141,7 @@ const getChannelData = async (serverUrl: string, initialTeamId: string, userId: 
         const request = exclude ? gqlOtherChannels : gqlEntryChannels;
         response = await request(serverUrl, initialTeamId);
     } catch (error) {
-        return {error: (error as ClientError).message};
+        return {error: getFullErrorMessage(error)};
     }
 
     if ('error' in response) {
@@ -175,7 +175,7 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
     try {
         response = await gqlEntry(serverUrl);
     } catch (error) {
-        return {error: (error as ClientError).message};
+        return {error: getFullErrorMessage(error)};
     }
 
     if ('error' in response) {

@@ -50,7 +50,7 @@ const FollowThreadOption = ({bottomSheetId, thread, teamId}: FollowThreadOptionP
             return;
         }
         await dismissBottomSheet(bottomSheetId);
-        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
+        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing, true);
     }, [bottomSheetId, teamId, thread]);
 
     const followThreadOptionTestId = thread.isFollowing ? 'post_options.following_thread.option' : 'post_options.follow_thread.option';

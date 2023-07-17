@@ -6,14 +6,13 @@ import {
     Keyboard,
     Platform,
     View,
-    LayoutChangeEvent,
+    type LayoutChangeEvent,
     useWindowDimensions,
     FlatList,
-    ListRenderItemInfo,
+    type ListRenderItemInfo,
     ScrollView,
 } from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import SelectedChip from '@components/selected_chip';
 import SelectedUser from '@components/selected_users/selected_user';
@@ -22,7 +21,7 @@ import UserItem from '@components/user_item';
 import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useIsTablet, useKeyboardHeight} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import SelectionSearchBar from './selection_search_bar';
@@ -32,7 +31,6 @@ import TextItem, {TextItemType} from './text_item';
 import type {SearchResult} from './invite';
 
 const AUTOCOMPLETE_ADJUST = 5;
-const KEYBOARD_HEIGHT_ADJUST = 3;
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
@@ -70,6 +68,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         searchListPadding: {
             paddingVertical: 8,
+            flex: 1,
         },
         searchListShadow: {
             shadowColor: '#000',
@@ -85,6 +84,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         searchListFlatList: {
             backgroundColor: theme.centerChannelBg,
             borderRadius: 4,
+            paddingHorizontal: 16,
         },
         selectedItems: {
             display: 'flex',
@@ -110,7 +110,7 @@ type SelectionProps = {
     term: string;
     searchResults: SearchResult[];
     selectedIds: {[id: string]: SearchResult};
-    modalPosition: number;
+    keyboardOverlap: number;
     wrapperHeight: number;
     loading: boolean;
     testID: string;
@@ -130,7 +130,7 @@ export default function Selection({
     term,
     searchResults,
     selectedIds,
-    modalPosition,
+    keyboardOverlap,
     wrapperHeight,
     loading,
     testID,
@@ -142,9 +142,7 @@ export default function Selection({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
-    const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
-    const keyboardHeight = useKeyboardHeight();
 
     const [teamBarHeight, setTeamBarHeight] = useState(0);
     const [searchBarHeight, setSearchBarHeight] = useState(0);
@@ -161,26 +159,10 @@ export default function Selection({
         onRemoveItem(id);
     };
 
-    const bottomSpace = dimensions.height - wrapperHeight - modalPosition;
     const otherElementsSize = teamBarHeight + searchBarHeight;
-    const insetsAdjust = (keyboardHeight + KEYBOARD_HEIGHT_ADJUST) || insets.bottom;
-
-    const keyboardOverlap = Platform.select({
-        ios: isTablet ? (
-            Math.max(0, keyboardHeight - bottomSpace)
-        ) : (
-            insetsAdjust
-        ),
-        default: 0,
-    });
-    const keyboardAdjust = Platform.select({
-        ios: isTablet ? keyboardOverlap : insetsAdjust,
-        default: 0,
-    });
-
     const workingSpace = wrapperHeight - keyboardOverlap;
     const spaceOnTop = otherElementsSize - AUTOCOMPLETE_ADJUST;
-    const spaceOnBottom = workingSpace - (otherElementsSize + keyboardAdjust);
+    const spaceOnBottom = workingSpace - otherElementsSize;
     const autocompletePosition = spaceOnBottom > spaceOnTop ? (
         otherElementsSize
     ) : (
@@ -222,12 +204,12 @@ export default function Selection({
 
         style.push(styles.searchListFlatList);
 
-        if (searchResults.length) {
+        if (searchResults.length || (term && !loading)) {
             style.push(styles.searchListBorder, styles.searchListPadding);
         }
 
         return style;
-    }, [searchResults, styles]);
+    }, [searchResults, styles, Boolean(term && !loading)]);
 
     const renderNoResults = useCallback(() => {
         if (!term || loading) {
@@ -235,20 +217,18 @@ export default function Selection({
         }
 
         return (
-            <View style={[styles.searchListBorder, styles.searchListPadding]}>
-                <TextItem
-                    text={term}
-                    type={TextItemType.SEARCH_NO_RESULTS}
-                    testID='invite.search_list_no_results'
-                />
-            </View>
+            <TextItem
+                text={term}
+                type={TextItemType.SEARCH_NO_RESULTS}
+                testID='invite.search_list_no_results'
+            />
         );
     }, [term, loading]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<SearchResult>) => {
         const key = keyExtractor(item);
 
-        return (
+        return typeof item === 'string' ? (
             <TouchableWithFeedback
                 key={key}
                 index={key}
@@ -257,19 +237,18 @@ export default function Selection({
                 type='native'
                 testID={`invite.search_list_item.${key}`}
             >
-                {typeof item === 'string' ? (
-                    <TextItem
-                        text={item}
-                        type={TextItemType.SEARCH_INVITE}
-                        testID='invite.search_list_text_item'
-                    />
-                ) : (
-                    <UserItem
-                        user={item}
-                        testID='invite.search_list_user_item'
-                    />
-                )}
+                <TextItem
+                    text={item}
+                    type={TextItemType.SEARCH_INVITE}
+                    testID='invite.search_list_text_item'
+                />
             </TouchableWithFeedback>
+        ) : (
+            <UserItem
+                user={item}
+                testID='invite.search_list_user_item'
+                onUserPress={onSelectItem}
+            />
         );
     }, [searchResults, onSelectItem]);
 

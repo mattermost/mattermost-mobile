@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {TouchableOpacity, View, ViewStyle} from 'react-native';
+import {TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
@@ -86,7 +86,7 @@ const Footer = ({channelId, location, participants, teamId, thread}: Props) => {
         if (teamId == null) {
             return;
         }
-        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
+        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing, true);
     }), [thread.isFollowing]);
 
     let repliesComponent;

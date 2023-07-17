@@ -50,6 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
         marginTop: 8,
         marginBottom: 8,
+        textAlign: 'center',
         ...typography('Heading', 700, 'SemiBold'),
     },
 }));
@@ -139,7 +140,7 @@ const PublicOrPrivateChannel = ({channel, creator, roles, theme}: Props) => {
             <IntroOptions
                 channelId={channel.id}
                 header={canSetHeader}
-                people={canManagePeople}
+                canAddMembers={canManagePeople}
             />
         </View>
     );

@@ -34,6 +34,7 @@ interface ClientConfig {
     DataRetentionMessageRetentionDays: string;
     DefaultClientLocale: string;
     DefaultTheme: string;
+    DelayChannelAutocomplete: 'true' | 'false';
     DesktopLatestVersion: string;
     DesktopMinVersion: string;
     DiagnosticId: string;
@@ -126,6 +127,7 @@ interface ClientConfig {
     GuestAccountsEnforceMultifactorAuthentication: string;
     HasImageProxy: string;
     HelpLink: string;
+    HideGuestTags: string;
     IosAppDownloadLink: string;
     IosLatestVersion: string;
     IosMinVersion: string;
@@ -153,6 +155,12 @@ interface ClientConfig {
     PluginsEnabled: string;
     PostEditTimeLimit: string;
     PostPriority: string;
+    PostAcknowledgements: string;
+    AllowPersistentNotifications: string;
+    PersistentNotificationMaxRecipients: string;
+    PersistentNotificationInterval: string;
+    AllowPersistentNotificationsForGuests: string;
+    PersistentNotificationIntervalMinutes: string;
     PrivacyPolicyLink: string;
     ReportAProblemLink: string;
     RequireEmailVerification: string;

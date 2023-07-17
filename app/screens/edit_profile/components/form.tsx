@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useRef} from 'react';
-import {MessageDescriptor, useIntl} from 'react-intl';
+import {type MessageDescriptor, useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
@@ -214,7 +214,7 @@ const ProfileForm = ({
                 fieldRef={nicknameRef}
                 isDisabled={userProfileFields.nickname.isDisabled}
                 label={formatMessage(FIELDS.nickname)}
-                maxLength={22}
+                maxLength={64}
                 testID='edit_profile_form.nickname'
                 value={userInfo.nickname}
                 {...fieldConfig}
