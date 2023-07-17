@@ -230,7 +230,7 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
         }
         res.push({
             borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
-            minHeight: (USER_CHIP_HEIGHT * 2) + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
+            minHeight: (USER_CHIP_HEIGHT * 2.5) + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
         });
 
         if (focused) {
