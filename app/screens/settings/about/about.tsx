@@ -7,7 +7,6 @@ import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
-import {buttonBackgroundStyle, buttonTextStyle} from '@app/utils/buttonStyles';
 import Config from '@assets/config.json';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -18,6 +17,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
+import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -261,19 +261,17 @@ const About = ({componentId, config, license}: AboutProps) => {
                         {config.SchemaVersion}
                     </Text>
                 </View>
-
                 <Button
                     theme={theme}
                     backgroundStyle={[buttonBackgroundStyle(theme, 'm', 'tertiary'), styles.copyInfoButtonContainer]}
                     onPress={copyToClipboard}
                     textStyle={buttonTextStyle(theme, 'm', 'tertiary', 'default')}
-                    text={'Copy info'}
+                    text={intl.formatMessage({id: 'settings.about.button.copyInfo', defaultMessage: 'Copy info'})}
                     testID={'about.copy_info'}
                     iconName='content-copy'
                     iconSize={15}
                     buttonType={'default'}
                 />
-
                 {license.IsLicensed === 'true' && (
                     <View style={styles.licenseContainer}>
                         <FormattedText

@@ -930,6 +930,7 @@
   "settings.about.app.version": "App Version: {version} (Build {number})",
   "settings.about.app.version.title": "App Version:",
   "settings.about.app.version.value": "{version} (Build {number})",
+  "settings.about.button.copyInfo": "Copy info",
   "settings.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved",
   "settings.about.database": "Database:",
   "settings.about.database.schema": "Database Schema Version:",
