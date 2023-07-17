@@ -159,26 +159,12 @@ const About = ({componentId, config, license}: AboutProps) => {
         const buildNumber = config.BuildNumber;
         const version = config.Version;
 
-        let id = t('settings.about.server.version.value');
-        let defaultMessage = '{version} (Build {number})';
-        let values: {version: string; number?: string} = {
-            version,
-            number: buildNumber,
-        };
-
         if (buildNumber === version) {
-            id = t('settings.about.serverVersionNoBuild');
-            defaultMessage = '{version}';
-            values = {
-                version,
-                number: undefined,
-            };
+            return version;
         }
 
-        return {
-            id, defaultMessage, values,
-        };
-    }, [config]);
+        return intl.formatMessage({id: 'settings.about.server.version.value', defaultMessage: '{version} (Build {buildNumber})'}, {version, buildNumber});
+    }, [config, intl]);
 
     useAndroidHardwareBackHandler(componentId, () => {
         popTopScreen(componentId);
@@ -186,10 +172,10 @@ const About = ({componentId, config, license}: AboutProps) => {
 
     const copyToClipboard = useCallback(
         () => {
-            const appVersion = intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version: {version} (Build {number})'}, {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()});
+            const appVersion = intl.formatMessage({id: 'settings.about.app.version', defaultMessage: 'App Version: {version} (Build {number})'}, {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()});
             const buildNumber = config.BuildNumber;
             const version = config.Version;
-            const server = buildNumber === version ? intl.formatMessage({id: 'settings.about.serverVersionNoBuild', defaultMessage: 'Server Version: {version}'}, {version}) : intl.formatMessage({id: 'settings.about.serverVersion', defaultMessage: 'Server Version: {version} (Build {buildNumber}'}, {version, buildNumber});
+            const server = buildNumber === version ? intl.formatMessage({id: 'settings.about.server.version.noBuild', defaultMessage: 'Server Version: {version}'}, {version}) : intl.formatMessage({id: 'settings.about.server.version', defaultMessage: 'Server Version: {version} (Build {buildNumber}'}, {version, buildNumber});
             const database = intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database: {driverName}'}, {driverName: config.SQLDriverName});
             const databaseSchemaVersion = intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version: {version}'}, {version: config.SchemaVersion});
             const copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
@@ -223,13 +209,13 @@ const About = ({componentId, config, license}: AboutProps) => {
                         style={styles.leftHeading}
                         testID='about.app_version.title'
                     >
-                        {intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version:'})}
+                        {intl.formatMessage({id: 'settings.about.app.version.title', defaultMessage: 'App Version:'})}
                     </Text>
                     <Text
                         style={styles.rightHeading}
                         testID='about.app_version.value'
                     >
-                        {intl.formatMessage({id: 'settings.about.build', defaultMessage: '{version} (Build {number})'},
+                        {intl.formatMessage({id: 'settings.about.app.version.value', defaultMessage: '{version} (Build {number})'},
                             {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()})}
                     </Text>
                 </View>
@@ -238,13 +224,13 @@ const About = ({componentId, config, license}: AboutProps) => {
                         style={styles.leftHeading}
                         testID='about.server_version.title'
                     >
-                        {intl.formatMessage({id: 'settings.about.server.version.desc', defaultMessage: 'Server Version:'})}
+                        {intl.formatMessage({id: 'settings.about.server.version.title', defaultMessage: 'Server Version:'})}
                     </Text>
                     <Text
                         style={styles.rightHeading}
                         testID='about.server_version.value'
                     >
-                        {intl.formatMessage({id: serverVersion.id, defaultMessage: serverVersion.defaultMessage}, serverVersion.values)}
+                        {serverVersion}
                     </Text>
                 </View>
                 <View style={styles.group}>
@@ -252,13 +238,13 @@ const About = ({componentId, config, license}: AboutProps) => {
                         style={styles.leftHeading}
                         testID='about.database.title'
                     >
-                        {intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database:'})}
+                        {intl.formatMessage({id: 'settings.about.database.title', defaultMessage: 'Database:'})}
                     </Text>
                     <Text
                         style={styles.rightHeading}
                         testID='about.database.value'
                     >
-                        {intl.formatMessage({id: 'settings.about.database.value', defaultMessage: '$: any{config.SQLDriverName}'})}
+                        {config.SQLDriverName}
                     </Text>
                 </View>
                 <View style={styles.group}>
@@ -266,16 +252,13 @@ const About = ({componentId, config, license}: AboutProps) => {
                         style={styles.leftHeading}
                         testID='about.database_schema_version.title'
                     >
-                        {intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version:'})}
+                        {intl.formatMessage({id: 'settings.about.database.schema.title', defaultMessage: 'Database Schema Version:'})}
                     </Text>
                     <Text
                         style={styles.rightHeading}
                         testID='about.database_schema_version.value'
                     >
-                        {intl.formatMessage({
-                            id: 'settings.about.database.schema.value',
-                            defaultMessage: `${config.SchemaVersion}`,
-                        })}
+                        {config.SchemaVersion}
                     </Text>
                 </View>
 
