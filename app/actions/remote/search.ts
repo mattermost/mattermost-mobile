@@ -5,10 +5,13 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
+import {getConfigValue} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
+import {getUtcOffsetForTimeZone} from '@utils/helpers';
 import {logDebug} from '@utils/log';
+import {getUserTimezone} from '@utils/user';
 
 import {fetchPostAuthors, fetchMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
@@ -51,9 +54,16 @@ export const searchPosts = async (serverUrl: string, teamId: string, params: Pos
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
+        const viewArchivedChannels = await getConfigValue(database, 'ExperimentalViewArchivedChannels');
+        const user = await getCurrentUser(database);
+        const timezoneOffset = getUtcOffsetForTimeZone(getUserTimezone(user)) * 60;
 
         let postsArray: Post[] = [];
-        const data = await client.searchPosts(teamId, params.terms, params.is_or_search);
+        const data = await client.searchPostsWithParams(teamId, {
+            ...params,
+            include_deleted_channels: Boolean(viewArchivedChannels),
+            time_zone_offset: timezoneOffset,
+        });
 
         const posts = data.posts || {};
         const order = data.order || [];
@@ -108,6 +118,7 @@ export const searchPosts = async (serverUrl: string, teamId: string, params: Pos
         return {
             order,
             posts: postsArray,
+            matches: data.matches,
         };
     } catch (error) {
         logDebug('error on searchPosts', getFullErrorMessage(error));
