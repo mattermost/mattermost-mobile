@@ -7,6 +7,7 @@ import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link
 import {General} from '@constants';
 import {isTypeDMorGM} from '@utils/channel';
 
+import AutoFollowThreads from './auto_follow_threads';
 import EditChannel from './edit_channel';
 import IgnoreMentions from './ignore_mentions';
 import Members from './members';
@@ -24,9 +25,12 @@ const Options = ({channelId, type, callsEnabled}: Props) => {
 
     return (
         <>
-            {type !== General.DM_CHANNEL &&
-                <IgnoreMentions channelId={channelId}/>
-            }
+            {type !== General.DM_CHANNEL && (
+                <>
+                    <AutoFollowThreads channelId={channelId}/>
+                    <IgnoreMentions channelId={channelId}/>
+                </>
+            )}
             <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
             {type !== General.DM_CHANNEL &&
