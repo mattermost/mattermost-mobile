@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
+import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import NoResults from '@components/files_search/no_results';
@@ -37,6 +37,9 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         padding: 20,
         color: theme.centerChannelColor,
     },
+    separator: {
+        height: 10,
+    },
 }));
 
 type Props = {
@@ -70,7 +73,7 @@ const FileResults = ({
     const [action, setAction] = useState<GalleryAction>('none');
     const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
 
-    const containerStyle = useMemo(() => ([paddingTop, {top: fileInfos.length ? 8 : 0, flexGrow: 1}]), [fileInfos, paddingTop]);
+    const containerStyle = useMemo(() => ([paddingTop, {flexGrow: 1}]), [paddingTop]);
     const numOptions = getNumberFileMenuOptions(canDownloadFiles, publicLinkEnabled);
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
@@ -161,6 +164,7 @@ const FileResults = ({
                         values={{count: orderedFileInfos.length}}
                     />
                 }
+                ItemSeparatorComponent={() => <View style={styles.separator}/>}
                 ListEmptyComponent={noResults}
                 contentContainerStyle={containerStyle}
                 data={orderedFileInfos}

@@ -43,6 +43,9 @@ const styles = StyleSheet.create({
     failed: {
         opacity: 0.5,
     },
+    marginTop: {
+        marginTop: 10,
+    },
 });
 
 const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, location, postId, publicLinkEnabled}: FilesProps) => {
@@ -73,7 +76,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
 
     const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
         let nonVisibleImagesCount: number;
-        let container: StyleProp<ViewStyle> = items.length > 1 ? styles.container : undefined;
+        let container: StyleProp<ViewStyle> = items.length > 1 ? styles.container : styles.marginTop;
         const containerWithGutter = [container, styles.gutter];
 
         return items.map((file, idx) => {
