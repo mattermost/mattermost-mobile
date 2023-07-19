@@ -23,6 +23,7 @@ const languages: Record<string, string> = keyMirror({
     sv: null,
     tr: null,
     uk: null,
+    vi: null,
     'zh-CN': null,
     'zh-TW': null,
 });
