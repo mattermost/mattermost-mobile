@@ -46,6 +46,7 @@ type Props = {
     isTimezoneEnabled: boolean;
     loading: boolean;
     posts: PostModel[];
+    matches?: SearchMatches;
     publicLinkEnabled: boolean;
     scrollPaddingTop: number;
     searchValue: string;
@@ -62,6 +63,7 @@ const Results = ({
     isTimezoneEnabled,
     loading,
     posts,
+    matches,
     publicLinkEnabled,
     scrollPaddingTop,
     searchValue,
@@ -105,6 +107,7 @@ const Results = ({
                         customEmojiNames={customEmojiNames}
                         isTimezoneEnabled={isTimezoneEnabled}
                         posts={posts}
+                        matches={matches}
                         paddingTop={paddingTop}
                         searchValue={searchValue}
                     />

@@ -121,6 +121,7 @@ interface ClientConfig {
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagGraphQL?: string;
     FeatureFlagPostPriority?: string;
+    ForgotPasswordLink?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
     GoogleDeveloperKey: string;
@@ -147,6 +148,7 @@ interface ClientConfig {
     MinimumHashtagLength: string;
     OpenIdButtonColor: string;
     OpenIdButtonText: string;
+    PasswordEnableForgotLink: string;
     PasswordMinimumLength: string;
     PasswordRequireLowercase: string;
     PasswordRequireNumber: string;

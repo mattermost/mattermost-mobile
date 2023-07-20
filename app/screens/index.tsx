@@ -15,15 +15,11 @@ import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
 const withGestures = (Screen: React.ComponentType, styles: StyleProp<ViewStyle>) => {
     return function gestureHoc(props: any) {
-        if (Platform.OS === 'android') {
-            return (
-                <GestureHandlerRootView style={[{flex: 1}, styles]}>
-                    <Screen {...props}/>
-                </GestureHandlerRootView>
-            );
-        }
-
-        return <Screen {...props}/>;
+        return (
+            <GestureHandlerRootView style={[{flex: 1}, styles]}>
+                <Screen {...props}/>
+            </GestureHandlerRootView>
+        );
     };
 };
 

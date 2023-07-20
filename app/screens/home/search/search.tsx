@@ -69,8 +69,9 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
     const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
     return {
-        terms: terms + extensionTerms,
-        is_or_search: true,
+        terms: terms.replace(/[\u201C\u201D]/g, '"') + extensionTerms,
+        is_or_search: false,
+        include_deleted_channels: true,
     };
 };
 
@@ -105,6 +106,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
     const [resultsLoading, setResultsLoading] = useState(false);
     const [lastSearchedValue, setLastSearchedValue] = useState('');
     const [posts, setPosts] = useState<PostModel[]>(emptyPosts);
+    const [matches, setMatches] = useState<SearchMatches|undefined>();
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
     const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
 
@@ -192,6 +194,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
         if (postResults.order) {
             const postModels = await getPosts(serverUrl, postResults.order, 'asc');
             setPosts(postModels.length ? postModels : emptyPosts);
+            setMatches(postResults.matches);
         }
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
         handleLoading(false);
@@ -399,8 +402,9 @@ const SearchScreen = ({teamId, teams}: Props) => {
                         <Results
                             loading={resultsLoading}
                             selectedTab={selectedTab}
-                            searchValue={lastSearchedValue}
+                            searchValue={lastSearchedValue.replace(/[\u201C\u201D]/g, '"')}
                             posts={posts}
+                            matches={matches}
                             fileInfos={fileInfos}
                             scrollPaddingTop={lockValue.value}
                             fileChannelIds={fileChannelIds}
