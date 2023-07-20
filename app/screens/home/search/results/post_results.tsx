@@ -52,7 +52,7 @@ const PostResults = ({
     const theme = useTheme();
     const styles = getStyles(theme);
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
-    const containerStyle = useMemo(() => ({top: posts.length ? 4 : 8, flexGrow: 1}), [posts]);
+    const containerStyle = useMemo(() => ([paddingTop, {flexGrow: 1}]), [paddingTop]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
         switch (item.type) {
@@ -111,7 +111,7 @@ const PostResults = ({
                 />
             }
             ListEmptyComponent={noResults}
-            contentContainerStyle={[paddingTop, containerStyle]}
+            contentContainerStyle={containerStyle}
             data={orderedPosts}
             indicatorStyle='black'
             initialNumToRender={5}
@@ -126,7 +126,6 @@ const PostResults = ({
             scrollEventThrottle={16}
             scrollToOverflowEnabled={true}
             showsVerticalScrollIndicator={true}
-            style={containerStyle}
             testID='search_results.post_list.flat_list'
         />
     );
