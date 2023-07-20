@@ -37,9 +37,6 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         padding: 20,
         color: theme.centerChannelColor,
     },
-    separator: {
-        height: 10,
-    },
 }));
 
 type Props = {
@@ -54,6 +51,9 @@ type Props = {
 }
 
 const galleryIdentifier = 'search-files-location';
+
+const separatorStyle = {height: 10};
+const Separator = () => <View style={separatorStyle}/>;
 
 const FileResults = ({
     canDownloadFiles,
@@ -164,7 +164,7 @@ const FileResults = ({
                         values={{count: orderedFileInfos.length}}
                     />
                 }
-                ItemSeparatorComponent={() => <View style={styles.separator}/>}
+                ItemSeparatorComponent={Separator}
                 ListEmptyComponent={noResults}
                 contentContainerStyle={containerStyle}
                 data={orderedFileInfos}
