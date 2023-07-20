@@ -76,7 +76,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
 
     const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
         let nonVisibleImagesCount: number;
-        let container: StyleProp<ViewStyle> = items.length > 1 ? styles.container : styles.marginTop;
+        let container: StyleProp<ViewStyle> = items.length > 1 ? styles.container : undefined;
         const containerWithGutter = [container, styles.gutter];
 
         return items.map((file, idx) => {
@@ -89,7 +89,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
             }
             return (
                 <View
-                    style={container}
+                    style={[container, styles.marginTop]}
                     key={file.id}
                 >
                     <File
