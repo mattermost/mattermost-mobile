@@ -4,6 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
+import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {General, Events, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -114,3 +115,8 @@ export const userTyping = async (serverUrl: string, channelId: string, rootId?: 
     const client = WebsocketManager.getClient(serverUrl);
     client?.sendUserTypingEvent(channelId, rootId);
 };
+
+export async function handleStatusChangedEvent(serverUrl: string, msg: WebSocketMessage) {
+    const newStatus = msg.data.status;
+    setCurrentUserStatus(serverUrl, newStatus);
+}

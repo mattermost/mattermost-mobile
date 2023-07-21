@@ -9,6 +9,7 @@ import Post from '@components/post_list/post';
 import ChannelInfo from './channel_info';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {SearchPattern} from '@typings/global/markdown';
 
 type Props = {
     appsEnabled: boolean;
@@ -17,6 +18,9 @@ type Props = {
     post: PostModel;
     location: string;
     testID?: string;
+    searchPatterns?: SearchPattern[];
+    skipSavedPostsHighlight?: boolean;
+    isSaved?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -30,7 +34,7 @@ const styles = StyleSheet.create({
     },
 });
 
-function PostWithChannelInfo({appsEnabled, customEmojiNames, isCRTEnabled, post, location, testID}: Props) {
+function PostWithChannelInfo({appsEnabled, customEmojiNames, isCRTEnabled, post, location, testID, searchPatterns, skipSavedPostsHighlight = false, isSaved}: Props) {
     return (
         <View style={styles.container}>
             <ChannelInfo
@@ -44,14 +48,16 @@ function PostWithChannelInfo({appsEnabled, customEmojiNames, isCRTEnabled, post,
                     isCRTEnabled={isCRTEnabled}
                     post={post}
                     location={location}
-                    highlightPinnedOrSaved={false}
+                    highlightPinnedOrSaved={!skipSavedPostsHighlight}
+                    searchPatterns={searchPatterns}
                     skipPinnedHeader={true}
-                    skipSavedHeader={true}
+                    skipSavedHeader={skipSavedPostsHighlight}
                     shouldRenderReplyButton={false}
                     showAddReaction={false}
                     previousPost={undefined}
                     nextPost={undefined}
                     testID={`${testID}.post`}
+                    isSaved={isSaved}
                 />
             </View>
         </View>

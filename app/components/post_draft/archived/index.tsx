@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import Button from 'react-native-button';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {switchToPenultimateChannel} from '@actions/remote/channel';
 import FormattedMarkdownText from '@components/formatted_markdown_text';

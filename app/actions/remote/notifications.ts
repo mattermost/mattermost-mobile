@@ -25,19 +25,15 @@ import {processPostsFetched} from '@utils/post';
 import type {Model} from '@nozbe/watermelondb';
 
 const fetchNotificationData = async (serverUrl: string, notification: NotificationWithData, skipEvents = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
+    const channelId = notification.payload?.channel_id;
+
+    if (!channelId) {
+        return {error: 'No chanel Id was specified'};
     }
 
     try {
-        const channelId = notification.payload?.channel_id;
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        if (!channelId) {
-            return {error: 'No chanel Id was specified'};
-        }
-
-        const {database} = operator;
         const currentTeamId = await getCurrentTeamId(database);
         let teamId = notification.payload?.team_id;
         let isDirectChannel = false;
@@ -96,7 +92,7 @@ const fetchNotificationData = async (serverUrl: string, notification: Notificati
         }
         return {};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
@@ -184,16 +180,19 @@ export const backgroundNotification = async (serverUrl: string, notification: No
 };
 
 export const openNotification = async (serverUrl: string, notification: NotificationWithData) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
+    // Wait for initial launch to kick in if needed
+    await new Promise((r) => setTimeout(r, 500));
+
+    if (EphemeralStore.getProcessingNotification() === notification.identifier) {
+        return {};
     }
 
+    EphemeralStore.setNotificationTapped(true);
+
+    const channelId = notification.payload!.channel_id!;
+    const rootId = notification.payload!.root_id!;
     try {
-        EphemeralStore.setNotificationTapped(true);
-        const {database} = operator;
-        const channelId = notification.payload!.channel_id!;
-        const rootId = notification.payload!.root_id!;
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const isCRTEnabled = await getIsCRTEnabled(database);
         const isThreadNotification = isCRTEnabled && Boolean(rootId);
@@ -232,7 +231,7 @@ export const openNotification = async (serverUrl: string, notification: Notifica
         }
         return switchToChannelById(serverUrl, channelId, teamId);
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };

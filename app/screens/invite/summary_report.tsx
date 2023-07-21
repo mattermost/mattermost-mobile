@@ -46,11 +46,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
             paddingVertical: 12,
         },
-        user: {
-            paddingTop: 0,
-            paddingBottom: 0,
-            height: 'auto',
-        },
         reason: {
             paddingLeft: 56,
             paddingRight: 20,
@@ -135,7 +130,6 @@ export default function SummaryReport({
                         ) : (
                             <UserItem
                                 user={item}
-                                containerStyle={styles.user}
                                 testID={`${testID}.user_item`}
                             />
                         )}

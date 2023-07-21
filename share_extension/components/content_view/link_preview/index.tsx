@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {ActivityIndicator, StyleProp, Text, View, ViewStyle} from 'react-native';
+import {ActivityIndicator, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
-import fetchOpenGraph, {OpenGraph} from '@share/open_graph';
+import fetchOpenGraph, {type OpenGraph} from '@share/open_graph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

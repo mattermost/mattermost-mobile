@@ -11,7 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type DisplayErrorProps = {
-    error: Partial<ClientErrorProps> | string;
+    error: unknown;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {

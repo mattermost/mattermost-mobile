@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {LayoutChangeEvent, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import CurrentCallBar from '@calls/components/current_call_bar';
+import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import JoinCallBanner from '@calls/components/join_call_banner';
+import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import {Screens} from '@constants';
@@ -28,7 +28,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
 type ChannelProps = {
-    serverUrl: string;
     channelId: string;
     componentId?: AvailableScreens;
     isCallInCurrentChannel: boolean;
@@ -48,7 +47,6 @@ const styles = StyleSheet.create({
 });
 
 const Channel = ({
-    serverUrl,
     channelId,
     componentId,
     isCallInCurrentChannel,
@@ -86,9 +84,12 @@ const Channel = ({
             EphemeralStore.removeSwitchingToChannel(channelId);
         }, 500);
 
+        storeLastViewedChannelIdAndServer(channelId);
+
         return () => {
             cancelAnimationFrame(raf);
             clearTimeout(t);
+            removeLastViewedChannelIdAndServer();
             EphemeralStore.removeSwitchingToChannel(channelId);
         };
     }, [channelId]);
@@ -97,21 +98,8 @@ const Channel = ({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    let callsComponents: JSX.Element | null = null;
     const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
-    if (showJoinCallBanner || isInACall) {
-        callsComponents = (
-            <FloatingCallContainer>
-                {showJoinCallBanner &&
-                    <JoinCallBanner
-                        serverUrl={serverUrl}
-                        channelId={channelId}
-                    />
-                }
-                {isInACall && <CurrentCallBar/>}
-            </FloatingCallContainer>
-        );
-    }
+    const renderCallsComponents = showJoinCallBanner || isInACall;
 
     return (
         <FreezeScreen>
@@ -128,6 +116,7 @@ const Channel = ({
                     callsEnabledInChannel={isCallsEnabledInChannel}
                     isTabletView={isTabletView}
                 />
+                {showJoinCallBanner && <RoundedHeaderCalls/>}
                 {shouldRender &&
                 <>
                     <View style={[styles.flex, {marginTop}]}>
@@ -150,7 +139,13 @@ const Channel = ({
                     />
                 </>
                 }
-                {callsComponents}
+                {renderCallsComponents &&
+                    <FloatingCallContainer
+                        channelId={channelId}
+                        showJoinCallBanner={showJoinCallBanner}
+                        isInACall={isInACall}
+                    />
+                }
             </SafeAreaView>
         </FreezeScreen>
     );

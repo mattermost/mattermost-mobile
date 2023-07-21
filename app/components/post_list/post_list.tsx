@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
-import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
+import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {DeviceEventEmitter, type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, Platform, type StyleProp, StyleSheet, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -36,6 +36,7 @@ type Props = {
     highlightedId?: PostModel['id'];
     highlightPinnedOrSaved?: boolean;
     isCRTEnabled?: boolean;
+    isPostAcknowledgementEnabled?: boolean;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
     location: string;
@@ -64,7 +65,7 @@ type ScrollIndexFailed = {
 };
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-const keyExtractor = (item: PostListItem | PostListOtherItem) => (item.type === 'post' ? item.value.id : item.value);
+const keyExtractor = (item: PostListItem | PostListOtherItem) => (item.type === 'post' ? item.value.currentPost.id : item.value);
 
 const styles = StyleSheet.create({
     flex: {
@@ -97,6 +98,7 @@ const PostList = ({
     highlightedId,
     highlightPinnedOrSaved = true,
     isCRTEnabled,
+    isPostAcknowledgementEnabled,
     isTimezoneEnabled,
     lastViewedAt,
     location,
@@ -196,7 +198,7 @@ const PostList = ({
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
             if (isViewable && item.type === 'post') {
-                acc[`${location}-${item.value.id}`] = true;
+                acc[`${location}-${item.value.currentPost.id}`] = true;
             }
             return acc;
         }, {});
@@ -270,20 +272,22 @@ const PostList = ({
                 return (<CombinedUserActivity {...postProps}/>);
             }
             default: {
-                const post = item.value;
+                const post = item.value.currentPost;
+                const {isSaved, nextPost, previousPost} = item.value;
                 const skipSaveddHeader = (location === Screens.THREAD && post.id === rootId);
                 const postProps = {
                     appsEnabled,
                     customEmojiNames,
                     isCRTEnabled,
+                    isPostAcknowledgementEnabled,
                     highlight: highlightedId === post.id,
                     highlightPinnedOrSaved,
-                    isSaved: post.isSaved,
+                    isSaved,
                     key: post.id,
                     location,
-                    nextPost: post.nextPost,
+                    nextPost,
                     post,
-                    previousPost: post.previousPost,
+                    previousPost,
                     rootId,
                     shouldRenderReplyButton,
                     skipSaveddHeader,
@@ -294,7 +298,7 @@ const PostList = ({
                 return (<Post {...postProps}/>);
             }
         }
-    }, [appsEnabled, currentTimezone, customEmojiNames, highlightPinnedOrSaved, isCRTEnabled, isTimezoneEnabled, shouldRenderReplyButton, theme]);
+    }, [appsEnabled, currentTimezone, customEmojiNames, highlightPinnedOrSaved, isCRTEnabled, isPostAcknowledgementEnabled, isTimezoneEnabled, shouldRenderReplyButton, theme]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
         listRef.current?.scrollToIndex({
@@ -310,7 +314,7 @@ const PostList = ({
             if (highlightedId && orderedPosts && !scrolledToHighlighted.current) {
                 scrolledToHighlighted.current = true;
                 // eslint-disable-next-line max-nested-callbacks
-                const index = orderedPosts.findIndex((p) => p.type === 'post' && p.value.id === highlightedId);
+                const index = orderedPosts.findIndex((p) => p.type === 'post' && p.value.currentPost.id === highlightedId);
                 if (index >= 0 && listRef.current) {
                     listRef.current?.scrollToIndex({
                         animated: true,

@@ -5,7 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {Config, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -239,15 +239,6 @@ export const observeConfigIntValue = (database: Database, key: keyof ClientConfi
     );
 };
 
-export const observeIsPostPriorityEnabled = (database: Database) => {
-    const featureFlag = observeConfigValue(database, 'FeatureFlagPostPriority');
-    const cfg = observeConfigValue(database, 'PostPriority');
-    return combineLatest([featureFlag, cfg]).pipe(
-        switchMap(([ff, c]) => of$(ff === Config.TRUE && c === Config.TRUE)),
-        distinctUntilChanged(),
-    );
-};
-
 export const observeLicense = (database: Database): Observable<ClientLicense | undefined> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.LICENSE).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: undefined}))),
@@ -336,7 +327,8 @@ export const observeWebsocketLastDisconnected = (database: Database) => {
 };
 
 export const resetWebSocketLastDisconnected = async (operator: ServerDataOperator, prepareRecordsOnly = false) => {
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(operator.database);
+    const {database} = operator;
+    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
 
     if (lastDisconnectedAt) {
         return operator.handleSystem({systems: [{
@@ -413,6 +405,19 @@ export async function prepareCommonSystemValues(
         });
     } catch {
         return [];
+    }
+}
+
+export async function setCurrentUserId(operator: ServerDataOperator, userId: string) {
+    try {
+        const models = await prepareCommonSystemValues(operator, {currentUserId: userId});
+        if (models) {
+            await operator.batchRecords(models, 'setCurrentChannelId');
+        }
+
+        return {currentUserId: userId};
+    } catch (error) {
+        return {error};
     }
 }
 

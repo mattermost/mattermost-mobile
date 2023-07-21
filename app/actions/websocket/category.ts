@@ -78,13 +78,7 @@ export async function handleCategoryDeletedEvent(serverUrl: string, msg: Websock
 
 export async function handleCategoryOrderUpdatedEvent(serverUrl: string, msg: WebsocketCategoriesMessage) {
     try {
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
-        if (!operator) {
-            return;
-        }
-
-        const {database} = operator;
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         // Update category order
         if (msg.data.order?.length) {

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle} from 'react-native';
+import {StyleSheet, useWindowDimensions, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import {buildFilePreviewUrl, buildFileThumbnailUrl} from '@actions/remote/file';
@@ -59,19 +59,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     imagePreview: {
         ...StyleSheet.absoluteFillObject,
     },
-    smallImageBorder: {
-        borderRadius: 5,
-    },
-    smallImageOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 4,
-    },
     singleSmallImageWrapper: {
         height: SMALL_IMAGE_MAX_HEIGHT,
         width: SMALL_IMAGE_MAX_WIDTH,
-        overflow: 'hidden',
     },
 }));
 
@@ -118,58 +108,11 @@ const ImageFile = ({
         return props;
     };
 
-    if (file.height <= SMALL_IMAGE_MAX_HEIGHT || file.width <= SMALL_IMAGE_MAX_WIDTH) {
-        let wrapperStyle: StyleProp<ViewStyle> = style.fileImageWrapper;
-        if (isSingleImage) {
-            wrapperStyle = style.singleSmallImageWrapper;
-
-            if (file.width > SMALL_IMAGE_MAX_WIDTH) {
-                wrapperStyle = [wrapperStyle, {width: '100%'}];
-            }
-        }
-
-        image = (
-            <ProgressiveImage
-                id={file.id!}
-                forwardRef={forwardRef}
-                style={{height: file.height, width: file.width}}
-                tintDefaultSource={!file.localPath && !failed}
-                onError={handleError}
-                resizeMode={'contain'}
-                {...imageProps()}
-            />
-        );
-
-        if (failed) {
-            image = (
-                <FileIcon
-                    failed={failed}
-                    file={file}
-                    backgroundColor={backgroundColor}
-                />
-            );
-        }
-
-        return (
-            <View
-                style={[
-                    wrapperStyle,
-                    style.smallImageBorder,
-                    {
-                        borderColor: changeOpacity(theme.centerChannelColor, 0.4),
-                        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-                    },
-                ]}
-            >
-                {!isSingleImage && <View style={style.boxPlaceholder}/>}
-                <View style={style.smallImageOverlay}>
-                    {image}
-                </View>
-            </View>
-        );
+    let imageDimensions = getImageDimensions();
+    if (isSingleImage && (!imageDimensions || (imageDimensions?.height === 0 && imageDimensions?.width === 0))) {
+        imageDimensions = style.singleSmallImageWrapper;
     }
 
-    const imageDimensions = getImageDimensions();
     image = (
         <ProgressiveImage
             id={file.id!}
@@ -215,6 +158,7 @@ const ImageFile = ({
             </View>
         );
     }
+
     return (
         <View
             style={style.fileImageWrapper}

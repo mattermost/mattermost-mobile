@@ -2,38 +2,30 @@
 
 exports[`components/categories_list should render channels error 1`] = `
 <View
-  animatedStyle={
-    {
-      "value": {
+  style={
+    [
+      {
+        "backgroundColor": "#1e325c",
+        "flex": 1,
+        "paddingTop": 10,
+      },
+      {
         "maxWidth": 750,
       },
-    }
-  }
-  collapsable={false}
-  style={
-    {
-      "backgroundColor": "#1e325c",
-      "flex": 1,
-      "maxWidth": 750,
-      "paddingLeft": 18,
-      "paddingRight": 20,
-      "paddingTop": 10,
-    }
+    ]
   }
 >
   <View
-    animatedStyle={
-      {
-        "value": {
+    style={
+      [
+        {
           "marginLeft": 0,
         },
-      }
-    }
-    collapsable={false}
-    style={
-      {
-        "marginLeft": 0,
-      }
+        {
+          "paddingLeft": 18,
+          "paddingRight": 20,
+        },
+      ]
     }
   >
     <View
@@ -337,38 +329,30 @@ exports[`components/categories_list should render channels error 1`] = `
 
 exports[`components/categories_list should render team error 1`] = `
 <View
-  animatedStyle={
-    {
-      "value": {
+  style={
+    [
+      {
+        "backgroundColor": "#1e325c",
+        "flex": 1,
+        "paddingTop": 10,
+      },
+      {
         "maxWidth": 750,
       },
-    }
-  }
-  collapsable={false}
-  style={
-    {
-      "backgroundColor": "#1e325c",
-      "flex": 1,
-      "maxWidth": 750,
-      "paddingLeft": 18,
-      "paddingRight": 20,
-      "paddingTop": 10,
-    }
+    ]
   }
 >
   <View
-    animatedStyle={
-      {
-        "value": {
+    style={
+      [
+        {
           "marginLeft": 0,
         },
-      }
-    }
-    collapsable={false}
-    style={
-      {
-        "marginLeft": 0,
-      }
+        {
+          "paddingLeft": 18,
+          "paddingRight": 20,
+        },
+      ]
     }
   >
     <View
@@ -467,20 +451,12 @@ exports[`components/categories_list should render team error 1`] = `
     style={
       {
         "flexDirection": "row",
+        "paddingLeft": 18,
+        "paddingRight": 20,
       }
     }
   >
     <View
-      animatedStyle={
-        {
-          "value": {
-            "marginRight": 8,
-            "opacity": 1,
-            "width": 40,
-          },
-        }
-      }
-      collapsable={false}
       style={
         {
           "marginRight": 8,

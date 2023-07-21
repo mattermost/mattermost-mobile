@@ -3,7 +3,7 @@
 
 import React, {useMemo} from 'react';
 
-import ImageTransformer, {ImageTransformerProps} from './transformer';
+import ImageTransformer, {type ImageTransformerProps} from './transformer';
 
 import type {PagerProps} from '../pager';
 import type {RenderPageProps} from '../pager/page';

@@ -3,85 +3,79 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
+import {HOME_PADDING} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {isDMorGM} from '@utils/channel';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserIdFromChannelName} from '@utils/user';
 
-import CustomStatus from './custom_status';
+import {ChannelBody} from './channel_body';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
-    channel: ChannelModel;
+    channel: ChannelModel | Channel;
     currentUserId: string;
     hasDraft: boolean;
     isActive: boolean;
-    isInfo?: boolean;
     isMuted: boolean;
     membersCount: number;
     isUnread: boolean;
     mentionsCount: number;
-    onPress: (channelId: string) => void;
-    hasMember: boolean;
+    onPress: (channel: ChannelModel | Channel) => void;
     teamDisplayName?: string;
     testID?: string;
     hasCall: boolean;
+    isOnCenterBg?: boolean;
+    showChannelName?: boolean;
+    isOnHome?: boolean;
 }
+
+export const ROW_HEIGHT = 40;
+export const ROW_HEIGHT_WITH_TEAM = 58;
 
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
-        paddingHorizontal: 20,
-        minHeight: 40,
         alignItems: 'center',
     },
-    infoItem: {
-        paddingHorizontal: 0,
-    },
-    wrapper: {
-        flex: 1,
-        flexDirection: 'row',
-    },
     icon: {
-        fontSize: 24,
-        lineHeight: 28,
-        color: changeOpacity(theme.sidebarText, 0.72),
+        marginRight: 12,
     },
     text: {
-        marginTop: -1,
         color: changeOpacity(theme.sidebarText, 0.72),
-        paddingLeft: 12,
-        paddingRight: 20,
     },
     highlight: {
         color: theme.sidebarUnreadText,
     },
-    textInfo: {
+    textOnCenterBg: {
         color: theme.centerChannelColor,
-        paddingRight: 20,
     },
     muted: {
         color: changeOpacity(theme.sidebarText, 0.32),
     },
-    mutedInfo: {
+    mutedOnCenterBg: {
         color: changeOpacity(theme.centerChannelColor, 0.32),
     },
     badge: {
         borderColor: theme.sidebarBg,
-        position: 'relative',
-        left: 0,
-        top: -2,
+        marginLeft: 4,
+
+        //Overwrite default badge styles
+        position: undefined,
+        top: undefined,
+        left: undefined,
         alignSelf: undefined,
     },
-    infoBadge: {
+    badgeOnCenterBg: {
         color: theme.buttonColor,
         backgroundColor: theme.buttonBg,
         borderColor: theme.centerChannelBg,
@@ -93,31 +87,15 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.1),
         borderLeftColor: theme.sidebarTextActiveBorder,
         borderLeftWidth: 5,
-        marginLeft: 0,
-        paddingLeft: 14,
     },
     textActive: {
         color: theme.sidebarText,
     },
-    teamName: {
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        paddingLeft: 12,
-        marginTop: 4,
-        ...typography('Body', 75),
-    },
-    teamNameMuted: {
-        color: changeOpacity(theme.centerChannelColor, 0.32),
-    },
-    teamNameTablet: {
-        marginLeft: -12,
-        paddingLeft: 0,
-        marginTop: 0,
-        paddingBottom: 0,
-        top: 5,
-    },
     hasCall: {
         textAlign: 'right',
-        paddingRight: 0,
+    },
+    filler: {
+        flex: 1,
     },
 }));
 
@@ -126,137 +104,118 @@ export const textStyle = StyleSheet.create({
     regular: typography('Body', 200, 'Regular'),
 });
 
-const ChannelListItem = ({
-    channel, currentUserId, hasDraft,
-    isActive, isInfo, isMuted, membersCount, hasMember,
-    isUnread, mentionsCount, onPress, teamDisplayName, testID, hasCall}: Props) => {
+const ChannelItem = ({
+    channel,
+    currentUserId,
+    hasDraft,
+    isActive,
+    isMuted,
+    membersCount,
+    isUnread,
+    mentionsCount,
+    onPress,
+    teamDisplayName = '',
+    testID,
+    hasCall,
+    isOnCenterBg = false,
+    showChannelName = false,
+    isOnHome = false,
+}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
+    const channelName = (showChannelName && !isDMorGM(channel)) ? channel.name : '';
+
     // Make it bolded if it has unreads or mentions
     const isBolded = isUnread || mentionsCount > 0;
+    const showActive = isActive && isTablet;
+
+    const teammateId = (channel.type === General.DM_CHANNEL) ? getUserIdFromChannelName(currentUserId, channel.name) : undefined;
+    const isOwnDirectMessage = (channel.type === General.DM_CHANNEL) && currentUserId === teammateId;
+
+    let displayName = 'displayName' in channel ? channel.displayName : channel.display_name;
+    if (isOwnDirectMessage) {
+        displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
+    }
+
+    const deleteAt = 'deleteAt' in channel ? channel.deleteAt : channel.delete_at;
+    const channelItemTestId = `${testID}.${channel.name}`;
 
     const height = useMemo(() => {
-        let h = 40;
-        if (isInfo) {
-            h = (teamDisplayName && !isTablet) ? 58 : 44;
-        }
-        return h;
-    }, [teamDisplayName, isInfo, isTablet]);
+        return (teamDisplayName && !isTablet) ? ROW_HEIGHT_WITH_TEAM : ROW_HEIGHT;
+    }, [teamDisplayName, isTablet]);
 
     const handleOnPress = useCallback(() => {
-        onPress(channel.id);
+        onPress(channel);
     }, [channel.id]);
 
     const textStyles = useMemo(() => [
         isBolded && !isMuted ? textStyle.bold : textStyle.regular,
         styles.text,
         isBolded && styles.highlight,
-        isActive && isTablet && !isInfo ? styles.textActive : null,
-        isInfo ? styles.textInfo : null,
+        showActive ? styles.textActive : null,
+        isOnCenterBg ? styles.textOnCenterBg : null,
         isMuted && styles.muted,
-        isMuted && isInfo && styles.mutedInfo,
-    ], [isBolded, styles, isMuted, isActive, isInfo, isTablet]);
+        isMuted && isOnCenterBg && styles.mutedOnCenterBg,
+    ], [isBolded, styles, isMuted, showActive, isOnCenterBg]);
 
     const containerStyle = useMemo(() => [
         styles.container,
-        isActive && isTablet && !isInfo && styles.activeItem,
-        isInfo && styles.infoItem,
+        isOnHome && HOME_PADDING,
+        showActive && styles.activeItem,
+        showActive && isOnHome && {
+            paddingLeft: HOME_PADDING.paddingLeft - styles.activeItem.borderLeftWidth,
+        },
         {minHeight: height},
-    ],
-    [height, isActive, isTablet, isInfo, styles]);
-
-    if (!hasMember) {
-        return null;
-    }
-
-    const teammateId = (channel.type === General.DM_CHANNEL) ? getUserIdFromChannelName(currentUserId, channel.name) : undefined;
-    const isOwnDirectMessage = (channel.type === General.DM_CHANNEL) && currentUserId === teammateId;
-
-    let displayName = channel.displayName;
-    if (isOwnDirectMessage) {
-        displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
-    }
-
-    const channelItemTestId = `${testID}.${channel.name}`;
+    ], [height, showActive, styles, isOnHome]);
 
     return (
         <TouchableOpacity onPress={handleOnPress}>
-            <>
-                <View
-                    style={containerStyle}
-                    testID={channelItemTestId}
-                >
-                    <View style={styles.wrapper}>
-                        <ChannelIcon
-                            hasDraft={hasDraft}
-                            isActive={isInfo ? false : isTablet && isActive}
-                            isInfo={isInfo}
-                            isUnread={isBolded}
-                            isArchived={channel.deleteAt > 0}
-                            membersCount={membersCount}
-                            name={channel.name}
-                            shared={channel.shared}
-                            size={24}
-                            type={channel.type}
-                            isMuted={isMuted}
-                        />
-                        <View>
-                            <Text
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                                style={textStyles}
-                                testID={`${channelItemTestId}.display_name`}
-                            >
-                                {displayName}
-                            </Text>
-                            {isInfo && Boolean(teamDisplayName) && !isTablet &&
-                            <Text
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                                style={[styles.teamName, isMuted && styles.teamNameMuted]}
-                                testID={`${channelItemTestId}.team_display_name`}
-                            >
-                                {teamDisplayName}
-                            </Text>
-                            }
-                        </View>
-                        {Boolean(teammateId) &&
-                        <CustomStatus
-                            isInfo={isInfo}
-                            testID={channelItemTestId}
-                            userId={teammateId!}
-                        />
-                        }
-                        {isInfo && Boolean(teamDisplayName) && isTablet &&
-                        <Text
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                            style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
-                            testID={`${channelItemTestId}.team_display_name`}
-                        >
-                            {teamDisplayName}
-                        </Text>
-                        }
-                    </View>
-                    <Badge
-                        visible={mentionsCount > 0}
-                        value={mentionsCount}
-                        style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
-                    />
-                    {hasCall &&
-                        <CompassIcon
-                            name='phone-in-talk'
-                            size={16}
-                            style={[...textStyles, styles.hasCall]}
-                        />
-                    }
-                </View>
-            </>
+            <View
+                style={containerStyle}
+                testID={channelItemTestId}
+            >
+                <ChannelIcon
+                    hasDraft={hasDraft}
+                    isActive={isTablet && isActive}
+                    isOnCenterBg={isOnCenterBg}
+                    isUnread={isBolded}
+                    isArchived={deleteAt > 0}
+                    membersCount={membersCount}
+                    name={channel.name}
+                    shared={channel.shared}
+                    size={24}
+                    type={channel.type}
+                    isMuted={isMuted}
+                    style={styles.icon}
+                />
+                <ChannelBody
+                    displayName={displayName}
+                    isMuted={isMuted}
+                    teamDisplayName={teamDisplayName}
+                    teammateId={teammateId}
+                    testId={channelItemTestId}
+                    textStyles={textStyles}
+                    channelName={channelName}
+                />
+                <View style={styles.filler}/>
+                <Badge
+                    visible={mentionsCount > 0}
+                    value={mentionsCount}
+                    style={[styles.badge, isMuted && styles.mutedBadge, isOnCenterBg && styles.badgeOnCenterBg]}
+                />
+                {hasCall &&
+                <CompassIcon
+                    name='phone-in-talk'
+                    size={16}
+                    style={[textStyles, styles.hasCall]}
+                />
+                }
+            </View>
         </TouchableOpacity>
     );
 };
 
-export default ChannelListItem;
+export default ChannelItem;

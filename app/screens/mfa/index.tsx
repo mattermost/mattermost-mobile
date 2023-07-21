@@ -11,7 +11,6 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {login} from '@actions/remote/session';
-import ClientError from '@client/rest/error';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -21,6 +20,7 @@ import {t} from '@i18n';
 import Background from '@screens/background';
 import {popTopScreen} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {getErrorMessage} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -32,7 +32,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type MFAProps = {
     componentId: AvailableScreens;
     config: Partial<ClientConfig>;
-    goToHome: (error?: never) => void;
+    goToHome: (error?: unknown) => void;
     license: Partial<ClientLicense>;
     loginId: string;
     password: string;
@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 20,
     },
     header: {
-        color: theme.mentionColor,
+        color: theme.centerChannelColor,
         marginBottom: 12,
         ...typography('Heading', 1000, 'SemiBold'),
     },
@@ -143,20 +143,10 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
         const result: LoginActionResponse = await login(serverUrl, {loginId, password, mfaToken: token, config, license, serverDisplayName});
         setIsLoading(false);
         if (result?.error && result.failed) {
-            if (typeof result.error == 'string') {
-                setError(result?.error);
-                return;
-            }
-
-            if (result.error instanceof ClientError && result.error.intl) {
-                setError(intl.formatMessage({id: result.error.intl.id, defaultMessage: result.error.intl.defaultMessage}, result.error.intl.values));
-                return;
-            }
-
-            setError(result.error.message);
+            setError(getErrorMessage(error, intl));
             return;
         }
-        goToHome(result.error as never);
+        goToHome(result.error);
     }), [token]);
 
     const transform = useAnimatedStyle(() => {

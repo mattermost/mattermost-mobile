@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, View, ViewStyle} from 'react-native';
+import {type StyleProp, View, type ViewStyle} from 'react-native';
 
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';

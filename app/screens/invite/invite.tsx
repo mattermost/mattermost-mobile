@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState, useRef} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
-import {Keyboard, View, LayoutChangeEvent} from 'react-native';
+import {type IntlShape, useIntl} from 'react-intl';
+import {Keyboard, View, type LayoutChangeEvent} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {getTeamMembersByIds, addUsersToTeam, sendEmailInvitesToTeam} from '@actions/remote/team';
@@ -13,7 +13,7 @@ import Loading from '@components/loading';
 import {ServerErrors} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useModalPosition} from '@hooks/device';
+import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {isEmail} from '@utils/helpers';
@@ -24,6 +24,7 @@ import {isGuest} from '@utils/user';
 import Selection from './selection';
 import Summary from './summary';
 
+import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
 import type {OptionsTopBarButton} from 'react-native-navigation';
 
@@ -69,7 +70,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
 
 export type EmailInvite = string;
 
-export type SearchResult = UserProfile|EmailInvite;
+export type SearchResult = UserProfile|UserModel|EmailInvite;
 
 export type InviteResult = {
     userId: string;
@@ -111,8 +112,10 @@ export default function Invite({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+
     const mainView = useRef<View>(null);
-    const modalPosition = useModalPosition(mainView);
+    const [wrapperHeight, setWrapperHeight] = useState(0);
+    const keyboardOverlap = useKeyboardOverlap(mainView, wrapperHeight);
 
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const retryTimeoutId = useRef<NodeJS.Timeout | null>(null);
@@ -122,7 +125,6 @@ export default function Invite({
     const [selectedIds, setSelectedIds] = useState<{[id: string]: SearchResult}>({});
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<Result>(DEFAULT_RESULT);
-    const [wrapperHeight, setWrapperHeight] = useState(0);
     const [stage, setStage] = useState(Stage.SELECTION);
     const [sendError, setSendError] = useState('');
 
@@ -393,7 +395,7 @@ export default function Invite({
                         term={term}
                         searchResults={searchResults}
                         selectedIds={selectedIds}
-                        modalPosition={modalPosition}
+                        keyboardOverlap={keyboardOverlap}
                         wrapperHeight={wrapperHeight}
                         loading={loading}
                         onSearchChange={handleSearchChange}

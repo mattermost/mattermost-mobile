@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Dispatch, SetStateAction} from 'react';
+import React, {type Dispatch, type SetStateAction} from 'react';
 import {useIntl} from 'react-intl';
 
 import SettingBlock from '@components/settings/block';

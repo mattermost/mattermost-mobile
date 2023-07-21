@@ -8,7 +8,6 @@ import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
 import Button from 'react-native-button';
 
 import {login} from '@actions/remote/session';
-import ClientError from '@client/rest/error';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -17,9 +16,10 @@ import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {t} from '@i18n';
 import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {isServerError} from '@utils/errors';
+import {getFullErrorMessage, isErrorWithMessage, isServerError} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -49,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     forgotPasswordBtn: {
         borderColor: 'transparent',
-        width: '50%',
+        width: '60%',
     },
     forgotPasswordError: {
         marginTop: 30,
@@ -99,11 +99,11 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
     const signIn = async () => {
         const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
-            goToHome(result.error as never);
+            goToHome(result.error);
         }
     };
 
-    const goToHome = (loginError?: never) => {
+    const goToHome = (loginError?: unknown) => {
         const hasError = launchError || Boolean(loginError);
         resetToHome({extra, launchError: hasError, launchType, serverUrl});
     };
@@ -136,18 +136,10 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
         goToScreen(MFA, '', {goToHome, loginId, password, config, serverDisplayName, license, serverUrl, theme}, loginAnimationOptions());
     };
 
-    const getLoginErrorMessage = (loginError: string | ClientErrorProps | Error) => {
-        if (typeof loginError === 'string') {
-            return loginError;
-        }
-
-        if (loginError instanceof ClientError) {
+    const getLoginErrorMessage = (loginError: unknown) => {
+        if (isServerError(loginError)) {
             const errorId = loginError.server_error_id;
-            if (!errorId && loginError.message) {
-                return loginError.message;
-            }
-
-            if (errorId === 'api.user.login.invalid_credentials_email_username' || !errorId) {
+            if (errorId === 'api.user.login.invalid_credentials_email_username' || (!isErrorWithMessage(loginError) && typeof loginError !== 'string')) {
                 return intl.formatMessage({
                     id: 'login.invalid_credentials',
                     defaultMessage: 'The email and password combination is incorrect',
@@ -155,7 +147,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
             }
         }
 
-        return loginError.message;
+        return getFullErrorMessage(loginError);
     };
 
     const createLoginPlaceholder = () => {
@@ -215,6 +207,11 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
     }, [error]);
 
     const onPressForgotPassword = useCallback(() => {
+        if (config.ForgotPasswordLink) {
+            tryOpenURL(config.ForgotPasswordLink);
+            return;
+        }
+
         const passProps = {
             theme,
             serverUrl,
@@ -343,7 +340,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
                 endAdornment={endAdornment}
             />
 
-            {(emailEnabled || usernameEnabled) && (
+            {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (
                 <Button
                     onPress={onPressForgotPassword}
                     containerStyle={[styles.forgotPasswordBtn, error ? styles.forgotPasswordError : undefined]}

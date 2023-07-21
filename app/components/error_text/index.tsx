@@ -2,14 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
+import {useIntl} from 'react-intl';
+import {type StyleProp, Text, type TextStyle, type ViewStyle} from 'react-native';
 
-import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {getErrorMessage} from '@utils/errors';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type ErrorProps = {
-    error: ErrorText;
+    error: unknown;
     testID?: string;
     textStyle?: StyleProp<ViewStyle> | StyleProp<TextStyle>;
 }
@@ -17,20 +18,8 @@ type ErrorProps = {
 const ErrorTextComponent = ({error, testID, textStyle}: ErrorProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const message = typeof (error) === 'string' ? error : error.message;
-
-    if (typeof (error) !== 'string' && error.intl) {
-        const {intl} = error;
-        return (
-            <FormattedText
-                testID={testID}
-                id={intl.id}
-                defaultMessage={intl.defaultMessage}
-                values={intl.values}
-                style={[style.errorLabel, textStyle]}
-            />
-        );
-    }
+    const intl = useIntl();
+    const message = getErrorMessage(error, intl);
 
     return (
         <Text

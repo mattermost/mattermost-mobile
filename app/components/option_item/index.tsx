@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {LayoutChangeEvent, Platform, StyleProp, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {type LayoutChangeEvent, Platform, type StyleProp, Switch, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -11,7 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import OptionIcon from './option_icon';
-import RadioItem, {RadioItemProps} from './radio_item';
+import RadioItem, {type RadioItemProps} from './radio_item';
 
 const TouchableOptionTypes = {
     ARROW: 'arrow',
@@ -27,9 +27,17 @@ const OptionType = {
     ...TouchableOptionTypes,
 } as const;
 
-type OptionType = typeof OptionType[keyof typeof OptionType];
+export type OptionType = typeof OptionType[keyof typeof OptionType];
 
 export const ITEM_HEIGHT = 48;
+const DESCRIPTION_MARGIN_TOP = 2;
+
+export function getItemHeightWithDescription(descriptionNumberOfLines: number) {
+    const labelHeight = 24; // typography 200 line height
+    const descriptionLineHeight = 16; // typography 75 line height;
+
+    return Math.max(48, labelHeight + DESCRIPTION_MARGIN_TOP + (descriptionLineHeight * descriptionNumberOfLines));
+}
 
 const hitSlop = {top: 11, bottom: 11, left: 11, right: 11};
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -50,7 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         description: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
-            marginTop: 2,
+            marginTop: DESCRIPTION_MARGIN_TOP,
         },
         iconContainer: {marginRight: 16},
         infoContainer: {marginRight: 2},
@@ -108,6 +116,7 @@ export type OptionItemProps = {
     info?: string;
     inline?: boolean;
     label: string;
+    labelContainerStyle?: StyleProp<ViewStyle>;
     onRemove?: () => void;
     optionDescriptionTextStyle?: StyleProp<TextStyle>;
     optionLabelTextStyle?: StyleProp<TextStyle>;
@@ -117,6 +126,7 @@ export type OptionItemProps = {
     type: OptionType;
     value?: string;
     onLayout?: (event: LayoutChangeEvent) => void;
+    descriptionNumberOfLines?: number;
 }
 
 const OptionItem = ({
@@ -130,6 +140,7 @@ const OptionItem = ({
     info,
     inline = false,
     label,
+    labelContainerStyle,
     onRemove,
     optionDescriptionTextStyle,
     optionLabelTextStyle,
@@ -139,6 +150,7 @@ const OptionItem = ({
     type,
     value,
     onLayout,
+    descriptionNumberOfLines,
 }: OptionItemProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -238,7 +250,7 @@ const OptionItem = ({
             onLayout={onLayout}
         >
             <View style={styles.row}>
-                <View style={styles.labelContainer}>
+                <View style={[styles.labelContainer, labelContainerStyle]}>
                     {Boolean(icon) && (
                         <View style={styles.iconContainer}>
                             <OptionIcon
@@ -260,6 +272,7 @@ const OptionItem = ({
                         <Text
                             style={[descriptionTextStyle, optionDescriptionTextStyle]}
                             testID={`${testID}.description`}
+                            numberOfLines={descriptionNumberOfLines}
                         >
                             {description}
                         </Text>

@@ -41,7 +41,13 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs):
         post.updateAt = raw.update_at;
         post.isPinned = Boolean(raw.is_pinned);
         post.message = raw.message;
-        post.metadata = raw.metadata && Object.keys(raw.metadata).length ? raw.metadata : null;
+        post.messageSource = raw.message_source || '';
+
+        // When we extract the posts from the threads, we don't get the metadata
+        // So, it might not be present in the raw post, so we use the one from the record
+        const metadata = raw.metadata ?? post.metadata;
+        post.metadata = metadata && Object.keys(metadata).length ? metadata : null;
+
         post.userId = raw.user_id;
         post.originalId = raw.original_id;
         post.pendingPostId = raw.pending_post_id;
@@ -132,6 +138,7 @@ export const transformFileRecord = ({action, database, value}: TransformerArgs):
  */
 export const transformDraftRecord = ({action, database, value}: TransformerArgs): Promise<DraftModel> => {
     const emptyFileInfo: FileInfo[] = [];
+    const emptyPostMetadata: PostMetadata = {};
     const raw = value.raw as Draft;
 
     // We use the raw id as  Draft is client side only and  we would only be creating/deleting drafts
@@ -141,6 +148,7 @@ export const transformDraftRecord = ({action, database, value}: TransformerArgs)
         draft.message = raw?.message ?? '';
         draft.channelId = raw?.channel_id ?? '';
         draft.files = raw?.files ?? emptyFileInfo;
+        draft.metadata = raw?.metadata ?? emptyPostMetadata;
     };
 
     return prepareBaseRecord({

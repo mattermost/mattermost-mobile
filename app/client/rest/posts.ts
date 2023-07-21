@@ -16,7 +16,7 @@ export interface ClientPostsMix {
     getPostThread: (postId: string, options: FetchPaginatedThreadOptions) => Promise<PostResponse>;
     getPosts: (channelId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
     getPostsSince: (channelId: string, since: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
-    getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
+    getPostsBefore: (channelId: string, postId?: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
     getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
     getFileInfosForPost: (postId: string) => Promise<FileInfo[]>;
     getSavedPosts: (userId: string, channelId?: string, teamId?: string, page?: number, perPage?: number) => Promise<PostResponse>;
@@ -27,10 +27,12 @@ export interface ClientPostsMix {
     addReaction: (userId: string, postId: string, emojiName: string) => Promise<Reaction>;
     removeReaction: (userId: string, postId: string, emojiName: string) => Promise<any>;
     getReactionsForPost: (postId: string) => Promise<any>;
-    searchPostsWithParams: (teamId: string, params: PostSearchParams) => Promise<any>;
-    searchPosts: (teamId: string, terms: string, isOrSearch: boolean) => Promise<PostResponse>;
+    searchPostsWithParams: (teamId: string, params: PostSearchParams) => Promise<SearchPostResponse>;
+    searchPosts: (teamId: string, terms: string, isOrSearch: boolean) => Promise<SearchPostResponse>;
     doPostAction: (postId: string, actionId: string, selectedOption?: string) => Promise<any>;
     doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string) => Promise<any>;
+    acknowledgePost: (postId: string, userId: string) => Promise<PostAcknowledgement>;
+    unacknowledgePost: (postId: string, userId: string) => Promise<any>;
 }
 
 const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -111,7 +113,7 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getPostsBefore = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT, collapsedThreads = false, collapsedThreadsExtended = false) => {
+    getPostsBefore = async (channelId: string, postId = '', page = 0, perPage = PER_PAGE_DEFAULT, collapsedThreads = false, collapsedThreadsExtended = false) => {
         this.analytics?.trackAPI('api_posts_get_before', {channel_id: channelId});
 
         return this.doFetch(
@@ -238,6 +240,20 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return this.doFetch(
             `${this.getPostRoute(postId)}/actions/${encodeURIComponent(actionId)}`,
             {method: 'post', body: msg},
+        );
+    };
+
+    acknowledgePost = async (postId: string, userId: string) => {
+        return this.doFetch(
+            `${this.getUserRoute(userId)}/posts/${postId}/ack`,
+            {method: 'post'},
+        );
+    };
+
+    unacknowledgePost = async (postId: string, userId: string) => {
+        return this.doFetch(
+            `${this.getUserRoute(userId)}/posts/${postId}/ack`,
+            {method: 'delete'},
         );
     };
 };

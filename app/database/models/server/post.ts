@@ -3,7 +3,7 @@
 
 import {Q, Query, Relation} from '@nozbe/watermelondb';
 import {children, field, immutableRelation, json, lazy} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
@@ -71,6 +71,11 @@ export default class PostModel extends Model implements PostModelInterface {
 
     /** message : Message in the post */
     @field('message') message!: string;
+
+    /** messageSource : will contain the message as submitted by the user if Message has been modified
+	by Mattermost for presentation (e.g if an image proxy is being used). It should be used to
+	populate edit boxes if present. */
+    @field('message_source') messageSource!: string;
 
     /** metadata: All the extra data associated with this Post */
     @json('metadata', safeParseJSON) metadata!: PostMetadata | null;
@@ -168,6 +173,7 @@ export default class PostModel extends Model implements PostModelInterface {
         root_id: this.rootId,
         original_id: this.originalId,
         message: this.message,
+        message_source: this.messageSource,
         type: this.type,
         props: this.props,
         pending_post_id: this.pendingPostId,

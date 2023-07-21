@@ -9,7 +9,7 @@ import Tag, {BotTag, GuestTag} from '@components/tag';
 type Props = {
     isBot: boolean;
     isChannelAdmin: boolean;
-    isGuest: boolean;
+    showGuestTag: boolean;
     isSystemAdmin: boolean;
     isTeamAdmin: boolean;
 }
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const UserProfileTag = ({isBot, isChannelAdmin, isGuest, isSystemAdmin, isTeamAdmin}: Props) => {
+const UserProfileTag = ({isBot, isChannelAdmin, showGuestTag, isSystemAdmin, isTeamAdmin}: Props) => {
     if (isBot) {
         return (
             <BotTag
@@ -31,7 +31,7 @@ const UserProfileTag = ({isBot, isChannelAdmin, isGuest, isSystemAdmin, isTeamAd
             />);
     }
 
-    if (isGuest) {
+    if (showGuestTag) {
         return (
             <GuestTag
                 style={styles.tag}

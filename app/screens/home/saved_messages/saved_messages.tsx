@@ -4,9 +4,9 @@
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchSavedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';
@@ -110,7 +110,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, i
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
             if (isViewable && item.type === 'post') {
-                acc[`${Screens.SAVED_MESSAGES}-${item.value.id}`] = true;
+                acc[`${Screens.SAVED_MESSAGES}-${item.value.currentPost.id}`] = true;
             }
             return acc;
         }, {});
@@ -152,10 +152,11 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, i
                     <PostWithChannelInfo
                         appsEnabled={appsEnabled}
                         customEmojiNames={customEmojiNames}
-                        key={item.value.id}
+                        key={item.value.currentPost.id}
                         location={Screens.SAVED_MESSAGES}
-                        post={item.value}
+                        post={item.value.currentPost}
                         testID='saved_messages.post_list'
+                        skipSavedPostsHighlight={true}
                     />
                 );
             default:

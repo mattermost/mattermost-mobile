@@ -5,7 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, StyleProp, Text, TextStyle, TouchableWithoutFeedback, View} from 'react-native';
+import {Alert, Platform, type StyleProp, Text, type TextStyle, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgUri} from 'react-native-svg';
@@ -36,7 +36,7 @@ import type {GalleryItemType} from '@typings/screens/gallery';
 type MarkdownImageProps = {
     disabled?: boolean;
     errorTextStyle: StyleProp<TextStyle>;
-    imagesMetadata: Record<string, PostImage>;
+    imagesMetadata: Record<string, PostImage | undefined>;
     isReplyPost?: boolean;
     linkDestination?: string;
     layoutHeight?: number;
@@ -90,7 +90,7 @@ const MarkdownImage = ({
     const fileInfo = useMemo(() => {
         const link = decodeURIComponent(uri);
         let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
-        let extension = metadata.format || filename.split('.').pop();
+        let extension = metadata?.format || filename.split('.').pop();
         if (extension === filename) {
             const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
             filename = `${filename}${ext}`;
@@ -240,7 +240,7 @@ const MarkdownImage = ({
                         <ProgressiveImage
                             forwardRef={ref}
                             id={fileInfo.id!}
-                            defaultSource={{uri: fileInfo.uri!}}
+                            imageUri={fileInfo.uri}
                             onError={handleOnError}
                             resizeMode='contain'
                             style={{width, height}}
@@ -260,7 +260,7 @@ const MarkdownImage = ({
             >
                 <ProgressiveImage
                     id={fileInfo.id!}
-                    defaultSource={{uri: fileInfo.uri!}}
+                    imageUri={fileInfo.uri}
                     onError={handleOnError}
                     resizeMode='contain'
                     style={{width, height}}

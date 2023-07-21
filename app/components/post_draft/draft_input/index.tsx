@@ -1,12 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef} from 'react';
-import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import React, {useCallback, useMemo, useRef} from 'react';
+import {useIntl} from 'react-intl';
+import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import PostPriorityLabel from '@components/post_priority/post_priority_label';
+import {General} from '@constants';
+import {MENTIONS_REGEX} from '@constants/autocomplete';
+import {PostPriorityType} from '@constants/post';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import PostInput from '../post_input';
@@ -15,18 +20,23 @@ import SendAction from '../send_action';
 import Typing from '../typing';
 import Uploads from '../uploads';
 
+import Header from './header';
+
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
 
 type Props = {
     testID?: string;
     channelId: string;
+    channelType?: ChannelType;
     rootId?: string;
     currentUserId: string;
     canShowPostPriority?: boolean;
 
     // Post Props
-    postPriority: PostPriorityData;
-    updatePostPriority: (postPriority: PostPriorityData) => void;
+    postPriority: PostPriority;
+    updatePostPriority: (postPriority: PostPriority) => void;
+    persistentNotificationInterval: number;
+    persistentNotificationMaxRecipients: number;
 
     // Cursor Position Handler
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
@@ -97,6 +107,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 export default function DraftInput({
     testID,
     channelId,
+    channelType,
     currentUserId,
     canShowPostPriority,
     files,
@@ -113,8 +124,12 @@ export default function DraftInput({
     updatePostInputTop,
     postPriority,
     updatePostPriority,
+    persistentNotificationInterval,
+    persistentNotificationMaxRecipients,
     setIsFocused,
 }: Props) {
+    const intl = useIntl();
+    const serverUrl = useServerUrl();
     const theme = useTheme();
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
@@ -131,6 +146,31 @@ export default function DraftInput({
     const quickActionsTestID = `${testID}.quick_actions`;
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
+
+    const persistenNotificationsEnabled = postPriority.persistent_notifications && postPriority.priority === PostPriorityType.URGENT;
+    const {noMentionsError, mentionsList} = useMemo(() => {
+        let error = false;
+        let mentions: string[] = [];
+        if (
+            channelType !== General.DM_CHANNEL &&
+            persistenNotificationsEnabled
+        ) {
+            mentions = (value.match(MENTIONS_REGEX) || []);
+            error = mentions.length === 0;
+        }
+
+        return {noMentionsError: error, mentionsList: mentions};
+    }, [channelType, persistenNotificationsEnabled, value]);
+
+    const handleSendMessage = useCallback(async () => {
+        if (persistenNotificationsEnabled) {
+            persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval);
+        } else {
+            sendMessage();
+        }
+    }, [serverUrl, mentionsList, persistenNotificationsEnabled, persistentNotificationMaxRecipients, sendMessage, value]);
+
+    const sendActionDisabled = !canSend || noMentionsError;
 
     return (
         <>
@@ -156,11 +196,10 @@ export default function DraftInput({
                     overScrollMode={'never'}
                     disableScrollViewPanResponder={true}
                 >
-                    {Boolean(postPriority?.priority) && (
-                        <View style={style.postPriorityLabel}>
-                            <PostPriorityLabel label={postPriority!.priority}/>
-                        </View>
-                    )}
+                    <Header
+                        noMentionsError={noMentionsError}
+                        postPriority={postPriority}
+                    />
                     <PostInput
                         testID={postInputTestID}
                         channelId={channelId}
@@ -171,7 +210,7 @@ export default function DraftInput({
                         updateValue={updateValue}
                         value={value}
                         addFiles={addFiles}
-                        sendMessage={sendMessage}
+                        sendMessage={handleSendMessage}
                         inputRef={inputRef}
                         setIsFocused={setIsFocused}
                     />
@@ -196,8 +235,8 @@ export default function DraftInput({
                         />
                         <SendAction
                             testID={sendActionTestID}
-                            disabled={!canSend}
-                            sendMessage={sendMessage}
+                            disabled={sendActionDisabled}
+                            sendMessage={handleSendMessage}
                         />
                     </View>
                 </ScrollView>

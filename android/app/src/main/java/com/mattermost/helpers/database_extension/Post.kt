@@ -86,6 +86,7 @@ internal fun insertPost(db: Database, post: JSONObject) {
         val editAt = try { post.getDouble("edit_at") } catch (e: JSONException) { 0 }
         val isPinned = try { post.getBoolean("is_pinned") } catch (e: JSONException) { false }
         val message = try { post.getString("message") } catch (e: JSONException) { "" }
+        val messageSource = try { post.getString("message_source") } catch (e: JSONException) { "" }
         val metadata = try { post.getJSONObject("metadata") } catch (e: JSONException) { JSONObject() }
         val originalId = try { post.getString("original_id") } catch (e: JSONException) { "" }
         val pendingId = try { post.getString("pending_post_id") } catch (e: JSONException) { "" }
@@ -100,13 +101,13 @@ internal fun insertPost(db: Database, post: JSONObject) {
         db.execute(
                 """
                 INSERT INTO Post 
-                (id, channel_id, create_at, delete_at, update_at, edit_at, is_pinned, message, metadata, original_id, pending_post_id, 
+                (id, channel_id, create_at, delete_at, update_at, edit_at, is_pinned, message, message_source, metadata, original_id, pending_post_id, 
                 previous_post_id, root_id, type, user_id, props, _changed, _status) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'created')
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'created')
                 """.trimIndent(),
                 arrayOf(
                         id, channelId, createAt, deleteAt, updateAt, editAt,
-                        isPinned, message, metadata.toString(),
+                        isPinned, message, messageSource, metadata.toString(),
                         originalId, pendingId, prevId, rootId,
                         type, userId, props
                 )
@@ -139,6 +140,7 @@ internal fun updatePost(db: Database, post: JSONObject) {
         val editAt = try { post.getDouble("edit_at") } catch (e: JSONException) { 0 }
         val isPinned = try { post.getBoolean("is_pinned") } catch (e: JSONException) { false }
         val message = try { post.getString("message") } catch (e: JSONException) { "" }
+        val messageSource = try { post.getString("message_source") } catch (e: JSONException) { "" }
         val metadata = try { post.getJSONObject("metadata") } catch (e: JSONException) { JSONObject() }
         val originalId = try { post.getString("original_id") } catch (e: JSONException) { "" }
         val pendingId = try { post.getString("pending_post_id") } catch (e: JSONException) { "" }
@@ -154,13 +156,13 @@ internal fun updatePost(db: Database, post: JSONObject) {
         db.execute(
                 """
                 UPDATE Post SET channel_id = ?, create_at = ?, delete_at = ?, update_at =?, edit_at =?, 
-                is_pinned = ?, message = ?, metadata = ?, original_id = ?, pending_post_id = ?, previous_post_id = ?, 
+                is_pinned = ?, message = ?, message_source = ?, metadata = ?, original_id = ?, pending_post_id = ?, previous_post_id = ?, 
                 root_id = ?, type = ?, user_id = ?, props = ?, _status = 'updated' 
                 WHERE id = ?
                 """.trimIndent(),
                 arrayOf(
                         channelId, createAt, deleteAt, updateAt, editAt,
-                        isPinned, message, metadata.toString(),
+                        isPinned, message, messageSource, metadata.toString(),
                         originalId, pendingId, prevId, rootId,
                         type, userId, props,
                         id,

@@ -18,7 +18,7 @@ import type {GalleryItemType} from '@typings/screens/gallery';
 
 type MarkdownTableImageProps = {
     disabled?: boolean;
-    imagesMetadata: Record<string, PostImage>;
+    imagesMetadata: Record<string, PostImage | undefined>;
     location?: string;
     postId: string;
     serverURL?: string;
@@ -55,7 +55,8 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
     };
 
     const getFileInfo = () => {
-        const {height, width} = metadata;
+        const height = metadata?.height || 0;
+        const width = metadata?.width || 0;
         const link = decodeURIComponent(getImageSource());
         let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
         let extension = filename.split('.').pop();
@@ -109,7 +110,7 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
             />
         );
     } else {
-        const {height, width} = calculateDimensions(metadata.height, metadata.width, 100, 100);
+        const {height, width} = calculateDimensions(metadata?.height, metadata?.width, 100, 100);
         image = (
             <TouchableWithoutFeedback
                 disabled={disabled}
@@ -118,7 +119,7 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
                 <Animated.View style={[styles, {width, height}]}>
                     <ProgressiveImage
                         id={fileId}
-                        defaultSource={{uri: source}}
+                        imageUri={source}
                         forwardRef={ref}
                         onError={onLoadFailed}
                         resizeMode='contain'

@@ -14,26 +14,29 @@ import {getChannelById} from '@queries/servers/channel';
 import {getConfig, getCurrentTeamId} from '@queries/servers/system';
 import {showAppForm} from '@screens/navigation';
 import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 import {tryOpenURL} from '@utils/url';
 
 import type {Client} from '@client/rest';
 import type {IntlShape} from 'react-intl';
 
-export const executeCommand = async (serverUrl: string, intl: IntlShape, message: string, channelId: string, rootId?: string): Promise<{data?: CommandResponse; error?: string | {message: string}}> => {
+export const executeCommand = async (serverUrl: string, intl: IntlShape, message: string, channelId: string, rootId?: string): Promise<{data?: CommandResponse; error?: unknown}> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+    const {database} = operator;
 
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch (error) {
-        return {error: error as ClientErrorProps};
+        return {error};
     }
 
-    const channel = await getChannelById(operator.database, channelId);
-    const teamId = channel?.teamId || (await getCurrentTeamId(operator.database));
+    const channel = await getChannelById(database, channelId);
+    const teamId = channel?.teamId || (await getCurrentTeamId(database));
 
     const args: CommandArgs = {
         channel_id: channelId,
@@ -68,7 +71,8 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     try {
         data = await client.executeCommand(msg, args);
     } catch (error) {
-        return {error: error as ClientErrorProps};
+        logDebug('error on executeCommand', getFullErrorMessage(error));
+        return {error};
     }
 
     if (data?.trigger_id) { //eslint-disable-line camelcase
@@ -89,14 +93,14 @@ const executeAppCommand = async (serverUrl: string, intl: IntlShape, parser: App
     }
 
     const res = await doAppSubmit(serverUrl, creq, intl);
-    if (res.error) {
-        const errorResponse = res.error as AppCallResponse;
+    if ('error' in res) {
+        const errorResponse = res.error;
         return createErrorMessage(errorResponse.text || intl.formatMessage({
             id: 'apps.error.unknown',
             defaultMessage: 'Unknown error.',
         }));
     }
-    const callResp = res.data as AppCallResponse;
+    const callResp = res.data;
 
     switch (callResp.type) {
         case AppCallResponseTypes.OK:
@@ -158,31 +162,22 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
     return {data: true};
 };
 
-export const fetchCommands = async (serverUrl: string, teamId: string) => {
-    let client: Client;
+export const fetchCommands = async (serverUrl: string, teamId: string): Promise<{commands: Command[]} | {error: unknown}> => {
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error: error as ClientErrorProps};
-    }
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         return {commands: await client.getCommandsList(teamId)};
     } catch (error) {
-        return {error: error as ClientErrorProps};
+        logDebug('error on fetchCommands', getFullErrorMessage(error));
+        return {error};
     }
 };
 
-export const fetchSuggestions = async (serverUrl: string, term: string, teamId: string, channelId: string, rootId?: string) => {
-    let client: Client;
+export const fetchSuggestions = async (serverUrl: string, term: string, teamId: string, channelId: string, rootId?: string): Promise<{suggestions: AutocompleteSuggestion[]} | {error: unknown}> => {
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error: error as ClientErrorProps};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         return {suggestions: await client.getCommandAutocompleteSuggestionsList(term, teamId, channelId, rootId)};
     } catch (error) {
-        return {error: error as ClientErrorProps};
+        logDebug('error on fetchSuggestions', getFullErrorMessage(error));
+        return {error};
     }
 };

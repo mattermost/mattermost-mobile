@@ -15,7 +15,7 @@ extension Network {
             // remove existing users in the database
             users = [User]()
             let storedUserIds = Database.default.queryUsers(byIds: userIds, forServerUrl: serverUrl)
-            if !(userIds.filter{ !storedUserIds.contains($0) }).isEmpty {
+            if !(userIds.subtracting(storedUserIds)).isEmpty {
                 group.enter()
                 DispatchQueue.global(qos: .default).async {
                     self.fetchUsers(byIds: Array(userIds), forServerUrl: serverUrl) {data, response, error in
@@ -29,7 +29,7 @@ extension Network {
             }
             
             let storedUsernames = Database.default.queryUsers(byUsernames: usernames, forServerUrl: serverUrl)
-            if !(usernames.filter{ !storedUsernames.contains($0) }).isEmpty {
+            if !(usernames.subtracting(storedUsernames)).isEmpty {
                 group.enter()
                 DispatchQueue.global(qos: .default).async {
                     self.fetchUsers(byUsernames: Array(usernames), forServerUrl: serverUrl) {data, response, error in

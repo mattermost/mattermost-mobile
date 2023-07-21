@@ -32,7 +32,6 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
                 return queryPostsById(database, recentMentions, Q.asc).observe();
             }),
         ),
-        currentUser,
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),

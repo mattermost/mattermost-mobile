@@ -4,7 +4,7 @@
 /* eslint-disable new-cap */
 
 import React, {memo} from 'react';
-import {Touchable, TouchableOpacity, TouchableNativeFeedback, TouchableWithoutFeedback, View, StyleProp, ViewStyle} from 'react-native';
+import {Touchable, TouchableOpacity, TouchableNativeFeedback, TouchableWithoutFeedback, View, type StyleProp, type ViewStyle} from 'react-native';
 
 type TouchableProps = Touchable & {
     children: React.ReactNode | React.ReactNode[];

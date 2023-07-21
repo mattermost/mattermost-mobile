@@ -5,7 +5,7 @@
 
 import {debounce} from 'lodash';
 import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useCallback} from 'react';
-import {GestureResponderEvent, LayoutChangeEvent, NativeSyntheticEvent, StyleProp, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
+import {type GestureResponderEvent, type LayoutChangeEvent, type NativeSyntheticEvent, type StyleProp, type TargetedEvent, Text, TextInput, type TextInputFocusEventData, type TextInputProps, type TextStyle, TouchableWithoutFeedback, View, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming, Easing} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -19,11 +19,14 @@ const BORDER_FOCUSED_WIDTH = 2;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        height: DEFAULT_INPUT_HEIGHT + (2 * BORDER_DEFAULT_WIDTH),
         width: '100%',
     },
     errorContainer: {
         flexDirection: 'row',
+
+        // Hack to properly place text in flexbox
+        borderColor: 'transparent',
+        borderWidth: 1,
     },
     errorIcon: {
         color: theme.errorTextColor,
@@ -174,13 +177,8 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
 
     const combinedContainerStyle = useMemo(() => {
-        const res: StyleProp<ViewStyle> = [styles.container];
-        if (multiline) {
-            res.push({height: 100 + (2 * BORDER_DEFAULT_WIDTH)});
-        }
-        res.push(containerStyle);
-        return res;
-    }, [styles, containerStyle, multiline]);
+        return [styles.container, containerStyle];
+    }, [styles, containerStyle]);
 
     const combinedTextInputContainerStyle = useMemo(() => {
         const res: StyleProp<TextStyle> = [styles.textInput];

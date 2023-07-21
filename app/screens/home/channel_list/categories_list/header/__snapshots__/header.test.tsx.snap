@@ -2,18 +2,16 @@
 
 exports[`components/channel_list/header Channel List Header Component should match snapshot 1`] = `
 <View
-  animatedStyle={
-    {
-      "value": {
+  style={
+    [
+      {
         "marginLeft": 0,
       },
-    }
-  }
-  collapsable={false}
-  style={
-    {
-      "marginLeft": 0,
-    }
+      {
+        "paddingLeft": 18,
+        "paddingRight": 20,
+      },
+    ]
   }
 >
   <View

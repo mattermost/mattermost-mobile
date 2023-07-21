@@ -37,18 +37,33 @@ function ipa() {
   esac
 }
 
+function installGemsAndPods() {
+    echo "Installing Gems"
+    npm run ios-gems
+    echo "Getting Cocoapods dependencies"
+    npm run pod-install
+}
+
+function installGemsAndPodsM1() {
+    echo "Installing Gems"
+    npm run ios-gems-m1
+    echo "Getting Cocoapods dependencies"
+    npm run pod-install-m1
+}
+
 function setup() {
     if [[ -z "$SKIP_SETUP" ]]; then
         npm run clean || exit 1
         npm install --ignore-scripts || exit 1
         npx patch-package || exit 1
-        node node_modules/react-native-webrtc/tools/downloadWebRTC.js || exit 1
+        node node_modules/\@sentry/cli/scripts/install.js || exit 1
 
         if [[ "$1" == "ios"* ]]; then
-          echo "Installing Gems"
-          npm run ios-gems &> /dev/null || exit 1
-          echo "Getting Cocoapods dependencies"
-          npm run pod-install || exit 1
+          if [[ $(uname -p) == 'arm' ]]; then
+            installGemsAndPodsM1 || exit 1
+          else
+            installGemsAndPods || exit 1
+          fi
         fi
 
         COMPASS_ICONS="node_modules/@mattermost/compass-icons/font/compass-icons.ttf"
@@ -70,8 +85,8 @@ function setup() {
         fi
 
         echo "Installing Fastane"
-        if !gem list bundler -i --version 2.1.4 > /dev/null 2>&1; then
-          gem install bundler --versio 2.1.4
+        if !gem list bundler -i --version 2.3.26 > /dev/null 2>&1; then
+          gem install bundler --versio 2.3.26
         fi
         cd fastlane && bundle install && cd .. || exit 1
     fi

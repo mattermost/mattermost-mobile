@@ -5,7 +5,7 @@ import moment from 'moment-timezone';
 import React, {useCallback, useEffect, useMemo, useReducer} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
@@ -46,7 +46,7 @@ type NewStatusType = {
 
 type Props = {
     customStatusExpirySupported: boolean;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     recentCustomStatuses: UserCustomStatus[];
     componentId: AvailableScreens;
 }
@@ -80,8 +80,8 @@ const DEFAULT_DURATION: CustomStatusDuration = 'today';
 const BTN_UPDATE_STATUS = 'update-custom-status';
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
-const calculateExpiryTime = (duration: CustomStatusDuration, currentUser: UserModel, expiresAt: moment.Moment): string => {
-    const userTimezone = getTimezone(currentUser.timezone);
+const calculateExpiryTime = (duration: CustomStatusDuration, currentUser: UserModel | undefined, expiresAt: moment.Moment): string => {
+    const userTimezone = getTimezone(currentUser?.timezone);
     const currentTime = getCurrentMomentForTimezone(userTimezone);
 
     switch (duration) {
@@ -162,7 +162,7 @@ const CustomStatus = ({
     }, [currentUser]);
 
     const initialStatus = useMemo(() => {
-        const userTimezone = getTimezone(currentUser.timezone);
+        const userTimezone = getTimezone(currentUser?.timezone);
 
         // May be a ref
         const isCustomStatusExpired = verifyExpiredStatus(currentUser);
@@ -239,6 +239,10 @@ const CustomStatus = ({
     }, [openClearAfterModal]);
 
     const handleSetStatus = useCallback(async () => {
+        if (!currentUser) {
+            return;
+        }
+
         if (isStatusSet) {
             let isStatusSame =
                 storedStatus?.emoji === newStatus.emoji &&
@@ -270,9 +274,9 @@ const CustomStatus = ({
                 dispatchStatus({type: 'fromUserCustomStatus', status});
             }
         } else if (storedStatus?.emoji) {
-            const unsetResponse = await unsetCustomStatus(serverUrl);
+            const {error} = await unsetCustomStatus(serverUrl);
 
-            if (unsetResponse?.data) {
+            if (!error) {
                 updateLocalCustomStatus(serverUrl, currentUser, undefined);
             }
         }

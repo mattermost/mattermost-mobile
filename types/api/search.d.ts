@@ -13,4 +13,5 @@ type PostSearchRequest = {
     error?: unknown;
     order?: string[];
     posts?: Post[];
+    matches?: SearchMatches;
 }

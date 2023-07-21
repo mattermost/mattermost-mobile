@@ -12,8 +12,8 @@ import ImagePreview from './image_preview';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhance = withObservables(['metadata'], ({database, metadata}: WithDatabaseArgs & {metadata: PostMetadata}) => {
-    const link = metadata.embeds?.[0].url;
+const enhance = withObservables(['metadata'], ({database, metadata}: WithDatabaseArgs & {metadata: PostMetadata | undefined | null}) => {
+    const link = metadata?.embeds?.[0].url;
 
     return {
         expandedLink: observeExpandedLinks(database).pipe(

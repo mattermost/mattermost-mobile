@@ -14,6 +14,6 @@ interface Session {
 }
 
 interface LoginActionResponse {
-    error?: ClientErrorProps | Error | string;
+    error?: unknown;
     failed: boolean;
 }

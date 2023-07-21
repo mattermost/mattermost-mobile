@@ -15,6 +15,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     displayName?: string;
     user?: UserModel;
+    hideGuestTags: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -47,7 +48,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const DirectMessage = ({displayName, user}: Props) => {
+const DirectMessage = ({
+    displayName,
+    user,
+    hideGuestTags,
+}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const directMessageUserTestId = `channel_info.title.direct_message.${user?.id}`;
@@ -74,7 +79,7 @@ const DirectMessage = ({displayName, user}: Props) => {
                     >
                         {displayName}
                     </Text>
-                    {user?.isGuest &&
+                    {user?.isGuest && !hideGuestTags &&
                     <GuestTag
                         textStyle={styles.tag}
                         style={styles.tagContainer}

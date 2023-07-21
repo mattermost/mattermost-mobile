@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleProp, TouchableHighlight, View, ViewStyle} from 'react-native';
+import {Keyboard, type StyleProp, TouchableHighlight, View, type ViewStyle} from 'react-native';
 
 import {fetchMissingProfilesByIds, fetchMissingProfilesByUsernames} from '@actions/remote/user';
 import Markdown from '@components/markdown';

@@ -5,7 +5,7 @@ import {fetchPostAuthors} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
+import {countUsersFromMentions, getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {generateId} from '@utils/general';
@@ -15,6 +15,7 @@ import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {updateLastPostAt, updateMyChannelLastFetchedAt} from './channel';
 
+import type {Q} from '@nozbe/watermelondb';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -157,6 +158,7 @@ export async function markPostAsDeleted(serverUrl: string, post: Post, prepareRe
         const model = dbPost.prepareUpdate((p) => {
             p.deleteAt = Date.now();
             p.message = '';
+            p.messageSource = '';
             p.metadata = null;
             p.props = undefined;
         });
@@ -239,12 +241,78 @@ export async function storePostsForChannel(
     }
 }
 
-export async function getPosts(serverUrl: string, ids: string[]) {
+export async function getPosts(serverUrl: string, ids: string[], sort?: Q.SortOrder) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        return queryPostsById(database, ids).fetch();
+        return queryPostsById(database, ids, sort).fetch();
     } catch (error) {
         return [];
+    }
+}
+
+export async function addPostAcknowledgement(serverUrl: string, postId: string, userId: string, acknowledgedAt: number, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const post = await getPostById(database, postId);
+        if (!post) {
+            throw new Error('Post not found');
+        }
+
+        // Check if the post has already been acknowledged by the user
+        const isAckd = post.metadata?.acknowledgements?.find((a) => a.user_id === userId);
+        if (isAckd) {
+            return {error: false};
+        }
+
+        const acknowledgements = [...(post.metadata?.acknowledgements || []), {
+            user_id: userId,
+            acknowledged_at: acknowledgedAt,
+            post_id: postId,
+        }];
+
+        const model = post.prepareUpdate((p) => {
+            p.metadata = {
+                ...p.metadata,
+                acknowledgements,
+            };
+        });
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([model], 'addPostAcknowledgement');
+        }
+
+        return {model};
+    } catch (error) {
+        logError('Failed addPostAcknowledgement', error);
+        return {error};
+    }
+}
+
+export async function removePostAcknowledgement(serverUrl: string, postId: string, userId: string, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const post = await getPostById(database, postId);
+        if (!post) {
+            throw new Error('Post not found');
+        }
+
+        const model = post.prepareUpdate((record) => {
+            record.metadata = {
+                ...post.metadata,
+                acknowledgements: post.metadata?.acknowledgements?.filter(
+                    (a) => a.user_id !== userId,
+                ) || [],
+            };
+        });
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([model], 'removePostAcknowledgement');
+        }
+
+        return {model};
+    } catch (error) {
+        logError('Failed removePostAcknowledgement', error);
+        return {error};
     }
 }
 
@@ -273,5 +341,14 @@ export async function deletePosts(serverUrl: string, postIds: string[]) {
         return {error: false};
     } catch (error) {
         return {error};
+    }
+}
+
+export function getUsersCountFromMentions(serverUrl: string, mentions: string[]): Promise<number> {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        return countUsersFromMentions(database, mentions);
+    } catch (error) {
+        return Promise.resolve(0);
     }
 }

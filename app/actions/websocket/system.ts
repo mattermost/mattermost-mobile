@@ -8,16 +8,13 @@ import DatabaseManager from '@database/manager';
 import {getConfig, getLicense} from '@queries/servers/system';
 
 export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
     try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const license = msg.data.license;
         const systems: IdValue[] = [{id: SYSTEM_IDENTIFIERS.LICENSE, value: JSON.stringify(license)}];
 
-        const prevLicense = await getLicense(operator.database);
+        const prevLicense = await getLicense(database);
         await operator.handleSystem({systems, prepareRecordsOnly: false});
 
         if (license?.LockTeammateNameDisplay && (prevLicense?.LockTeammateNameDisplay !== license.LockTeammateNameDisplay)) {
@@ -29,14 +26,10 @@ export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocke
 }
 
 export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
     try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const config = msg.data.config;
-        const prevConfig = await getConfig(operator.database);
+        const prevConfig = await getConfig(database);
         await storeConfig(serverUrl, config);
         if (config?.LockTeammateNameDisplay && (prevConfig?.LockTeammateNameDisplay !== config.LockTeammateNameDisplay)) {
             updateDmGmDisplayName(serverUrl);

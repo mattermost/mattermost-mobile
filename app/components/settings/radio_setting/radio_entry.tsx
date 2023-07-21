@@ -31,6 +31,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 12,
             color: theme.linkColor,
         },
+        text: {
+            fontSize: 12,
+            color: theme.centerChannelColor,
+        },
     };
 });
 
@@ -61,7 +65,7 @@ function RadioEntry({
         >
             <View style={style.container}>
                 <View style={style.rowContainer}>
-                    <Text>{text}</Text>
+                    <Text style={style.text}>{text}</Text>
                 </View>
                 {isSelected && (
                     <CompassIcon

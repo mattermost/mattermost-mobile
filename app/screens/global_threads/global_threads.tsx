@@ -4,11 +4,13 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {setGlobalThreadsTab} from '@actions/local/systems';
 import NavigationHeader from '@components/navigation_header';
+import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
@@ -49,6 +51,14 @@ const GlobalThreads = ({componentId, globalThreadsTab}: Props) => {
         return {flex: 1, marginTop};
     }, [defaultHeight]);
 
+    const headerLeftComponent = useMemo(() => {
+        if (isTablet) {
+            return undefined;
+        }
+
+        return (<OtherMentionsBadge channelId={Screens.GLOBAL_THREADS}/>);
+    }, [isTablet]);
+
     useEffect(() => {
         mounted.current = true;
         return () => {
@@ -85,6 +95,7 @@ const GlobalThreads = ({componentId, globalThreadsTab}: Props) => {
                         defaultMessage: 'Threads',
                     })
                 }
+                leftComponent={headerLeftComponent}
             />
             <View style={contextStyle}>
                 <RoundedHeaderContext/>

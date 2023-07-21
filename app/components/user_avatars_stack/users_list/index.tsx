@@ -4,7 +4,7 @@
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, PanResponder, StyleProp, StyleSheet, TouchableOpacity, ViewStyle} from 'react-native';
+import {Keyboard, type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, PanResponder} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import UserItem from '@components/user_item';
@@ -23,40 +23,30 @@ type Props = {
 
 type ItemProps = {
     channelId: string;
-    containerStyle: StyleProp<ViewStyle>;
     location: string;
     user: UserModel;
 }
 
-const style = StyleSheet.create({
-    container: {
-        paddingLeft: 0,
-    },
-});
-
-const Item = ({channelId, containerStyle, location, user}: ItemProps) => {
+const Item = ({channelId, location, user}: ItemProps) => {
     const intl = useIntl();
     const theme = useTheme();
-    const openUserProfile = async () => {
-        if (user) {
-            await dismissBottomSheet(Screens.BOTTOM_SHEET);
-            const screen = Screens.USER_PROFILE;
-            const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-            const closeButtonId = 'close-user-profile';
-            const props = {closeButtonId, location, userId: user.id, channelId};
 
-            Keyboard.dismiss();
-            openAsBottomSheet({screen, title, theme, closeButtonId, props});
-        }
-    };
+    const openUserProfile = useCallback(async (u: UserModel | UserProfile) => {
+        await dismissBottomSheet(Screens.BOTTOM_SHEET);
+        const screen = Screens.USER_PROFILE;
+        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+        const closeButtonId = 'close-user-profile';
+        const props = {closeButtonId, location, userId: u.id, channelId};
+
+        Keyboard.dismiss();
+        openAsBottomSheet({screen, title, theme, closeButtonId, props});
+    }, [location, channelId, theme, intl]);
 
     return (
-        <TouchableOpacity onPress={openUserProfile}>
-            <UserItem
-                user={user}
-                containerStyle={containerStyle}
-            />
-        </TouchableOpacity>
+        <UserItem
+            user={user}
+            onUserPress={openUserProfile}
+        />
     );
 };
 
@@ -89,7 +79,6 @@ const UsersList = ({channelId, location, type = 'FlatList', users}: Props) => {
             channelId={channelId}
             location={location}
             user={item}
-            containerStyle={style.container}
         />
     ), [channelId, location]);
 

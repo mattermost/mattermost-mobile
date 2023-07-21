@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {IntlShape, useIntl} from 'react-intl';
-import {StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
+import {type IntlShape, useIntl} from 'react-intl';
+import {type StyleProp, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import Markdown from '@components/markdown';
+import {postTypeMessages} from '@components/post_list/combined_user_activity/messages';
 import {Post} from '@constants';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
@@ -221,7 +222,7 @@ const renderUnarchivedMessage = ({post, author, location, styles, intl, theme}: 
     return renderMessage({post, styles, intl, location, localeHolder, values, theme});
 };
 
-const renderAddGuestToChannelMessage = ({post, location, styles, intl, theme}: RenderersProps) => {
+const renderAddGuestToChannelMessage = ({post, location, styles, intl, theme}: RenderersProps, hideGuestTags: boolean) => {
     if (!post.props.username || !post.props.addedUsername) {
         return null;
     }
@@ -229,27 +230,27 @@ const renderAddGuestToChannelMessage = ({post, location, styles, intl, theme}: R
     const username = renderUsername(post.props.username);
     const addedUsername = renderUsername(post.props.addedUsername);
 
-    const localeHolder = {
+    const localeHolder = hideGuestTags ? postTypeMessages[Post.POST_TYPES.ADD_TO_CHANNEL].one : {
         id: t('api.channel.add_guest.added'),
         defaultMessage: '{addedUsername} added to the channel as a guest by {username}.',
     };
 
-    const values = {username, addedUsername};
+    const values = hideGuestTags ? {firstUser: addedUsername, actor: username} : {username, addedUsername};
     return renderMessage({post, styles, intl, location, localeHolder, values, theme});
 };
 
-const renderGuestJoinChannelMessage = ({post, styles, location, intl, theme}: RenderersProps) => {
+const renderGuestJoinChannelMessage = ({post, styles, location, intl, theme}: RenderersProps, hideGuestTags: boolean) => {
     if (!post.props.username) {
         return null;
     }
 
     const username = renderUsername(post.props.username);
-    const localeHolder = {
+    const localeHolder = hideGuestTags ? postTypeMessages[Post.POST_TYPES.JOIN_CHANNEL].one : {
         id: t('api.channel.guest_join_channel.post_and_forget'),
         defaultMessage: '{username} joined the channel as a guest.',
     };
 
-    const values = {username};
+    const values = hideGuestTags ? {firstUser: username} : {username};
     return renderMessage({post, styles, intl, location, localeHolder, values, theme});
 };
 
@@ -259,16 +260,21 @@ const systemMessageRenderers = {
     [Post.POST_TYPES.PURPOSE_CHANGE]: renderPurposeChangeMessage,
     [Post.POST_TYPES.CHANNEL_DELETED]: renderArchivedMessage,
     [Post.POST_TYPES.CHANNEL_UNARCHIVED]: renderUnarchivedMessage,
-    [Post.POST_TYPES.GUEST_JOIN_CHANNEL]: renderGuestJoinChannelMessage,
-    [Post.POST_TYPES.ADD_GUEST_TO_CHANNEL]: renderAddGuestToChannelMessage,
 };
 
-export const SystemMessage = ({post, location, author}: SystemMessageProps) => {
+export const SystemMessage = ({post, location, author, hideGuestTags}: SystemMessageProps & { hideGuestTags: boolean}) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const textStyles = getMarkdownTextStyles(theme);
     const styles = {messageStyle: style.systemMessage, textStyles, containerStyle: style.container};
+
+    if (post.type === Post.POST_TYPES.GUEST_JOIN_CHANNEL) {
+        return renderGuestJoinChannelMessage({post, author, location, styles, intl, theme}, hideGuestTags);
+    }
+    if (post.type === Post.POST_TYPES.ADD_GUEST_TO_CHANNEL) {
+        return renderAddGuestToChannelMessage({post, author, location, styles, intl, theme}, hideGuestTags);
+    }
 
     const renderer = systemMessageRenderers[post.type];
     if (!renderer) {

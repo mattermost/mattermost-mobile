@@ -7,17 +7,17 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
+import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from '@components/files/file_filter';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import TeamPickerIcon from '@screens/home/search/team_picker_icon';
 import {bottomSheet} from '@screens/navigation';
-import {FileFilter, FileFilters} from '@utils/file';
+import {type FileFilter, FileFilters} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {TabTypes, TabType} from '@utils/search';
+import {TabTypes, type TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
 import SelectButton from './header_button';
 
 import type TeamModel from '@typings/database/models/servers/team';
@@ -45,7 +45,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         badge: {
             backgroundColor: theme.buttonBg,
             borderColor: theme.centerChannelBg,
-            marginTop: 8,
+            marginTop: 2,
         },
         buttonsContainer: {
             marginBottom: 12,

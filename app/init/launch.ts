@@ -2,15 +2,17 @@
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
-import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
+import {Alert, AppState, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
+import {switchToChannelById} from '@actions/remote/channel';
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import LocalConfig from '@assets/config.json';
 import {DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
-import {getOnboardingViewed} from '@queries/app/global';
+import {getLastViewedChannelIdAndServer, getOnboardingViewed, getLastViewedThreadIdAndServer} from '@queries/app/global';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
@@ -42,10 +44,13 @@ export const initialLaunch = async () => {
         tapped = delivered.find((d) => (d as unknown as NotificationData).ack_id === notification?.payload.ack_id) == null;
     }
     if (initialNotificationTypes.includes(notification?.payload?.type) && tapped) {
-        return launchAppFromNotification(convertToNotificationData(notification!), true);
+        const notificationData = convertToNotificationData(notification!);
+        EphemeralStore.setProcessingNotification(notificationData.identifier);
+        return launchAppFromNotification(notificationData, true);
     }
 
-    return launchApp({launchType: Launch.Normal, coldStart: notification ? tapped : true});
+    const coldStart = notification ? (tapped || AppState.currentState === 'active') : true;
+    return launchApp({launchType: Launch.Normal, coldStart});
 };
 
 const launchAppFromDeepLink = async (deepLinkUrl: string, coldStart = false) => {
@@ -169,6 +174,15 @@ const launchToHome = async (props: LaunchProps) => {
         }
         case Launch.Normal:
             if (props.coldStart) {
+                const lastViewedChannel = await getLastViewedChannelIdAndServer();
+                const lastViewedThread = await getLastViewedThreadIdAndServer();
+
+                if (lastViewedThread && lastViewedThread.server_url === props.serverUrl && lastViewedThread.thread_id) {
+                    fetchAndSwitchToThread(props.serverUrl!, lastViewedThread.thread_id);
+                } else if (lastViewedChannel && lastViewedChannel.server_url === props.serverUrl && lastViewedChannel.channel_id) {
+                    switchToChannelById(props.serverUrl!, lastViewedChannel.channel_id);
+                }
+
                 appEntry(props.serverUrl!);
             }
             break;

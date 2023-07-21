@@ -46,14 +46,16 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
     let tch: TeamChannelHistory|undefined;
 
     try {
+        const {database} = operator;
+
         // Exlude GLOBAL_THREADS from channel check
         if (channelId !== Screens.GLOBAL_THREADS) {
-            const myChannel = (await operator.database.get<MyChannelModel>(MY_CHANNEL).find(channelId));
+            const myChannel = (await database.get<MyChannelModel>(MY_CHANNEL).find(channelId));
             if (!myChannel) {
                 return [];
             }
         }
-        const teamChannelHistory = await getTeamChannelHistory(operator.database, teamId);
+        const teamChannelHistory = await getTeamChannelHistory(database, teamId);
         const channelIdSet = new Set(teamChannelHistory);
         if (channelIdSet.has(channelId)) {
             channelIdSet.delete(channelId);
@@ -111,7 +113,8 @@ export const removeChannelFromTeamHistory = async (operator: ServerDataOperator,
     let tch: TeamChannelHistory;
 
     try {
-        const teamChannelHistory = await getTeamChannelHistory(operator.database, teamId);
+        const {database} = operator;
+        const teamChannelHistory = await getTeamChannelHistory(database, teamId);
         const channelIdSet = new Set(teamChannelHistory);
         if (channelIdSet.has(channelId)) {
             channelIdSet.delete(channelId);
@@ -132,7 +135,8 @@ export const removeChannelFromTeamHistory = async (operator: ServerDataOperator,
 };
 
 export const addTeamToTeamHistory = async (operator: ServerDataOperator, teamId: string, prepareRecordsOnly = false) => {
-    const teamHistory = (await getTeamHistory(operator.database));
+    const {database} = operator;
+    const teamHistory = (await getTeamHistory(database));
     const teamHistorySet = new Set(teamHistory);
     if (teamHistorySet.has(teamId)) {
         teamHistorySet.delete(teamId);
@@ -144,7 +148,8 @@ export const addTeamToTeamHistory = async (operator: ServerDataOperator, teamId:
 };
 
 export const removeTeamFromTeamHistory = async (operator: ServerDataOperator, teamId: string, prepareRecordsOnly = false) => {
-    const teamHistory = (await getTeamHistory(operator.database));
+    const {database} = operator;
+    const teamHistory = (await getTeamHistory(database));
     const teamHistorySet = new Set(teamHistory);
     if (!teamHistorySet.has(teamId)) {
         return undefined;

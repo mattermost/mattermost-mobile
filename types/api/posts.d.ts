@@ -20,8 +20,16 @@ type PostType =
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph';
 
-type PostPriorityData = {
-    priority: ''|'urgent'|'important';
+type PostAcknowledgement = {
+    post_id: string;
+    user_id: string;
+    acknowledged_at: number;
+}
+
+type PostPriority = {
+    priority: '' | 'urgent' | 'important';
+    requested_ack?: boolean;
+    persistent_notifications?: boolean;
 };
 
 type PostEmbed = {
@@ -38,12 +46,13 @@ type PostImage = {
 };
 
 type PostMetadata = {
+    acknowledgements?: PostAcknowledgement[];
     embeds?: PostEmbed[];
     emojis?: CustomEmoji[];
     files?: FileInfo[];
-    images?: Dictionary<PostImage>;
+    images?: Dictionary<PostImage | undefined>;
     reactions?: Reaction[];
-    priority?: PostPriorityData;
+    priority?: PostPriority;
 };
 
 type Post = {
@@ -59,6 +68,7 @@ type Post = {
     root_id: string;
     original_id: string;
     message: string;
+    message_source?: string;
     type: PostType;
     participants?: null | UserProfile[]|string[];
     props: Record<string, any>;
@@ -83,6 +93,12 @@ type PostResponse = {
     posts: IDMappedObjects<Post>;
     prev_post_id?: string;
 };
+
+type SearchMatches = {[key: $ID<Post>]: string[]};
+
+type SearchPostResponse = PostResponse & {
+    matches?: SearchMatches;
+}
 
 type ProcessedPosts = {
     order: string[];
@@ -119,6 +135,10 @@ type MessageAttachmentField = {
 type PostSearchParams = {
     terms: string;
     is_or_search: boolean;
+    include_deleted_channels?: boolean;
+    time_zone_offset?: number;
+    page?: number;
+    per_page?: number;
 };
 
 type FetchPaginatedThreadOptions = {

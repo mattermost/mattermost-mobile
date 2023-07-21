@@ -9,7 +9,6 @@ import {fetchChannelStats, removeMemberFromChannel, updateChannelMemberSchemeRol
 import OptionItem from '@components/option_item';
 import {Events, Members} from '@constants';
 import {useServerUrl} from '@context/server';
-import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 
@@ -19,31 +18,31 @@ const {MAKE_CHANNEL_ADMIN, MAKE_CHANNEL_MEMBER, REMOVE_USER} = Members.ManageOpt
 
 const messages = defineMessages({
     role_change_error: {
-        id: t('mobile.manage_members.change_role.error'),
+        id: 'mobile.manage_members.change_role.error',
         defaultMessage: 'An error occurred while trying to update the role. Please check your connection and try again.',
     },
     make_channel_admin: {
-        id: t('mobile.manage_members.make_channel_admin'),
+        id: 'mobile.manage_members.make_channel_admin',
         defaultMessage: 'Make Channel Admin',
     },
     make_channel_member: {
-        id: t('mobile.manage_members.make_channel_member'),
+        id: 'mobile.manage_members.make_channel_member',
         defaultMessage: 'Make Channel Member',
     },
     remove_title: {
-        id: t('mobile.manage_members.remove_member'),
+        id: 'mobile.manage_members.remove_member',
         defaultMessage: 'Remove From Channel',
     },
     remove_message: {
-        id: t('mobile.manage_members.message'),
+        id: 'mobile.manage_members.message',
         defaultMessage: 'Are you sure you want to remove the selected member from the channel?',
     },
     remove_cancel: {
-        id: t('mobile.manage_members.cancel'),
+        id: 'mobile.manage_members.cancel',
         defaultMessage: 'Cancel',
     },
     remove_confirm: {
-        id: t('mobile.manage_members.remove'),
+        id: 'mobile.manage_members.remove',
         defaultMessage: 'Remove',
     },
 });
@@ -62,8 +61,13 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
     const serverUrl = useServerUrl();
 
     const handleRemoveUser = useCallback(async () => {
-        removeMemberFromChannel(serverUrl, channelId, userId);
-        fetchChannelStats(serverUrl, channelId, false);
+        removeMemberFromChannel(serverUrl, channelId, userId).then(
+            (res) => {
+                if (!res.error) {
+                    fetchChannelStats(serverUrl, channelId, false);
+                }
+            },
+        );
         await dismissBottomSheet();
         DeviceEventEmitter.emit(Events.REMOVE_USER_FROM_CHANNEL, userId);
     }, [channelId, serverUrl, userId]);
@@ -85,7 +89,7 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
 
     const updateChannelMemberSchemeRole = useCallback(async (schemeAdmin: boolean) => {
         const result = await updateChannelMemberSchemeRoles(serverUrl, channelId, userId, true, schemeAdmin);
-        if (result.error) {
+        if ('error' in result) {
             alertErrorWithFallback(intl, result.error, messages.role_change_error);
         }
         await dismissBottomSheet();

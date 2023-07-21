@@ -244,6 +244,7 @@ extension Database {
         let rootId = Expression<String>("root_id")
         let originalId = Expression<String>("original_id")
         let message = Expression<String>("message")
+        let messageSource = Expression<String>("message_source")
         let metadata = Expression<String>("metadata")
         let type = Expression<String>("type")
         let pendingPostId = Expression<String?>("pending_post_id")
@@ -256,6 +257,12 @@ extension Database {
         for post in posts {
             var setter = [Setter]()
             let metadataSetters = createPostMetadataSetters(from: post)
+            let propsJSON = try? JSONSerialization.data(withJSONObject: post.props, options: [])
+            var propsString = "{}"
+            if let propsJSON = propsJSON {
+                propsString = String(data: propsJSON, encoding: String.Encoding.utf8) ?? "{}"
+            }
+
             setter.append(id <- post.id)
             setter.append(createAt <- post.createAt)
             setter.append(updateAt <- post.updateAt)
@@ -267,11 +274,12 @@ extension Database {
             setter.append(rootId <- post.rootId)
             setter.append(originalId <- post.originalId)
             setter.append(message <- post.message)
+            setter.append(messageSource <- post.messageSource)
             setter.append(metadata <- metadataSetters.metadata)
             setter.append(type <- post.type)
             setter.append(pendingPostId <- post.pendingPostId)
             setter.append(prevPostId <- post.prevPostId)
-            setter.append(props <- post.props)
+            setter.append(props <- propsString)
             setter.append(statusCol <- "created")
 
             let postSetter = PostSetters(

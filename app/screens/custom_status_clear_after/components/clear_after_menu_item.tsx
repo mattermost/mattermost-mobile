@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment, {Moment} from 'moment';
+import moment, {type Moment} from 'moment';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, TouchableOpacity} from 'react-native';
@@ -20,7 +20,7 @@ import DateTimePicker from './date_time_selector';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    currentUser: UserModel;
+    currentUser?: UserModel;
     duration: CustomStatusDuration;
     expiryTime?: string;
     handleItemClick: (duration: CustomStatusDuration, expiresAt: string) => void;
@@ -136,7 +136,7 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
                 <DateTimePicker
                     handleChange={handleCustomExpiresAtChange}
                     theme={theme}
-                    timezone={getTimezone(currentUser.timezone)}
+                    timezone={getTimezone(currentUser?.timezone)}
                 />
             )}
         </View>

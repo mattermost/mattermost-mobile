@@ -22,14 +22,14 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type NotificationMobileProps = {
     componentId: AvailableScreens;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     isCRTEnabled: boolean;
     sendPushNotifications: boolean;
 };
 const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
     const serverUrl = useServerUrl();
 
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
 
     const [pushSend, setPushSend] = useState<UserNotifyPropsPush>(notifyProps.push);
     const [pushStatus, setPushStatus] = useState<UserNotifyPropsPushStatus>(notifyProps.push_status);

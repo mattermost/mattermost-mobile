@@ -12,6 +12,7 @@ import FormattedText from '@components/formatted_text';
 import {Sso} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {isErrorWithMessage} from '@utils/errors';
 import {isBetaApp} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -50,7 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 100, 'Regular'),
         },
         infoTitle: {
-            color: theme.mentionColor,
+            color: theme.centerChannelColor,
             marginBottom: 4,
             ...typography('Heading', 700),
         },
@@ -82,9 +83,9 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
         parsedUrl.set('query', qs.stringify(query));
         const url = parsedUrl.toString();
 
-        const onError = (e: Error) => {
+        const onError = (e: unknown) => {
             let message;
-            if (e && Platform.OS === 'android' && e?.message?.match(/no activity found to handle intent/i)) {
+            if (e && Platform.OS === 'android' && isErrorWithMessage(e) && e.message.match(/no activity found to handle intent/i)) {
                 message = intl.formatMessage({
                     id: 'mobile.oauth.failed_to_open_link_no_browser',
                     defaultMessage: 'The link failed to open. Please verify that a browser is installed on the device.',

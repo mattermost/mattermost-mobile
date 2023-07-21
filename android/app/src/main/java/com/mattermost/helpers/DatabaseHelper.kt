@@ -39,7 +39,7 @@ class DatabaseHelper {
     private fun setDefaultDatabase(context: Context) {
         val databaseName = "app.db"
         val databasePath = Uri.fromFile(context.filesDir).toString() + "/" + databaseName
-        defaultDatabase = Database(databasePath, context)
+        defaultDatabase = Database.getInstance(databasePath, context)
     }
 
     internal fun JSONObject.toMap(): Map<String, Any?> = keys().asSequence().associateWith { it ->

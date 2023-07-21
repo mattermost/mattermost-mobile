@@ -3,9 +3,9 @@
 
 import {Alert} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
-import {Navigation} from 'react-native-navigation';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
+import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveAndJoinWithAlert, needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {
@@ -23,7 +23,7 @@ import {
     getCurrentCall,
     getChannelsWithCalls,
 } from '@calls/state';
-import {General, Preferences, Screens} from '@constants';
+import {General, Preferences} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -31,26 +31,21 @@ import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
+import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
-import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
-import {logWarning} from '@utils/log';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
 
 import {newConnection} from '../connection/connection';
 
 import type {
-    ApiResp,
+    AudioDevice,
     Call,
     CallParticipant,
-    CallReactionEmoji,
     CallsConnection,
-    RecordingState,
-    ServerCallState,
-    ServerChannelState,
 } from '@calls/types/calls';
-import type {Client} from '@client/rest';
-import type ClientError from '@client/rest/error';
+import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
 let connection: CallsConnection | null = null;
@@ -67,38 +62,27 @@ export const loadConfig = async (serverUrl: string, force = false) => {
         }
     }
 
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+        const data = await client.getCallsConfig();
+        const nextConfig = {...data, last_retrieved_at: now};
+        setConfig(serverUrl, nextConfig);
+        return {data: nextConfig};
     } catch (error) {
+        logDebug('error on loadConfig', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
-
-    let data;
-    try {
-        data = await client.getCallsConfig();
-    } catch (error) {
-        await forceLogoutIfNecessary(serverUrl, error as ClientError);
-        return {error};
-    }
-
-    const nextConfig = {...data, last_retrieved_at: now};
-    setConfig(serverUrl, nextConfig);
-    return {data: nextConfig};
 };
 
 export const loadCalls = async (serverUrl: string, userId: string) => {
-    let client: Client;
+    let resp: CallChannelState[] = [];
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-    let resp: ServerChannelState[] = [];
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         resp = await client.getCalls() || [];
     } catch (error) {
-        await forceLogoutIfNecessary(serverUrl, error as ClientError);
+        logDebug('error on loadCalls', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 
@@ -127,18 +111,13 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
 };
 
 export const loadCallForChannel = async (serverUrl: string, channelId: string) => {
-    let client: Client;
+    let resp: CallChannelState;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    let resp: ServerChannelState;
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         resp = await client.getCallForChannel(channelId);
     } catch (error) {
-        await forceLogoutIfNecessary(serverUrl, error as ClientError);
+        logDebug('error on loadCallForChannel', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 
@@ -158,7 +137,7 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
     return {data: {call, enabled: resp.enabled}};
 };
 
-const createCallAndAddToIds = (channelId: string, call: ServerCallState, ids: Set<string>) => {
+const createCallAndAddToIds = (channelId: string, call: CallState, ids: Set<string>) => {
     return {
         participants: call.users.reduce((accum, cur, curIdx) => {
             // Add the id to the set of UserModels we want to ensure are loaded.
@@ -189,18 +168,13 @@ export const loadConfigAndCalls = async (serverUrl: string, userId: string) => {
 };
 
 export const checkIsCallsPluginEnabled = async (serverUrl: string) => {
-    let client: Client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
     let data: ClientPluginManifest[] = [];
     try {
+        const client = NetworkManager.getClient(serverUrl);
         data = await client.getPluginsManifests();
     } catch (error) {
-        await forceLogoutIfNecessary(serverUrl, error as ClientError);
+        logDebug('error on checkIsCallsPluginEnabled', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 
@@ -214,24 +188,18 @@ export const checkIsCallsPluginEnabled = async (serverUrl: string) => {
 };
 
 export const enableChannelCalls = async (serverUrl: string, channelId: string, enable: boolean) => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         const res = await client.enableChannelCalls(channelId, enable);
         if (res.enabled === enable) {
             setChannelEnabled(serverUrl, channelId, enable);
         }
+        return {};
     } catch (error) {
-        await forceLogoutIfNecessary(serverUrl, error as ClientError);
+        logDebug('error on enableChannelCalls', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
-
-    return {};
 };
 
 export const joinCall = async (
@@ -240,7 +208,8 @@ export const joinCall = async (
     userId: string,
     hasMicPermission: boolean,
     title?: string,
-): Promise<{ error?: string | Error; data?: string }> => {
+    rootId?: string,
+): Promise<{ error?: unknown; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
     const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
@@ -258,14 +227,33 @@ export const joinCall = async (
     try {
         connection = await newConnection(serverUrl, channelId, () => {
             myselfLeftCall();
-        }, setScreenShareURL, hasMicPermission, title);
-    } catch (error: unknown) {
-        await forceLogoutIfNecessary(serverUrl, error as ClientError);
-        return {error: error as Error};
+        }, setScreenShareURL, hasMicPermission, title, rootId);
+    } catch (error) {
+        await forceLogoutIfNecessary(serverUrl, error);
+        return {error};
     }
 
     try {
         await connection.waitForPeerConnection();
+
+        // Follow the thread.
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return {data: channelId};
+        }
+
+        // If this was a call started by ourselves, then we should have subscribed in the start_call ws handler
+        // (unless we received the start_call ws before the post/thread ws).
+        // If this was us joining an existing call, follow the thread here.
+        const call = getCallsState(serverUrl).calls[channelId];
+        if (call && call.threadId) {
+            const thread = await getThreadById(database, call.threadId);
+            if (thread && !thread.isFollowing) {
+                const channel = await getChannelById(database, channelId);
+                updateThreadFollowing(serverUrl, channel?.teamId || '', call.threadId, true, false);
+            }
+        }
+
         return {data: channelId};
     } catch (e) {
         connection.disconnect();
@@ -278,17 +266,6 @@ export const leaveCall = () => {
     if (connection) {
         connection.disconnect();
         connection = null;
-    }
-    setSpeakerphoneOn(false);
-};
-
-export const leaveCallPopCallScreen = async () => {
-    leaveCall();
-
-    // Need to pop the call screen, if it's somewhere in the stack.
-    if (NavigationStore.getScreensInStack().includes(Screens.CALL)) {
-        await dismissAllModalsAndPopToScreen(Screens.CALL, 'Call');
-        Navigation.pop(Screens.CALL).catch(() => null);
     }
 };
 
@@ -322,7 +299,7 @@ export const unraiseHand = () => {
     }
 };
 
-export const sendReaction = (emoji: CallReactionEmoji) => {
+export const sendReaction = (emoji: EmojiData) => {
     if (connection) {
         connection.sendReaction(emoji);
     }
@@ -331,6 +308,10 @@ export const sendReaction = (emoji: CallReactionEmoji) => {
 export const setSpeakerphoneOn = (speakerphoneOn: boolean) => {
     InCallManager.setForceSpeakerphoneOn(speakerphoneOn);
     setSpeakerPhone(speakerphoneOn);
+};
+
+export const setPreferredAudioRoute = async (audio: AudioDevice) => {
+    return InCallManager.chooseAudioRoute(audio);
 };
 
 export const canEndCall = async (serverUrl: string, channelId: string) => {
@@ -397,56 +378,47 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
 };
 
 export const endCall = async (serverUrl: string, channelId: string) => {
-    const client = NetworkManager.getClient(serverUrl);
-
-    let data: ApiResp;
     try {
-        data = await client.endCall(channelId);
+        const client = NetworkManager.getClient(serverUrl);
+        const data = await client.endCall(channelId);
+        return data;
     } catch (error) {
-        await forceLogoutIfNecessary(serverUrl, error as ClientError);
+        logDebug('error on endCall', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
         throw error;
     }
-
-    return data;
 };
 
 export const startCallRecording = async (serverUrl: string, callId: string) => {
     needsRecordingErrorAlert();
-
-    const client = NetworkManager.getClient(serverUrl);
-
-    let data: ApiResp | RecordingState;
     try {
-        data = await client.startCallRecording(callId);
+        const client = NetworkManager.getClient(serverUrl);
+        const data = await client.startCallRecording(callId);
+        return data;
     } catch (error) {
-        await forceLogoutIfNecessary(serverUrl, error as ClientError);
-        logWarning('start call recording returned:', error);
+        logDebug('error on startCallRecording', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
         return error;
     }
-
-    return data;
 };
 
 export const stopCallRecording = async (serverUrl: string, callId: string) => {
     needsRecordingWillBePostedAlert();
     needsRecordingErrorAlert();
 
-    const client = NetworkManager.getClient(serverUrl);
-
-    let data: ApiResp | RecordingState;
     try {
-        data = await client.stopCallRecording(callId);
+        const client = NetworkManager.getClient(serverUrl);
+        const data = await client.stopCallRecording(callId);
+        return data;
     } catch (error) {
-        await forceLogoutIfNecessary(serverUrl, error as ClientError);
-        logWarning('stop call recording returned:', error);
+        logDebug('error on stopCallRecording', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
         return error;
     }
-
-    return data;
 };
 
 // handleCallsSlashCommand will return true if the slash command was handled
-export const handleCallsSlashCommand = async (value: string, serverUrl: string, channelId: string, currentUserId: string, intl: IntlShape):
+export const handleCallsSlashCommand = async (value: string, serverUrl: string, channelId: string, rootId: string, currentUserId: string, intl: IntlShape):
     Promise<{ handled?: boolean; error?: string }> => {
     const tokens = value.split(' ');
     if (tokens.length < 2 || tokens[0] !== '/call') {
@@ -467,15 +439,17 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
                 };
             }
             const title = tokens.length > 2 ? tokens.slice(2).join(' ') : undefined;
-            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title);
+            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
             return {handled: true};
         }
-        case 'join':
-            await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+        case 'join': {
+            const title = tokens.length > 2 ? tokens.slice(2).join(' ') : undefined;
+            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
             return {handled: true};
+        }
         case 'leave':
             if (getCurrentCall()?.channelId === channelId) {
-                await leaveCallPopCallScreen();
+                await leaveCall();
                 return {handled: true};
             }
             return {
@@ -588,7 +562,7 @@ const handleEndCall = async (serverUrl: string, channelId: string, currentUserId
                     try {
                         await endCall(serverUrl, channelId);
                     } catch (e) {
-                        const err = (e as ClientError).message || 'unable to complete command, see server logs';
+                        const err = getFullErrorMessage(e);
                         Alert.alert('Error', `Error: ${err}`);
                     }
                 },

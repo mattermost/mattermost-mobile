@@ -14,7 +14,7 @@
       {
         "rule": "cli",
         "binary": "npm",
-        "semver": ">=8.5.5 <9.0.0",
+        "semver": ">=7.24.0 <9.0.0",
         "error": "install npm 8.5.5 `npm i -g npm@8.5.5"
       }
     ],

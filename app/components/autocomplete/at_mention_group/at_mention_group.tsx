@@ -20,7 +20,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 40,
             paddingVertical: 8,
             paddingTop: 4,
-            paddingHorizontal: 16,
             flexDirection: 'row',
             alignItems: 'center',
         },

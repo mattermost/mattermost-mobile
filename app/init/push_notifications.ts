@@ -7,17 +7,17 @@ import {
     NotificationAction,
     NotificationBackgroundFetchResult,
     NotificationCategory,
-    NotificationCompletion,
+    type NotificationCompletion,
     Notifications,
-    NotificationTextInput,
-    Registered,
+    type NotificationTextInput,
+    type Registered,
 } from 'react-native-notifications';
 import {requestNotifications} from 'react-native-permissions';
 
 import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
+import {updateThread} from '@actions/local/thread';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
-import {markThreadAsRead} from '@actions/remote/thread';
 import {Device, Events, Navigation, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
@@ -25,7 +25,7 @@ import NativeNotifications from '@notifications';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
-import {dismissOverlay, showOverlay} from '@screens/navigation';
+import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isBetaApp} from '@utils/general';
@@ -90,7 +90,12 @@ class PushNotifications {
                 if (isCRTEnabled && payload.root_id) {
                     const thread = await getThreadById(database, payload.root_id);
                     if (thread?.isFollowing) {
-                        markThreadAsRead(serverUrl, payload.team_id, payload.post_id);
+                        const data: Partial<ThreadWithViewedAt> = {
+                            unread_mentions: 0,
+                            unread_replies: 0,
+                            last_viewed_at: Date.now(),
+                        };
+                        updateThread(serverUrl, payload.root_id, data);
                     }
                 } else {
                     markChannelAsViewed(serverUrl, payload.channel_id);
@@ -139,6 +144,7 @@ class PushNotifications {
             const condition3 = isInThreadScreen && !isSameThreadNotification;
 
             if (condition1 || condition2 || condition3) {
+                // Dismiss the screen if it's already visible or else it blocks the navigation
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
 
                 const screen = Screens.IN_APP_NOTIFICATION;
@@ -147,9 +153,6 @@ class PushNotifications {
                     serverName,
                     serverUrl,
                 };
-
-                // Dismiss the screen if it's already visible or else it blocks the navigation
-                await dismissOverlay(screen);
 
                 showOverlay(screen, passProps);
             }

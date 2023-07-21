@@ -4,24 +4,19 @@
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getCurrentUser} from '@queries/servers/user';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
-import type ClientError from '@client/rest/error';
-
 export async function fetchTermsOfService(serverUrl: string): Promise<{terms?: TermsOfService; error?: any}> {
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         const terms = await client.getTermsOfService();
         return {terms};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        logDebug('error on fetchTermsOfService', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }
@@ -47,7 +42,8 @@ export async function updateTermsOfServiceStatus(serverUrl: string, id: string, 
         }
         return {resp};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        logDebug('error on updateTermsOfServiceStatus', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }

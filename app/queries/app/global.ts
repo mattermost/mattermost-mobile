@@ -64,6 +64,16 @@ export const getFirstLaunch = async () => {
     return records[0].value;
 };
 
+export const getLastViewedChannelIdAndServer = async () => {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LAST_VIEWED_CHANNEL)?.fetch();
+    return records?.[0]?.value;
+};
+
+export const getLastViewedThreadIdAndServer = async () => {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LAST_VIEWED_THREAD)?.fetch();
+    return records?.[0]?.value;
+};
+
 export const observeTutorialWatched = (tutorial: string) => {
     const query = queryGlobalValue(tutorial);
     if (!query) {

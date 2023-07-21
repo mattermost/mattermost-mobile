@@ -5,11 +5,11 @@ import React, {useMemo} from 'react';
 import {StyleSheet, useWindowDimensions, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
+import FileResults from '@components/files_search/file_results';
 import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
-import {TabTypes, TabType} from '@utils/search';
+import {TabTypes, type TabType} from '@utils/search';
 
-import FileResults from './file_results';
 import PostResults from './post_results';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -46,6 +46,7 @@ type Props = {
     isTimezoneEnabled: boolean;
     loading: boolean;
     posts: PostModel[];
+    matches?: SearchMatches;
     publicLinkEnabled: boolean;
     scrollPaddingTop: number;
     searchValue: string;
@@ -62,6 +63,7 @@ const Results = ({
     isTimezoneEnabled,
     loading,
     posts,
+    matches,
     publicLinkEnabled,
     scrollPaddingTop,
     searchValue,
@@ -84,7 +86,7 @@ const Results = ({
     }, [selectedTab, width, !loading]);
 
     const paddingTop = useMemo(() => (
-        {paddingTop: scrollPaddingTop, flexGrow: 1}
+        {paddingTop: scrollPaddingTop}
     ), [scrollPaddingTop]);
 
     return (
@@ -105,6 +107,7 @@ const Results = ({
                         customEmojiNames={customEmojiNames}
                         isTimezoneEnabled={isTimezoneEnabled}
                         posts={posts}
+                        matches={matches}
                         paddingTop={paddingTop}
                         searchValue={searchValue}
                     />

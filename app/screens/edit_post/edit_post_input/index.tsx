@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import PasteInput, {PasteInputRef} from '@mattermost/react-native-paste-input';
+import PasteInput, {type PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {NativeSyntheticEvent, Platform, TextInputSelectionChangeEventData, useWindowDimensions, View} from 'react-native';
+import {type NativeSyntheticEvent, type TextInputSelectionChangeEventData, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {emptyFunction} from '@utils/general';
@@ -25,13 +25,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-const HEIGHT_DIFF = Platform.select({android: 40, default: 30});
-
 export type EditPostInputRef = {
     focus: () => void;
 }
 
 type PostInputProps = {
+    inputHeight: number;
     message: string;
     hasError: boolean;
     onTextSelectionChange: (curPos: number) => void;
@@ -39,21 +38,23 @@ type PostInputProps = {
 }
 
 const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
-    message, onChangeText, onTextSelectionChange, hasError,
+    inputHeight,
+    message,
+    onChangeText,
+    onTextSelectionChange,
+    hasError,
 }: PostInputProps, ref) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const {height} = useWindowDimensions();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const textInputHeight = (height / 2) - HEIGHT_DIFF;
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
 
     const inputRef = useRef<PasteInputRef>();
 
     const inputStyle = useMemo(() => {
-        return [styles.input, {height: textInputHeight}];
-    }, [textInputHeight, styles]);
+        return [styles.input, {height: inputHeight}];
+    }, [inputHeight, styles]);
 
     const onSelectionChange = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
         const curPos = event.nativeEvent.selection.end;
@@ -63,8 +64,8 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
     const containerStyle = useMemo(() => [
         styles.inputContainer,
         hasError && {marginTop: 0},
-        {height: textInputHeight},
-    ], [styles, textInputHeight]);
+        {height: inputHeight},
+    ], [styles, inputHeight]);
 
     useImperativeHandle(ref, () => ({
         focus: () => inputRef.current?.focus(),

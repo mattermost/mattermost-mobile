@@ -41,6 +41,7 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
             guest_count: 0,
             member_count: 0,
             pinned_post_count: 0,
+            files_count: 0,
         });
     }
 
@@ -95,12 +96,14 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
         let member_count = 0;
         let guest_count = 0;
         let pinned_post_count = 0;
+        let files_count = 0;
         if (storedChannel) {
             storedInfo = allChannelsInfoForTeam[c.id];
             if (storedInfo) {
                 member_count = storedInfo.memberCount;
                 guest_count = storedInfo.guestCount;
                 pinned_post_count = storedInfo.pinnedPostCount;
+                files_count = storedInfo.filesCount;
             }
         }
 
@@ -111,6 +114,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
             guest_count,
             member_count,
             pinned_post_count,
+            files_count,
         });
     }
 
@@ -328,7 +332,8 @@ export const observeCurrentChannel = (database: Database) => {
 
 export async function deleteChannelMembership(operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) {
     try {
-        const channelMembership = await operator.database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
+        const {database} = operator;
+        const channelMembership = await database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
         const models: Model[] = [];
         for (const membership of channelMembership) {
             models.push(membership.prepareDestroyPermanently());

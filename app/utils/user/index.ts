@@ -105,7 +105,7 @@ export const getUsersByUsername = (users: UserModel[]) => {
     return usersByUsername;
 };
 
-export const getUserTimezoneProps = (currentUser: UserModel) => {
+export const getUserTimezoneProps = (currentUser?: UserModel) => {
     if (currentUser?.timezone) {
         return {
             ...currentUser?.timezone,
@@ -120,8 +120,8 @@ export const getUserTimezoneProps = (currentUser: UserModel) => {
     };
 };
 
-export const getUserTimezone = (user: UserModel | UserProfile) => {
-    return getTimezone(user.timezone);
+export const getUserTimezone = (user?: UserModel | UserProfile) => {
+    return getTimezone(user?.timezone);
 };
 
 export const getTimezone = (timezone?: UserTimezone | null) => {
@@ -234,6 +234,10 @@ export function isShared(user: UserProfile | UserModel): boolean {
     return ('remoteId' in user) ? Boolean(user.remoteId) : Boolean(user.remote_id);
 }
 
+export function isDeactivated(user: UserProfile | UserModel): boolean {
+    return Boolean('deleteAt' in user ? user.deleteAt : user.delete_at);
+}
+
 export function removeUserFromList(userId: string, originalList: UserProfile[]): UserProfile[] {
     const list = [...originalList];
     for (let i = list.length - 1; i >= 0; i--) {
@@ -312,7 +316,7 @@ export function filterProfilesMatchingTerm(users: UserProfile[], term: string): 
 
         return profileSuggestions.
             filter((suggestion) => suggestion !== '').
-            some((suggestion) => suggestion.startsWith(trimmedTerm));
+            some((suggestion) => suggestion.includes(trimmedTerm));
     });
 }
 

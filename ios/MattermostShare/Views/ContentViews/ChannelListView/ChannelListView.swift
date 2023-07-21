@@ -16,9 +16,12 @@ struct ChannelListView: View {
       SearchBarView()
       if shareViewModel.search.isEmpty {
         HStack {
-          Text("RECENT")
-            .font(Font.custom("OpenSans-SemiBold", size: 12))
-            .foregroundColor(Color.theme.centerChannelColor.opacity(0.64))
+          Text(
+            NSLocalizedString("mobile.channel_list.recent", value: "Recent", comment: "")
+              .uppercased()
+          )
+          .font(Font.custom("OpenSans-SemiBold", size: 12))
+          .foregroundColor(Color.theme.centerChannelColor.opacity(0.64))
           Spacer()
         }
         .padding(.top, 20)

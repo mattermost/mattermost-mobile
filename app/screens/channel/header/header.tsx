@@ -11,6 +11,7 @@ import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import NavigationHeader from '@components/navigation_header';
 import {ITEM_HEIGHT} from '@components/option_item';
+import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {General, Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -23,7 +24,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import OtherMentionsBadge from './other_mentions_badge';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
 import type {HeaderRightButton} from '@components/navigation_header/header';
@@ -48,14 +48,17 @@ type ChannelProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     customStatusContainer: {
         flexDirection: 'row',
-        height: 13,
+        height: 15,
         left: Platform.select({ios: undefined, default: -2}),
         marginTop: Platform.select({ios: undefined, default: 1}),
     },
-    customStatusEmoji: {marginRight: 5},
+    customStatusEmoji: {
+        marginRight: 5,
+        marginTop: Platform.select({ios: undefined, default: -2}),
+    },
     customStatusText: {
         alignItems: 'center',
-        height: 13,
+        height: 15,
     },
     subtitle: {
         color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
@@ -206,7 +209,6 @@ const ChannelHeader = ({
                         customStatus={customStatus}
                         emojiSize={13}
                         style={styles.customStatusEmoji}
-                        testID='channel_header'
                     />
                     }
                     <View style={styles.customStatusText}>

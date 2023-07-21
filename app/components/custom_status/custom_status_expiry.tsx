@@ -3,9 +3,9 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import moment, {Moment} from 'moment-timezone';
+import moment, {type Moment} from 'moment-timezone';
 import React from 'react';
-import {Text, TextStyle} from 'react-native';
+import {Text, type TextStyle} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -23,7 +23,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    currentUser: UserModel;
+    currentUser?: UserModel;
     isMilitaryTime: boolean;
     showPrefix?: boolean;
     showTimeCompulsory?: boolean;

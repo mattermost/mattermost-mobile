@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {GestureResponderEvent, Platform, Text, useWindowDimensions, View} from 'react-native';
+import {type GestureResponderEvent, Platform, Text, useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
