@@ -27,8 +27,8 @@ export interface ClientPostsMix {
     addReaction: (userId: string, postId: string, emojiName: string) => Promise<Reaction>;
     removeReaction: (userId: string, postId: string, emojiName: string) => Promise<any>;
     getReactionsForPost: (postId: string) => Promise<any>;
-    searchPostsWithParams: (teamId: string, params: PostSearchParams) => Promise<any>;
-    searchPosts: (teamId: string, terms: string, isOrSearch: boolean) => Promise<PostResponse>;
+    searchPostsWithParams: (teamId: string, params: PostSearchParams) => Promise<SearchPostResponse>;
+    searchPosts: (teamId: string, terms: string, isOrSearch: boolean) => Promise<SearchPostResponse>;
     doPostAction: (postId: string, actionId: string, selectedOption?: string) => Promise<any>;
     doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string) => Promise<any>;
     acknowledgePost: (postId: string, userId: string) => Promise<PostAcknowledgement>;

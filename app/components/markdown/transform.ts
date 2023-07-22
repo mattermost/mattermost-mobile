@@ -184,21 +184,22 @@ export function highlightSearchPatterns(ast: Node, searchPatterns: SearchPattern
         }
 
         const node = e.node;
+        if ((node.type === 'text' || node.type === 'code') && node.literal) {
+            for (const patternPattern of searchPatterns) {
+                const {index, length} = getFirstMatch(node.literal, [patternPattern.pattern]);
 
-        if (node.type === 'text' && node.literal) {
-            const {index, length} = getFirstMatch(node.literal, searchPatterns.map((pattern) => pattern.pattern));
+                // TODO we might need special handling here for if the search term is part of a hashtag
 
-            // TODO we might need special handling here for if the search term is part of a hashtag
+                if (index === -1) {
+                    continue;
+                }
 
-            if (index === -1) {
-                continue;
+                const matchNode = highlightTextNode(node, index, index + length, 'search_highlight');
+
+                // Resume processing on the next node after the match node which may include any remaining text
+                // that was part of this one
+                walker.resumeAt(matchNode, false);
             }
-
-            const matchNode = highlightTextNode(node, index, index + length, 'search_highlight');
-
-            // Resume processing on the next node after the match node which may include any remaining text
-            // that was part of this one
-            walker.resumeAt(matchNode, false);
         }
     }
 

@@ -8,11 +8,13 @@ import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Screens} from '@constants';
+import {convertSearchTermToRegex, parseSearchTerms} from '@utils/markdown';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 import {TabTypes} from '@utils/search';
 
 import type {PostListItem, PostListOtherItem} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
+import type {SearchPattern} from '@typings/global/markdown';
 
 type Props = {
     appsEnabled: boolean;
@@ -20,6 +22,7 @@ type Props = {
     currentTimezone: string;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
+    matches?: SearchMatches;
     paddingTop: StyleProp<ViewStyle>;
     searchValue: string;
 }
@@ -30,6 +33,7 @@ const PostResults = ({
     customEmojiNames,
     isTimezoneEnabled,
     posts,
+    matches,
     paddingTop,
     searchValue,
 }: Props) => {
@@ -46,21 +50,34 @@ const PostResults = ({
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
-            case 'post':
+            case 'post': {
+                const key = item.value.currentPost.id;
+                const hasPhrases = (/"([^"]*)"/).test(searchValue || '');
+                let searchPatterns: SearchPattern[] | undefined;
+                if (matches && !hasPhrases) {
+                    searchPatterns = matches?.[key].map(convertSearchTermToRegex);
+                } else {
+                    searchPatterns = parseSearchTerms(searchValue).map(convertSearchTermToRegex).sort((a, b) => {
+                        return b.term.length - a.term.length;
+                    });
+                }
+
                 return (
                     <PostWithChannelInfo
                         appsEnabled={appsEnabled}
                         customEmojiNames={customEmojiNames}
-                        key={item.value.currentPost.id}
+                        key={key}
                         location={Screens.SEARCH}
                         post={item.value.currentPost}
+                        searchPatterns={searchPatterns}
                         testID='search_results.post_list'
                     />
                 );
+            }
             default:
                 return null;
         }
-    }, [appsEnabled, customEmojiNames]);
+    }, [appsEnabled, customEmojiNames, searchValue, matches]);
 
     const noResults = useMemo(() => (
         <NoResultsWithTerm

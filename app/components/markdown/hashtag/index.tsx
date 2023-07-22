@@ -20,7 +20,7 @@ const Hashtag = ({hashtag, linkStyle}: HashtagProps) => {
         DeviceEventEmitter.emit(Navigation.NAVIGATE_TO_TAB, {
             screen: Screens.SEARCH,
             params: {
-                searchTerm: hashtag,
+                searchTerm: `#${hashtag}`,
             },
         });
     };
