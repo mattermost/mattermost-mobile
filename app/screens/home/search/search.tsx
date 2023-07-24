@@ -365,7 +365,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
             >
                 <KeyboardAvoidingView
                     style={styles.flex}
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 >
                     <Animated.View style={animated}>
                         <Animated.View style={headerTopStyle}>
