@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {makeCallsBaseAndBadgeRGB, rgbToCSS} from '@mattermost/calls/lib/utils';
+import {makeCallsBaseAndBadgeRGB, rgbToCSS} from '@mattermost/calls';
 import {Alert} from 'react-native';
 
 import {Calls, Post} from '@constants';

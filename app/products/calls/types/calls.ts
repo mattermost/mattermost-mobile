@@ -123,6 +123,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     MaxRecordingDuration: 60,
     AllowScreenSharing: true,
     EnableSimulcast: false,
+    EnableRinging: false,
 };
 
 export type ApiResp = {
