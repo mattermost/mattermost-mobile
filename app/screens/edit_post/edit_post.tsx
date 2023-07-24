@@ -110,13 +110,15 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
 
     const onChangeTextCommon = useCallback((message: string) => {
         const tooLong = message.trim().length > maxPostSize;
+        setErrorLine(undefined);
+        setErrorExtra(undefined);
         if (tooLong) {
             const line = intl.formatMessage({id: 'mobile.message_length.message_split_left', defaultMessage: 'Message exceeds the character limit'});
             const extra = `${message.trim().length} / ${maxPostSize}`;
             setErrorLine(line);
             setErrorExtra(extra);
         }
-        toggleSaveButton(editingMessage !== message);
+        toggleSaveButton(editingMessage !== message && !tooLong);
     }, [intl, maxPostSize, editingMessage, toggleSaveButton]);
 
     const onAutocompleteChangeText = useCallback((message: string) => {

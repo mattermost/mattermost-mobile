@@ -7,7 +7,7 @@ import {getViewPortWidth} from '@utils/images';
 import {changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {MarkdownTextStyles} from '@typings/global/markdown';
+import type {MarkdownTextStyles, SearchPattern} from '@typings/global/markdown';
 
 type LanguageObject = {
     [key: string]: {
@@ -16,6 +16,13 @@ type LanguageObject = {
         aliases?: Set<string>;
     };
 }
+
+// pattern to detect the existence of a Chinese, Japanese, or Korean character in a string
+// http://stackoverflow.com/questions/15033196/using-javascript-to-check-whether-a-string-contains-japanese-characters-includi
+const cjkPattern = /[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf\uac00-\ud7a3]/;
+
+const puncStart = /^[^\p{L}\d\s#]+/u;
+const puncEnd = /[^\p{L}\d\s]+$/u;
 
 export function getCodeFont() {
     return Platform.OS === 'ios' ? 'Menlo' : 'monospace';
@@ -263,3 +270,89 @@ export const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: Styl
     const contextStyles: TextStyle[] = context.map((type) => textStyles[type]).filter((f) => f !== undefined);
     return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
 };
+
+export function parseSearchTerms(searchTerm: string): string[] {
+    let terms = [];
+
+    let termString = searchTerm;
+
+    while (termString) {
+        let captured;
+
+        // check for a quoted string
+        captured = (/^"([^"]*)"/).exec(termString);
+        if (captured) {
+            termString = termString.substring(captured[0].length);
+
+            if (captured[1].length > 0) {
+                terms.push(captured[1]);
+            }
+            continue;
+        }
+
+        // check for a search flag (and don't add it to terms)
+        captured = (/^-?(?:in|from|channel|on|before|after): ?\S+/).exec(termString);
+        if (captured) {
+            termString = termString.substring(captured[0].length);
+            continue;
+        }
+
+        // capture at mentions differently from the server so we can highlight them with the preceeding at sign
+        captured = (/^@[a-z0-9.-_]+\b/).exec(termString);
+        if (captured) {
+            termString = termString.substring(captured[0].length);
+
+            terms.push(captured[0]);
+            continue;
+        }
+
+        // capture any plain text up until the next quote or search flag
+        captured = (/^.+?(?=(?:\b|\B-)(?:in:|from:|channel:|on:|before:|after:)|"|$)/).exec(termString);
+        if (captured) {
+            termString = termString.substring(captured[0].length);
+
+            // break the text up into words based on how the server splits them in SqlPostStore.SearchPosts and then discard empty terms
+            terms.push(
+                ...captured[0].split(/[ <>+()~@]/).filter((term) => Boolean(term)),
+            );
+            continue;
+        }
+
+        // we should never reach this point since at least one of the regexes should match something in the remaining text
+        throw new Error(
+            'Infinite loop in search term parsing: "' + termString + '"',
+        );
+    }
+
+    // remove punctuation from each term
+    terms = terms.map((term) => {
+        term.replace(puncStart, '');
+        if (term.charAt(term.length - 1) !== '*') {
+            term.replace(puncEnd, '');
+        }
+        return term;
+    });
+
+    return terms;
+}
+
+export function convertSearchTermToRegex(term: string): SearchPattern {
+    let pattern;
+
+    if (cjkPattern.test(term)) {
+        // term contains Chinese, Japanese, or Korean characters so don't mark word boundaries
+        pattern = '()(' + escapeRegex(term.replace(/\*/g, '')) + ')';
+    } else if ((/[^\s][*]$/).test(term)) {
+        pattern = '\\b()(' + escapeRegex(term.substring(0, term.length - 1)) + ')';
+    } else if (term.startsWith('@') || term.startsWith('#')) {
+        // needs special handling of the first boundary because a word boundary doesn't work before a symbol
+        pattern = '(\\W|^)(' + escapeRegex(term) + ')\\b';
+    } else {
+        pattern = '\\b()(' + escapeRegex(term) + ')\\b';
+    }
+
+    return {
+        pattern: new RegExp(pattern, 'gi'),
+        term,
+    };
+}

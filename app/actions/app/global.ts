@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {getActiveServerUrl} from '@app/init/credentials';
 import {Tutorial} from '@constants';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -49,4 +50,30 @@ export const storeLastAskForReview = async (prepareRecordsOnly = false) => {
 
 export const storeFirstLaunch = async (prepareRecordsOnly = false) => {
     return storeGlobal(GLOBAL_IDENTIFIERS.FIRST_LAUNCH, Date.now(), prepareRecordsOnly);
+};
+
+export const storeLastViewedChannelIdAndServer = async (channelId: string) => {
+    const currentServerUrl = await getActiveServerUrl();
+
+    return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_CHANNEL, {
+        server_url: currentServerUrl,
+        channel_id: channelId,
+    }, false);
+};
+
+export const storeLastViewedThreadIdAndServer = async (threadId: string) => {
+    const currentServerUrl = await getActiveServerUrl();
+
+    return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_THREAD, {
+        server_url: currentServerUrl,
+        thread_id: threadId,
+    }, false);
+};
+
+export const removeLastViewedChannelIdAndServer = async () => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_CHANNEL, null, false);
+};
+
+export const removeLastViewedThreadIdAndServer = async () => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_THREAD, null, false);
 };

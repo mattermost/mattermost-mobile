@@ -993,5 +993,6 @@
     "channel_notification_preferences.notification.mention": "Mentions, messages directs uniquement",
     "channel_notification_preferences.notification.all": "Tous les nouveaux messages",
     "channel_notification_preferences.muted_title": "Ce canal est en sourdine",
-    "channel_notification_preferences.muted_content": "Vous pouvez modifier les paramètres de notification, mais vous ne recevrez pas de notifications tant que le canal n'aura pas été désactivé."
+    "channel_notification_preferences.muted_content": "Vous pouvez modifier les paramètres de notification, mais vous ne recevrez pas de notifications tant que le canal n'aura pas été désactivé.",
+    "post_priority.picker.cancel": "Annuler"
 }

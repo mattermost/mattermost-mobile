@@ -19,6 +19,7 @@ import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {getFullErrorMessage, isErrorWithMessage, isServerError} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -206,6 +207,11 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
     }, [error]);
 
     const onPressForgotPassword = useCallback(() => {
+        if (config.ForgotPasswordLink) {
+            tryOpenURL(config.ForgotPasswordLink);
+            return;
+        }
+
         const passProps = {
             theme,
             serverUrl,
@@ -334,7 +340,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
                 endAdornment={endAdornment}
             />
 
-            {(emailEnabled || usernameEnabled) && (
+            {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (
                 <Button
                     onPress={onPressForgotPassword}
                     containerStyle={[styles.forgotPasswordBtn, error ? styles.forgotPasswordError : undefined]}
