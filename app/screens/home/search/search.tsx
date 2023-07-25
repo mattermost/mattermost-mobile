@@ -372,9 +372,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                                 setTeamId={handleResultsTeamChange}
                                 onTabSelect={setSelectedTab}
                                 onFilterChanged={handleFilterChange}
-                                numberMessages={posts.length}
                                 selectedTab={selectedTab}
-                                numberFiles={fileInfos.length}
                                 selectedFilter={filter}
                                 teams={teams}
                             />
