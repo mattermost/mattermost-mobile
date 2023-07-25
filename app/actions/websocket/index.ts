@@ -57,6 +57,7 @@ import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleChannelUnarchiveEvent,
     handleChannelUpdatedEvent,
     handleChannelViewedEvent,
+    handleMultipleChannelsViewedEvent,
     handleDirectAddedEvent,
     handleUserAddedToChannelEvent,
     handleUserRemovedFromChannelEvent} from './channel';
@@ -249,6 +250,10 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         case WebsocketEvents.CHANNEL_VIEWED:
             handleChannelViewedEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.MULTIPLE_CHANNELS_VIEWED:
+            handleMultipleChannelsViewedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_MEMBER_UPDATED:
