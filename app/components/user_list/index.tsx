@@ -111,6 +111,28 @@ export function createProfilesSections(intl: IntlShape, profiles: UserProfile[],
     return results;
 }
 
+function createProfiles(profiles: UserProfile[], members?: ChannelMembership[]): UserProfileWithChannelAdmin[] {
+    if (!profiles.length) {
+        return [];
+    }
+
+    const profileMap = new Map<string, UserProfileWithChannelAdmin>();
+    profiles.forEach((profile) => {
+        profileMap.set(profile.id, profile);
+    });
+
+    if (members?.length) {
+        members.forEach((m) => {
+            const profileFound = profileMap.get(m.user_id);
+            if (profileFound) {
+                profileFound.scheme_admin = m.scheme_admin;
+            }
+        });
+    }
+
+    return Array.from(profileMap.values());
+}
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         list: {
@@ -195,7 +217,7 @@ export default function UserList({
         }
 
         if (term) {
-            return profiles;
+            return createProfiles(profiles, channelMembers);
         }
 
         return createProfilesSections(intl, profiles, channelMembers);
