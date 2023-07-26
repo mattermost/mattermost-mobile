@@ -574,7 +574,6 @@
     "settings.about.licensed": "Con licencia para: {company}",
     "settings.about.powered_by": "{site} es desarrollado por Mattermost",
     "settings.about.server.version.value": "{version} (Compilación {number})",
-    "settings.about.version": "Versión de la App:",
     "settings.advanced_settings": "Ajustes avanzados",
     "settings.display": "Mostrar",
     "settings.link.error.text": "No fue posible abrir el enlace.",

@@ -404,7 +404,6 @@
     "settings.link.error.text": "Unable to open the link.",
     "settings.display": "Display",
     "settings.advanced_settings": "Advanced Settings",
-    "settings.about.serverVersionNoBuild": "{version}",
     "settings.about.server.version.value": "{version} (Build {number})",
     "settings.about.powered_by": "{site} is powered by Mattermost",
     "settings.about.licensed": "Licensed to: {company}",

@@ -419,7 +419,6 @@
     "settings.link.error.text": "リンクを開けませんでした。",
     "settings.display": "表示",
     "settings.advanced_settings": "詳細設定",
-    "settings.about.serverVersionNoBuild": "{version}",
     "settings.about.server.version.value": "{version} (Build {number})",
     "settings.about.powered_by": "{site} はMattermostを利用しています",
     "settings.about.licensed": "ライセンス: {company}",

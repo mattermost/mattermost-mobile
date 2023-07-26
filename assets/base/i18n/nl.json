@@ -691,7 +691,6 @@
     "settings.link.error.text": "Fout bij het openen van de link.",
     "settings.display": "Weergave",
     "settings.advanced_settings": "Geavanceerde instellingen",
-    "settings.about.serverVersionNoBuild": "{version}",
     "settings.about.server.version.value": "{version} (Build {number})",
     "settings.about.powered_by": "{site} wordt aangedreven door Mattermost",
     "settings.about.licensed": "Licentie verleend aan: {company}",

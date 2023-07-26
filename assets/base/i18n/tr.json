@@ -673,7 +673,6 @@
     "settings.link.error.text": "Bağlantı açılamadı.",
     "settings.display": "Görünüm",
     "settings.advanced_settings": "Gelişmiş ayarlar",
-    "settings.about.serverVersionNoBuild": "{version}",
     "settings.about.server.version.value": "{version} (Yapım {number})",
     "settings.about.powered_by": "{site} sitesi Mattermost tarafından sunulmaktadır",
     "settings.about.licensed": "Lisans sahibi: {company}",
