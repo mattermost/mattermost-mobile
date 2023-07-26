@@ -1060,5 +1060,6 @@
     "share_extension.channels_screen.title": "选择频道",
     "share_extension.error_screen.reason": "原因：{reason}",
     "share_extension.error_screen.description": "尝试将内容分享到{applicationName}时出现错误。",
-    "share_extension.error_screen.label": "发生了一个错误"
+    "share_extension.error_screen.label": "发生了一个错误",
+    "mobile.search.results": "{count} 个搜索结果"
 }
