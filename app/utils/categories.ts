@@ -32,10 +32,10 @@ export const filterArchivedChannels = (channelsWithMyChannel: ChannelWithMyChann
 };
 
 export const filterAutoclosedDMs = (
-    categoryType: CategoryType, limit: number, currentChannelId: string,
+    categoryType: CategoryType, limit: number, currentUserId: string, currentChannelId: string,
     channelsWithMyChannel: ChannelWithMyChannel[], preferences: PreferenceModel[],
     notifyPropsPerChannel: Record<string, Partial<ChannelNotifyProps>>,
-    deactivatedDMs?: Map<string, UserModel | undefined >,
+    deactivatedUsers?: Map<string, UserModel | undefined >,
     lastUnreadChannelId?: string,
 ) => {
     if (categoryType !== DMS_CATEGORY) {
@@ -71,14 +71,20 @@ export const filterAutoclosedDMs = (
             return true;
         }
 
+        const lastViewedAt = getLastViewedAt(cwm);
+
         // DMs with deactivated users will be visible if you're currently viewing them and they were opened
         // since the user was deactivated
         if (channel.type === General.DM_CHANNEL) {
-            const lastViewedAt = getLastViewedAt(cwm);
-            const teammate = deactivatedDMs?.get(channel.id);
+            const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
+            const teammate = deactivatedUsers?.get(teammateId);
             if (teammate && teammate.deleteAt > lastViewedAt) {
                 return false;
             }
+        }
+
+        if (isDMorGM(channel) && !lastViewedAt) {
+            return false;
         }
 
         return true;
@@ -138,9 +144,6 @@ export const filterManuallyClosedDms = (
 
         if (!isDMorGM(channel)) {
             return true;
-        } else if (!myChannel.lastPostAt) {
-            // If the direct channel does not have posts we hide it
-            return false;
         }
 
         if (isUnreadChannel(myChannel, notifyPropsPerChannel[myChannel.id], lastUnreadChannelId)) {
