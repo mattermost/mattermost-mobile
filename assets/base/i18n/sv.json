@@ -707,7 +707,6 @@
     "settings.link.error.text": "Kunde inte öppna länken.",
     "settings.display": "Utseende",
     "settings.advanced_settings": "Avancerade inställningar",
-    "settings.about.serverVersionNoBuild": "{version}",
     "settings.about.server.version.value": "{version} (Build {number})",
     "settings.about.powered_by": "{site} funkar med hjälp av Mattermost",
     "settings.about.licensed": "Licensierad till: {company}",

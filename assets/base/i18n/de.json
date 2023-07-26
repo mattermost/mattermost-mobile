@@ -628,7 +628,6 @@
     "settings.about.licensed": "Lizenziert für: {company}",
     "settings.about.powered_by": "{site} wird betrieben mit Mattermost",
     "settings.about.server.version.value": "{version} (Build {number})",
-    "settings.about.version": "App-Version:",
     "settings.advanced_settings": "Erweiterte Einstellungen",
     "settings.display": "Anzeige",
     "settings.link.error.text": "Link kann nicht geöffnet werden.",

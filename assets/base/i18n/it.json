@@ -335,7 +335,6 @@
     "settings.advanced.delete": "Cancellare",
     "settings.advanced.cancel": "Annullamento",
     "settings.advanced_settings": "Impostazioni avanzate",
-    "settings.about.serverVersionNoBuild": "{version}",
     "settings.about.server.version.value": "{version} (Build {number})",
     "settings.about.powered_by": "{site} è gestito da Mattermost",
     "settings.about.licensed": "Concesso in licenza a: {company}",

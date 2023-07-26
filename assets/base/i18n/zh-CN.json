@@ -587,7 +587,6 @@
     "snack.bar.favorited.channel": "此频道已收藏",
     "smobile.search.recent_title": "{teamName}内最近的搜索",
     "settings.notice_platform_link": "服务器",
-    "settings.about.serverVersionNoBuild": "{version}",
     "settings.about.powered_by": "{site}由Mattermost支持",
     "settings.about.licensed": "许可给：{company}",
     "settings.about.database.schema": "数据库Schema版本：",

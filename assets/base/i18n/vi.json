@@ -705,7 +705,6 @@
     "settings.about.licensed": "Giấy phép được cấp: {company}",
     "settings.about.powered_by": "{site} được cung cấp bởi Mattermost",
     "settings.about.server.version.value": "{version} (Bản {number})",
-    "settings.about.version": "Phiên bản ứng dụng:",
     "settings.advanced_settings": "Cài đặt nâng cao",
     "settings.advanced.cancel": "Huỷ",
     "settings.advanced.delete": "Xoá",

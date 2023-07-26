@@ -808,7 +808,6 @@
     "settings.link.error.text": "Nie można otworzyć linku.",
     "settings.display": "Wygląd",
     "settings.advanced_settings": "Zaawansowane Ustawienia",
-    "settings.about.serverVersionNoBuild": "{version}",
     "settings.about.server.version.value": "{version} (Build {number})",
     "settings.about.powered_by": "{site} jest wspierane przez Mattermost",
     "settings.about.licensed": "Licencjonowany dla: {company}",

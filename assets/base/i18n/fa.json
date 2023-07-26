@@ -491,7 +491,6 @@
     "settings.advanced.delete": "حذف",
     "settings.advanced.cancel": "لغو",
     "settings.advanced_settings": "تنظیمات پیشرفته",
-    "settings.about.serverVersionNoBuild": "{version}",
     "settings.about.server.version.value": "{version} (ساخت {number})",
     "settings_display.clock.mz": "۲۴-ساعته",
     "screen.search.results.filter.audio": "صوتی",
