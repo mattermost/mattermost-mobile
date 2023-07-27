@@ -589,7 +589,7 @@
     "settings.notice_platform_link": "服务器",
     "settings.about.powered_by": "{site}由Mattermost支持",
     "settings.about.licensed": "许可给：{company}",
-    "settings.about.database.schema": "数据库Schema版本：",
+    "settings.about.database.schema": "数据库Schema版本：{version}",
     "settings_display.timezone.select": "选择时区",
     "settings_display.timezone.off": "关",
     "settings_display.custom_theme": "自定义主题",
@@ -962,7 +962,7 @@
     "user.edit_profile.email.auth_service": "登录发生于{service}. 不能更新电子邮件。用来发送通知的电子邮件是{email}。",
     "settings.notice_mobile_link": "移动应用",
     "settings.advanced_settings": "高级设定",
-    "settings.about.database": "数据库：",
+    "settings.about.database": "数据库：{driverName}",
     "mobile.post_pre_header.saved": "已保存",
     "mobile.participants.header": "话题参与者",
     "mobile.no_results.spelling": "检查拼写或者尝试另外的搜索。",
@@ -1057,5 +1057,14 @@
     "share_extension.error_screen.reason": "原因：{reason}",
     "share_extension.error_screen.description": "尝试将内容分享到{applicationName}时出现错误。",
     "share_extension.error_screen.label": "发生了一个错误",
-    "mobile.search.results": "{count} 个搜索结果"
+    "mobile.search.results": "{count} 个搜索结果",
+    "settings.about.app.version.title": "应用程序版本：",
+    "settings.about.app.version.value": "{version}（构建号{number}）",
+    "settings.about.button.copyInfo": "复制信息",
+    "settings.about.database.schema.title": "数据库 Schema 版本：",
+    "settings.about.database.title": "数据库：",
+    "settings.about.server.version": "服务器版本：{version}（构建版本{buildNumber}）",
+    "settings.about.server.version.title": "服务器版本：",
+    "settings.about.app.version": "应用程序版本：{version}（构建号{number}）",
+    "settings.about.server.version.noBuild": "服务器版本：{version}"
 }
