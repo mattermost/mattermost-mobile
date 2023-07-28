@@ -811,8 +811,8 @@
     "settings.about.server.version.value": "{version} (Build {number})",
     "settings.about.powered_by": "{site} jest wspierane przez Mattermost",
     "settings.about.licensed": "Licencjonowany dla: {company}",
-    "settings.about.database.schema": "Wersja Schematu Bazy Danych:",
-    "settings.about.database": "System bazy danych:",
+    "settings.about.database.schema": "Wersja schematu bazy danych: {version}",
+    "settings.about.database": "Baza danych: {driverName}",
     "settings.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. Wszelkie prawa zastrzeżone",
     "settings.about": "O {appTitle}",
     "unsupported_server.title": "Niewspierana wersja serwera",
@@ -1057,5 +1057,14 @@
     "share_extension.channels_screen.title": "Wybierz kanał",
     "share_extension.error_screen.description": "Podczas próby udostępnienia zawartości na stronie {applicationName} wystąpił błąd.",
     "share_extension.error_screen.reason": "Powód: {reason}",
-    "mobile.search.results": "{count} szukaj {count, plural, one {wynik} other {wyniki}}"
+    "mobile.search.results": "{count} szukaj {count, plural, one {wynik} other {wyniki}}",
+    "settings.about.app.version.title": "Wersja aplikacji:",
+    "settings.about.app.version.value": "{version} (Build {number})",
+    "settings.about.button.copyInfo": "Kopiuj informacje",
+    "settings.about.database.schema.title": "Wersja Schematu Bazy Danych:",
+    "settings.about.database.title": "Baza danych:",
+    "settings.about.server.version.noBuild": "Wersja Serwera: {version}",
+    "settings.about.server.version.title": "Wersja serwera:",
+    "settings.about.app.version": "Wersja Aplikacji: {version} (Build {number})",
+    "settings.about.server.version": "Wersja serwera: {version} (kompilacja {buildNumber}"
 }
