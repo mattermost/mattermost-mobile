@@ -33,7 +33,7 @@ import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import {fetchGroupsForChannelIfConstrained} from './groups';
 import {fetchPostsForChannel} from './post';
-import {setDirectChannelVisible} from './preference';
+import {openChannelIfNeeded, savePreference} from './preference';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 import {addCurrentUserToTeam, fetchTeamByName, removeCurrentUserFromTeam} from './team';
@@ -764,6 +764,7 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
         const channelName = getDirectChannelName(currentUser.id, userId);
         const channel = await getChannelByName(database, '', channelName);
         if (channel) {
+            openChannelIfNeeded(serverUrl, channel.id);
             return {data: channel.toApi()};
         }
 
@@ -798,6 +799,16 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
         };
 
         const models = [];
+
+        const preferences = [
+            {user_id: currentUser.id, category: Preferences.CATEGORIES.DIRECT_CHANNEL_SHOW, name: userId, value: 'true'},
+            {user_id: currentUser.id, category: Preferences.CATEGORIES.CHANNEL_OPEN_TIME, name: created.id, value: new Date().getTime().toString()},
+        ];
+        const preferenceModels = await savePreference(serverUrl, preferences, true);
+        if (preferenceModels.preferences?.length) {
+            models.push(...preferenceModels.preferences);
+        }
+
         const channelPromises = await prepareMyChannelsForTeam(operator, '', [created], [member, {...member, user_id: userId}]);
         if (channelPromises.length) {
             const channelModels = await Promise.all(channelPromises);
@@ -893,14 +904,15 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
         // Check the channel previous existency: if the channel already have
         // posts is because it existed before.
         if (created.total_msg_count > 0) {
+            openChannelIfNeeded(serverUrl, created.id);
             EphemeralStore.creatingChannel = false;
             return {data: created};
         }
 
-        const preferences = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
+        const displayNamePreferences = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
         const license = await getLicense(database);
         const config = await getConfig(database);
-        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
+        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(displayNamePreferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         const {directChannels, users} = await fetchMissingDirectChannelsInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
 
         const member = {
@@ -929,6 +941,15 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
                 const categoryModels = await addChannelToDefaultCategory(serverUrl, created, true);
                 if (categoryModels.models?.length) {
                     models.push(...categoryModels.models);
+                }
+
+                const preferences = [
+                    {user_id: currentUser.id, category: Preferences.CATEGORIES.GROUP_CHANNEL_SHOW, name: created.id, value: 'true'},
+                    {user_id: currentUser.id, category: Preferences.CATEGORIES.CHANNEL_OPEN_TIME, name: created.id, value: new Date().getTime().toString()},
+                ];
+                const preferenceModels = await savePreference(serverUrl, preferences, true);
+                if (preferenceModels.preferences?.length) {
+                    models.push(...preferenceModels.preferences);
                 }
 
                 models.push(...userModels);
@@ -1012,7 +1033,7 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
 
     fetchPostsForChannel(serverUrl, channelId);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
-    setDirectChannelVisible(serverUrl, channelId);
+    openChannelIfNeeded(serverUrl, channelId);
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
     fetchGroupsForChannelIfConstrained(serverUrl, channelId);

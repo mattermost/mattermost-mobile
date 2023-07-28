@@ -200,6 +200,16 @@ export const queryAllMyChannelsForTeam = (database: Database, teamId: string) =>
     );
 };
 
+export const queryAllUnreadDMsAndGMsIds = (database: Database) => {
+    return database.get<ChannelModel>(CHANNEL).query(
+        Q.on(MY_CHANNEL, Q.or(
+            Q.where('mentions_count', Q.gt(0)),
+            Q.where('message_count', Q.gt(0)),
+        )),
+        Q.where('type', Q.oneOf([General.GM_CHANNEL, General.DM_CHANNEL])),
+    );
+};
+
 export const getMyChannel = async (database: Database, channelId: string) => {
     try {
         const member = await database.get<MyChannelModel>(MY_CHANNEL).find(channelId);
