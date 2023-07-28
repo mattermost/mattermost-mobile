@@ -67,6 +67,7 @@ const mockClient = {
     enableChannelCalls: jest.fn(),
     startCallRecording: jest.fn(),
     stopCallRecording: jest.fn(),
+    dismissCall: jest.fn(),
 };
 
 jest.mock('@calls/connection/connection', () => ({
@@ -160,7 +161,7 @@ describe('Actions.Calls', () => {
             setCallsState('server1', DefaultCallsState);
             setChannelsWithCalls('server1', {});
             setCurrentCall(null);
-            setCallsConfig('server1', DefaultCallsConfig);
+            setCallsConfig('server1', {...DefaultCallsConfig, EnableRinging: true});
         });
     });
 
@@ -386,5 +387,13 @@ describe('Actions.Calls', () => {
         expect(mockClient.stopCallRecording).toBeCalledWith('channel-id');
         expect(needsRecordingErrorAlert).toBeCalled();
         expect(needsRecordingWillBePostedAlert).toBeCalled();
+    });
+
+    it('dismissIncomingCall', async () => {
+        await act(async () => {
+            await CallsActions.dismissIncomingCall('server1', 'channel-id');
+        });
+
+        expect(mockClient.dismissCall).toBeCalledWith('channel-id');
     });
 });

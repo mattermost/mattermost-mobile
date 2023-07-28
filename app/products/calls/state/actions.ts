@@ -70,7 +70,7 @@ export const setCalls = async (serverUrl: string, myUserId: string, calls: Dicti
     setCurrentCall(nextCall);
 };
 
-const processIncomingCalls = async (serverUrl: string, calls: Call[], keepExisting = true) => {
+export const processIncomingCalls = async (serverUrl: string, calls: Call[], keepExisting = true) => {
     if (!getCallsConfig(serverUrl).EnableRinging) {
         return;
     }
