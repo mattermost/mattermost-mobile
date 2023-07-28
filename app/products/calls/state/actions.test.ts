@@ -84,6 +84,7 @@ jest.mock('react-native-navigation', () => ({
 }));
 
 const call1: Call = {
+    id: 'call1',
     participants: {
         'user-1': {id: 'user-1', muted: false, raisedHand: 0},
         'user-2': {id: 'user-2', muted: true, raisedHand: 0},
@@ -94,8 +95,10 @@ const call1: Call = {
     threadId: 'thread-1',
     ownerId: 'user-1',
     hostId: 'user-1',
+    dismissed: {},
 };
 const call2: Call = {
+    id: 'call2',
     participants: {
         'user-3': {id: 'user-3', muted: false, raisedHand: 0},
         'user-4': {id: 'user-4', muted: true, raisedHand: 0},
@@ -106,8 +109,10 @@ const call2: Call = {
     threadId: 'thread-2',
     ownerId: 'user-3',
     hostId: 'user-3',
+    dismissed: {},
 };
 const call3: Call = {
+    id: 'call3',
     participants: {
         'user-5': {id: 'user-5', muted: false, raisedHand: 0},
         'user-6': {id: 'user-6', muted: true, raisedHand: 0},
@@ -118,6 +123,7 @@ const call3: Call = {
     threadId: 'thread-3',
     ownerId: 'user-5',
     hostId: 'user-5',
+    dismissed: {},
 };
 
 describe('useCallsState', () => {

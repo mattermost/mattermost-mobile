@@ -98,7 +98,8 @@ jest.mock('react-native-navigation', () => ({
 }));
 
 const addFakeCall = (serverUrl: string, channelId: string) => {
-    const call = {
+    const call: Call = {
+        id: 'call',
         participants: {
             xohi8cki9787fgiryne716u84o: {id: 'xohi8cki9787fgiryne716u84o', muted: false, raisedHand: 0},
             xohi8cki9787fgiryne716u841: {id: 'xohi8cki9787fgiryne716u84o', muted: true, raisedHand: 0},
@@ -113,7 +114,8 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
         threadId: 'abcd1234567',
         ownerId: 'xohi8cki9787fgiryne716u84o',
         hostId: 'xohi8cki9787fgiryne716u84o',
-    } as Call;
+        dismissed: {},
+    };
     act(() => {
         State.setCallsState(serverUrl, {myUserId: 'myUserId', calls: {}, enabled: {}});
         State.callStarted(serverUrl, call);

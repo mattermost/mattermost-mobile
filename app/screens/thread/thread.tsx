@@ -8,6 +8,7 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
+import {IncomingCallsContainer} from '@calls/components/incoming_calls_container';
 import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
@@ -30,9 +31,9 @@ import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view'
 type ThreadProps = {
     componentId: AvailableScreens;
     isCRTEnabled: boolean;
-    isCallInCurrentChannel: boolean;
+    showJoinCallBanner: boolean;
     isInACall: boolean;
-    isInCurrentChannelCall: boolean;
+    showIncomingCalls: boolean;
     rootId: string;
     rootPost?: PostModel;
 };
@@ -49,9 +50,9 @@ const Thread = ({
     isCRTEnabled,
     rootId,
     rootPost,
-    isCallInCurrentChannel,
+    showJoinCallBanner,
     isInACall,
-    isInCurrentChannelCall,
+    showIncomingCalls,
 }: ThreadProps) => {
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
@@ -110,8 +111,7 @@ const Thread = ({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
-    const renderCallsComponents = showJoinCallBanner || isInACall;
+    const showFloatingCallContainer = showJoinCallBanner || isInACall;
 
     return (
         <FreezeScreen>
@@ -144,11 +144,18 @@ const Thread = ({
                     />
                 </>
                 }
-                {renderCallsComponents &&
+                {showFloatingCallContainer &&
                     <FloatingCallContainer
                         channelId={rootPost!.channelId}
                         showJoinCallBanner={showJoinCallBanner}
                         isInACall={isInACall}
+                        threadScreen={true}
+                    />
+                }
+                {showIncomingCalls &&
+                    <IncomingCallsContainer
+                        showingJoinCallBanner={showJoinCallBanner}
+                        showingCurrentCallBanner={isInACall}
                         threadScreen={true}
                     />
                 }
