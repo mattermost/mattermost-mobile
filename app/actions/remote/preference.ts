@@ -20,6 +20,8 @@ import {getUserIdFromChannelName} from '@utils/user';
 
 import {forceLogoutIfNecessary} from './session';
 
+import type ChannelModel from '@typings/database/models/servers/channel';
+
 export type MyPreferencesRequest = {
     preferences?: PreferenceType[];
     error?: unknown;
@@ -141,17 +143,45 @@ export const openChannelIfNeeded = async (serverUrl: string, channelId: string) 
         if (!channel || !isDMorGM(channel)) {
             return {};
         }
-        const userId = await getCurrentUserId(database);
-        const {DIRECT_CHANNEL_SHOW, GROUP_CHANNEL_SHOW} = Preferences.CATEGORIES;
+        const res = await openChannels(serverUrl, [channel]);
+        return res;
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const openAllUnreadChannels = async (serverUrl: string) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const channels = await queryAllUnreadDMsAndGMsIds(database).fetch();
+        const res = await openChannels(serverUrl, channels);
+        return res;
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+const openChannels = async (serverUrl: string, channels: ChannelModel[]) => {
+    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    const userId = await getCurrentUserId(database);
+
+    const {DIRECT_CHANNEL_SHOW, GROUP_CHANNEL_SHOW} = Preferences.CATEGORIES;
+    const directChannelShowPreferences = await queryPreferencesByCategoryAndName(database, DIRECT_CHANNEL_SHOW).fetch();
+    const groupChannelShowPreferences = await queryPreferencesByCategoryAndName(database, GROUP_CHANNEL_SHOW).fetch();
+    const showPreferences = directChannelShowPreferences.concat(groupChannelShowPreferences);
+
+    const prefs: PreferenceType[] = [];
+    for (const channel of channels) {
         const category = channel.type === General.DM_CHANNEL ? DIRECT_CHANNEL_SHOW : GROUP_CHANNEL_SHOW;
-        const name = channel.type === General.DM_CHANNEL ? getUserIdFromChannelName(userId, channel.name) : channelId;
-        const preferences = await queryPreferencesByCategoryAndName(database, category, name).fetch();
-        const visible = getPreferenceAsBool(preferences, category, name, false);
+        const name = channel.type === General.DM_CHANNEL ? getUserIdFromChannelName(userId, channel.name) : channel.id;
+        const visible = getPreferenceAsBool(showPreferences, category, name, false);
         if (visible) {
-            return {};
+            continue;
         }
 
-        const prefs: PreferenceType[] = [
+        prefs.push(
             {
                 user_id: userId,
                 category,
@@ -164,55 +194,10 @@ export const openChannelIfNeeded = async (serverUrl: string, channelId: string) 
                 name: channel.id,
                 value: Date.now().toString(),
             },
-        ];
-
-        return savePreference(serverUrl, prefs);
-    } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
-        return {error};
+        );
     }
-};
 
-export const openAllUnreadChannels = async (serverUrl: string) => {
-    try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const channels = await queryAllUnreadDMsAndGMsIds(database).fetch();
-        const userId = await getCurrentUserId(database);
-        const {DIRECT_CHANNEL_SHOW, GROUP_CHANNEL_SHOW} = Preferences.CATEGORIES;
-
-        const directChannelShowPreferences = await queryPreferencesByCategoryAndName(database, DIRECT_CHANNEL_SHOW).fetch();
-        const groupChannelShowPreferences = await queryPreferencesByCategoryAndName(database, GROUP_CHANNEL_SHOW).fetch();
-        const showPreferences = directChannelShowPreferences.concat(groupChannelShowPreferences);
-        const prefs: PreferenceType[] = [];
-        for (const channel of channels) {
-            const category = channel.type === General.DM_CHANNEL ? DIRECT_CHANNEL_SHOW : GROUP_CHANNEL_SHOW;
-            const name = channel.type === General.DM_CHANNEL ? getUserIdFromChannelName(userId, channel.name) : channel.id;
-            const visible = getPreferenceAsBool(showPreferences, category, name, false);
-            if (visible) {
-                continue;
-            }
-
-            prefs.push(
-                {
-                    user_id: userId,
-                    category,
-                    name,
-                    value: 'true',
-                },
-                {
-                    user_id: userId,
-                    category: Preferences.CATEGORIES.CHANNEL_OPEN_TIME,
-                    name: channel.id,
-                    value: Date.now().toString(),
-                },
-            );
-        }
-
-        return savePreference(serverUrl, prefs);
-    } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
-        return {error};
-    }
+    return savePreference(serverUrl, prefs);
 };
 
 export const setDirectChannelVisible = async (serverUrl: string, channelId: string, visible = true) => {
