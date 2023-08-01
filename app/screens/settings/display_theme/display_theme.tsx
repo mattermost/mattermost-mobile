@@ -25,27 +25,29 @@ type DisplayThemeProps = {
 const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUserId}: DisplayThemeProps) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const initialTheme = useMemo(() => theme.type, [/* dependency array should remain empty */]);
+    const initialTheme = useMemo(() => theme, [/* dependency array should remain empty */]);
 
     const close = () => popTopScreen(componentId);
 
     const setThemePreference = useCallback((newTheme?: string) => {
         const allowedTheme = allowedThemeKeys.find((tk) => tk === newTheme);
-        const differentTheme = initialTheme?.toLowerCase() !== newTheme?.toLowerCase();
+        const differentTheme = theme.type?.toLowerCase() !== newTheme?.toLowerCase();
 
-        if (!allowedTheme || !differentTheme) {
+        if (!differentTheme) {
             close();
             return;
         }
+
+        const themeJson = Preferences.THEMES[allowedTheme as ThemeKey] || initialTheme;
 
         const pref: PreferenceType = {
             category: Preferences.CATEGORIES.THEME,
             name: currentTeamId,
             user_id: currentUserId,
-            value: JSON.stringify(Preferences.THEMES[allowedTheme as ThemeKey]),
+            value: JSON.stringify(themeJson),
         };
         savePreference(serverUrl, [pref]);
-    }, [allowedThemeKeys, currentTeamId, initialTheme, serverUrl]);
+    }, [allowedThemeKeys, currentTeamId, theme.type, serverUrl]);
 
     useAndroidHardwareBackHandler(componentId, setThemePreference);
 
@@ -54,12 +56,12 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
             <ThemeTiles
                 allowedThemeKeys={allowedThemeKeys}
                 onThemeChange={setThemePreference}
-                selectedTheme={initialTheme}
+                selectedTheme={theme.type}
             />
-            {theme.type === 'custom' && (
+            {initialTheme.type === 'custom' && (
                 <CustomTheme
                     setTheme={setThemePreference}
-                    displayTheme={initialTheme}
+                    displayTheme={initialTheme.type}
                 />
             )}
         </SettingContainer>
