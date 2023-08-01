@@ -344,12 +344,19 @@ export async function fetchStatusByIds(serverUrl: string, userIds: string[], fet
                 return result;
             }, {});
 
+            const usersToBatch = [];
             for (const user of users) {
-                const status = userStatuses[user.id];
-                user.prepareStatus(status?.status || General.OFFLINE);
+                const receivedStatus = userStatuses[user.id];
+                const statusToSet = receivedStatus?.status || General.OFFLINE;
+                if (statusToSet !== user.status) {
+                    user.prepareStatus(statusToSet);
+                    usersToBatch.push(user);
+                }
             }
 
-            await operator.batchRecords(users, 'fetchStatusByIds');
+            if (usersToBatch.length) {
+                await operator.batchRecords(usersToBatch, 'fetchStatusByIds');
+            }
         }
 
         return {statuses};
