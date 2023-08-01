@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {buildPreferenceKey} from '@database/operator/server_data_operator/comparators';
+import {shouldUpdateUserRecord} from '@database/operator/server_data_operator/comparators/user';
 import {
     transformPreferenceRecord,
     transformUserRecord,
@@ -102,6 +103,7 @@ describe('*** Operator: User Handlers tests ***', () => {
             tableName: 'User',
             prepareRecordsOnly: false,
             transformer: transformUserRecord,
+            shouldUpdate: shouldUpdateUserRecord,
         }, 'handleUsers');
     });
 
