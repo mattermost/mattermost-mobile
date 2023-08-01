@@ -140,9 +140,14 @@ export async function handleMultipleChannelsViewedEvent(serverUrl: string, msg: 
             promises.push(markChannelAsViewed(serverUrl, id, false, true));
         }
 
-        const members = (await Promise.all(promises)).reduce<MyChannelModel[]>((acum, v) => {
-            if (v.member) {
-                acum.push(v.member);
+        const members = (await Promise.allSettled(promises)).reduce<MyChannelModel[]>((acum, v) => {
+            if (v.status === 'rejected') {
+                return acum;
+            }
+
+            const value = v.value;
+            if (value.member) {
+                acum.push(value.member);
             }
             return acum;
         }, []);
