@@ -25,6 +25,7 @@
   },
   "rules": {
     "eol-last": ["error", "always"],
+    "linebreak-style": 0,
     "global-require": 0,
     "no-undefined": 0,
     "no-shadow": "off",
