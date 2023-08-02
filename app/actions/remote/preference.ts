@@ -6,17 +6,21 @@ import {DeviceEventEmitter} from 'react-native';
 import {handleReconnect} from '@actions/websocket';
 import {Events, General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
+import {getPreferenceAsBool} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
-import {getChannelById} from '@queries/servers/channel';
+import {queryAllUnreadDMsAndGMsIds, getChannelById} from '@queries/servers/channel';
 import {truncateCrtRelatedTables} from '@queries/servers/entry';
-import {querySavedPostsPreferences} from '@queries/servers/preference';
+import {queryPreferencesByCategoryAndName, querySavedPostsPreferences} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import {forceLogoutIfNecessary} from './session';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 export type MyPreferencesRequest = {
     preferences?: PreferenceType[];
@@ -79,19 +83,23 @@ export const savePostPreference = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const savePreference = async (serverUrl: string, preferences: PreferenceType[]) => {
+export const savePreference = async (serverUrl: string, preferences: PreferenceType[], prepareRecordsOnly = false) => {
     try {
+        if (!preferences.length) {
+            return {preferences: []};
+        }
+
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const userId = await getCurrentUserId(database);
         client.savePreferences(userId, preferences);
-        await operator.handlePreferences({
+        const preferenceModels = await operator.handlePreferences({
             preferences,
-            prepareRecordsOnly: false,
+            prepareRecordsOnly,
         });
 
-        return {preferences};
+        return {preferences: preferenceModels};
     } catch (error) {
         logDebug('error on savePreference', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
@@ -126,6 +134,70 @@ export const deleteSavedPost = async (serverUrl: string, postId: string) => {
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
+};
+
+export const openChannelIfNeeded = async (serverUrl: string, channelId: string) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const channel = await getChannelById(database, channelId);
+        if (!channel || !isDMorGM(channel)) {
+            return {};
+        }
+        const res = await openChannels(serverUrl, [channel]);
+        return res;
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const openAllUnreadChannels = async (serverUrl: string) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const channels = await queryAllUnreadDMsAndGMsIds(database).fetch();
+        const res = await openChannels(serverUrl, channels);
+        return res;
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+const openChannels = async (serverUrl: string, channels: ChannelModel[]) => {
+    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    const userId = await getCurrentUserId(database);
+
+    const {DIRECT_CHANNEL_SHOW, GROUP_CHANNEL_SHOW} = Preferences.CATEGORIES;
+    const directChannelShowPreferences = await queryPreferencesByCategoryAndName(database, DIRECT_CHANNEL_SHOW).fetch();
+    const groupChannelShowPreferences = await queryPreferencesByCategoryAndName(database, GROUP_CHANNEL_SHOW).fetch();
+    const showPreferences = directChannelShowPreferences.concat(groupChannelShowPreferences);
+
+    const prefs: PreferenceType[] = [];
+    for (const channel of channels) {
+        const category = channel.type === General.DM_CHANNEL ? DIRECT_CHANNEL_SHOW : GROUP_CHANNEL_SHOW;
+        const name = channel.type === General.DM_CHANNEL ? getUserIdFromChannelName(userId, channel.name) : channel.id;
+        const visible = getPreferenceAsBool(showPreferences, category, name, false);
+        if (visible) {
+            continue;
+        }
+
+        prefs.push(
+            {
+                user_id: userId,
+                category,
+                name,
+                value: 'true',
+            },
+            {
+                user_id: userId,
+                category: Preferences.CATEGORIES.CHANNEL_OPEN_TIME,
+                name: channel.id,
+                value: Date.now().toString(),
+            },
+        );
+    }
+
+    return savePreference(serverUrl, prefs);
 };
 
 export const setDirectChannelVisible = async (serverUrl: string, channelId: string, visible = true) => {

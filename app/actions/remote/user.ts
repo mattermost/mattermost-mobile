@@ -360,6 +360,48 @@ export async function fetchStatusByIds(serverUrl: string, userIds: string[], fet
     }
 }
 
+let usersByIdBatch: {
+    serverUrl: string;
+    userIds: Set<string>;
+    timeout?: NodeJS.Timeout;
+} | undefined;
+const TIME_TO_BATCH = 500;
+
+const processBatch = () => {
+    if (!usersByIdBatch) {
+        return;
+    }
+
+    if (usersByIdBatch.timeout) {
+        clearTimeout(usersByIdBatch.timeout);
+    }
+    if (usersByIdBatch.userIds.size) {
+        fetchUsersByIds(usersByIdBatch.serverUrl, Array.from(usersByIdBatch.userIds));
+    }
+
+    usersByIdBatch = undefined;
+};
+
+export const fetchUserByIdBatched = async (serverUrl: string, userId: string) => {
+    if (serverUrl !== usersByIdBatch?.serverUrl) {
+        processBatch();
+    }
+
+    if (!usersByIdBatch) {
+        usersByIdBatch = {
+            serverUrl,
+            userIds: new Set(),
+        };
+    }
+
+    if (usersByIdBatch.timeout) {
+        clearTimeout(usersByIdBatch.timeout);
+    }
+
+    usersByIdBatch.userIds.add(userId);
+    usersByIdBatch.timeout = setTimeout(processBatch, TIME_TO_BATCH);
+};
+
 export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetchOnly = false) => {
     if (!userIds.length) {
         return {users: [], existingUsers: []};
