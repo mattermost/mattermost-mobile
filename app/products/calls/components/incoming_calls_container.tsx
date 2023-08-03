@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CallNotification from '@calls/components/call_notification';
@@ -20,14 +20,6 @@ const style = StyleSheet.create({
     wrapper: {
         position: 'absolute',
         width: '100%',
-        ...Platform.select({
-            android: {
-                elevation: 9,
-            },
-            ios: {
-                zIndex: 9,
-            },
-        }),
     },
 });
 

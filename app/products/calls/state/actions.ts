@@ -86,7 +86,7 @@ export const processIncomingCalls = async (serverUrl: string, calls: Call[], kee
     const myUserId = getCallsState(serverUrl).myUserId;
     const newIncoming: IncomingCallNotification[] = [];
 
-    for (const call of calls) {
+    for await (const call of calls) {
         // dismissed already?
         if (call.dismissed[myUserId] || existingCalls[call.channelId]?.dismissed[myUserId]) {
             continue;
@@ -102,7 +102,6 @@ export const processIncomingCalls = async (serverUrl: string, calls: Call[], kee
             continue;
         }
 
-        // eslint-disable-next-line no-await-in-loop
         const channel = await getChannelById(database, call.channelId);
         if (!channel) {
             logDebug('calls: processIncomingCalls could not find channel by id', call.channelId, 'for serverUrl', serverUrl);
@@ -113,7 +112,6 @@ export const processIncomingCalls = async (serverUrl: string, calls: Call[], kee
             continue;
         }
 
-        // eslint-disable-next-line no-await-in-loop
         const callerModel = await getUserById(database, call.ownerId);
 
         newIncoming.push({
