@@ -127,6 +127,8 @@ const ProgressiveImage = ({
                     source={{uri: imageUri}}
                     style={[
                         StyleSheet.absoluteFill,
+
+                        // @ts-expect-error style is supported but TS complains
                         imageStyle,
                         animatedOpacity,
                     ]}
@@ -143,6 +145,8 @@ const ProgressiveImage = ({
                 resizeMode={resizeMode}
                 onError={onError}
                 source={{uri: imageUri}}
+
+                // @ts-expect-error style is supported but TS complains
                 style={[StyleSheet.absoluteFill, imageStyle, animatedOpacity]}
                 onLoadEnd={onLoadImageEnd}
                 testID='progressive_image.highResImage'

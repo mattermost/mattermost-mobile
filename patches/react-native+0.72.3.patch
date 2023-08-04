@@ -1,0 +1,32 @@
+diff --git a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
+index 096874e..4524181 100644
+--- a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
++++ b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
+@@ -1838,9 +1838,14 @@ class ScrollView extends React.Component<Props, State> {
+         // however, the ScrollView still needs the baseStyle to be scrollable
+         // $FlowFixMe[underconstrained-implicit-instantiation]
+         const {outer, inner} = splitLayoutProps(flattenStyle(props.style));
++        let inverted;
++        if (inner.scaleY) {
++          inverted = {scaleY: -1};
++          delete inner['scaleY']
++        }
+         return React.cloneElement(
+           refreshControl,
+-          {style: StyleSheet.compose(baseStyle, outer)},
++          {style: StyleSheet.compose(baseStyle, outer, inverted)},
+           <NativeDirectionalScrollView
+             {...props}
+             style={StyleSheet.compose(baseStyle, inner)}
+diff --git a/node_modules/react-native/jest/setup.js b/node_modules/react-native/jest/setup.js
+index 71f49e6..c0c3152 100644
+--- a/node_modules/react-native/jest/setup.js
++++ b/node_modules/react-native/jest/setup.js
+@@ -21,6 +21,7 @@ global.performance = {
+   now: jest.fn(Date.now),
+ };
+ 
++global.Promise = jest.requireActual('promise');
+ global.regeneratorRuntime = jest.requireActual('regenerator-runtime/runtime');
+ global.window = global;
+ 
