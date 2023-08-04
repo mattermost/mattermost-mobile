@@ -11,7 +11,7 @@ export const CHANNEL_MENTION_REGEX = /\B(~([^~\r\n]*))$/i;
 
 export const CHANNEL_MENTION_REGEX_DELAYED = /\B(~([^~\r\n]{2,}))$/i;
 
-export const CHANNEL_MENTION_SEARCH_REGEX = /\b(?:in|channel):\s*(\S*)$/i;
+export const CHANNEL_MENTION_SEARCH_REGEX = /\b(?:in|channel):\s*([^\r\n]*)$/i;
 
 export const DATE_MENTION_SEARCH_REGEX = /\b(?:on|before|after):\s*(\S*)$/i;
 
