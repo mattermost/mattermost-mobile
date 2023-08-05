@@ -7,6 +7,8 @@ import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
+import {SNACK_BAR_TYPE} from '@app/constants/snack_bar';
+import {showSnackBar} from '@app/utils/snack_bar';
 import Config from '@assets/config.json';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -180,6 +182,7 @@ const About = ({componentId, config, license}: AboutProps) => {
             const databaseSchemaVersion = intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version: {version}'}, {version: config.SchemaVersion});
             const copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
             Clipboard.setString(copiedString);
+            showSnackBar({barType: SNACK_BAR_TYPE.INFO_COPIED, sourceScreen: componentId});
         },
         [intl, config],
     );

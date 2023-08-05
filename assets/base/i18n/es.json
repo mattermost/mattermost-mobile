@@ -585,6 +585,7 @@
     "settings.save": "Guardar",
     "smobile.search.recent_title": "Búsquedas recientes en {teamName}",
     "snack.bar.favorited.channel": "Este canal estaba como favorito",
+    "snack.bar.info.copied": "El info ha sido copiado al portapapeles",
     "snack.bar.link.copied": "El enlace fue copiado al portapapeles",
     "snack.bar.message.copied": "El texto ha sido copiado al portapapeles",
     "snack.bar.mute.channel": "Está canal estaba silenciado",
