@@ -710,8 +710,8 @@
     "settings.about.server.version.value": "{version} (Build {number})",
     "settings.about.powered_by": "{site} funkar med hjälp av Mattermost",
     "settings.about.licensed": "Licensierad till: {company}",
-    "settings.about.database.schema": "Version av databasschema:",
-    "settings.about.database": "Databas:",
+    "settings.about.database.schema": "Version av databasschema: {version}",
+    "settings.about.database": "Databas: {driverName}",
     "settings.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. Alla rättigheter är reserverade",
     "settings.about": "Om {appTitle}",
     "settings_display.timezone.select": "Välj tidszon",
@@ -1056,5 +1056,15 @@
     "share_extension.error_screen.label": "Ett fel uppstod",
     "share_extension.channels_screen.title": "Välj kanal",
     "share_extension.error_screen.reason": "Anledning: {reason}",
-    "share_extension.error_screen.description": "Ett fel uppstod när innehållet skulle delas med {applicationName}."
+    "share_extension.error_screen.description": "Ett fel uppstod när innehållet skulle delas med {applicationName}.",
+    "mobile.search.results": "{count} {count, plural, one {sökresultat} other {sökresultat}}",
+    "settings.about.app.version": "App-version: {version} (Build {number})",
+    "settings.about.app.version.title": "App Version:",
+    "settings.about.app.version.value": "{version} (Build {number})",
+    "settings.about.button.copyInfo": "Kopiera informationen",
+    "settings.about.database.schema.title": "Version av databasschema:",
+    "settings.about.database.title": "Databas:",
+    "settings.about.server.version": "Serverversion: {version} (Build {buildNumber}",
+    "settings.about.server.version.noBuild": "Serverversion: {version}",
+    "settings.about.server.version.title": "Serverversion:"
 }
