@@ -694,8 +694,8 @@
     "settings.about.server.version.value": "{version} (Build {number})",
     "settings.about.powered_by": "{site} wordt aangedreven door Mattermost",
     "settings.about.licensed": "Licentie verleend aan: {company}",
-    "settings.about.database.schema": "Databaseschema-versie:",
-    "settings.about.database": "Database:",
+    "settings.about.database.schema": "Databaseschema-versie: {version}",
+    "settings.about.database": "Database: {driverName}",
     "settings.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. Alle rechten voorbehouden",
     "settings.about": "Over {appTitle}",
     "settings_display.timezone.select": "Tijdzone Selecteren",
@@ -1056,5 +1056,15 @@
     "share_extension.channels_screen.title": "Kanaal selecteren",
     "share_extension.error_screen.label": "Er is een fout opgetreden",
     "share_extension.error_screen.reason": "Reden: {reason}",
-    "share_extension.error_screen.description": "Er is een fout opgetreden toen werd geprobeerd de inhoud te delen naar {applicationName}."
+    "share_extension.error_screen.description": "Er is een fout opgetreden toen werd geprobeerd de inhoud te delen naar {applicationName}.",
+    "mobile.search.results": "{count} zoek{count, plural, one {resultaat} other {resultaten}}",
+    "settings.about.app.version": "App-versie: {version} (Build {number})",
+    "settings.about.app.version.title": "App-versie:",
+    "settings.about.app.version.value": "{version} (Build {number})",
+    "settings.about.button.copyInfo": "Informatie kopiëren",
+    "settings.about.database.schema.title": "Databaseschema-versie:",
+    "settings.about.database.title": "Database:",
+    "settings.about.server.version": "Serverversie: {version} (Build {buildNumber}",
+    "settings.about.server.version.noBuild": "Serverversie: {version}",
+    "settings.about.server.version.title": "Serverversie:"
 }
