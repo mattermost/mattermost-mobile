@@ -20,11 +20,14 @@ export async function setCurrentUserStatus(serverUrl: string, status: string) {
             throw new Error(`No current user for ${serverUrl}`);
         }
 
-        user.prepareStatus(status);
-        await operator.batchRecords([user], 'setCurrentUserStatusOffline');
+        if (user.status !== status) {
+            user.prepareStatus(status);
+            await operator.batchRecords([user], 'setCurrentUserStatus');
+        }
+
         return null;
     } catch (error) {
-        logError('Failed setCurrentUserStatusOffline', error);
+        logError('Failed setCurrentUserStatus', error);
         return {error};
     }
 }

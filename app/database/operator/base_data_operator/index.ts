@@ -45,7 +45,7 @@ export default class BaseDataOperator {
      * @param {(existing: Model, newElement: RawValue) => boolean} inputsArg.buildKeyRecordBy
      * @returns {Promise<{ProcessRecordResults}>}
      */
-    processRecords = async <T extends Model>({createOrUpdateRawValues = [], deleteRawValues = [], tableName, buildKeyRecordBy, fieldName}: ProcessRecordsArgs): Promise<ProcessRecordResults<T>> => {
+    processRecords = async <T extends Model>({createOrUpdateRawValues = [], deleteRawValues = [], tableName, buildKeyRecordBy, fieldName, shouldUpdate}: ProcessRecordsArgs): Promise<ProcessRecordResults<T>> => {
         const getRecords = async (rawValues: RawValue[]) => {
             // We will query a table where one of its fields can match a range of values.  Hence, here we are extracting all those potential values.
             const columnValues: string[] = getRangeOfValues({fieldName, raws: rawValues});
@@ -92,6 +92,10 @@ export default class BaseDataOperator {
 
                 // We found a record in the database that matches this element; hence, we'll proceed for an UPDATE operation
                 if (existingRecord) {
+                    if (shouldUpdate && !shouldUpdate(existingRecord, newElement)) {
+                        continue;
+                    }
+
                     // Some raw value has an update_at field.  We'll proceed to update only if the update_at value is different from the record's value in database
                     const updateRecords = getValidRecordsForUpdate({
                         tableName,
@@ -205,7 +209,7 @@ export default class BaseDataOperator {
      * @param {string} handleRecordsArgs.tableName
      * @returns {Promise<Model[]>}
      */
-    async handleRecords<T extends Model>({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleRecordsArgs<T>, description: string): Promise<T[]> {
+    async handleRecords<T extends Model>({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true, shouldUpdate}: HandleRecordsArgs<T>, description: string): Promise<T[]> {
         if (!createOrUpdateRawValues.length) {
             logWarning(
                 `An empty "rawValues" array has been passed to the handleRecords method for tableName ${tableName}`,
@@ -219,6 +223,7 @@ export default class BaseDataOperator {
             tableName,
             buildKeyRecordBy,
             fieldName,
+            shouldUpdate,
         });
 
         let models: T[] = [];
