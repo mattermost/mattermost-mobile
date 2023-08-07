@@ -130,8 +130,6 @@ const Emoji = (props: EmojiProps) => {
     return (
         <FastImage
             key={key}
-
-            // @ts-expect-error style is supported but TS complains
             style={[commonStyle, imageStyle, {width, height}]}
             source={{uri: imageUrl}}
             resizeMode={FastImage.resizeMode.contain}

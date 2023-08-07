@@ -36,7 +36,10 @@ public class MainActivity extends NavigationActivity {
                 this,
                 Objects.requireNonNull(getMainComponentName()),
                 // If you opted-in for the New Architecture, we enable the Fabric Renderer.
-                DefaultNewArchitectureEntryPoint.getFabricEnabled());
+                DefaultNewArchitectureEntryPoint.getFabricEnabled(), // fabricEnabled
+                // If you opted-in for the New Architecture, we enable Concurrent React (i.e. React 18).
+                DefaultNewArchitectureEntryPoint.getConcurrentReactEnabled() // concurrentRootEnabled
+        );
     }
 
     @Override

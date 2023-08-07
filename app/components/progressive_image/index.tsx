@@ -120,6 +120,8 @@ const ProgressiveImage = ({
         if (showHighResImage && imageUri) {
             image = (
                 <AnimatedFastImage
+
+                    // @ts-expect-error old style ref
                     ref={forwardRef}
                     nativeID={`image-${id}`}
                     resizeMode={resizeMode}
@@ -127,8 +129,6 @@ const ProgressiveImage = ({
                     source={{uri: imageUri}}
                     style={[
                         StyleSheet.absoluteFill,
-
-                        // @ts-expect-error style is supported but TS complains
                         imageStyle,
                         animatedOpacity,
                     ]}
@@ -140,13 +140,13 @@ const ProgressiveImage = ({
     } else if (imageUri) {
         image = (
             <AnimatedFastImage
+
+                // @ts-expect-error old style ref
                 ref={forwardRef}
                 nativeID={`image-${id}`}
                 resizeMode={resizeMode}
                 onError={onError}
                 source={{uri: imageUri}}
-
-                // @ts-expect-error style is supported but TS complains
                 style={[StyleSheet.absoluteFill, imageStyle, animatedOpacity]}
                 onLoadEnd={onLoadImageEnd}
                 testID='progressive_image.highResImage'

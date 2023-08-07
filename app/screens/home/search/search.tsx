@@ -6,7 +6,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, type LayoutChangeEvent, Platform, StyleSheet, type ViewStyle, KeyboardAvoidingView} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
-import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {getPosts} from '@actions/local/post';
@@ -233,7 +233,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
         handleSearch(newTeamId, lastSearchedValue);
     }, [lastSearchedValue, handleSearch]);
 
-    const initialContainerStyle: ViewStyle = useMemo(() => {
+    const initialContainerStyle: AnimatedStyle<ViewStyle> = useMemo(() => {
         return {
             paddingTop: scrollPaddingTop,
             flexGrow: 1,
@@ -396,6 +396,8 @@ const SearchScreen = ({teamId, teams}: Props) => {
                             removeClippedSubviews={false}
                             scrollToOverflowEnabled={true}
                             overScrollMode='always'
+
+                            // @ts-expect-error old style ref
                             ref={scrollRef}
                             renderItem={renderInitialOrLoadingItem}
                         />
