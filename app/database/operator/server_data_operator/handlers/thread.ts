@@ -4,6 +4,7 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
+import {shouldUpdateThreadRecord} from '@database/operator/server_data_operator/comparators/thread';
 import {
     transformThreadRecord,
     transformThreadParticipantRecord,
@@ -110,6 +111,7 @@ const ThreadHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
             prepareRecordsOnly: true,
             createOrUpdateRawValues: createOrUpdateThreads,
             tableName: THREAD,
+            shouldUpdate: shouldUpdateThreadRecord,
         }, 'handleThreads(NEVER)');
 
         // Add the models to be batched here

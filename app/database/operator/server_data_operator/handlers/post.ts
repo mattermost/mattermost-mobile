@@ -6,6 +6,7 @@ import {Q} from '@nozbe/watermelondb';
 import {ActionType} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {buildDraftKey} from '@database/operator/server_data_operator/comparators';
+import {shouldUpdateFileRecord} from '@database/operator/server_data_operator/comparators/files';
 import {
     transformDraftRecord,
     transformFileRecord,
@@ -234,6 +235,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             deleteRawValues: pendingPostsToDelete,
             tableName,
             fieldName: 'id',
+            shouldUpdate: (e: PostModel, n: Post) => n.update_at > e.updateAt,
         }));
 
         const preparedPosts = (await this.prepareRecords({
@@ -309,6 +311,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             tableName: FILE,
             fieldName: 'id',
             deleteRawValues: [],
+            shouldUpdate: shouldUpdateFileRecord,
         }));
 
         const postFiles = await this.prepareRecords({

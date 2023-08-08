@@ -294,14 +294,19 @@ const debouncedFetchUserOrGroupsByMentionNames = debounce(
     },
 );
 
+const notFoundMentions: {[serverUrl: string]: Set<string>} = {};
 const fetchUserOrGroupsByMentionNames = async (serverUrl: string, mentions: string[]) => {
     try {
+        if (!notFoundMentions[serverUrl]) {
+            notFoundMentions[serverUrl] = new Set();
+        }
+
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         // Get any missing users
         const usersInDb = await queryUsersByIdsOrUsernames(database, [], mentions).fetch();
         const usersMap = new Set(usersInDb.map((u) => u.username));
-        const usernamesToFetch = mentions.filter((m) => !usersMap.has(m));
+        const usernamesToFetch = mentions.filter((m) => !usersMap.has(m) && !notFoundMentions[serverUrl].has(m));
 
         let fetchedUsers;
         if (usernamesToFetch.length) {
@@ -317,7 +322,15 @@ const fetchUserOrGroupsByMentionNames = async (serverUrl: string, mentions: stri
         const groupsToFetch = groupsToCheck.filter((g) => !groupsMap.has(g));
 
         if (groupsToFetch.length) {
-            await fetchGroupsByNames(serverUrl, groupsToFetch, false);
+            const results = await fetchGroupsByNames(serverUrl, groupsToFetch, false);
+            if (!('error' in results)) {
+                const retrievedSet = new Set(results.map((r) => r.name));
+                for (const g of groupsToFetch) {
+                    if (!retrievedSet.has(g)) {
+                        notFoundMentions[serverUrl].add(g);
+                    }
+                }
+            }
         }
         return {};
     } catch (error) {
@@ -344,12 +357,19 @@ export async function fetchStatusByIds(serverUrl: string, userIds: string[], fet
                 return result;
             }, {});
 
+            const usersToBatch = [];
             for (const user of users) {
-                const status = userStatuses[user.id];
-                user.prepareStatus(status?.status || General.OFFLINE);
+                const receivedStatus = userStatuses[user.id];
+                const statusToSet = receivedStatus?.status || General.OFFLINE;
+                if (statusToSet !== user.status) {
+                    user.prepareStatus(statusToSet);
+                    usersToBatch.push(user);
+                }
             }
 
-            await operator.batchRecords(users, 'fetchStatusByIds');
+            if (usersToBatch.length) {
+                await operator.batchRecords(usersToBatch, 'fetchStatusByIds');
+            }
         }
 
         return {statuses};
