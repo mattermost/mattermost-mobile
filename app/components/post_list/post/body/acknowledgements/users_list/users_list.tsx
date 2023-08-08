@@ -2,7 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
-import React, {useCallback} from 'react';
+import React, {useCallback, useRef} from 'react';
+import {FlatList} from 'react-native-gesture-handler';
+
+import {useIsTablet} from '@hooks/device';
 
 import UserListItem from './user_list_item';
 
@@ -18,6 +21,9 @@ type Props = {
 };
 
 const UsersList = ({channelId, location, users, userAcknowledgements, timezone}: Props) => {
+    const isTablet = useIsTablet();
+    const listRef = useRef<FlatList>(null);
+
     const renderItem = useCallback(({item}: ListRenderItemInfo<UserModel>) => (
         <UserListItem
             channelId={channelId}
@@ -27,6 +33,17 @@ const UsersList = ({channelId, location, users, userAcknowledgements, timezone}:
             timezone={timezone}
         />
     ), [channelId, location, timezone]);
+
+    if (isTablet) {
+        return (
+            <FlatList
+                data={users}
+                ref={listRef}
+                renderItem={renderItem}
+                overScrollMode={'always'}
+            />
+        );
+    }
 
     return (
         <BottomSheetFlatList
