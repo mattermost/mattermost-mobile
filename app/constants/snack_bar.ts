@@ -8,6 +8,7 @@ export const SNACK_BAR_TYPE = keyMirror({
     ADD_CHANNEL_MEMBERS: null,
     FAVORITE_CHANNEL: null,
     FOLLOW_THREAD: null,
+    INFO_COPIED: null,
     LINK_COPIED: null,
     MESSAGE_COPIED: null,
     MUTE_CHANNEL: null,
@@ -42,6 +43,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         defaultMessage: 'Thread followed',
         iconName: 'check',
         canUndo: true,
+    },
+    INFO_COPIED: {
+        id: t('snack.bar.info.copied'),
+        defaultMessage: 'Info copied to clipboard',
+        iconName: 'content-copy',
+        canUndo: false,
     },
     LINK_COPIED: {
         id: t('snack.bar.link.copied'),
