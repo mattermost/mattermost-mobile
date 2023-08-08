@@ -1066,5 +1066,6 @@
     "settings.about.database.title": "Databas:",
     "settings.about.server.version": "Serverversion: {version} (Build {buildNumber}",
     "settings.about.server.version.noBuild": "Serverversion: {version}",
-    "settings.about.server.version.title": "Serverversion:"
+    "settings.about.server.version.title": "Serverversion:",
+    "snack.bar.info.copied": "Kopierat till clipboard"
 }
