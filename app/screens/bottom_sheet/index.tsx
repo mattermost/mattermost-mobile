@@ -191,10 +191,10 @@ const BottomSheet = ({
 
     if (isTablet) {
         return (
-            <GestureHandlerRootView style={styles.container}>
+            <>
                 <View style={styles.separator}/>
                 {renderContainerContent()}
-            </GestureHandlerRootView>
+            </>
         );
     }
 
