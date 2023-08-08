@@ -5,9 +5,9 @@ import React, {useCallback, useMemo, useRef} from 'react';
 import {type MessageDescriptor, useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
-import {getErrorMessage} from '@app/utils/errors';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
+import {getErrorMessage} from '@utils/errors';
 
 import DisabledFields from './disabled_fields';
 import EmailField from './email_field';
@@ -84,8 +84,9 @@ const ProfileForm = ({
     const emailRef = useRef<FloatingTextInputRef>(null);
     const nicknameRef = useRef<FloatingTextInputRef>(null);
     const positionRef = useRef<FloatingTextInputRef>(null);
-    const errorMessage = getErrorMessage(error, intl) as string;
+
     const {formatMessage} = intl;
+    const errorMessage = error == null ? undefined : getErrorMessage(error, intl) as string;
 
     const userProfileFields: FieldSequence = useMemo(() => {
         const service = currentUser.authService;
