@@ -192,7 +192,7 @@ const ProfileForm = ({
             <Field
                 fieldKey='username'
                 fieldRef={usernameRef}
-                error={errorMessage === 'Unknown error' ? undefined : errorMessage}
+                error={errorMessage}
                 isDisabled={userProfileFields.username.isDisabled}
                 label={formatMessage(FIELDS.username)}
                 maxLength={22}
