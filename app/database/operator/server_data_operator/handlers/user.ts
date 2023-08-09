@@ -3,6 +3,7 @@
 
 import {MM_TABLES} from '@constants/database';
 import {buildPreferenceKey} from '@database/operator/server_data_operator/comparators';
+import {shouldUpdateUserRecord} from '@database/operator/server_data_operator/comparators/user';
 import {
     transformPreferenceRecord,
     transformUserRecord,
@@ -126,6 +127,7 @@ const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             createOrUpdateRawValues,
             tableName: USER,
             prepareRecordsOnly,
+            shouldUpdate: shouldUpdateUserRecord,
         }, 'handleUsers');
     };
 };

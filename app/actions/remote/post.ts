@@ -378,7 +378,10 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
                     models.push(...threadModels);
                 }
             }
-            await operator.batchRecords(models, 'fetchPosts');
+
+            if (models.length) {
+                await operator.batchRecords(models, 'fetchPosts');
+            }
         }
         return result;
     } catch (error) {

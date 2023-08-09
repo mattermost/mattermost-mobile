@@ -13,11 +13,13 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SettingContainer from '@components/settings/container';
 import AboutLinks from '@constants/about_links';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {showSnackBar} from '@utils/snack_bar';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -180,6 +182,7 @@ const About = ({componentId, config, license}: AboutProps) => {
             const databaseSchemaVersion = intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version: {version}'}, {version: config.SchemaVersion});
             const copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
             Clipboard.setString(copiedString);
+            showSnackBar({barType: SNACK_BAR_TYPE.INFO_COPIED, sourceScreen: componentId});
         },
         [intl, config],
     );
