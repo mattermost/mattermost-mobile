@@ -4,6 +4,7 @@
 import {Platform, type StyleProp, StyleSheet, type TextStyle} from 'react-native';
 
 import {getViewPortWidth} from '@utils/images';
+import {logError} from '@utils/log';
 import {changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -271,8 +272,8 @@ export const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: Styl
     return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
 };
 
-export function parseSearchTerms(searchTerm: string): string[] {
-    let terms = [];
+export function parseSearchTerms(searchTerm: string): string[] | undefined {
+    let terms: string[] = [];
 
     let termString = searchTerm;
 
@@ -318,10 +319,11 @@ export function parseSearchTerms(searchTerm: string): string[] {
             continue;
         }
 
-        // we should never reach this point since at least one of the regexes should match something in the remaining text
-        throw new Error(
+        logError(
             'Infinite loop in search term parsing: "' + termString + '"',
         );
+
+        return undefined;
     }
 
     // remove punctuation from each term
