@@ -38,6 +38,7 @@ type Props = {
     iconPad?: boolean;
     onHeaderPress?: () => void;
     pushProxyStatus: string;
+    pushDisabledAck: boolean;
 }
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -111,6 +112,7 @@ const ChannelListHeader = ({
     iconPad,
     onHeaderPress,
     pushProxyStatus,
+    pushDisabledAck,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -166,7 +168,7 @@ const ChannelListHeader = ({
 
     const onPushAlertPress = useCallback(() => {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {
-            alertPushProxyError(intl);
+            alertPushProxyError(intl, serverUrl);
         } else {
             alertPushProxyUnknown(intl);
         }
@@ -206,7 +208,7 @@ const ChannelListHeader = ({
                         >
                             {serverDisplayName}
                         </Text>
-                        {(pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
+                        {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && !pushDisabledAck && (
                             <TouchableWithFeedback
                                 onPress={onPushAlertPress}
                                 testID='channel_list_header.push_alert'

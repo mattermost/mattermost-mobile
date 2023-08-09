@@ -55,6 +55,22 @@ export const getDontAskForReview = async () => {
     return Boolean(records?.[0]?.value);
 };
 
+export const getPushDisabledInServerAcknowledged = async (serverDomainString: string) => {
+    const records = await queryGlobalValue(`${GLOBAL_IDENTIFIERS.PUSH_DISABLED_ACK}${serverDomainString}`)?.fetch();
+    return Boolean(records?.[0]?.value);
+};
+
+export const observePushDisabledInServerAcknowledged = (serverDomainString: string) => {
+    const query = queryGlobalValue(`${GLOBAL_IDENTIFIERS.PUSH_DISABLED_ACK}${serverDomainString}`);
+    if (!query) {
+        return of$(false);
+    }
+    return query.observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(false))),
+        switchMap((v) => of$(Boolean(v))),
+    );
+};
+
 export const getFirstLaunch = async () => {
     const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.FIRST_LAUNCH)?.fetch();
     if (!records?.[0]?.value) {

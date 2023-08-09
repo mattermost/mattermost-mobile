@@ -77,3 +77,11 @@ export const removeLastViewedChannelIdAndServer = async () => {
 export const removeLastViewedThreadIdAndServer = async () => {
     return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_THREAD, null, false);
 };
+
+export const storePushDisabledInServerAcknowledged = async (serverUrl: string) => {
+    return storeGlobal(`${GLOBAL_IDENTIFIERS.PUSH_DISABLED_ACK}${serverUrl}`, 'true', false);
+};
+
+export const removePushDisabledInServerAcknowledged = async (serverUrl: string) => {
+    return storeGlobal(`${GLOBAL_IDENTIFIERS.PUSH_DISABLED_ACK}${serverUrl}`, null, false);
+};

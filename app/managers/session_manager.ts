@@ -5,7 +5,7 @@ import CookieManager, {type Cookie} from '@react-native-cookies/cookies';
 import {AppState, type AppStateStatus, DeviceEventEmitter, Platform} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {storeOnboardingViewedValue} from '@actions/app/global';
+import {removePushDisabledInServerAcknowledged, storeOnboardingViewedValue} from '@actions/app/global';
 import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -21,7 +21,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
-import {isMainActivity} from '@utils/helpers';
+import {extractCleanDomain, isMainActivity} from '@utils/helpers';
 import {addNewServer} from '@utils/server';
 
 import type {LaunchType} from '@typings/launch';
@@ -167,6 +167,8 @@ class SessionManager {
         const activeServerDisplayName = await DatabaseManager.getActiveServerDisplayName();
 
         await this.terminateSession(serverUrl, removeServer);
+
+        await removePushDisabledInServerAcknowledged(extractCleanDomain(serverUrl));
 
         if (activeServerUrl === serverUrl) {
             let displayName = '';

@@ -44,6 +44,7 @@ type Props = {
     server: ServersModel;
     tutorialWatched: boolean;
     pushProxyStatus: string;
+    pushDisabledAck: boolean;
 }
 
 type BadgeValues = {
@@ -147,6 +148,7 @@ const ServerItem = ({
     server,
     tutorialWatched,
     pushProxyStatus,
+    pushDisabledAck,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -428,7 +430,7 @@ const ServerItem = ({
                                     >
                                         {displayName}
                                     </Text>
-                                    {server.lastActiveAt > 0 && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+                                    {server.lastActiveAt > 0 && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && !pushDisabledAck && (
                                         <CompassIcon
                                             name='alert-outline'
                                             color={theme.errorTextColor}

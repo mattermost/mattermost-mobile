@@ -6,7 +6,10 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
+import {observePushDisabledInServerAcknowledged} from '@app/queries/app/global';
+import {extractCleanDomain} from '@app/utils/helpers';
 import {Permissions} from '@constants';
+import {withServerUrl} from '@context/server';
 import {observePermissionForTeam} from '@queries/servers/role';
 import {observeConfigBooleanValue, observePushVerificationStatus} from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
@@ -16,7 +19,11 @@ import ChannelListHeader from './header';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+type Props = WithDatabaseArgs & {
+    serverUrl: string;
+}
+
+const enhanced = withObservables([], ({serverUrl, database}: Props) => {
     const team = observeCurrentTeam(database);
 
     const currentUser = observeCurrentUser(database);
@@ -57,7 +64,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             distinctUntilChanged(),
         ),
         pushProxyStatus: observePushVerificationStatus(database),
+        pushDisabledAck: observePushDisabledInServerAcknowledged(extractCleanDomain(serverUrl)),
     };
 });
 
-export default withDatabase(enhanced(ChannelListHeader));
+export default withDatabase(withServerUrl(enhanced(ChannelListHeader)));

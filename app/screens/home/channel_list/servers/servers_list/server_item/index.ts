@@ -4,10 +4,11 @@
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 
+import {extractCleanDomain} from '@app/utils/helpers';
 import {Tutorial} from '@constants';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
-import {observeTutorialWatched} from '@queries/app/global';
+import {observePushDisabledInServerAcknowledged, observeTutorialWatched} from '@queries/app/global';
 import {observePushVerificationStatus} from '@queries/servers/system';
 
 import ServerItem from './server_item';
@@ -26,6 +27,7 @@ const enhance = withObservables(['highlight'], ({highlight, server}: {highlight:
         server: server.observe(),
         tutorialWatched,
         pushProxyStatus: serverDatabase ? observePushVerificationStatus(serverDatabase) : of$(PUSH_PROXY_STATUS_UNKNOWN),
+        pushDisabledAck: observePushDisabledInServerAcknowledged(extractCleanDomain(server.url)),
     };
 });
 

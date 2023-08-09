@@ -17,6 +17,7 @@ describe('components/channel_list/header', () => {
                 canJoinChannels={true}
                 canInvitePeople={true}
                 displayName={'Test!'}
+                pushDisabledAck={true}
             />,
         );
 

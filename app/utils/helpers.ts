@@ -162,3 +162,45 @@ export function isMainActivity() {
         android: ShareModule?.getCurrentActivityName() === 'MainActivity',
     });
 }
+
+/**
+ * Extracts the domain name or IP address from a serverUrl.
+ *
+ * @param {string} input - The serverUrl, potentially with a port and protocol.
+ * @returns {string} The extracted domain name or IP address,
+ * or empty if no match is found.
+ *
+ * // Output:
+ * // Input: https://example-something.com => Result: example-something
+ * // Input: http://192.168.1.1 => Result: 192.168.1.1
+ * // Input: https://127.0.0.1:3000 => Result: 127.0.0.1
+ */
+export function extractDomain(input: string) {
+    const regex = /^(https?:\/\/)?([\w.-]+)(:\d+)?$/;
+    const match = input.match(regex);
+
+    if (match && match[2]) {
+        return match[2].replace(/[\W.]/g, '');
+    }
+
+    return '';
+}
+
+/**
+ * Returns the domain name or IP address from a serverUrl without special characters.
+ *
+ * @param {string} domain - The extracted domain from a serverUrl.
+ * @returns {string} The extracted domain name or IP address, modified to remove special characters,
+ * or empty .
+ *
+ * // Output:
+ * // Input: example-something => Result: examplesomething
+ * // Input: 192.168.1.1 => Result: 19216811
+ * // Input: 127.0.0.1 => Result: 127001
+ */
+export function extractCleanDomain(domain: string) {
+    if (!domain) {
+        return '';
+    }
+    return extractDomain(domain).replace(/[\W.]/g, '');
+}

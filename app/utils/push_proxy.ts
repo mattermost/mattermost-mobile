@@ -3,16 +3,30 @@
 
 import {Alert} from 'react-native';
 
+import {storePushDisabledInServerAcknowledged} from '@actions/app/global';
+import {getPushDisabledInServerAcknowledged} from '@app/queries/app/global';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import EphemeralStore from '@store/ephemeral_store';
 
+import {extractCleanDomain} from './helpers';
+
 import type {IntlShape} from 'react-intl';
 
-export function canReceiveNotifications(serverUrl: string, verification: string, intl: IntlShape) {
+export async function pushDisabledInServerAck(serverUrl: string) {
+    const extractedDomain = extractCleanDomain(serverUrl);
+    const pushServerDisabledAck = await getPushDisabledInServerAcknowledged(extractedDomain);
+    return pushServerDisabledAck;
+}
+
+export async function canReceiveNotifications(serverUrl: string, verification: string, intl: IntlShape) {
+    const a = await pushDisabledInServerAck(serverUrl);
+
     switch (verification) {
         case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
             EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_NOT_AVAILABLE);
-            alertPushProxyError(intl);
+            if (!a) {
+                alertPushProxyError(intl, serverUrl);
+            }
             break;
         case PUSH_PROXY_RESPONSE_UNKNOWN:
             EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_UNKNOWN);
@@ -23,7 +37,14 @@ export function canReceiveNotifications(serverUrl: string, verification: string,
     }
 }
 
-export function alertPushProxyError(intl: IntlShape) {
+const handleAlertResponse = async (buttonIndex: number, serverUrl: string) => {
+    if (buttonIndex === 0) {
+        // User clicked "Okay" acknowledging that the push notifications are disabled on that server
+        await storePushDisabledInServerAcknowledged(extractCleanDomain(serverUrl));
+    }
+};
+
+export function alertPushProxyError(intl: IntlShape, serverUrl: string) {
     Alert.alert(
         intl.formatMessage({
             id: 'alert.push_proxy_error.title',
@@ -35,6 +56,7 @@ export function alertPushProxyError(intl: IntlShape) {
         }),
         [{
             text: intl.formatMessage({id: 'alert.push_proxy.button', defaultMessage: 'Okay'}),
+            onPress: () => handleAlertResponse(0, serverUrl),
         }],
     );
 }
