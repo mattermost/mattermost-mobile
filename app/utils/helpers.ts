@@ -174,13 +174,16 @@ export function isMainActivity() {
  * // Input: https://example-something.com => Result: example-something
  * // Input: http://192.168.1.1 => Result: 192.168.1.1
  * // Input: https://127.0.0.1:3000 => Result: 127.0.0.1
+ * // Input: https://subdomain.example.com/api => subdomain.example.com/api
+ * // Input: http://localhost:8080/app/v1 => localhost:8080/app/v1
  */
 export function extractDomain(input: string) {
-    const regex = /^(https?:\/\/)?([\w.-]+)(:\d+)?$/;
+    const regex = /^(https?:\/\/)?([\w.-]+)(:\d+)?(\/\S*)?/;
     const match = input.match(regex);
 
-    if (match && match[2]) {
-        return match[2].replace(/[\W.]/g, '');
+    if (match) {
+        const modifiedString = match[2] + (match[4] || '');
+        return modifiedString;
     }
 
     return '';
