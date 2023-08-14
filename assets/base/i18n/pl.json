@@ -1066,5 +1066,6 @@
     "settings.about.server.version.noBuild": "Wersja Serwera: {version}",
     "settings.about.server.version.title": "Wersja serwera:",
     "settings.about.app.version": "Wersja Aplikacji: {version} (Build {number})",
-    "settings.about.server.version": "Wersja serwera: {version} (kompilacja {buildNumber}"
+    "settings.about.server.version": "Wersja serwera: {version} (kompilacja {buildNumber}",
+    "snack.bar.info.copied": "Informacje skopiowane do schowka"
 }

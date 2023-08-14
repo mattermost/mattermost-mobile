@@ -69,9 +69,9 @@ const PostResults = ({
                 const hasPhrases = (/"([^"]*)"/).test(searchValue || '');
                 let searchPatterns: SearchPattern[] | undefined;
                 if (matches && !hasPhrases) {
-                    searchPatterns = matches?.[key].map(convertSearchTermToRegex);
+                    searchPatterns = matches?.[key]?.map(convertSearchTermToRegex);
                 } else {
-                    searchPatterns = parseSearchTerms(searchValue).map(convertSearchTermToRegex).sort((a, b) => {
+                    searchPatterns = parseSearchTerms(searchValue)?.map(convertSearchTermToRegex).sort((a, b) => {
                         return b.term.length - a.term.length;
                     });
                 }

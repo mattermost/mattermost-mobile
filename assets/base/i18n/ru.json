@@ -848,8 +848,8 @@
     "settings.about.server.version.value": "{version} (Сборка {number})",
     "settings.about.powered_by": "{site} работает на Mattermost",
     "settings.about.licensed": "Лицензировано для: {company}",
-    "settings.about.database.schema": "Версия Схемы Базы Данных:",
-    "settings.about.database": "База данных:",
+    "settings.about.database.schema": "Версия Схемы Базы Данных: {version}",
+    "settings.about.database": "База данных: {driverName}",
     "settings.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. Все права защищены",
     "settings.about": "О {appTitle}",
     "settings_display.timezone.select": "Выберите часовой пояс",
@@ -1056,5 +1056,16 @@
     "share_extension.channels_screen.title": "Выбрать канал",
     "share_extension.error_screen.description": "При попытке поделиться содержимым на {applicationName} произошла ошибка.",
     "share_extension.error_screen.label": "Произошла ошибка",
-    "share_extension.error_screen.reason": "Причина: {reason}"
+    "share_extension.error_screen.reason": "Причина: {reason}",
+    "mobile.search.results": "{count} поиск {count, plural, one {результат} few {результата} other {результатов}}",
+    "settings.about.app.version": "Версия приложения: {version} (Сборка {number})",
+    "settings.about.app.version.title": "Версия приложения:",
+    "settings.about.app.version.value": "{version} (Сборка {number})",
+    "settings.about.button.copyInfo": "Скопировать информацию",
+    "settings.about.database.schema.title": "Версия Схемы Базы Данных:",
+    "settings.about.database.title": "База данных:",
+    "settings.about.server.version": "Версия сервера: {version} (Build {buildNumber}",
+    "settings.about.server.version.noBuild": "Версия сервера: {version}",
+    "settings.about.server.version.title": "Версия сервера:",
+    "snack.bar.info.copied": "Информация скопирована в буфер обмена"
 }
