@@ -182,6 +182,8 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
                         <RoundedHeaderContext/>
                     </Animated.View>
                     <AnimatedFlatList
+
+                        // @ts-expect-error old style ref
                         ref={scrollRef}
                         contentContainerStyle={paddingTop}
                         ListEmptyComponent={renderEmptyList()}
