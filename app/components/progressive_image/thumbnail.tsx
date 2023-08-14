@@ -25,6 +25,8 @@ const Thumbnail = ({onError, opacity, style, source, tintColor}: ThumbnailProps)
                 onError={onError}
                 resizeMode='cover'
                 source={source}
+
+                // @ts-expect-error style is supported but TS complains
                 style={style}
                 testID='progressive_image.miniPreview'
             />
