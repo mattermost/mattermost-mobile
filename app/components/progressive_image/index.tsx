@@ -120,6 +120,8 @@ const ProgressiveImage = ({
         if (showHighResImage && imageUri) {
             image = (
                 <AnimatedFastImage
+
+                    // @ts-expect-error old style ref
                     ref={forwardRef}
                     nativeID={`image-${id}`}
                     resizeMode={resizeMode}
@@ -138,6 +140,8 @@ const ProgressiveImage = ({
     } else if (imageUri) {
         image = (
             <AnimatedFastImage
+
+                // @ts-expect-error old style ref
                 ref={forwardRef}
                 nativeID={`image-${id}`}
                 resizeMode={resizeMode}

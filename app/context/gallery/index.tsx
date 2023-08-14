@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useLayoutEffect} from 'react';
-import Animated, {makeMutable, runOnUI} from 'react-native-reanimated';
+import {useEffect, useLayoutEffect} from 'react';
+import Animated, {makeMutable, runOnUI, type AnimatedRef} from 'react-native-reanimated';
 
 import type {GalleryManagerSharedValues} from '@typings/screens/gallery';
 
 export interface GalleryManagerItem {
     index: number;
-    ref: React.RefObject<unknown>;
+    ref: AnimatedRef<any>;
 }
 
 export interface GalleryManagerItems {
@@ -79,7 +79,7 @@ class Gallery {
         })();
     }
 
-    public registerItem(index: number, ref: React.RefObject<unknown>) {
+    public registerItem(index: number, ref: AnimatedRef<any>) {
         if (this.items.has(index)) {
             return;
         }

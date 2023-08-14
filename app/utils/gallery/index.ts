@@ -4,7 +4,7 @@
 import React from 'react';
 import {DeviceEventEmitter, Keyboard, NativeModules, Platform} from 'react-native';
 import {Navigation, type Options, type OptionsLayout} from 'react-native-navigation';
-import {measure} from 'react-native-reanimated';
+import {measure, type AnimatedRef} from 'react-native-reanimated';
 
 import {Events, Screens} from '@constants';
 import {allOrientations, showOverlay} from '@screens/navigation';
@@ -100,7 +100,7 @@ export const getShouldRender = (index: number, activeIndex: number, diffValue = 
     return true;
 };
 
-export function measureItem(ref: React.RefObject<any>, sharedValues: GalleryManagerSharedValues) {
+export function measureItem(ref: AnimatedRef<any>, sharedValues: GalleryManagerSharedValues) {
     'worklet';
 
     try {
