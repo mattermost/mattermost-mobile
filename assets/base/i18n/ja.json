@@ -422,8 +422,8 @@
     "settings.about.server.version.value": "{version} (Build {number})",
     "settings.about.powered_by": "{site} はMattermostを利用しています",
     "settings.about.licensed": "ライセンス: {company}",
-    "settings.about.database.schema": "データベーススキーマのバージョン:",
-    "settings.about.database": "データベース:",
+    "settings.about.database.schema": "データベーススキーマのバージョン: {version}",
+    "settings.about.database": "データベース: {driverName}",
     "settings.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved",
     "settings.about": "{appTitle}について",
     "settings_display.timezone.select": "タイムゾーンを選択",
@@ -1056,5 +1056,16 @@
     "share_extension.channels_screen.title": "チャンネルを選択",
     "share_extension.error_screen.description": "{applicationName} にコンテンツを共有する際にエラーが発生しました。",
     "share_extension.error_screen.label": "エラーが発生しました",
-    "share_extension.error_screen.reason": "理由: {reason}"
+    "share_extension.error_screen.reason": "理由: {reason}",
+    "snack.bar.info.copied": "情報がクリップボードにコピーされました",
+    "mobile.search.results": "{count} 件の検索 {count, plural, one {結果} other {結果}}",
+    "settings.about.app.version": "App Version: {version} (Build {number})",
+    "settings.about.app.version.title": "App Version:",
+    "settings.about.app.version.value": "{version} (Build {number})",
+    "settings.about.button.copyInfo": "情報をコピー",
+    "settings.about.database.schema.title": "データベーススキーマのバージョン:",
+    "settings.about.database.title": "データベース:",
+    "settings.about.server.version": "サーバーのバージョン: {version} (Build {buildNumber})",
+    "settings.about.server.version.noBuild": "サーバーのバージョン: {version}",
+    "settings.about.server.version.title": "サーバーのバージョン:"
 }
