@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
+import {Observable, of as of$, switchMap} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -24,4 +24,19 @@ export const retrieveChannels = (database: Database, myChannels: MyChannelModel[
     }
 
     return of$([]);
+};
+
+export const removeChannelsFromArchivedTeams = (recentChannels: ChannelModel[], teamIds: Observable<Set<string>>) => {
+    return teamIds.pipe(
+        // eslint-disable-next-line max-nested-callbacks
+        switchMap((teamIdsSet) =>
+            // eslint-disable-next-line max-nested-callbacks
+            of$(recentChannels.filter((channel) => {
+                if (!channel.teamId) {
+                    return true;
+                }
+                return teamIdsSet.has(channel.teamId);
+            })),
+        ),
+    );
 };
