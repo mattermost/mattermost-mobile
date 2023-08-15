@@ -17,6 +17,7 @@ import {
     observeCurrentTeamId,
     observeCurrentUserId,
 } from '@queries/servers/system';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
 import {isTypeDMorGM} from '@utils/channel';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -110,6 +111,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         canEnableDisableCalls,
         isCallsEnabledInChannel,
         canManageMembers,
+        isCRTEnabled: observeIsCRTEnabled(database),
     };
 });
 

@@ -30,6 +30,7 @@ type Props = {
     canEnableDisableCalls: boolean;
     isCallsEnabledInChannel: boolean;
     canManageMembers: boolean;
+    isCRTEnabled: boolean;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -50,6 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const ChannelInfo = ({
+    isCRTEnabled,
     channelId,
     closeButtonId,
     componentId,
@@ -103,6 +105,7 @@ const ChannelInfo = ({
                     type={type}
                     callsEnabled={callsAvailable}
                     canManageMembers={canManageMembers}
+                    isCRTEnabled={isCRTEnabled}
                 />
                 <View style={styles.separator}/>
                 {canEnableDisableCalls &&

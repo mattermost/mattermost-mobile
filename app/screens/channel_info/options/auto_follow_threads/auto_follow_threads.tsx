@@ -5,8 +5,8 @@ import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
-import OptionItem from '@app/components/option_item';
-import {useServerUrl} from '@app/context/server';
+import OptionItem from '@components/option_item';
+import {useServerUrl} from '@context/server';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {

@@ -21,6 +21,7 @@ type Props = {
     type?: ChannelType;
     callsEnabled: boolean;
     canManageMembers: boolean;
+    isCRTEnabled: boolean;
 }
 
 const Options = ({
@@ -28,16 +29,17 @@ const Options = ({
     type,
     callsEnabled,
     canManageMembers,
+    isCRTEnabled,
 }: Props) => {
     const isDMorGM = isTypeDMorGM(type);
 
     return (
         <>
+            {isCRTEnabled && (
+                <AutoFollowThreads channelId={channelId}/>
+            )}
             {type !== General.DM_CHANNEL && (
-                <>
-                    <AutoFollowThreads channelId={channelId}/>
-                    <IgnoreMentions channelId={channelId}/>
-                </>
+                <IgnoreMentions channelId={channelId}/>
             )}
             <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
