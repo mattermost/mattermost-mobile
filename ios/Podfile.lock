@@ -1,7 +1,7 @@
 PODS:
   - Alamofire (5.6.4)
   - boost (1.76.0)
-  - BVLinearGradient (2.8.1):
+  - BVLinearGradient (2.8.2):
     - React-Core
   - CocoaAsyncSocket (7.6.5)
   - CocoaLumberjack (3.8.0):
@@ -374,7 +374,7 @@ PODS:
     - React-Core
   - react-native-hw-keyboard-event (0.0.4):
     - React
-  - react-native-image-picker (5.6.0):
+  - react-native-image-picker (5.6.1):
     - React-Core
   - react-native-in-app-review (4.3.3):
     - React-Core
@@ -492,14 +492,14 @@ PODS:
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
-  - ReactNativeNavigation (7.36.0):
+  - ReactNativeNavigation (7.37.0):
     - HMSegmentedControl
     - React-Core
     - React-CoreModules
     - React-RCTImage
     - React-RCTText
-    - ReactNativeNavigation/Core (= 7.36.0)
-  - ReactNativeNavigation/Core (7.36.0):
+    - ReactNativeNavigation/Core (= 7.37.0)
+  - ReactNativeNavigation/Core (7.37.0):
     - HMSegmentedControl
     - React-Core
     - React-CoreModules
@@ -558,18 +558,18 @@ PODS:
     - React-RCTText
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNRudderSdk (1.7.1):
+  - RNRudderSdk (1.8.0):
     - React
     - Rudder (~> 1.13)
   - RNScreens (3.24.0):
     - React-Core
     - React-RCTImage
-  - RNSentry (5.8.1):
+  - RNSentry (5.9.0):
     - React-Core
-    - Sentry/HybridSDK (= 8.9.3)
+    - Sentry/HybridSDK (= 8.9.4)
   - RNShare (9.2.3):
     - React-Core
-  - RNSVG (13.10.0):
+  - RNSVG (13.11.0):
     - React-Core
   - RNVectorIcons (10.0.0):
     - React-Core
@@ -580,9 +580,9 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - Sentry/HybridSDK (8.9.3):
-    - SentryPrivate (= 8.9.3)
-  - SentryPrivate (8.9.3)
+  - Sentry/HybridSDK (8.9.4):
+    - SentryPrivate (= 8.9.4)
+  - SentryPrivate (8.9.4)
   - simdjson (3.1.0-wmelon1)
   - SocketRocket (0.6.1)
   - Starscream (4.0.4)
@@ -903,7 +903,7 @@ CHECKOUT OPTIONS:
 SPEC CHECKSUMS:
   Alamofire: 4e95d97098eacb88856099c4fc79b526a299e48c
   boost: 57d2868c099736d80fcd648bf211b4431e51a558
-  BVLinearGradient: 421743791a59d259aec53f4c58793aad031da2ca
+  BVLinearGradient: 916632041121a658c704df89d99f04acb038de0f
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CocoaLumberjack: 78abfb691154e2a9df8ded4350d504ee19d90732
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
@@ -950,7 +950,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: 2b8f18667caee73a96708a82b284a4f40b30a156
   react-native-emm: 5aaacd33453894ec64b9c774f735b6bf1a92b89f
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
-  react-native-image-picker: db60857e03d63721f19b6f4027de20429ddd9cba
+  react-native-image-picker: 5fcac5a5ffcb3737837f0617d43fd767249290de
   react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
   react-native-netinfo: fefd4e98d75cbdd6e85fc530f7111a8afdf2b0c5
   react-native-network-client: b12f0de0c3488237a8240e5f2acdd9f6c505c6d5
@@ -976,7 +976,7 @@ SPEC CHECKSUMS:
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   ReactNativeIncallManager: 2385505fa5dfdbbc78925e3b8d23b30ce0cde40e
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
-  ReactNativeNavigation: 11f3907b9401a859f07ea5cfe82a1518b154f1e8
+  ReactNativeNavigation: 2651d0bc1479e9df0789b077ae93320dc2c9b73b
   RNCClipboard: 3f0451a8100393908bea5c5c5b16f96d45f30bfc
   RNDateTimePicker: 9b4091348e53f540180abdc54984d839a556f593
   RNDeviceInfo: 5795b418ed3451ebcaf39384e6cf51f60cb931c9
@@ -989,17 +989,17 @@ SPEC CHECKSUMS:
   RNPermissions: 8ec6088b9f52706b4ef98fc4929df617d23917f3
   RNReactNativeHapticFeedback: afa5bf2794aecbb2dba2525329253da0d66656df
   RNReanimated: 49cdb63e767bb7e743ff4c12f7d85722c0d008f2
-  RNRudderSdk: 70865f8d0746d7e78e27df98c148d1ca0205c551
+  RNRudderSdk: b8cbccae069ea1a16ae1fd93e1b1072c1f1b7af7
   RNScreens: b21dc57dfa2b710c30ec600786a3fc223b1b92e7
-  RNSentry: 221d8c3f0bf0d951e9ecc89d3e42ee97aab9d7c0
+  RNSentry: c167b3da6aa7f3cf85d909caae905d043a062b6c
   RNShare: da6d90b6dc332f51f86498041d6e34211f96b630
-  RNSVG: 80584470ff1ffc7994923ea135a3e5ad825546b9
+  RNSVG: 03e4d258ca355d7836a0a5dd4d4dc63c1eb49cbb
   RNVectorIcons: 8b5bb0fa61d54cd2020af4f24a51841ce365c7e9
   Rudder: 3f4ab09638452282a22b96a388b54132dcd3fca8
   SDWebImage: a47aea9e3d8816015db4e523daff50cfd294499d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  Sentry: 97161cac725da1ecbe77d1445bf8a61c1e5667f1
-  SentryPrivate: 9a76def09fb08f9501997b8df946e8097947b94f
+  Sentry: 56c76eed917f7dffd46db50906afbf5c9aa2673a
+  SentryPrivate: f3be34b5deb9fe676fdfb1f1ad5cdb1b740c5688
   simdjson: e6bfae9ce4bcdc80452d388d593816f1ca2106f3
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
