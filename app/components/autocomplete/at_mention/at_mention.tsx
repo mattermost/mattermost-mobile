@@ -1,17 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, SectionList, type SectionListData, type SectionListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
 
 import {searchGroupsByName, searchGroupsByNameInChannel, searchGroupsByNameInTeam} from '@actions/local/group';
 import {searchUsers} from '@actions/remote/user';
+import {General} from '@app/constants';
 import GroupMentionItem from '@components/autocomplete/at_mention_group/at_mention_group';
 import AtMentionItem from '@components/autocomplete/at_mention_item';
 import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';
 import SpecialMentionItem from '@components/autocomplete/special_mention_item';
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
+import {MM_TABLES} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
@@ -23,9 +26,15 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const SECTION_KEY_TEAM_MEMBERS = 'teamMembers';
 const SECTION_KEY_IN_CHANNEL = 'inChannel';
-const SECTION_KEY_OUT_OF_CHANNEL = 'outChannel';
 const SECTION_KEY_SPECIAL = 'special';
 const SECTION_KEY_GROUPS = 'groups';
+
+const {
+    CHANNEL_MEMBERSHIP,
+    CHANNEL,
+    USER,
+    MY_CHANNEL,
+} = MM_TABLES.SERVER;
 
 type SpecialMention = {
     completeHandle: string;
@@ -42,7 +51,7 @@ const getMatchTermForAtMention = (() => {
     return (value: string, isSearch: boolean) => {
         if (value !== lastValue || isSearch !== lastIsSearch) {
             const regex = isSearch ? AT_MENTION_SEARCH_REGEX : AT_MENTION_REGEX;
-            let term = value.toLowerCase();
+            let term = value;
             if (term.startsWith('from: @') || term.startsWith('from:@')) {
                 term = term.replace('@', '');
             }
@@ -138,8 +147,8 @@ const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChanne
     } else {
         if (usersInChannel.length) {
             newSections.push({
-                id: t('suggestion.mention.members'),
-                defaultMessage: 'Channel Members',
+                id: t('suggestion.mention.users'),
+                defaultMessage: 'Users',
                 data: usersInChannel,
                 key: SECTION_KEY_IN_CHANNEL,
             });
@@ -160,15 +169,6 @@ const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChanne
                 defaultMessage: 'Special Mentions',
                 data: getSpecialMentions(),
                 key: SECTION_KEY_SPECIAL,
-            });
-        }
-
-        if (usersOutOfChannel.length) {
-            newSections.push({
-                id: t('suggestion.mention.nonmembers'),
-                defaultMessage: 'Not in Channel',
-                data: usersOutOfChannel,
-                key: SECTION_KEY_OUT_OF_CHANNEL,
             });
         }
     }
@@ -230,6 +230,21 @@ const getAllUsers = async (serverUrl: string) => {
     return queryAllUsers(database).fetch();
 };
 
+const getUsersFromDMSorted = async (serverUrl: string, memberIds: string[]) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return [];
+    }
+
+    return database.get<UserModel>(USER).query(
+        Q.unsafeSqlQuery(`SELECT DISTINCT u.* FROM User u
+        INNER JOIN ${CHANNEL_MEMBERSHIP} cm ON cm.user_id=u.id
+        LEFT JOIN ${CHANNEL} c ON c.id=cm.id AND c.type='${General.DM_CHANNEL}'
+        LEFT JOIN ${MY_CHANNEL} my
+        WHERE cm.user_id IN (${`'${memberIds.join("','")}'`})
+        ORDER BY my.last_viewed_at DESC`)).fetch();
+};
+
 const AtMention = ({
     channelId,
     teamId,
@@ -289,15 +304,25 @@ const AtMention = ({
             const filteredUsers = filterResults(fallbackUsers, term);
             setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyUserlList);
         } else if (receivedUsers) {
-            if (hasTrailingSpaces(term)) {
-                const filteredReceivedUsers = filterResults(receivedUsers.users, term);
-                const filteredReceivedOutOfChannelUsers = filterResults(receivedUsers.out_of_channel || [], term);
+            const memberIds = receivedUsers.users.map((e) => e.id);
+            const sortedMembers: Array<UserProfile | UserModel> = await getUsersFromDMSorted(sUrl, memberIds);
+            const sortedMembersId = sortedMembers.map((e) => e.id);
+            const membersNoDm = receivedUsers.users.filter((u) => !sortedMembersId.includes(u.id));
+            sortedMembers.push(...membersNoDm);
 
+            if (receivedUsers?.out_of_channel?.length) {
+                const outChannelMemberIds = receivedUsers.out_of_channel.map((e) => e.id);
+                const outSortedMembers = await getUsersFromDMSorted(sUrl, outChannelMemberIds);
+                sortedMembers.push(...outSortedMembers);
+            }
+
+            const slicedArray = sortedMembers.slice(0, 20);
+
+            if (hasTrailingSpaces(term)) {
+                const filteredReceivedUsers = filterResults(slicedArray, term);
                 setUsersInChannel(filteredReceivedUsers.length ? filteredReceivedUsers : emptyUserlList);
-                setUsersOutOfChannel(filteredReceivedOutOfChannelUsers.length ? filteredReceivedOutOfChannelUsers : emptyUserlList);
             } else {
-                setUsersInChannel(receivedUsers.users.length ? receivedUsers.users : emptyUserlList);
-                setUsersOutOfChannel(receivedUsers.out_of_channel?.length ? receivedUsers.out_of_channel : emptyUserlList);
+                setUsersInChannel(sortedMembers.length ? sortedMembers : emptyUserlList);
             }
         }
 
