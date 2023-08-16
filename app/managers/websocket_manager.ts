@@ -147,7 +147,10 @@ class WebsocketManager {
                 if (error) {
                     client.close(false);
                 }
-                this.firstConnectionSynced[serverUrl] = true;
+                // Makes sure a client still exist, and therefore we haven't been logged out
+                if (this.clients[serverUrl]) {
+                    this.firstConnectionSynced[serverUrl] = true;
+                }
             }
         }
     };
