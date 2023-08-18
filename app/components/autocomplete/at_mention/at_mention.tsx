@@ -9,6 +9,7 @@ import {Platform, SectionList, type SectionListData, type SectionListRenderItemI
 import {searchGroupsByName, searchGroupsByNameInChannel, searchGroupsByNameInTeam} from '@actions/local/group';
 import {searchUsers} from '@actions/remote/user';
 import {General} from '@app/constants';
+import {logError} from '@app/utils/log';
 import GroupMentionItem from '@components/autocomplete/at_mention_group/at_mention_group';
 import AtMentionItem from '@components/autocomplete/at_mention_item';
 import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';
@@ -51,7 +52,7 @@ const getMatchTermForAtMention = (() => {
     return (value: string, isSearch: boolean) => {
         if (value !== lastValue || isSearch !== lastIsSearch) {
             const regex = isSearch ? AT_MENTION_SEARCH_REGEX : AT_MENTION_REGEX;
-            let term = value;
+            let term = value.toLowerCase();
             if (term.startsWith('from: @') || term.startsWith('from:@')) {
                 term = term.replace('@', '');
             }
@@ -105,7 +106,7 @@ const filterResults = (users: Array<UserModel | UserProfile>, term: string) => {
     });
 };
 
-const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChannel: Array<UserProfile | UserModel>, usersOutOfChannel: Array<UserProfile | UserModel>, groups: GroupModel[], showSpecialMentions: boolean, isLocal = false, isSearch = false) => {
+const makeSections = (teamMembers: Array<UserProfile | UserModel>, users: Array<UserProfile | UserModel>, groups: GroupModel[], showSpecialMentions: boolean, isLocal = false, isSearch = false) => {
     const newSections: UserMentionSections = [];
 
     if (isSearch) {
@@ -145,11 +146,11 @@ const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChanne
             });
         }
     } else {
-        if (usersInChannel.length) {
+        if (users.length) {
             newSections.push({
                 id: t('suggestion.mention.users'),
                 defaultMessage: 'Users',
-                data: usersInChannel,
+                data: users,
                 key: SECTION_KEY_IN_CHANNEL,
             });
         }
@@ -231,18 +232,23 @@ const getAllUsers = async (serverUrl: string) => {
 };
 
 const getUsersFromDMSorted = async (serverUrl: string, memberIds: string[]) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return [];
-    }
+    try {
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return emptyUserlList;
+        }
 
-    return database.get<UserModel>(USER).query(
-        Q.unsafeSqlQuery(`SELECT DISTINCT u.* FROM User u
-        INNER JOIN ${CHANNEL_MEMBERSHIP} cm ON cm.user_id=u.id
-        LEFT JOIN ${CHANNEL} c ON c.id=cm.id AND c.type='${General.DM_CHANNEL}'
-        LEFT JOIN ${MY_CHANNEL} my
-        WHERE cm.user_id IN (${`'${memberIds.join("','")}'`})
-        ORDER BY my.last_viewed_at DESC`)).fetch();
+        return database.get<UserModel>(USER).query(
+            Q.unsafeSqlQuery(`SELECT DISTINCT u.* FROM User u
+            INNER JOIN ${CHANNEL_MEMBERSHIP} cm ON cm.user_id=u.id
+            INNER JOIN ${CHANNEL} c ON c.id=cm.id AND c.type='${General.DM_CHANNEL}'
+            INNER JOIN ${MY_CHANNEL} my
+            WHERE cm.user_id IN (${`'${memberIds.join("','")}'`})
+            ORDER BY my.last_viewed_at DESC`)).fetch();
+    } catch (error) {
+        logError('Failed sort members', error);
+        return emptyUserlList;
+    }
 };
 
 const AtMention = ({
@@ -263,8 +269,7 @@ const AtMention = ({
     const serverUrl = useServerUrl();
 
     const [sections, setSections] = useState<UserMentionSections>(emptySectionList);
-    const [usersInChannel, setUsersInChannel] = useState<Array<UserProfile | UserModel>>(emptyUserlList);
-    const [usersOutOfChannel, setUsersOutOfChannel] = useState<Array<UserProfile | UserModel>>(emptyUserlList);
+    const [users, setUsers] = useState<Array<UserProfile | UserModel>>(emptyUserlList);
     const [groups, setGroups] = useState<GroupModel[]>(emptyGroupList);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
@@ -306,8 +311,9 @@ const AtMention = ({
         } else if (receivedUsers) {
             const memberIds = receivedUsers.users.map((e) => e.id);
             const sortedMembers: Array<UserProfile | UserModel> = await getUsersFromDMSorted(sUrl, memberIds);
-            const sortedMembersId = sortedMembers.map((e) => e.id);
-            const membersNoDm = receivedUsers.users.filter((u) => !sortedMembersId.includes(u.id));
+            const sortedMembersId = new Set<string>(sortedMembers.map((e) => e.id));
+
+            const membersNoDm = receivedUsers.users.filter((u) => !sortedMembersId.has(u.id));
             sortedMembers.push(...membersNoDm);
 
             if (receivedUsers?.out_of_channel?.length) {
@@ -316,13 +322,13 @@ const AtMention = ({
                 sortedMembers.push(...outSortedMembers);
             }
 
-            const slicedArray = sortedMembers.slice(0, 20);
-
             if (hasTrailingSpaces(term)) {
-                const filteredReceivedUsers = filterResults(slicedArray, term);
-                setUsersInChannel(filteredReceivedUsers.length ? filteredReceivedUsers : emptyUserlList);
+                const filteredReceivedUsers = filterResults(sortedMembers, term);
+                const slicedArray = filteredReceivedUsers.slice(0, 20);
+                setUsers(slicedArray.length ? slicedArray : emptyUserlList);
             } else {
-                setUsersInChannel(sortedMembers.length ? sortedMembers : emptyUserlList);
+                const slicedArray = sortedMembers.slice(0, 20);
+                setUsers(slicedArray.length ? slicedArray : emptyUserlList);
             }
         }
 
@@ -330,14 +336,13 @@ const AtMention = ({
     }, 200), []);
 
     const teamMembers = useMemo(
-        () => [...usersInChannel, ...usersOutOfChannel],
-        [usersInChannel, usersOutOfChannel],
+        () => [...users],
+        [users],
     );
 
     const matchTerm = getMatchTermForAtMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
-        setUsersInChannel(emptyUserlList);
-        setUsersOutOfChannel(emptyUserlList);
+        setUsers(emptyUserlList);
         setGroups(emptyGroupList);
         setFilteredLocalUsers(emptyUserlList);
         setSections(emptySectionList);
@@ -458,9 +463,9 @@ const AtMention = ({
         const buildMemberSection = isSearch || (!channelId && teamMembers.length > 0);
         let newSections;
         if (useLocal) {
-            newSections = makeSections(filteredLocalUsers, [], [], groups, showSpecialMentions, true, buildMemberSection);
+            newSections = makeSections(filteredLocalUsers, [], groups, showSpecialMentions, true, buildMemberSection);
         } else {
-            newSections = makeSections(teamMembers, usersInChannel, usersOutOfChannel, groups, showSpecialMentions, buildMemberSection);
+            newSections = makeSections(teamMembers, users, groups, showSpecialMentions, buildMemberSection);
         }
         const nSections = newSections.length;
 
@@ -473,7 +478,7 @@ const AtMention = ({
         }
         setSections(nSections ? newSections : emptySectionList);
         onShowingChange(Boolean(nSections));
-    }, [!useLocal && usersInChannel, !useLocal && usersOutOfChannel, teamMembers, groups, loading, channelId, useLocal && filteredLocalUsers]);
+    }, [!useLocal && users, teamMembers, groups, loading, channelId, useLocal && filteredLocalUsers]);
 
     if (sections.length === 0 || noResultsTerm != null) {
         // If we are not in an active state or the mention has been completed return null so nothing is rendered
