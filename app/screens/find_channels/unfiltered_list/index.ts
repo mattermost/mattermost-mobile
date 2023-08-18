@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {Observable, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {queryMyRecentChannels} from '@queries/servers/channel';
 import {queryJoinedTeams} from '@queries/servers/team';
@@ -26,7 +26,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const recentChannels = queryMyRecentChannels(database, MAX_CHANNELS).
         observeWithColumns(['last_viewed_at']).pipe(
             switchMap((myChannels) => retrieveChannels(database, myChannels, true)),
-            switchMap((myChannels) => removeChannelsFromArchivedTeams(myChannels, teamIds)),
+            combineLatestWith(teamIds),
+            switchMap(([myChannels, tmIds]) => of$(removeChannelsFromArchivedTeams(myChannels, tmIds))),
         );
 
     return {

@@ -37,14 +37,15 @@ const enhanced = withObservables(['term'], ({database, term}: EnhanceProps) => {
         switchMap((matchStart) => {
             return retrieveChannels(database, matchStart.flat(), true);
         }),
-        switchMap((myChannels) => removeChannelsFromArchivedTeams(myChannels, teamIds)),
+        combineLatestWith(teamIds),
+        switchMap(([myChannels, tmIds]) => of$(removeChannelsFromArchivedTeams(myChannels, tmIds))),
     );
 
     const channelsMatch = joinedChannelsMatch.pipe(
         combineLatestWith(directChannelsMatch),
         switchMap((matched) => retrieveChannels(database, matched.flat(), true)),
-        switchMap((myChannels) => removeChannelsFromArchivedTeams(myChannels, teamIds)),
-
+        combineLatestWith(teamIds),
+        switchMap(([myChannels, tmIds]) => of$(removeChannelsFromArchivedTeams(myChannels, tmIds))),
     );
 
     const archivedChannels = observeArchiveChannelsByTerm(database, term, MAX_RESULTS).pipe(
