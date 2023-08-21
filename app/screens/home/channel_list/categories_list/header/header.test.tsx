@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
+import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {renderWithIntl} from '@test/intl-test-helper';
 
 import Header from './header';
@@ -22,5 +22,35 @@ describe('components/channel_list/header', () => {
         );
 
         expect(toJSON()).toMatchSnapshot();
+    });
+
+    it('Push notifications disabled and not having ackoledge show alert icon', () => {
+        const wrapper = renderWithIntl(
+            <Header
+                pushProxyStatus={PUSH_PROXY_RESPONSE_NOT_AVAILABLE}
+                canCreateChannels={true}
+                canJoinChannels={true}
+                canInvitePeople={true}
+                displayName={'Test!'}
+                pushDisabledAck={false}
+            />,
+        );
+
+        expect(wrapper.getByTestId('channel_list_header.push_alert')).toBeTruthy();
+    });
+
+    it('Push notifications disabled but after ackoledging do not show alert icon', () => {
+        const wrapper = renderWithIntl(
+            <Header
+                pushProxyStatus={PUSH_PROXY_RESPONSE_NOT_AVAILABLE}
+                canCreateChannels={true}
+                canJoinChannels={true}
+                canInvitePeople={true}
+                displayName={'Test!'}
+                pushDisabledAck={true}
+            />,
+        );
+
+        expect(wrapper.queryByTestId('channel_list_header.push_alert')).toBeNull();
     });
 });

@@ -7,7 +7,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {observePushDisabledInServerAcknowledged} from '@app/queries/app/global';
-import {extractCleanDomain} from '@app/utils/helpers';
+import {createKeyFromServerUrl} from '@app/utils/helpers';
 import {Permissions} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observePermissionForTeam} from '@queries/servers/role';
@@ -64,7 +64,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
             distinctUntilChanged(),
         ),
         pushProxyStatus: observePushVerificationStatus(database),
-        pushDisabledAck: observePushDisabledInServerAcknowledged(extractCleanDomain(serverUrl)),
+        pushDisabledAck: observePushDisabledInServerAcknowledged(createKeyFromServerUrl(serverUrl)),
     };
 });
 

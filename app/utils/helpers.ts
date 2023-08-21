@@ -164,46 +164,27 @@ export function isMainActivity() {
 }
 
 /**
- * Extracts the domain name or IP address from a serverUrl.
+ * Uses the serverUrl to create a key.
  *
  * @param {string} input - The serverUrl, potentially with a port and protocol.
  * @returns {string} The extracted domain name or IP address,
  * or empty if no match is found.
  *
  * // Output:
- * // Input: https://example-something.com => Result: example-something
- * // Input: http://192.168.1.1 => Result: 192.168.1.1
- * // Input: https://127.0.0.1:3000 => Result: 127.0.0.1
- * // Input: https://subdomain.example.com/api => subdomain.example.com/api
- * // Input: http://localhost:8080/app/v1 => localhost:8080/app/v1
+ * // Input: https://example-something.com => Result: examplesomething
+ * // Input: http://192.168.1.1 => Result: 19216811
+ * // Input: https://127.0.0.1:3000 => Result: 1270013000
+ * // Input: https://subdomain.example.com/api => subdomainexamplecomapi
+ * // Input: http://localhost:8080/app/v1 => localhost8080appv1
  */
-export function extractDomain(input: string) {
+export function createKeyFromServerUrl(input: string) {
     const regex = /^(https?:\/\/)?([\w.-]+)(:\d+)?(\/\S*)?/;
     const match = input.match(regex);
 
     if (match) {
-        const modifiedString = match[2] + (match[4] || '');
-        return modifiedString;
+        const domainWithPortAndSubpath = match[2] + (match[3] || '') + (match[4] || '');
+        return domainWithPortAndSubpath.replace(/[^\w]/g, '');
     }
 
     return '';
-}
-
-/**
- * Returns the domain name or IP address from a serverUrl without special characters.
- *
- * @param {string} domain - The extracted domain from a serverUrl.
- * @returns {string} The extracted domain name or IP address, modified to remove special characters,
- * or empty .
- *
- * // Output:
- * // Input: example-something => Result: examplesomething
- * // Input: 192.168.1.1 => Result: 19216811
- * // Input: 127.0.0.1 => Result: 127001
- */
-export function extractCleanDomain(domain: string) {
-    if (!domain) {
-        return '';
-    }
-    return extractDomain(domain).replace(/[\W.]/g, '');
 }

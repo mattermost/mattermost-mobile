@@ -8,23 +8,23 @@ import {getPushDisabledInServerAcknowledged} from '@app/queries/app/global';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import EphemeralStore from '@store/ephemeral_store';
 
-import {extractCleanDomain} from './helpers';
+import {createKeyFromServerUrl} from './helpers';
 
 import type {IntlShape} from 'react-intl';
 
 export async function pushDisabledInServerAck(serverUrl: string) {
-    const extractedDomain = extractCleanDomain(serverUrl);
+    const extractedDomain = createKeyFromServerUrl(serverUrl);
     const pushServerDisabledAck = await getPushDisabledInServerAcknowledged(extractedDomain);
     return pushServerDisabledAck;
 }
 
 export async function canReceiveNotifications(serverUrl: string, verification: string, intl: IntlShape) {
-    const a = await pushDisabledInServerAck(serverUrl);
+    const hasAckNotification = await pushDisabledInServerAck(serverUrl);
 
     switch (verification) {
         case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
             EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_NOT_AVAILABLE);
-            if (!a) {
+            if (!hasAckNotification) {
                 alertPushProxyError(intl, serverUrl);
             }
             break;
@@ -40,7 +40,7 @@ export async function canReceiveNotifications(serverUrl: string, verification: s
 const handleAlertResponse = async (buttonIndex: number, serverUrl: string) => {
     if (buttonIndex === 0) {
         // User clicked "Okay" acknowledging that the push notifications are disabled on that server
-        await storePushDisabledInServerAcknowledged(extractCleanDomain(serverUrl));
+        await storePushDisabledInServerAcknowledged(createKeyFromServerUrl(serverUrl));
     }
 };
 

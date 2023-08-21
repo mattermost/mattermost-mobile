@@ -21,7 +21,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
-import {extractCleanDomain, isMainActivity} from '@utils/helpers';
+import {createKeyFromServerUrl, isMainActivity} from '@utils/helpers';
 import {addNewServer} from '@utils/server';
 
 import type {LaunchType} from '@typings/launch';
@@ -121,6 +121,7 @@ class SessionManager {
         WebsocketManager.invalidateClient(serverUrl);
 
         if (removeServer) {
+            await removePushDisabledInServerAcknowledged(createKeyFromServerUrl(serverUrl));
             await DatabaseManager.destroyServerDatabase(serverUrl);
         } else {
             await DatabaseManager.deleteServerDatabase(serverUrl);
@@ -167,8 +168,6 @@ class SessionManager {
         const activeServerDisplayName = await DatabaseManager.getActiveServerDisplayName();
 
         await this.terminateSession(serverUrl, removeServer);
-
-        await removePushDisabledInServerAcknowledged(extractCleanDomain(serverUrl));
 
         if (activeServerUrl === serverUrl) {
             let displayName = '';
