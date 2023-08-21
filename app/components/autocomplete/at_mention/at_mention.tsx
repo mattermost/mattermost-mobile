@@ -1,25 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, SectionList, type SectionListData, type SectionListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
 
 import {searchGroupsByName, searchGroupsByNameInChannel, searchGroupsByNameInTeam} from '@actions/local/group';
 import {searchUsers} from '@actions/remote/user';
-import {General} from '@app/constants';
-import {logError} from '@app/utils/log';
 import GroupMentionItem from '@components/autocomplete/at_mention_group/at_mention_group';
 import AtMentionItem from '@components/autocomplete/at_mention_item';
 import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';
 import SpecialMentionItem from '@components/autocomplete/special_mention_item';
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
-import {MM_TABLES} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
-import {queryAllUsers} from '@queries/servers/user';
+import {queryAllUsers, getUsersFromDMSorted} from '@queries/servers/user';
 import {hasTrailingSpaces} from '@utils/helpers';
 
 import type GroupModel from '@typings/database/models/servers/group';
@@ -29,13 +25,6 @@ const SECTION_KEY_TEAM_MEMBERS = 'teamMembers';
 const SECTION_KEY_IN_CHANNEL = 'inChannel';
 const SECTION_KEY_SPECIAL = 'special';
 const SECTION_KEY_GROUPS = 'groups';
-
-const {
-    CHANNEL_MEMBERSHIP,
-    CHANNEL,
-    USER,
-    MY_CHANNEL,
-} = MM_TABLES.SERVER;
 
 type SpecialMention = {
     completeHandle: string;
@@ -231,26 +220,6 @@ const getAllUsers = async (serverUrl: string) => {
     return queryAllUsers(database).fetch();
 };
 
-const getUsersFromDMSorted = async (serverUrl: string, memberIds: string[]) => {
-    try {
-        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-        if (!database) {
-            return emptyUserlList;
-        }
-
-        return database.get<UserModel>(USER).query(
-            Q.unsafeSqlQuery(`SELECT DISTINCT u.* FROM User u
-            INNER JOIN ${CHANNEL_MEMBERSHIP} cm ON cm.user_id=u.id
-            INNER JOIN ${CHANNEL} c ON c.id=cm.id AND c.type='${General.DM_CHANNEL}'
-            INNER JOIN ${MY_CHANNEL} my
-            WHERE cm.user_id IN (${`'${memberIds.join("','")}'`})
-            ORDER BY my.last_viewed_at DESC`)).fetch();
-    } catch (error) {
-        logError('Failed sort members', error);
-        return emptyUserlList;
-    }
-};
-
 const AtMention = ({
     channelId,
     teamId,
@@ -293,6 +262,11 @@ const AtMention = ({
             return;
         }
 
+        const database = DatabaseManager.serverDatabases[sUrl]?.database;
+        if (!database) {
+            return;
+        }
+
         setGroups(groupsResult);
 
         setUseLocal(Boolean(error));
@@ -310,7 +284,7 @@ const AtMention = ({
             setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyUserlList);
         } else if (receivedUsers) {
             const memberIds = receivedUsers.users.map((e) => e.id);
-            const sortedMembers: Array<UserProfile | UserModel> = await getUsersFromDMSorted(sUrl, memberIds);
+            const sortedMembers: Array<UserProfile | UserModel> = await getUsersFromDMSorted(database, memberIds);
             const sortedMembersId = new Set<string>(sortedMembers.map((e) => e.id));
 
             const membersNoDm = receivedUsers.users.filter((u) => !sortedMembersId.has(u.id));
@@ -318,7 +292,7 @@ const AtMention = ({
 
             if (receivedUsers?.out_of_channel?.length) {
                 const outChannelMemberIds = receivedUsers.out_of_channel.map((e) => e.id);
-                const outSortedMembers = await getUsersFromDMSorted(sUrl, outChannelMemberIds);
+                const outSortedMembers = await getUsersFromDMSorted(database, outChannelMemberIds);
                 sortedMembers.push(...outSortedMembers);
             }
 
@@ -334,11 +308,6 @@ const AtMention = ({
 
         setLoading(false);
     }, 200), []);
-
-    const teamMembers = useMemo(
-        () => [...users],
-        [users],
-    );
 
     const matchTerm = getMatchTermForAtMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
@@ -460,12 +429,12 @@ const AtMention = ({
             return;
         }
         const showSpecialMentions = useChannelMentions && matchTerm != null && checkSpecialMentions(matchTerm);
-        const buildMemberSection = isSearch || (!channelId && teamMembers.length > 0);
+        const buildMemberSection = isSearch || (!channelId && users.length > 0);
         let newSections;
         if (useLocal) {
             newSections = makeSections(filteredLocalUsers, [], groups, showSpecialMentions, true, buildMemberSection);
         } else {
-            newSections = makeSections(teamMembers, users, groups, showSpecialMentions, buildMemberSection);
+            newSections = makeSections(users, users, groups, showSpecialMentions, buildMemberSection);
         }
         const nSections = newSections.length;
 
@@ -478,7 +447,7 @@ const AtMention = ({
         }
         setSections(nSections ? newSections : emptySectionList);
         onShowingChange(Boolean(nSections));
-    }, [!useLocal && users, teamMembers, groups, loading, channelId, useLocal && filteredLocalUsers]);
+    }, [!useLocal && users, users, groups, loading, channelId, useLocal && filteredLocalUsers]);
 
     if (sections.length === 0 || noResultsTerm != null) {
         // If we are not in an active state or the mention has been completed return null so nothing is rendered

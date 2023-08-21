@@ -5,6 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
+import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {sanitizeLikeString} from '@helpers/database';
@@ -17,7 +18,7 @@ import type ChannelMembershipModel from '@typings/database/models/servers/channe
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CHANNEL_MEMBERSHIP, USER, TEAM_MEMBERSHIP}} = MM_TABLES;
+const {SERVER: {CHANNEL_MEMBERSHIP, USER, TEAM_MEMBERSHIP, CHANNEL, MY_CHANNEL}} = MM_TABLES;
 export const getUserById = async (database: Database, userId: string) => {
     try {
         const userRecord = (await database.get<UserModel>(USER).find(userId));
@@ -134,4 +135,18 @@ export const observeDeactivatedUsers = (database: Database) => {
             return of$(new Map(users.map((u) => [u.id, u])));
         }),
     );
+};
+
+export const getUsersFromDMSorted = async (database: Database, memberIds: string[]) => {
+    try {
+        return database.get<UserModel>(USER).query(
+            Q.unsafeSqlQuery(`SELECT DISTINCT u.* FROM User u
+            INNER JOIN ${CHANNEL_MEMBERSHIP} cm ON cm.user_id=u.id
+            INNER JOIN ${CHANNEL} c ON c.id=cm.id AND c.type='${General.DM_CHANNEL}'
+            INNER JOIN ${MY_CHANNEL} my
+            WHERE cm.user_id IN (${`'${memberIds.join("','")}'`})
+            ORDER BY my.last_viewed_at DESC`)).fetch();
+    } catch (error) {
+        return [];
+    }
 };

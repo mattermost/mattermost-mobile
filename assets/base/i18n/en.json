@@ -927,7 +927,7 @@
   "settings_display.timezone.off": "Off",
   "settings_display.timezone.select": "Select Timezone",
   "settings.about": "About {appTitle}",
-  "settings.about.build": "{version} (Build {number})",
+  "settings.about.app.version": "App Version: {version} (Build {number})",
   "settings.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved",
   "settings.about.database": "Database:",
   "settings.about.database.schema": "Database Schema Version:",
