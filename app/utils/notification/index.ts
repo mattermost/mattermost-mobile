@@ -90,12 +90,26 @@ export const emitNotificationError = (type: 'Team' | 'Channel' | 'Post' | 'Conne
 
 export const scheduleExpiredNotification = (serverUrl: string, session: Session, serverName: string, locale = DEFAULT_LOCALE) => {
     const expiresAt = session?.expires_at || 0;
-    const expiresInHours = Math.ceil(Math.abs(moment.duration(moment().diff(moment(expiresAt))).asHours())); // Calculate expiresInHours
+    const expiresInHours = Math.ceil(Math.abs(moment.duration(moment().diff(moment(expiresAt))).asHours()));
+    const expiresInDays = Math.floor(expiresInHours / 24); // Calculate expiresInDays
+    const remainingHours = expiresInHours % 24; // Calculate remaining hours
     const intl = createIntl({locale, messages: getTranslations(locale)});
+    
+    const daysPlural = intl.formatPlural(expiresInDays, {
+        one: 'day',
+        other: 'days',
+    });
+
+    const hoursPlural = intl.formatPlural(remainingHours, {
+        one: 'hour',
+        other: 'hours',
+    });
+
     const body = intl.formatMessage({
         id: 'mobile.session_expired',
-        defaultMessage: 'Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {hoursCount, number} {hoursCount, plural, one {hour} other {hours}}.', // Update the message to hours
-    }, {siteName: serverName, hoursCount: expiresInHours}); // Update daysCount to hoursCount
+        defaultMessage: 'Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire in {daysCount, number} {days} and {hoursCount, number} {hours}.', // Update the message
+    }, {siteName: serverName, daysCount: expiresInDays, days: daysPlural, hoursCount: remainingHours, hours: hoursPlural});
+
     const title = intl.formatMessage({id: 'mobile.session_expired.title', defaultMessage: 'Session Expired'});
 
     if (expiresAt) {
