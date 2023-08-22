@@ -166,7 +166,7 @@ export class WebSocketClient extends EventEmitter {
 
         setTimeout(() => {
             if (!this.closed) {
-                logDebug('reconnecting');
+                logDebug(`calls: attempting ws reconnection to ${this.serverUrl + this.wsPath}`);
                 this.init(true);
             }
         }, this.reconnectRetryTime);
