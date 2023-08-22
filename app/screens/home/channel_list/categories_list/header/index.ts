@@ -6,14 +6,14 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {observePushDisabledInServerAcknowledged} from '@app/queries/app/global';
-import {createKeyFromServerUrl} from '@app/utils/helpers';
 import {Permissions} from '@constants';
 import {withServerUrl} from '@context/server';
+import {observePushDisabledInServerAcknowledged} from '@queries/app/global';
 import {observePermissionForTeam} from '@queries/servers/role';
 import {observeConfigBooleanValue, observePushVerificationStatus} from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
+import {urlSafeBase64Encode} from '@utils/security';
 
 import ChannelListHeader from './header';
 
@@ -64,7 +64,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
             distinctUntilChanged(),
         ),
         pushProxyStatus: observePushVerificationStatus(database),
-        pushDisabledAck: observePushDisabledInServerAcknowledged(createKeyFromServerUrl(serverUrl)),
+        pushDisabledAck: observePushDisabledInServerAcknowledged(urlSafeBase64Encode(serverUrl)),
     };
 });
 

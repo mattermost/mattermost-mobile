@@ -7,6 +7,7 @@ import FastImage from 'react-native-fast-image';
 
 import {removePushDisabledInServerAcknowledged, storeOnboardingViewedValue} from '@actions/app/global';
 import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
+import {urlSafeBase64Encode} from '@app/utils/security';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
@@ -21,7 +22,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
-import {createKeyFromServerUrl, isMainActivity} from '@utils/helpers';
+import {isMainActivity} from '@utils/helpers';
 import {addNewServer} from '@utils/server';
 
 import type {LaunchType} from '@typings/launch';
@@ -121,7 +122,7 @@ class SessionManager {
         WebsocketManager.invalidateClient(serverUrl);
 
         if (removeServer) {
-            await removePushDisabledInServerAcknowledged(createKeyFromServerUrl(serverUrl));
+            await removePushDisabledInServerAcknowledged(urlSafeBase64Encode(serverUrl));
             await DatabaseManager.destroyServerDatabase(serverUrl);
         } else {
             await DatabaseManager.deleteServerDatabase(serverUrl);

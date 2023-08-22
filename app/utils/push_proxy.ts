@@ -4,18 +4,17 @@
 import {Alert} from 'react-native';
 
 import {storePushDisabledInServerAcknowledged} from '@actions/app/global';
-import {getPushDisabledInServerAcknowledged} from '@app/queries/app/global';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
+import {getPushDisabledInServerAcknowledged} from '@queries/app/global';
 import EphemeralStore from '@store/ephemeral_store';
 
-import {createKeyFromServerUrl} from './helpers';
+import {urlSafeBase64Encode} from './security';
 
 import type {IntlShape} from 'react-intl';
 
-export async function pushDisabledInServerAck(serverUrl: string) {
-    const extractedDomain = createKeyFromServerUrl(serverUrl);
-    const pushServerDisabledAck = await getPushDisabledInServerAcknowledged(extractedDomain);
-    return pushServerDisabledAck;
+export function pushDisabledInServerAck(serverUrl: string) {
+    const extractedDomain = urlSafeBase64Encode(serverUrl);
+    return getPushDisabledInServerAcknowledged(extractedDomain);
 }
 
 export async function canReceiveNotifications(serverUrl: string, verification: string, intl: IntlShape) {
@@ -40,7 +39,7 @@ export async function canReceiveNotifications(serverUrl: string, verification: s
 const handleAlertResponse = async (buttonIndex: number, serverUrl: string) => {
     if (buttonIndex === 0) {
         // User clicked "Okay" acknowledging that the push notifications are disabled on that server
-        await storePushDisabledInServerAcknowledged(createKeyFromServerUrl(serverUrl));
+        await storePushDisabledInServerAcknowledged(urlSafeBase64Encode(serverUrl));
     }
 };
 

@@ -162,29 +162,3 @@ export function isMainActivity() {
         android: ShareModule?.getCurrentActivityName() === 'MainActivity',
     });
 }
-
-/**
- * Uses the serverUrl to create a key.
- *
- * @param {string} input - The serverUrl, potentially with a port and protocol.
- * @returns {string} The extracted domain name or IP address,
- * or empty if no match is found.
- *
- * // Output:
- * // Input: https://example-something.com => Result: examplesomething
- * // Input: http://192.168.1.1 => Result: 19216811
- * // Input: https://127.0.0.1:3000 => Result: 1270013000
- * // Input: https://subdomain.example.com/api => subdomainexamplecomapi
- * // Input: http://localhost:8080/app/v1 => localhost8080appv1
- */
-export function createKeyFromServerUrl(input: string) {
-    const regex = /^(https?:\/\/)?([\w.-]+)(:\d+)?(\/\S*)?/;
-    const match = input.match(regex);
-
-    if (match) {
-        const domainWithPortAndSubpath = match[2] + (match[3] || '') + (match[4] || '');
-        return domainWithPortAndSubpath.replace(/[^\w]/g, '');
-    }
-
-    return '';
-}

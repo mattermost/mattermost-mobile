@@ -24,7 +24,7 @@ describe('components/channel_list/header', () => {
         expect(toJSON()).toMatchSnapshot();
     });
 
-    it('Push notifications disabled and not having ackoledge show alert icon', () => {
+    it('Push notifications disabled and not having acknoledged it show alert icon', () => {
         const wrapper = renderWithIntl(
             <Header
                 pushProxyStatus={PUSH_PROXY_RESPONSE_NOT_AVAILABLE}
@@ -39,7 +39,7 @@ describe('components/channel_list/header', () => {
         expect(wrapper.getByTestId('channel_list_header.push_alert')).toBeTruthy();
     });
 
-    it('Push notifications disabled but after ackoledging do not show alert icon', () => {
+    it('Push notifications are disabled, but even after acknowledging them, the alert icon does not appear', () => {
         const wrapper = renderWithIntl(
             <Header
                 pushProxyStatus={PUSH_PROXY_RESPONSE_NOT_AVAILABLE}
