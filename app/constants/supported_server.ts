@@ -4,7 +4,7 @@
 export const MIN_REQUIRED_VERSION = '5.26.2';
 export const FULL_VERSION = '7.8.0';
 export const MAJOR_VERSION = 7;
-export const MIN_VERSION = 1;
+export const MIN_VERSION = 8;
 export const PATCH_VERSION = 0;
 
 export default {

@@ -61,6 +61,7 @@
         "afterColon": true
       }}],
     "@typescript-eslint/member-delimiter-style": 2,
+    "@typescript-eslint/no-unsafe-declaration-merging": "off",
     "import/order": [
       2,
       {
