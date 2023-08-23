@@ -68,19 +68,11 @@ const styles = StyleSheet.create({
 const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
     const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
-    const userNames = terms.match(/@(\w+)/g)?.map(name => name.slice(1))
-    let fromUserName = ""
-    if(userNames && userNames.length > 0){
-        for(const name of userNames){
-            console.log(terms?.toLowerCase(),terms?.toLowerCase().includes(`from:${name}`),name)
-            if(!terms?.toLowerCase().includes(`from:${name}`) && name.length > 0){
-                fromUserName = fromUserName + `from:${name}`
-            }
-        }
-    }
-   
+    
+    terms = terms.replace("@","from:")
+    
     return {
-        terms: fromUserName  + terms.replace(/[\u201C\u201D]/g, '"') + extensionTerms,
+        terms: terms.replace(/[\u201C\u201D]/g, '"') + extensionTerms,
         is_or_search: false,
         include_deleted_channels: true,
     };
