@@ -11,6 +11,7 @@ import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
 import useBackNavigation from '@hooks/navigate_back';
+import {isTypeDMorGM} from '@utils/channel';
 
 import {popTopScreen} from '../navigation';
 
@@ -30,9 +31,22 @@ type Props = {
     isMuted: boolean;
     notifyLevel?: NotificationLevel;
     notifyThreadReplies?: 'all' | 'mention';
+    channelType: ChannelType;
+    hasGMasDMFeature: boolean;
 }
 
-const ChannelNotificationPreferences = ({channelId, componentId, defaultLevel, defaultThreadReplies, isCRTEnabled, isMuted, notifyLevel, notifyThreadReplies}: Props) => {
+const ChannelNotificationPreferences = ({
+    channelId,
+    componentId,
+    defaultLevel,
+    defaultThreadReplies,
+    isCRTEnabled,
+    isMuted,
+    notifyLevel,
+    notifyThreadReplies,
+    channelType,
+    hasGMasDMFeature,
+}: Props) => {
     const serverUrl = useServerUrl();
     const defaultNotificationReplies = defaultThreadReplies === 'all';
     const diffNotificationLevel = notifyLevel !== 'default' && notifyLevel !== defaultLevel;
@@ -78,6 +92,10 @@ const ChannelNotificationPreferences = ({channelId, componentId, defaultLevel, d
     useBackNavigation(save);
     useAndroidHardwareBackHandler(componentId, save);
 
+    const showThreadReplies = isCRTEnabled && (
+        !hasGMasDMFeature ||
+        !isTypeDMorGM(channelType)
+    );
     return (
         <SettingsContainer testID='push_notification_settings'>
             {isMuted && <MutedBanner channelId={channelId}/>}
@@ -93,8 +111,10 @@ const ChannelNotificationPreferences = ({channelId, componentId, defaultLevel, d
                 notifyLevel={notifyAbout}
                 notifyTitleTop={notifyTitleTop}
                 onPress={onNotificationLevel}
+                channelType={channelType}
+                hasGMasDMFeature={hasGMasDMFeature}
             />
-            {isCRTEnabled &&
+            {showThreadReplies &&
             <ThreadReplies
                 isSelected={threadReplies}
                 onPress={onSetThreadReplies}

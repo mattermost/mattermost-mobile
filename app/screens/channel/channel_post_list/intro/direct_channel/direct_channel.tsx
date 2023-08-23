@@ -27,6 +27,7 @@ type Props = {
     isBot: boolean;
     members?: ChannelMembershipModel[];
     theme: Theme;
+    hasGMasDMFeature: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -52,6 +53,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         textAlign: 'center',
         ...typography('Body', 200, 'Regular'),
     },
+    boldText: {
+        ...typography('Body', 200, 'SemiBold'),
+    },
     profilesContainer: {
         justifyContent: 'center',
         alignItems: 'center',
@@ -67,7 +71,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const DirectChannel = ({channel, currentUserId, isBot, members, theme}: Props) => {
+const DirectChannel = ({
+    channel,
+    currentUserId,
+    isBot,
+    members,
+    theme,
+    hasGMasDMFeature,
+}: Props) => {
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
@@ -89,11 +100,23 @@ const DirectChannel = ({channel, currentUserId, isBot, members, theme}: Props) =
                 />
             );
         }
+        if (!hasGMasDMFeature) {
+            return (
+                <FormattedText
+                    defaultMessage={'This is the start of your conversation with this group. Messages and files shared here are not shown to anyone else outside of the group.'}
+                    id='intro.group_message.after_gm_as_dm'
+                    style={styles.message}
+                />
+            );
+        }
         return (
             <FormattedText
-                defaultMessage={'This is the start of your conversation with this group. Messages and files shared here are not shown to anyone else outside of the group.'}
+                defaultMessage={'This is the start of your conversation with this group. You\'ll be notified for <b>all activity</b> in this group message.'}
                 id='intro.group_message'
                 style={styles.message}
+                values={{
+                    b: (chunk: string) => <Text style={styles.boldText}>{chunk}</Text>,
+                }}
             />
         );
     }, [channel.displayName, theme]);

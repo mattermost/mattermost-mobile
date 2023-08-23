@@ -6,7 +6,8 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeChannelSettings, observeIsMutedSetting} from '@queries/servers/channel';
+import {observeChannel, observeChannelSettings, observeIsMutedSetting} from '@queries/servers/channel';
+import {observeHasGMasDMFeature} from '@queries/servers/features';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {getNotificationProps} from '@utils/user';
@@ -24,6 +25,8 @@ const enhanced = withObservables([], ({channelId, database}: EnhancedProps) => {
     const isCRTEnabled = observeIsCRTEnabled(database);
     const isMuted = observeIsMutedSetting(database, channelId);
     const notifyProps = observeCurrentUser(database).pipe(switchMap((u) => of$(getNotificationProps(u))));
+    const channelType = observeChannel(database, channelId).pipe(switchMap((c) => of$(c?.type)));
+    const hasGMasDMFeature = observeHasGMasDMFeature(database);
 
     const notifyLevel = settings.pipe(
         switchMap((s) => of$(s?.notifyProps.push)),
@@ -47,6 +50,8 @@ const enhanced = withObservables([], ({channelId, database}: EnhancedProps) => {
         notifyThreadReplies,
         defaultLevel,
         defaultThreadReplies,
+        channelType,
+        hasGMasDMFeature,
     };
 });
 
