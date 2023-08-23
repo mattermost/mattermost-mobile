@@ -24,10 +24,6 @@
         "binary": "emulator"
       },
       {
-        "rule": "cli",
-        "binary": "android"
-      },
-      {
         "rule": "env",
         "variable": "ANDROID_HOME",
         "error": "The ANDROID_HOME environment variable must be set to your local SDK.  Refer to getting started docs for help."
