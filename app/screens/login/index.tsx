@@ -142,9 +142,9 @@ const LoginOptions = ({
         dismissModal({componentId});
     };
 
-    const pop = () => {
+    const pop = useCallback(() => {
         popTopScreen(componentId);
-    };
+    }, [componentId]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         const {height} = e.nativeEvent.layout;

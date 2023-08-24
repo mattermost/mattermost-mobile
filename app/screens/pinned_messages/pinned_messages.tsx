@@ -66,11 +66,11 @@ function SavedMessages({
 
     const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
-    const close = () => {
+    const close = useCallback(() => {
         if (componentId) {
             popTopScreen(componentId);
         }
-    };
+    }, [componentId]);
 
     useEffect(() => {
         fetchPinnedPosts(serverUrl, channelId).finally(() => {

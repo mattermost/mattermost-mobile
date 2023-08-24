@@ -168,9 +168,11 @@ const About = ({componentId, config, license}: AboutProps) => {
         return intl.formatMessage({id: 'settings.about.server.version.value', defaultMessage: '{version} (Build {buildNumber})'}, {version, buildNumber});
     }, [config, intl]);
 
-    useAndroidHardwareBackHandler(componentId, () => {
+    const close = useCallback(() => {
         popTopScreen(componentId);
-    });
+    }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     const copyToClipboard = useCallback(
         () => {
