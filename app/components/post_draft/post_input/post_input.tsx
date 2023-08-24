@@ -142,8 +142,7 @@ export default function PostInput({
 
     const onBlur = useCallback(() => {
         updateDraftMessage(serverUrl, channelId, rootId, value);
-        setIsFocused(false);
-    }, [channelId, rootId, value, setIsFocused]);
+    }, [channelId, rootId, value]);
 
     const onFocus = useCallback(() => {
         setIsFocused(true);
