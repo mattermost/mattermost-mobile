@@ -45,7 +45,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
         },
         link: {
             color: theme.linkColor,
-            fontFamily: 'OpenSans',
+            fontFamily: 'Metropolis',
         },
         heading1: {
             ...typography('Heading', 700),
