@@ -136,13 +136,18 @@ export default function PostInput({
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
 
-    const handleAndroidKeyboard = () => {
+    const handleAndroidKeyboardHide = () => {
         onBlur();
+    };
+
+    const handleAndroidKeyboardShow = () => {
+        onFocus();
     };
 
     const onBlur = useCallback(() => {
         updateDraftMessage(serverUrl, channelId, rootId, value);
-    }, [channelId, rootId, value]);
+        setIsFocused(false);
+    }, [channelId, rootId, value, setIsFocused]);
 
     const onFocus = useCallback(() => {
         setIsFocused(true);
@@ -251,13 +256,16 @@ export default function PostInput({
     }, [serverUrl, channelId, rootId, value]);
 
     useEffect(() => {
-        let keyboardListener: EmitterSubscription | undefined;
+        let keyboardHideListener: EmitterSubscription | undefined;
+        let keyboardShowListener: EmitterSubscription | undefined;
         if (Platform.OS === 'android') {
-            keyboardListener = Keyboard.addListener('keyboardDidHide', handleAndroidKeyboard);
+            keyboardHideListener = Keyboard.addListener('keyboardDidHide', handleAndroidKeyboardHide);
+            keyboardShowListener = Keyboard.addListener('keyboardDidShow', handleAndroidKeyboardShow);
         }
 
         return (() => {
-            keyboardListener?.remove();
+            keyboardShowListener?.remove();
+            keyboardHideListener?.remove();
         });
     }, []);
 
