@@ -151,7 +151,7 @@
     "friendly_date.hoursAgo": "{count} {count, plural, one {時間} other {時間}} 前",
     "friendly_date.minsAgo": "{count} {count, plural, one {分} other {分}} 前",
     "friendly_date.monthsAgo": "{count} {count, plural, one {ヶ月} other {ヶ月}} 前",
-    "friendly_date.now": "今すぐ",
+    "friendly_date.now": "今",
     "friendly_date.yearsAgo": "{count} {count, plural, one {年} other {年}} 前",
     "friendly_date.yesterday": "昨日",
     "gallery.footer.channel_name": "{channelName}に共有されました",
