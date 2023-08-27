@@ -60,7 +60,10 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
     const animatedStyle = useShowMoreAnimatedStyle(height, maxHeight, open);
     const style = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
-    const textStyles = getMarkdownTextStyles(theme);
+    const textStyles = useMemo(() => {
+        const _textStyles = getMarkdownTextStyles(theme);
+        return {..._textStyles, link:{..._textStyles.link, fontFamily:'Metropolis'}}
+    },[theme]);
 
     const mentionKeys = useMemo(() => {
         return currentUser?.mentionKeys;
@@ -94,7 +97,7 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
                             layoutWidth={layoutWidth}
                             location={location}
                             postId={post.id}
-                            textStyles={{...textStyles, link:{...textStyles.link, fontFamily:'Metropolis'}}}
+                            textStyles={textStyles}
                             value={post.message}
                             mentionKeys={mentionKeys}
                             searchPatterns={searchPatterns}
