@@ -24,7 +24,7 @@ export const SEARCH_INPUT_MARGIN = 5;
 export const JOIN_CALL_BAR_HEIGHT = 38;
 export const CURRENT_CALL_BAR_HEIGHT = 68;
 export const CALL_ERROR_BAR_HEIGHT = 62;
-export const CALL_NOTIFICATION_BAR_HEIGHT = 68;
+export const CALL_NOTIFICATION_BAR_HEIGHT = 60;
 
 export const ANNOUNCEMENT_BAR_HEIGHT = 40;
 

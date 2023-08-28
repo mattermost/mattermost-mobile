@@ -9,11 +9,11 @@ import {switchToChannelById} from '@actions/remote/channel';
 import {fetchProfilesInChannel} from '@actions/remote/user';
 import {dismissIncomingCall} from '@calls/actions/calls';
 import {leaveAndJoinWithAlert} from '@calls/alerts';
-import CallAvatar from '@calls/components/call_avatar';
 import {removeIncomingCall} from '@calls/state';
 import {ChannelType, type IncomingCallNotification} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import ProfilePicture from '@components/profile_picture';
 import {Preferences} from '@constants';
 import {CALL_NOTIFICATION_BAR_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
@@ -29,9 +29,8 @@ const style = StyleSheet.create({
         backgroundColor: Preferences.THEMES.denim.onlineIndicator,
         borderRadius: 8,
         height: CALL_NOTIFICATION_BAR_HEIGHT,
-        margin: 8,
-        marginTop: 6,
-        marginBottom: 6,
+        marginLeft: 8,
+        marginRight: 8,
     },
     outerOnCallsScreen: {
         backgroundColor: changeOpacity(Preferences.THEMES.denim.onlineIndicator, 0.40),
@@ -40,8 +39,8 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         width: '100%',
         height: '100%',
-        paddingTop: 10,
-        paddingBottom: 10,
+        paddingTop: 8,
+        paddingBottom: 8,
         paddingLeft: 12,
         paddingRight: 12,
         borderRadius: 8,
@@ -59,12 +58,12 @@ const style = StyleSheet.create({
     text: {
         flex: 1,
         ...typography('Body', 200),
-        lineHeight: 22,
+        lineHeight: 20,
         color: Preferences.THEMES.denim.buttonColor,
     },
     boldText: {
         ...typography('Body', 200, 'SemiBold'),
-        lineHeight: 22,
+        lineHeight: 20,
     },
     join: {
         flexDirection: 'row',
@@ -194,10 +193,11 @@ export const CallNotification = ({
                 style={[style.innerContainer, onCallsScreen && style.innerOnCallsScreen]}
                 onPress={onContainerPress}
             >
-                <CallAvatar
-                    userModel={incomingCall.callerModel}
-                    serverUrl={incomingCall.serverUrl}
+                <ProfilePicture
+                    author={incomingCall.callerModel}
+                    url={incomingCall.serverUrl}
                     size={32}
+                    showStatus={false}
                 />
                 {message}
                 <Pressable

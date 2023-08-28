@@ -39,10 +39,7 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
     return {
         wrapper: {
-            marginTop: 8,
-            marginRight: 6,
-            marginBottom: 8,
-            marginLeft: 6,
+            margin: 8,
             backgroundColor: theme.callsBg,
             borderRadius: 8,
         },

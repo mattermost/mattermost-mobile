@@ -148,6 +148,7 @@ const Channel = ({
                 }
                 {showIncomingCalls &&
                     <IncomingCallsContainer
+                        channelId={channelId}
                         showingJoinCallBanner={showJoinCallBanner}
                         showingCurrentCallBanner={isInACall}
                     />

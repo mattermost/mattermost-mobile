@@ -183,6 +183,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         marginTop: 0,
         width: usernameM,
     },
+    incomingCallContainer: {
+        width: '100%',
+        marginBottom: 8,
+        gap: 8,
+    },
     buttonsContainer: {
         alignItems: 'center',
     },
@@ -338,6 +343,7 @@ const CallScreen = ({
     const smallerAvatar = isLandscape || screenShareOn;
     const avatarSize = smallerAvatar ? avatarM : avatarL;
     const numParticipants = Object.keys(participantsDict).length;
+    const showIncomingCalls = incomingCalls.incomingCalls.length > 0;
 
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
     const recordOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Record'});
@@ -683,13 +689,17 @@ const CallScreen = ({
                 {!isLandscape && currentCall.reactionStream.length > 0 &&
                     <EmojiList reactionStream={currentCall.reactionStream}/>
                 }
-                {incomingCalls.incomingCalls.map((ic) => (
-                    <CallNotification
-                        key={ic.callID}
-                        incomingCall={ic}
-                        onCallsScreen={true}
-                    />
-                ))}
+                {showIncomingCalls &&
+                    <View style={style.incomingCallContainer}>
+                        {incomingCalls.incomingCalls.map((ic) => (
+                            <CallNotification
+                                key={ic.callID}
+                                incomingCall={ic}
+                                onCallsScreen={true}
+                            />
+                        ))}
+                    </View>
+                }
                 {micPermissionsError &&
                     <MessageBar
                         type={Calls.MessageBarType.Microphone}

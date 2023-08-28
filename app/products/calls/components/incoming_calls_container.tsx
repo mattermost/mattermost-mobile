@@ -20,33 +20,47 @@ const style = StyleSheet.create({
     wrapper: {
         position: 'absolute',
         width: '100%',
+        marginTop: 8,
+        gap: 8,
     },
 });
 
 type Props = {
+    channelId: string;
     showingJoinCallBanner: boolean;
     showingCurrentCallBanner: boolean;
     threadScreen?: boolean;
 }
 
-export const IncomingCallsContainer = ({showingJoinCallBanner, showingCurrentCallBanner, threadScreen}: Props) => {
+export const IncomingCallsContainer = ({
+    channelId,
+    showingJoinCallBanner,
+    showingCurrentCallBanner,
+    threadScreen,
+}: Props) => {
     const incomingCalls = useIncomingCalls().incomingCalls;
     const insets = useSafeAreaInsets();
     const micPermissionsGranted = useGlobalCallsState().micPermissionsGranted;
     const currentCall = useCurrentCall();
 
+    // If we're in the channel for the incoming call, don't show the incoming call banner.
+    const calls = incomingCalls.filter((ic) => ic.channelID !== channelId);
+    if (calls.length === 0) {
+        return null;
+    }
+
     const micPermissionsError = !micPermissionsGranted && (currentCall ? !currentCall.micPermissionsErrorDismissed : false);
     const qualityAlert = showingCurrentCallBanner && (currentCall ? currentCall.callQualityAlert && currentCall.callQualityAlertDismissed === 0 : false);
     const top = insets.top + (threadScreen ? 0 : topBarHeight) +
         (showingJoinCallBanner ? JOIN_CALL_BAR_HEIGHT : 0) +
-        (showingCurrentCallBanner ? CURRENT_CALL_BAR_HEIGHT : 0) +
+        (showingCurrentCallBanner ? CURRENT_CALL_BAR_HEIGHT - 2 : 0) +
         (micPermissionsError ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
         (qualityAlert ? CALL_ERROR_BAR_HEIGHT + 8 : 0);
     const wrapperTop = {top};
 
     return (
         <View style={[style.wrapper, wrapperTop]}>
-            {incomingCalls.map((ic) => (
+            {calls.map((ic) => (
                 <CallNotification
                     key={ic.callID}
                     incomingCall={ic}

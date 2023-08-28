@@ -154,6 +154,7 @@ const Thread = ({
                 }
                 {showIncomingCalls &&
                     <IncomingCallsContainer
+                        channelId={rootPost!.channelId}
                         showingJoinCallBanner={showJoinCallBanner}
                         showingCurrentCallBanner={isInACall}
                         threadScreen={true}
