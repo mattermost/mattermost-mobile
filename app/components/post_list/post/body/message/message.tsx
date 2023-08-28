@@ -62,8 +62,8 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
     const blockStyles = getMarkdownBlockStyles(theme);
     const textStyles = useMemo(() => {
         const _textStyles = getMarkdownTextStyles(theme);
-        return {..._textStyles, link:{..._textStyles.link, fontFamily:'Metropolis'}}
-    },[theme]);
+        return {..._textStyles, link: {..._textStyles.link, fontFamily: 'Metropolis'}};
+    }, [theme]);
 
     const mentionKeys = useMemo(() => {
         return currentUser?.mentionKeys;
