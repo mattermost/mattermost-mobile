@@ -12,7 +12,7 @@ import {observeConfigValue, observeCurrentTeamId} from '@queries/servers/system'
 import {queryJoinedTeams} from '@queries/servers/team';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
-import {retrieveChannels} from '@screens/find_channels/utils';
+import {removeChannelsFromArchivedTeams, retrieveChannels} from '@screens/find_channels/utils';
 
 import FilteredList, {MAX_RESULTS} from './filtered_list';
 
@@ -37,11 +37,15 @@ const enhanced = withObservables(['term'], ({database, term}: EnhanceProps) => {
         switchMap((matchStart) => {
             return retrieveChannels(database, matchStart.flat(), true);
         }),
+        combineLatestWith(teamIds),
+        switchMap(([myChannels, tmIds]) => of$(removeChannelsFromArchivedTeams(myChannels, tmIds))),
     );
 
     const channelsMatch = joinedChannelsMatch.pipe(
         combineLatestWith(directChannelsMatch),
         switchMap((matched) => retrieveChannels(database, matched.flat(), true)),
+        combineLatestWith(teamIds),
+        switchMap(([myChannels, tmIds]) => of$(removeChannelsFromArchivedTeams(myChannels, tmIds))),
     );
 
     const archivedChannels = observeArchiveChannelsByTerm(database, term, MAX_RESULTS).pipe(

@@ -68,6 +68,8 @@ describe('Account - Settings - About', () => {
         await expect(AboutScreen.databaseValue).toBeVisible();
         await expect(AboutScreen.databaseSchemaVersionTitle).toHaveText('Database Schema Version:');
         await expect(AboutScreen.databaseSchemaVersionValue).toBeVisible();
+        await expect(AboutScreen.copyInfoButton).toBeVisible();
+        await expect(AboutScreen.copyInfoButton).toHaveText('Copy info');
         if (isLicensed) {
             await expect(AboutScreen.licensee).toBeVisible();
         } else {

@@ -18,6 +18,7 @@ export type FieldProps = TextInputProps & {
     onTextChange: (fieldKey: string, value: string) => void;
     isOptional?: boolean;
     testID: string;
+    error?: string;
     value: string;
     fieldRef: RefObject<FloatingTextInputRef>;
     onFocusNextField: (fieldKey: string) => void;
@@ -49,6 +50,7 @@ const Field = ({
     testID,
     value,
     fieldRef,
+    error,
     onFocusNextField,
     ...props
 }: FieldProps) => {
@@ -91,6 +93,7 @@ const Field = ({
                 onChangeText={onChangeText}
                 testID={fieldInputTestId}
                 theme={theme}
+                error={error}
                 value={value}
                 ref={fieldRef}
                 onSubmitEditing={onSubmitEditing}

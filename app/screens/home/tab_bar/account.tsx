@@ -34,7 +34,7 @@ const Account = ({currentUser, isFocused, theme}: Props) => {
         <View style={isFocused ? style.selected : undefined}>
             <ProfilePicture
                 author={currentUser}
-                showStatus={false}
+                showStatus={true}
                 size={28}
             />
         </View>

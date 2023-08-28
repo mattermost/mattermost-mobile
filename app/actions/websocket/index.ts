@@ -7,6 +7,7 @@ import {markChannelAsRead} from '@actions/remote/channel';
 import {handleEntryAfterLoadNavigation, registerDeviceToken} from '@actions/remote/entry/common';
 import {deferredAppEntryActions, entry} from '@actions/remote/entry/gql_common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
+import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
@@ -58,6 +59,7 @@ import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleChannelUnarchiveEvent,
     handleChannelUpdatedEvent,
     handleChannelViewedEvent,
+    handleMultipleChannelsViewedEvent,
     handleDirectAddedEvent,
     handleUserAddedToChannelEvent,
     handleUserRemovedFromChannelEvent} from './channel';
@@ -152,6 +154,8 @@ async function doReconnect(serverUrl: string) {
     }
 
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+
+    openAllUnreadChannels(serverUrl);
 
     dataRetentionCleanup(serverUrl);
 
@@ -250,6 +254,10 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         case WebsocketEvents.CHANNEL_VIEWED:
             handleChannelViewedEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.MULTIPLE_CHANNELS_VIEWED:
+            handleMultipleChannelsViewedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_MEMBER_UPDATED:

@@ -42,6 +42,8 @@ const UserProfileAvatar = ({enablePostIconOverride, forwardRef, imageSize, user,
         return (
             <View style={styles.avatar}>
                 <AnimatedFastImage
+
+                    // @ts-expect-error TS expects old type ref
                     ref={forwardRef}
                     style={styles.avatar}
                     source={{uri: userIconOverride}}

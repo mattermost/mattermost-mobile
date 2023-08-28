@@ -48,7 +48,6 @@ extension KeychainError: LocalizedError {
 
 public class Keychain: NSObject {
     @objc public static let `default` = Keychain()
-    private var tokenCache = Dictionary<String, String>()
     
     public func getClientIdentityAndCertificate(for host: String) throws -> (SecIdentity, SecCertificate)? {
         let query = try buildIdentityQuery(for: host)
@@ -81,10 +80,6 @@ public class Keychain: NSObject {
     }
     
     public func getToken(for serverUrl: String) throws -> String? {
-        if let cache = tokenCache[serverUrl] {
-            return cache
-        }
-
         var attributes = try buildTokenAttributes(for: serverUrl)
         attributes[kSecMatchLimit] = kSecMatchLimitOne
         attributes[kSecReturnData] = kCFBooleanTrue
@@ -94,15 +89,10 @@ public class Keychain: NSObject {
         let data = result as? Data
         if status == errSecSuccess && data != nil {
             let token = String(data: data!, encoding: .utf8)
-            tokenCache[serverUrl] = token
             return token
         }
         
         return nil
-    }
-
-    public func invalidateToken(for serverUrl: String) {
-        tokenCache.removeValue(forKey: serverUrl)
     }
     
     private func buildIdentityQuery(for host: String) throws -> [CFString: Any] {
