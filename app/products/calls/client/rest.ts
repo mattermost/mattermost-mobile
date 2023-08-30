@@ -15,6 +15,7 @@ export interface ClientCallsMix {
     genTURNCredentials: () => Promise<RTCIceServer[]>;
     startCallRecording: (callId: string) => Promise<ApiResp | CallRecordingState>;
     stopCallRecording: (callId: string) => Promise<ApiResp | CallRecordingState>;
+    dismissCall: (channelId: string) => Promise<ApiResp>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -82,6 +83,13 @@ const ClientCalls = (superclass: any) => class extends superclass {
     stopCallRecording = async (callID: string) => {
         return this.doFetch(
             `${this.getCallsRoute()}/calls/${callID}/recording/stop`,
+            {method: 'post'},
+        );
+    };
+
+    dismissCall = async (channelID: string) => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/calls/${channelID}/dismiss-notification`,
             {method: 'post'},
         );
     };
