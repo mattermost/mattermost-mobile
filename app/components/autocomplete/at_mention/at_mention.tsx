@@ -262,11 +262,6 @@ const AtMention = ({
             return;
         }
 
-        const database = DatabaseManager.serverDatabases[sUrl]?.database;
-        if (!database) {
-            return;
-        }
-
         setGroups(groupsResult);
 
         setUseLocal(Boolean(error));
@@ -283,31 +278,39 @@ const AtMention = ({
             const filteredUsers = filterResults(fallbackUsers, term);
             setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyUserlList);
         } else if (receivedUsers) {
-            const memberIds = receivedUsers.users.map((e) => e.id);
-            const sortedMembers: Array<UserProfile | UserModel> = await getUsersFromDMSorted(database, memberIds);
-            const sortedMembersId = new Set<string>(sortedMembers.map((e) => e.id));
-
-            const membersNoDm = receivedUsers.users.filter((u) => !sortedMembersId.has(u.id));
-            sortedMembers.push(...membersNoDm);
-
-            if (receivedUsers?.out_of_channel?.length) {
-                const outChannelMemberIds = receivedUsers.out_of_channel.map((e) => e.id);
-                const outSortedMembers = await getUsersFromDMSorted(database, outChannelMemberIds);
-                sortedMembers.push(...outSortedMembers);
-            }
-
-            if (hasTrailingSpaces(term)) {
-                const filteredReceivedUsers = filterResults(sortedMembers, term);
-                const slicedArray = filteredReceivedUsers.slice(0, 20);
-                setUsers(slicedArray.length ? slicedArray : emptyUserlList);
-            } else {
-                const slicedArray = sortedMembers.slice(0, 20);
-                setUsers(slicedArray.length ? slicedArray : emptyUserlList);
-            }
+            sortRecievedUsers(sUrl, term, receivedUsers?.users, receivedUsers?.out_of_channel);
         }
 
         setLoading(false);
     }, 200), []);
+
+    async function sortRecievedUsers(sUrl: string, term: string, receivedUsers: UserProfile[], outOfChannel: UserProfile[] | undefined) {
+        const database = DatabaseManager.serverDatabases[sUrl]?.database;
+        if (!database) {
+            return;
+        }
+        const memberIds = receivedUsers.map((e) => e.id);
+        const sortedMembers: Array<UserProfile | UserModel> = await getUsersFromDMSorted(database, memberIds);
+        const sortedMembersId = new Set<string>(sortedMembers.map((e) => e.id));
+
+        const membersNoDm = receivedUsers.filter((u) => !sortedMembersId.has(u.id));
+        sortedMembers.push(...membersNoDm);
+
+        if (outOfChannel?.length) {
+            const outChannelMemberIds = outOfChannel.map((e) => e.id);
+            const outSortedMembers = await getUsersFromDMSorted(database, outChannelMemberIds);
+            sortedMembers.push(...outSortedMembers);
+        }
+
+        if (hasTrailingSpaces(term)) {
+            const filteredReceivedUsers = filterResults(sortedMembers, term);
+            const slicedArray = filteredReceivedUsers.slice(0, 20);
+            setUsers(slicedArray.length ? slicedArray : emptyUserlList);
+        } else {
+            const slicedArray = sortedMembers.slice(0, 20);
+            setUsers(slicedArray.length ? slicedArray : emptyUserlList);
+        }
+    }
 
     const matchTerm = getMatchTermForAtMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
