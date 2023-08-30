@@ -17,7 +17,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     userModel?: UserModel;
-    volume: number;
+    volume?: number;
     serverUrl: string;
     size: number;
     muted?: boolean;
@@ -149,7 +149,7 @@ const getStyleSheet = ({
     });
 };
 
-const CallAvatar = ({userModel, volume, serverUrl, sharingScreen, size, muted, raisedHand, reaction}: Props) => {
+const CallAvatar = ({userModel, volume = 0, serverUrl, sharingScreen, size, muted, raisedHand, reaction}: Props) => {
     const theme = useTheme();
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
     const style = useMemo(() => getStyleSheet({theme: callsTheme, volume, size}), [callsTheme, volume, size]);

@@ -7,6 +7,7 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import {
     callEnded,
     callStarted,
+    removeIncomingCall,
     setCallScreenOff,
     setCallScreenOn,
     setChannelEnabled,
@@ -21,14 +22,21 @@ import {
 } from '@calls/state';
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
+import {getCurrentUserId} from '@queries/servers/system';
 
 import type {
-    CallHostChangedData, CallRecordingStateData,
+    CallHostChangedData,
+    CallRecordingStateData,
     CallStartData,
     EmptyData,
     UserConnectedData,
-    UserDisconnectedData, UserMutedUnmutedData, UserRaiseUnraiseHandData,
-    UserReactionData, UserScreenOnOffData, UserVoiceOnOffData,
+    UserDisconnectedData,
+    UserDismissedNotification,
+    UserMutedUnmutedData,
+    UserRaiseUnraiseHandData,
+    UserReactionData,
+    UserScreenOnOffData,
+    UserVoiceOnOffData,
 } from '@mattermost/calls/lib/types';
 
 export const handleCallUserConnected = (serverUrl: string, msg: WebSocketMessage<UserConnectedData>) => {
@@ -59,12 +67,8 @@ export const handleCallUserVoiceOff = (msg: WebSocketMessage<UserVoiceOnOffData>
 };
 
 export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage<CallStartData>) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return;
-    }
-
     callStarted(serverUrl, {
+        id: msg.data.id,
         channelId: msg.data.channelID,
         startTime: msg.data.start_at,
         threadId: msg.data.thread_id,
@@ -72,6 +76,7 @@ export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage<CallS
         participants: {},
         ownerId: msg.data.owner_id,
         hostId: msg.data.host_id,
+        dismissed: {},
     });
 };
 
@@ -117,4 +122,19 @@ export const handleCallRecordingState = (serverUrl: string, msg: WebSocketMessag
 
 export const handleCallHostChanged = (serverUrl: string, msg: WebSocketMessage<CallHostChangedData>) => {
     setHost(serverUrl, msg.broadcast.channel_id, msg.data.hostID);
+};
+
+export const handleUserDismissedNotification = async (serverUrl: string, msg: WebSocketMessage<UserDismissedNotification>) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
+    // For now we are only handling our own dismissed.
+    const myUserId = await getCurrentUserId(database);
+    if (myUserId !== msg.data.userID) {
+        return;
+    }
+
+    removeIncomingCall(serverUrl, msg.data.callID);
 };
