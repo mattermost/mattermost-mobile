@@ -28,6 +28,7 @@ import {
     handleCallUserUnraiseHand,
     handleCallUserVoiceOff,
     handleCallUserVoiceOn,
+    handleUserDismissedNotification,
 } from '@calls/connection/websocket_event_handlers';
 import {isSupportedServerCalls} from '@calls/utils';
 import {Screens, WebsocketEvents} from '@constants';
@@ -391,6 +392,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.CALLS_HOST_CHANGED:
             handleCallHostChanged(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_DISMISSED_NOTIFICATION:
+            handleUserDismissedNotification(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:

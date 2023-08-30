@@ -24,7 +24,32 @@ export const DefaultCallsState: CallsState = {
     enabled: {},
 };
 
+export enum ChannelType {
+    DM,
+    GM
+}
+
+export type IncomingCallNotification = {
+    serverUrl: string;
+    myUserId: string;
+    callID: string;
+    channelID: string;
+    callerID: string;
+    callerModel?: UserModel;
+    startAt: number;
+    type: ChannelType;
+}
+
+export type IncomingCalls = {
+    incomingCalls: IncomingCallNotification[];
+}
+
+export const DefaultIncomingCalls: IncomingCalls = {
+    incomingCalls: [],
+};
+
 export type Call = {
+    id: string;
     participants: Dictionary<CallParticipant>;
     channelId: string;
     startTime: number;
@@ -33,9 +58,11 @@ export type Call = {
     ownerId: string;
     recState?: CallRecordingState;
     hostId: string;
+    dismissed: Dictionary<boolean>;
 }
 
 export const DefaultCall: Call = {
+    id: '',
     participants: {},
     channelId: '',
     startTime: 0,
@@ -43,6 +70,7 @@ export const DefaultCall: Call = {
     threadId: '',
     ownerId: '',
     hostId: '',
+    dismissed: {},
 };
 
 export enum AudioDevice {
@@ -123,6 +151,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     MaxRecordingDuration: 60,
     AllowScreenSharing: true,
     EnableSimulcast: false,
+    EnableRinging: false,
 };
 
 export type ApiResp = {

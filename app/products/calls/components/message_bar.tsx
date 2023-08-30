@@ -28,7 +28,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => (
             zIndex: 10,
         },
         errorWrapper: {
-            padding: 10,
+            padding: 8,
             paddingTop: 0,
         },
         errorBar: {

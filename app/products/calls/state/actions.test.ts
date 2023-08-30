@@ -8,9 +8,12 @@ import {act, renderHook} from '@testing-library/react-hooks';
 import {needsRecordingAlert} from '@calls/alerts';
 import {
     newCurrentCall,
+    processIncomingCalls,
     processMeanOpinionScore,
+    removeIncomingCall,
     setAudioDeviceInfo,
     setCallQualityAlertDismissed,
+    setCallsConfig,
     setCallsState,
     setChannelsWithCalls,
     setCurrentCall,
@@ -23,6 +26,7 @@ import {
     useChannelsWithCalls,
     useCurrentCall,
     useGlobalCallsState,
+    useIncomingCalls,
     userReacted,
 } from '@calls/state';
 import {
@@ -52,6 +56,7 @@ import {
     DefaultCallsState,
     DefaultCurrentCall,
     DefaultGlobalCallsState,
+    DefaultIncomingCalls,
     type GlobalCallsState,
 } from '@calls/types/calls';
 import {License} from '@constants';
@@ -75,6 +80,18 @@ jest.mock('@queries/servers/thread', () => ({
     })),
 }));
 
+jest.mock('@queries/servers/channel', () => ({
+    getChannelById: jest.fn(() => Promise.resolve({
+        type: 'D',
+    })),
+}));
+
+jest.mock('@queries/servers/user', () => ({
+    getUserById: jest.fn(() => Promise.resolve({
+        username: 'user-5',
+    })),
+}));
+
 jest.mock('react-native-navigation', () => ({
     Navigation: {
         pop: jest.fn(() => Promise.resolve({
@@ -84,6 +101,7 @@ jest.mock('react-native-navigation', () => ({
 }));
 
 const call1: Call = {
+    id: 'call1',
     participants: {
         'user-1': {id: 'user-1', muted: false, raisedHand: 0},
         'user-2': {id: 'user-2', muted: true, raisedHand: 0},
@@ -94,8 +112,10 @@ const call1: Call = {
     threadId: 'thread-1',
     ownerId: 'user-1',
     hostId: 'user-1',
+    dismissed: {},
 };
 const call2: Call = {
+    id: 'call2',
     participants: {
         'user-3': {id: 'user-3', muted: false, raisedHand: 0},
         'user-4': {id: 'user-4', muted: true, raisedHand: 0},
@@ -106,8 +126,10 @@ const call2: Call = {
     threadId: 'thread-2',
     ownerId: 'user-3',
     hostId: 'user-3',
+    dismissed: {},
 };
 const call3: Call = {
+    id: 'call3',
     participants: {
         'user-5': {id: 'user-5', muted: false, raisedHand: 0},
         'user-6': {id: 'user-6', muted: true, raisedHand: 0},
@@ -118,6 +140,20 @@ const call3: Call = {
     threadId: 'thread-3',
     ownerId: 'user-5',
     hostId: 'user-5',
+    dismissed: {},
+};
+const callDM: Call = {
+    id: 'callDM',
+    participants: {
+        'user-5': {id: 'user-5', muted: false, raisedHand: 0},
+    },
+    channelId: 'channel-private',
+    startTime: 123,
+    screenOn: '',
+    threadId: 'thread-4',
+    ownerId: 'user-5',
+    hostId: 'user-5',
+    dismissed: {},
 };
 
 describe('useCallsState', () => {
@@ -153,7 +189,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], {});
     });
 
-    it('setCalls, two callsState hooks, channelsWithCalls hook, ', () => {
+    it('setCalls, two callsState hooks, channelsWithCalls hook, ', async () => {
         const initialCallsState = {
             ...DefaultCallsState,
             calls: {'channel-1': call1},
@@ -217,7 +253,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[3], initialCurrentCallState);
 
         // test
-        act(() => setCalls('server1', 'myId', test.calls, test.enabled));
+        await act(async () => setCalls('server1', 'myId', test.calls, test.enabled));
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], expectedCallsState);
         assert.deepEqual(result.current[2], expectedChannelsWithCallsState);
@@ -242,6 +278,7 @@ describe('useCallsState', () => {
         };
         const expectedCallsState = {
             'channel-1': {
+                id: 'call1',
                 participants: {
                     'user-1': {id: 'user-1', muted: false, raisedHand: 0},
                     'user-2': {id: 'user-2', muted: true, raisedHand: 0},
@@ -253,6 +290,7 @@ describe('useCallsState', () => {
                 threadId: 'thread-1',
                 ownerId: 'user-1',
                 hostId: 'user-1',
+                dismissed: {},
             },
         };
         const expectedChannelsWithCallsState = initialChannelsWithCallsState;
@@ -302,6 +340,7 @@ describe('useCallsState', () => {
         };
         const expectedCallsState = {
             'channel-1': {
+                id: 'call1',
                 participants: {
                     'user-2': {id: 'user-2', muted: true, raisedHand: 0},
                 },
@@ -311,6 +350,7 @@ describe('useCallsState', () => {
                 threadId: 'thread-1',
                 ownerId: 'user-1',
                 hostId: 'user-1',
+                dismissed: {},
             },
         };
         const expectedChannelsWithCallsState = initialChannelsWithCallsState;
@@ -366,6 +406,7 @@ describe('useCallsState', () => {
         };
         const expectedCallsState = {
             'channel-1': {
+                id: 'call1',
                 participants: {
                     'user-2': {id: 'user-2', muted: true, raisedHand: 0},
                 },
@@ -375,6 +416,7 @@ describe('useCallsState', () => {
                 ownerId: 'user-1',
                 hostId: 'user-1',
                 screenOn: '',
+                dismissed: {},
             },
         };
         const expectedChannelsWithCallsState = initialChannelsWithCallsState;
@@ -563,6 +605,7 @@ describe('useCallsState', () => {
         };
         const expectedCalls = {
             'channel-1': {
+                id: 'call1',
                 participants: {
                     'user-1': {id: 'user-1', muted: false, raisedHand: 0},
                     'user-2': {id: 'user-2', muted: true, raisedHand: 345},
@@ -573,6 +616,7 @@ describe('useCallsState', () => {
                 threadId: 'thread-1',
                 ownerId: 'user-1',
                 hostId: 'user-1',
+                dismissed: {},
             },
         };
         const initialCurrentCallState: CurrentCall = {
@@ -989,7 +1033,7 @@ describe('useCallsState', () => {
         assert.deepEqual((result.current[1] as CurrentCall).callQualityAlert, true);
     });
 
-    it('voiceOn and Off', () => {
+    it('voiceOn and Off', async () => {
         const initialCallsState = {
             ...DefaultCallsState,
             myUserId: 'myUserId',
@@ -1025,7 +1069,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[0], initialCallsState);
 
         // test that voice state is cleared on reconnect
-        act(() => setCalls('server1', 'myUserId', initialCallsState.calls, {}));
+        await act(() => setCalls('server1', 'myUserId', initialCallsState.calls, {}));
         assert.deepEqual(result.current[1], initialCurrentCallState);
         assert.deepEqual(result.current[0], initialCallsState);
     });
@@ -1247,5 +1291,112 @@ describe('useCallsState', () => {
         assert.deepEqual((result.current[1] as CurrentCall | null), expectedCurrentCallState);
         act(() => setHost('server1', 'channel-1', 'myUserId'));
         expect(needsRecordingAlert).toBeCalled();
+    });
+
+    it('incoming calls', async () => {
+        const calls = {'channel-dm': callDM};
+        const afterLoadCallsState: CallsState = {
+            myUserId: 'myId',
+            calls,
+            enabled: {},
+        };
+        const initialCurrentCallState: CurrentCall | null = null;
+        const initialIncomingCalls = DefaultIncomingCalls;
+        const expectedIncomingCalls = {
+            incomingCalls: [{
+                callID: 'callDM',
+                callerID: 'user-5',
+                callerModel: {username: 'user-5'},
+                channelID: 'channel-private',
+                myUserId: 'myId',
+                serverUrl: 'server1',
+                startAt: 123,
+                type: 0,
+            }],
+        };
+        const dismissedCalls = {
+            'channel-dm': {...callDM, dismissed: {myId: true}},
+        };
+        const callIStarted: Call = {
+            id: 'callIStartedid',
+            participants: {
+                'user-5': {id: 'user-5', muted: false, raisedHand: 0},
+            },
+            channelId: 'channel-private2',
+            startTime: 123,
+            screenOn: '',
+            threadId: 'thread-4',
+            ownerId: 'myId',
+            hostId: 'user-5',
+            dismissed: {},
+        };
+        const callImIn: Call = {
+            id: 'callImInId',
+            participants: {},
+            channelId: 'channel-private2',
+            startTime: 123,
+            screenOn: '',
+            threadId: 'thread-4',
+            ownerId: 'user-5',
+            hostId: 'user-5',
+            dismissed: {},
+        };
+        const currentCallStateImIn: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myId',
+            ...callImIn,
+        };
+
+        // setup
+        await DatabaseManager.init(['server1']);
+        const {result} = renderHook(() => {
+            return [
+                useCallsState('server1'),
+                useCurrentCall(),
+                useIncomingCalls(),
+            ];
+        });
+        act(() => {
+            setCallsConfig('server1', {...DefaultCallsConfig, EnableRinging: true});
+        });
+        assert.deepEqual(result.current[0], DefaultCallsState);
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+        assert.deepEqual(result.current[2], initialIncomingCalls);
+
+        // test incoming call on load
+        await act(async () => setCalls('server1', 'myId', afterLoadCallsState.calls, {}));
+        assert.deepEqual(result.current[0], afterLoadCallsState);
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+        assert.deepEqual(result.current[2], expectedIncomingCalls);
+
+        // test dismissing (same path for manually dismissing, joining that call,
+        // or receiving ws event from dismissing/joining from another client)
+        act(() => removeIncomingCall('server1', 'callDM'));
+        assert.deepEqual(result.current[0], afterLoadCallsState);
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+        assert.deepEqual(result.current[2], DefaultIncomingCalls);
+
+        // test load call, but call has been dismissed
+        await act(async () => setCalls('server1', 'myId', dismissedCalls, {}));
+        assert.deepEqual(result.current[2], DefaultIncomingCalls);
+
+        // test load call, then load same call again (eg from ws event): should only have one notification
+        await act(async () => setCalls('server1', 'myId', afterLoadCallsState.calls, {}));
+        assert.deepEqual(result.current[2], expectedIncomingCalls);
+        await act(async () => processIncomingCalls('server1', [calls['channel-dm']]));
+        assert.deepEqual(result.current[2], expectedIncomingCalls);
+
+        // test received ws event for a call I started
+        await act(async () => processIncomingCalls('server1', [callIStarted]));
+        assert.deepEqual(result.current[2], expectedIncomingCalls);
+
+        // test received ws event for a call I am in
+        await act(async () => {
+            setCurrentCall(currentCallStateImIn);
+            await processIncomingCalls('server1', [callImIn]);
+        });
+        assert.deepEqual(result.current[1], currentCallStateImIn);
+        assert.deepEqual(result.current[2], expectedIncomingCalls);
     });
 });
