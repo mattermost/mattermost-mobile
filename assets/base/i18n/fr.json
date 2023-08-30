@@ -5,7 +5,7 @@
     "about.enterpriseEditionSt": "Communication moderne derrière votre pare-feu.",
     "about.hash": "Hash de version :",
     "about.hashee": "Hash de version EE :",
-    "about.teamEditionLearn": "Rejoignez la communauté Mattermost sur ",
+    "about.teamEditionLearn": "Rejoignez la communauté Mattermost sur",
     "about.teamEditionSt": "Toute la communication de votre équipe en un seul endroit, consultable instantanément et accessible de partout.",
     "about.teamEditiont0": "Édition Team",
     "about.teamEditiont1": "Édition Entreprise",
@@ -990,5 +990,10 @@
     "channel_notification_preferences.notification.all": "Tous les nouveaux messages",
     "channel_notification_preferences.muted_title": "Ce canal est en sourdine",
     "channel_notification_preferences.muted_content": "Vous pouvez modifier les paramètres de notification, mais vous ne recevrez pas de notifications tant que le canal n'aura pas été désactivé.",
-    "post_priority.picker.cancel": "Annuler"
+    "post_priority.picker.cancel": "Annuler",
+    "channel_files.empty.paragraph": "Les fichiers publiés sur cette chaîne s'afficheront ici.",
+    "channel_files.empty.title": "Aucun fichier ici",
+    "channel_files.noFiles.paragraph": "Ce canal ne contient aucun fichier avec les filtres appliqués",
+    "channel_files.noFiles.title": "Aucun fichier trouver",
+    "channel_add_members.add_members.button": "Ajouter des membres"
 }
