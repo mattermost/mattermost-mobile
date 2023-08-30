@@ -486,6 +486,48 @@ SOFTWARE.
 
 ---
 
+## @react-native/eslint-config
+
+This product contains '@react-native/eslint-config' by Meta.	
+
+ESLint config for React Native
+
+* HOMEPAGE:	
+  * https://github.com/facebook/react-native/tree/HEAD/packages/eslint-config-react-native-community#readme
+
+* LICENSE: MIT
+
+
+---
+
+## @react-native/metro-config
+
+This product contains '@react-native/metro-config' by Meta.	
+
+Config resolver and transformer for Metro.
+
+* HOMEPAGE:	
+  * https://github.com/facebook/react-native#readme
+
+* LICENSE: MIT
+
+
+---
+
+## @tsconfig/react-native
+
+This product contains '@tsconfig/react-native' by TSC Base.	
+
+Hosts TSConfigs for you to extend in your apps, tuned to a particular runtime environment. Owned and improved by the community. Basically Definitely Typed for TSConfigs.
+
+* HOMEPAGE:	
+  * https://github.com/tsconfig/bases#readme
+
+* LICENSE: MIT
+
+
+---
+
 ## @react-navigation/bottom-tabs
 
 This product contains '@react-navigation/bottom-tabs' by react-navigation.	
