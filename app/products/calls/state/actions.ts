@@ -258,8 +258,7 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
         setCurrentCall(nextCurrentCall);
     }
 
-    const myUserId = callsState.myUserId;
-    if (userId === myUserId) {
+    if (userId === callsState.myUserId) {
         removeIncomingCall(serverUrl, callsState.calls[channelId].id, channelId);
     }
 };
