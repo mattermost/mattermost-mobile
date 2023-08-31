@@ -1066,5 +1066,9 @@
     "settings.about.server.version": "服务器版本：{version}（构建版本{buildNumber}）",
     "settings.about.server.version.title": "服务器版本：",
     "settings.about.app.version": "应用程序版本：{version}（构建号{number}）",
-    "settings.about.server.version.noBuild": "服务器版本：{version}"
+    "settings.about.server.version.noBuild": "服务器版本：{version}",
+    "snack.bar.info.copied": "信息已复制到剪贴板",
+    "mobile.calls_join_button": "加入",
+    "mobile.calls_incoming_dm": "<b>{name}</b>邀请您加入通话",
+    "mobile.calls_incoming_gm": "<b>{name}</b> 现邀请您与其他<b> {num, plural, one {# 位} other {# 位}} </b>进行通话"
 }
