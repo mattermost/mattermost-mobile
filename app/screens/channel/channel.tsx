@@ -7,6 +7,7 @@ import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
+import {IncomingCallsContainer} from '@calls/components/incoming_calls_container';
 import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
@@ -30,10 +31,10 @@ import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view'
 type ChannelProps = {
     channelId: string;
     componentId?: AvailableScreens;
-    isCallInCurrentChannel: boolean;
+    showJoinCallBanner: boolean;
     isInACall: boolean;
-    isInCurrentChannelCall: boolean;
     isCallsEnabledInChannel: boolean;
+    showIncomingCalls: boolean;
     isTabletView?: boolean;
 };
 
@@ -49,10 +50,10 @@ const styles = StyleSheet.create({
 const Channel = ({
     channelId,
     componentId,
-    isCallInCurrentChannel,
+    showJoinCallBanner,
     isInACall,
-    isInCurrentChannelCall,
     isCallsEnabledInChannel,
+    showIncomingCalls,
     isTabletView,
 }: ChannelProps) => {
     const isTablet = useIsTablet();
@@ -64,9 +65,9 @@ const Channel = ({
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
-    const handleBack = () => {
+    const handleBack = useCallback(() => {
         popTopScreen(componentId);
-    };
+    }, [componentId]);
 
     useKeyboardTrackingPaused(postDraftRef, channelId, trackKeyboardForScreens);
     useAndroidHardwareBackHandler(componentId, handleBack);
@@ -98,8 +99,7 @@ const Channel = ({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
-    const renderCallsComponents = showJoinCallBanner || isInACall;
+    const showFloatingCallContainer = showJoinCallBanner || isInACall;
 
     return (
         <FreezeScreen>
@@ -139,11 +139,18 @@ const Channel = ({
                     />
                 </>
                 }
-                {renderCallsComponents &&
+                {showFloatingCallContainer &&
                     <FloatingCallContainer
                         channelId={channelId}
                         showJoinCallBanner={showJoinCallBanner}
                         isInACall={isInACall}
+                    />
+                }
+                {showIncomingCalls &&
+                    <IncomingCallsContainer
+                        channelId={channelId}
+                        showingJoinCallBanner={showJoinCallBanner}
+                        showingCurrentCallBanner={isInACall}
                     />
                 }
             </SafeAreaView>

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 
 import SettingContainer from '@components/settings/container';
@@ -90,9 +90,11 @@ const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled,
         gotoSettingsScreen(screen, title);
     });
 
-    useAndroidHardwareBackHandler(componentId, () => {
+    const close = useCallback(() => {
         popTopScreen(componentId);
-    });
+    }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <SettingContainer testID='display_settings'>

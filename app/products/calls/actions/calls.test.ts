@@ -67,6 +67,7 @@ const mockClient = {
     enableChannelCalls: jest.fn(),
     startCallRecording: jest.fn(),
     stopCallRecording: jest.fn(),
+    dismissCall: jest.fn(),
 };
 
 jest.mock('@calls/connection/connection', () => ({
@@ -98,7 +99,8 @@ jest.mock('react-native-navigation', () => ({
 }));
 
 const addFakeCall = (serverUrl: string, channelId: string) => {
-    const call = {
+    const call: Call = {
+        id: 'call',
         participants: {
             xohi8cki9787fgiryne716u84o: {id: 'xohi8cki9787fgiryne716u84o', muted: false, raisedHand: 0},
             xohi8cki9787fgiryne716u841: {id: 'xohi8cki9787fgiryne716u84o', muted: true, raisedHand: 0},
@@ -113,7 +115,8 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
         threadId: 'abcd1234567',
         ownerId: 'xohi8cki9787fgiryne716u84o',
         hostId: 'xohi8cki9787fgiryne716u84o',
-    } as Call;
+        dismissed: {},
+    };
     act(() => {
         State.setCallsState(serverUrl, {myUserId: 'myUserId', calls: {}, enabled: {}});
         State.callStarted(serverUrl, call);
@@ -158,7 +161,7 @@ describe('Actions.Calls', () => {
             setCallsState('server1', DefaultCallsState);
             setChannelsWithCalls('server1', {});
             setCurrentCall(null);
-            setCallsConfig('server1', DefaultCallsConfig);
+            setCallsConfig('server1', {...DefaultCallsConfig, EnableRinging: true});
         });
     });
 
@@ -384,5 +387,13 @@ describe('Actions.Calls', () => {
         expect(mockClient.stopCallRecording).toBeCalledWith('channel-id');
         expect(needsRecordingErrorAlert).toBeCalled();
         expect(needsRecordingWillBePostedAlert).toBeCalled();
+    });
+
+    it('dismissIncomingCall', async () => {
+        await act(async () => {
+            await CallsActions.dismissIncomingCall('server1', 'channel-id');
+        });
+
+        expect(mockClient.dismissCall).toBeCalledWith('channel-id');
     });
 });
