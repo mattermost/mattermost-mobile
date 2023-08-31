@@ -577,7 +577,7 @@ const Markdown = ({
             checkbox: renderCheckbox,
 
             editedIndicator: renderEditedIndicator,
-            max_nodes_warning: renderMaxNodesWarning,
+            maxNodesWarning: renderMaxNodesWarning,
         };
 
         return new Renderer({
