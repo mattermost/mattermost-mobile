@@ -65,9 +65,9 @@ const Channel = ({
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
-    const handleBack = () => {
+    const handleBack = useCallback(() => {
         popTopScreen(componentId);
-    };
+    }, [componentId]);
 
     useKeyboardTrackingPaused(postDraftRef, channelId, trackKeyboardForScreens);
     useAndroidHardwareBackHandler(componentId, handleBack);

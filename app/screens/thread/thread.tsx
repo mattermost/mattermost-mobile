@@ -57,9 +57,9 @@ const Thread = ({
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
 
-    const close = () => {
+    const close = useCallback(() => {
         popTopScreen(componentId);
-    };
+    }, [componentId]);
 
     useKeyboardTrackingPaused(postDraftRef, rootId, trackKeyboardForScreens);
     useAndroidHardwareBackHandler(componentId, close);

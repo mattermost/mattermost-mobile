@@ -512,9 +512,11 @@ const CallScreen = ({
         recordOptionTitle, stopRecording, stopRecordingOptionTitle, style, switchToThread, callThreadOptionTitle,
         openChannelOptionTitle]);
 
-    useAndroidHardwareBackHandler(componentId, () => {
+    const collapse = useCallback(() => {
         popTopScreen(componentId);
-    });
+    }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, collapse);
 
     useEffect(() => {
         const didDismissListener = Navigation.events().registerComponentDidDisappearListener(async ({componentId: screen}) => {
@@ -665,7 +667,7 @@ const CallScreen = ({
                 teammateNameDisplay={teammateNameDisplay}
             />
             <Pressable
-                onPress={() => popTopScreen()}
+                onPress={collapse}
                 style={style.collapseIconContainer}
             >
                 <CompassIcon
