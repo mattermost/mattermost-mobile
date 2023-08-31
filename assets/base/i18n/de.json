@@ -1067,5 +1067,8 @@
     "settings.about.server.version": "Server Version: {version} (Build {buildNumber}",
     "settings.about.server.version.title": "Server-Version:",
     "settings.about.server.version.noBuild": "Server Version: {version}",
-    "snack.bar.info.copied": "Info in die Zwischenablage kopiert"
+    "snack.bar.info.copied": "Info in die Zwischenablage kopiert",
+    "mobile.calls_join_button": "Teilnehmen",
+    "mobile.calls_incoming_dm": "<b>{name}</b> lädt dich zu einem Anruf ein",
+    "mobile.calls_incoming_gm": "<b>{name}</b> lädt dich zu einem Anruf mit <b>{num, plural, one {einem anderen} other {# anderen}}</b> ein"
 }
