@@ -1067,5 +1067,8 @@
     "settings.about.server.version.title": "Wersja serwera:",
     "settings.about.app.version": "Wersja Aplikacji: {version} (Build {number})",
     "settings.about.server.version": "Wersja serwera: {version} (kompilacja {buildNumber}",
-    "snack.bar.info.copied": "Informacje skopiowane do schowka"
+    "snack.bar.info.copied": "Informacje skopiowane do schowka",
+    "mobile.calls_incoming_dm": "<b>{name}</b> zaprasza do rozmowy",
+    "mobile.calls_incoming_gm": "<b>{name}</b> zaprasza do rozmowy z {num, plural, one {# innym} other {# innymi}} <b></b>",
+    "mobile.calls_join_button": "Dołącz"
 }
