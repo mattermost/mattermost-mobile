@@ -44,6 +44,8 @@ const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {
         let newValue = '';
         if (!searchValue) {
             newValue = modifierTerm;
+        } else if (searchValue.startsWith('@') && modifierTerm === 'From:') {
+            newValue = `From:${searchValue.slice(1)}`;
         } else if (searchValue.endsWith(' ')) {
             newValue = `${searchValue}${modifierTerm}`;
         } else {

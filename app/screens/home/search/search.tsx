@@ -68,9 +68,6 @@ const styles = StyleSheet.create({
 const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
     const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
-    
-    terms = terms.replace("@","from:")
-    
     return {
         terms: terms.replace(/[\u201C\u201D]/g, '"') + extensionTerms,
         is_or_search: false,
