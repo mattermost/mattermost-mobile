@@ -1067,5 +1067,8 @@
     "settings.about.server.version": "Serverversie: {version} (Build {buildNumber}",
     "settings.about.server.version.noBuild": "Serverversie: {version}",
     "settings.about.server.version.title": "Serverversie:",
-    "snack.bar.info.copied": "Info gekopieerd naar klembord"
+    "snack.bar.info.copied": "Info gekopieerd naar klembord",
+    "mobile.calls_incoming_dm": "<b>{name}</b> nodigt je uit voor een gesprek",
+    "mobile.calls_incoming_gm": "<b>{name}</b> nodigt je uit voor een gesprek met {num, plural, one {# other} other {# others}} <b></b>",
+    "mobile.calls_join_button": "Deelnemen"
 }
