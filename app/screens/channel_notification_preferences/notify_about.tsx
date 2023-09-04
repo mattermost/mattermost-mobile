@@ -80,10 +80,10 @@ const NotifyAbout = ({
         if (defaultLevel === NotificationLevel.MENTION) {
             defaultLevelToUse = NotificationLevel.ALL;
         }
+    }
 
-        if (notifyLevel === NotificationLevel.MENTION) {
-            notifyLevelToUse = NotificationLevel.ALL;
-        }
+    if (notifyLevel === NotificationLevel.DEFAULT) {
+        notifyLevelToUse = defaultLevelToUse;
     }
 
     return (
