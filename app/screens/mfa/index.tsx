@@ -174,9 +174,11 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
         translateX.value = 0;
     }, []);
 
-    useAndroidHardwareBackHandler(componentId, () => {
+    const close = useCallback(() => {
         popTopScreen(componentId);
-    });
+    }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <View style={styles.flex}>

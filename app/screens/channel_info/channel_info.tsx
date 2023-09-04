@@ -70,7 +70,7 @@ const ChannelInfo = ({
         return dismissModal({componentId});
     }, [componentId]);
 
-    useNavButtonPressed(closeButtonId, componentId, onPressed, []);
+    useNavButtonPressed(closeButtonId, componentId, onPressed, [onPressed]);
     useAndroidHardwareBackHandler(componentId, onPressed);
 
     return (

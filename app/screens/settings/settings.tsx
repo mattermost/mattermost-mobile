@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, View} from 'react-native';
 
@@ -66,9 +66,9 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         };
     }, [theme.centerChannelColor]);
 
-    const close = () => {
+    const close = useCallback(() => {
         dismissModal({componentId});
-    };
+    }, [componentId]);
 
     useEffect(() => {
         setButtons(componentId, {

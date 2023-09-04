@@ -6,7 +6,12 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, distinctUntilChanged, of as of$, switchMap} from 'rxjs';
 
 import {observeIsCallsEnabledInChannel} from '@calls/observers';
-import {observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
+import {
+    observeCallsState,
+    observeChannelsWithCalls,
+    observeCurrentCall,
+    observeIncomingCalls,
+} from '@calls/state';
 import {Preferences} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannel} from '@queries/servers/channel';
@@ -38,8 +43,20 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         switchMap((call) => of$(Boolean(call?.connected))),
         distinctUntilChanged(),
     );
+    const dismissed = combineLatest([channelId, observeCallsState(serverUrl)]).pipe(
+        switchMap(([id, state]) => of$(Boolean(state.calls[id]?.dismissed[state.myUserId]))),
+        distinctUntilChanged(),
+    );
     const isInCurrentChannelCall = combineLatest([channelId, ccChannelId]).pipe(
         switchMap(([id, ccId]) => of$(id === ccId)),
+        distinctUntilChanged(),
+    );
+    const showJoinCallBanner = combineLatest([isCallInCurrentChannel, dismissed, isInCurrentChannelCall]).pipe(
+        switchMap(([isCall, dism, inCurrCall]) => of$(Boolean(isCall && !dism && !inCurrCall))),
+        distinctUntilChanged(),
+    );
+    const showIncomingCalls = observeIncomingCalls().pipe(
+        switchMap((ics) => of$(ics.incomingCalls.length > 0)),
         distinctUntilChanged(),
     );
 
@@ -50,9 +67,9 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
 
     return {
         channelId,
-        isCallInCurrentChannel,
+        showJoinCallBanner,
         isInACall,
-        isInCurrentChannelCall,
+        showIncomingCalls,
         isCallsEnabledInChannel: observeIsCallsEnabledInChannel(database, serverUrl, channelId),
         dismissedGMasDMNotice,
         channelType,
