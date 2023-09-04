@@ -6,6 +6,7 @@ import {Alert, Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {getPosts} from '@actions/local/post';
 import {fetchChannelById, joinChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById, fetchPostsAround, fetchPostThread} from '@actions/remote/post';
 import {addCurrentUserToTeam, fetchTeamByName, removeCurrentUserFromTeam} from '@actions/remote/team';
@@ -122,6 +123,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const POSTS_LIMIT = 5;
 
+const idExtractor = (item: Post) => {
+    return item.id;
+};
+
 function Permalink({
     channel,
     rootId,
@@ -163,7 +168,9 @@ function Permalink({
                     setError({unreachable: true});
                 }
                 if (data.posts) {
-                    setPosts(loadThreadPosts ? processThreadPosts(data.posts, postId) : data.posts);
+                    const ids = data.posts.map(idExtractor);
+                    const postsModels = await getPosts(serverUrl, ids, 'desc');
+                    setPosts(loadThreadPosts ? processThreadPosts(postsModels, postId) : postsModels);
                 }
                 setLoading(false);
                 return;
