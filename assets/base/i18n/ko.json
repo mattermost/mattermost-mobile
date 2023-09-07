@@ -1072,5 +1072,6 @@
     "persistent_notifications.error.okay": "확인",
     "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {member} other {members}} 추가됨",
     "server.invalid.certificate.title": "잘못된 SSL 인증서",
-    "server.invalid.certificate.description": "이 서버의 인증서가 유효하지 않습니다.\n\"{hostname}\"인 것처럼 속이고 있는 서버에 연결하려 하므로 기밀 정보가 위험에 노출될 수 있습니다."
+    "server.invalid.certificate.description": "이 서버의 인증서가 유효하지 않습니다.\n\"{hostname}\"인 것처럼 속이고 있는 서버에 연결하려 하므로 기밀 정보가 위험에 노출될 수 있습니다.",
+    "markdown.max_nodes.error": "이 메시지는 모바일 기기에서 표시하기에 너무 깁니다. 데스크톱에서 확인하거나 또는 이 한계를 늘리도록 관리자에게 연락하시기 바랍니다."
 }
