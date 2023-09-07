@@ -43,7 +43,9 @@ export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = fal
             url = resp.redirectUrls[resp.redirectUrls.length - 1];
         }
     } catch (error) {
-        // do nothing
+        if (useHttp) {
+            return undefined;
+        }
     }
 
     return sanitizeUrl(url, useHttp);

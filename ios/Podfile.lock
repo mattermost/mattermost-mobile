@@ -380,7 +380,7 @@ PODS:
     - React-Core
   - react-native-netinfo (9.4.1):
     - React-Core
-  - react-native-network-client (1.3.8):
+  - react-native-network-client (1.4.0):
     - Alamofire (~> 5.6.4)
     - React-Core
     - Starscream (~> 4.0.4)
@@ -953,7 +953,7 @@ SPEC CHECKSUMS:
   react-native-image-picker: 5fcac5a5ffcb3737837f0617d43fd767249290de
   react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
   react-native-netinfo: fefd4e98d75cbdd6e85fc530f7111a8afdf2b0c5
-  react-native-network-client: b12f0de0c3488237a8240e5f2acdd9f6c505c6d5
+  react-native-network-client: 38affc5ccc242b6c825171b8f451bfb84468affd
   react-native-notifications: d309f7080aad71206882dbb98d9ed788969f3b6d
   react-native-paste-input: 09f14cbfb646ad9d2ef79cdc6f3d45f337c10ad1
   react-native-safe-area-context: 9697629f7b2cda43cf52169bb7e0767d330648c2
