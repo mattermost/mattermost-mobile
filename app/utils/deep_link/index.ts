@@ -10,14 +10,14 @@ import {fetchUsersByUsernames} from '@actions/remote/user';
 import {DeepLink, Launch, Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {DEFAULT_LOCALE, getTranslations} from '@i18n';
+import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import WebsocketManager from '@managers/websocket_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {errorBadChannel, errorUnkownUser} from '@utils/draft';
+import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
 import {logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
 import {addNewServer} from '@utils/server';
@@ -115,7 +115,11 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
 }
 
 export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
-    const url = removeProtocol(deepLinkUrl);
+    const url = removeProtocol(decodeURIComponent(deepLinkUrl));
+
+    if (url.includes('../') || url.includes('/..')) {
+        return {type: DeepLink.Invalid, url: deepLinkUrl};
+    }
 
     let match = new RegExp('(.*)\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
     if (match) {
@@ -201,3 +205,12 @@ export const getLaunchPropsFromDeepLink = (deepLinkUrl: string, coldStart = fals
 
     return launchProps;
 };
+
+export function alertInvalidDeepLink(intl: IntlShape) {
+    const message = {
+        id: t('mobile.deep_link.invalid'),
+        defaultMessage: 'This link you are trying to open is invalid.',
+    };
+
+    return alertErrorWithFallback(intl, {}, message);
+}
