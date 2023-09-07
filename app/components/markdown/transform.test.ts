@@ -2131,10 +2131,6 @@ describe('Components.Markdown.transform', () => {
                     }, {
                         type: 'at_mention',
                         _mentionName: 'user',
-                        children: [{
-                            type: 'text',
-                            literal: '@user',
-                        }],
                     }],
                 }],
             },
@@ -2154,10 +2150,6 @@ describe('Components.Markdown.transform', () => {
                         children: [{
                             type: 'at_mention',
                             _mentionName: 'words',
-                            children: [{
-                                type: 'text',
-                                literal: '@words',
-                            }],
                         }],
                     }],
                 }],
@@ -2178,10 +2170,6 @@ describe('Components.Markdown.transform', () => {
                         children: [{
                             type: 'at_mention',
                             _mentionName: 'words',
-                            children: [{
-                                type: 'text',
-                                literal: '@words',
-                            }],
                         }],
                     }],
                 }],
@@ -2579,10 +2567,6 @@ describe('Components.Markdown.transform', () => {
                         children: [{
                             type: 'at_mention',
                             _mentionName: 'channel.',
-                            children: [{
-                                type: 'text',
-                                literal: '@channel.',
-                            }],
                         }],
                     }],
                 }],
@@ -2601,10 +2585,6 @@ describe('Components.Markdown.transform', () => {
                     }, {
                         type: 'at_mention',
                         _mentionName: 'Gvn.',
-                        children: [{
-                            type: 'text',
-                            literal: '@Gvn.',
-                        }],
                     }],
                 }],
             },
