@@ -1070,5 +1070,7 @@
     "persistent_notifications.error.max_recipients.description": "최대 {max} 수신자에게 영구 알림을 보낼 수 있습니다. 메시지에 언급된 {count} 수신자가 있습니다. 멘션한 사람을 변경해야만 보낼 수 있습니다.",
     "persistent_notifications.error.no_mentions.title": "수신자는 @멘션되어야 합니다",
     "persistent_notifications.error.okay": "확인",
-    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {member} other {members}} 추가됨"
+    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {member} other {members}} 추가됨",
+    "server.invalid.certificate.title": "잘못된 SSL 인증서",
+    "server.invalid.certificate.description": "이 서버의 인증서가 유효하지 않습니다.\n\"{hostname}\"인 것처럼 속이고 있는 서버에 연결하려 하므로 기밀 정보가 위험에 노출될 수 있습니다."
 }
