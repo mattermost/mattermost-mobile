@@ -14,7 +14,6 @@ type PoliciesResponse<T> = {
 }
 
 export interface ClientGeneralMix {
-    getOpenGraphMetadata: (url: string) => Promise<any>;
     ping: (deviceId?: string, timeoutInterval?: number) => Promise<any>;
     logClientError: (message: string, level?: string) => Promise<any>;
     getClientConfigOld: () => Promise<ClientConfig>;
@@ -28,13 +27,6 @@ export interface ClientGeneralMix {
 }
 
 const ClientGeneral = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
-    getOpenGraphMetadata = async (url: string) => {
-        return this.doFetch(
-            `${this.urlVersion}/opengraph`,
-            {method: 'post', body: {url}},
-        );
-    };
-
     ping = async (deviceId?: string, timeoutInterval?: number) => {
         let url = `${this.urlVersion}/system/ping?time=${Date.now()}`;
         if (deviceId) {
