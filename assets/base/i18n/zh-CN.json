@@ -1070,5 +1070,8 @@
     "snack.bar.info.copied": "信息已复制到剪贴板",
     "mobile.calls_join_button": "加入",
     "mobile.calls_incoming_dm": "<b>{name}</b>邀请您加入通话",
-    "mobile.calls_incoming_gm": "<b>{name}</b> 现邀请您与其他<b> {num, plural, one {# 位} other {# 位}} </b>进行通话"
+    "mobile.calls_incoming_gm": "<b>{name}</b> 现邀请您与其他<b> {num, plural, one {# 位} other {# 位}} </b>进行通话",
+    "server.invalid.certificate.description": "此服务器的证书无效。\n您可能正在连接到一个假冒为 \"{hostname}\" 的服务器，这可能会危及您的机密信息。",
+    "server.invalid.certificate.title": "无效的SSL证书",
+    "markdown.max_nodes.error": "此信息过长，无法在移动客户端上完整显示。请在PC客户端上查看或联系管理员以增加消息限制长度。"
 }
