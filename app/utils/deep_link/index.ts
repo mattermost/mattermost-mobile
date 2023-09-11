@@ -115,35 +115,39 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
 }
 
 export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
-    const url = removeProtocol(decodeURIComponent(deepLinkUrl));
+    try {
+        const url = removeProtocol(decodeURIComponent(deepLinkUrl));
 
-    if (url.includes('../') || url.includes('/..')) {
-        return {type: DeepLink.Invalid, url: deepLinkUrl};
-    }
+        if (url.includes('../') || url.includes('/..')) {
+            return {type: DeepLink.Invalid, url: deepLinkUrl};
+        }
 
-    let match = new RegExp('(.*)\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], channelName: match[3]}};
-    }
+        let match = new RegExp('(.*)\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
+        if (match) {
+            return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], channelName: match[3]}};
+        }
 
-    match = new RegExp('(.*)\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
-    if (match) {
-        return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], postId: match[3]}};
-    }
+        match = new RegExp('(.*)\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
+        if (match) {
+            return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], postId: match[3]}};
+        }
 
-    match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], userName: match[3]}};
-    }
+        match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(url);
+        if (match) {
+            return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], userName: match[3]}};
+        }
 
-    match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], channelId: match[3]}};
-    }
+        match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/(\\S+)').exec(url);
+        if (match) {
+            return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], channelId: match[3]}};
+        }
 
-    match = new RegExp('(.*)\\/plugins\\/([^\\/]+)\\/(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.Plugin, url: deepLinkUrl, data: {serverUrl: match[1], id: match[2], teamName: ''}};
+        match = new RegExp('(.*)\\/plugins\\/([^\\/]+)\\/(\\S+)').exec(url);
+        if (match) {
+            return {type: DeepLink.Plugin, url: deepLinkUrl, data: {serverUrl: match[1], id: match[2], teamName: ''}};
+        }
+    } catch {
+        // do nothing just return invalid deeplink
     }
 
     return {type: DeepLink.Invalid, url: deepLinkUrl};
