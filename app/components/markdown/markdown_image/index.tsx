@@ -157,7 +157,7 @@ const MarkdownImage = ({
                         style={style.bottomSheet}
                     >
                         <SlideUpPanelItem
-                            icon='content-copy'
+                            leftIcon='content-copy'
                             onPress={() => {
                                 dismissBottomSheet();
                                 Clipboard.setString(linkDestination || source);
@@ -167,7 +167,7 @@ const MarkdownImage = ({
                         />
                         <SlideUpPanelItem
                             destructive={true}
-                            icon='cancel'
+                            leftIcon='cancel'
                             onPress={() => {
                                 dismissBottomSheet();
                             }}
