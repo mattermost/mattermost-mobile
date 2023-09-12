@@ -143,7 +143,7 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
         const result: LoginActionResponse = await login(serverUrl, {loginId, password, mfaToken: token, config, license, serverDisplayName});
         setIsLoading(false);
         if (result?.error && result.failed) {
-            setError(getErrorMessage(error, intl));
+            setError(getErrorMessage(result.error, intl));
             return;
         }
         goToHome(result.error);
@@ -191,7 +191,7 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
                     bounces={false}
                     contentContainerStyle={styles.innerContainer}
                     enableAutomaticScroll={Platform.OS === 'android'}
-                    enableOnAndroid={true}
+                    enableOnAndroid={false}
                     enableResetScrollToCoords={true}
                     extraScrollHeight={0}
                     keyboardDismissMode='on-drag'
