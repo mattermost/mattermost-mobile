@@ -435,6 +435,7 @@
   "mobile.calls_ended_at": "Ended at",
   "mobile.calls_error_message": "Error: {error}",
   "mobile.calls_error_title": "Error",
+  "mobile.calls_headset": "Headset",
   "mobile.calls_host": "host",
   "mobile.calls_host_rec": "You are recording this meeting. Consider letting everyone know that this meeting is being recorded.",
   "mobile.calls_host_rec_error": "Please try to record again. You can also contact your system admin for troubleshooting help.",
