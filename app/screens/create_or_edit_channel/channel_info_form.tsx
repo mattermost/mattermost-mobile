@@ -231,9 +231,7 @@ export default function ChannelInfoForm({
     const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
     const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
 
-    const autocompletePosition = spaceOnBottom > spaceOnTop ?
-        (otherElementsSize + headerFieldHeight) - scrollPosition :
-        (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardOverlap) - otherElementsSize;
+    const autocompletePosition = spaceOnBottom > spaceOnTop ? (otherElementsSize + headerFieldHeight) - scrollPosition : (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardOverlap) - otherElementsSize;
     const autocompleteAvailableSpace = spaceOnBottom > spaceOnTop ? spaceOnBottom : spaceOnTop;
     const growDown = spaceOnBottom > spaceOnTop;
 

@@ -206,8 +206,8 @@ const CreateOrEditChannel = ({
             id: channel.id,
             type: channel.type,
             display_name: isDirect(channel) ? channel.displayName : displayName,
-            purpose,
-            header,
+            purpose: isDirect(channel) ? null : purpose,
+            header: isDirect(channel) ? null : header,
         } as Channel;
 
         setCanSave(false);
