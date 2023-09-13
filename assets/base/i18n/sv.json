@@ -1067,5 +1067,12 @@
     "settings.about.server.version": "Serverversion: {version} (Build {buildNumber}",
     "settings.about.server.version.noBuild": "Serverversion: {version}",
     "settings.about.server.version.title": "Serverversion:",
-    "snack.bar.info.copied": "Kopierat till clipboard"
+    "snack.bar.info.copied": "Kopierat till clipboard",
+    "server.invalid.certificate.title": "Ogiltigt SSL-certifikat",
+    "server.invalid.certificate.description": "Servercertifikatet på servern är felaktigt.\nDet kan vara så att du ansluter till en server som låtsas vara \"{hostname}\" och din information skulle kunna riskera läcka till obehöriga.",
+    "mobile.calls_incoming_gm": "<b>{name}</b> bjuder in dig till ett samtal med <b>{num, plural, one {# annan} other {# andra}}</b>",
+    "mobile.calls_incoming_dm": "<b>{name}</b> bjuder in till ett samtal",
+    "mobile.deep_link.invalid": "Länken du försöker öppna är ogiltig.",
+    "markdown.max_nodes.error": "Meddelandet är för långt för att kunna visas på en mobil. Du kan se det i en dator eller kontakta en administratör för att utöka gränsen.",
+    "mobile.calls_join_button": "Anslut"
 }
