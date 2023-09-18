@@ -7,7 +7,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Channel} from '@constants';
-import {observeChannelSettings} from '@queries/servers/channel';
+import {observeChannel, observeChannelSettings} from '@queries/servers/channel';
 
 import AutoFollowThreads from './auto_follow_threads';
 
@@ -18,6 +18,7 @@ type Props = WithDatabaseArgs & {
 }
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
+    const channel = observeChannel(database, channelId);
     const settings = observeChannelSettings(database, channelId);
     const followedStatus = settings.pipe(
         switchMap((s) => {
@@ -27,6 +28,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
 
     return {
         followedStatus,
+        displayName: channel.pipe(switchMap((c) => of$(c?.displayName))),
     };
 });
 

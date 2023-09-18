@@ -35,11 +35,13 @@ const Options = ({
 
     return (
         <>
-            {isCRTEnabled && (
-                <AutoFollowThreads channelId={channelId}/>
-            )}
             {type !== General.DM_CHANNEL && (
-                <IgnoreMentions channelId={channelId}/>
+                <>
+                    {isCRTEnabled && (
+                        <AutoFollowThreads channelId={channelId}/>
+                    )}
+                    <IgnoreMentions channelId={channelId}/>
+                </>
             )}
             <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>

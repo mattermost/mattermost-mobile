@@ -6,31 +6,50 @@ import {useIntl} from 'react-intl';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
+import {
+    CHANNEL_AUTO_FOLLOW_THREADS_FALSE,
+    CHANNEL_AUTO_FOLLOW_THREADS_TRUE,
+} from '@constants/channel';
 import {useServerUrl} from '@context/server';
+import {t} from '@i18n';
+import {alertErrorWithFallback} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
     channelId: string;
     followedStatus: boolean;
+    displayName: string;
 };
 
-const AutoFollowThreads = ({channelId, followedStatus}: Props) => {
+const AutoFollowThreads = ({channelId, displayName, followedStatus}: Props) => {
     const [autoFollow, setAutoFollow] = useState(followedStatus);
     const serverUrl = useServerUrl();
-    const {formatMessage} = useIntl();
+    const intl = useIntl();
 
-    const toggleFollow = preventDoubleTap(() => {
+    const toggleFollow = preventDoubleTap(async () => {
         const props: Partial<ChannelNotifyProps> = {
-            channel_auto_follow_threads: followedStatus ? 'off' : 'on',
+            channel_auto_follow_threads: followedStatus ? CHANNEL_AUTO_FOLLOW_THREADS_FALSE : CHANNEL_AUTO_FOLLOW_THREADS_TRUE,
         };
-        setAutoFollow(!autoFollow);
-        updateChannelNotifyProps(serverUrl, channelId, props);
+        setAutoFollow((v) => !v);
+        const result = await updateChannelNotifyProps(serverUrl, channelId, props);
+        if (result?.error) {
+            alertErrorWithFallback(
+                intl,
+                result.error,
+                {
+                    id: t('channel_info.channel_auto_follow_threads_failed'),
+                    defaultMessage: 'An error occurred trying to auto follow all threads in channel {displayName}',
+                },
+                {displayName},
+            );
+            setAutoFollow((v) => !v);
+        }
     });
 
     return (
         <OptionItem
             action={toggleFollow}
-            label={formatMessage({id: 'channel_info.channel_auto_follow_threads', defaultMessage: 'Follow all threads in this channel'})}
+            label={intl.formatMessage({id: 'channel_info.channel_auto_follow_threads', defaultMessage: 'Follow all threads in this channel'})}
             icon='message-plus-outline'
             type='toggle'
             selected={autoFollow}
