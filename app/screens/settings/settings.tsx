@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, View} from 'react-native';
 
+import {handleGotoLocation} from '@actions/remote/command';
 import CompassIcon from '@components/compass_icon';
 import SettingContainer from '@components/settings/container';
 import SettingItem from '@components/settings/item';
@@ -16,8 +17,6 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {handleGotoLocation} from '@actions/remote/command';
-
 
 import ReportProblem from './report_problem';
 
