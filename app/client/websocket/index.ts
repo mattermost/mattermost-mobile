@@ -229,6 +229,7 @@ export default class WebSocketClient {
         });
 
         this.conn!.onError((evt: any) => {
+            this.conn = undefined;
             if (evt.url === this.url) {
                 this.hasReliablyReconnect = false;
                 if (this.connectFailCount <= 1) {
