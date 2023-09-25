@@ -139,7 +139,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
                         style={styles.bottomSheet}
                     >
                         <SlideUpPanelItem
-                            icon='content-copy'
+                            leftIcon='content-copy'
                             onPress={() => {
                                 dismissBottomSheet();
                                 Clipboard.setString(content);
@@ -149,7 +149,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
                         />
                         <SlideUpPanelItem
                             destructive={true}
-                            icon='cancel'
+                            leftIcon='cancel'
                             onPress={dismissBottomSheet}
                             testID='at_mention.bottom_sheet.cancel'
                             text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

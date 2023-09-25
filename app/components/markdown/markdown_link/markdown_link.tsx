@@ -116,7 +116,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                         style={style.bottomSheet}
                     >
                         <SlideUpPanelItem
-                            icon='content-copy'
+                            leftIcon='content-copy'
                             onPress={() => {
                                 dismissBottomSheet();
                                 Clipboard.setString(href);
@@ -126,7 +126,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                         />
                         <SlideUpPanelItem
                             destructive={true}
-                            icon='cancel'
+                            leftIcon='cancel'
                             onPress={() => {
                                 dismissBottomSheet();
                             }}
