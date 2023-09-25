@@ -201,7 +201,6 @@
     "postinstall": "patch-package && ./scripts/postinstall.sh",
     "prepare": "husky install",
     "preinstall": "./scripts/preinstall.sh && npx solidarity",
-    "react-devtools": "react-devtools",
     "start": "react-native start",
     "test": "jest --forceExit --runInBand",
     "test:coverage": "jest --coverage",
