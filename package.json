@@ -165,7 +165,6 @@
     "mock-async-storage": "2.2.0",
     "nock": "13.3.2",
     "patch-package": "8.0.0",
-    "react-devtools": "4.28.0",
     "react-devtools-core": "4.28.0",
     "react-native-svg-transformer": "1.1.0",
     "react-test-renderer": "18.2.0",
