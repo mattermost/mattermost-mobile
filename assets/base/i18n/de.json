@@ -1074,5 +1074,6 @@
     "server.invalid.certificate.title": "Ungültiges SSL-Zertifikat",
     "server.invalid.certificate.description": "Das Zertifikat für diesen Server ist ungültig.\nMöglicherweise stellen Sie eine Verbindung zu einem Server her, der vorgibt, \"{hostname}\" zu sein, wodurch Ihre vertraulichen Daten gefährdet werden könnten.",
     "markdown.max_nodes.error": "Diese Nachricht ist zu lang, um auf einem mobilen Gerät vollständig angezeigt zu werden. Bitte sehen Sie sie sich auf dem Desktop an oder kontaktieren Sie einen Administrator, um dieses Limit zu erhöhen.",
-    "mobile.deep_link.invalid": "Der Link, den du zu öffnen versuchst, ist ungültig."
+    "mobile.deep_link.invalid": "Der Link, den du zu öffnen versuchst, ist ungültig.",
+    "mobile.calls_headset": "Kopfhörer"
 }
