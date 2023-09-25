@@ -1019,7 +1019,7 @@
   "system_notice.dont_show": "Don't Show Again",
   "system_notice.remind_me": "Remind Me Later",
   "system_notice.title.gm_as_dm": "Updates to Group Messages",
-  "system_noticy.body.gm_as_dm": "You wil now be notified for all activity in your group messages along with a notification badge for every new message.\n\nYou can configure this in notification preferences for each group message.",
+  "system_noticy.body.gm_as_dm": "You will now be notified for all activity in your group messages along with a notification badge for every new message.\n\nYou can configure this in notification preferences for each group message.",
   "team_list.no_other_teams.description": "To join another team, ask a Team Admin for an invitation, or create your own team.",
   "team_list.no_other_teams.title": "No additional teams to join",
   "terms_of_service.acceptButton": "Accept",

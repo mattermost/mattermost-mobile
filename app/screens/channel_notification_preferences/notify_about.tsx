@@ -10,7 +10,6 @@ import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
 import {NotificationLevel} from '@constants';
 import {t} from '@i18n';
-import {isTypeDMorGM} from '@utils/channel';
 
 import type {SharedValue} from 'react-native-reanimated';
 
@@ -20,8 +19,6 @@ type Props = {
     notifyLevel: NotificationLevel;
     notifyTitleTop: SharedValue<number>;
     onPress: (level: NotificationLevel) => void;
-    channelType: ChannelType;
-    hasGMasDMFeature: boolean;
 }
 
 type NotifPrefOptions = {
@@ -62,8 +59,6 @@ const NotifyAbout = ({
     notifyLevel,
     notifyTitleTop,
     onPress,
-    channelType,
-    hasGMasDMFeature,
 }: Props) => {
     const {formatMessage} = useIntl();
     const onLayout = useCallback((e: LayoutChangeEvent) => {
@@ -72,18 +67,9 @@ const NotifyAbout = ({
         notifyTitleTop.value = y > 0 ? y + 10 : BLOCK_TITLE_HEIGHT;
     }, []);
 
-    const shouldShowwithGMasDMBehavior = hasGMasDMFeature && isTypeDMorGM(channelType);
-
-    let defaultLevelToUse = defaultLevel;
     let notifyLevelToUse = notifyLevel;
-    if (shouldShowwithGMasDMBehavior) {
-        if (defaultLevel === NotificationLevel.MENTION) {
-            defaultLevelToUse = NotificationLevel.ALL;
-        }
-    }
-
     if (notifyLevel === NotificationLevel.DEFAULT) {
-        notifyLevelToUse = defaultLevelToUse;
+        notifyLevelToUse = defaultLevel;
     }
 
     return (
@@ -93,11 +79,8 @@ const NotifyAbout = ({
             onLayout={onLayout}
         >
             {Object.keys(NOTIFY_OPTIONS).map((key) => {
-                if (key === NotificationLevel.MENTION && shouldShowwithGMasDMBehavior) {
-                    return null;
-                }
                 const {id, defaultMessage, value, testID} = NOTIFY_OPTIONS[key];
-                const defaultOption = key === defaultLevelToUse ? formatMessage({id: 'channel_notification_preferences.default', defaultMessage: '(default)'}) : '';
+                const defaultOption = key === defaultLevel ? formatMessage({id: 'channel_notification_preferences.default', defaultMessage: '(default)'}) : '';
                 const label = `${formatMessage({id, defaultMessage})} ${defaultOption}`;
 
                 return (

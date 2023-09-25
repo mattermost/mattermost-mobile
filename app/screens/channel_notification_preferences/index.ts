@@ -4,12 +4,14 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, combineLatestWith} from 'rxjs/operators';
 
+import {NotificationLevel} from '@constants';
 import {observeChannel, observeChannelSettings, observeIsMutedSetting} from '@queries/servers/channel';
 import {observeHasGMasDMFeature} from '@queries/servers/features';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
+import {isTypeDMorGM} from '@utils/channel';
 import {getNotificationProps} from '@utils/user';
 
 import ChannelNotificationPreferences from './channel_notification_preferences';
@@ -38,7 +40,21 @@ const enhanced = withObservables([], ({channelId, database}: EnhancedProps) => {
 
     const defaultLevel = notifyProps.pipe(
         switchMap((n) => of$(n?.push)),
+        combineLatestWith(hasGMasDMFeature, channelType),
+        switchMap(([v, hasFeature, cType]) => {
+            const shouldShowwithGMasDMBehavior = hasFeature && isTypeDMorGM(cType);
+
+            let defaultLevelToUse = v;
+            if (shouldShowwithGMasDMBehavior) {
+                if (v === NotificationLevel.MENTION) {
+                    defaultLevelToUse = NotificationLevel.ALL;
+                }
+            }
+
+            return of$(defaultLevelToUse);
+        }),
     );
+
     const defaultThreadReplies = notifyProps.pipe(
         switchMap((n) => of$(n?.push_threads)),
     );

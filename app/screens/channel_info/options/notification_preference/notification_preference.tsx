@@ -90,7 +90,7 @@ const NotificationPreference = ({
         }
 
         if (hasGMasDMFeature) {
-            if (notifyLevelToUse === NotificationLevel.MENTION && isTypeDMorGM(channelType)) {
+            if (notifyLevel === NotificationLevel.DEFAULT && notifyLevelToUse === NotificationLevel.MENTION && isTypeDMorGM(channelType)) {
                 notifyLevelToUse = NotificationLevel.ALL;
             }
         }

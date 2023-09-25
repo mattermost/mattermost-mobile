@@ -7,6 +7,7 @@ import {useSharedValue} from 'react-native-reanimated';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
 import SettingsContainer from '@components/settings/container';
+import {NotificationLevel} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
@@ -78,8 +79,13 @@ const ChannelNotificationPreferences = ({
     const save = useCallback(() => {
         const pushThreads = threadReplies ? 'all' : 'mention';
 
-        if (notifyLevel !== notifyAbout || (isCRTEnabled && pushThreads !== notifyThreadReplies)) {
-            const props: Partial<ChannelNotifyProps> = {push: notifyAbout};
+        let notifyAboutToUse = notifyAbout;
+        if (notifyAbout === defaultLevel) {
+            notifyAboutToUse = NotificationLevel.DEFAULT;
+        }
+
+        if (notifyLevel !== notifyAboutToUse || (isCRTEnabled && pushThreads !== notifyThreadReplies)) {
+            const props: Partial<ChannelNotifyProps> = {push: notifyAboutToUse};
             if (isCRTEnabled) {
                 props.push_threads = pushThreads;
             }
@@ -87,7 +93,7 @@ const ChannelNotificationPreferences = ({
             updateChannelNotifyProps(serverUrl, channelId, props);
         }
         popTopScreen(componentId);
-    }, [channelId, componentId, isCRTEnabled, notifyAbout, notifyLevel, notifyThreadReplies, serverUrl, threadReplies]);
+    }, [defaultLevel, channelId, componentId, isCRTEnabled, notifyAbout, notifyLevel, notifyThreadReplies, serverUrl, threadReplies]);
 
     useBackNavigation(save);
     useAndroidHardwareBackHandler(componentId, save);
@@ -111,8 +117,6 @@ const ChannelNotificationPreferences = ({
                 notifyLevel={notifyAbout}
                 notifyTitleTop={notifyTitleTop}
                 onPress={onNotificationLevel}
-                channelType={channelType}
-                hasGMasDMFeature={hasGMasDMFeature}
             />
             {showThreadReplies &&
             <ThreadReplies

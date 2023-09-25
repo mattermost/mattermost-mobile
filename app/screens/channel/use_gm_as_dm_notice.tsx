@@ -9,7 +9,7 @@ import {savePreference} from '@actions/remote/preference';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {getPreferenceAsBool} from '@helpers/api/preference';
-import ephemeral_store from '@store/ephemeral_store';
+import EphemeralStore from '@store/ephemeral_store';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
@@ -31,23 +31,23 @@ const useGMasDMNotice = (userId: string, channelType: ChannelType, dismissedGMas
             return;
         }
 
-        if (ephemeral_store.noticeShown.has(Preferences.NOTICES.GM_AS_DM)) {
+        if (EphemeralStore.noticeShown.has(Preferences.NOTICES.GM_AS_DM)) {
             return;
         }
 
         const onRemindMeLaterPress = () => {
-            ephemeral_store.noticeShown.add(Preferences.NOTICES.GM_AS_DM);
+            EphemeralStore.noticeShown.add(Preferences.NOTICES.GM_AS_DM);
         };
 
         const onHideAndForget = () => {
-            ephemeral_store.noticeShown.add(Preferences.NOTICES.GM_AS_DM);
+            EphemeralStore.noticeShown.add(Preferences.NOTICES.GM_AS_DM);
             savePreference(serverUrl, [{category: Preferences.CATEGORIES.SYSTEM_NOTICE, name: Preferences.NOTICES.GM_AS_DM, value: 'true', user_id: userId}]);
         };
 
         // Show the GM as DM notice if needed
         Alert.alert(
             intl.formatMessage({id: 'system_notice.title.gm_as_dm', defaultMessage: 'Updates to Group Messages'}),
-            intl.formatMessage({id: 'system_noticy.body.gm_as_dm', defaultMessage: 'You wil now be notified for all activity in your group messages along with a notification badge for every new message.\n\nYou can configure this in notification preferences for each group message.'}),
+            intl.formatMessage({id: 'system_noticy.body.gm_as_dm', defaultMessage: 'You will now be notified for all activity in your group messages along with a notification badge for every new message.\n\nYou can configure this in notification preferences for each group message.'}),
             [
                 {
                     text: intl.formatMessage({id: 'system_notice.remind_me', defaultMessage: 'Remind Me Later'}),
