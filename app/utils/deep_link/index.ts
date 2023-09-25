@@ -10,14 +10,14 @@ import {fetchUsersByUsernames} from '@actions/remote/user';
 import {DeepLink, Launch, Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {DEFAULT_LOCALE, getTranslations} from '@i18n';
+import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import WebsocketManager from '@managers/websocket_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {errorBadChannel, errorUnkownUser} from '@utils/draft';
+import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
 import {logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
 import {addNewServer} from '@utils/server';
@@ -115,31 +115,39 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
 }
 
 export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
-    const url = removeProtocol(deepLinkUrl);
+    try {
+        const url = removeProtocol(decodeURIComponent(deepLinkUrl));
 
-    let match = new RegExp('(.*)\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], channelName: match[3]}};
-    }
+        if (url.includes('../') || url.includes('/..')) {
+            return {type: DeepLink.Invalid, url: deepLinkUrl};
+        }
 
-    match = new RegExp('(.*)\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
-    if (match) {
-        return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], postId: match[3]}};
-    }
+        let match = new RegExp('(.*)\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
+        if (match) {
+            return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], channelName: match[3]}};
+        }
 
-    match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], userName: match[3]}};
-    }
+        match = new RegExp('(.*)\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
+        if (match) {
+            return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], postId: match[3]}};
+        }
 
-    match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], channelId: match[3]}};
-    }
+        match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(url);
+        if (match) {
+            return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], userName: match[3]}};
+        }
 
-    match = new RegExp('(.*)\\/plugins\\/([^\\/]+)\\/(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.Plugin, url: deepLinkUrl, data: {serverUrl: match[1], id: match[2], teamName: ''}};
+        match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/(\\S+)').exec(url);
+        if (match) {
+            return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], channelId: match[3]}};
+        }
+
+        match = new RegExp('(.*)\\/plugins\\/([^\\/]+)\\/(\\S+)').exec(url);
+        if (match) {
+            return {type: DeepLink.Plugin, url: deepLinkUrl, data: {serverUrl: match[1], id: match[2], teamName: ''}};
+        }
+    } catch {
+        // do nothing just return invalid deeplink
     }
 
     return {type: DeepLink.Invalid, url: deepLinkUrl};
@@ -201,3 +209,12 @@ export const getLaunchPropsFromDeepLink = (deepLinkUrl: string, coldStart = fals
 
     return launchProps;
 };
+
+export function alertInvalidDeepLink(intl: IntlShape) {
+    const message = {
+        id: t('mobile.deep_link.invalid'),
+        defaultMessage: 'This link you are trying to open is invalid.',
+    };
+
+    return alertErrorWithFallback(intl, {}, message);
+}
