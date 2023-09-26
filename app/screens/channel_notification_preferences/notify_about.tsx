@@ -40,7 +40,7 @@ const NOTIFY_OPTIONS: Record<string, NotifPrefOptions> = {
         value: NotificationLevel.ALL,
     },
     [NotificationLevel.MENTION]: {
-        defaultMessage: 'Mentions, direct messages only',
+        defaultMessage: 'Mentions only',
         id: t('channel_notification_preferences.notification.mention'),
         testID: 'channel_notification_preferences.notification.mention',
         value: NotificationLevel.MENTION,
