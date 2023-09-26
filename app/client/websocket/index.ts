@@ -15,6 +15,7 @@ const MAX_WEBSOCKET_FAILS = 7;
 const WEBSOCKET_TIMEOUT = toMilliseconds({seconds: 30});
 const MIN_WEBSOCKET_RETRY_TIME = toMilliseconds({seconds: 3});
 const MAX_WEBSOCKET_RETRY_TIME = toMilliseconds({minutes: 5});
+const ERROR_UNKNOWN_HOST = 'UnknownHostException';
 
 export default class WebSocketClient {
     private conn?: WebSocketClientInterface;
@@ -229,7 +230,10 @@ export default class WebSocketClient {
         });
 
         this.conn!.onError((evt: any) => {
-            this.conn = undefined;
+            if (evt?.message?.error?.includes(ERROR_UNKNOWN_HOST)) {
+                this.conn = undefined;
+            }
+
             if (evt.url === this.url) {
                 this.hasReliablyReconnect = false;
                 if (this.connectFailCount <= 1) {
