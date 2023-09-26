@@ -21,6 +21,8 @@ import Options from './options';
 import Title from './title';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
+import ConvertToChannelLabel from '@app/components/channel_actions/convert_to_channel/convert_to_channel_label';
+import { General } from '@app/constants';
 
 type Props = {
     channelId: string;
@@ -105,6 +107,12 @@ const ChannelInfo = ({
                     canManageMembers={canManageMembers}
                 />
                 <View style={styles.separator}/>
+                {type === General.GM_CHANNEL &&
+                <>
+                    <ConvertToChannelLabel/>
+                    <View style={styles.separator}/>
+                </>
+                }
                 {canEnableDisableCalls &&
                     <>
                         <ChannelInfoEnableCalls
