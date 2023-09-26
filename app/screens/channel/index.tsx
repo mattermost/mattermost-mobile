@@ -12,8 +12,12 @@ import {
     observeCurrentCall,
     observeIncomingCalls,
 } from '@calls/state';
+import {Preferences} from '@constants';
 import {withServerUrl} from '@context/server';
-import {observeCurrentChannelId} from '@queries/servers/system';
+import {observeCurrentChannel} from '@queries/servers/channel';
+import {observeHasGMasDMFeature} from '@queries/servers/features';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 
 import Channel from './channel';
 
@@ -56,12 +60,21 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         distinctUntilChanged(),
     );
 
+    const dismissedGMasDMNotice = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.SYSTEM_NOTICE, Preferences.NOTICES.GM_AS_DM).observe();
+    const channelType = observeCurrentChannel(database).pipe(switchMap((c) => of$(c?.type)));
+    const currentUserId = observeCurrentUserId(database);
+    const hasGMasDMFeature = observeHasGMasDMFeature(database);
+
     return {
         channelId,
         showJoinCallBanner,
         isInACall,
         showIncomingCalls,
         isCallsEnabledInChannel: observeIsCallsEnabledInChannel(database, serverUrl, channelId),
+        dismissedGMasDMNotice,
+        channelType,
+        currentUserId,
+        hasGMasDMFeature,
     };
 });
 
