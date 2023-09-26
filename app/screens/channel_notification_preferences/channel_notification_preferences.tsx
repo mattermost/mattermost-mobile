@@ -30,7 +30,7 @@ type Props = {
     defaultThreadReplies: 'all' | 'mention';
     isCRTEnabled: boolean;
     isMuted: boolean;
-    notifyLevel?: NotificationLevel;
+    notifyLevel: NotificationLevel;
     notifyThreadReplies?: 'all' | 'mention';
     channelType: ChannelType;
     hasGMasDMFeature: boolean;
@@ -50,9 +50,9 @@ const ChannelNotificationPreferences = ({
 }: Props) => {
     const serverUrl = useServerUrl();
     const defaultNotificationReplies = defaultThreadReplies === 'all';
-    const diffNotificationLevel = notifyLevel !== 'default' && notifyLevel !== defaultLevel;
+    const diffNotificationLevel = notifyLevel !== NotificationLevel.DEFAULT && notifyLevel !== defaultLevel;
     const notifyTitleTop = useSharedValue((isMuted ? MUTED_BANNER_HEIGHT : 0) + BLOCK_TITLE_HEIGHT);
-    const [notifyAbout, setNotifyAbout] = useState<NotificationLevel>((notifyLevel === undefined || notifyLevel === 'default') ? defaultLevel : notifyLevel);
+    const [notifyAbout, setNotifyAbout] = useState<NotificationLevel>(notifyLevel === NotificationLevel.DEFAULT ? defaultLevel : notifyLevel);
     const [threadReplies, setThreadReplies] = useState<boolean>((notifyThreadReplies || defaultThreadReplies) === 'all');
     const [resetDefaultVisible, setResetDefaultVisible] = useState(diffNotificationLevel || defaultNotificationReplies !== threadReplies);
 

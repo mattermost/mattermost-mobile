@@ -6,6 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {NotificationLevel} from '@constants';
 import {observeChannel, observeChannelSettings} from '@queries/servers/channel';
 import {observeHasGMasDMFeature} from '@queries/servers/features';
 import {observeCurrentUser} from '@queries/servers/user';
@@ -26,7 +27,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     const settings = observeChannelSettings(database, channelId);
     const userNotifyLevel = observeCurrentUser(database).pipe(switchMap((u) => of$(getNotificationProps(u).push)));
     const notifyLevel = settings.pipe(
-        switchMap((s) => of$(s?.notifyProps.push)),
+        switchMap((s) => of$(s?.notifyProps.push || NotificationLevel.DEFAULT)),
     );
     const hasGMasDMFeature = observeHasGMasDMFeature(database);
 

@@ -31,7 +31,7 @@ const enhanced = withObservables([], ({channelId, database}: EnhancedProps) => {
     const hasGMasDMFeature = observeHasGMasDMFeature(database);
 
     const notifyLevel = settings.pipe(
-        switchMap((s) => of$(s?.notifyProps.push)),
+        switchMap((s) => of$(s?.notifyProps.push || NotificationLevel.DEFAULT)),
     );
 
     const notifyThreadReplies = settings.pipe(
