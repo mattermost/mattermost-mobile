@@ -1071,7 +1071,7 @@
     "mobile.calls_incoming_dm": "<b>{name}</b> is inviting you to a call",
     "mobile.calls_incoming_gm": "<b>{name}</b> is inviting you to a call with  <b>{num, plural, one {# other} other {# others}}</b>",
     "mobile.calls_join_button": "Join",
-    "server.invalid.certificate.description": "The certificate for this server is invalid.\nYou might be connecting to a server that is pretending to be '\\{hostname}'\\ which could put your confidential information at risk.",
+    "server.invalid.certificate.description": "The certificate for this server is invalid.\nYou might be connecting to a server that is pretending to be \"{hostname}\" which could put your confidential information at risk.",
     "server.invalid.certificate.title": "Invalid SSL certificate",
     "markdown.max_nodes.error": "This message is too long to by shown fully on a mobile device. Please view it on desktop or contact an admin to increase this limit."
 }
