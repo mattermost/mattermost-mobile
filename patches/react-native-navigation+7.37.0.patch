@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
-index 8ddc3d5..c4acd2d 100644
+index 8ddc3d5..609e359 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
 @@ -1,18 +1,15 @@
@@ -42,7 +42,7 @@ index 8ddc3d5..c4acd2d 100644
      }
  
      @Override
-@@ -96,15 +92,11 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+@@ -96,15 +92,16 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
  
      @Override
      public void invokeDefaultOnBackPressed() {
@@ -51,6 +51,11 @@ index 8ddc3d5..c4acd2d 100644
 -            NavigationActivity.super.onBackPressed();
 -            callback.setEnabled(true);
 -        }
++        // if (!navigator.handleBack(new CommandListenerAdapter())) {
++        //     callback.setEnabled(false);
++        //     NavigationActivity.super.onBackPressed();
++        //     callback.setEnabled(true);
++        // }
 +        super.invokeDefaultOnBackPressed();
      }
  
@@ -60,7 +65,7 @@ index 8ddc3d5..c4acd2d 100644
          super.onActivityResult(requestCode, resultCode, data);
          getReactGateway().onActivityResult(this, requestCode, resultCode, data);
      }
-@@ -126,7 +118,6 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+@@ -126,7 +123,6 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
          return navigator;
      }
  
@@ -68,7 +73,7 @@ index 8ddc3d5..c4acd2d 100644
      public void requestPermissions(String[] permissions, int requestCode, PermissionListener listener) {
          mPermissionListener = listener;
          requestPermissions(permissions, requestCode);
-@@ -134,6 +125,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+@@ -134,6 +130,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
  
      @Override
      public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -77,7 +82,7 @@ index 8ddc3d5..c4acd2d 100644
          if (mPermissionListener != null && mPermissionListener.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
              mPermissionListener = null;
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-index a34598c..b035a76 100644
+index a34598c..4247607 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 @@ -59,20 +59,30 @@ public class NavigationModule extends ReactContextBaseJavaModule {
@@ -87,7 +92,7 @@ index a34598c..b035a76 100644
 -                UiUtils.runOnMainThread(() -> navigator().onHostPause());
 +                Navigator navigator = navigator();
 +                if (navigator != null) {
-+                    UiUtils.runOnMainThread(() -> navigator.onHostPause());
++                    UiUtils.runOnMainThread(() -> navigator().onHostPause());
 +                }
              }
  
@@ -106,14 +111,14 @@ index a34598c..b035a76 100644
 +                    eventEmitter = new EventEmitter(reactContext);
 +                    Navigator navigator = navigator();
 +                    if (navigator != null) {
-+                        navigator.setEventEmitter(eventEmitter);
-+                        layoutFactory.init(
++                            navigator.setEventEmitter(eventEmitter);
++                            layoutFactory.init(
 +                                activity(),
 +                                eventEmitter,
 +                                navigator.getChildRegistry(),
 +                                ((NavigationApplication) activity().getApplication()).getExternalComponents()
-+                        );
-+                        UiUtils.runOnMainThread(() -> navigator.onHostResume());
++                            );
++                            UiUtils.runOnMainThread(() -> navigator.onHostResume());
 +                    }
 +                } catch (ClassCastException e) {
 +                    // The most current activity is not a NavigationActivity
@@ -129,7 +134,7 @@ index a34598c..b035a76 100644
 +        if (activity() instanceof NavigationActivity) {
 +            return ((NavigationActivity)activity()).getNavigator();
 +        }
-+        return  null;
++        return null;
      }
  
      private Options parse(@Nullable ReadableMap mergeOptions) {
@@ -162,34 +167,6 @@ index a34598c..b035a76 100644
          if (navigationActivity != null) {
              navigationActivity.onCatalystInstanceDestroy();
          }
-diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/MotionEvent.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/MotionEvent.kt
-index a79e487..dba9b65 100644
---- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/MotionEvent.kt
-+++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/MotionEvent.kt
-@@ -3,11 +3,20 @@ package com.reactnativenavigation.utils
- import android.graphics.Rect
- import android.view.MotionEvent
- import android.view.View
-+import android.view.ViewGroup
- 
- val hitRect = Rect()
- 
- fun MotionEvent.coordinatesInsideView(view: View?): Boolean {
-     view ?: return false
--    view.getHitRect(hitRect)
--    return hitRect.contains(x.toInt(), y.toInt())
-+    val viewGroup = (view as ViewGroup).getChildAt(0) as ViewGroup
-+    return if (viewGroup.childCount > 0) {
-+        val content = viewGroup.getChildAt(0)
-+
-+        content.getHitRect(hitRect)
-+
-+        hitRect.contains(x.toInt(), y.toInt())
-+    } else {
-+        false
-+    }
- }
-\ No newline at end of file
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
 index 035ec31..630b8d4 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
@@ -206,7 +183,7 @@ index 035ec31..630b8d4 100644
 +    }
  }
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
-index 3ce9674..ae34704 100644
+index fc482a6..9406bbf 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
 @@ -94,6 +94,7 @@
@@ -214,11 +191,11 @@ index 3ce9674..ae34704 100644
                                    }];
          self.reactView.backgroundColor = UIColor.clearColor;
 +        self.reactView.frame = UIScreen.mainScreen.bounds;
-         self.reactView.translatesAutoresizingMaskIntoConstraints = NO;
+         self.reactView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+         [self.reactView setFrame:self.view.frame];
          [self.view addSubview:self.reactView];
-         [self updateReactViewConstraints];
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
-index 934e7e7..19169a3 100644
+index b44f24f..bf4e1c3 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
 @@ -1,6 +1,8 @@
@@ -236,35 +213,9 @@ index 934e7e7..19169a3 100644
          [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class] ||
 +        [hitTestResult isKindOfClass:[RNCSafeAreaView class]] ||
 +        [hitTestResult isKindOfClass:[RNCSafeAreaProvider class]] ||
-         [hitTestResult isKindOfClass:[RCTModalHostView class]]) {
+         [hitTestResult isKindOfClass:[RCTModalHostView class]] ||
+         [hitTestResult isKindOfClass:NSClassFromString(@"RCTRootComponentView")]) {
          return nil;
-     }
-diff --git a/node_modules/react-native-navigation/lib/ios/RNNReactView.h b/node_modules/react-native-navigation/lib/ios/RNNReactView.h
-index f814815..bb39a10 100644
---- a/node_modules/react-native-navigation/lib/ios/RNNReactView.h
-+++ b/node_modules/react-native-navigation/lib/ios/RNNReactView.h
-@@ -4,6 +4,12 @@
- #import <React/RCTRootView.h>
- #endif
- 
-+#if RCT_NEW_ARCH_ENABLED
-+
-+// Fabric
-+#import <React/RCTFabricSurfaceHostingProxyRootView.h>
-+#endif
-+
- #import "RNNEventEmitter.h"
- #import "UIView+Utils.h"
- #import <React/RCTRootViewDelegate.h>
-@@ -30,7 +36,7 @@ typedef void (^RNNReactViewReadyCompletionBlock)(void);
- 
- @end
- 
--#ifdef RN_FABRIC_ENABLED
-+#ifdef RCT_NEW_ARCH_ENABLED
- @interface RNNReactView
-     : RCTFabricSurfaceHostingProxyRootView <RCTRootViewDelegate, RNNComponentProtocol>
- #else
 diff --git a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts b/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
 index 4851b40..e891183 100644
 --- a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
