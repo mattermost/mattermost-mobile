@@ -7,7 +7,7 @@ runs:
     - name: ci/setup-node
       uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
       with:
-        node-version: "${{ env.NODE_VERSION }}"
+        node-version-file: ".nvmrc"
         cache: "npm"
         cache-dependency-path: package-lock.json
 

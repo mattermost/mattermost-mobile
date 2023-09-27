@@ -6,6 +6,10 @@
   "author": "Mattermost, Inc.",
   "license": "Apache 2.0",
   "private": true,
+  "engines": {
+    "node": "^18.10.0",
+    "npm": "^9.0.0"
+  },
   "dependencies": {
     "@formatjs/intl-datetimeformat": "6.10.0",
     "@formatjs/intl-getcanonicallocales": "2.2.1",
