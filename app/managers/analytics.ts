@@ -25,7 +25,8 @@ export class Analytics {
 
     async init(config: ClientConfig) {
         if (LocalConfig.RudderApiKey) {
-            this.analytics = require('@rudderstack/rudder-sdk-react-native').default;
+            // Rudder stack has been temporarily removed
+            // this.analytics = require('@rudderstack/rudder-sdk-react-native').default;
         }
 
         if (this.analytics) {
