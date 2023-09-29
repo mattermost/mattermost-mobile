@@ -24,7 +24,9 @@ import EphemeralStore from '@store/ephemeral_store';
 
 import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
+import useGMasDMNotice from './use_gm_as_dm_notice';
 
+import type PreferenceModel from '@typings/database/models/servers/preference';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
@@ -36,6 +38,10 @@ type ChannelProps = {
     isCallsEnabledInChannel: boolean;
     showIncomingCalls: boolean;
     isTabletView?: boolean;
+    dismissedGMasDMNotice: PreferenceModel[];
+    currentUserId: string;
+    channelType: ChannelType;
+    hasGMasDMFeature: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -55,7 +61,12 @@ const Channel = ({
     isCallsEnabledInChannel,
     showIncomingCalls,
     isTabletView,
+    dismissedGMasDMNotice,
+    channelType,
+    currentUserId,
+    hasGMasDMFeature,
 }: ChannelProps) => {
+    useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const [shouldRenderPosts, setShouldRenderPosts] = useState(false);

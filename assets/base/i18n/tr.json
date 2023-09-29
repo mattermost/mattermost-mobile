@@ -1066,5 +1066,13 @@
     "settings.about.database.title": "Veri tabanı:",
     "settings.about.server.version": "Sunucu sürümü: {version} (Yapım {buildNumber}",
     "settings.about.server.version.noBuild": "Sunucu sürümü: {version}",
-    "settings.about.server.version.title": "Sunucu sürümü:"
+    "settings.about.server.version.title": "Sunucu sürümü:",
+    "snack.bar.info.copied": "Bilgiler panoya kopyalandı",
+    "mobile.calls_incoming_dm": "<b>{name}</b> sizi bir görüşmeye çağırıyor",
+    "mobile.calls_incoming_gm": "<b>{name}</b> sizi  <b>{num, plural, one {kişinin} other {kişinin}}</b> olduğu bir görüşmeye çağırıyor",
+    "mobile.calls_join_button": "Katıl",
+    "server.invalid.certificate.description": "Bu sunucunun sertifikası geçersiz.\n\"{hostname}\" gibi davranan bir sunucuya bağlanıyor olabilirsiniz. Bu durumda gizli bilgilerinizi tehlikeye atabilir.",
+    "server.invalid.certificate.title": "SSL sertifikası geçersiz",
+    "markdown.max_nodes.error": "Bu ileti bir mobil aygıtta tam olarak görüntülenemeyecek kadar uzun. Lütfen iletiyi masaüstü uygulamasından görüntüleyin ya da bu sınırı artırmak için bir yönetici ile görüşün.",
+    "mobile.deep_link.invalid": "Açmaya çalıştığınız bağlantı geçersiz."
 }
