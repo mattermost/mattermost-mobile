@@ -274,7 +274,6 @@ export async function patchChannel(serverUrl: string, channelId: string, channel
                     v.displayName = channelData.display_name;
                 }
                 v.type = channelData.type;
-                logInfo({channelData});
             });
             models.push(channel);
         }
