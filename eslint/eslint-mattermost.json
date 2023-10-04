@@ -185,7 +185,7 @@
     ],
     "multiline-ternary": [
       1,
-      "never"
+      "always-multiline"
     ],
     "new-cap": 2,
     "new-parens": 2,
