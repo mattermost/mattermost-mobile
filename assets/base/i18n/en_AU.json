@@ -752,7 +752,6 @@
     "intro.townsquare": "Welcome to {name}. Everyone automatically becomes a member of this channel when they join the team.",
     "intro.public_channel": "Public Channel",
     "intro.private_channel": "Private Channel",
-    "intro.group_message": "This is the start of your conversation with this group. Messages and files shared here are not shown to anyone else outside of the group.",
     "intro.direct_message": "This is the start of your conversation with {teammate}. Messages and files shared here are not shown to anyone else.",
     "intro.created_by": "created by {creator} on {date}.",
     "intro.channel_info": "Info",

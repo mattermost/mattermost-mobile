@@ -370,7 +370,6 @@
     "account.logout": "ログアウト",
     "intro.created_by": "{creator} によって {date} に作成されました。",
     "intro.townsquare": "{name} へようこそ。チームに参加した全員が自動でこのチャンネルのメンバーになります。",
-    "intro.group_message": "ここはこのグループとの会話のトップです。ここに共有されたメッセージやファイルはこのグループ以外のユーザーは見ることができません。",
     "intro.direct_message": "ここは {teammate} との会話のトップです。ここで共有されたメッセージやファイルは他のユーザーは見ることができません。",
     "global_threads.options.title": "スレッドアクション",
     "mobile.display_settings.clockDisplay": "時刻表示",

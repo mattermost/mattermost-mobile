@@ -540,7 +540,6 @@
     "intro.townsquare": "{name} ortamına hoş geldiniz. Takıma katılan herkes otomatik olarak bu kanalın bir üyesi olur.",
     "intro.public_channel": "Herkese açık kanal",
     "intro.private_channel": "Özel kanal",
-    "intro.group_message": "Bu grupla konuşmanızın başlangıcı. Burada paylaşılan iletiler ve dosyalar grup dışında kimseye gösterilmez.",
     "intro.direct_message": "{teammate} ile yaptığınız görüşmenin başlangıcı. Burada paylaşılan iletiler ve dosyalar başka kimseye gösterilmez.",
     "mobile.create_post.read_only": "Bu kanal salt okunur.",
     "mobile.create_direct_message.start": "Görüşmeyi başlat",

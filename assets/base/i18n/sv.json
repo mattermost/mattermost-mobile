@@ -557,7 +557,6 @@
     "intro.townsquare": "Välkommen till {name}. Alla blir automatiskt medlemmar i den här kanalen när de går med i teamet.",
     "intro.public_channel": "Publik kanal",
     "intro.private_channel": "Privat kanal",
-    "intro.group_message": "Detta är början på ditt samtal med gruppen. Meddelanden och filer som delas här visas inte för någon annan utanför gruppen.",
     "intro.direct_message": "Detta är början på ditt samtal med {teammate}. Meddelanden och filer som delas här visas inte för någon annan.",
     "intro.created_by": "Skapad av {creator} den {date}.",
     "intro.channel_info": "Info",

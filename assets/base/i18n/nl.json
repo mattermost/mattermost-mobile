@@ -458,7 +458,6 @@
     "intro.townsquare": "Welkom op {name}. Iedereen wordt automatisch lid van dit kanaal als ze bij het team komen.",
     "intro.public_channel": "Publiek kanaal",
     "intro.private_channel": "Privé-kanaal",
-    "intro.group_message": "Dit is het begin van je gesprek met deze groep. Berichten en bestanden die hier gedeeld worden, worden aan niemand buiten de groep getoond.",
     "intro.direct_message": "Dit is het begin van je gesprek met {teammate}. Berichten en bestanden die hier gedeeld worden, worden aan niemand anders getoond.",
     "intro.created_by": "gemaakt door {creator} op {date}.",
     "intro.channel_info": "Info",

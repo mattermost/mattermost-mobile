@@ -456,7 +456,6 @@
     "intro.townsquare": "Witamy na {name}. Każdy automatycznie staje się członkiem tego kanału, gdy dołącza do zespołu.",
     "intro.public_channel": "Kanał Publiczny",
     "intro.private_channel": "Kanał Prywatny",
-    "intro.group_message": "To jest początek Twojej rozmowy z tą grupą. Wiadomości i pliki udostępniane tutaj nie są pokazywane nikomu spoza grupy.",
     "intro.direct_message": "To jest początek Twojej rozmowy z {teammate}. Wiadomości i pliki udostępnione tutaj nie są pokazywane nikomu innemu.",
     "intro.created_by": "stworzony przez {creator} w dniu {date}.",
     "intro.channel_info": "Informacje",

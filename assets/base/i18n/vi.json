@@ -560,7 +560,6 @@
     "intro.channel_info": "Thông tin",
     "intro.created_by": "được tạo bởi {creator} vào {date}.",
     "intro.direct_message": "Đây là phần đầu cuộc trò chuyện của bạn với {teammate}. Tin nhắn và tệp được chia sẻ ở đây không được hiển thị cho bất kỳ ai khác.",
-    "intro.group_message": "Đây là phần bắt đầu cuộc trò chuyện của bạn với nhóm này. Các tin nhắn và tệp được chia sẻ ở đây không được hiển thị cho bất kỳ ai khác bên ngoài nhóm.",
     "intro.private_channel": "Kênh riêng tư",
     "intro.public_channel": "Kênh công khai",
     "intro.townsquare": "Chào mừng bạn đến với {name}. Mọi người tự động trở thành thành viên của kênh này khi họ tham gia nhóm.",

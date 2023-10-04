@@ -740,7 +740,6 @@
     "intro.townsquare": "欢迎 {name}。每个人加入团队后自动会成为此频道的成员。",
     "intro.public_channel": "公开频道",
     "intro.private_channel": "非公开频道",
-    "intro.group_message": "这是您与此群组开始的对话。消息和文件保存在这里的不会对任何群组外的人显示。",
     "intro.direct_message": "这是您与{teammate}开始的对话。消息和文件保存在这里的不会对其他任何人显示。",
     "intro.created_by": "由{creator}在{date}创建。",
     "intro.channel_info": "信息",
