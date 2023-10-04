@@ -8,6 +8,7 @@ import InCallManager from 'react-native-incall-manager';
 import {mediaDevices, MediaStream, MediaStreamTrack, RTCPeerConnection} from 'react-native-webrtc';
 
 import {setPreferredAudioRoute, setSpeakerphoneOn} from '@calls/actions/calls';
+import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/foreground_service';
 import {processMeanOpinionScore, setAudioDeviceInfo} from '@calls/state';
 import {AudioDevice, type AudioDeviceInfo, type AudioDeviceInfoRaw, type CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
@@ -110,6 +111,10 @@ export async function newConnection(
         InCallManager.stop();
         audioDeviceChanged?.remove();
         wiredHeadsetEvent?.remove();
+
+        if (Platform.OS === 'android') {
+            foregroundServiceStop();
+        }
 
         if (closeCb) {
             closeCb();
@@ -249,6 +254,9 @@ export async function newConnection(
                     }
                 }
             });
+
+            // To allow us to use microphone in the background
+            await foregroundServiceStart();
         }
 
         // We default to speakerphone, but not if the WiredHeadset is plugged in.
