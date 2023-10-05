@@ -14,8 +14,12 @@ const channelConfig = {
     enableVibration: false,
 };
 
+// Note: multiple calls with same arguments are a noop.
+export const foregroundServiceSetup = () => {
+    VIForegroundService.getInstance().createNotificationChannel(channelConfig);
+};
+
 export const foregroundServiceStart = async () => {
-    await VIForegroundService.getInstance().createNotificationChannel(channelConfig);
     const notificationConfig = {
         channelId: 'calls_channel',
         id: 345678,
