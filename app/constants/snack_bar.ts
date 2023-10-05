@@ -13,6 +13,7 @@ export const SNACK_BAR_TYPE = keyMirror({
     MESSAGE_COPIED: null,
     MUTE_CHANNEL: null,
     REMOVE_CHANNEL_USER: null,
+    TEXT_COPIED: null,
     UNFAVORITE_CHANNEL: null,
     UNMUTE_CHANNEL: null,
     UNFOLLOW_THREAD: null,
@@ -23,6 +24,7 @@ type SnackBarConfig = {
     defaultMessage: string;
     iconName: string;
     canUndo: boolean;
+    type?: 'success' | 'error' | 'default';
 };
 
 export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
@@ -55,6 +57,7 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         defaultMessage: 'Link copied to clipboard',
         iconName: 'link-variant',
         canUndo: false,
+        type: 'success',
     },
     MESSAGE_COPIED: {
         id: t('snack.bar.message.copied'),
@@ -73,6 +76,13 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         defaultMessage: '1 member was removed from the channel',
         iconName: 'check',
         canUndo: true,
+    },
+    TEXT_COPIED: {
+        id: t('snack.bar.text.copied'),
+        defaultMessage: 'Copied to clipboard',
+        iconName: 'content-copy',
+        canUndo: false,
+        type: 'success',
     },
     UNFAVORITE_CHANNEL: {
         id: t('snack.bar.unfavorite.channel'),

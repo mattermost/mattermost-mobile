@@ -19,7 +19,7 @@ import Animated, {
 
 import Toast, {TOAST_HEIGHT} from '@components/toast';
 import {Navigation as NavigationConstants, Screens} from '@constants';
-import {SNACK_BAR_CONFIG, SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {SNACK_BAR_CONFIG} from '@constants/snack_bar';
 import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -145,6 +145,22 @@ const SnackBar = ({
         ] as AnimatedStyleProp<ViewStyle>;
     }, [theme, barType]);
 
+    const toastStyle = useMemo(() => {
+        let backgroundColor: string;
+        switch (config?.type) {
+            case 'success':
+                backgroundColor = theme.onlineIndicator;
+                break;
+            case 'error':
+                backgroundColor = theme.errorTextColor;
+                break;
+            default:
+                backgroundColor = theme.centerChannelColor;
+                break;
+        }
+        return [styles.toast, {backgroundColor}];
+    }, [theme, config?.type]);
+
     const animatedMotion = useAnimatedStyle(() => {
         return {
             opacity: interpolate(offset.value, [0, 100], [1, 0], Extrapolation.EXTEND),
@@ -254,7 +270,7 @@ const SnackBar = ({
                             {id: config.id, defaultMessage: config.defaultMessage},
                             messageValues,
                         )}
-                        style={[styles.toast, barType === SNACK_BAR_TYPE.LINK_COPIED && {backgroundColor: theme.onlineIndicator}]}
+                        style={toastStyle}
                         textStyle={styles.text}
                     >
                         {config.canUndo && onAction && (
