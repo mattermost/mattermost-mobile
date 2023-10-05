@@ -170,6 +170,8 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     return (
         <>
             <AnimatedVideo
+
+                // @ts-expect-error old style ref
                 ref={videoRef}
                 source={source}
                 paused={paused}

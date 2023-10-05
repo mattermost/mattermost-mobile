@@ -167,7 +167,7 @@ const AtMention = ({
                         style={style.bottomSheet}
                     >
                         <SlideUpPanelItem
-                            icon='content-copy'
+                            leftIcon='content-copy'
                             onPress={() => {
                                 dismissBottomSheet();
                                 let username = mentionName;
@@ -182,7 +182,7 @@ const AtMention = ({
                         />
                         <SlideUpPanelItem
                             destructive={true}
-                            icon='cancel'
+                            leftIcon='cancel'
                             onPress={() => {
                                 dismissBottomSheet();
                             }}

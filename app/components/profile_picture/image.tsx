@@ -92,6 +92,8 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
         return (
             <AnimatedFastImage
                 key={pictureUrl}
+
+                // @ts-expect-error TS expects old type ref
                 ref={forwardRef}
                 style={fIStyle}
                 source={imgSource}

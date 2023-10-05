@@ -14,6 +14,8 @@ class EphemeralStore {
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
 
+    noticeShown = new Set<string>();
+
     private pushProxyVerification: {[serverUrl: string]: string | undefined} = {};
     private canJoinOtherTeams: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
 

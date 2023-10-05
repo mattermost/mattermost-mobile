@@ -69,7 +69,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.BOTTOM_SHEET:
             screen = withServerDatabase(require('@screens/bottom_sheet').default);
             Navigation.registerComponent(Screens.BOTTOM_SHEET, () =>
-                withSafeAreaInsets(withManagedConfig(screen)),
+                withGestures(withSafeAreaInsets(withManagedConfig(screen)), undefined),
             );
             return;
         case Screens.BROWSE_CHANNELS:

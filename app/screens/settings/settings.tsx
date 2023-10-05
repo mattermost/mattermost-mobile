@@ -1,22 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, View} from 'react-native';
+import {Platform, View} from 'react-native';
 
+import {handleGotoLocation} from '@actions/remote/command';
 import CompassIcon from '@components/compass_icon';
 import SettingContainer from '@components/settings/container';
 import SettingItem from '@components/settings/item';
 import {Screens} from '@constants';
-import {useServerDisplayName} from '@context/server';
+import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {tryOpenURL} from '@utils/url';
 
 import ReportProblem from './report_problem';
 
@@ -53,6 +53,7 @@ type SettingsProps = {
 const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) => {
     const theme = useTheme();
     const intl = useIntl();
+    const serverUrl = useServerUrl();
     const serverDisplayName = useServerDisplayName();
 
     const serverName = siteName || serverDisplayName;
@@ -66,9 +67,9 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         };
     }, [theme.centerChannelColor]);
 
-    const close = () => {
+    const close = useCallback(() => {
         dismissModal({componentId});
-    };
+    }, [componentId]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -109,14 +110,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
 
     const openHelp = preventDoubleTap(() => {
         if (helpLink) {
-            const onError = () => {
-                Alert.alert(
-                    intl.formatMessage({id: 'mobile.link.error.title', defaultMessage: 'Error'}),
-                    intl.formatMessage({id: 'mobile.link.error.text', defaultMessage: 'Unable to open the link.'}),
-                );
-            };
-
-            tryOpenURL(helpLink, onError);
+            handleGotoLocation(serverUrl, intl, helpLink);
         }
     });
 

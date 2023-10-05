@@ -4,20 +4,13 @@
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import {render} from '@testing-library/react-native';
 import React, {type ReactElement} from 'react';
-import {createIntl, IntlProvider} from 'react-intl';
+import {IntlProvider} from 'react-intl';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {ThemeContext, getDefaultThemeByAppearance} from '@context/theme';
 import {getTranslations} from '@i18n';
 
 import type Database from '@nozbe/watermelondb/Database';
-
-export function getIntlShape(locale = 'en') {
-    return createIntl({
-        locale,
-        messages: getTranslations(locale),
-    });
-}
 
 export function renderWithIntl(ui: ReactElement, {locale = 'en', ...renderOptions} = {}) {
     function Wrapper({children}: {children: ReactElement}) {

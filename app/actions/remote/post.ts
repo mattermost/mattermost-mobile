@@ -9,11 +9,9 @@ import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePost
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
 import {ActionType, General, Post, ServerErrors} from '@constants';
-import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {filterPostsInOrderedArray} from '@helpers/api/post';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
-import {extractRecordsForTable} from '@helpers/database';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
@@ -378,7 +376,10 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
                     models.push(...threadModels);
                 }
             }
-            await operator.batchRecords(models, 'fetchPosts');
+
+            if (models.length) {
+                await operator.batchRecords(models, 'fetchPosts');
+            }
         }
         return result;
     } catch (error) {
@@ -597,7 +598,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
             await operator.batchRecords(models, 'fetchPostThread');
         }
         setFetchingThreadState(postId, false);
-        return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
+        return {posts: result.posts};
     } catch (error) {
         logDebug('error on fetchPostThread', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
@@ -665,7 +666,7 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
             await operator.batchRecords(models, 'fetchPostsAround');
         }
 
-        return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
+        return {posts: data.posts};
     } catch (error) {
         logDebug('error on fetchPostsAround', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);

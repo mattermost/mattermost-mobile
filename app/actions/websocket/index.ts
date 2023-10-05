@@ -7,6 +7,7 @@ import {markChannelAsRead} from '@actions/remote/channel';
 import {handleEntryAfterLoadNavigation, registerDeviceToken} from '@actions/remote/entry/common';
 import {deferredAppEntryActions, entry} from '@actions/remote/entry/gql_common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
+import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
@@ -27,6 +28,7 @@ import {
     handleCallUserUnraiseHand,
     handleCallUserVoiceOff,
     handleCallUserVoiceOn,
+    handleUserDismissedNotification,
 } from '@calls/connection/websocket_event_handlers';
 import {isSupportedServerCalls} from '@calls/utils';
 import {Screens, WebsocketEvents} from '@constants';
@@ -57,6 +59,7 @@ import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleChannelUnarchiveEvent,
     handleChannelUpdatedEvent,
     handleChannelViewedEvent,
+    handleMultipleChannelsViewedEvent,
     handleDirectAddedEvent,
     handleUserAddedToChannelEvent,
     handleUserRemovedFromChannelEvent} from './channel';
@@ -151,6 +154,8 @@ async function doReconnect(serverUrl: string) {
     }
 
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+
+    openAllUnreadChannels(serverUrl);
 
     dataRetentionCleanup(serverUrl);
 
@@ -249,6 +254,10 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         case WebsocketEvents.CHANNEL_VIEWED:
             handleChannelViewedEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.MULTIPLE_CHANNELS_VIEWED:
+            handleMultipleChannelsViewedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_MEMBER_UPDATED:
@@ -383,6 +392,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.CALLS_HOST_CHANGED:
             handleCallHostChanged(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_DISMISSED_NOTIFICATION:
+            handleUserDismissedNotification(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:

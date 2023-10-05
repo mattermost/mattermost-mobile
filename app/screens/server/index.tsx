@@ -289,6 +289,10 @@ const Server = ({
         };
 
         const serverUrl = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp);
+        if (!serverUrl) {
+            cancelPing();
+            return;
+        }
         const result = await doPing(serverUrl, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined);
 
         if (canceled) {

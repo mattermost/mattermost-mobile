@@ -80,6 +80,8 @@ export const GLOBAL_IDENTIFIERS = {
     FIRST_LAUNCH: 'firstLaunch',
     LAST_ASK_FOR_REVIEW: 'lastAskForReview',
     ONBOARDING: 'onboarding',
+    LAST_VIEWED_CHANNEL: 'lastViewedChannel',
+    LAST_VIEWED_THREAD: 'lastViewedThread',
 };
 
 export enum OperationType {

@@ -35,6 +35,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             paddingLeft: 12,
             marginVertical: 12,
+            flex: 1,
+            overflow: 'hidden',
         },
         menuItemContainer: {
             paddingVertical: 8,

@@ -19,10 +19,11 @@ import EphemeralStore from '@store/ephemeral_store';
 import Intro from './intro';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AnimatedStyle} from 'react-native-reanimated';
 
 type Props = {
     channelId: string;
-    contentContainerStyle?: StyleProp<ViewStyle>;
+    contentContainerStyle?: StyleProp<AnimatedStyle<ViewStyle>>;
     isCRTEnabled: boolean;
     lastViewedAt: number;
     nativeID: string;

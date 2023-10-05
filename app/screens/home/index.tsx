@@ -17,7 +17,7 @@ import {useAppState} from '@hooks/device';
 import {getAllServers} from '@queries/app/servers';
 import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
-import {handleDeepLink} from '@utils/deep_link';
+import {alertInvalidDeepLink, handleDeepLink} from '@utils/deep_link';
 import {logError} from '@utils/log';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
@@ -121,9 +121,18 @@ export default function HomeScreen(props: HomeProps) {
 
     useEffect(() => {
         if (props.launchType === 'deeplink') {
+            if (props.launchError) {
+                alertInvalidDeepLink(intl);
+                return;
+            }
+
             const deepLink = props.extra as DeepLinkWithData;
             if (deepLink?.url) {
-                handleDeepLink(deepLink.url);
+                handleDeepLink(deepLink.url).then((result) => {
+                    if (result.error) {
+                        alertInvalidDeepLink(intl);
+                    }
+                });
             }
         }
     }, []);

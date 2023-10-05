@@ -22,7 +22,6 @@ import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
-import {invalidateKeychainCache} from '@utils/mattermost_managed';
 import {addNewServer} from '@utils/server';
 
 import type {LaunchType} from '@typings/launch';
@@ -116,7 +115,6 @@ class SessionManager {
     private terminateSession = async (serverUrl: string, removeServer: boolean) => {
         cancelSessionNotification(serverUrl);
         await removeServerCredentials(serverUrl);
-        invalidateKeychainCache(serverUrl);
         PushNotifications.removeServerNotifications(serverUrl);
 
         NetworkManager.invalidateClient(serverUrl);
