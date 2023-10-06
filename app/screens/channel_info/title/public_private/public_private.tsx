@@ -5,15 +5,15 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, Text, View} from 'react-native';
+import {Platform, StyleSheet, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import SlideUpPanelItem, {ITEM_HEIGHT} from '@app/components/slide_up_panel_item';
-import {SNACK_BAR_TYPE} from '@app/constants/snack_bar';
-import {bottomSheet, dismissBottomSheet} from '@app/screens/navigation';
-import {bottomSheetSnapPoint} from '@app/utils/helpers';
-import {showSnackBar} from '@app/utils/snack_bar';
+import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useTheme} from '@context/theme';
+import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
+import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -49,11 +49,12 @@ const PublicPrivate = ({displayName, purpose}: Props) => {
     const styles = getStyleSheet(theme);
     const publicPrivateTestId = 'channel_info.title.public_private';
 
-    const onCopy = useCallback(() => {
+    const onCopy = useCallback(async () => {
         Clipboard.setString(purpose!);
-        dismissBottomSheet().then(() => {
+        await dismissBottomSheet();
+        if ((Platform.OS === 'android' && Platform.Version < 33) || Platform.OS === 'ios') {
             showSnackBar({barType: SNACK_BAR_TYPE.TEXT_COPIED});
-        });
+        }
     }, [purpose]);
 
     const handleLongPress = useCallback(() => {
@@ -88,7 +89,13 @@ const PublicPrivate = ({displayName, purpose}: Props) => {
                 theme,
             });
         }
-    }, [onCopy, managedConfig?.copyAndPasteProtection]);
+    }, [
+        bottom,
+        theme,
+        onCopy,
+        intl.formatMessage,
+        managedConfig?.copyAndPasteProtection,
+    ]);
 
     return (
         <>
