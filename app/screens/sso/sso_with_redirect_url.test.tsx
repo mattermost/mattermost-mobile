@@ -17,6 +17,7 @@ jest.mock('@utils/url', () => {
 describe('SSO with redirect url', () => {
     const baseProps = {
         customUrlScheme: 'mmauth://',
+        codeVerifier: 'some random string',
         doSSOLogin: jest.fn(),
         intl: {},
         loginError: '',

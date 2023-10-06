@@ -103,7 +103,7 @@ const Server = ({
         let serverUrl: string | undefined = defaultServerUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
         let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
 
-        if (launchType === Launch.DeepLink || launchType === Launch.AddServerFromDeepLink) {
+        if (!launchError && (launchType === Launch.DeepLink || launchType === Launch.AddServerFromDeepLink)) {
             const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
             if (managedConfig.serverUrl) {
                 autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);

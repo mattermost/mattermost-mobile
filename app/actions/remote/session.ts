@@ -213,6 +213,16 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
     }
 };
 
+export const fetchSessionTokenFromCodeChallenge = async (serverUrl: string, codeChallengeToken: string, codeVerifier: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return client.ssoCodeChallenge(codeChallengeToken, codeVerifier);
+    } catch (error) {
+        logDebug('error on fetchSessionTokenFromCodeChallenge', getFullErrorMessage(error));
+        return {error};
+    }
+};
+
 export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string): Promise<LoginActionResponse> => {
     const database = DatabaseManager.appDatabase?.database;
     if (!database) {

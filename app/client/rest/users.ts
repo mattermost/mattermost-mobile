@@ -17,6 +17,7 @@ export interface ClientUsersMix {
     getKnownUsers: () => Promise<string[]>;
     sendPasswordResetEmail: (email: string) => Promise<any>;
     setDefaultProfileImage: (userId: string) => Promise<any>;
+    ssoCodeChallenge: (token: string, codeVerifier: string) => Promise<{token: string; csrf: string}>;
     login: (loginId: string, password: string, token?: string, deviceId?: string, ldapOnly?: boolean) => Promise<UserProfile>;
     loginById: (id: string, password: string, token?: string, deviceId?: string) => Promise<UserProfile>;
     logout: () => Promise<any>;
@@ -126,6 +127,22 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return this.doFetch(
             `${this.getUserRoute(userId)}/image`,
             {method: 'delete'},
+        );
+    };
+
+    ssoCodeChallenge = async (token: string, codeVerifier: string) => {
+        const body = {
+            token,
+            code_verifier: codeVerifier,
+        };
+
+        return this.doFetch(
+            '/sso/token',
+            {
+                method: 'post',
+                body,
+                headers: {'Cache-Control': 'no-store'},
+            },
         );
     };
 

@@ -2,18 +2,22 @@
 // See LICENSE.txt for license information.
 
 import qs from 'querystringify';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Linking, Platform, Text, View} from 'react-native';
 import Button from 'react-native-button';
+import {sha256} from 'react-native-sha256';
 import urlParse from 'url-parse';
 
+import {fetchSessionTokenFromCodeChallenge} from '@actions/remote/session';
 import FormattedText from '@components/formatted_text';
 import {Sso} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isErrorWithMessage} from '@utils/errors';
 import {isBetaApp} from '@utils/general';
+import {urlSafeBase64Encode} from '@utils/security';
+import {generateRandomString} from '@utils/strings';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
@@ -62,23 +66,26 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
     const [error, setError] = useState<string>('');
     const style = getStyleSheet(theme);
     const intl = useIntl();
+    const codeVerifier = useMemo(() => generateRandomString(100), []);
     let customUrlScheme = Sso.REDIRECT_URL_SCHEME;
     if (isBetaApp) {
         customUrlScheme = Sso.REDIRECT_URL_SCHEME_DEV;
     }
 
     const redirectUrl = customUrlScheme + 'callback';
-    const init = (resetErrors = true) => {
+    const init = async (resetErrors = true) => {
         if (resetErrors !== false) {
             setError('');
             setLoginError('');
-            NetworkManager.invalidateClient(serverUrl);
             NetworkManager.createClient(serverUrl);
         }
+        const hash = await sha256(codeVerifier);
+        const codeChallenge = urlSafeBase64Encode(hash);
         const parsedUrl = urlParse(loginUrl, true);
         const query: Record<string, string> = {
             ...parsedUrl.query,
             redirect_to: redirectUrl,
+            code_challenge: codeChallenge,
         };
         parsedUrl.set('query', qs.stringify(query));
         const url = parsedUrl.toString();
@@ -105,11 +112,19 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
     };
 
     useEffect(() => {
-        const onURLChange = ({url}: { url: string }) => {
+        const onURLChange = async ({url}: { url: string }) => {
             if (url && url.startsWith(redirectUrl)) {
                 const parsedUrl = urlParse(url, true);
-                const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
-                const csrfToken = parsedUrl.query?.MMCSRF;
+                let bearerToken = parsedUrl.query?.MMAUTHTOKEN;
+                let csrfToken = parsedUrl.query?.MMCSRF;
+                const codeChallengeToken = parsedUrl.query?.MMCHALLENGETOKEN;
+                if (codeChallengeToken) {
+                    const response = await fetchSessionTokenFromCodeChallenge(serverUrl, codeChallengeToken, codeVerifier);
+                    if ('token' in response) {
+                        bearerToken = response.token;
+                        csrfToken = response.csrf;
+                    }
+                }
                 if (bearerToken && csrfToken) {
                     doSSOLogin(bearerToken, csrfToken);
                 } else {
