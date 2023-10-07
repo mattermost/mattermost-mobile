@@ -10,6 +10,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {ANDROID_33, OS_VERSION} from '@constants/versions';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -52,7 +53,7 @@ const PublicPrivate = ({displayName, purpose}: Props) => {
     const onCopy = useCallback(async () => {
         Clipboard.setString(purpose!);
         await dismissBottomSheet();
-        if ((Platform.OS === 'android' && Platform.Version < 33) || Platform.OS === 'ios') {
+        if ((Platform.OS === OS_VERSION.ANDROID && Number(Platform.Version) < ANDROID_33) || Platform.OS === OS_VERSION.IOS) {
             showSnackBar({barType: SNACK_BAR_TYPE.TEXT_COPIED});
         }
     }, [purpose]);

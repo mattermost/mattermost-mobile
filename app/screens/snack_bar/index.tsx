@@ -19,7 +19,7 @@ import Animated, {
 
 import Toast, {TOAST_HEIGHT} from '@components/toast';
 import {Navigation as NavigationConstants, Screens} from '@constants';
-import {SNACK_BAR_CONFIG} from '@constants/snack_bar';
+import {MESSAGE_TYPE, SNACK_BAR_CONFIG} from '@constants/snack_bar';
 import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -148,10 +148,10 @@ const SnackBar = ({
     const toastStyle = useMemo(() => {
         let backgroundColor: string;
         switch (config?.type) {
-            case 'success':
+            case MESSAGE_TYPE.SUCCESS:
                 backgroundColor = theme.onlineIndicator;
                 break;
-            case 'error':
+            case MESSAGE_TYPE.ERROR:
                 backgroundColor = theme.errorTextColor;
                 break;
             default:
