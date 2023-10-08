@@ -795,7 +795,7 @@
     "notification_settings.threads_mentions": "Vermeldingen in draadjes",
     "notification_settings.send_notification.about": "Breng me op de hoogte van...",
     "notification_settings.pushNotification.nothing": "Niets",
-    "notification_settings.pushNotification.mentions_only": "Vermeldingen, alleen directe berichten (standaard)",
+    "notification_settings.pushNotification.mentions_only": "Alleen voor vermeldingen, rechtstreekse berichten en groepsberichten (standaard)",
     "notification_settings.pushNotification.disabled_long": "Push-meldingen voor mobiele apparaten zijn uitgeschakeld door jouw systeembeheerder.",
     "notification_settings.pushNotification.all_new_messages": "Alle nieuwe berichten",
     "notification_settings.push_threads.replies": "Reacties op draadjes",
@@ -1077,5 +1077,12 @@
     "intro.group_message.all": "Je ontvangt een melding <b>voor alle activiteit</b> in dit groepsbericht.",
     "intro.group_message.common": "Dit is het begin van je gesprek met deze groep.",
     "intro.group_message.mention": "Je hebt ervoor gekozen alleen op de hoogte te worden gebracht <b>enkel als je in dit groepsbericht wordt vermeld</b>.",
-    "intro.group_message.after_gm_as_dm": "Dit is het begin van je gesprek met deze groep. Berichten en bestanden die hier worden gedeeld, worden aan niemand buiten de groep getoond."
+    "intro.group_message.after_gm_as_dm": "Dit is het begin van je gesprek met deze groep. Berichten en bestanden die hier worden gedeeld, worden aan niemand buiten de groep getoond.",
+    "intro.group_message.muted": "Dit groepsbericht is momenteel <b>gemuted</b>, dus je krijgt geen melding.",
+    "intro.group_message.none": "Je hebt geselecteerd om <b>nooit</b> op de hoogte te worden gebracht in dit groepsbericht.",
+    "system_notice.title.gm_as_dm": "Updates voor groepsberichten",
+    "system_notice.dont_show": "Niet meer weergeven",
+    "system_notice.remind_me": "Herinner me later",
+    "system_noticy.body.gm_as_dm": "Je wordt nu op de hoogte gebracht van alle activiteit in je groepsberichtenm samen met een meldingsbadge voor elk nieuw bericht.\n\nJe kunt dit instellen in de meldingsvoorkeuren voor elk groepsbericht.",
+    "mobile.calls_headset": "Hoofdtelefoon"
 }
