@@ -27,6 +27,7 @@ import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@
 import {AudioDeviceButton} from '@calls/components/audio_device_button';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
+import CallNotification from '@calls/components/call_notification';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
 import EmojiList from '@calls/components/emoji_list';
 import MessageBar from '@calls/components/message_bar';
@@ -34,7 +35,12 @@ import ReactionBar from '@calls/components/reaction_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
 import {RaisedHandBanner} from '@calls/screens/call_screen/raised_hand_banner';
-import {setCallQualityAlertDismissed, setMicPermissionsErrorDismissed, useCallsConfig} from '@calls/state';
+import {
+    setCallQualityAlertDismissed,
+    setMicPermissionsErrorDismissed,
+    useCallsConfig,
+    useIncomingCalls,
+} from '@calls/state';
 import {getHandsRaised, makeCallsTheme, sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -177,6 +183,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         marginTop: 0,
         width: usernameM,
     },
+    incomingCallContainer: {
+        width: '100%',
+        marginBottom: 8,
+        gap: 8,
+    },
     buttonsContainer: {
         alignItems: 'center',
     },
@@ -316,6 +327,8 @@ const CallScreen = ({
     const serverUrl = useServerUrl();
     const {EnableRecordings} = useCallsConfig(serverUrl);
     usePermissionsChecker(micPermissionsGranted);
+    const incomingCalls = useIncomingCalls();
+
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
     const [showReactions, setShowReactions] = useState(false);
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
@@ -330,6 +343,7 @@ const CallScreen = ({
     const smallerAvatar = isLandscape || screenShareOn;
     const avatarSize = smallerAvatar ? avatarM : avatarL;
     const numParticipants = Object.keys(participantsDict).length;
+    const showIncomingCalls = incomingCalls.incomingCalls.length > 0;
 
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
     const recordOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Record'});
@@ -463,7 +477,7 @@ const CallScreen = ({
                     {
                         showStartRecording &&
                         <SlideUpPanelItem
-                            icon={'record-circle-outline'}
+                            leftIcon={'record-circle-outline'}
                             onPress={startRecording}
                             text={recordOptionTitle}
                         />
@@ -471,14 +485,14 @@ const CallScreen = ({
                     {
                         showStopRecording &&
                         <SlideUpPanelItem
-                            icon={'record-square-outline'}
+                            leftIcon={'record-square-outline'}
                             onPress={stopRecording}
                             text={stopRecordingOptionTitle}
                             textStyles={style.denimDND}
                         />
                     }
                     <SlideUpPanelItem
-                        icon='message-text-outline'
+                        leftIcon='message-text-outline'
                         onPress={switchToThread}
                         text={callThreadOptionTitle}
                     />
@@ -498,9 +512,11 @@ const CallScreen = ({
         recordOptionTitle, stopRecording, stopRecordingOptionTitle, style, switchToThread, callThreadOptionTitle,
         openChannelOptionTitle]);
 
-    useAndroidHardwareBackHandler(componentId, () => {
+    const collapse = useCallback(() => {
         popTopScreen(componentId);
-    });
+    }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, collapse);
 
     useEffect(() => {
         const didDismissListener = Navigation.events().registerComponentDidDisappearListener(async ({componentId: screen}) => {
@@ -651,7 +667,7 @@ const CallScreen = ({
                 teammateNameDisplay={teammateNameDisplay}
             />
             <Pressable
-                onPress={() => popTopScreen()}
+                onPress={collapse}
                 style={style.collapseIconContainer}
             >
                 <CompassIcon
@@ -674,6 +690,17 @@ const CallScreen = ({
                 {isLandscape && header}
                 {!isLandscape && currentCall.reactionStream.length > 0 &&
                     <EmojiList reactionStream={currentCall.reactionStream}/>
+                }
+                {showIncomingCalls &&
+                    <View style={style.incomingCallContainer}>
+                        {incomingCalls.incomingCalls.map((ic) => (
+                            <CallNotification
+                                key={ic.callID}
+                                incomingCall={ic}
+                                onCallsScreen={true}
+                            />
+                        ))}
+                    </View>
                 }
                 {micPermissionsError &&
                     <MessageBar
@@ -737,7 +764,6 @@ const CallScreen = ({
                                 iconStyle={[
                                     style.buttonIcon,
                                     isLandscape && style.buttonIconLandscape,
-                                    style.speakerphoneIcon,
                                     currentCall.speakerphoneOn && style.buttonOn,
                                 ]}
                                 buttonTextStyle={style.buttonText}

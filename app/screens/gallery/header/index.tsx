@@ -4,7 +4,7 @@
 import React, {useMemo} from 'react';
 import {type StyleProp, StyleSheet, useWindowDimensions, View, type ViewStyle} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import Animated from 'react-native-reanimated';
+import Animated, {type AnimatedStyle} from 'react-native-reanimated';
 import {SafeAreaView, type Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
@@ -16,7 +16,7 @@ import {typography} from '@utils/typography';
 type Props = {
     index: number;
     onClose: () => void;
-    style: StyleProp<ViewStyle>;
+    style: StyleProp<AnimatedStyle<ViewStyle>>;
     total: number;
 }
 

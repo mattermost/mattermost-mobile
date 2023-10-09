@@ -28,7 +28,7 @@ const NO_TEAMS_HEIGHT = 392;
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         teamContainer: {
-            paddingLeft: 12,
+            paddingLeft: 8,
             flexDirection: 'row',
             alignItems: 'center',
         },

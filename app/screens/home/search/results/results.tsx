@@ -100,7 +100,7 @@ const Results = ({
             }
             {!loading &&
             <Animated.View style={[styles.container, transform]}>
-                <View style={styles.result} >
+                <View style={styles.result}>
                     <PostResults
                         appsEnabled={appsEnabled}
                         currentTimezone={currentTimezone}
@@ -112,7 +112,7 @@ const Results = ({
                         searchValue={searchValue}
                     />
                 </View>
-                <View style={styles.result} >
+                <View style={styles.result}>
                     <FileResults
                         canDownloadFiles={canDownloadFiles}
                         fileChannels={fileChannels}

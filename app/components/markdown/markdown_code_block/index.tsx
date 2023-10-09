@@ -123,7 +123,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
                         style={style.bottomSheet}
                     >
                         <SlideUpPanelItem
-                            icon='content-copy'
+                            leftIcon='content-copy'
                             onPress={() => {
                                 dismissBottomSheet();
                                 Clipboard.setString(content);
@@ -133,7 +133,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
                         />
                         <SlideUpPanelItem
                             destructive={true}
-                            icon='cancel'
+                            leftIcon='cancel'
                             onPress={() => {
                                 dismissBottomSheet();
                             }}

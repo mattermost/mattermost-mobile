@@ -1,11 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {createIntl} from 'react-intl';
 import DeviceInfo from 'react-native-device-info';
 import ReactNativeHapticFeedback, {HapticFeedbackTypes} from 'react-native-haptic-feedback';
 
+import {getTranslations} from '@i18n';
+
 type SortByCreatAt = (Session | Channel | Team | Post) & {
     create_at: number;
+}
+
+export function getIntlShape(locale = 'en') {
+    return createIntl({
+        locale,
+        messages: getTranslations(locale),
+    });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

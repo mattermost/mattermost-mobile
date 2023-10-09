@@ -64,7 +64,3 @@ export const deleteEntititesFile = (callback?: (success: boolean) => void) => {
         callback(true);
     }
 };
-
-export const invalidateKeychainCache = (serverUrl: string) => {
-    MattermostManaged.invalidateKeychainCache(serverUrl);
-};

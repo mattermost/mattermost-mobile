@@ -4,7 +4,6 @@
 import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps, type BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
@@ -39,7 +38,6 @@ const PADDING_TOP_TABLET = 8;
 
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        container: {flex: 1},
         bottomSheet: {
             backgroundColor: theme.centerChannelBg,
             borderTopStartRadius: 24,
@@ -199,27 +197,25 @@ const BottomSheet = ({
     }
 
     return (
-        <GestureHandlerRootView style={styles.container}>
-            <BottomSheetM
-                ref={sheetRef}
-                index={initialSnapIndex}
-                snapPoints={snapPoints}
-                animateOnMount={true}
-                backdropComponent={renderBackdrop}
-                onAnimate={handleAnimationStart}
-                onChange={handleChange}
-                animationConfigs={animatedConfig}
-                handleComponent={Indicator}
-                style={styles.bottomSheet}
-                backgroundStyle={bottomSheetBackgroundStyle}
-                footerComponent={footerComponent}
-                keyboardBehavior='extend'
-                keyboardBlurBehavior='restore'
-                onClose={close}
-            >
-                {renderContainerContent()}
-            </BottomSheetM>
-        </GestureHandlerRootView>
+        <BottomSheetM
+            ref={sheetRef}
+            index={initialSnapIndex}
+            snapPoints={snapPoints}
+            animateOnMount={true}
+            backdropComponent={renderBackdrop}
+            onAnimate={handleAnimationStart}
+            onChange={handleChange}
+            animationConfigs={animatedConfig}
+            handleComponent={Indicator}
+            style={styles.bottomSheet}
+            backgroundStyle={bottomSheetBackgroundStyle}
+            footerComponent={footerComponent}
+            keyboardBehavior='extend'
+            keyboardBlurBehavior='restore'
+            onClose={close}
+        >
+            {renderContainerContent()}
+        </BottomSheetM>
     );
 };
 

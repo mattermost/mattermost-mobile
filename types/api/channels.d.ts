@@ -45,6 +45,13 @@ type Channel = {
     group_constrained: boolean|null;
     shared: boolean;
 };
+type ChannelPatch = {
+    name?: string;
+    display_name?: string;
+    header?: string;
+    purpose?: string;
+    group_constrained?: boolean|null;
+};
 type ChannelWithTeamData = Channel & {
     team_display_name: string;
     team_name: string;

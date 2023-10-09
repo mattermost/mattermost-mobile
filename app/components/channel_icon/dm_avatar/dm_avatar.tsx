@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect} from 'react';
 
+import {fetchUserByIdBatched} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -12,6 +14,7 @@ import type UserModel from '@typings/database/models/servers/user';
 import type {StyleProp, ViewStyle} from 'react-native';
 
 type Props = {
+    authorId: string;
     author?: UserModel;
     isOnCenterBg?: boolean;
     style: StyleProp<ViewStyle>;
@@ -35,10 +38,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const DmAvatar = ({author, isOnCenterBg, style, size}: Props) => {
+const DmAvatar = ({
+    authorId,
+    author,
+    isOnCenterBg,
+    style,
+    size,
+}: Props) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
+    useEffect(() => {
+        if (authorId && !author) {
+            fetchUserByIdBatched(serverUrl, authorId);
+        }
+    }, []);
     if (author?.deleteAt) {
         return (
             <CompassIcon

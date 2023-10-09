@@ -125,3 +125,13 @@ export const observeUserIsChannelAdmin = (database: Database, userId: string, ch
         distinctUntilChanged(),
     );
 };
+
+export const observeDeactivatedUsers = (database: Database) => {
+    return database.get<UserModel>(USER).query(
+        Q.where('delete_at', Q.gt(0)),
+    ).observe().pipe(
+        switchMap((users) => {
+            return of$(new Map(users.map((u) => [u.id, u])));
+        }),
+    );
+};

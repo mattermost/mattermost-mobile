@@ -12,30 +12,37 @@ import {
     getChannelsWithCalls,
     getCurrentCall,
     getGlobalCallsState,
+    getIncomingCalls,
     setCallsConfig,
     setCallsState,
     setChannelsWithCalls,
     setCurrentCall,
     setGlobalCallsState,
+    setIncomingCalls,
 } from '@calls/state';
 import {
     type AudioDeviceInfo,
     type Call,
     type CallsConfigState,
     type ChannelsWithCalls,
+    ChannelType,
     type CurrentCall,
     DefaultCall,
     DefaultCurrentCall,
+    type IncomingCallNotification,
     type ReactionStreamEmoji,
 } from '@calls/types/calls';
-import {Calls, Screens} from '@constants';
+import {Calls, General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getThreadById} from '@queries/servers/thread';
+import {getUserById} from '@queries/servers/user';
+import {isDMorGM} from '@utils/channel';
+import {logDebug} from '@utils/log';
 
 import type {CallRecordingState, UserReactionData} from '@mattermost/calls/lib/types';
 
-export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
+export const setCalls = async (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
         (accum, next) => {
             accum[next] = true;
@@ -44,6 +51,8 @@ export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<
     setChannelsWithCalls(serverUrl, channelsWithCalls);
 
     setCallsState(serverUrl, {myUserId, calls, enabled});
+
+    await processIncomingCalls(serverUrl, Object.values(calls), false);
 
     // Does the current call need to be updated?
     const currentCall = getCurrentCall();
@@ -59,6 +68,118 @@ export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<
         voiceOn: {},
     };
     setCurrentCall(nextCall);
+};
+
+export const processIncomingCalls = async (serverUrl: string, calls: Call[], keepExisting = true) => {
+    if (!getCallsConfig(serverUrl).EnableRinging) {
+        return;
+    }
+
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
+    // Do we have incoming calls we should notify about?
+    const incomingCalls = getIncomingCalls().incomingCalls;
+    const existingCalls = getCallsState(serverUrl).calls;
+    const myUserId = getCallsState(serverUrl).myUserId;
+    const newIncoming: IncomingCallNotification[] = [];
+
+    for await (const call of calls) {
+        // dismissed already?
+        if (call.dismissed[myUserId] || existingCalls[call.channelId]?.dismissed[myUserId]) {
+            continue;
+        }
+
+        // already in our incomingCalls notifications?
+        if (incomingCalls.findIndex((c) => c.callID === call.id) >= 0) {
+            continue;
+        }
+
+        // Never send a notification for a call you started, or a call you are currently in.
+        if (myUserId === call.ownerId || getCurrentCall()?.id === call.id) {
+            continue;
+        }
+
+        const channel = await getChannelById(database, call.channelId);
+        if (!channel) {
+            logDebug('calls: processIncomingCalls could not find channel by id', call.channelId, 'for serverUrl', serverUrl);
+            continue;
+        }
+
+        if (!isDMorGM(channel)) {
+            continue;
+        }
+
+        const callerModel = await getUserById(database, call.ownerId);
+
+        newIncoming.push({
+            serverUrl,
+            myUserId,
+            callID: call.id,
+            callerID: call.ownerId,
+            callerModel,
+            channelID: call.channelId,
+            startAt: call.startTime,
+            type: channel.type === General.DM_CHANNEL ? ChannelType.DM : ChannelType.GM,
+        });
+    }
+
+    if (newIncoming.length === 0 && keepExisting) {
+        return;
+    }
+
+    if (keepExisting) {
+        newIncoming.push(...incomingCalls);
+    } else {
+        const removedThisServer = incomingCalls.filter((ic) => ic.serverUrl !== serverUrl);
+        newIncoming.push(...removedThisServer);
+    }
+
+    if (newIncoming.length === 0 && incomingCalls.length === 0) {
+        return;
+    }
+
+    newIncoming.sort((a, b) => a.startAt - b.startAt);
+    setIncomingCalls({incomingCalls: newIncoming});
+};
+
+const getChannelIdFromCallId = (serverUrl: string, callId: string) => {
+    const callsState = getCallsState(serverUrl);
+    for (const call of Object.values(callsState.calls)) {
+        if (call.id === callId) {
+            return call.channelId;
+        }
+    }
+    return undefined;
+};
+
+export const removeIncomingCall = (serverUrl: string, callId: string, channelId?: string) => {
+    if (!getCallsConfig(serverUrl).EnableRinging) {
+        return;
+    }
+
+    const incomingCalls = getIncomingCalls();
+    const newIncomingCalls = incomingCalls.incomingCalls.filter((ic) => ic.callID !== callId);
+    if (incomingCalls.incomingCalls.length !== newIncomingCalls.length) {
+        setIncomingCalls({incomingCalls: newIncomingCalls});
+    }
+
+    let chId = channelId;
+    if (!chId) {
+        chId = getChannelIdFromCallId(serverUrl, callId);
+        if (!chId) {
+            return;
+        }
+    }
+
+    const callsState = getCallsState(serverUrl);
+    const nextCalls = {...callsState.calls};
+    if (nextCalls[chId]) {
+        nextCalls[chId].dismissed[callsState.myUserId] = true;
+    }
+    setCallsState(serverUrl, {...callsState, calls: nextCalls});
 };
 
 export const setCallForChannel = (serverUrl: string, channelId: string, enabled?: boolean, call?: Call) => {
@@ -136,6 +257,10 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
 
         setCurrentCall(nextCurrentCall);
     }
+
+    if (userId === callsState.myUserId) {
+        removeIncomingCall(serverUrl, callsState.calls[channelId].id, channelId);
+    }
 };
 
 export const userLeftCall = (serverUrl: string, channelId: string, userId: string) => {
@@ -158,6 +283,9 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
     const nextCalls = {...callsState.calls};
     if (Object.keys(nextCall.participants).length === 0) {
         delete nextCalls[channelId];
+
+        const callId = callsState.calls[channelId].id;
+        removeIncomingCall(serverUrl, callId, channelId);
 
         const channelsWithCalls = getChannelsWithCalls(serverUrl);
         const nextChannelsWithCalls = {...channelsWithCalls};
@@ -230,6 +358,8 @@ export const callStarted = async (serverUrl: string, call: Call) => {
     nextCalls[call.channelId] = call;
     setCallsState(serverUrl, {...callsState, calls: nextCalls});
 
+    await processIncomingCalls(serverUrl, [call]);
+
     const nextChannelsWithCalls = {...getChannelsWithCalls(serverUrl), [call.channelId]: true};
     setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
 
@@ -263,6 +393,7 @@ export const callStarted = async (serverUrl: string, call: Call) => {
 export const callEnded = (serverUrl: string, channelId: string) => {
     const callsState = getCallsState(serverUrl);
     const nextCalls = {...callsState.calls};
+    const callId = nextCalls[channelId]?.id || '';
     delete nextCalls[channelId];
     setCallsState(serverUrl, {...callsState, calls: nextCalls});
 
@@ -270,6 +401,8 @@ export const callEnded = (serverUrl: string, channelId: string) => {
     const nextChannelsWithCalls = {...channelsWithCalls};
     delete nextChannelsWithCalls[channelId];
     setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
+
+    removeIncomingCall(serverUrl, callId, channelId);
 
     // currentCall is set to null by the disconnect.
 };

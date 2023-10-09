@@ -101,3 +101,17 @@ export function observeCanManageChannelMembers(database: Database, channelId: st
         distinctUntilChanged(),
     );
 }
+
+export function observeCanManageChannelSettings(database: Database, channelId: string, user: UserModel) {
+    return observeChannel(database, channelId).pipe(
+        switchMap((c) => {
+            if (!c || c.deleteAt !== 0 || isDMorGM(c)) {
+                return of$(false);
+            }
+
+            const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES : Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES;
+            return observePermissionForChannel(database, c, user, permission, true);
+        }),
+        distinctUntilChanged(),
+    );
+}

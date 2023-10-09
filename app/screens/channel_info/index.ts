@@ -10,7 +10,7 @@ import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannel} from '@queries/servers/channel';
-import {observeCanManageChannelMembers} from '@queries/servers/role';
+import {observeCanManageChannelMembers, observeCanManageChannelSettings} from '@queries/servers/role';
 import {
     observeConfigValue,
     observeCurrentChannelId,
@@ -106,12 +106,20 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         switchMap(([u, cId]) => (u ? observeCanManageChannelMembers(database, cId, u) : of$(false))),
         distinctUntilChanged(),
     );
+
+    const canManageSettings = currentUser.pipe(
+        combineLatestWith(channelId),
+        switchMap(([u, cId]) => (u ? observeCanManageChannelSettings(database, cId, u) : of$(false))),
+        distinctUntilChanged(),
+    );
+
     return {
         type,
         canEnableDisableCalls,
         isCallsEnabledInChannel,
         canManageMembers,
         isCRTEnabled: observeIsCRTEnabled(database),
+        canManageSettings,
     };
 });
 
