@@ -249,13 +249,14 @@ export async function createChannel(serverUrl: string, displayName: string, purp
     }
 }
 
-export async function patchChannel(serverUrl: string, channelPatch: Partial<Channel> & {id: string}) {
+export async function patchChannel(serverUrl: string, channelId: string, channelPatch: ChannelPatch) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const channelData = await client.patchChannel(channelPatch.id, channelPatch);
+        const channelData = await client.patchChannel(channelId, channelPatch);
         const models = [];
+
         const channelInfo = (await getChannelInfo(database, channelData.id));
         if (channelInfo && (channelInfo.purpose !== channelData.purpose || channelInfo.header !== channelData.header)) {
             channelInfo.prepareUpdate((v) => {
@@ -264,10 +265,14 @@ export async function patchChannel(serverUrl: string, channelPatch: Partial<Chan
             });
             models.push(channelInfo);
         }
+
         const channel = await getChannelById(database, channelData.id);
         if (channel && (channel.displayName !== channelData.display_name || channel.type !== channelData.type)) {
             channel.prepareUpdate((v) => {
-                v.displayName = channelData.display_name;
+                // DM and GM display names cannot be patched and are formatted client-side; do not overwrite
+                if (channelData.type !== General.DM_CHANNEL && channelData.type !== General.GM_CHANNEL) {
+                    v.displayName = channelData.display_name;
+                }
                 v.type = channelData.type;
             });
             models.push(channel);

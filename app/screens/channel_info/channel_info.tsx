@@ -30,6 +30,7 @@ type Props = {
     canEnableDisableCalls: boolean;
     isCallsEnabledInChannel: boolean;
     canManageMembers: boolean;
+    canManageSettings: boolean;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -57,6 +58,7 @@ const ChannelInfo = ({
     canEnableDisableCalls,
     isCallsEnabledInChannel,
     canManageMembers,
+    canManageSettings,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -70,7 +72,7 @@ const ChannelInfo = ({
         return dismissModal({componentId});
     }, [componentId]);
 
-    useNavButtonPressed(closeButtonId, componentId, onPressed, []);
+    useNavButtonPressed(closeButtonId, componentId, onPressed, [onPressed]);
     useAndroidHardwareBackHandler(componentId, onPressed);
 
     return (
@@ -103,6 +105,7 @@ const ChannelInfo = ({
                     type={type}
                     callsEnabled={callsAvailable}
                     canManageMembers={canManageMembers}
+                    canManageSettings={canManageSettings}
                 />
                 <View style={styles.separator}/>
                 {canEnableDisableCalls &&

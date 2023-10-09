@@ -53,8 +53,8 @@ export function getSidebarPreferenceAsBool(preferences: Preference[], name: stri
     return getPreferenceAsBool(preferences, Preferences.CATEGORIES.SIDEBAR_SETTINGS, name, defaultValue);
 }
 
-export function filterPreferences(preferences?: PreferenceType[]) {
-    if (!preferences?.length) {
+export function filterPreferences(preferences: PreferenceType[]) {
+    if (!preferences.length) {
         return preferences;
     }
 

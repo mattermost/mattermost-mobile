@@ -128,7 +128,7 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    patchChannel = async (channelId: string, channelPatch: Partial<Channel>) => {
+    patchChannel = async (channelId: string, channelPatch: ChannelPatch) => {
         this.analytics?.trackAPI('api_channels_patch', {channel_id: channelId});
 
         return this.doFetch(

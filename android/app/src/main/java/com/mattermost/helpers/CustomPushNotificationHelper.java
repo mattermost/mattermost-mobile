@@ -52,6 +52,7 @@ public class CustomPushNotificationHelper {
     public static final String PUSH_TYPE_MESSAGE = "message";
     public static final String PUSH_TYPE_CLEAR = "clear";
     public static final String PUSH_TYPE_SESSION = "session";
+    public static final String CATEGORY_CAN_REPLY = "CAN_REPLY";
 
     private static NotificationChannel mHighImportanceChannel;
     private static NotificationChannel mMinImportanceChannel;
@@ -132,8 +133,9 @@ public class CustomPushNotificationHelper {
     private static void addNotificationReplyAction(Context context, NotificationCompat.Builder notification, Bundle bundle, int notificationId) {
         String postId = bundle.getString("post_id");
         String serverUrl = bundle.getString("server_url");
+        boolean canReply = bundle.containsKey("category") && bundle.getString("category").equals(CATEGORY_CAN_REPLY);
 
-        if (android.text.TextUtils.isEmpty(postId) || serverUrl == null) {
+        if (android.text.TextUtils.isEmpty(postId) || serverUrl == null || !canReply) {
             return;
         }
 

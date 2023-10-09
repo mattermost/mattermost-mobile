@@ -4,12 +4,14 @@
 import {Alert} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
+import {dismissIncomingCall} from '@calls/actions/calls';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {
     getCallsConfig,
     getCallsState,
     getChannelsWithCalls,
     getCurrentCall,
+    removeIncomingCall,
     setMicPermissionsGranted,
 } from '@calls/state';
 import {errorAlert} from '@calls/utils';
@@ -198,6 +200,13 @@ const doJoinCall = async (
     await hasBluetoothPermission();
     const hasPermission = await hasMicrophonePermission();
     setMicPermissionsGranted(hasPermission);
+
+    if (!newCall && joinChannelIsDMorGM) {
+        // we're joining an existing call, so dismiss any notifications (for all clients, too)
+        const callId = getCallsState(serverUrl).calls[channelId].id;
+        dismissIncomingCall(serverUrl, channelId);
+        removeIncomingCall(serverUrl, callId, channelId);
+    }
 
     const res = await joinCall(serverUrl, channelId, user.id, hasPermission, title, rootId);
     if (res.error) {

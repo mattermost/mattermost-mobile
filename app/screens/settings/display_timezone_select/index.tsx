@@ -101,10 +101,10 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
         ));
     }, [searchRegion, timezones, initialScrollIndex]);
 
-    const close = (newTimezone?: string) => {
+    const close = useCallback((newTimezone?: string) => {
         onBack(newTimezone || currentTimezone);
         popTopScreen(componentId);
-    };
+    }, [currentTimezone, componentId]);
 
     const onPressTimezone = useCallback((selectedTimezone: string) => {
         close(selectedTimezone);

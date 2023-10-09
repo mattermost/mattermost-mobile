@@ -1066,5 +1066,14 @@
     "settings.about.server.version.noBuild": "Wersja Serwera: {version}",
     "settings.about.server.version.title": "Wersja serwera:",
     "settings.about.app.version": "Wersja Aplikacji: {version} (Build {number})",
-    "settings.about.server.version": "Wersja serwera: {version} (kompilacja {buildNumber}"
+    "settings.about.server.version": "Wersja serwera: {version} (kompilacja {buildNumber}",
+    "snack.bar.info.copied": "Informacje skopiowane do schowka",
+    "mobile.calls_incoming_dm": "<b>{name}</b> zaprasza do rozmowy",
+    "mobile.calls_incoming_gm": "<b>{name}</b> zaprasza do rozmowy z {num, plural, one {# innym} other {# innymi}} <b></b>",
+    "mobile.calls_join_button": "Dołącz",
+    "server.invalid.certificate.title": "Nieprawidłowy certyfikat SSL",
+    "server.invalid.certificate.description": "Certyfikat tego serwera jest nieprawidłowy.\nMożliwe, że łączysz się z serwerem podszywającym się pod \"{hostname}\", co może narazić Twoje poufne informacje na ryzyko.",
+    "mobile.deep_link.invalid": "Link, który próbujesz otworzyć, jest nieprawidłowy.",
+    "markdown.max_nodes.error": "Ta wiadomość jest zbyt długa, aby wyświetlić ją w całości na urządzeniu mobilnym. Wyświetl ją na komputerze lub skontaktuj się z administratorem, aby zwiększyć limit.",
+    "mobile.calls_headset": "Zestaw słuchawkowy"
 }

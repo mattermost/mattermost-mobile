@@ -413,6 +413,43 @@ index 1333a10..b908006 100644
  RCT_EXPORT_METHOD(getNativeProps:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
  {
      [self.bridge.uiManager addUIBlock:
+diff --git a/node_modules/react-native-keyboard-tracking-view/lib/ObservingInputAccessoryView.m b/node_modules/react-native-keyboard-tracking-view/lib/ObservingInputAccessoryView.m
+index e472679..4a2204b 100644
+--- a/node_modules/react-native-keyboard-tracking-view/lib/ObservingInputAccessoryView.m
++++ b/node_modules/react-native-keyboard-tracking-view/lib/ObservingInputAccessoryView.m
+@@ -115,21 +115,25 @@
+ 
+ - (void)_keyboardWillShowNotification:(NSNotification*)notification
+ {
+-	_keyboardState = KeyboardStateWillShow;
++    if (_keyboardState != KeyboardStateShown) {
++        _keyboardState = KeyboardStateWillShow;
+         
+-	[self invalidateIntrinsicContentSize];
++        [self invalidateIntrinsicContentSize];
+         
+-    if([_delegate respondsToSelector:@selector(observingInputAccessoryViewKeyboardWillAppear:keyboardDelta:)])
+-    {
+-        [_delegate observingInputAccessoryViewKeyboardWillAppear:self keyboardDelta:_keyboardHeight - _previousKeyboardHeight];
++        if([_delegate respondsToSelector:@selector(observingInputAccessoryViewKeyboardWillAppear:keyboardDelta:)])
++        {
++            [_delegate observingInputAccessoryViewKeyboardWillAppear:self keyboardDelta:_keyboardHeight - _previousKeyboardHeight];
++        }
+     }
+ }
+ 
+ - (void)_keyboardDidShowNotification:(NSNotification*)notification
+ {
+-	_keyboardState = KeyboardStateShown;
++    if (_keyboardState != KeyboardStateShown) {
++        _keyboardState = KeyboardStateShown;
+         
+-	[self invalidateIntrinsicContentSize];
++        [self invalidateIntrinsicContentSize];
++    }
+ }
+ 
+ - (void)_keyboardWillHideNotification:(NSNotification*)notification
 diff --git a/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.android.js b/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.android.js
 index af15edf..20b6ab6 100644
 --- a/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.android.js

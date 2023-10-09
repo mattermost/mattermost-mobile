@@ -1066,5 +1066,13 @@
     "settings.about.database.title": "База данных:",
     "settings.about.server.version": "Версия сервера: {version} (Build {buildNumber}",
     "settings.about.server.version.noBuild": "Версия сервера: {version}",
-    "settings.about.server.version.title": "Версия сервера:"
+    "settings.about.server.version.title": "Версия сервера:",
+    "snack.bar.info.copied": "Информация скопирована в буфер обмена",
+    "mobile.calls_incoming_dm": "<b>{name}</b> приглашает вас на звонок",
+    "mobile.calls_join_button": "Присоединиться",
+    "mobile.calls_incoming_gm": "<b>{name}</b> приглашает Вас на разговор с <b>{num, plural, one {# одним участником} few {# несколькими участниками} other {# несколькими участниками}}</b>",
+    "server.invalid.certificate.title": "Недействительный сертификат SSL",
+    "server.invalid.certificate.description": "Сертификат этого сервера недействителен.\nВозможно, вы подключаетесь к серверу, который выдает себя за \"{hostname}\", что может подвергнуть риску вашу конфиденциальную информацию.",
+    "mobile.deep_link.invalid": "Ссылка, которую вы пытаетесь открыть, недействительна.",
+    "markdown.max_nodes.error": "Это сообщение слишком длинное для полного отображения на мобильном устройстве. Пожалуйста, просмотрите его на настольном компьютере или свяжитесь с администратором, чтобы увеличить этот лимит."
 }

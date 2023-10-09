@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getActiveServerUrl} from '@app/init/credentials';
 import {Tutorial} from '@constants';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {getActiveServerUrl} from '@init/credentials';
 import {logError} from '@utils/log';
 
 export const storeGlobal = async (id: string, value: unknown, prepareRecordsOnly = false) => {

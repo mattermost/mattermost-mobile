@@ -3,12 +3,12 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {Observable, of as of$} from 'rxjs';
+import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {queryMyRecentChannels} from '@queries/servers/channel';
 import {queryJoinedTeams} from '@queries/servers/team';
-import {retrieveChannels} from '@screens/find_channels/utils';
+import {removeChannelsFromArchivedTeams, retrieveChannels} from '@screens/find_channels/utils';
 
 import UnfilteredList from './unfiltered_list';
 
@@ -18,10 +18,16 @@ const MAX_CHANNELS = 20;
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const teamsCount = queryJoinedTeams(database).observeCount();
+    const teamIds: Observable<Set<string>> = queryJoinedTeams(database).observe().pipe(
+        // eslint-disable-next-line max-nested-callbacks
+        switchMap((teams) => of$(new Set(teams.map((t) => t.id)))),
+    );
 
     const recentChannels = queryMyRecentChannels(database, MAX_CHANNELS).
         observeWithColumns(['last_viewed_at']).pipe(
             switchMap((myChannels) => retrieveChannels(database, myChannels, true)),
+            combineLatestWith(teamIds),
+            switchMap(([myChannels, tmIds]) => of$(removeChannelsFromArchivedTeams(myChannels, tmIds))),
         );
 
     return {
