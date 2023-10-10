@@ -561,6 +561,8 @@ PODS:
   - RNScreens (3.24.0):
     - React-Core
     - React-RCTImage
+  - RNSecureRandom (1.0.1):
+    - React
   - RNSentry (5.9.0):
     - React-Core
     - Sentry/HybridSDK (= 8.9.4)
@@ -690,6 +692,7 @@ DEPENDENCIES:
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - RNSecureRandom (from `../node_modules/react-native-securerandom`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSha256 (from `../node_modules/react-native-sha256`)
   - RNShare (from `../node_modules/react-native-share`)
@@ -872,6 +875,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNSecureRandom:
+    :path: "../node_modules/react-native-securerandom"
   RNSentry:
     :path: "../node_modules/@sentry/react-native"
   RNSha256:
@@ -987,6 +992,7 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: afa5bf2794aecbb2dba2525329253da0d66656df
   RNReanimated: 49cdb63e767bb7e743ff4c12f7d85722c0d008f2
   RNScreens: b21dc57dfa2b710c30ec600786a3fc223b1b92e7
+  RNSecureRandom: 07efbdf2cd99efe13497433668e54acd7df49fef
   RNSentry: c167b3da6aa7f3cf85d909caae905d043a062b6c
   RNSha256: a6bc3640a34eb41907e363828b9ec742c274298d
   RNShare: da6d90b6dc332f51f86498041d6e34211f96b630

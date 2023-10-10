@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import qs from 'querystringify';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Linking, Platform, Text, View} from 'react-native';
 import Button from 'react-native-button';
+import {generateSecureRandom} from 'react-native-securerandom';
 import {sha256} from 'react-native-sha256';
 import urlParse from 'url-parse';
 
@@ -17,7 +18,6 @@ import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isErrorWithMessage} from '@utils/errors';
 import {isBetaApp} from '@utils/general';
 import {urlSafeBase64Encode} from '@utils/security';
-import {generateRandomString} from '@utils/strings';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
@@ -66,7 +66,8 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
     const [error, setError] = useState<string>('');
     const style = getStyleSheet(theme);
     const intl = useIntl();
-    const codeVerifier = useMemo(() => generateRandomString(100), []);
+
+    const [codeVerifier, setCodeVerifier] = useState<string>();
     let customUrlScheme = Sso.REDIRECT_URL_SCHEME;
     if (isBetaApp) {
         customUrlScheme = Sso.REDIRECT_URL_SCHEME_DEV;
@@ -79,7 +80,10 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
             setLoginError('');
             NetworkManager.createClient(serverUrl);
         }
-        const hash = await sha256(codeVerifier);
+        const verifier = await generateSecureRandom(100);
+
+        setCodeVerifier(verifier);
+        const hash = await sha256(verifier);
         const codeChallenge = urlSafeBase64Encode(hash);
         const parsedUrl = urlParse(loginUrl, true);
         const query: Record<string, string> = {
@@ -118,7 +122,7 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
                 let bearerToken = parsedUrl.query?.MMAUTHTOKEN;
                 let csrfToken = parsedUrl.query?.MMCSRF;
                 const codeChallengeToken = parsedUrl.query?.MMCHALLENGETOKEN;
-                if (codeChallengeToken) {
+                if (codeChallengeToken && codeVerifier) {
                     const response = await fetchSessionTokenFromCodeChallenge(serverUrl, codeChallengeToken, codeVerifier);
                     if ('token' in response) {
                         bearerToken = response.token;
@@ -140,11 +144,16 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
 
         const listener = Linking.addEventListener('url', onURLChange);
 
+        return () => {
+            listener.remove();
+        };
+    }, [codeVerifier]);
+
+    useEffect(() => {
         const timeout = setTimeout(() => {
             init(false);
         }, 1000);
         return () => {
-            listener.remove();
             clearTimeout(timeout);
         };
     }, []);

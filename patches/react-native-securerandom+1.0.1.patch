@@ -1,0 +1,24 @@
+diff --git a/node_modules/react-native-securerandom/index.d.ts b/node_modules/react-native-securerandom/index.d.ts
+index c4ade46..b145b27 100644
+--- a/node_modules/react-native-securerandom/index.d.ts
++++ b/node_modules/react-native-securerandom/index.d.ts
+@@ -1 +1 @@
+-export declare function generateSecureRandom(length: number): Promise<Uint8Array>;
++export declare function generateSecureRandom(length: number): Promise<string>;
+diff --git a/node_modules/react-native-securerandom/index.js b/node_modules/react-native-securerandom/index.js
+index c3d1727..310ee2f 100644
+--- a/node_modules/react-native-securerandom/index.js
++++ b/node_modules/react-native-securerandom/index.js
+@@ -1,5 +1,4 @@
+ import { NativeModules } from 'react-native';
+-import { toByteArray } from 'base64-js';
+ 
+ const { RNSecureRandom } = NativeModules;
+ 
+@@ -8,5 +7,5 @@ export function generateSecureRandom(length) {
+         return Promise.reject(Error('react-native-securerandom is not properly linked'));
+     }
+ 
+-    return RNSecureRandom.generateSecureRandomAsBase64(length).then(base64 => toByteArray(base64));
++    return RNSecureRandom.generateSecureRandomAsBase64(length);
+ }
