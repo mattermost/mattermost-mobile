@@ -4,8 +4,7 @@
 import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
-import {handleEntryAfterLoadNavigation, registerDeviceToken} from '@actions/remote/entry/common';
-import {deferredAppEntryActions, entry} from '@actions/remote/entry/gql_common';
+import {deferredAppEntryActions, entry, handleEntryAfterLoadNavigation, registerDeviceToken} from '@actions/remote/entry/common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
