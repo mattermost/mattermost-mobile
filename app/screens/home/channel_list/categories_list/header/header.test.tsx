@@ -17,14 +17,13 @@ describe('components/channel_list/header', () => {
                 canJoinChannels={true}
                 canInvitePeople={true}
                 displayName={'Test!'}
-                pushDisabledAck={true}
             />,
         );
 
         expect(toJSON()).toMatchSnapshot();
     });
 
-    it('Push notifications disabled and not having acknoledged it show alert icon', () => {
+    it('Push notifications disabled show alert icon', () => {
         const wrapper = renderWithIntl(
             <Header
                 pushProxyStatus={PUSH_PROXY_RESPONSE_NOT_AVAILABLE}
@@ -32,25 +31,9 @@ describe('components/channel_list/header', () => {
                 canJoinChannels={true}
                 canInvitePeople={true}
                 displayName={'Test!'}
-                pushDisabledAck={false}
             />,
         );
 
         expect(wrapper.getByTestId('channel_list_header.push_alert')).toBeTruthy();
-    });
-
-    it('Push notifications are disabled, but even after acknowledging them, the alert icon does not appear', () => {
-        const wrapper = renderWithIntl(
-            <Header
-                pushProxyStatus={PUSH_PROXY_RESPONSE_NOT_AVAILABLE}
-                canCreateChannels={true}
-                canJoinChannels={true}
-                canInvitePeople={true}
-                displayName={'Test!'}
-                pushDisabledAck={true}
-            />,
-        );
-
-        expect(wrapper.queryByTestId('channel_list_header.push_alert')).toBeNull();
     });
 });

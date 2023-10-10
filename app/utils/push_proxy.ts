@@ -36,14 +36,14 @@ export async function canReceiveNotifications(serverUrl: string, verification: s
     }
 }
 
-const handleAlertResponse = async (buttonIndex: number, serverUrl: string) => {
-    if (buttonIndex === 0) {
+const handleAlertResponse = async (buttonIndex: number, serverUrl?: string) => {
+    if (buttonIndex === 0 && serverUrl) {
         // User clicked "Okay" acknowledging that the push notifications are disabled on that server
         await storePushDisabledInServerAcknowledged(urlSafeBase64Encode(serverUrl));
     }
 };
 
-export function alertPushProxyError(intl: IntlShape, serverUrl: string) {
+export function alertPushProxyError(intl: IntlShape, serverUrl?: string) {
     Alert.alert(
         intl.formatMessage({
             id: 'alert.push_proxy_error.title',

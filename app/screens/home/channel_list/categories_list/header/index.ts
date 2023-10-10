@@ -7,23 +7,16 @@ import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
-import {withServerUrl} from '@context/server';
-import {observePushDisabledInServerAcknowledged} from '@queries/app/global';
 import {observePermissionForTeam} from '@queries/servers/role';
 import {observeConfigBooleanValue, observePushVerificationStatus} from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
-import {urlSafeBase64Encode} from '@utils/security';
 
 import ChannelListHeader from './header';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type Props = WithDatabaseArgs & {
-    serverUrl: string;
-}
-
-const enhanced = withObservables([], ({serverUrl, database}: Props) => {
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const team = observeCurrentTeam(database);
 
     const currentUser = observeCurrentUser(database);
@@ -64,8 +57,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
             distinctUntilChanged(),
         ),
         pushProxyStatus: observePushVerificationStatus(database),
-        pushDisabledAck: observePushDisabledInServerAcknowledged(urlSafeBase64Encode(serverUrl)),
     };
 });
 
-export default withDatabase(withServerUrl(enhanced(ChannelListHeader)));
+export default withDatabase(enhanced(ChannelListHeader));
