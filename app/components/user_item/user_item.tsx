@@ -32,6 +32,7 @@ type Props = {
     rightDecorator?: React.ReactNode;
     onUserPress?: (user: UserProfile | UserModel) => void;
     onUserLongPress?: (user: UserProfile | UserModel) => void;
+    onLayout?: () => void;
     disabled?: boolean;
     viewRef?: React.LegacyRef<View>;
     padding?: number;
@@ -102,6 +103,7 @@ const UserItem = ({
     locale,
     teammateNameDisplay,
     rightDecorator,
+    onLayout,
     onUserPress,
     onUserLongPress,
     disabled = false,
@@ -159,6 +161,7 @@ const UserItem = ({
             onPress={onPress}
             onLongPress={onLongPress}
             disabled={!(onUserPress || onUserLongPress)}
+            onLayout={onLayout}
         >
             <View
                 ref={viewRef}
