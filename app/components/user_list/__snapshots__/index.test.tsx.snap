@@ -259,15 +259,6 @@ exports[`components/channel_list_row should show no results 1`] = `
           </View>
         </View>
       </View>
-      <Modal
-        animationType="fade"
-        hardwareAccelerated={false}
-        onDismiss={[Function]}
-        onRequestClose={[Function]}
-        testID="tutorial_highlight"
-        transparent={true}
-        visible={false}
-      />
     </View>
     <View
       onFocusCapture={[Function]}
@@ -555,6 +546,15 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
           </View>
         </View>
       </View>
+      <Modal
+        animationType="fade"
+        hardwareAccelerated={false}
+        onDismiss={[Function]}
+        onRequestClose={[Function]}
+        testID="tutorial_highlight"
+        transparent={true}
+        visible={false}
+      />
     </View>
     <View
       onFocusCapture={[Function]}
@@ -842,15 +842,6 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
           </View>
         </View>
       </View>
-      <Modal
-        animationType="fade"
-        hardwareAccelerated={false}
-        onDismiss={[Function]}
-        onRequestClose={[Function]}
-        testID="tutorial_highlight"
-        transparent={true}
-        visible={false}
-      />
     </View>
     <View
       onFocusCapture={[Function]}
@@ -1170,15 +1161,6 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
           </View>
         </View>
       </View>
-      <Modal
-        animationType="fade"
-        hardwareAccelerated={false}
-        onDismiss={[Function]}
-        onRequestClose={[Function]}
-        testID="tutorial_highlight"
-        transparent={true}
-        visible={false}
-      />
     </View>
     <View
       onFocusCapture={[Function]}
