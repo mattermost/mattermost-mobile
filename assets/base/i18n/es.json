@@ -729,7 +729,6 @@
     "intro.townsquare": "Bienvenido a {name}. Todos se convierten automáticamente en miembros de este canal cuando se unen al equipo.",
     "intro.public_channel": "Canal público",
     "intro.private_channel": "Canal privado",
-    "intro.group_message": "Este es el comienzo de tu conversación con este grupo. Los mensajes y archivos compartidos aquí no se muestran a nadie fuera del grupo.",
     "intro.direct_message": "Este es el comienzo de tu conversación con {teammate}. Los mensajes y archivos compartidos aquí no se muestran a nadie más.",
     "intro.created_by": "creado por {creator} el {date}.",
     "intro.channel_info": "Información",
