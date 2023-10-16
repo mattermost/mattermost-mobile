@@ -262,6 +262,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CALL:
             screen = withServerDatabase(require('@calls/screens/call_screen').default);
             break;
+        case Screens.CONVERT_GM_TO_CHANNEL:
+            screen = withServerDatabase(require('@screens/convert_gm_to_channel').default);
     }
 
     if (screen) {

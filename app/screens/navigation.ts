@@ -245,6 +245,7 @@ export function getThemeFromState(): Theme {
 function isScreenRegistered(screen: AvailableScreens) {
     const notImplemented = NOT_READY.includes(screen) || !Object.values(Screens).includes(screen);
     if (notImplemented) {
+        console.log('AAAA');
         Alert.alert(
             'Temporary error ' + screen,
             'The functionality you are trying to use has not been implemented yet',

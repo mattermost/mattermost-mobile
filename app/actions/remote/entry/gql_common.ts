@@ -266,6 +266,7 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
     return {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData};
 };
 
+// LOL
 export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0): Promise<EntryResponse> => {
     const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
     const config = await getConfig(database);
