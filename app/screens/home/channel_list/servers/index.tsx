@@ -27,7 +27,8 @@ export type ServersRef = {
     openServers: () => void;
 }
 
-export const SERVER_ITEM_HEIGHT = 72;
+export const SERVER_ITEM_HEIGHT = 75;
+export const PUSH_ALERT_TEXT_HEIGHT = 42;
 const subscriptions: Map<string, UnreadSubscription> = new Map();
 
 const styles = StyleSheet.create({
@@ -119,8 +120,8 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             const maxScreenHeight = Math.ceil(0.6 * Dimensions.get('window').height);
             const maxSnapPoint = Math.min(
                 maxScreenHeight,
-                bottomSheetSnapPoint(registeredServers.current.length, 75, bottom) + TITLE_HEIGHT + BUTTON_HEIGHT +
-                    (registeredServers.current.filter((s: ServersModel) => s.lastActiveAt).length * 42),
+                bottomSheetSnapPoint(registeredServers.current.length, SERVER_ITEM_HEIGHT, bottom) + TITLE_HEIGHT + BUTTON_HEIGHT +
+                    (registeredServers.current.filter((s: ServersModel) => s.lastActiveAt).length * PUSH_ALERT_TEXT_HEIGHT),
             );
 
             const snapPoints: BottomSheetProps['snapPoints'] = [
