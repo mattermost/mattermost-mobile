@@ -6,10 +6,10 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, StyleSheet, View, type ListRenderItemInfo} from 'react-native';
 
-import {BUTTON_HEIGHT} from '@app/screens/bottom_sheet';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {BUTTON_HEIGHT} from '@screens/bottom_sheet';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {addNewServer} from '@utils/server';
 
