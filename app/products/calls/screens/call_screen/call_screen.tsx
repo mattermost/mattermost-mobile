@@ -105,6 +105,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         height: '100%',
         alignItems: 'center',
     },
+    floatingBarsContainer: {
+        flexDirection: 'column',
+        width: '100%',
+        gap: 8,
+        marginBottom: 8,
+    },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -184,11 +190,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     usernameShort: {
         marginTop: 0,
         width: usernameM,
-    },
-    incomingCallContainer: {
-        width: '100%',
-        marginBottom: 8,
-        gap: 8,
     },
     buttonsContainer: {
         alignItems: 'center',
@@ -695,29 +696,29 @@ const CallScreen = ({
                 {!isLandscape && currentCall.reactionStream.length > 0 &&
                     <EmojiList reactionStream={currentCall.reactionStream}/>
                 }
-                {showIncomingCalls &&
-                    <View style={style.incomingCallContainer}>
-                        {incomingCalls.incomingCalls.map((ic) => (
+                <View style={style.floatingBarsContainer}>
+                    {showIncomingCalls &&
+                        incomingCalls.incomingCalls.map((ic) => (
                             <CallNotification
                                 key={ic.callID}
                                 incomingCall={ic}
                                 onCallsScreen={true}
                             />
-                        ))}
-                    </View>
-                }
-                {micPermissionsError &&
-                    <MessageBar
-                        type={Calls.MessageBarType.Microphone}
-                        onPress={setMicPermissionsErrorDismissed}
-                    />
-                }
-                {currentCall.callQualityAlert &&
-                    <MessageBar
-                        type={Calls.MessageBarType.CallQuality}
-                        onPress={setCallQualityAlertDismissed}
-                    />
-                }
+                        ))
+                    }
+                    {micPermissionsError &&
+                        <MessageBar
+                            type={Calls.MessageBarType.Microphone}
+                            onDismiss={setMicPermissionsErrorDismissed}
+                        />
+                    }
+                    {currentCall.callQualityAlert &&
+                        <MessageBar
+                            type={Calls.MessageBarType.CallQuality}
+                            onDismiss={setCallQualityAlertDismissed}
+                        />
+                    }
+                </View>
                 <View style={[style.buttonsContainer]}>
                     <View
                         style={[

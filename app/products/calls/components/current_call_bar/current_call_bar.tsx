@@ -39,7 +39,8 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
     return {
         wrapper: {
-            margin: 8,
+            marginRight: 8,
+            marginLeft: 8,
             backgroundColor: theme.callsBg,
             borderRadius: 8,
         },
@@ -56,7 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
             paddingRight: 12,
             paddingBottom: 8,
             paddingLeft: 6,
-            height: CURRENT_CALL_BAR_HEIGHT - 10,
+            height: CURRENT_CALL_BAR_HEIGHT,
         },
         pressable: {
             zIndex: 10,
@@ -267,13 +268,13 @@ const CurrentCallBar = ({
             {micPermissionsError &&
                 <MessageBar
                     type={Calls.MessageBarType.Microphone}
-                    onPress={setMicPermissionsErrorDismissed}
+                    onDismiss={setMicPermissionsErrorDismissed}
                 />
             }
             {currentCall?.callQualityAlert &&
                 <MessageBar
                     type={Calls.MessageBarType.CallQuality}
-                    onPress={setCallQualityAlertDismissed}
+                    onDismiss={setCallQualityAlertDismissed}
                 />
             }
         </>

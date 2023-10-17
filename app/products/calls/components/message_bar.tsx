@@ -11,7 +11,7 @@ import CompassIcon from '@components/compass_icon';
 import {Calls} from '@constants';
 import {CALL_ERROR_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {CallsTheme} from '@calls/types/calls';
@@ -19,28 +19,36 @@ import type {MessageBarType} from '@constants/calls';
 
 type Props = {
     type: MessageBarType;
-    onPress: () => void;
+    onDismiss: () => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => (
     {
-        pressable: {
-            zIndex: 10,
+        outerContainer: {
+            borderRadius: 8,
+            backgroundColor: theme.dndIndicator,
+            height: CALL_ERROR_BAR_HEIGHT,
+            marginLeft: 8,
+            marginRight: 8,
         },
-        errorWrapper: {
-            padding: 8,
-            paddingTop: 0,
+        outerContainerWarning: {
+            backgroundColor: theme.awayIndicator,
         },
-        errorBar: {
+        innerContainer: {
             flexDirection: 'row',
             backgroundColor: theme.dndIndicator,
-            minHeight: CALL_ERROR_BAR_HEIGHT,
+            height: '100%',
             width: '100%',
-            borderRadius: 5,
-            padding: 10,
+            borderRadius: 8,
+            borderWidth: 2,
+            borderColor: changeOpacity(theme.buttonColor, 0.16),
+            paddingTop: 4,
+            paddingLeft: 15,
+            paddingBottom: 4,
+            justifyContent: 'center',
             alignItems: 'center',
         },
-        warningBar: {
+        innerContainerWarning: {
             backgroundColor: theme.awayIndicator,
         },
         errorText: {
@@ -51,19 +59,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => (
         warningText: {
             color: theme.callsBg,
         },
-        iconContainer: {
-            width: 42,
-            height: 42,
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 4,
-            margin: 0,
-            padding: 9,
-        },
-        pressedIconContainer: {
-            backgroundColor: theme.buttonColor,
+        closeIcon: {
+            color: changeOpacity(theme.buttonColor, 0.56),
+            paddingLeft: 10,
+            paddingRight: 10,
+            paddingTop: 4,
+            paddingBottom: 4,
         },
         errorIcon: {
+            paddingRight: 9,
             color: theme.buttonColor,
             fontSize: 18,
         },
@@ -76,13 +80,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => (
         pressedWarningIcon: {
             color: theme.awayIndicator,
         },
-        paddingRight: {
-            paddingRight: 9,
-        },
     }
 ));
 
-const MessageBar = ({type, onPress}: Props) => {
+const MessageBar = ({type, onDismiss}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
@@ -100,7 +101,7 @@ const MessageBar = ({type, onPress}: Props) => {
             icon = (
                 <CompassIcon
                     name='microphone-off'
-                    style={[style.errorIcon, style.paddingRight]}
+                    style={[style.errorIcon]}
                 />);
             break;
         case Calls.MessageBarType.CallQuality:
@@ -111,38 +112,25 @@ const MessageBar = ({type, onPress}: Props) => {
             icon = (
                 <CompassIcon
                     name='alert-outline'
-                    style={[style.errorIcon, style.warningIcon, style.paddingRight]}
+                    style={[style.errorIcon, style.warningIcon]}
                 />);
             break;
     }
 
     return (
-        <View style={style.errorWrapper}>
+        <View style={[style.outerContainer, warning && style.outerContainerWarning]}>
             <Pressable
                 onPress={Permissions.openSettings}
-                style={[style.errorBar, warning && style.warningBar]}
+                style={[style.innerContainer, warning && style.innerContainerWarning]}
             >
                 {icon}
                 <Text style={[style.errorText, warning && style.warningText]}>{message}</Text>
-                <Pressable
-                    onPress={onPress}
-                    hitSlop={5}
-                    style={({pressed}) => [
-                        style.pressable,
-                        style.iconContainer,
-                        pressed && style.pressedIconContainer,
-                    ]}
-                >
-                    {({pressed}) => (
-                        <CompassIcon
-                            name='close'
-                            style={[style.errorIcon,
-                                warning && style.warningIcon,
-                                pressed && style.pressedErrorIcon,
-                                pressed && warning && style.pressedWarningIcon,
-                            ]}
-                        />
-                    )}
+                <Pressable onPress={onDismiss}>
+                    <CompassIcon
+                        name='close'
+                        size={18}
+                        style={style.closeIcon}
+                    />
                 </Pressable>
             </Pressable>
         </View>

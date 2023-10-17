@@ -34,7 +34,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     outerContainer: {
         borderRadius: 8,
         height: JOIN_CALL_BAR_HEIGHT,
-        marginTop: 8,
         marginRight: 8,
         marginLeft: 8,
     },

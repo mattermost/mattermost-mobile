@@ -8,7 +8,6 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import {IncomingCallsContainer} from '@calls/components/incoming_calls_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -110,7 +109,7 @@ const Thread = ({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const showFloatingCallContainer = showJoinCallBanner || isInACall;
+    const showFloatingCallContainer = showJoinCallBanner || isInACall || showIncomingCalls;
 
     return (
         <FreezeScreen>
@@ -146,15 +145,8 @@ const Thread = ({
                     <FloatingCallContainer
                         channelId={rootPost!.channelId}
                         showJoinCallBanner={showJoinCallBanner}
+                        showIncomingCalls={showIncomingCalls}
                         isInACall={isInACall}
-                        threadScreen={true}
-                    />
-                }
-                {showIncomingCalls &&
-                    <IncomingCallsContainer
-                        channelId={rootPost!.channelId}
-                        showingJoinCallBanner={showJoinCallBanner}
-                        showingCurrentCallBanner={isInACall}
                         threadScreen={true}
                     />
                 }
