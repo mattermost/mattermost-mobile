@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {Dimensions, StyleSheet} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {BUTTON_HEIGHT, TITLE_HEIGHT} from '@app/screens/bottom_sheet';
 import ServerIcon from '@components/server_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -18,7 +19,6 @@ import {sortServersByDisplayName} from '@utils/server';
 
 import ServerList, {AddServerButton} from './servers_list';
 
-import {BUTTON_HEIGHT, TITLE_HEIGHT} from '@app/screens/bottom_sheet';
 import type {BottomSheetProps} from '@gorhom/bottom-sheet';
 import type ServersModel from '@typings/database/models/app/servers';
 import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
@@ -119,8 +119,8 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             const maxScreenHeight = Math.ceil(0.6 * Dimensions.get('window').height);
             const maxSnapPoint = Math.min(
                 maxScreenHeight,
-                bottomSheetSnapPoint(registeredServers.current.length, 72, bottom) + TITLE_HEIGHT + BUTTON_HEIGHT +
-                    (registeredServers.current.filter((s: ServersModel) => s.lastActiveAt).length * 40),
+                bottomSheetSnapPoint(registeredServers.current.length, 75, bottom) + TITLE_HEIGHT + BUTTON_HEIGHT +
+                    (registeredServers.current.filter((s: ServersModel) => s.lastActiveAt).length * 42),
             );
 
             const snapPoints: BottomSheetProps['snapPoints'] = [
