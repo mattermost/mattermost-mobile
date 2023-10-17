@@ -172,8 +172,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         marginTop: 5,
         marginBottom: 0,
     },
+    profileScreenOn: {
+        marginBottom: 2,
+    },
     username: {
-        marginTop: 10,
         width: usernameL,
         textAlign: 'center',
         color: theme.buttonColor,
@@ -604,16 +606,18 @@ const CallScreen = ({
                                     style={[style.user, screenShareOn && style.userScreenOn]}
                                     key={user.id}
                                 >
-                                    <CallAvatar
-                                        userModel={user.userModel}
-                                        volume={currentCall.voiceOn[user.id] ? 1 : 0}
-                                        muted={user.muted}
-                                        sharingScreen={user.id === currentCall.screenOn}
-                                        raisedHand={Boolean(user.raisedHand)}
-                                        reaction={user.reaction?.emoji}
-                                        size={avatarSize}
-                                        serverUrl={currentCall.serverUrl}
-                                    />
+                                    <View style={[screenShareOn && style.profileScreenOn]}>
+                                        <CallAvatar
+                                            userModel={user.userModel}
+                                            speaking={currentCall.voiceOn[user.id]}
+                                            muted={user.muted}
+                                            sharingScreen={user.id === currentCall.screenOn}
+                                            raisedHand={Boolean(user.raisedHand)}
+                                            reaction={user.reaction?.emoji}
+                                            size={avatarSize}
+                                            serverUrl={currentCall.serverUrl}
+                                        />
+                                    </View>
                                     <Text
                                         style={[style.username, smallerAvatar && style.usernameShort]}
                                         numberOfLines={1}

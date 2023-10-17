@@ -55,16 +55,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
             paddingTop: 8,
             paddingRight: 12,
             paddingBottom: 8,
-            paddingLeft: 12,
+            paddingLeft: 6,
             height: CURRENT_CALL_BAR_HEIGHT - 10,
         },
         pressable: {
             zIndex: 10,
-        },
-        profilePic: {
-            marginTop: 4,
-            marginRight: Platform.select({android: -8}),
-            marginLeft: Platform.select({android: -8}),
         },
         userInfo: {
             flex: 1,
@@ -72,10 +67,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
         },
         speakingUser: {
             color: theme.buttonColor,
-            ...typography('Body', 200, 'SemiBold'),
+            ...typography('Body', 100, 'SemiBold'),
         },
         speakingPostfix: {
-            ...typography('Body', 200, 'Regular'),
+            ...typography('Body', 100, 'Regular'),
         },
         channelAndTime: {
             color: changeOpacity(theme.buttonColor, 0.56),
@@ -224,14 +219,12 @@ const CurrentCallBar = ({
                     style={style.container}
                     onPress={goToCallScreen}
                 >
-                    <View style={style.profilePic}>
-                        <CallAvatar
-                            userModel={userModelsDict[speaker || '']}
-                            volume={speaker ? 0.5 : 0}
-                            serverUrl={currentCall?.serverUrl || ''}
-                            size={32}
-                        />
-                    </View>
+                    <CallAvatar
+                        userModel={userModelsDict[speaker || '']}
+                        speaking={Boolean(speaker)}
+                        serverUrl={currentCall?.serverUrl || ''}
+                        size={40}
+                    />
                     <View style={style.userInfo}>
                         {talkingMessage}
                         <Text style={style.channelAndTime}>
