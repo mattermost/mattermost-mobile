@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
+import {Dimensions, StyleSheet} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ServerIcon from '@components/server_icon';
@@ -12,13 +12,13 @@ import {useTheme} from '@context/theme';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer, type UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
-import {BUTTON_HEIGHT, TITLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {sortServersByDisplayName} from '@utils/server';
 
 import ServerList, {AddServerButton} from './servers_list';
 
+import {BUTTON_HEIGHT, TITLE_HEIGHT} from '@app/screens/bottom_sheet';
 import type {BottomSheetProps} from '@gorhom/bottom-sheet';
 import type ServersModel from '@typings/database/models/app/servers';
 import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
@@ -116,12 +116,18 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
                     <ServerList servers={registeredServers.current!}/>
                 );
             };
+            const maxScreenHeight = Math.ceil(0.6 * Dimensions.get('window').height);
+            const maxSnapPoint = Math.min(
+                maxScreenHeight,
+                bottomSheetSnapPoint(registeredServers.current.length, 72, bottom) + TITLE_HEIGHT + BUTTON_HEIGHT +
+                    (registeredServers.current.filter((s: ServersModel) => s.lastActiveAt).length * 40),
+            );
 
             const snapPoints: BottomSheetProps['snapPoints'] = [
                 1,
-                bottomSheetSnapPoint(Math.min(2.5, registeredServers.current.length), 72, bottom) + TITLE_HEIGHT + BUTTON_HEIGHT,
+                maxSnapPoint,
             ];
-            if (registeredServers.current.length > 1) {
+            if (maxSnapPoint === maxScreenHeight) {
                 snapPoints.push('80%');
             }
 
