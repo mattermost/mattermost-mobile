@@ -8,7 +8,6 @@ import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import {IncomingCallsContainer} from '@calls/components/incoming_calls_container';
-import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import {Screens} from '@constants';
@@ -127,7 +126,6 @@ const Channel = ({
                     callsEnabledInChannel={isCallsEnabledInChannel}
                     isTabletView={isTabletView}
                 />
-                {showJoinCallBanner && <RoundedHeaderCalls/>}
                 {shouldRender &&
                 <>
                     <View style={[styles.flex, {marginTop}]}>

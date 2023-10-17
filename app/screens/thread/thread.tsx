@@ -9,7 +9,6 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import {IncomingCallsContainer} from '@calls/components/incoming_calls_container';
-import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -123,7 +122,6 @@ const Thread = ({
                 onLayout={onLayout}
             >
                 <RoundedHeaderContext/>
-                {showJoinCallBanner && <RoundedHeaderCalls threadScreen={true}/>}
                 {Boolean(rootPost) &&
                 <>
                     <View style={styles.flex}>
