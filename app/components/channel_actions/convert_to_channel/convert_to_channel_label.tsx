@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 
 import OptionItem from '@app/components/option_item';
 import {Screens} from '@app/constants';
-import {useTheme} from '@app/context/theme';
 import {dismissBottomSheet, goToScreen} from '@app/screens/navigation';
 import {preventDoubleTap} from '@app/utils/tap';
 
@@ -17,12 +17,14 @@ const ConvertToChannelLabel = () => {
         goToScreen(Screens.CONVERT_GM_TO_CHANNEL, title, {});
     });
 
-    // LOL: localize this
+    const {formatMessage} = useIntl();
+    const label = formatMessage({id: 'channel_info.convert_gm_to_channel', defaultMessage: 'Convert to a Private Channel'});
+
     return (
         <OptionItem
             action={goToConvertToPrivateChannl}
             icon='lock-outline'
-            label='Convert to a Private Channel'
+            label={label}
             type='default'
         />
     );

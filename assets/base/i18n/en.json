@@ -1074,5 +1074,6 @@
   "video.download": "Download video",
   "video.download_description": "This video must be downloaded to play it.",
   "video.failed_description": "An error occurred while trying to play the video.",
-  "your.servers": "Your servers"
+  "your.servers": "Your servers",
+  "channel_info.convert_gm_to_channel": "Convert to a Private Channel"
 }
