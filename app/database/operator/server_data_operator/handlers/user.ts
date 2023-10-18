@@ -37,13 +37,15 @@ const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
      */
     handlePreferences = async ({preferences, prepareRecordsOnly = true, sync = false}: HandlePreferencesArgs): Promise<PreferenceModel[]> => {
         const records: PreferenceModel[] = [];
-        const filtered = filterPreferences(preferences);
-        if (!filtered?.length) {
+
+        if (!preferences?.length) {
             logWarning(
                 'An empty or undefined "preferences" array has been passed to the handlePreferences method',
             );
             return records;
         }
+
+        const filtered = filterPreferences(preferences);
 
         // WE NEED TO SYNC THE PREFS FROM WHAT WE GOT AND WHAT WE HAVE
         const deleteValues: PreferenceModel[] = [];

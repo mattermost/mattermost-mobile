@@ -14,7 +14,7 @@ import {Device} from '@constants';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {typography} from '@utils/typography';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     pressableStyle: StyleProp<ViewStyle>;
@@ -23,13 +23,16 @@ type Props = {
     currentCall: CurrentCall;
 }
 
-const style = {
-    bold: typography('Body', 200, 'SemiBold'),
-};
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
+    checkIcon: {
+        color: theme.buttonBg,
+    },
+}));
 
 export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, currentCall}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
+    const style = getStyleFromTheme(theme);
     const {bottom} = useSafeAreaInsets();
     const isTablet = Device.IS_TABLET; // not `useIsTablet` because even if we're in splitView, we're still using a tablet.
     const color = theme.awayIndicator;
@@ -38,10 +41,14 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
     const tabletLabel = intl.formatMessage({id: 'mobile.calls_tablet', defaultMessage: 'Tablet'});
     const speakerLabel = intl.formatMessage({id: 'mobile.calls_speaker', defaultMessage: 'SpeakerPhone'});
     const bluetoothLabel = intl.formatMessage({id: 'mobile.calls_bluetooth', defaultMessage: 'Bluetooth'});
+    const headsetLabel = intl.formatMessage({id: 'mobile.calls_headset', defaultMessage: 'Headset'});
 
     const deviceSelector = useCallback(async () => {
         const currentDevice = audioDeviceInfo.selectedAudioDevice;
-        const available = audioDeviceInfo.availableAudioDeviceList;
+        let available = audioDeviceInfo.availableAudioDeviceList;
+        if (available.includes(AudioDevice.WiredHeadset)) {
+            available = available.filter((d) => d !== AudioDevice.Earpiece);
+        }
         const selectDevice = (device: AudioDevice) => {
             setPreferredAudioRoute(device);
             dismissBottomSheet();
@@ -52,34 +59,47 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
                 <View>
                     {available.includes(AudioDevice.Earpiece) && isTablet &&
                         <SlideUpPanelItem
-                            icon={'tablet'}
+                            leftIcon={'tablet'}
                             onPress={() => selectDevice(AudioDevice.Earpiece)}
                             text={tabletLabel}
-                            textStyles={currentDevice === AudioDevice.Earpiece ? {...style.bold, color} : {}}
+                            rightIcon={currentDevice === AudioDevice.Earpiece ? 'check' : undefined}
+                            rightIconStyles={currentDevice === AudioDevice.Earpiece ? style.checkIcon : {}}
                         />
                     }
                     {available.includes(AudioDevice.Earpiece) && !isTablet &&
                         <SlideUpPanelItem
-                            icon={'cellphone'}
+                            leftIcon={'cellphone'}
                             onPress={() => selectDevice(AudioDevice.Earpiece)}
                             text={phoneLabel}
-                            textStyles={currentDevice === AudioDevice.Earpiece ? {...style.bold, color} : {}}
+                            rightIcon={currentDevice === AudioDevice.Earpiece ? 'check' : undefined}
+                            rightIconStyles={currentDevice === AudioDevice.Earpiece ? style.checkIcon : {}}
                         />
                     }
                     {available.includes(AudioDevice.Speakerphone) &&
                         <SlideUpPanelItem
-                            icon={'volume-high'}
+                            leftIcon={'volume-high'}
                             onPress={() => selectDevice(AudioDevice.Speakerphone)}
                             text={speakerLabel}
-                            textStyles={currentDevice === AudioDevice.Speakerphone ? {...style.bold, color} : {}}
+                            rightIcon={currentDevice === AudioDevice.Speakerphone ? 'check' : undefined}
+                            rightIconStyles={currentDevice === AudioDevice.Speakerphone ? style.checkIcon : {}}
                         />
                     }
                     {available.includes(AudioDevice.Bluetooth) &&
                         <SlideUpPanelItem
-                            icon={'bluetooth'}
+                            leftIcon={'bluetooth'}
                             onPress={() => selectDevice(AudioDevice.Bluetooth)}
                             text={bluetoothLabel}
-                            textStyles={currentDevice === AudioDevice.Bluetooth ? {...style.bold, color} : {}}
+                            rightIcon={currentDevice === AudioDevice.Bluetooth ? 'check' : undefined}
+                            rightIconStyles={currentDevice === AudioDevice.Bluetooth ? style.checkIcon : {}}
+                        />
+                    }
+                    {available.includes(AudioDevice.WiredHeadset) &&
+                        <SlideUpPanelItem
+                            leftIcon={'headphones'}
+                            onPress={() => selectDevice(AudioDevice.WiredHeadset)}
+                            text={headsetLabel}
+                            rightIcon={currentDevice === AudioDevice.WiredHeadset ? 'check' : undefined}
+                            rightIconStyles={currentDevice === AudioDevice.WiredHeadset ? style.checkIcon : {}}
                         />
                     }
                 </View>
@@ -89,7 +109,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
         await bottomSheet({
             closeButtonId: 'close-other-actions',
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(audioDeviceInfo.availableAudioDeviceList.length + 1, ITEM_HEIGHT, bottom)],
+            snapPoints: [1, bottomSheetSnapPoint(available.length + 1, ITEM_HEIGHT, bottom)],
             title: intl.formatMessage({id: 'mobile.calls_audio_device', defaultMessage: 'Select audio device'}),
             theme,
         });
@@ -105,6 +125,10 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
         case AudioDevice.Bluetooth:
             icon = 'bluetooth';
             label = bluetoothLabel;
+            break;
+        case AudioDevice.WiredHeadset:
+            icon = 'headphones';
+            label = headsetLabel;
             break;
     }
 

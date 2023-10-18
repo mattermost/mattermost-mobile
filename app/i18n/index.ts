@@ -145,6 +145,13 @@ function loadTranslation(locale?: string): {[x: string]: string} {
 
                 translations = require('@assets/i18n/uk.json');
                 break;
+            case 'vi':
+                require('@formatjs/intl-pluralrules/locale-data/vi');
+                require('@formatjs/intl-numberformat/locale-data/vi');
+                require('@formatjs/intl-datetimeformat/locale-data/vi');
+
+                translations = require('@assets/i18n/uk.json');
+                break;
             case 'zh-CN':
                 loadChinesePolyfills();
                 translations = require('@assets/i18n/zh-CN.json');

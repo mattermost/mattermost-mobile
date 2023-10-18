@@ -20,6 +20,7 @@ type Props = {
     type?: ChannelType;
     callsEnabled: boolean;
     canManageMembers: boolean;
+    canManageSettings: boolean;
 }
 
 const Options = ({
@@ -27,6 +28,7 @@ const Options = ({
     type,
     callsEnabled,
     canManageMembers,
+    canManageSettings,
 }: Props) => {
     const isDMorGM = isTypeDMorGM(type);
 
@@ -50,7 +52,7 @@ const Options = ({
                     testID='channel_info.options.copy_channel_link.option'
                 />
             }
-            {type !== General.DM_CHANNEL && type !== General.GM_CHANNEL &&
+            {canManageSettings &&
                 <EditChannel channelId={channelId}/>
             }
         </>

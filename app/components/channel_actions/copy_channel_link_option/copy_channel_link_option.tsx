@@ -35,7 +35,7 @@ const CopyChannelLinkOption = ({channelName, teamName, showAsLabel, testID}: Pro
             <SlideUpPanelItem
                 onPress={onCopyLink}
                 text={intl.formatMessage({id: 'channel_info.copy_link', defaultMessage: 'Copy Link'})}
-                icon='link-variant'
+                leftIcon='link-variant'
                 testID={testID}
             />
         );

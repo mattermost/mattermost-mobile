@@ -71,7 +71,7 @@ const PanelItem = ({pickerAction, pictureUtils, onRemoveProfileImage}: PanelItem
 
     return (
         <SlideUpPanelItem
-            icon={item.icon}
+            leftIcon={item.icon}
             onPress={item.onPress}
             testID={item.testID}
             text={intl.formatMessage(item.text)}
