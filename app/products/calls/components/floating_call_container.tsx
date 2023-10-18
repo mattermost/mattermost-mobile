@@ -10,6 +10,7 @@ import {IncomingCallsContainer} from '@calls/components/incoming_calls_container
 import JoinCallBanner from '@calls/components/join_call_banner';
 import {DEFAULT_HEADER_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
+import {useIsTablet} from '@hooks/device';
 
 const topBarHeight = DEFAULT_HEADER_HEIGHT;
 
@@ -33,8 +34,11 @@ type Props = {
 const FloatingCallContainer = ({channelId, showJoinCallBanner, showIncomingCalls, isInACall, threadScreen}: Props) => {
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
+    const isTablet = useIsTablet();
+
+    const topBarIsIncludedAlready = Boolean(isTablet || threadScreen);
     const wrapperTop = {
-        top: insets.top + (threadScreen ? 0 : topBarHeight),
+        top: insets.top + (topBarIsIncludedAlready ? 0 : topBarHeight),
     };
 
     return (
@@ -49,7 +53,8 @@ const FloatingCallContainer = ({channelId, showJoinCallBanner, showIncomingCalls
             {showIncomingCalls &&
                 <IncomingCallsContainer
                     channelId={channelId}
-                />}
+                />
+            }
         </View>
     );
 };

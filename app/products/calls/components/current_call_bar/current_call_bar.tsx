@@ -56,15 +56,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
             paddingTop: 8,
             paddingRight: 12,
             paddingBottom: 8,
-            paddingLeft: 6,
+            paddingLeft: 12,
             height: CURRENT_CALL_BAR_HEIGHT,
+        },
+        avatarOutline: {
+            height: 40,
+            width: 40,
+            borderRadius: 20,
+            backgroundColor: changeOpacity(theme.buttonColor, 0.08),
+            padding: 2,
+            marginRight: 6,
+            marginLeft: 6,
         },
         pressable: {
             zIndex: 10,
         },
-        userInfo: {
+        text: {
             flex: 1,
+            flexDirection: 'column',
             paddingLeft: 6,
+            gap: 2,
         },
         speakingUser: {
             color: theme.buttonColor,
@@ -220,13 +231,15 @@ const CurrentCallBar = ({
                     style={style.container}
                     onPress={goToCallScreen}
                 >
-                    <CallAvatar
-                        userModel={userModelsDict[speaker || '']}
-                        speaking={Boolean(speaker)}
-                        serverUrl={currentCall?.serverUrl || ''}
-                        size={40}
-                    />
-                    <View style={style.userInfo}>
+                    <View style={[!speaker && style.avatarOutline]}>
+                        <CallAvatar
+                            userModel={userModelsDict[speaker || '']}
+                            speaking={Boolean(speaker)}
+                            serverUrl={currentCall?.serverUrl || ''}
+                            size={speaker ? 40 : 24}
+                        />
+                    </View>
+                    <View style={style.text}>
                         {talkingMessage}
                         <Text style={style.channelAndTime}>
                             {`~${displayName}`}

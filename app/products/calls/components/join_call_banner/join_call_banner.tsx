@@ -36,33 +36,49 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: JOIN_CALL_BAR_HEIGHT,
         marginRight: 8,
         marginLeft: 8,
+        shadowColor: theme.centerChannelColor,
+        shadowOffset: {
+            width: 0,
+            height: 6,
+        },
+        shadowOpacity: 0.12,
+        shadowRadius: 4,
+        elevation: 4,
     },
     innerContainer: {
         flexDirection: 'row',
-        backgroundColor: '#339970', // intentionally not themed
         width: '100%',
         height: '100%',
         borderRadius: 8,
-        borderWidth: 2,
-        borderColor: changeOpacity(theme.buttonColor, 0.16),
         paddingTop: 4,
+        paddingRight: 4,
         paddingBottom: 4,
-        justifyContent: 'center',
+        paddingLeft: 8,
         alignItems: 'center',
+        backgroundColor: '#339970', // intentionally not themed
     },
     innerContainerRestricted: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.48),
     },
-    joinCallIcon: {
-        color: theme.buttonColor,
-        marginLeft: 15,
-        marginRight: 13,
+    iconContainer: {
+        top: 1,
+        width: 32,
     },
-    joinCall: {
+    icon: {
+        fontSize: 18,
+        color: theme.buttonColor,
+        alignSelf: 'center',
+    },
+    textContainer: {
+        flexDirection: 'row',
+        flex: 1,
+        marginLeft: 8,
+    },
+    joinCallText: {
         color: theme.buttonColor,
         ...typography('Body', 100, 'SemiBold'),
     },
-    started: {
+    startedText: {
         flex: 1,
         color: changeOpacity(theme.buttonColor, 0.80),
         ...typography(),
@@ -75,14 +91,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginRight: 10,
         color: changeOpacity(theme.sidebarText, 0.84),
         fontWeight: '400',
-    },
-    headerText: {
-        color: changeOpacity(theme.centerChannelColor, 0.56),
-        fontSize: 12,
-        fontWeight: '600',
-        paddingHorizontal: 16,
-        paddingVertical: 0,
-        top: 16,
     },
     avatarStyle: {
         borderColor: '#339970',
@@ -111,12 +119,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.buttonColor, 0.80),
         textAlign: 'center',
     },
+    dismissContainer: {
+        alignItems: 'center',
+        width: 32,
+        height: '100%',
+        justifyContent: 'center',
+    },
     closeIcon: {
         color: changeOpacity(theme.buttonColor, 0.56),
-        paddingLeft: 10,
-        paddingRight: 10,
-        paddingTop: 4,
-        paddingBottom: 4,
     },
 }));
 
@@ -152,29 +162,32 @@ const JoinCallBanner = ({
                 style={[style.innerContainer, isLimitRestricted && style.innerContainerRestricted]}
                 onPress={joinHandler}
             >
-                <CompassIcon
-                    name='phone-in-talk'
-                    size={18}
-                    style={style.joinCallIcon}
-                />
-                <FormattedText
-                    id={'mobile.calls_join_call'}
-                    defaultMessage={'Join call'}
-                    style={style.joinCall}
-                />
-                {isLimitRestricted ? (
+                <View style={style.iconContainer}>
+                    <CompassIcon
+                        name='phone-in-talk'
+                        style={style.icon}
+                    />
+                </View>
+                <View style={style.textContainer}>
                     <FormattedText
-                        id={'mobile.calls_limit_reached'}
-                        defaultMessage={'Participant limit reached'}
-                        style={style.limitReached}
+                        id={'mobile.calls_join_call'}
+                        defaultMessage={'Join call'}
+                        style={style.joinCallText}
                     />
-                ) : (
-                    <FormattedRelativeTime
-                        value={channelCallStartTime}
-                        updateIntervalInSeconds={1}
-                        style={style.started}
-                    />
-                )}
+                    {isLimitRestricted ? (
+                        <FormattedText
+                            id={'mobile.calls_limit_reached'}
+                            defaultMessage={'Participant limit reached'}
+                            style={style.limitReached}
+                        />
+                    ) : (
+                        <FormattedRelativeTime
+                            value={channelCallStartTime}
+                            updateIntervalInSeconds={1}
+                            style={style.startedText}
+                        />
+                    )}
+                </View>
                 <UserAvatarsStack
                     channelId={channelId}
                     location={Screens.CHANNEL}
@@ -186,11 +199,12 @@ const JoinCallBanner = ({
                     overflowTextStyle={style.overflowText}
                 />
                 <Pressable onPress={onDismissPress}>
-                    <CompassIcon
-                        name='close'
-                        size={18}
-                        style={style.closeIcon}
-                    />
+                    <View style={style.dismissContainer}>
+                        <CompassIcon
+                            name='close'
+                            style={[style.icon, style.closeIcon]}
+                        />
+                    </View>
                 </Pressable>
             </Pressable>
         </View>

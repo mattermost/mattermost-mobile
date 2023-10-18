@@ -25,51 +25,72 @@ import {displayUsername} from '@utils/user';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     outerContainer: {
-        backgroundColor: theme.onlineIndicator,
         borderRadius: 8,
         height: CALL_NOTIFICATION_BAR_HEIGHT,
         marginLeft: 8,
         marginRight: 8,
+        backgroundColor: theme.onlineIndicator,
+        shadowColor: theme.centerChannelColor,
+        shadowOffset: {
+            width: 0,
+            height: 6,
+        },
+        shadowOpacity: 0.12,
+        shadowRadius: 4,
+        elevation: 4,
     },
     outerOnCallsScreen: {
         backgroundColor: changeOpacity(theme.onlineIndicator, 0.40),
     },
     innerContainer: {
         flexDirection: 'row',
-        gap: 8,
         width: '100%',
         height: '100%',
-        paddingTop: 4,
-        paddingBottom: 4,
-        paddingLeft: 12,
         borderRadius: 8,
-        borderWidth: 2,
-        borderStyle: 'solid',
+        paddingTop: 4,
+        paddingRight: 4,
+        paddingBottom: 4,
+        paddingLeft: 8,
+        alignItems: 'center',
         borderColor: changeOpacity(theme.buttonColor, 0.16),
         backgroundColor: changeOpacity('#000', 0.16),
-        justifyContent: 'center',
-        alignItems: 'center',
     },
     innerOnCallsScreen: {
+        borderStyle: 'solid',
+        borderWidth: 2,
         borderColor: changeOpacity(theme.buttonColor, 0.16),
         backgroundColor: changeOpacity('#000', 0.12),
     },
-    text: {
+    profileContainer: {
+        width: 32,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    icon: {
+        fontSize: 18,
+        color: theme.buttonColor,
+        alignSelf: 'center',
+    },
+    textContainer: {
         flex: 1,
+        marginLeft: 8,
+    },
+    text: {
         ...typography('Body', 100),
-        lineHeight: 20,
         color: theme.buttonColor,
     },
     boldText: {
         ...typography('Body', 100, 'SemiBold'),
         lineHeight: 20,
     },
+    dismissContainer: {
+        alignItems: 'center',
+        width: 32,
+        height: '100%',
+        justifyContent: 'center',
+    },
     closeIcon: {
         color: changeOpacity(theme.buttonColor, 0.56),
-        paddingLeft: 10,
-        paddingRight: 10,
-        paddingTop: 4,
-        paddingBottom: 4,
     },
 }));
 
@@ -151,19 +172,24 @@ export const CallNotification = ({
                 style={[style.innerContainer, onCallsScreen && style.innerOnCallsScreen]}
                 onPress={onContainerPress}
             >
-                <ProfilePicture
-                    author={incomingCall.callerModel}
-                    url={incomingCall.serverUrl}
-                    size={24}
-                    showStatus={false}
-                />
-                {message}
-                <Pressable onPress={onDismissPress}>
-                    <CompassIcon
-                        name='close'
-                        size={18}
-                        style={style.closeIcon}
+                <View style={style.profileContainer}>
+                    <ProfilePicture
+                        author={incomingCall.callerModel}
+                        url={incomingCall.serverUrl}
+                        size={24}
+                        showStatus={false}
                     />
+                </View>
+                <View style={style.textContainer}>
+                    {message}
+                </View>
+                <Pressable onPress={onDismissPress}>
+                    <View style={style.dismissContainer}>
+                        <CompassIcon
+                            name='close'
+                            style={[style.icon, style.closeIcon]}
+                        />
+                    </View>
                 </Pressable>
             </Pressable>
         </View>

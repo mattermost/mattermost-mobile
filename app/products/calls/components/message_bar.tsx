@@ -22,69 +22,75 @@ type Props = {
     onDismiss: () => void;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => (
-    {
-        outerContainer: {
-            borderRadius: 8,
-            backgroundColor: theme.dndIndicator,
-            height: CALL_ERROR_BAR_HEIGHT,
-            marginLeft: 8,
-            marginRight: 8,
+const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
+    outerContainer: {
+        borderRadius: 8,
+        height: CALL_ERROR_BAR_HEIGHT,
+        marginLeft: 8,
+        marginRight: 8,
+        shadowColor: theme.centerChannelColor,
+        shadowOffset: {
+            width: 0,
+            height: 6,
         },
-        outerContainerWarning: {
-            backgroundColor: theme.awayIndicator,
-        },
-        innerContainer: {
-            flexDirection: 'row',
-            backgroundColor: theme.dndIndicator,
-            height: '100%',
-            width: '100%',
-            borderRadius: 8,
-            borderWidth: 2,
-            borderColor: changeOpacity(theme.buttonColor, 0.16),
-            paddingTop: 4,
-            paddingLeft: 15,
-            paddingBottom: 4,
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-        innerContainerWarning: {
-            backgroundColor: theme.awayIndicator,
-        },
-        errorText: {
-            flex: 1,
-            ...typography('Body', 100, 'SemiBold'),
-            color: theme.buttonColor,
-        },
-        warningText: {
-            color: theme.callsBg,
-        },
-        closeIcon: {
-            color: changeOpacity(theme.buttonColor, 0.56),
-            paddingLeft: 10,
-            paddingRight: 10,
-            paddingTop: 4,
-            paddingBottom: 4,
-        },
-        closeIconWarning: {
-            color: changeOpacity(theme.callsBg, 0.56),
-        },
-        errorIcon: {
-            paddingRight: 9,
-            color: theme.buttonColor,
-            fontSize: 18,
-        },
-        warningIcon: {
-            color: theme.callsBg,
-        },
-        pressedErrorIcon: {
-            color: theme.dndIndicator,
-        },
-        pressedWarningIcon: {
-            color: theme.awayIndicator,
-        },
-    }
-));
+        shadowOpacity: 0.12,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    outerContainerWarning: {
+        backgroundColor: theme.awayIndicator,
+    },
+    innerContainer: {
+        flexDirection: 'row',
+        height: '100%',
+        width: '100%',
+        borderRadius: 8,
+        paddingTop: 4,
+        paddingRight: 4,
+        paddingBottom: 4,
+        paddingLeft: 8,
+        alignItems: 'center',
+        backgroundColor: theme.dndIndicator,
+    },
+    innerContainerWarning: {
+        backgroundColor: theme.awayIndicator,
+    },
+    iconContainer: {
+        top: 1,
+        width: 32,
+    },
+    icon: {
+        fontSize: 18,
+        color: theme.buttonColor,
+        alignSelf: 'center',
+    },
+    warningIcon: {
+        color: theme.callsBg,
+    },
+    textContainer: {
+        flex: 1,
+        marginLeft: 8,
+    },
+    errorText: {
+        ...typography('Body', 100, 'SemiBold'),
+        color: theme.buttonColor,
+    },
+    warningText: {
+        color: theme.callsBg,
+    },
+    dismissContainer: {
+        alignItems: 'center',
+        width: 32,
+        height: '100%',
+        justifyContent: 'center',
+    },
+    closeIcon: {
+        color: changeOpacity(theme.buttonColor, 0.56),
+    },
+    closeIconWarning: {
+        color: changeOpacity(theme.callsBg, 0.56),
+    },
+}));
 
 const MessageBar = ({type, onDismiss}: Props) => {
     const intl = useIntl();
@@ -104,7 +110,7 @@ const MessageBar = ({type, onDismiss}: Props) => {
             icon = (
                 <CompassIcon
                     name='microphone-off'
-                    style={[style.errorIcon]}
+                    style={[style.icon]}
                 />);
             break;
         case Calls.MessageBarType.CallQuality:
@@ -115,7 +121,7 @@ const MessageBar = ({type, onDismiss}: Props) => {
             icon = (
                 <CompassIcon
                     name='alert-outline'
-                    style={[style.errorIcon, style.warningIcon]}
+                    style={[style.icon, style.warningIcon]}
                 />);
             break;
     }
@@ -126,14 +132,19 @@ const MessageBar = ({type, onDismiss}: Props) => {
                 onPress={Permissions.openSettings}
                 style={[style.innerContainer, warning && style.innerContainerWarning]}
             >
-                {icon}
-                <Text style={[style.errorText, warning && style.warningText]}>{message}</Text>
+                <View style={style.iconContainer}>
+                    {icon}
+                </View>
+                <View style={style.textContainer}>
+                    <Text style={[style.errorText, warning && style.warningText]}>{message}</Text>
+                </View>
                 <Pressable onPress={onDismiss}>
-                    <CompassIcon
-                        name='close'
-                        size={18}
-                        style={[style.closeIcon, warning && style.closeIconWarning]}
-                    />
+                    <View style={style.dismissContainer}>
+                        <CompassIcon
+                            name='close'
+                            style={[style.icon, style.closeIcon, warning && style.closeIconWarning]}
+                        />
+                    </View>
                 </Pressable>
             </Pressable>
         </View>

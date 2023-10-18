@@ -67,7 +67,7 @@ const getStyleSheet = ({theme, size}: { theme: CallsTheme; size: number }) => {
             width: size,
         },
         profileIcon: {
-            color: changeOpacity(theme.buttonColor, 0.16),
+            color: changeOpacity(theme.buttonColor, 0.56),
         },
         muteIconContainer: {
             position: 'absolute',
