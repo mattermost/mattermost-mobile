@@ -40,6 +40,7 @@
     "@sentry/react-native": "5.9.0",
     "@stream-io/flat-list-mvcp": "0.10.3",
     "@tsconfig/react-native": "3.0.2",
+    "@voximplant/react-native-foreground-service": "3.0.2",
     "base-64": "1.0.0",
     "commonmark": "npm:@mattermost/commonmark@0.30.1-1",
     "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#235bc817bcade503fb81fa51bbbe3c84f958ed12",
