@@ -51,7 +51,7 @@ export function alertPushProxyError(intl: IntlShape, serverUrl?: string) {
         }),
         intl.formatMessage({
             id: 'alert.push_proxy_error.description',
-            defaultMessage: 'Due to the configuration for this server, notifications cannot be received in the mobile app. Contact your system admin for more information.',
+            defaultMessage: 'due to the configuration of this server, notifications cannot be received in the mobile app. Contact your system admin for more information.',
         }),
         [{
             text: intl.formatMessage({id: 'alert.push_proxy.button', defaultMessage: 'Okay'}),
