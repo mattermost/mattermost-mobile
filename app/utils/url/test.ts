@@ -139,22 +139,22 @@ describe('UrlUtils', () => {
             {
                 name: 'should return null if all inputs are empty',
                 input: {url: '', serverURL: '', siteURL: ''},
-                expected: {type: 'invalid'},
+                expected: {type: DeepLinkType.Invalid},
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: '', serverURL: '', siteURL: null},
-                expected: {type: 'invalid'},
+                expected: {type: DeepLinkType.Invalid},
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: '', serverURL: null, siteURL: ''},
-                expected: {type: 'invalid'},
+                expected: {type: DeepLinkType.Invalid},
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: null, serverURL: '', siteURL: ''},
-                expected: {type: 'invalid'},
+                expected: {type: DeepLinkType.Invalid},
             },
             {
                 name: 'should return null for not supported link',
@@ -163,12 +163,12 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
-                expected: {type: 'invalid'},
+                expected: {type: DeepLinkType.Invalid},
             },
             {
                 name: 'should return null despite url subset match',
                 input: {url: 'http://myserver.com', serverURL: 'http://myserver.co'},
-                expected: {type: 'invalid'},
+                expected: {type: DeepLinkType.Invalid},
             },
             {
                 name: 'should match despite no server URL in input link',
@@ -185,6 +185,24 @@ describe('UrlUtils', () => {
                     },
                     type: DeepLinkType.Permalink,
                 },
+            },
+            {
+                name: 'should return null for invalid deeplink',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/../town-square',
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: {type: DeepLinkType.Invalid},
+            },
+            {
+                name: 'should return null for encoded invalid deeplink',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/%252f..%252ftown-square',
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: {type: DeepLinkType.Invalid},
             },
             {
                 name: 'should match channel link',
@@ -247,7 +265,7 @@ describe('UrlUtils', () => {
                         serverUrl: URL_PATH_NO_PROTOCOL,
                         teamName: 'ad-1',
                     },
-                    type: 'permalink',
+                    type: DeepLinkType.Permalink,
                 },
             },
             {
@@ -263,7 +281,7 @@ describe('UrlUtils', () => {
                         serverUrl: URL_PATH_NO_PROTOCOL,
                         teamName: 'ad-1',
                     },
-                    type: 'permalink',
+                    type: DeepLinkType.Permalink,
                 },
             },
             {
@@ -273,9 +291,7 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_WITH_SUBPATH,
                     siteURL: SERVER_WITH_SUBPATH,
                 },
-                expected: {
-                    type: 'invalid',
-                },
+                expected: {type: DeepLinkType.Invalid},
             },
         ];
 

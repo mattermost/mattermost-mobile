@@ -118,7 +118,12 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
     try {
         const url = removeProtocol(decodeURIComponent(deepLinkUrl));
 
-        if (url.includes('../') || url.includes('/..')) {
+        if (
+            url.includes('../') ||
+            url.includes('/..') ||
+            url.includes('..%2f') ||
+            url.includes('%2f..')
+        ) {
             return {type: DeepLink.Invalid, url: deepLinkUrl};
         }
 
