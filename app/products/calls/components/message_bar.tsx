@@ -66,6 +66,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => (
             paddingTop: 4,
             paddingBottom: 4,
         },
+        closeIconWarning: {
+            color: changeOpacity(theme.callsBg, 0.56),
+        },
         errorIcon: {
             paddingRight: 9,
             color: theme.buttonColor,
@@ -129,7 +132,7 @@ const MessageBar = ({type, onDismiss}: Props) => {
                     <CompassIcon
                         name='close'
                         size={18}
-                        style={style.closeIcon}
+                        style={[style.closeIcon, warning && style.closeIconWarning]}
                     />
                 </Pressable>
             </Pressable>
