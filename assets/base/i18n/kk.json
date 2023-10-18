@@ -1,10 +1,10 @@
 {
-    "about.teamEditionLearn": "Mattermost қауымына қосылыныз ",
-    "about.hashee": "EE Build Hash:",
-    "about.hash": "Build Hash:",
-    "about.enterpriseEditionSt": "Сіздің Firewall'дың аржағындағы заманауи байланыс.",
-    "about.enterpriseEditionLearn": "Enterprise Edition туралы көбірек білініз ",
-    "about.enterpriseEditione1": "Enterprise Edition",
-    "about.date": "Build күні:",
-    "about.teamEditiont1": "Enterprise Edition"
+  "about.date": "Құрастыру күні:",
+  "about.enterpriseEditionLearn": "Кәсіпорын басылымы туралы көбірек біліңіз ",
+  "about.enterpriseEditionSt": "Сіздің желіаралық экраныңыздың ар жағындағы заманауи байланыс.",
+  "about.enterpriseEditione1": "Кәсіпорын басылымы",
+  "about.hash": "Құрастыру хэші:",
+  "about.hashee": "Кәсіпорын басылымының құрастыру хэші:",
+  "about.teamEditionLearn": "Mattermost қауымына қосылыныз ",
+  "about.teamEditiont1": "Enterprise Edition"
 }
