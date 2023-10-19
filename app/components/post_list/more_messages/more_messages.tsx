@@ -96,7 +96,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
         },
         textContainer: {
-            paddingLeft: 4,
+            marginLeft: 8,
         },
         text: {
             color: theme.buttonColor,
