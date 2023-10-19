@@ -131,8 +131,6 @@ const Channel = ({
                         <ChannelPostList
                             channelId={channelId}
                             nativeID={channelId}
-                            currentCallBarVisible={isInACall}
-                            joinCallBannerVisible={showJoinCallBanner}
                         />
                     </View>
                     <PostDraft
