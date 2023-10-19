@@ -213,9 +213,11 @@ const ServerItem = ({
     };
 
     const onLayout = useCallback(() => {
-        swipeable.current?.close();
-        startTutorial();
-    }, []);
+        if (showTutorial) {
+            swipeable.current?.close();
+            startTutorial();
+        }
+    }, [showTutorial]);
 
     const containerStyle = useMemo(() => {
         const style: StyleProp<ViewStyle> = [styles.container];
@@ -390,6 +392,7 @@ const ServerItem = ({
                     style={containerStyle}
                     ref={viewRef}
                     testID={serverItemTestId}
+                    onLayout={onLayout}
                 >
                     <RectButton
                         onPress={onServerPressed}
@@ -474,13 +477,14 @@ const ServerItem = ({
                 itemBounds={itemBounds}
                 onDismiss={handleDismissTutorial}
                 onShow={handleShowTutorial}
-                onLayout={onLayout}
                 itemBorderRadius={8}
             >
+                {Boolean(itemBounds.endX) &&
                 <TutorialSwipeLeft
                     message={intl.formatMessage({id: 'server.tutorial.swipe', defaultMessage: 'Swipe left on a server to see more actions'})}
                     style={isTablet ? styles.tutorialTablet : styles.tutorial}
                 />
+                }
             </TutorialHighlight>
             }
         </>
