@@ -6,5 +6,7 @@
   "about.hash": "Құрастыру хэші:",
   "about.hashee": "Кәсіпорын басылымының құрастыру хэші:",
   "about.teamEditionLearn": "Mattermost қауымына қосылыныз ",
-  "about.teamEditiont1": "Enterprise Edition"
+  "about.teamEditionSt": "Команда арасындағы барлық байланыс шұғыл ізделетін және кез келген жерден қол жетімді бірыңғай жерде жинақталған.",
+  "about.teamEditiont0": "Команда басылымы",
+  "about.teamEditiont1": "Кәсіпорын басылымы"
 }
