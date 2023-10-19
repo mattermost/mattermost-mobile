@@ -264,6 +264,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.CONVERT_GM_TO_CHANNEL:
             screen = withServerDatabase(require('@screens/convert_gm_to_channel').default);
+            break;
+        case Screens.TEAM_SELECTOR_LIST:
+            screen = withServerDatabase(require('@screens/convert_gm_to_channel/team_selector_list').default);
+            break;
     }
 
     if (screen) {

@@ -3,12 +3,14 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Text, View} from 'react-native';
+import {Platform} from 'react-native';
 
-import CompassIcon from '@app/components/compass_icon';
+import OptionItem from '@app/components/option_item';
+import {Screens} from '@app/constants';
 import {useTheme} from '@app/context/theme';
+import {dismissBottomSheet, goToScreen} from '@app/screens/navigation';
+import {preventDoubleTap} from '@app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import {typography} from '@app/utils/typography';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -16,27 +18,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             borderTopWidth: 1,
             borderBottomWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.08),
-            display: 'flex',
-            flexDirection: 'row',
-            height: 48,
-            alignItems: 'center',
-            gap: 8,
-        },
-        label: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 100),
-        },
-        value: {},
-        placeholder: {
-            marginLeft: 'auto',
-            marginRight: 0,
-            color: changeOpacity(theme.centerChannelColor, 0.72),
-            ...typography('Body', 100),
-        },
-        icon: {
-            color: changeOpacity(theme.centerChannelColor, 0.52),
-            marginRight: 0,
-            width: 20,
         },
     };
 });
@@ -45,27 +26,25 @@ export const TeamSelector = () => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
 
-    const intl = useIntl();
-    const label = intl.formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.label', defaultMessage: 'Team'});
+    const {formatMessage} = useIntl();
+    const label = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.label', defaultMessage: 'Team'});
 
-    const placeholderText = intl.formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.placeholder', defaultMessage: 'Select a Team'});
-    const placeholder = (
-        <Text style={styles.placeholder}>{placeholderText}</Text>
-    );
+    const placeholder = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.placeholder', defaultMessage: 'Select a Team'});
+
+    const goToTeamSelectorList = preventDoubleTap(async () => {
+        await dismissBottomSheet();
+
+        const title = formatMessage({id: 'channel_info.convert_gm_to_channel.team_selector_list.title', defaultMessage: 'Select Team'});
+        goToScreen(Screens.TEAM_SELECTOR_LIST, title);
+    });
 
     return (
-        <View style={styles.teamSelector}>
-            <Text style={styles.label}>
-                {label}
-            </Text>
-
-            {placeholder}
-
-            <CompassIcon
-                style={styles.icon}
-                name='arrow-forward-ios'
-                size={18}
-            />
-        </View>
+        <OptionItem
+            action={goToTeamSelectorList}
+            containerStyle={styles.teamSelector}
+            label={label}
+            type={Platform.select({ios: 'arrow', default: 'default'})}
+            info={placeholder}
+        />
     );
 };

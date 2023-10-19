@@ -1092,5 +1092,6 @@
   "channel_info.convert_gm_to_channel.warning.body": "You are about to convert the Group Message with Leonard Riley, Regina Wilson, Todd Smith and Aliya Mosta to a Channel. This cannot be undone.",
   "channel_into.convert_gm_to_channel.team_selector.label": "Team",
   "channel_into.convert_gm_to_channel.team_selector.placeholder": "Select a Team",
-  "channel_info.convert_gm_to_channel.button_text": "Convert to Private Channel"
+  "channel_info.convert_gm_to_channel.button_text": "Convert to Private Channel",
+  "channel_info.convert_gm_to_channel.team_selector_list.title": "Select Team"
 }

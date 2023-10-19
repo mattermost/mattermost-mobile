@@ -32,7 +32,7 @@ export const ConvertGMToChannelForm = () => {
     const {formatMessage} = useIntl();
     const confirmButtonText = formatMessage({
         id: 'channel_info.convert_gm_to_channel.button_text',
-        defaultMessage: 'Convert to a Private Channel',
+        defaultMessage: 'Convert to Private Channel',
     });
 
     return (

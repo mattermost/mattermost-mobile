@@ -8,13 +8,7 @@ import FloatingTextInput from '@app/components/floating_text_input_label';
 import {Channel} from '@app/constants';
 import {useTheme} from '@app/context/theme';
 import {t} from '@app/i18n';
-import {getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@app/utils/theme';
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
-    fieldContainer: {
-        marginBottom: 32,
-    },
-}));
+import {getKeyboardAppearanceFromTheme} from '@app/utils/theme';
 
 export const ChannelNameInput = () => {
     const {formatMessage} = useIntl();
@@ -22,8 +16,6 @@ export const ChannelNameInput = () => {
 
     const labelDisplayName = formatMessage({id: t('channel_modal.name'), defaultMessage: 'Name'});
     const placeholder = formatMessage({id: t('"channel_modal.name": "Name",'), defaultMessage: 'Channel Name'});
-
-    const styles = getStyleSheet(theme);
 
     return (
         <FloatingTextInput
@@ -40,7 +32,6 @@ export const ChannelNameInput = () => {
             showErrorIcon={false}
             spellCheck={false}
             testID='gonvert_gm_to_channel.channel_display_name.input'
-            containerStyle={styles.fieldContainer}
             theme={theme}
         />
     );
