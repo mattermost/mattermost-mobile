@@ -39,9 +39,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         shadowRadius: 4,
         elevation: 4,
     },
-    outerOnCallsScreen: {
-        backgroundColor: changeOpacity(theme.onlineIndicator, 0.40),
-    },
     innerContainer: {
         flexDirection: 'row',
         width: '100%',
@@ -52,10 +49,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingBottom: 4,
         paddingLeft: 8,
         alignItems: 'center',
-        borderColor: changeOpacity(theme.buttonColor, 0.16),
         backgroundColor: changeOpacity('#000', 0.16),
     },
     innerOnCallsScreen: {
+        paddingRight: 2,
+        paddingLeft: 6,
         borderStyle: 'solid',
         borderWidth: 2,
         borderColor: changeOpacity(theme.buttonColor, 0.16),
@@ -167,7 +165,7 @@ export const CallNotification = ({
     }
 
     return (
-        <View style={[style.outerContainer, onCallsScreen && style.outerOnCallsScreen]}>
+        <View style={[style.outerContainer]}>
             <Pressable
                 style={[style.innerContainer, onCallsScreen && style.innerOnCallsScreen]}
                 onPress={onContainerPress}
