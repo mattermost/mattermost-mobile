@@ -56,7 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
             paddingTop: 8,
             paddingRight: 12,
             paddingBottom: 8,
-            paddingLeft: 12,
+            paddingLeft: 6,
             height: CURRENT_CALL_BAR_HEIGHT,
         },
         avatarOutline: {
