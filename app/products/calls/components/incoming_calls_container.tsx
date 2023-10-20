@@ -23,20 +23,11 @@ export const IncomingCallsContainer = ({
 }: Props) => {
     const incomingCalls = useIncomingCalls().incomingCalls;
 
-    // const micPermissionsGranted = useGlobalCallsState().micPermissionsGranted;
-    // const currentCall = useCurrentCall();
-
     // If we're in the channel for the incoming call, don't show the incoming call banner.
     const calls = incomingCalls.filter((ic) => ic.channelID !== channelId);
     if (calls.length === 0) {
         return null;
     }
-
-    // const micPermissionsError = !micPermissionsGranted && (currentCall ? !currentCall.micPermissionsErrorDismissed : false);
-    // const qualityAlert = (currentCall ? currentCall.callQualityAlert && currentCall.callQualityAlertDismissed === 0 : false);
-    // const marginTop = (micPermissionsError ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
-    //     (qualityAlert ? CALL_ERROR_BAR_HEIGHT + 8 : 0);
-    // const wrapperTop = {marginTop};
 
     return (
         <View style={style.wrapper}>
