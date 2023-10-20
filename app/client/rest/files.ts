@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {toMilliseconds} from '@utils/datetime';
+import {logDebug} from '@utils/log';
 
 import type ClientBase from './base';
 import type {ClientResponse, ClientResponseError, ProgressPromise, UploadRequestOptions} from '@mattermost/react-native-network-client';
@@ -89,6 +90,7 @@ const ClientFiles = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     searchFilesWithParams = async (teamId: string, params: FileSearchParams) => {
         this.analytics?.trackAPI('api_files_search');
         const endpoint = teamId ? `${this.getTeamRoute(teamId)}/files/search` : `${this.getFilesRoute()}/search`;
+        logDebug(endpoint);
         return this.doFetch(endpoint, {method: 'post', body: params});
     };
 

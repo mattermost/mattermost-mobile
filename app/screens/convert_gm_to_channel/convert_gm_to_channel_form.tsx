@@ -25,7 +25,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export const ConvertGMToChannelForm = () => {
+type Props = {
+    commonTeams: Team[];
+}
+
+export const ConvertGMToChannelForm = ({commonTeams}: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
 
@@ -38,7 +42,9 @@ export const ConvertGMToChannelForm = () => {
     return (
         <View style={styles.container}>
             <MessageBox/>
-            <TeamSelector/>
+            <TeamSelector
+                commonTeams={commonTeams}
+            />
             <ChannelNameInput/>
             <Button
                 onPress={() => true}

@@ -9,12 +9,16 @@ import {Screens} from '@app/constants';
 import {dismissBottomSheet, goToScreen} from '@app/screens/navigation';
 import {preventDoubleTap} from '@app/utils/tap';
 
-const ConvertToChannelLabel = () => {
+type Props = {
+    channelId: string;
+}
+
+const ConvertToChannelLabel = (props: Props) => {
     const goToConvertToPrivateChannl = preventDoubleTap(async () => {
         await dismissBottomSheet();
 
         const title = 'Convert to Private Channel';
-        goToScreen(Screens.CONVERT_GM_TO_CHANNEL, title, {});
+        goToScreen(Screens.CONVERT_GM_TO_CHANNEL, title, {channelId: props.channelId});
     });
 
     const {formatMessage} = useIntl();

@@ -1262,3 +1262,15 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         logDebug('cannot kick user from channel', error);
     }
 };
+
+export const getGroupMessageMembersCommonTeams = async (serverUrl: string, channelId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const teams = await client.getGroupMessageMembersCommonTeams(channelId);
+        return {teams};
+    } catch (error) {
+        logDebug('error on getGroupMessageMembersCommonTeams', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};

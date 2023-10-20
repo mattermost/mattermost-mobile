@@ -22,7 +22,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export const TeamSelector = () => {
+
+type Props = {
+    commonTeams: Team[];
+}
+
+export const TeamSelector = ({commonTeams}: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
 
@@ -35,7 +40,7 @@ export const TeamSelector = () => {
         await dismissBottomSheet();
 
         const title = formatMessage({id: 'channel_info.convert_gm_to_channel.team_selector_list.title', defaultMessage: 'Select Team'});
-        goToScreen(Screens.TEAM_SELECTOR_LIST, title);
+        goToScreen(Screens.TEAM_SELECTOR_LIST, title, {teans: commonTeams});
     });
 
     return (

@@ -44,6 +44,7 @@ export interface ClientChannelsMix {
     searchAllChannels: (term: string, teamIds: string[], archivedOnly?: boolean) => Promise<Channel[]>;
     updateChannelMemberSchemeRoles: (channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean) => Promise<any>;
     getMemberInChannel: (channelId: string, userId: string) => Promise<ChannelMembership>;
+    getGroupMessageMembersCommonTeams: (channelId: string) => Promise<Team[]>;
 }
 
 const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -347,6 +348,13 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
     getMemberInChannel = (channelId: string, userId: string) => {
         return this.doFetch(
             `${this.getChannelMembersRoute(channelId)}/${userId}`,
+            {method: 'get'},
+        );
+    };
+
+    getGroupMessageMembersCommonTeams = (channelId: string) => {
+        return this.doFetch(
+            `${this.getChannelRoute(channelId)}/common_teams`,
             {method: 'get'},
         );
     };
