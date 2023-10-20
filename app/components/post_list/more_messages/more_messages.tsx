@@ -144,7 +144,8 @@ const MoreMessages = ({
     const currentCallBarVisible = Boolean(currentCall);
     const micPermissionsError = !globalCallsState.micPermissionsGranted && (currentCall && !currentCall.micPermissionsErrorDismissed);
     const callQualityAlert = Boolean(currentCall?.callQualityAlert);
-    const callsIncomingAdjustment = (incomingCalls.length * CALL_NOTIFICATION_BAR_HEIGHT) + (incomingCalls.length * 8);
+    const incomingCallsShowing = incomingCalls.filter((ic) => ic.channelID !== channelId);
+    const callsIncomingAdjustment = (incomingCallsShowing.length * CALL_NOTIFICATION_BAR_HEIGHT) + (incomingCallsShowing.length * 8);
     const callsAdjustment = (currentCallBarVisible ? CURRENT_CALL_BAR_HEIGHT + 8 : 0) +
         (micPermissionsError ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
         (callQualityAlert ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
