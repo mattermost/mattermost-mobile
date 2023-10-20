@@ -14,6 +14,8 @@ import type PostModel from '@typings/database/models/servers/post';
 import type {IntlShape} from 'react-intl';
 import type {RTCIceServer} from 'react-native-webrtc';
 
+const callsMessageRegex = /^\u200b.* is inviting you to a call$/;
+
 export function sortParticipants(locale: string, teammateNameDisplay: string, participants?: Dictionary<CallParticipant>, presenterID?: string): CallParticipant[] {
     if (!participants) {
         return [];
@@ -149,4 +151,8 @@ export function makeCallsTheme(theme: Theme): CallsTheme {
     newTheme.callsBadgeBg = rgbToCSS(badgeBgRGB);
 
     return newTheme;
+}
+
+export function isCallsStartedMessage(message = '') {
+    return (message === 'You\'ve been invited to a call' || callsMessageRegex.test(message));
 }
