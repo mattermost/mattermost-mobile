@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
 
+import TeamList from '@app/components/team_list';
 import {useTheme} from '@app/context/theme';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@app/utils/theme';
 import SearchBar from '@components/search';
@@ -13,7 +14,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         padding: 12,
     },
     listContainer: {
-
+        marginTop: 12,
     },
 }));
 
@@ -40,11 +41,10 @@ const TeamSelectorList = ({teams, selectTeam}: Props) => {
                 onChangeText={selectTeam}
             />
             <View style={styles.listContainer}>
-                {
-                    teams.map((team) => (
-                        <Text key={team.id}>{team.name}</Text>
-                    ))
-                }
+                <TeamList
+                    teams={teams}
+                    onPress={() => ''}
+                />
             </View>
         </View>
     );
