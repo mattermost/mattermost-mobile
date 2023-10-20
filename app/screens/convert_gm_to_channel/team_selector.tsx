@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
@@ -36,18 +36,24 @@ export const TeamSelector = ({commonTeams}: Props) => {
 
     const placeholder = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.placeholder', defaultMessage: 'Select a Team'});
 
+    const [selectedTeam, setSelectedTeam] = useState('');
+
+    const selectTeam = useCallback((teamId: string) => {
+        setSelectedTeam(teamId);
+    }, []);
+
     const goToTeamSelectorList = preventDoubleTap(async () => {
         await dismissBottomSheet();
 
         const title = formatMessage({id: 'channel_info.convert_gm_to_channel.team_selector_list.title', defaultMessage: 'Select Team'});
-        goToScreen(Screens.TEAM_SELECTOR_LIST, title, {teans: commonTeams});
+        goToScreen(Screens.TEAM_SELECTOR_LIST, title, {teams: commonTeams, selectTeam});
     });
 
     return (
         <OptionItem
             action={goToTeamSelectorList}
             containerStyle={styles.teamSelector}
-            label={label}
+            label={`${label} - ${selectedTeam}`}
             type={Platform.select({ios: 'arrow', default: 'default'})}
             info={placeholder}
         />

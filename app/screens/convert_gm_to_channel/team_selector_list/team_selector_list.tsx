@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {useTheme} from '@app/context/theme';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@app/utils/theme';
@@ -10,20 +10,19 @@ import SearchBar from '@components/search';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-
-    },
-    inputContainerStyle: {
-
-    },
-    inputStyle: {
-
+        padding: 12,
     },
     listContainer: {
 
     },
 }));
 
-const TeamSelectorList = () => {
+type Props = {
+    teams: Team[];
+    selectTeam: (teamId: string) => void;
+}
+
+const TeamSelectorList = ({teams, selectTeam}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -38,7 +37,15 @@ const TeamSelectorList = () => {
                 placeholderTextColor={color}
                 searchIconColor={color}
                 testID='convert_gm_to_channel_team_search_bar'
+                onChangeText={selectTeam}
             />
+            <View style={styles.listContainer}>
+                {
+                    teams.map((team) => (
+                        <Text key={team.id}>{team.name}</Text>
+                    ))
+                }
+            </View>
         </View>
     );
 };

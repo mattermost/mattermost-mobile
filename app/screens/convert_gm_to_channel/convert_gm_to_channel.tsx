@@ -8,6 +8,7 @@ import {useServerUrl} from '@app/context/server';
 
 import {ConvertGMToChannelForm} from './convert_gm_to_channel_form';
 import {Loader} from './loader';
+import { logDebug } from '@app/utils/log';
 
 type Props = {
     channelId: string;
@@ -39,7 +40,7 @@ const ConvertGMToChannel = (props: Props) => {
         work();
     }, []);
 
-    const showLoader = !loadingAnimationTimeout && !commonTeamsFetched;
+    const showLoader = !loadingAnimationTimeout || !commonTeamsFetched;
     if (showLoader) {
         return (<Loader/>);
     }
