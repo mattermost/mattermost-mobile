@@ -134,31 +134,31 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
 
     return (
         <>
-            {/*{!expanded &&*/}
-            {/*<Tooltip*/}
-            {/*    isVisible={tooltipVisible}*/}
-            {/*    useInteractionManager={true}*/}
-            {/*    contentStyle={tooltipContentStyle}*/}
-            {/*    content={<SkinSelectorTooltip onClose={close}/>}*/}
-            {/*    placement={isTablet ? 'left' : 'top'}*/}
-            {/*    onClose={close}*/}
-            {/*    tooltipStyle={styles.tooltipStyle}*/}
-            {/*>*/}
-            {/*    <Animated.View*/}
-            {/*        style={widthAnimatedStyle}*/}
-            {/*        exiting={FadeOut}*/}
-            {/*        entering={FadeIn}*/}
-            {/*    >*/}
-            {/*        <Animated.View style={[styles.container, opacityStyle]}>*/}
-            {/*            <TouchableEmoji*/}
-            {/*                name={skins[skinTone]}*/}
-            {/*                onEmojiPress={expand}*/}
-            {/*                size={28}*/}
-            {/*            />*/}
-            {/*        </Animated.View>*/}
-            {/*    </Animated.View>*/}
-            {/*</Tooltip>*/}
-            {/*}*/}
+            {!expanded &&
+            <Tooltip
+                isVisible={tooltipVisible}
+                useInteractionManager={true}
+                contentStyle={tooltipContentStyle}
+                content={<SkinSelectorTooltip onClose={close}/>}
+                placement={isTablet ? 'left' : 'top'}
+                onClose={close}
+                tooltipStyle={styles.tooltipStyle}
+            >
+                <Animated.View
+                    style={widthAnimatedStyle}
+                    exiting={FadeOut}
+                    entering={FadeIn}
+                >
+                    <Animated.View style={[styles.container, opacityStyle]}>
+                        <TouchableEmoji
+                            name={skins[skinTone]}
+                            onEmojiPress={expand}
+                            size={28}
+                        />
+                    </Animated.View>
+                </Animated.View>
+            </Tooltip>
+            }
             {expanded &&
             <Animated.View
                 style={styles.expanded}
