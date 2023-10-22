@@ -1117,7 +1117,6 @@
 				ORGANIZATIONNAME = Facebook;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
-						DevelopmentTeam = UQ8HT4Q2XM;
 						LastSwiftMigration = 1010;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -1930,7 +1929,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 487;
-				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				DEVELOPMENT_TEAM = 44S5N8GAPS;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1974,7 +1973,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 487;
-				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				DEVELOPMENT_TEAM = 44S5N8GAPS;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2241,10 +2240,7 @@
 				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
 					" ",
-					"-Wl -ld_classic ",
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
@@ -2298,10 +2294,7 @@
 				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
 					" ",
-					"-Wl -ld_classic ",
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;

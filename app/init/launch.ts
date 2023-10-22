@@ -8,6 +8,7 @@ import {Notifications} from 'react-native-notifications';
 import {switchToChannelById} from '@actions/remote/channel';
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import emojiStore from '@app/store/emoji_picker';
 import LocalConfig from '@assets/config.json';
 import {DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -112,6 +113,9 @@ const launchApp = async (props: LaunchProps) => {
                 EphemeralStore.theme = await getThemeForCurrentTeam(database);
                 const currentUserId = await getCurrentUserId(database);
                 hasCurrentUser = Boolean(currentUserId);
+
+                // initialize emoji picker
+                emojiStore.initialize(database);
             }
 
             let launchType = props.launchType;

@@ -38,6 +38,7 @@
     "@react-navigation/native": "6.1.7",
     "@react-navigation/stack": "6.3.17",
     "@sentry/react-native": "5.9.0",
+    "@shopify/flash-list": "1.6.1",
     "@stream-io/flat-list-mvcp": "0.10.3",
     "@tsconfig/react-native": "3.0.2",
     "base-64": "1.0.0",

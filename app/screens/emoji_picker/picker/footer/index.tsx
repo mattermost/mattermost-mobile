@@ -1,37 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetFooter, type BottomSheetFooterProps, SHEET_STATE, useBottomSheet, useBottomSheetInternal} from '@gorhom/bottom-sheet';
-import React, {useCallback} from 'react';
+import {BottomSheetFooter, type BottomSheetFooterProps} from '@gorhom/bottom-sheet';
+import React, {type FC} from 'react';
 import {Platform} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
+import EmojiCategoryBar from '@app/components/emoji_picker/emoji_category_bar';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
-import {selectEmojiCategoryBarSection} from '@hooks/emoji_category_bar';
 
-import EmojiCategoryBar from '../emoji_category_bar';
-
-const PickerFooter = (props: BottomSheetFooterProps) => {
+const PickerFooter: FC<BottomSheetFooterProps> = ({...props}) => {
     const theme = useTheme();
     const keyboardHeight = useKeyboardHeight();
-    const {animatedSheetState} = useBottomSheetInternal();
-    const {expand} = useBottomSheet();
-
-    const scrollToIndex = useCallback((index: number) => {
-        if (animatedSheetState.value === SHEET_STATE.EXTENDED) {
-            selectEmojiCategoryBarSection(index);
-            return;
-        }
-        expand();
-
-        // @ts-expect-error wait until the bottom sheet is epanded
-        while (animatedSheetState.value !== SHEET_STATE.EXTENDED) {
-            // do nothing
-        }
-
-        selectEmojiCategoryBarSection(index);
-    }, []);
 
     const animatedStyle = useAnimatedStyle(() => {
         const paddingBottom = withTiming(
@@ -60,7 +41,7 @@ const PickerFooter = (props: BottomSheetFooterProps) => {
             {...props}
         >
             <Animated.View style={[animatedStyle]}>
-                <EmojiCategoryBar onSelect={scrollToIndex}/>
+                <EmojiCategoryBar/>
             </Animated.View>
         </BottomSheetFooter>
     );

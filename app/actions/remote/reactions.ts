@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {addRecentReaction} from '@actions/local/reactions';
+import emojiStore from '@app/store/emoji_picker';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getRecentPostsInChannel, getRecentPostsInThread} from '@queries/servers/post';
@@ -44,6 +45,9 @@ export async function addReaction(serverUrl: string, postId: string, emojiName: 
             }
 
             await operator.batchRecords(models, 'addReaction');
+
+            //rebuild emoji picker afeter adding reaction
+            emojiStore.initialize(database);
 
             return {reaction};
         }
