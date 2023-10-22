@@ -28,18 +28,20 @@ type Props = {
 }
 
 export const TeamSelector = ({commonTeams}: Props) => {
+    const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
 
-    const {formatMessage} = useIntl();
-    const label = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.label', defaultMessage: 'Team'});
+    const [selectedTeam, setSelectedTeam] = useState<Team>();
 
+    const label = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.label', defaultMessage: 'Team'});
     const placeholder = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.placeholder', defaultMessage: 'Select a Team'});
 
-    const [selectedTeam, setSelectedTeam] = useState('');
-
     const selectTeam = useCallback((teamId: string) => {
-        setSelectedTeam(teamId);
+        const team = commonTeams.find((t) => t.id === teamId);
+        if (team) {
+            setSelectedTeam(team);
+        }
     }, []);
 
     const goToTeamSelectorList = preventDoubleTap(async () => {
@@ -53,9 +55,9 @@ export const TeamSelector = ({commonTeams}: Props) => {
         <OptionItem
             action={goToTeamSelectorList}
             containerStyle={styles.teamSelector}
-            label={`${label} - ${selectedTeam}`}
+            label={label}
             type={Platform.select({ios: 'arrow', default: 'default'})}
-            info={placeholder}
+            info={selectedTeam ? selectedTeam.display_name : placeholder}
         />
     );
 };

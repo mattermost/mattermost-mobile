@@ -50,7 +50,7 @@ const NoResultsWithTerm = ({term, type}: Props) => {
 
     useEffect(() => {
         setTitleId(type === TabTypes.FILES ? t('mobile.no_results_with_term.files') : t('mobile.no_results_with_term.messages'));
-        setDefaultMessage(type === TabTypes.FILES ? 'No files matching “{term}”' : 'No matches found for “{term}”');
+        setDefaultMessage(type === TabTypes.FILES ? 'No files matching “{term}”' : 'No matches fzxcxcound for “{term}”');
     }, [type]);
 
     return (

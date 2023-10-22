@@ -11,6 +11,7 @@ import Loading from '@components/loading';
 import TeamListItem from './team_list_item';
 
 import type TeamModel from '@typings/database/models/servers/team';
+import { logDebug } from '@app/utils/log';
 
 type Props = {
     iconBackgroundColor?: string;
@@ -67,6 +68,8 @@ export default function TeamList({
     if (loading) {
         footer = (<Loading/>);
     }
+
+    logDebug(teams);
 
     return (
         <View style={styles.container}>
