@@ -560,7 +560,6 @@
     "intro.channel_info": "Thông tin",
     "intro.created_by": "được tạo bởi {creator} vào {date}.",
     "intro.direct_message": "Đây là phần đầu cuộc trò chuyện của bạn với {teammate}. Tin nhắn và tệp được chia sẻ ở đây không được hiển thị cho bất kỳ ai khác.",
-    "intro.group_message": "Đây là phần bắt đầu cuộc trò chuyện của bạn với nhóm này. Các tin nhắn và tệp được chia sẻ ở đây không được hiển thị cho bất kỳ ai khác bên ngoài nhóm.",
     "intro.private_channel": "Kênh riêng tư",
     "intro.public_channel": "Kênh công khai",
     "intro.townsquare": "Chào mừng bạn đến với {name}. Mọi người tự động trở thành thành viên của kênh này khi họ tham gia nhóm.",
@@ -1074,5 +1073,6 @@
     "mobile.calls_incoming_dm": "<b>{name}</b> đang mời bạn tham gia cuộc gọi",
     "mobile.deep_link.invalid": "Liên kết bạn đang cố mở này không hợp lệ.",
     "markdown.max_nodes.error": "Thông báo này quá dài để hiển thị đầy đủ trên thiết bị di động. Vui lòng xem nó trên máy tính để bàn hoặc liên hệ với quản trị viên để tăng giới hạn này.",
-    "mobile.calls_join_button": "Tham gia"
+    "mobile.calls_join_button": "Tham gia",
+    "system_notice.dont_show": "Không hiển thị lại"
 }

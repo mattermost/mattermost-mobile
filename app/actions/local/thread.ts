@@ -94,14 +94,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             }
         }
 
-        if (currentTeamId === teamId) {
-            const models = await prepareCommonSystemValues(operator, {
-                currentChannelId: channel.id,
-            });
-            if (models.length) {
-                await operator.batchRecords(models, 'switchToThread');
-            }
-        } else {
+        if (currentTeamId !== teamId) {
             const modelPromises: Array<Promise<Model[]>> = [];
             modelPromises.push(addTeamToTeamHistory(operator, teamId, true));
             const commonValues: PrepareCommonSystemValuesArgs = {
