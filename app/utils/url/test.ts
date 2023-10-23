@@ -196,9 +196,9 @@ describe('UrlUtils', () => {
                 expected: {type: DeepLinkType.Invalid},
             },
             {
-                name: 'should return null for encoded invalid deeplink',
+                name: 'should return null for double encoded invalid deeplink',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/%252f..%252ftown-square',
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/%252f%252e.town-square',
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },

@@ -118,12 +118,7 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
     try {
         const url = removeProtocol(decodeURIComponent(deepLinkUrl));
 
-        if (
-            url.includes('../') ||
-            url.includes('/..') ||
-            url.includes('..%2f') ||
-            url.includes('%2f..')
-        ) {
+        if (isDeepLinkInvalid(url)) {
             return {type: DeepLink.Invalid, url: deepLinkUrl};
         }
 
@@ -156,6 +151,11 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
     }
 
     return {type: DeepLink.Invalid, url: deepLinkUrl};
+}
+
+function isDeepLinkInvalid(decodedUrl: string) {
+    const url = decodeURIComponent(decodedUrl);
+    return url.includes('../') || url.includes('/..');
 }
 
 export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string) {
