@@ -15,7 +15,7 @@ import {forceLogoutIfNecessary} from './session';
 
 import type {Model} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
-import { isSystemMessage } from '@app/utils/post';
+import { isSystemMessage } from '@utils/post';
 
 export async function addReaction(serverUrl: string, postId: string, emojiName: string) {
     try {
@@ -90,7 +90,7 @@ export const removeReaction = async (serverUrl: string, postId: string, emojiNam
 };
 export const handleReactionToLatestPost = async (serverUrl: string, emojiName: string, add: boolean, rootId?: string) => {
     try {
-        const { database } = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         let posts: PostModel[];
         if (rootId) {
             posts = await getRecentPostsInThread(database, rootId);
@@ -99,15 +99,16 @@ export const handleReactionToLatestPost = async (serverUrl: string, emojiName: s
             posts = await getRecentPostsInChannel(database, channelId);
         }
         const latestRegularUserPost = posts.find(post => !isSystemMessage(post));
-
-        if (latestRegularUserPost) {
-            if (add) {
-                return addReaction(serverUrl, latestRegularUserPost.id, emojiName);
-            }
-            return removeReaction(serverUrl, latestRegularUserPost.id, emojiName);
+        if (!latestRegularUserPost) {
+            return { error: 'No regular user posts found in the thread.' };
         }
+            
+        if (add) {
+            return addReaction(serverUrl, latestRegularUserPost.id, emojiName);
+        }
+            
+        return removeReaction(serverUrl, latestRegularUserPost.id, emojiName);
 
-        return { error: 'No regular user posts found in the thread.' };
     } catch (error) {
         return { error };
     }
