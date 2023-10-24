@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TextBase, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import CompassIcon from '@app/components/compass_icon';
 import {useTheme} from '@app/context/theme';
@@ -54,7 +54,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export const MessageBox = () => {
+type Props = {
+    profiles: UserProfile[];
+}
+
+export const MessageBox = ({profiles}: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
 

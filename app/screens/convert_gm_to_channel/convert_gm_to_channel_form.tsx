@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
@@ -12,7 +12,6 @@ import Button from '@components/button';
 import {ChannelNameInput} from './channel_name_input';
 import {MessageBox} from './message_box';
 import {TeamSelector} from './team_selector';
-import { logDebug } from '@app/utils/log';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -28,9 +27,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 
 type Props = {
     commonTeams: Team[];
+    profiles: UserProfile[];
 }
 
-export const ConvertGMToChannelForm = ({commonTeams}: Props) => {
+export const ConvertGMToChannelForm = ({commonTeams, profiles}: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
 
@@ -42,7 +42,9 @@ export const ConvertGMToChannelForm = ({commonTeams}: Props) => {
 
     return (
         <View style={styles.container}>
-            <MessageBox/>
+            <MessageBox
+                profiles={profiles}
+            />
             <TeamSelector
                 commonTeams={commonTeams}
             />
