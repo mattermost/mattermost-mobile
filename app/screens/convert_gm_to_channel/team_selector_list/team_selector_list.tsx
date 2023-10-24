@@ -1,16 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {View} from 'react-native';
 
 import TeamList from '@app/components/team_list';
 import {useTheme} from '@app/context/theme';
+import {popTopScreen} from '@app/screens/navigation';
+import {logDebug} from '@app/utils/log';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@app/utils/theme';
 import SearchBar from '@components/search';
-import { filter } from 'lodash';
-import { logDebug } from '@app/utils/log';
-import { loadDefs } from 'nock';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -43,6 +42,11 @@ const TeamSelectorList = ({teams, selectTeam}: Props) => {
         }
     }, [teams]);
 
+    const handleOnPress = useCallback((teamId: string) => {
+        selectTeam(teamId);
+        popTopScreen();
+    }, []);
+
     return (
         <View style={styles.container}>
             <SearchBar
@@ -57,7 +61,7 @@ const TeamSelectorList = ({teams, selectTeam}: Props) => {
             <View style={styles.listContainer}>
                 <TeamList
                     teams={filteredTeams}
-                    onPress={selectTeam}
+                    onPress={handleOnPress}
                 />
             </View>
         </View>

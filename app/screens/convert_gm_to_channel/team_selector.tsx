@@ -22,7 +22,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-
 type Props = {
     commonTeams: Team[];
 }
@@ -58,6 +57,7 @@ export const TeamSelector = ({commonTeams}: Props) => {
             label={label}
             type={Platform.select({ios: 'arrow', default: 'default'})}
             info={selectedTeam ? selectedTeam.display_name : placeholder}
+            labelContainerStyle={{flexShrink: 0}}
         />
     );
 };
