@@ -94,7 +94,7 @@ export const scheduleExpiredNotification = (serverUrl: string, session: Session,
     const expiresInDays = Math.floor(expiresInHours / 24); // Calculate expiresInDays
     const remainingHours = expiresInHours % 24; // Calculate remaining hours
     const intl = createIntl({locale, messages: getTranslations(locale)});
-    const body = "";
+    const body = '';
     if (expiresInDays === 0) {
         body = intl.formatMessage({
             id: 'mobile.session_expired',
