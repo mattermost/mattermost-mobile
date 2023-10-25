@@ -10,7 +10,7 @@ import {makeStyleSheetFromTheme} from '@app/utils/theme';
 import Button from '@components/button';
 
 import {ChannelNameInput} from './channel_name_input';
-import {MessageBox} from './message_box';
+import MessageBox from './message_box';
 import {TeamSelector} from './team_selector';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {

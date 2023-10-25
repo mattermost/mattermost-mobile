@@ -10,6 +10,7 @@ import {logDebug} from '@app/utils/log';
 
 import {ConvertGMToChannelForm} from './convert_gm_to_channel_form';
 import {Loader} from './loader';
+import UserProfile from '../user_profile/user_profile';
 
 type Props = {
     channelId: string;
@@ -50,10 +51,15 @@ const ConvertGMToChannel = ({channelId}: Props) => {
             }
 
             if (users.length) {
-                setProfiles(users);
+                const usersById: {[id: string]: UserProfile} = {};
+                // eslint-disable-next-line max-nested-callbacks
+                users.forEach((profile) => {
+                    usersById[profile.id] = profile;
+                });
 
-                // LOL: remove this if not needed
-                logDebug(members);
+                // eslint-disable-next-line max-nested-callbacks
+                const filteredUsers = members.map((member) => usersById[member.user_id]);
+                setProfiles(filteredUsers);
             }
 
             setChannelMembersFetched(true);
