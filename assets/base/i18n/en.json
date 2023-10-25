@@ -15,7 +15,7 @@
   "account.your_profile": "Your Profile",
   "alert.channel_deleted.description": "The channel {displayName} has been archived.",
   "alert.channel_deleted.title": "Archived channel",
-  "alert.push_proxy_error.description": "Due to the configuration for this server, notifications cannot be received in the mobile app. Contact your system admin for more information.",
+  "alert.push_proxy_error.description": "Due to the configuration of this server, notifications cannot be received in the mobile app. Contact your system admin for more information.",
   "alert.push_proxy_error.title": "Notifications cannot be received from this server",
   "alert.push_proxy_unknown.description": "This server was unable to receive push notifications for an unknown reason. This will be attempted again next time you connect.",
   "alert.push_proxy_unknown.title": "Notifications could not be received from this server",
