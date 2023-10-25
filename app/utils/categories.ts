@@ -180,7 +180,9 @@ const sortChannelsByName = (notifyPropsPerChannel: Record<string, Partial<Channe
 export const sortChannels = (sorting: CategorySorting, channelsWithMyChannel: ChannelWithMyChannel[], notifyPropsPerChannel: Record<string, Partial<ChannelNotifyProps>>, locale: string) => {
     if (sorting === 'recent') {
         return channelsWithMyChannel.sort((cwmA, cwmB) => {
-            return cwmB.myChannel.lastPostAt - cwmA.myChannel.lastPostAt;
+            const a = Math.max(cwmA.myChannel.lastPostAt, cwmA.channel.createAt);
+            const b = Math.max(cwmB.myChannel.lastPostAt, cwmB.channel.createAt);
+            return b - a;
         }).map((cwm) => cwm.channel);
     } else if (sorting === 'manual') {
         return channelsWithMyChannel.sort((cwmA, cwmB) => {
