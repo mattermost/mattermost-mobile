@@ -1090,6 +1090,7 @@
   "channel_info.convert_gm_to_channel": "Convert to a Private Channel",
   "channel_info.convert_gm_to_channel.warning.header": "Conversation history will be visible to any channel members",
   "channel_info.convert_gm_to_channel.warning.body": "You are about to convert the Group Message with {memberNames} to a Channel. This cannot be undone.",
+  "channel_info.convert_gm_to_channel.warning.body.yourself": "yourself",
   "channel_into.convert_gm_to_channel.team_selector.label": "Team",
   "channel_into.convert_gm_to_channel.team_selector.placeholder": "Select a Team",
   "channel_info.convert_gm_to_channel.button_text": "Convert to Private Channel",
