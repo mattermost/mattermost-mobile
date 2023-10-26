@@ -24,9 +24,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 
 type Props = {
     commonTeams: Team[];
+    onSelectTeam: (team: Team) => void;
 }
 
-export const TeamSelector = ({commonTeams}: Props) => {
+export const TeamSelector = ({commonTeams, onSelectTeam}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
@@ -40,6 +41,7 @@ export const TeamSelector = ({commonTeams}: Props) => {
         const team = commonTeams.find((t) => t.id === teamId);
         if (team) {
             setSelectedTeam(team);
+            onSelectTeam(team);
         }
     }, []);
 
