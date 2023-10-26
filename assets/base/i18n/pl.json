@@ -16,7 +16,7 @@
   "alert.channel_deleted.description": "Kanał {displayName} został zarchiwizowany.",
   "alert.channel_deleted.title": "Kanał zarchiwizowany",
   "alert.push_proxy.button": "Okej",
-  "alert.push_proxy_error.description": "Ze względu na konfigurację dla tego serwera, powiadomienia nie mogą być odbierane w aplikacji mobilnej. Skontaktuj się z administratorem systemu, aby uzyskać więcej informacji.",
+  "alert.push_proxy_error.description": "Ze względu na konfigurację tego serwera powiadomienia nie mogą być odbierane w aplikacji mobilnej. Aby uzyskać więcej informacji, skontaktuj się z administratorem systemu.",
   "alert.push_proxy_error.title": "Nie można odbierać powiadomień z tego serwera",
   "alert.push_proxy_unknown.description": "Ten serwer nie był w stanie odebrać powiadomień push z nieznanego powodu. Zostanie podjęta próba ponownego połączenia przy następnym połączeniu.",
   "alert.push_proxy_unknown.title": "Powiadomienia nie mogły być odebrane z tego serwera",
