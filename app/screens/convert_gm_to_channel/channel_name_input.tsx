@@ -10,7 +10,11 @@ import {useTheme} from '@app/context/theme';
 import {t} from '@app/i18n';
 import {getKeyboardAppearanceFromTheme} from '@app/utils/theme';
 
-export const ChannelNameInput = () => {
+type Props = {
+    error?: string;
+}
+
+export const ChannelNameInput = ({error}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
 
@@ -29,10 +33,11 @@ export const ChannelNameInput = () => {
             maxLength={Channel.MAX_CHANNEL_NAME_LENGTH}
             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
             returnKeyType='next'
-            showErrorIcon={false}
+            showErrorIcon={true}
             spellCheck={false}
             testID='gonvert_gm_to_channel.channel_display_name.input'
             theme={theme}
+            error={error}
         />
     );
 };
