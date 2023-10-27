@@ -28,24 +28,29 @@ const withCombinedPosts = withObservables(['postId'], ({database, postId}: WithD
 
     // Columns observed: `props` is used by `usernamesById`. `message` is used by generateCombinedPost.
     const posts = queryPostsById(database, postIds).observeWithColumns(['props', 'message']);
-    const post = posts.pipe(map((ps) => generateCombinedPost(postId, ps)));
+    const post = posts.pipe(map((ps) => (ps.length ? generateCombinedPost(postId, ps) : null)));
     const canDelete = combineLatest([posts, currentUser]).pipe(
         switchMap(([ps, u]) => (ps.length ? observePermissionForPost(database, ps[0], u, Permissions.DELETE_OTHERS_POSTS, false) : of$(false))),
     );
 
     const usernamesById = post.pipe(
         switchMap(
-            (p) => queryUsersByIdsOrUsernames(database, p.props.user_activity.allUserIds, p.props.user_activity.allUsernames).observeWithColumns(['username']).
-                pipe(
-                    // eslint-disable-next-line max-nested-callbacks
-                    switchMap((users) => {
+            (p) => {
+                if (!p) {
+                    return of$<Record<string, string>>({});
+                }
+                return queryUsersByIdsOrUsernames(database, p.props.user_activity.allUserIds, p.props.user_activity.allUsernames).observeWithColumns(['username']).
+                    pipe(
                         // eslint-disable-next-line max-nested-callbacks
-                        return of$(users.reduce((acc: Record<string, string>, user) => {
-                            acc[user.id] = user.username;
-                            return acc;
-                        }, {}));
-                    }),
-                ),
+                        switchMap((users) => {
+                            // eslint-disable-next-line max-nested-callbacks
+                            return of$(users.reduce((acc: Record<string, string>, user) => {
+                                acc[user.id] = user.username;
+                                return acc;
+                            }, {}));
+                        }),
+                    );
+            },
         ),
     );
 
