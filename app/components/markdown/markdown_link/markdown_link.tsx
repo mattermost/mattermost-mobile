@@ -122,7 +122,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                         style={style.bottomSheet}
                     >
                         <SlideUpPanelItem
-                            leftIcon='link-variant'
+                            leftIcon='content-copy'
                             onPress={() => {
                                 dismissBottomSheet();
                                 Clipboard.setString(href);

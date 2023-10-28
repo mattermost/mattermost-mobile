@@ -85,6 +85,16 @@ const style = StyleSheet.create({
 
 const headerTestId = 'channel_info.extra.header';
 
+const onCopy = async (text: string, isLink?: boolean) => {
+    Clipboard.setString(text);
+    await dismissBottomSheet();
+    if ((Platform.OS === OS_VERSION.ANDROID && Number(Platform.Version) < ANDROID_33) || Platform.OS === OS_VERSION.IOS) {
+        showSnackBar({
+            barType: isLink ? SNACK_BAR_TYPE.LINK_COPIED : SNACK_BAR_TYPE.TEXT_COPIED,
+        });
+    }
+};
+
 const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomStatusEnabled}: Props) => {
     const intl = useIntl();
     const {bottom} = useSafeAreaInsets();
@@ -103,16 +113,6 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
             />
         ),
     }), [createdAt, createdBy, theme]);
-
-    const onCopy = useCallback(async (text: string, isLink?: boolean) => {
-        Clipboard.setString(text);
-        await dismissBottomSheet();
-        if ((Platform.OS === OS_VERSION.ANDROID && Number(Platform.Version) < ANDROID_33) || Platform.OS === OS_VERSION.IOS) {
-            showSnackBar({
-                barType: isLink ? SNACK_BAR_TYPE.LINK_COPIED : SNACK_BAR_TYPE.TEXT_COPIED,
-            });
-        }
-    }, []);
 
     const handleLongPress = useCallback((url?: string) => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
@@ -172,10 +172,11 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
         header,
         bottom,
         theme,
-        onCopy,
         intl.formatMessage,
         managedConfig?.copyAndPasteProtection,
     ]);
+
+    const touchableHandleLongPress = useCallback(() => handleLongPress(), [handleLongPress]);
 
     return (
         <View style={styles.container}>
@@ -232,7 +233,7 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
                 <TouchableWithFeedback
                     type='opacity'
                     activeOpacity={0.8}
-                    onLongPress={() => handleLongPress()}
+                    onLongPress={touchableHandleLongPress}
                 >
                     <Markdown
                         channelId={channelId}
