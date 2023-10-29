@@ -6,9 +6,10 @@ import React, {type FC} from 'react';
 import {Platform} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
-import EmojiCategoryBar from '@app/components/emoji_picker/emoji_category_bar';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
+
+import EmojiCategoryBar from '../emoji_category_bar';
 
 const PickerFooter: FC<BottomSheetFooterProps> = ({...props}) => {
     const theme = useTheme();

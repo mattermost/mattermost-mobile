@@ -94,6 +94,7 @@ const Picker: FC<Props> = ({testID = '', onEmojiPress}) => {
                     onChangeText={onChangeSearchTerm}
                     testID={`${testID}.search_bar`}
                     value={searchTerm}
+                    useBottomSheet={true}
                 />
             </View>
             {EmojiList}

@@ -6,13 +6,15 @@ import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {useSharedValue} from 'react-native-reanimated';
 
 import SearchBar, {type SearchProps} from '@components/search';
+import {useIsTablet} from '@hooks/device';
 import {setEmojiSkinTone} from '@hooks/emoji_category_bar';
 
+import BottomSheetSearch from './bottom_sheet_search';
 import SkinToneSelector from './skintone_selector';
 
 type Props = SearchProps & {
     skinTone: string;
-    disableBottomSheet?: boolean;
+    useBottomSheet?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -20,7 +22,8 @@ const styles = StyleSheet.create({
     row: {flexDirection: 'row'},
 });
 
-const PickerHeader = ({skinTone, ...props}: Props) => {
+const PickerHeader = ({skinTone, useBottomSheet, ...props}: Props) => {
+    const isTablet = useIsTablet();
     const containerWidth = useSharedValue(0);
     const isSearching = useSharedValue(false);
 
@@ -44,17 +47,32 @@ const PickerHeader = ({skinTone, ...props}: Props) => {
         containerWidth.value = e.nativeEvent.layout.width;
     }, []);
 
+    let search;
+    if (isTablet || !useBottomSheet) {
+        search = (
+            <SearchBar
+                {...props}
+                onBlur={onBlur}
+                onFocus={onFocus}
+            />
+        );
+    } else {
+        search = (
+            <BottomSheetSearch
+                {...props}
+                onBlur={onBlur}
+                onFocus={onFocus}
+            />
+        );
+    }
+
     return (
         <View
             onLayout={onLayout}
             style={styles.row}
         >
             <View style={styles.flex}>
-                <SearchBar
-                    {...props}
-                    onBlur={onBlur}
-                    onFocus={onFocus}
-                />
+                {search}
             </View>
             <SkinToneSelector
                 skinTone={skinTone}

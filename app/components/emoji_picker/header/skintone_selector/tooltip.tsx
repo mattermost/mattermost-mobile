@@ -30,8 +30,8 @@ const styles = StyleSheet.create({
         marginTop: 12,
     },
     description: {
-        color: Preferences.THEMES.light.centerChannelColor,
-        ...typography('Body', 200, 'Light'),
+        color: Preferences.THEMES.denim.centerChannelColor,
+        ...typography('Body', 200, 'Regular'),
     },
     titleContainer: {
         alignItems: 'center',
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
         marginTop: 22,
     },
     title: {
-        color: Preferences.THEMES.light.centerChannelColor,
+        color: Preferences.THEMES.denim.centerChannelColor,
         ...typography('Body', 200, 'SemiBold'),
     },
 });
@@ -61,7 +61,7 @@ const SkinSelectorTooltip = ({onClose}: Props) => {
                     testID='skin_selector.tooltip.close.button'
                 >
                     <CompassIcon
-                        color={changeOpacity(Preferences.THEMES.light.centerChannelColor, 0.56)}
+                        color={changeOpacity(Preferences.THEMES.denim.centerChannelColor, 0.56)}
                         name='close'
                         size={18}
                     />
