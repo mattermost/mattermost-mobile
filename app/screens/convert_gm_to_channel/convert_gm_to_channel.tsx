@@ -14,11 +14,16 @@ import { logDebug } from '@app/utils/log';
 type Props = {
     channelId: string;
     currentUserId?: string;
+    teammateNameDisplay: string;
 }
 
 const loadingIndicatorTimeout = 1200;
 
-const ConvertGMToChannel = ({channelId, currentUserId}: Props) => {
+const ConvertGMToChannel = ({
+    channelId,
+    currentUserId,
+    teammateNameDisplay,
+}: Props) => {
     const [loadingAnimationTimeout, setLoadingAnimationTimeout] = useState(false);
     const [commonTeamsFetched, setCommonTeamsFetched] = useState(false);
     const [channelMembersFetched, setChannelMembersFetched] = useState(false);
@@ -93,6 +98,7 @@ const ConvertGMToChannel = ({channelId, currentUserId}: Props) => {
         <ConvertGMToChannelForm
             commonTeams={commonTeams}
             profiles={profiles}
+            teammateNameDisplay={teammateNameDisplay}
         />
     );
 };
