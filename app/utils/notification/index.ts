@@ -104,7 +104,7 @@ export const scheduleExpiredNotification = (serverUrl: string, session: Session,
         body = intl.formatMessage({
             id: 'mobile.session_expired_days',
             defaultMessage: 'Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.',
-        }, {siteName: serverName, daysCount: expiresInDays, hoursCount: remainingHours});
+        }, {siteName: serverName, daysCount: expiresInDays});
     } else {
         body = intl.formatMessage({
             id: 'mobile.session_expired_days_hrs',
