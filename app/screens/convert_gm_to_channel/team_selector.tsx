@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
@@ -11,6 +11,7 @@ import {useTheme} from '@app/context/theme';
 import {dismissBottomSheet, goToScreen} from '@app/screens/navigation';
 import {preventDoubleTap} from '@app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
+import { logDebug } from '@app/utils/log';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -37,6 +38,15 @@ export const TeamSelector = ({commonTeams, onSelectTeam, selectedTeamId}: Props)
 
     const label = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.label', defaultMessage: 'Team'});
     const placeholder = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.placeholder', defaultMessage: 'Select a Team'});
+
+    useEffect(() => {
+        logDebug(`AAA selectedTeamId: ${selectedTeamId}`);
+        if (selectedTeamId) {
+            const team = commonTeams.find((t) => t.id === selectedTeamId);
+            logDebug(`AAA team: ${team?.display_name}`);
+            setSelectedTeam(team);
+        }
+    }, [selectedTeamId]);
 
     const selectTeam = useCallback((teamId: string) => {
         const team = commonTeams.find((t) => t.id === teamId);

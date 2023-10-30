@@ -12,9 +12,10 @@ import {getKeyboardAppearanceFromTheme} from '@app/utils/theme';
 
 type Props = {
     error?: string;
+    onChange: (text: string) => void;
 }
 
-export const ChannelNameInput = ({error}: Props) => {
+export const ChannelNameInput = ({error, onChange}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
 
@@ -38,6 +39,7 @@ export const ChannelNameInput = ({error}: Props) => {
             testID='gonvert_gm_to_channel.channel_display_name.input'
             theme={theme}
             error={error}
+            onChangeText={onChange}
         />
     );
 };

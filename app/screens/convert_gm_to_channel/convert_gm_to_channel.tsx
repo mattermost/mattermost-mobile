@@ -9,6 +9,7 @@ import {useServerUrl} from '@app/context/server';
 
 import {ConvertGMToChannelForm} from './convert_gm_to_channel_form/convert_gm_to_channel_form';
 import {Loader} from './loader';
+import channel from '@app/constants/channel';
 
 type Props = {
     channelId: string;
@@ -98,6 +99,7 @@ const ConvertGMToChannel = ({
             commonTeams={commonTeams}
             profiles={profiles}
             teammateNameDisplay={teammateNameDisplay}
+            channelId={channelId}
         />
     );
 };

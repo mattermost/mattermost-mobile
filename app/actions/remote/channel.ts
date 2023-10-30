@@ -1274,3 +1274,33 @@ export const getGroupMessageMembersCommonTeams = async (serverUrl: string, chann
         return {error};
     }
 };
+
+export const convertGroupMessageToPrivateChannel = async (serverUrl: string, channelId: string, teamId: string, displayName: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const name = generateChannelNameFromDisplayName(displayName);
+
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const existingChannel = await getChannelById(database, channelId);
+
+        // addConvertingChannel ??? do we need to do this?
+
+        const updatedChannel = await client.convertGroupMessageToPrivateChannel(channelId, teamId, displayName, name);
+
+        if (existingChannel) {
+            existingChannel.prepareUpdate((channel) => {
+                channel.type = General.PRIVATE_CHANNEL;
+                channel.displayName = displayName;
+                channel.name = name;
+            });
+
+            await operator.batchRecords([existingChannel], 'convertGroupMessageToPrivateChannel');
+        }
+
+        return {updatedChannel};
+    } catch (error) {
+        logDebug('error on convertGroupMessageToPrivateChannel', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
