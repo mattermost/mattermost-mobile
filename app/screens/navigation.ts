@@ -564,7 +564,7 @@ export async function dismissAllModalsAndPopToScreen(screenId: AvailableScreens,
 }
 
 export function showModal(name: AvailableScreens, title: string, passProps = {}, options: Options = {}) {
-    if (!isScreenRegistered(name)) {
+    if (!isScreenRegistered(name) || NavigationStore.getVisibleModal() === name) {
         return;
     }
 
