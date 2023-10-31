@@ -613,6 +613,7 @@
   "mobile.managed.settings": "Ayarlara git",
   "mobile.markdown.code.copy_code": "Kodu kopyala",
   "mobile.markdown.code.plusMoreLines": "+ {count, number} diğer {count, plural, one {satır} other {satır}}",
+  "mobile.markdown.copy_header": "Üst bilgi metnini kopyala",
   "mobile.markdown.image.too_large": "Görsel {maxWidth} x {maxHeight} boyutundan büyük:",
   "mobile.markdown.link.copy_url": "Adresi kopyala",
   "mobile.mention.copy_mention": "Anmayı kopyala",
