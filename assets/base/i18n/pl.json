@@ -613,6 +613,7 @@
   "mobile.managed.settings": "Idz do ustawień",
   "mobile.markdown.code.copy_code": "Skopiuj Kod",
   "mobile.markdown.code.plusMoreLines": "+{count, number} więcej {count, plural, one {line} other {lines}}",
+  "mobile.markdown.copy_header": "Kopiowanie tekstu nagłówka",
   "mobile.markdown.image.too_large": "Obrazek przekracza maksymalne rozmiary szerokości {maxWidth} oraz {maxHeight} wysokości:",
   "mobile.markdown.link.copy_url": "Kopiuj URL",
   "mobile.mention.copy_mention": "Kopiuj wzmiankę",
