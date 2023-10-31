@@ -14,26 +14,26 @@ type PlusMenuItemProps = {
 const PlusMenuItem = ({pickerAction, onPress}: PlusMenuItemProps) => {
     const intl = useIntl();
 
-    const menuItems = {
+    const menuItems: {[key: string]: Omit<React.ComponentProps<typeof SlideUpPanelItem>, 'onPress'>} = {
         browseChannels: {
-            icon: 'globe',
+            leftIcon: 'globe',
             text: intl.formatMessage({id: 'plus_menu.browse_channels.title', defaultMessage: 'Browse Channels'}),
             testID: 'plus_menu_item.browse_channels',
         },
 
         createNewChannel: {
-            icon: 'plus',
+            leftIcon: 'plus',
             text: intl.formatMessage({id: 'plus_menu.create_new_channel.title', defaultMessage: 'Create New Channel'}),
             testID: 'plus_menu_item.create_new_channel',
         },
 
         openDirectMessage: {
-            icon: 'account-outline',
+            leftIcon: 'account-outline',
             text: intl.formatMessage({id: 'plus_menu.open_direct_message.title', defaultMessage: 'Open a Direct Message'}),
             testID: 'plus_menu_item.open_direct_message',
         },
         invitePeopleToTeam: {
-            icon: 'account-plus-outline',
+            leftIcon: 'account-plus-outline',
             text: intl.formatMessage({id: 'plus_menu.invite_people_to_team.title', defaultMessage: 'Invite people to the team'}),
             testID: 'plus_menu_item.invite_people_to_team',
         },
