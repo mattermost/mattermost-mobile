@@ -14,7 +14,7 @@ type PlusMenuItemProps = {
 const PlusMenuItem = ({pickerAction, onPress}: PlusMenuItemProps) => {
     const intl = useIntl();
 
-    const menuItems = {
+    const menuItems: {[key: string]: Omit<React.ComponentProps<typeof SlideUpPanelItem>, 'onPress'>} = {
         browseChannels: {
             leftIcon: 'globe',
             text: intl.formatMessage({id: 'plus_menu.browse_channels.title', defaultMessage: 'Browse Channels'}),
