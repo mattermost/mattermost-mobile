@@ -23,6 +23,7 @@ type MarkdownLinkProps = {
     experimentalNormalizeMarkdownLinks: string;
     href: string;
     siteURL: string;
+    onLinkLongPress?: (url?: string) => void;
 }
 
 const style = StyleSheet.create({
@@ -44,7 +45,7 @@ const parseLinkLiteral = (literal: string) => {
     return parsed.href;
 };
 
-const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL}: MarkdownLinkProps) => {
+const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL, onLinkLongPress}: MarkdownLinkProps) => {
     const intl = useIntl();
     const {bottom} = useSafeAreaInsets();
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -109,6 +110,11 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
 
     const handleLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
+            if (onLinkLongPress) {
+                onLinkLongPress(href);
+                return;
+            }
+
             const renderContent = () => {
                 return (
                     <View
@@ -145,7 +151,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                 theme,
             });
         }
-    }, [managedConfig, intl, bottom, theme]);
+    }, [managedConfig, intl, bottom, theme, onLinkLongPress]);
 
     const renderChildren = experimentalNormalizeMarkdownLinks ? parseChildren() : children;
 

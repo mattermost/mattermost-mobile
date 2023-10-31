@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-notifications/lib/android/app/build.gradle b/node_modules/react-native-notifications/lib/android/app/build.gradle
-index d049e84..9ad7004 100644
+index 30bb01c..bba788d 100644
 --- a/node_modules/react-native-notifications/lib/android/app/build.gradle
 +++ b/node_modules/react-native-notifications/lib/android/app/build.gradle
 @@ -96,9 +96,9 @@ android {
@@ -7,10 +7,10 @@ index d049e84..9ad7004 100644
      testOptions {
          unitTests.all { t ->
 -            reports {
--                html.enabled true
+-                html.required.set true
 -            }
 +            // reports {
-+            //     html.enabled true
++            //     html.required.set true
 +            // }
              testLogging {
                  events "PASSED", "SKIPPED", "FAILED", "standardOut", "standardError"
@@ -90,10 +90,10 @@ index 5b7f15f..9381794 100644
          }
      }
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/NotificationIntentAdapter.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/NotificationIntentAdapter.java
-index 1e7e871..62e5cb8 100644
+index 1e7e871..36b96b6 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/NotificationIntentAdapter.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/NotificationIntentAdapter.java
-@@ -14,17 +14,9 @@ public class NotificationIntentAdapter {
+@@ -14,17 +14,11 @@ public class NotificationIntentAdapter {
  
      @SuppressLint("UnspecifiedImmutableFlag")
      public static PendingIntent createPendingNotificationIntent(Context appContext, PushNotificationProps notification) {
@@ -108,9 +108,11 @@ index 1e7e871..62e5cb8 100644
 -            taskStackBuilder.addNextIntentWithParentStack(mainActivityIntent);
 -            return taskStackBuilder.getPendingIntent((int) System.currentTimeMillis(), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
 -        }
-+        Intent intent = appContext.getPackageManager().getLaunchIntentForPackage(appContext.getPackageName());
-+        intent.putExtra(PUSH_NOTIFICATION_EXTRA_NAME, notification.asBundle());
-+        return PendingIntent.getActivity(appContext, (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
++        Intent mainActivityIntent = appContext.getPackageManager().getLaunchIntentForPackage(appContext.getPackageName());
++        mainActivityIntent.putExtra(PUSH_NOTIFICATION_EXTRA_NAME, notification.asBundle());
++        TaskStackBuilder taskStackBuilder = TaskStackBuilder.create(appContext);
++        taskStackBuilder.addNextIntentWithParentStack(mainActivityIntent);
++        return taskStackBuilder.getPendingIntent((int) System.currentTimeMillis(), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
      }
  
      public static boolean canHandleTrampolineActivity(Context appContext) {

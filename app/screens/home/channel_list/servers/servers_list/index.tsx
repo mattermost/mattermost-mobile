@@ -4,11 +4,12 @@
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {FlatList, StyleSheet, View, type ListRenderItemInfo} from 'react-native';
 
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {BUTTON_HEIGHT} from '@screens/bottom_sheet';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {addNewServer} from '@utils/server';
 
@@ -28,6 +29,9 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         marginVertical: 4,
+    },
+    serverList: {
+        marginBottom: BUTTON_HEIGHT,
     },
 });
 
@@ -68,6 +72,7 @@ const ServerList = ({servers}: Props) => {
             <View style={[styles.container, {marginTop: isTablet ? 12 : 0}]}>
                 <List
                     data={servers}
+                    style={styles.serverList}
                     renderItem={renderServer}
                     keyExtractor={keyExtractor}
                     contentContainerStyle={styles.contentContainer}
