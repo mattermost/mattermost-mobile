@@ -613,6 +613,7 @@
   "mobile.managed.settings": "Перейти к настройкам",
   "mobile.markdown.code.copy_code": "Скопировать код",
   "mobile.markdown.code.plusMoreLines": "еще +{count, number} {count, plural, one {строка} few {строки} other {строк}}",
+  "mobile.markdown.copy_header": "Копирование текста заголовка",
   "mobile.markdown.image.too_large": "Изображение превышает максимальное разрешение {maxWidth} на {maxHeight}:",
   "mobile.markdown.link.copy_url": "Скопировать URL",
   "mobile.mention.copy_mention": "Скопировать упоминание",
