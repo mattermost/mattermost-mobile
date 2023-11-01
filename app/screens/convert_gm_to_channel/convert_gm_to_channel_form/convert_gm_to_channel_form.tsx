@@ -36,7 +36,7 @@ type Props = {
     commonTeams: Team[];
     profiles: UserProfile[];
     locale?: string;
-    teammateNameDisplay: string;
+    teammateNameDisplay?: string;
 }
 
 export const ConvertGMToChannelForm = ({

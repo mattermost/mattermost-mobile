@@ -7,9 +7,8 @@ import {fetchChannelMemberships, getGroupMessageMembersCommonTeams} from '@actio
 import {PER_PAGE_DEFAULT} from '@app/client/rest/constants';
 import {useServerUrl} from '@app/context/server';
 
-import {ConvertGMToChannelForm} from './convert_gm_to_channel_form/convert_gm_to_channel_form';
+import ConvertGMToChannelForm from './convert_gm_to_channel_form';
 import {Loader} from './loader';
-import channel from '@app/constants/channel';
 
 type Props = {
     channelId: string;

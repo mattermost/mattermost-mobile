@@ -34,6 +34,10 @@ export const queryCategoriesByTeamIds = (database: Database, teamIds: string[]) 
     return database.get<CategoryModel>(CATEGORY).query(Q.where('team_id', Q.oneOf(teamIds)));
 };
 
+export const queryAllCategories = (database: Database) => {
+    return database.get<CategoryModel>(CATEGORY).query();
+};
+
 export async function prepareCategoriesAndCategoriesChannels(operator: ServerDataOperator, categories: CategoryWithChannels[], prune = false) {
     try {
         const {database} = operator;

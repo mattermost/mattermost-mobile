@@ -29,6 +29,7 @@ export const deleteCategory = async (serverUrl: string, categoryId: string) => {
     }
 };
 
+// LOL use this
 export async function storeCategories(serverUrl: string, categories: CategoryWithChannels[], prune = false, prepareRecordsOnly = false) {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

@@ -231,6 +231,8 @@ export async function createChannel(serverUrl: string, displayName: string, purp
             const resolvedModels = await Promise.all(channelModels);
             models.push(...resolvedModels.flat());
         }
+
+        // LOL
         const categoriesModels = await addChannelToDefaultCategory(serverUrl, channelData, true);
         if (categoriesModels.models?.length) {
             models.push(...categoriesModels.models);
