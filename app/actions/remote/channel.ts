@@ -1279,11 +1279,12 @@ export const convertGroupMessageToPrivateChannel = async (serverUrl: string, cha
     try {
         const client = NetworkManager.getClient(serverUrl);
         const name = generateChannelNameFromDisplayName(displayName);
-
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const existingChannel = await getChannelById(database, channelId);
 
-        // addConvertingChannel ??? do we need to do this?
+        const existingChannel = await getChannelById(database, channelId);
+        if (existingChannel) {
+            EphemeralStore.addConvertingChannel(channelId);
+        }
 
         const updatedChannel = await client.convertGroupMessageToPrivateChannel(channelId, teamId, displayName, name);
 
@@ -1302,5 +1303,7 @@ export const convertGroupMessageToPrivateChannel = async (serverUrl: string, cha
         logDebug('error on convertGroupMessageToPrivateChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
+    } finally {
+        EphemeralStore.removeConvertingChannel(channelId);
     }
 };

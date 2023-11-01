@@ -18,9 +18,6 @@ import MessageBox from '../message_box/message_box';
 import {TeamSelector} from '../team_selector';
 
 import {NoCommonTeamForm} from './no_common_teams_form';
-import { dismissAllModalsAndPopToRoot, popToRoot, popTopScreen } from '@app/screens/navigation';
-import { switchToChannel } from '@actions/local/channel';
-import { update } from 'lodash';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
