@@ -686,7 +686,7 @@
     "alert.push_proxy.button": "Okay",
     "alert.push_proxy_unknown.title": "Notifications could not be received from this server",
     "alert.push_proxy_error.title": "Notifications cannot be received from this server",
-    "alert.push_proxy_error.description": "Due to the configuration for this server, notifications cannot be received in the mobile app. Contact your system admin for more information.",
+    "alert.push_proxy_error.description": "Due to the configuration of this server, notifications cannot be received in the mobile app. Contact your system admin for more information.",
     "alert.channel_deleted.title": "Archived channel",
     "alert.channel_deleted.description": "The channel {displayName} has been archived.",
     "account.your_profile": "Your Profile",

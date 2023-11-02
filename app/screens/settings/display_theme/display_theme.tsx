@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState, useEffect} from 'react';
 
 import {savePreference} from '@actions/remote/preference';
 import SettingContainer from '@components/settings/container';
@@ -26,17 +26,22 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const initialTheme = useMemo(() => theme, [/* dependency array should remain empty */]);
+    const [newTheme, setNewTheme] = useState<string | undefined>(undefined);
 
     const close = () => popTopScreen(componentId);
 
-    const setThemePreference = useCallback((newTheme?: string) => {
-        const allowedTheme = allowedThemeKeys.find((tk) => tk === newTheme);
+    useEffect(() => {
         const differentTheme = theme.type?.toLowerCase() !== newTheme?.toLowerCase();
 
         if (!differentTheme) {
             close();
             return;
         }
+        setThemePreference();
+    }, [newTheme]);
+
+    const setThemePreference = useCallback(() => {
+        const allowedTheme = allowedThemeKeys.find((tk) => tk === newTheme);
 
         const themeJson = Preferences.THEMES[allowedTheme as ThemeKey] || initialTheme;
 
@@ -47,15 +52,20 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
             value: JSON.stringify(themeJson),
         };
         savePreference(serverUrl, [pref]);
-    }, [allowedThemeKeys, currentTeamId, theme.type, serverUrl]);
+    }, [allowedThemeKeys, currentTeamId, theme.type, serverUrl, newTheme]);
 
-    useAndroidHardwareBackHandler(componentId, setThemePreference);
+    const onAndroidBack = () => {
+        setThemePreference();
+        close();
+    };
+
+    useAndroidHardwareBackHandler(componentId, onAndroidBack);
 
     return (
         <SettingContainer testID='theme_display_settings'>
             <ThemeTiles
                 allowedThemeKeys={allowedThemeKeys}
-                onThemeChange={setThemePreference}
+                onThemeChange={setNewTheme}
                 selectedTheme={theme.type}
             />
             {initialTheme.type === 'custom' && (
