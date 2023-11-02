@@ -118,6 +118,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         isCallsEnabledInChannel,
         canManageMembers,
         canManageSettings,
+        currentUser,
     };
 });
 

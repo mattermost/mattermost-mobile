@@ -23,6 +23,7 @@ import Options from './options';
 import Title from './title';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
+import type { UserModel } from '@app/database/models/server';
 
 type Props = {
     channelId: string;
@@ -33,6 +34,7 @@ type Props = {
     isCallsEnabledInChannel: boolean;
     canManageMembers: boolean;
     canManageSettings: boolean;
+    currentUser: UserModel;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -61,6 +63,7 @@ const ChannelInfo = ({
     isCallsEnabledInChannel,
     canManageMembers,
     canManageSettings,
+    currentUser,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -112,7 +115,7 @@ const ChannelInfo = ({
                 />
                 <View style={styles.separator}/>
                 {/* LOL hide this option for guest users */}
-                {type === General.GM_CHANNEL &&
+                {type === General.GM_CHANNEL && !currentUser.isGuest &&
                 <>
                     <ConvertToChannelLabel
                         channelId={channelId}
