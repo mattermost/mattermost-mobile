@@ -708,7 +708,6 @@
   "mobile.server_url.deeplink.emm.denied": "このアプリはEMMによって制御され、DeepLinkサーバーのURLはEMMが許可したサーバーに一致していません",
   "mobile.server_url.empty": "有効なサーバーURLを入力してください",
   "mobile.server_url.invalid_format": "URLはhttp://またはhttps://から始まらなくてはいけません",
-  "mobile.session_expired": "通知を受け取るにはログインしてください。{siteName} へのセッションは {daysCount, number} {daysCount, plural, one {日} other {日}} 毎に期限切れになるよう設定されています。",
   "mobile.session_expired.title": "セッション有効期限切れ",
   "mobile.set_status.dnd": "取り込み中",
   "mobile.storage_permission_denied_description": "サーバーにファイルをアップロードします。設定を開き、{applicationName} にこのデバイスのファイルへの読み取りと書き込みのアクセス権を付与してください。",

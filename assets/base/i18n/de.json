@@ -710,7 +710,6 @@
   "mobile.server_url.deeplink.emm.denied": "Diese Anwendung wird von einem EMM gesteuert und die DeepLink-Server-URL stimmt nicht mit dem vom EMM zugelassenen Server überein",
   "mobile.server_url.empty": "Bitte eine gültige Server URL eingeben",
   "mobile.server_url.invalid_format": "URL muss mit http:// oder https:// beginnen",
-  "mobile.session_expired": "Bitte melde dich an, um weiter Benachrichtigungen zu erhalten. Sitzungen für {siteName} sind so konfiguriert, dass sie alle {daysCount, number} {daysCount, plural, one {Tag} other {Tage}} ablaufen.",
   "mobile.session_expired.title": "Sitzung abgelaufen",
   "mobile.set_status.dnd": "Nicht stören",
   "mobile.storage_permission_denied_description": "Lade Dateien auf deinen Server hoch. Öffne die Einstellungen, um {applicationName} Lese- und Schreibzugriff auf Dateien auf diesem Gerät zu gewähren.",

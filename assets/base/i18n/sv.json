@@ -709,7 +709,6 @@
   "mobile.server_url.deeplink.emm.denied": "Den här appen kontrolleras av ett EMM och DeepLink-serverns url matchar inte EMM:s tillåtna server",
   "mobile.server_url.empty": "Ange en giltig server-URL",
   "mobile.server_url.invalid_format": "Måste börja med http:// eller https://",
-  "mobile.session_expired": "Logga in på nytt för att ta emot notifieringar. Sessioner i {siteName} löper ut efter {daysCount, number} {daysCount, plural, one {dag} other {dagar}}.",
   "mobile.session_expired.title": "Sessionen har upphört",
   "mobile.set_status.dnd": "Stör ej",
   "mobile.storage_permission_denied_description": "Ladda upp filer till din server. Öppna Inställningar för att ge {applicationName} läs- och skrivåtkomst till filer på den här enheten.",
