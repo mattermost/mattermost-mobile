@@ -709,7 +709,6 @@
   "mobile.server_url.deeplink.emm.denied": "Deze app wordt gecontroleerd door een EMM en de DeepLink server-url komt niet overeen met de door de EMM toegestane server",
   "mobile.server_url.empty": "Geef een geldige server URL op",
   "mobile.server_url.invalid_format": "URL moet beginnen met http:// of https://",
-  "mobile.session_expired": "Log in om meldingen te blijven ontvangen. Sessies voor {siteName} zijn geconfigureerd om elke {daysCount, number} {daysCount, plural, one {dag} other {dagen}} te verlopen.",
   "mobile.session_expired.title": "Sessie verlopen",
   "mobile.set_status.dnd": "Niet Storen",
   "mobile.storage_permission_denied_description": "Upload bestanden naar jouw server. Open Instellingen om {applicationName} Lees- en Schrijftoegang te verlenen tot bestanden op dit apparaat.",

@@ -710,7 +710,6 @@
   "mobile.server_url.deeplink.emm.denied": "이 앱은 EMM에 의해 제어되며 딥링크 서버 URL이 EMM 허용 서버와 일치하지 않습니다",
   "mobile.server_url.empty": "유효한 서버 URL을 입력해주세요",
   "mobile.server_url.invalid_format": "URL은 http:// 또는 https://로 시작해야 합니다",
-  "mobile.session_expired": "알림을 계속 받으려면 로그인하세요. {siteName} 세션은 {daysCount, number} {daysCount, plural, one {day} other {days}}마다 만료되도록 구성되어 있습니다.",
   "mobile.session_expired.title": "세션 만료",
   "mobile.set_status.dnd": "방해 금지",
   "mobile.storage_permission_denied_description": "서버에 파일을 업로드합니다. 설정을 열어 {applicationName} 에 이 장치의 파일에 대한 읽기 및 쓰기 액세스 권한을 부여합니다.",

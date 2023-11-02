@@ -709,7 +709,6 @@
   "mobile.server_url.deeplink.emm.denied": "此应用被EMM控制，且DeepLink服务器链接与EMM允许的服务器不匹配",
   "mobile.server_url.empty": "请输入有效的服务端网址",
   "mobile.server_url.invalid_format": "每个 URL 必须以 http:// 或 https:// 开头",
-  "mobile.session_expired": "请登入再以继续接收通知。{siteName} 的会话过期时间设定为 {daysCount, number} 天。",
   "mobile.session_expired.title": "会话已过期",
   "mobile.set_status.dnd": "请勿打扰",
   "mobile.storage_permission_denied_description": "上传文件到您的 Mattermost。打开设定并允许 {applicationName} 读写此设备上的文件。",

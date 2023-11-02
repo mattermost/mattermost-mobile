@@ -710,7 +710,6 @@
   "mobile.server_url.deeplink.emm.denied": "Это приложение управляется EMM, и url сервера DeepLink не соответствует разрешенному серверу EMM",
   "mobile.server_url.empty": "Пожалуйста, введите действительный URL-адрес сервера",
   "mobile.server_url.invalid_format": "Адрес должен начинаться с http:// или https://",
-  "mobile.session_expired": "Пожалуйста, войдите в систему, чтобы продолжать получать уведомления. Сессии для {siteName} настроены на истечение срока действия каждые {daysCount, number} {daysCount, plural, one {день} few{дня} other {дней}}.",
   "mobile.session_expired.title": "Сессия истекла",
   "mobile.set_status.dnd": "Не беспокоить",
   "mobile.storage_permission_denied_description": "Загрузите файлы на свой сервер. Откройте Настройки, чтобы предоставить {applicationName} доступ на чтение и запись к файлам на этом устройстве.",

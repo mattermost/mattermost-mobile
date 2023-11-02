@@ -707,7 +707,6 @@
   "mobile.server_url.deeplink.emm.denied": "Cette application est gérée par une EMM et l'URL du serveur de lien profond ne correspond pas au serveur autorisé par l'EMM",
   "mobile.server_url.empty": "Veuillez spécifier une URL de serveur valide",
   "mobile.server_url.invalid_format": "L'URL doit commencer par http:// ou https://",
-  "mobile.session_expired": "Veuillez vous connecter pour continuer à recevoir des notifications. Les sessions pour {siteName} sont configurées pour expirer tous les {daysCount, number} {daysCount, plural, one {jours} other {jours}}.",
   "mobile.session_expired.title": "Session expirée",
   "mobile.set_status.dnd": "Ne pas déranger",
   "mobile.storage_permission_denied_description": "Charger des fichiers vers votre serveur. Ouvrez les paramètres pour autoriser {applicationName} à accéder en lecture et en écriture aux fichiers sur cet appareil.",

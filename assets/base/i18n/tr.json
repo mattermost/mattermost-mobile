@@ -710,7 +710,6 @@
   "mobile.server_url.deeplink.emm.denied": "Bu uygulama bir EMM tarafından denetleniyor ve DeepLink sunucu adresi EMM tarafından izin verilen bir sunucuyla eşleşmiyor",
   "mobile.server_url.empty": "Lütfen geçerli bir sunucu adresi yazın",
   "mobile.server_url.invalid_format": "Adres http:// ya da https:// ile başlamalıdır",
-  "mobile.session_expired": "Lütfen bildirimleri alabilmek için oturum açın. {siteName} oturumları {daysCount, number} {daysCount, plural, one {gün} other {gün}} süreyle açık kalır.",
   "mobile.session_expired.title": "Oturumun süresi dolmuş",
   "mobile.set_status.dnd": "Rahatsız etmeyin",
   "mobile.storage_permission_denied_description": "Dosyaları sunucunuza yükleyin. {applicationName} uygulamasına bu aygıt üzerindeki dosyaları okuma ve yazma izni vermek için ayarları açın.",
