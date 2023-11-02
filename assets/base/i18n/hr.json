@@ -32,6 +32,7 @@
   "apps.error.form.no_lookup": "`lookup` nije definiran.",
   "apps.error.form.no_source": "`source` nije definiran.",
   "apps.error.form.no_submit": "`submit` nije definirano",
+  "browse_channels.archivedChannels": "Arhivirani kanali",
   "browse_channels.publicChannels": "Javni kanali",
   "browse_channels.sharedChannels": "Dijeljeni kanali",
   "browse_channels.title": "Pregledaj kanale",
@@ -47,6 +48,7 @@
   "channel_info.copy_link": "Kopiraj poveznicu",
   "channel_info.error_close": "Zatvori",
   "channel_info.mention": "Spominjanje",
+  "channel_info.notification.all": "Sve",
   "channel_list.channels_category": "Kanali",
   "channel_list.dms_category": "Izravne poruke",
   "channel_modal.name": "Ime",
@@ -107,8 +109,12 @@
   "mobile.gallery.title": "{index} od {total}",
   "mobile.link.error.text": "Nije moguće otvoriti poveznicu.",
   "mobile.link.error.title": "Greška",
+  "mobile.login_options.gitlab": "GitLab",
+  "mobile.login_options.google": "Google",
   "mobile.manage_members.cancel": "Odustani",
   "mobile.manage_members.member": "Član",
+  "mobile.manage_members.remove": "Ukloni",
+  "mobile.manage_members.remove_member": "Ukloni iz kanala",
   "mobile.managed.exit": "Zatvori",
   "mobile.oauth.failed_to_login": "Pokušaj prijave neuspio. Pokušaj ponovo.",
   "mobile.oauth.failed_to_open_link": "Neuspjelo otvaranje poveznice. Pokušaj ponovo.",
@@ -265,5 +271,6 @@
   "user.settings.general.nickname": "Nadimak",
   "user.settings.general.position": "Položaj",
   "user.settings.general.username": "Korisničko ime",
-  "user.settings.notifications.email_threads.description": "Obavijesti me o svim odgovorima na rasprave koje pratim"
+  "user.settings.notifications.email_threads.description": "Obavijesti me o svim odgovorima na rasprave koje pratim",
+  "user_status.title": "Stanje"
 }
