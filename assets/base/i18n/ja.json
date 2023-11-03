@@ -450,7 +450,6 @@
   "mobile.calls_host_rec_title": "レコーディングしています",
   "mobile.calls_incoming_dm": "<b>{name}</b>があなたを通話に招待しています",
   "mobile.calls_incoming_gm": "<b>{name}</b>があなたを<b>{num, plural, one {# 人} other {# 人}}</b>との通話に招待しています",
-  "mobile.calls_join_button": "参加",
   "mobile.calls_join_call": "通話に参加する",
   "mobile.calls_lasted": "通話時間 {duration}",
   "mobile.calls_leave": "脱退",

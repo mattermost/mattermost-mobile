@@ -451,7 +451,6 @@
   "mobile.calls_host_rec_title": "녹화 중입니다",
   "mobile.calls_incoming_dm": "<b>{name}</b> 이(가) 통화로 초대합니다",
   "mobile.calls_incoming_gm": "<b>{name}</b> is inviting you to a call with  <b>{num, plural, one {# other} other {# others}}</b>",
-  "mobile.calls_join_button": "참가",
   "mobile.calls_join_call": "통화 참가하기",
   "mobile.calls_lasted": "{duration}동안 지속됨",
   "mobile.calls_leave": "나가기",

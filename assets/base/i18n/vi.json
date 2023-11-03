@@ -443,7 +443,6 @@
   "mobile.calls_host_rec_title": "Bạn đang ghi âm",
   "mobile.calls_incoming_dm": "<b>{name}</b> đang mời bạn tham gia cuộc gọi",
   "mobile.calls_incoming_gm": "<b>{name}</b> đang mời bạn tham gia cuộc gọi với   <b>{num, plural, one  {# người khác} other  {# người khác}}</b>",
-  "mobile.calls_join_button": "Tham gia",
   "mobile.calls_join_call": "Tham gia cuộc gọi",
   "mobile.calls_lasted": "Kéo dài {duration}",
   "mobile.calls_leave": "Rời",

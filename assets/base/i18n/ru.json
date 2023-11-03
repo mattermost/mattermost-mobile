@@ -451,7 +451,6 @@
   "mobile.calls_host_rec_title": "Вы записываете",
   "mobile.calls_incoming_dm": "<b>{name}</b> приглашает вас на звонок",
   "mobile.calls_incoming_gm": "<b>{name}</b> приглашает Вас на разговор с <b>{num, plural, one {# одним участником} few {# несколькими участниками} other {# несколькими участниками}}</b>",
-  "mobile.calls_join_button": "Присоединиться",
   "mobile.calls_join_call": "Присоединиться к звонку",
   "mobile.calls_lasted": "Длительность: {duration}",
   "mobile.calls_leave": "Покинуть",

@@ -451,7 +451,6 @@
   "mobile.calls_host_rec_title": "Sie zeichnest gerade auf",
   "mobile.calls_incoming_dm": "<b>{name}</b> lädt dich zu einem Anruf ein",
   "mobile.calls_incoming_gm": "<b>{name}</b> lädt dich zu einem Anruf mit <b>{num, plural, one {einem anderen} other {# anderen}}</b> ein",
-  "mobile.calls_join_button": "Teilnehmen",
   "mobile.calls_join_call": "Am Anruf teilnehmen",
   "mobile.calls_lasted": "Dauer {duration}",
   "mobile.calls_leave": "Verlassen",

@@ -451,7 +451,6 @@
   "mobile.calls_host_rec_title": "Je bent aan het opnemen",
   "mobile.calls_incoming_dm": "<b>{name}</b> nodigt je uit voor een gesprek",
   "mobile.calls_incoming_gm": "<b>{name}</b> nodigt je uit voor een gesprek met {num, plural, one {# other} other {# others}} <b></b>",
-  "mobile.calls_join_button": "Deelnemen",
   "mobile.calls_join_call": "Deelnemen aan oproep",
   "mobile.calls_lasted": "Duurde {duration}",
   "mobile.calls_leave": "Verlaten",
