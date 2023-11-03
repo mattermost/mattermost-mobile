@@ -155,7 +155,7 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
 
 function isDeepLinkInvalid(decodedUrl: string) {
     const url = decodeURIComponent(decodedUrl);
-    return url.includes('../') || url.includes('/..');
+    return Boolean((/([/\\]\.\.|\.\.[/\\])/).exec(url)?.length);
 }
 
 export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string) {
