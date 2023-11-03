@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {type StyleProp, Text, TouchableOpacity, View, type ViewStyle} from 'react-native';
+import {type StyleProp, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
@@ -32,6 +32,10 @@ type Props = {
     breakAt?: number;
     style?: StyleProp<ViewStyle>;
     noBorder?: boolean;
+    avatarStyle?: StyleProp<ViewStyle>;
+    overflowContainerStyle?: StyleProp<ViewStyle>;
+    overflowItemStyle?: StyleProp<ViewStyle>;
+    overflowTextStyle?: StyleProp<TextStyle>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -42,7 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flexDirection: 'row',
         },
-        firstAvatar: {
+        avatarCommon: {
             justifyContent: 'center',
             alignItems: 'center',
             width: size,
@@ -56,35 +60,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderWidth: 0,
         },
         notFirstAvatars: {
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: size,
-            height: size,
-            borderWidth: (size / 2) + 1,
-            borderColor: theme.centerChannelBg,
-            backgroundColor: theme.centerChannelBg,
-            borderRadius: size / 2,
             marginLeft: imgOverlap,
         },
         overflowContainer: {
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: size,
-            height: size,
             borderRadius: size / 2,
             borderWidth: 1,
-            borderColor: theme.centerChannelBg,
-            backgroundColor: theme.centerChannelBg,
             marginLeft: imgOverlap,
         },
         overflowItem: {
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: size,
-            height: size,
             borderRadius: size / 2,
             borderWidth: 1,
-            borderColor: theme.centerChannelBg,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         overflowText: {
@@ -110,6 +95,10 @@ const UserAvatarsStack = ({
     style: baseContainerStyle,
     users,
     noBorder = false,
+    avatarStyle,
+    overflowContainerStyle,
+    overflowItemStyle,
+    overflowTextStyle,
 }: Props) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -165,14 +154,14 @@ const UserAvatarsStack = ({
                 {displayUsers.map((user, index) => (
                     <UserAvatar
                         key={user.id}
-                        style={index === 0 ? [style.firstAvatar, noBorder && style.noBorder] : [style.notFirstAvatars, noBorder && style.noBorder]}
+                        style={index === 0 ? [style.avatarCommon, noBorder && style.noBorder, avatarStyle] : [style.avatarCommon, style.notFirstAvatars, noBorder && style.noBorder, avatarStyle]}
                         user={user}
                     />
                 ))}
                 {Boolean(overflowUsersCount) && (
-                    <View style={[style.overflowContainer, noBorder && style.noBorder]}>
-                        <View style={[style.overflowItem, noBorder && style.noBorder]}>
-                            <Text style={style.overflowText}>
+                    <View style={[style.avatarCommon, style.overflowContainer, noBorder && style.noBorder, overflowContainerStyle]}>
+                        <View style={[style.avatarCommon, style.overflowItem, noBorder && style.noBorder, overflowItemStyle]}>
+                            <Text style={[style.overflowText, overflowTextStyle]}>
                                 {'+' + overflowUsersCount.toString()}
                             </Text>
                         </View>
