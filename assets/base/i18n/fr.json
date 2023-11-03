@@ -451,7 +451,6 @@
   "mobile.calls_host_rec_title": "Vous êtes en train d'enregistrer",
   "mobile.calls_incoming_dm": "<b>{name}</b> vous invite à un appel",
   "mobile.calls_incoming_gm": "<b>{name}</b> vous invite à un appel avec  <b>{num, plural, one {# other} other {# others}}</b>",
-  "mobile.calls_join_button": "Rejoindre",
   "mobile.calls_join_call": "Rejoindre l'appel",
   "mobile.calls_lasted": "Durée {duration}",
   "mobile.calls_leave": "Quitter",

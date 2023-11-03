@@ -451,7 +451,6 @@
   "mobile.calls_host_rec_title": "您正在录制中",
   "mobile.calls_incoming_dm": "<b>{name}</b>邀请您加入通话",
   "mobile.calls_incoming_gm": "<b>{name}</b> 现邀请您与其他<b> {num, plural, one {# 位} other {# 位}} </b>进行通话",
-  "mobile.calls_join_button": "加入",
   "mobile.calls_join_call": "加入通话",
   "mobile.calls_lasted": "通话时间{duration}",
   "mobile.calls_leave": "离开",

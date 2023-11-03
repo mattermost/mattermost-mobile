@@ -451,7 +451,6 @@
   "mobile.calls_host_rec_title": "Nagrywasz",
   "mobile.calls_incoming_dm": "<b>{name}</b> zaprasza do rozmowy",
   "mobile.calls_incoming_gm": "<b>{name}</b> zaprasza do rozmowy z {num, plural, one {# innym} other {# innymi}} <b></b>",
-  "mobile.calls_join_button": "Dołącz",
   "mobile.calls_join_call": "Dołącz do rozmowy",
   "mobile.calls_lasted": "Trwało {duration}",
   "mobile.calls_leave": "Opuść",

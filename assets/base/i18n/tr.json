@@ -451,7 +451,6 @@
   "mobile.calls_host_rec_title": "Kaydediyorsunuz",
   "mobile.calls_incoming_dm": "<b>{name}</b> sizi bir görüşmeye çağırıyor",
   "mobile.calls_incoming_gm": "<b>{name}</b> sizi  <b>{num, plural, one {kişinin} other {kişinin}}</b> olduğu bir görüşmeye çağırıyor",
-  "mobile.calls_join_button": "Katıl",
   "mobile.calls_join_call": "Çağrıya katıl",
   "mobile.calls_lasted": "{duration} sürdü",
   "mobile.calls_leave": "Ayrıl",

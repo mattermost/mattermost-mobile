@@ -451,7 +451,6 @@
   "mobile.calls_host_rec_title": "Du spelar in",
   "mobile.calls_incoming_dm": "<b>{name}</b> bjuder in till ett samtal",
   "mobile.calls_incoming_gm": "<b>{name}</b> bjuder in dig till ett samtal med <b>{num, plural, one {# annan} other {# andra}}</b>",
-  "mobile.calls_join_button": "Anslut",
   "mobile.calls_join_call": "Anslut till samtalet",
   "mobile.calls_lasted": "Varade i {duration}",
   "mobile.calls_leave": "Lämna",
