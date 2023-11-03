@@ -5,7 +5,7 @@ import CookieManager, {type Cookie} from '@react-native-cookies/cookies';
 import {AppState, type AppStateStatus, DeviceEventEmitter, Platform} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {storeOnboardingViewedValue} from '@actions/app/global';
+import {removePushDisabledInServerAcknowledged, storeOnboardingViewedValue} from '@actions/app/global';
 import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -22,6 +22,7 @@ import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
+import {urlSafeBase64Encode} from '@utils/security';
 import {addNewServer} from '@utils/server';
 
 import type {LaunchType} from '@typings/launch';
@@ -121,6 +122,7 @@ class SessionManager {
         WebsocketManager.invalidateClient(serverUrl);
 
         if (removeServer) {
+            await removePushDisabledInServerAcknowledged(urlSafeBase64Encode(serverUrl));
             await DatabaseManager.destroyServerDatabase(serverUrl);
         } else {
             await DatabaseManager.deleteServerDatabase(serverUrl);

@@ -385,7 +385,7 @@ PODS:
     - React-Core
     - Starscream (~> 4.0.4)
     - SwiftyJSON (~> 5.0)
-  - react-native-notifications (5.0.0):
+  - react-native-notifications (5.1.0):
     - React-Core
   - react-native-paste-input (0.6.4):
     - React-Core
@@ -951,7 +951,7 @@ SPEC CHECKSUMS:
   react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
   react-native-netinfo: fefd4e98d75cbdd6e85fc530f7111a8afdf2b0c5
   react-native-network-client: 953ab4d0914fdde6dc40924b5faad8631a587d4e
-  react-native-notifications: d309f7080aad71206882dbb98d9ed788969f3b6d
+  react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
   react-native-paste-input: 09f14cbfb646ad9d2ef79cdc6f3d45f337c10ad1
   react-native-safe-area-context: 9697629f7b2cda43cf52169bb7e0767d330648c2
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
@@ -1007,4 +1007,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 25f07cb9e5eed8c84db8e8723000e8470c349058
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.14.2

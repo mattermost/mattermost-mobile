@@ -71,6 +71,7 @@ type MarkdownProps = {
     textStyles?: MarkdownTextStyles;
     theme: Theme;
     value?: string;
+    onLinkLongPress?: (url?: string) => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -133,7 +134,7 @@ const Markdown = ({
     enableInlineLatex, enableLatex, maxNodes,
     imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutHeight, layoutWidth,
     location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
-    textStyles = {}, theme, value = '', baseParagraphStyle,
+    textStyles = {}, theme, value = '', baseParagraphStyle, onLinkLongPress,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -402,7 +403,10 @@ const Markdown = ({
 
     const renderLink = ({children, href}: {children: ReactElement; href: string}) => {
         return (
-            <MarkdownLink href={href}>
+            <MarkdownLink
+                href={href}
+                onLinkLongPress={onLinkLongPress}
+            >
                 {children}
             </MarkdownLink>
         );
