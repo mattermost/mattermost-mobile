@@ -52,7 +52,6 @@ type Props = {
     header?: ReactElement;
     testID: string;
     currentCallBarVisible?: boolean;
-    joinCallBannerVisible?: boolean;
     savedPostIds: Set<string>;
 }
 
@@ -111,8 +110,6 @@ const PostList = ({
     showMoreMessages,
     showNewMessageLine = true,
     testID,
-    currentCallBarVisible,
-    joinCallBannerVisible,
     savedPostIds,
 }: Props) => {
     const listRef = useRef<FlatList<string | PostModel>>(null);
@@ -377,8 +374,6 @@ const PostList = ({
                 scrollToIndex={scrollToIndex}
                 theme={theme}
                 testID={`${testID}.more_messages_button`}
-                currentCallBarVisible={Boolean(currentCallBarVisible)}
-                joinCallBannerVisible={Boolean(joinCallBannerVisible)}
             />
             }
         </>
