@@ -24,6 +24,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
+import type ServersModel from '@typings/database/models/app/servers';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     outerContainer: {
         borderRadius: 8,
@@ -40,7 +42,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         shadowRadius: 4,
         elevation: 4,
     },
-    outerContainerOtherServer: {
+    outerContainerServerName: {
         height: CALL_NOTIFICATION_BAR_HEIGHT + 8,
     },
     innerContainer: {
@@ -86,7 +88,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 100, 'SemiBold'),
         lineHeight: 20,
     },
-    textOtherServer: {
+    textServerName: {
         ...typography('Heading', 25),
         color: changeOpacity(theme.buttonColor, 0.72),
         textTransform: 'uppercase',
@@ -103,6 +105,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
+    servers: ServersModel[];
     incomingCall: IncomingCallNotification;
     currentUserId: string;
     teammateNameDisplay: string;
@@ -111,6 +114,7 @@ type Props = {
 }
 
 export const CallNotification = ({
+    servers,
     incomingCall,
     currentUserId,
     teammateNameDisplay,
@@ -121,8 +125,8 @@ export const CallNotification = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const [otherServerName, setOtherServerName] = useState('');
-    const otherServer = (incomingCall.serverUrl !== serverUrl);
+    const [serverName, setServerName] = useState('');
+    const moreThanOneServer = servers.length > 1;
 
     useEffect(() => {
         const channelMembers = members?.filter((m) => m.userId !== currentUserId);
@@ -134,21 +138,21 @@ export const CallNotification = ({
     // We only need to getServerDisplayName once
     useEffect(() => {
         async function getName() {
-            setOtherServerName(await getServerDisplayName(incomingCall.serverUrl));
+            setServerName(await getServerDisplayName(incomingCall.serverUrl));
         }
 
-        if (otherServer) {
+        if (moreThanOneServer) {
             getName();
         }
-    }, [otherServer, incomingCall.serverUrl]);
+    }, [moreThanOneServer, incomingCall.serverUrl]);
 
     const onContainerPress = useCallback(async () => {
-        if (otherServer) {
+        if (incomingCall.serverUrl !== serverUrl) {
             await DatabaseManager.setActiveServerDatabase(incomingCall.serverUrl);
             await WebsocketManager.initializeClient(incomingCall.serverUrl);
         }
         switchToChannelById(incomingCall.serverUrl, incomingCall.channelID);
-    }, [otherServer, incomingCall]);
+    }, [incomingCall, serverUrl]);
 
     const onDismissPress = useCallback(() => {
         removeIncomingCall(serverUrl, incomingCall.callID, incomingCall.channelID);
@@ -188,7 +192,7 @@ export const CallNotification = ({
     }
 
     return (
-        <View style={[style.outerContainer, otherServer && style.outerContainerOtherServer]}>
+        <View style={[style.outerContainer, moreThanOneServer && style.outerContainerServerName]}>
             <Pressable
                 style={[style.innerContainer, onCallsScreen && style.innerOnCallsScreen]}
                 onPress={onContainerPress}
@@ -203,9 +207,9 @@ export const CallNotification = ({
                 </View>
                 <View style={style.textContainer}>
                     {message}
-                    {otherServer &&
-                        <Text style={style.textOtherServer}>
-                            {otherServerName}
+                    {moreThanOneServer &&
+                        <Text style={style.textServerName}>
+                            {serverName}
                         </Text>
                     }
                 </View>
