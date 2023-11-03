@@ -44,7 +44,7 @@ export const observeIsCallLimitRestricted = (database: Database, serverUrl: stri
         distinctUntilChanged(),
     );
     const callNumOfParticipants = observeCallsState(serverUrl).pipe(
-        switchMap((cs) => of$(Object.keys(cs.calls[channelId]?.participants || {}).length)),
+        switchMap((cs) => of$(Object.keys(cs.calls[channelId]?.sessions || {}).length)),
         distinctUntilChanged(),
     );
     const isCloud = observeLicense(database).pipe(

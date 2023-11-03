@@ -39,7 +39,7 @@ import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/u
 
 import {newConnection} from '../connection/connection';
 
-import type {AudioDevice, Call, CallParticipant, CallsConnection} from '@calls/types/calls';
+import type {AudioDevice, Call, CallSession, CallsConnection} from '@calls/types/calls';
 import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
@@ -134,16 +134,19 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
 
 const createCallAndAddToIds = (channelId: string, call: CallState, ids: Set<string>) => {
     return {
-        participants: call.users.reduce((accum, cur, curIdx) => {
+        sessions: Object.values(call.sessions).reduce((accum, cur) => {
             // Add the id to the set of UserModels we want to ensure are loaded.
-            ids.add(cur);
+            ids.add(cur.user_id);
 
             // Create the CallParticipant
-            const muted = call.states && call.states[curIdx] ? !call.states[curIdx].unmuted : true;
-            const raisedHand = call.states && call.states[curIdx] ? call.states[curIdx].raised_hand : 0;
-            accum[cur] = {id: cur, muted, raisedHand};
+            accum[cur.session_id] = {
+                userId: cur.user_id,
+                sessionId: cur.session_id,
+                raisedHand: cur.raised_hand || 0,
+                muted: !cur.unmuted,
+            };
             return accum;
-        }, {} as Dictionary<CallParticipant>),
+        }, {} as Dictionary<CallSession>),
         channelId,
         id: call.id,
         startTime: call.start_at,
@@ -351,12 +354,12 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
         return msg;
     }
 
-    const numParticipants = Object.keys(call.participants).length;
+    const numSessions = Object.keys(call.sessions).length;
 
     msg = intl.formatMessage({
         id: 'mobile.calls_end_msg_channel',
-        defaultMessage: 'Are you sure you want to end a call with {numParticipants} participants in {displayName}?',
-    }, {numParticipants, displayName: channel.displayName});
+        defaultMessage: 'Are you sure you want to end a call with {numSessions} participants in {displayName}?',
+    }, {numSessions, displayName: channel.displayName});
 
     if (channel.type === General.DM_CHANNEL) {
         const otherID = getUserIdFromChannelName(currentUserId, channel.name);

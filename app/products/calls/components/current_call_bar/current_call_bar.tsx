@@ -23,14 +23,13 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
-import type {CallsTheme, CurrentCall} from '@calls/types/calls';
-import type UserModel from '@typings/database/models/servers/user';
+import type {CallSession, CallsTheme, CurrentCall} from '@calls/types/calls';
 import type {Options} from 'react-native-navigation';
 
 type Props = {
     displayName: string;
     currentCall: CurrentCall | null;
-    userModelsDict: Dictionary<UserModel>;
+    sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
     micPermissionsGranted: boolean;
     threadScreen?: boolean;
@@ -135,7 +134,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
 const CurrentCallBar = ({
     displayName,
     currentCall,
-    userModelsDict,
+    sessionsDict,
     teammateNameDisplay,
     micPermissionsGranted,
     threadScreen,
@@ -169,7 +168,7 @@ const CurrentCallBar = ({
         leaveCall();
     }, []);
 
-    const myParticipant = currentCall?.participants[currentCall.myUserId];
+    const myParticipant = currentCall?.sessions[currentCall.mySessionId];
 
     // Since we can only see one user talking, it doesn't really matter who we show here (e.g., we can't
     // tell who is speaking louder).
@@ -185,7 +184,7 @@ const CurrentCallBar = ({
     if (speaker) {
         talkingMessage = (
             <Text style={style.speakingUser}>
-                {displayUsername(userModelsDict[speaker], intl.locale, teammateNameDisplay)}
+                {displayUsername(sessionsDict[speaker].userModel, intl.locale, teammateNameDisplay)}
                 {' '}
                 <Text style={style.speakingPostfix}>{
                     formatMessage({
@@ -208,7 +207,7 @@ const CurrentCallBar = ({
 
     // The user should receive an alert if all of the following conditions apply:
     // - Recording has started and recording has not ended.
-    const isHost = Boolean(currentCall?.hostId === myParticipant?.id);
+    const isHost = Boolean(currentCall?.hostId === myParticipant?.userId);
     if (currentCall?.recState?.start_at && !currentCall?.recState?.end_at) {
         recordingAlert(isHost, intl);
     }
@@ -233,7 +232,7 @@ const CurrentCallBar = ({
                 >
                     <View style={[!speaker && style.avatarOutline]}>
                         <CallAvatar
-                            userModel={userModelsDict[speaker || '']}
+                            userModel={sessionsDict[speaker || '']?.userModel}
                             speaking={Boolean(speaker)}
                             serverUrl={currentCall?.serverUrl || ''}
                             size={speaker ? 40 : 24}

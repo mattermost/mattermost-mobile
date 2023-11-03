@@ -50,7 +50,7 @@ export const DefaultIncomingCalls: IncomingCalls = {
 
 export type Call = {
     id: string;
-    participants: Dictionary<CallParticipant>;
+    sessions: Dictionary<CallSession>;
     channelId: string;
     startTime: number;
     screenOn: string;
@@ -63,7 +63,7 @@ export type Call = {
 
 export const DefaultCall: Call = {
     id: '',
-    participants: {},
+    sessions: {},
     channelId: '',
     startTime: 0,
     screenOn: '',
@@ -85,6 +85,7 @@ export type CurrentCall = Call & {
     connected: boolean;
     serverUrl: string;
     myUserId: string;
+    mySessionId: string;
     screenShareURL: string;
     speakerphoneOn: boolean;
     audioDeviceInfo: AudioDeviceInfo;
@@ -100,6 +101,7 @@ export const DefaultCurrentCall: CurrentCall = {
     connected: false,
     serverUrl: '',
     myUserId: '',
+    mySessionId: '',
     screenShareURL: '',
     speakerphoneOn: false,
     audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
@@ -110,8 +112,9 @@ export const DefaultCurrentCall: CurrentCall = {
     callQualityAlertDismissed: 0,
 };
 
-export type CallParticipant = {
-    id: string;
+export type CallSession = {
+    sessionId: string;
+    userId: string;
     muted: boolean;
     raisedHand: number;
     userModel?: UserModel;
@@ -152,6 +155,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     AllowScreenSharing: true,
     EnableSimulcast: false,
     EnableRinging: false,
+    EnableTranscriptions: false,
 };
 
 export type ApiResp = {

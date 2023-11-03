@@ -8,24 +8,25 @@ import {Calls, Post} from '@constants';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
-import type {CallParticipant, CallsTheme} from '@calls/types/calls';
+import type {CallSession, CallsTheme} from '@calls/types/calls';
 import type {CallsConfig} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
+import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 import type {RTCIceServer} from 'react-native-webrtc';
 
-export function sortParticipants(locale: string, teammateNameDisplay: string, participants?: Dictionary<CallParticipant>, presenterID?: string): CallParticipant[] {
-    if (!participants) {
+export function sortSessions(locale: string, teammateNameDisplay: string, sessions?: Dictionary<CallSession>, presenterID?: string): CallSession[] {
+    if (!sessions) {
         return [];
     }
 
-    const users = Object.values(participants);
+    const sessns = Object.values(sessions);
 
-    return users.sort(sortByName(locale, teammateNameDisplay)).sort(sortByState(presenterID));
+    return sessns.sort(sortByName(locale, teammateNameDisplay)).sort(sortByState(presenterID));
 }
 
 const sortByName = (locale: string, teammateNameDisplay: string) => {
-    return (a: CallParticipant, b: CallParticipant) => {
+    return (a: CallSession, b: CallSession) => {
         const nameA = displayUsername(a.userModel, locale, teammateNameDisplay);
         const nameB = displayUsername(b.userModel, locale, teammateNameDisplay);
         return nameA.localeCompare(nameB);
@@ -33,10 +34,10 @@ const sortByName = (locale: string, teammateNameDisplay: string) => {
 };
 
 const sortByState = (presenterID?: string) => {
-    return (a: CallParticipant, b: CallParticipant) => {
-        if (a.id === presenterID) {
+    return (a: CallSession, b: CallSession) => {
+        if (a.sessionId === presenterID) {
             return -1;
-        } else if (b.id === presenterID) {
+        } else if (b.sessionId === presenterID) {
             return 1;
         }
 
@@ -58,13 +59,13 @@ const sortByState = (presenterID?: string) => {
     };
 };
 
-export function getHandsRaised(participants: Dictionary<CallParticipant>) {
-    return Object.values(participants).filter((p) => p.raisedHand);
+export function getHandsRaised(sessions: Dictionary<CallSession>) {
+    return Object.values(sessions).filter((s) => s.raisedHand);
 }
 
-export function getHandsRaisedNames(participants: CallParticipant[], currentUserId: string, locale: string, teammateNameDisplay: string, intl: IntlShape) {
-    return participants.sort((a, b) => a.raisedHand - b.raisedHand).map((p) => {
-        if (p.id === currentUserId) {
+export function getHandsRaisedNames(sessions: CallSession[], sessionId: string, locale: string, teammateNameDisplay: string, intl: IntlShape) {
+    return sessions.sort((a, b) => a.raisedHand - b.raisedHand).map((p) => {
+        if (p.sessionId === sessionId) {
             return intl.formatMessage({id: 'mobile.calls_you_2', defaultMessage: 'You'});
         }
         return displayUsername(p.userModel, locale, teammateNameDisplay);
@@ -150,3 +151,46 @@ export function makeCallsTheme(theme: Theme): CallsTheme {
 
     return newTheme;
 }
+
+interface HasUserId {
+    userId: string;
+}
+export function userIds<T extends HasUserId>(hasUserId: T[]): string[] {
+    const ids: string[] = [];
+    const seen: Record<string, boolean> = {};
+    for (const p of hasUserId) {
+        if (!seen[p.userId]) {
+            ids.push(p.userId);
+            seen[p.userId] = true;
+        }
+    }
+    return ids;
+}
+
+interface HasSessionId {
+    sessionId: string;
+}
+export function sessionIds<T extends HasSessionId>(hasSessionId: T[]): string[] {
+    const ids: string[] = [];
+    const seen: Record<string, boolean> = {};
+    for (const p of hasSessionId) {
+        if (!seen[p.sessionId]) {
+            ids.push(p.sessionId);
+            seen[p.sessionId] = true;
+        }
+    }
+    return ids;
+}
+
+export function fillUserModels(sessions: Dictionary<CallSession>, models: UserModel[]) {
+    const idToModel = models.reduce((accum, cur) => {
+        accum[cur.id] = cur;
+        return accum;
+    }, {} as Dictionary<UserModel>);
+    const next = {...sessions};
+    for (const participant of Object.values(next)) {
+        participant.userModel = idToModel[participant.userId];
+    }
+    return sessions;
+}
+

@@ -39,10 +39,9 @@ const mockClient = {
     getCalls: jest.fn(() => [
         {
             call: {
-                users: ['user-1', 'user-2'],
-                states: {
-                    'user-1': {unmuted: true},
-                    'user-2': {unmuted: false},
+                sessions: {
+                    session1: {session_id: 'session1', user_id: 'user-1', unmuted: true},
+                    session2: {session_id: 'session1', user_id: 'user-1', unmuted: false},
                 },
                 start_at: 123,
                 screen_sharing_id: '',
@@ -101,13 +100,13 @@ jest.mock('react-native-navigation', () => ({
 const addFakeCall = (serverUrl: string, channelId: string) => {
     const call: Call = {
         id: 'call',
-        participants: {
-            xohi8cki9787fgiryne716u84o: {id: 'xohi8cki9787fgiryne716u84o', muted: false, raisedHand: 0},
-            xohi8cki9787fgiryne716u841: {id: 'xohi8cki9787fgiryne716u84o', muted: true, raisedHand: 0},
-            xohi8cki9787fgiryne716u842: {id: 'xohi8cki9787fgiryne716u84o', muted: false, raisedHand: 0},
-            xohi8cki9787fgiryne716u843: {id: 'xohi8cki9787fgiryne716u84o', muted: true, raisedHand: 0},
-            xohi8cki9787fgiryne716u844: {id: 'xohi8cki9787fgiryne716u84o', muted: false, raisedHand: 0},
-            xohi8cki9787fgiryne716u845: {id: 'xohi8cki9787fgiryne716u84o', muted: true, raisedHand: 0},
+        sessions: {
+            a23456abcdefghijklmnopqrs: {sessionId: 'a23456abcdefghijklmnopqrs', userId: 'xohi8cki9787fgiryne716u84o', muted: false, raisedHand: 0},
+            a12345667890bcdefghijklmn1: {sessionId: 'a12345667890bcdefghijklmn1', userId: 'xohi8cki9787fgiryne716u84o', muted: true, raisedHand: 0},
+            a12345667890bcdefghijklmn2: {sessionId: 'a12345667890bcdefghijklmn2', userId: 'xohi8cki9787fgiryne716u84o', muted: false, raisedHand: 0},
+            a12345667890bcdefghijklmn3: {sessionId: 'a12345667890bcdefghijklmn3', userId: 'xohi8cki9787fgiryne716u84o', muted: true, raisedHand: 0},
+            a12345667890bcdefghijklmn4: {sessionId: 'a12345667890bcdefghijklmn4', userId: 'xohi8cki9787fgiryne716u84o', muted: false, raisedHand: 0},
+            a12345667890bcdefghijklmn5: {sessionId: 'a12345667890bcdefghijklmn5', userId: 'xohi8cki9787fgiryne716u84o', muted: true, raisedHand: 0},
         },
         channelId,
         startTime: (new Date()).getTime(),
@@ -205,7 +204,7 @@ describe('Actions.Calls', () => {
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
-            userJoinedCall('server1', 'channel-id', 'myUserId');
+            userJoinedCall('server1', 'channel-id', 'myUserId', 'mySessionId');
         });
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');
@@ -239,7 +238,7 @@ describe('Actions.Calls', () => {
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
-            userJoinedCall('server1', 'channel-id', 'myUserId');
+            userJoinedCall('server1', 'channel-id', 'myUserId', 'mySessionId');
         });
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');
@@ -269,7 +268,7 @@ describe('Actions.Calls', () => {
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
-            userJoinedCall('server1', 'channel-id', 'myUserId');
+            userJoinedCall('server1', 'channel-id', 'myUserId', 'mySessionId');
         });
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall | null)?.channelId, 'channel-id');

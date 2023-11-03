@@ -6,7 +6,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
-import {idsAreEqual} from '@calls/utils';
+import {fillUserModels, idsAreEqual, sessionIds, userIds} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
 import {observeTeammateNameDisplay, queryUsersById} from '@queries/servers/user';
@@ -33,17 +33,18 @@ const enhanced = withObservables([], () => {
         switchMap((c) => of$(c?.displayName || '')),
         distinctUntilChanged(),
     );
-    const participantIds = currentCall.pipe(
-        distinctUntilChanged((prev, curr) => prev?.participants === curr?.participants), // Did the participants object ref change?
-        switchMap((call) => (call ? of$(Object.keys(call.participants)) : of$([]))),
-        distinctUntilChanged((prev, curr) => idsAreEqual(prev, curr)),
-    );
-    const userModelsDict = combineLatest([database, participantIds]).pipe(
-        switchMap(([db, ids]) => (db && ids.length > 0 ? queryUsersById(db, ids).observeWithColumns(['nickname', 'username', 'first_name', 'last_name']) : of$([]))),
-        switchMap((ps) => of$(arrayToDic(ps))),
+    const sessionsDict = combineLatest([database, currentCall]).pipe(
+        switchMap(([db, call]) => (db && call ? queryUsersById(db, userIds(Object.values(call.sessions))).observeWithColumns(['nickname', 'username', 'first_name', 'last_name', 'last_picture_update']) : of$([])).pipe(
+
+            // We now have a UserModel[] one for each userId, but we need the session dictionary with user models
+            // eslint-disable-next-line max-nested-callbacks
+            switchMap((ps: UserModel[]) => of$(fillUserModels(call?.sessions || {}, ps))),
+        )),
+        distinctUntilChanged((prev, curr) => idsAreEqual(sessionIds(Object.values(prev)), sessionIds(Object.values(curr)))),
     );
     const teammateNameDisplay = database.pipe(
         switchMap((db) => (db ? observeTeammateNameDisplay(db) : of$(''))),
+        distinctUntilChanged(),
     );
     const micPermissionsGranted = observeGlobalCallsState().pipe(
         switchMap((gs) => of$(gs.micPermissionsGranted)),
@@ -53,17 +54,10 @@ const enhanced = withObservables([], () => {
     return {
         displayName,
         currentCall,
-        userModelsDict,
+        sessionsDict,
         teammateNameDisplay,
         micPermissionsGranted,
     };
 });
-
-function arrayToDic(participants: UserModel[]) {
-    return participants.reduce((accum, cur) => {
-        accum[cur.id] = cur;
-        return accum;
-    }, {} as Dictionary<UserModel>);
-}
 
 export default enhanced(CurrentCallBar);

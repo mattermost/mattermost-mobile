@@ -18,8 +18,8 @@ import {
     handleCallScreenOff,
     handleCallScreenOn,
     handleCallStarted,
-    handleCallUserConnected,
-    handleCallUserDisconnected,
+    handleCallUserJoined,
+    handleCallUserLeft,
     handleCallUserMuted,
     handleCallUserRaiseHand,
     handleCallUserReacted,
@@ -347,11 +347,11 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.CALLS_CHANNEL_DISABLED:
             handleCallChannelDisabled(serverUrl, msg);
             break;
-        case WebsocketEvents.CALLS_USER_CONNECTED:
-            handleCallUserConnected(serverUrl, msg);
+        case WebsocketEvents.CALLS_USER_JOINED:
+            handleCallUserJoined(serverUrl, msg);
             break;
-        case WebsocketEvents.CALLS_USER_DISCONNECTED:
-            handleCallUserDisconnected(serverUrl, msg);
+        case WebsocketEvents.CALLS_USER_LEFT:
+            handleCallUserLeft(serverUrl, msg);
             break;
         case WebsocketEvents.CALLS_USER_MUTED:
             handleCallUserMuted(serverUrl, msg);

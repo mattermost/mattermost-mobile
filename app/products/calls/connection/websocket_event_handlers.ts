@@ -29,9 +29,9 @@ import type {
     CallRecordingStateData,
     CallStartData,
     EmptyData,
-    UserConnectedData,
-    UserDisconnectedData,
     UserDismissedNotification,
+    UserJoinedData,
+    UserLeftData,
     UserMutedUnmutedData,
     UserRaiseUnraiseHandData,
     UserReactionData,
@@ -39,31 +39,31 @@ import type {
     UserVoiceOnOffData,
 } from '@mattermost/calls/lib/types';
 
-export const handleCallUserConnected = (serverUrl: string, msg: WebSocketMessage<UserConnectedData>) => {
+export const handleCallUserJoined = (serverUrl: string, msg: WebSocketMessage<UserJoinedData>) => {
     // Load user model async (if needed).
-    fetchUsersByIds(serverUrl, [msg.data.userID]);
+    fetchUsersByIds(serverUrl, [msg.data.user_id]);
 
-    userJoinedCall(serverUrl, msg.broadcast.channel_id, msg.data.userID);
+    userJoinedCall(serverUrl, msg.broadcast.channel_id, msg.data.user_id, msg.data.session_id);
 };
 
-export const handleCallUserDisconnected = (serverUrl: string, msg: WebSocketMessage<UserDisconnectedData>) => {
-    userLeftCall(serverUrl, msg.broadcast.channel_id, msg.data.userID);
+export const handleCallUserLeft = (serverUrl: string, msg: WebSocketMessage<UserLeftData>) => {
+    userLeftCall(serverUrl, msg.broadcast.channel_id, msg.data.session_id);
 };
 
 export const handleCallUserMuted = (serverUrl: string, msg: WebSocketMessage<UserMutedUnmutedData>) => {
-    setUserMuted(serverUrl, msg.broadcast.channel_id, msg.data.userID, true);
+    setUserMuted(serverUrl, msg.broadcast.channel_id, msg.data.session_id, true);
 };
 
 export const handleCallUserUnmuted = (serverUrl: string, msg: WebSocketMessage<UserMutedUnmutedData>) => {
-    setUserMuted(serverUrl, msg.broadcast.channel_id, msg.data.userID, false);
+    setUserMuted(serverUrl, msg.broadcast.channel_id, msg.data.session_id, false);
 };
 
 export const handleCallUserVoiceOn = (msg: WebSocketMessage<UserVoiceOnOffData>) => {
-    setUserVoiceOn(msg.broadcast.channel_id, msg.data.userID, true);
+    setUserVoiceOn(msg.broadcast.channel_id, msg.data.session_id, true);
 };
 
 export const handleCallUserVoiceOff = (msg: WebSocketMessage<UserVoiceOnOffData>) => {
-    setUserVoiceOn(msg.broadcast.channel_id, msg.data.userID, false);
+    setUserVoiceOn(msg.broadcast.channel_id, msg.data.session_id, false);
 };
 
 export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage<CallStartData>) => {
@@ -73,7 +73,7 @@ export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage<CallS
         startTime: msg.data.start_at,
         threadId: msg.data.thread_id,
         screenOn: '',
-        participants: {},
+        sessions: {},
         ownerId: msg.data.owner_id,
         hostId: msg.data.host_id,
         dismissed: {},
@@ -97,19 +97,20 @@ export const handleCallChannelDisabled = (serverUrl: string, msg: WebSocketMessa
 };
 
 export const handleCallScreenOn = (serverUrl: string, msg: WebSocketMessage<UserScreenOnOffData>) => {
-    setCallScreenOn(serverUrl, msg.broadcast.channel_id, msg.data.userID);
+    setCallScreenOn(serverUrl, msg.broadcast.channel_id, msg.data.session_id);
 };
 
+// TODO: should we be checking if it's the actual sharer (like in the webapp?)
 export const handleCallScreenOff = (serverUrl: string, msg: WebSocketMessage<UserScreenOnOffData>) => {
-    setCallScreenOff(serverUrl, msg.broadcast.channel_id);
+    setCallScreenOff(serverUrl, msg.broadcast.channel_id, msg.data.session_id);
 };
 
 export const handleCallUserRaiseHand = (serverUrl: string, msg: WebSocketMessage<UserRaiseUnraiseHandData>) => {
-    setRaisedHand(serverUrl, msg.broadcast.channel_id, msg.data.userID, msg.data.raised_hand);
+    setRaisedHand(serverUrl, msg.broadcast.channel_id, msg.data.session_id, msg.data.raised_hand);
 };
 
 export const handleCallUserUnraiseHand = (serverUrl: string, msg: WebSocketMessage<UserRaiseUnraiseHandData>) => {
-    setRaisedHand(serverUrl, msg.broadcast.channel_id, msg.data.userID, msg.data.raised_hand);
+    setRaisedHand(serverUrl, msg.broadcast.channel_id, msg.data.session_id, msg.data.raised_hand);
 };
 
 export const handleCallUserReacted = (serverUrl: string, msg: WebSocketMessage<UserReactionData>) => {
