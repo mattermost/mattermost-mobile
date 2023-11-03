@@ -3,12 +3,13 @@
 
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
-import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
+import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels, queryAllCategories, queryCategoryChannelsByChannelId} from '@queries/servers/categories';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
+import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 export const deleteCategory = async (serverUrl: string, categoryId: string) => {
@@ -92,11 +93,8 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
                 categoriesWithChannels.push(cwc);
             }
         } else {
-            const categories = await queryCategoriesByTeamIds(database, [teamId]).fetch();
-            const channelCategory = categories.find((c) => c.type === CHANNELS_CATEGORY);
-            if (channelCategory) {
-                const cwc = await channelCategory.toCategoryWithChannels();
-                cwc.channel_ids.unshift(channel.id);
+            const cwc = await prepareAddNonGMDMChannelToDefaultCategory(database, teamId, channel.id);
+            if (cwc) {
                 categoriesWithChannels.push(cwc);
             }
         }
@@ -105,6 +103,42 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
 
         if (models.length && !prepareRecordsOnly) {
             await operator.batchRecords(models, 'addChannelToDefaultCategory');
+        }
+
+        return {models};
+    } catch (error) {
+        return {error};
+    }
+}
+
+async function prepareAddNonGMDMChannelToDefaultCategory(database: Database, teamId: string, channelId: string): Promise<CategoryWithChannels | undefined> {
+    const categories = await queryCategoriesByTeamIds(database, [teamId]).fetch();
+    const channelCategory = categories.find((category) => category.type === CHANNELS_CATEGORY);
+    if (channelCategory) {
+        const cwc = await channelCategory.toCategoryWithChannels();
+        cwc.channel_ids.unshift(channelId);
+        return cwc;
+    }
+
+    return undefined;
+}
+
+export async function putGMInCorrectCategory(serverUrl: string, channelId: string, targetTeamID: string, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const categoryChannels = await queryCategoryChannelsByChannelId(database, channelId).fetch();
+        categoryChannels.forEach((categoryChannel) => categoryChannel.prepareDestroyPermanently());
+
+        const models: any[] = categoryChannels;
+
+        const cwc = await prepareAddNonGMDMChannelToDefaultCategory(database, targetTeamID, channelId);
+        if (cwc) {
+            const model = await prepareCategoryChannels(operator, [cwc]);
+            models.push(...model);
+        }
+
+        if (models.length > 0 && !prepareRecordsOnly) {
+            await operator.batchRecords(models, 'putGMInCorrectCategory');
         }
 
         return {models};

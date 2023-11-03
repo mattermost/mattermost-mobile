@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {addChannelToDefaultCategory} from '@actions/local/category';
+import {addChannelToDefaultCategory, putGMInCorrectCategory} from '@actions/local/category';
 import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
     storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket,
@@ -12,7 +12,7 @@ import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
 import {loadCallForChannel} from '@calls/actions/calls';
-import {Events} from '@constants';
+import {Events, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
 import {getConfig, getCurrentChannelId} from '@queries/servers/system';
@@ -93,14 +93,29 @@ export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
 export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const updatedChannel = JSON.parse(msg.data.channel) as Channel;
 
-        const updatedChannel = JSON.parse(msg.data.channel);
+        // if (EphemeralStore.isConvertingChannel(updatedChannel.id)) {
+        //     return;
+        // }
+
+        logDebug(`updatedChannel.id: ${updatedChannel.id}`);
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const existingChannel = await getChannelById(database, updatedChannel.id);
+        const existingChannelType = existingChannel?.type;
+
         const models: Model[] = await operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: true});
         const infoModel = await updateChannelInfoFromChannel(serverUrl, updatedChannel, true);
         if (infoModel.model) {
             models.push(...infoModel.model);
         }
         operator.batchRecords(models, 'handleChannelUpdatedEvent');
+
+        if (existingChannelType === General.GM_CHANNEL && updatedChannel.type === General.PRIVATE_CHANNEL) {
+            logDebug('Yo yoyo!');
+            await putGMInCorrectCategory(serverUrl, updatedChannel.id, updatedChannel.team_id);
+        }
     } catch {
         // Do nothing
     }

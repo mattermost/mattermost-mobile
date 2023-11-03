@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 import {DeviceEventEmitter} from 'react-native';
 
-import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
+import {addChannelToDefaultCategory, putGMInCorrectCategory, storeCategories} from '@actions/local/category';
 import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
@@ -1279,7 +1279,6 @@ export const getGroupMessageMembersCommonTeams = async (serverUrl: string, chann
 
 export const convertGroupMessageToPrivateChannel = async (serverUrl: string, channelId: string, teamId: string, displayName: string) => {
     try {
-        const client = NetworkManager.getClient(serverUrl);
         const name = generateChannelNameFromDisplayName(displayName);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -1288,6 +1287,7 @@ export const convertGroupMessageToPrivateChannel = async (serverUrl: string, cha
             EphemeralStore.addConvertingChannel(channelId);
         }
 
+        const client = NetworkManager.getClient(serverUrl);
         const updatedChannel = await client.convertGroupMessageToPrivateChannel(channelId, teamId, displayName, name);
 
         if (existingChannel) {
@@ -1297,7 +1297,14 @@ export const convertGroupMessageToPrivateChannel = async (serverUrl: string, cha
                 channel.name = name;
             });
 
-            await operator.batchRecords([existingChannel], 'convertGroupMessageToPrivateChannel');
+            const models: any[] = [existingChannel];
+
+            const {models: categoryUpdateModels} = await putGMInCorrectCategory(serverUrl, channelId, teamId, true);
+            if (categoryUpdateModels) {
+                models.push(...categoryUpdateModels);
+            }
+
+            await operator.batchRecords(models, 'convertGroupMessageToPrivateChannel');
         }
 
         return {updatedChannel};
