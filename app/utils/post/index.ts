@@ -4,7 +4,7 @@
 import {Alert, type AlertButton} from 'react-native';
 
 import {getUsersCountFromMentions} from '@actions/local/post';
-import {Post} from '@constants';
+import {General, Post} from '@constants';
 import {SPECIAL_MENTIONS_REGEX} from '@constants/autocomplete';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import {DEFAULT_LOCALE} from '@i18n';
@@ -104,7 +104,7 @@ export function hasSpecialMentions(message: string): boolean {
     return result;
 }
 
-export async function persistentNotificationsConfirmation(serverUrl: string, value: string, mentionsList: string[], intl: IntlShape, sendMessage: () => void, persistentNotificationMaxRecipients: number, persistentNotificationInterval: number) {
+export async function persistentNotificationsConfirmation(serverUrl: string, value: string, mentionsList: string[], intl: IntlShape, sendMessage: () => void, persistentNotificationMaxRecipients: number, persistentNotificationInterval: number, channelType: ChannelType) {
     let title = '';
     let description = '';
     let buttons: AlertButton[] = [{
@@ -136,7 +136,7 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
                 max: persistentNotificationMaxRecipients,
                 count: mentionsList.length,
             });
-        } else if (usersCount === 0) {
+        } else if (usersCount === 0 && channelType !== General.DM_CHANNEL) {
             title = intl.formatMessage({
                 id: 'persistent_notifications.error.no_mentions.title',
                 defaultMessage: 'Recipients must be @mentioned',
@@ -152,7 +152,7 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
             });
             description = intl.formatMessage({
                 id: 'persistent_notifications.confirm.description',
-                defaultMessage: '@mentioned recipients will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
+                defaultMessage: `${ 'R' ? channelType === General.DM_CHANNEL : '@mentioned r' }ecipients will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.`,
             }, {
                 interval: persistentNotificationInterval,
             });
