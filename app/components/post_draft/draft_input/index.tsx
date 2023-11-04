@@ -164,7 +164,7 @@ export default function DraftInput({
 
     const handleSendMessage = useCallback(async () => {
         if (persistenNotificationsEnabled) {
-            persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval);
+            persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, channelType);
         } else {
             sendMessage();
         }
