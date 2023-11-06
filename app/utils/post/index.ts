@@ -104,7 +104,7 @@ export function hasSpecialMentions(message: string): boolean {
     return result;
 }
 
-export async function persistentNotificationsConfirmation(serverUrl: string, value: string, mentionsList: string[], intl: IntlShape, sendMessage: () => void, persistentNotificationMaxRecipients: number, persistentNotificationInterval: number, channelType: ChannelType) {
+export async function persistentNotificationsConfirmation(serverUrl: string, value: string, mentionsList: string[], intl: IntlShape, sendMessage: () => void, persistentNotificationMaxRecipients: number, persistentNotificationInterval: number, channelType?: ChannelType) {
     let title = '';
     let description = '';
     let buttons: AlertButton[] = [{
