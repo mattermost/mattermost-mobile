@@ -8,8 +8,9 @@ import {useIntl} from 'react-intl';
 import {Alert, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
+import {CALL_ERROR_BAR_HEIGHT, CALL_NOTIFICATION_BAR_HEIGHT, CURRENT_CALL_BAR_HEIGHT, JOIN_CALL_BAR_HEIGHT} from '@app/constants/view';
 import {initializeVoiceTrack} from '@calls/actions/calls';
-import {setMicPermissionsGranted} from '@calls/state';
+import {setMicPermissionsGranted, useCallsState, useChannelsWithCalls, useCurrentCall, useGlobalCallsState, useIncomingCalls} from '@calls/state';
 import {errorAlert} from '@calls/utils';
 import {useServerUrl} from '@context/server';
 import {useAppState} from '@hooks/device';
@@ -107,4 +108,28 @@ export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
             asyncFn();
         }
     }, [appState]);
+};
+
+export const useCallsAdjustment = (serverUrl: string, channelId: string) => {
+    const incomingCalls = useIncomingCalls().incomingCalls;
+    const channelsWithCalls = useChannelsWithCalls(serverUrl);
+    const callsState = useCallsState(serverUrl);
+    const globalCallsState = useGlobalCallsState();
+    const currentCall = useCurrentCall();
+    const dismissed = Boolean(callsState.calls[channelId]?.dismissed[callsState.myUserId]);
+    const inCurrentCall = currentCall?.id === channelId;
+    const joinCallBannerVisible = Boolean(channelsWithCalls[channelId]) && !dismissed && !inCurrentCall;
+
+    // Do we have calls banners?
+    const currentCallBarVisible = Boolean(currentCall);
+    const micPermissionsError = !globalCallsState.micPermissionsGranted && (currentCall && !currentCall.micPermissionsErrorDismissed);
+    const callQualityAlert = Boolean(currentCall?.callQualityAlert);
+    const incomingCallsShowing = incomingCalls.filter((ic) => ic.channelID !== channelId);
+    const callsIncomingAdjustment = (incomingCallsShowing.length * CALL_NOTIFICATION_BAR_HEIGHT) + (incomingCallsShowing.length * 8);
+    const callsAdjustment = (currentCallBarVisible ? CURRENT_CALL_BAR_HEIGHT + 8 : 0) +
+        (micPermissionsError ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
+        (callQualityAlert ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
+        (joinCallBannerVisible ? JOIN_CALL_BAR_HEIGHT + 8 : 0) +
+        callsIncomingAdjustment;
+    return callsAdjustment;
 };

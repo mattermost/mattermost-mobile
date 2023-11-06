@@ -3,108 +3,94 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchProfilesInChannel} from '@actions/remote/user';
 import {dismissIncomingCall} from '@calls/actions/calls';
-import {leaveAndJoinWithAlert} from '@calls/alerts';
 import {removeIncomingCall} from '@calls/state';
 import {ChannelType, type IncomingCallNotification} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
-import {Preferences} from '@constants';
 import {CALL_NOTIFICATION_BAR_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
 import ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
-const style = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     outerContainer: {
-        backgroundColor: Preferences.THEMES.denim.onlineIndicator,
         borderRadius: 8,
         height: CALL_NOTIFICATION_BAR_HEIGHT,
         marginLeft: 8,
         marginRight: 8,
-    },
-    outerOnCallsScreen: {
-        backgroundColor: changeOpacity(Preferences.THEMES.denim.onlineIndicator, 0.40),
+        backgroundColor: theme.onlineIndicator,
+        shadowColor: theme.centerChannelColor,
+        shadowOffset: {
+            width: 0,
+            height: 6,
+        },
+        shadowOpacity: 0.12,
+        shadowRadius: 4,
+        elevation: 4,
     },
     innerContainer: {
         flexDirection: 'row',
         width: '100%',
         height: '100%',
-        paddingTop: 8,
-        paddingBottom: 8,
-        paddingLeft: 12,
-        paddingRight: 12,
         borderRadius: 8,
-        borderWidth: 2,
-        borderStyle: 'solid',
-        borderColor: changeOpacity(Preferences.THEMES.denim.buttonColor, 0.16),
-        gap: 8,
+        paddingTop: 4,
+        paddingRight: 4,
+        paddingBottom: 4,
+        paddingLeft: 8,
         alignItems: 'center',
         backgroundColor: changeOpacity('#000', 0.16),
     },
     innerOnCallsScreen: {
-        borderColor: changeOpacity(Preferences.THEMES.denim.buttonColor, 0.16),
+        paddingRight: 2,
+        paddingLeft: 6,
+        borderStyle: 'solid',
+        borderWidth: 2,
+        borderColor: changeOpacity(theme.buttonColor, 0.16),
         backgroundColor: changeOpacity('#000', 0.12),
     },
-    text: {
-        flex: 1,
-        ...typography('Body', 200),
-        lineHeight: 20,
-        color: Preferences.THEMES.denim.buttonColor,
-    },
-    boldText: {
-        ...typography('Body', 200, 'SemiBold'),
-        lineHeight: 20,
-    },
-    join: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        height: 40,
-        gap: 7,
-        backgroundColor: Preferences.THEMES.denim.buttonColor,
-        paddingTop: 10,
-        paddingRight: 20,
-        paddingBottom: 10,
-        paddingLeft: 20,
-        borderRadius: 30,
-    },
-    joinOnCallsScreen: {
-        backgroundColor: changeOpacity(Preferences.THEMES.denim.buttonColor, 0.12),
-    },
-    joinLabel: {
-        ...typography('Body', 100, 'SemiBold'),
-    },
-    joinIconLabel: {
-        color: Preferences.THEMES.denim.onlineIndicator,
-    },
-    joinIconLabelOnCallsScreen: {
-        color: Preferences.THEMES.denim.buttonColor,
-    },
-    dismiss: {
-        height: 40,
-        width: 40,
-        borderRadius: 20,
-        padding: 0,
-        backgroundColor: changeOpacity(Preferences.THEMES.denim.buttonColor, 0.08),
+    profileContainer: {
+        width: 32,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    dismissOnCallsScreen: {
-        backgroundColor: 'transparent',
+    icon: {
+        fontSize: 18,
+        color: theme.buttonColor,
+        alignSelf: 'center',
     },
-    dismissIcon: {
-        color: Preferences.THEMES.denim.buttonColor,
+    textContainer: {
+        flex: 1,
+        marginLeft: 8,
     },
-});
+    text: {
+        ...typography('Body', 100),
+        color: theme.buttonColor,
+    },
+    boldText: {
+        ...typography('Body', 100, 'SemiBold'),
+        lineHeight: 20,
+    },
+    dismissContainer: {
+        alignItems: 'center',
+        width: 32,
+        height: '100%',
+        justifyContent: 'center',
+    },
+    closeIcon: {
+        color: changeOpacity(theme.buttonColor, 0.56),
+    },
+}));
 
 type Props = {
     incomingCall: IncomingCallNotification;
@@ -123,6 +109,8 @@ export const CallNotification = ({
 }: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const theme = useTheme();
+    const style = getStyleSheet(theme);
 
     useEffect(() => {
         const channelMembers = members?.filter((m) => m.userId !== currentUserId);
@@ -130,10 +118,6 @@ export const CallNotification = ({
             fetchProfilesInChannel(serverUrl, incomingCall.channelID, currentUserId, undefined, false);
         }
     }, []);
-
-    const onJoinPress = useCallback(() => {
-        leaveAndJoinWithAlert(intl, incomingCall.serverUrl, incomingCall.channelID);
-    }, [intl, incomingCall]);
 
     const onContainerPress = useCallback(async () => {
         if (serverUrl !== incomingCall.serverUrl) {
@@ -179,47 +163,31 @@ export const CallNotification = ({
             />
         );
     }
-    const joinLabel = (
-        <FormattedText
-            id={'mobile.calls_join_button'}
-            defaultMessage={'Join'}
-            style={[style.joinIconLabel, style.joinLabel, onCallsScreen && style.joinIconLabelOnCallsScreen]}
-        />
-    );
 
     return (
-        <View style={[style.outerContainer, onCallsScreen && style.outerOnCallsScreen]}>
+        <View style={[style.outerContainer]}>
             <Pressable
                 style={[style.innerContainer, onCallsScreen && style.innerOnCallsScreen]}
                 onPress={onContainerPress}
             >
-                <ProfilePicture
-                    author={incomingCall.callerModel}
-                    url={incomingCall.serverUrl}
-                    size={32}
-                    showStatus={false}
-                />
-                {message}
-                <Pressable
-                    style={[style.join, onCallsScreen && style.joinOnCallsScreen]}
-                    onPress={onJoinPress}
-                >
-                    <CompassIcon
-                        name='phone-in-talk'
-                        size={18}
-                        style={[style.joinIconLabel, onCallsScreen && style.joinIconLabelOnCallsScreen]}
-                    />
-                    {joinLabel}
-                </Pressable>
-                <Pressable
-                    style={[style.dismiss, onCallsScreen && style.dismissOnCallsScreen]}
-                    onPress={onDismissPress}
-                >
-                    <CompassIcon
-                        name={'close'}
+                <View style={style.profileContainer}>
+                    <ProfilePicture
+                        author={incomingCall.callerModel}
+                        url={incomingCall.serverUrl}
                         size={24}
-                        style={style.dismissIcon}
+                        showStatus={false}
                     />
+                </View>
+                <View style={style.textContainer}>
+                    {message}
+                </View>
+                <Pressable onPress={onDismissPress}>
+                    <View style={style.dismissContainer}>
+                        <CompassIcon
+                            name='close'
+                            style={[style.icon, style.closeIcon]}
+                        />
+                    </View>
                 </Pressable>
             </Pressable>
         </View>
