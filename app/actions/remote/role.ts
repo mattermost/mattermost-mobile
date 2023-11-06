@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {queryRoles} from '@queries/servers/role';
@@ -42,7 +43,13 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
             return {roles: []};
         }
 
-        const roles = await client.getRolesByNames(newRoles);
+        const getRolesRequests = [];
+        for (let i = 0; i < newRoles.length; i += General.MAX_GET_ROLES_BY_NAMES) {
+            const chunk = newRoles.slice(i, i + General.MAX_GET_ROLES_BY_NAMES);
+            getRolesRequests.push(client.getRolesByNames(chunk));
+        }
+
+        const roles = (await Promise.all(getRolesRequests)).flat();
         if (!fetchOnly) {
             await operator.handleRole({
                 roles,
