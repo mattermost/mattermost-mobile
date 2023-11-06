@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import {switchMap} from '@nozbe/watermelondb/utils/rx';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 
@@ -11,7 +12,6 @@ import {observeCanDownloadFiles, observeConfigBooleanValue, observeCurrentTeamId
 import ChannelFiles from './channel_files';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import { switchMap } from '@nozbe/watermelondb/utils/rx';
 
 type Props = WithDatabaseArgs & {
     channelId: string;
