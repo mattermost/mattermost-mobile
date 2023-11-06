@@ -27,6 +27,7 @@ const TEST_ID = 'channel_files';
 
 type Props = {
     channel: ChannelModel;
+    teamId: String;
     componentId: AvailableScreens;
     canDownloadFiles: boolean;
     publicLinkEnabled: boolean;
@@ -73,6 +74,7 @@ const emptyFileResults: FileInfo[] = [];
 
 function ChannelFiles({
     channel,
+    teamId,
     componentId,
     canDownloadFiles,
     publicLinkEnabled,
@@ -98,7 +100,7 @@ function ChannelFiles({
         const t = Date.now();
         lastSearchRequest.current = t;
         const searchParams = getSearchParams(channel.id, searchTerm, ftr);
-        const {files} = await searchFiles(serverUrl, channel.teamId, searchParams);
+        const {files} = await searchFiles(serverUrl, teamId.toString(), searchParams);
         if (lastSearchRequest.current !== t) {
             return;
         }
