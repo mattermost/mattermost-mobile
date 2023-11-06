@@ -4,7 +4,12 @@
 import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
-import {deferredAppEntryActions, entry, handleEntryAfterLoadNavigation, registerDeviceToken} from '@actions/remote/entry/common';
+import {
+    deferredAppEntryActions,
+    entry,
+    handleEntryAfterLoadNavigation,
+    registerDeviceToken,
+} from '@actions/remote/entry/common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
@@ -17,7 +22,7 @@ import {
     handleCallRecordingState,
     handleCallScreenOff,
     handleCallScreenOn,
-    handleCallStarted,
+    handleCallStarted, handleCallUserConnected, handleCallUserDisconnected,
     handleCallUserJoined,
     handleCallUserLeft,
     handleCallUserMuted,
@@ -51,8 +56,14 @@ import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 
-import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
-import {handleChannelConvertedEvent, handleChannelCreatedEvent,
+import {
+    handleCategoryCreatedEvent,
+    handleCategoryDeletedEvent,
+    handleCategoryOrderUpdatedEvent,
+    handleCategoryUpdatedEvent,
+} from './category';
+import {
+    handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleChannelDeletedEvent,
     handleChannelMemberUpdatedEvent,
     handleChannelUnarchiveEvent,
@@ -61,15 +72,39 @@ import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleMultipleChannelsViewedEvent,
     handleDirectAddedEvent,
     handleUserAddedToChannelEvent,
-    handleUserRemovedFromChannelEvent} from './channel';
-import {handleGroupMemberAddEvent, handleGroupMemberDeleteEvent, handleGroupReceivedEvent, handleGroupTeamAssociatedEvent, handleGroupTeamDissociateEvent} from './group';
+    handleUserRemovedFromChannelEvent,
+} from './channel';
+import {
+    handleGroupMemberAddEvent,
+    handleGroupMemberDeleteEvent,
+    handleGroupReceivedEvent,
+    handleGroupTeamAssociatedEvent,
+    handleGroupTeamDissociateEvent,
+} from './group';
 import {handleOpenDialogEvent} from './integrations';
-import {handleNewPostEvent, handlePostAcknowledgementAdded, handlePostAcknowledgementRemoved, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
-import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
+import {
+    handleNewPostEvent,
+    handlePostAcknowledgementAdded,
+    handlePostAcknowledgementRemoved,
+    handlePostDeleted,
+    handlePostEdited,
+    handlePostUnread,
+} from './posts';
+import {
+    handlePreferenceChangedEvent,
+    handlePreferencesChangedEvent,
+    handlePreferencesDeletedEvent,
+} from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
-import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent, handleTeamArchived, handleTeamRestored} from './teams';
+import {
+    handleLeaveTeamEvent,
+    handleUserAddedToTeamEvent,
+    handleUpdateTeamEvent,
+    handleTeamArchived,
+    handleTeamRestored,
+} from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
 import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent} from './users';
 
@@ -347,6 +382,17 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.CALLS_CHANNEL_DISABLED:
             handleCallChannelDisabled(serverUrl, msg);
             break;
+
+        // DEPRECATED in favour of user_joined (since v0.21.0)
+        case WebsocketEvents.CALLS_USER_CONNECTED:
+            handleCallUserConnected(serverUrl, msg);
+            break;
+
+        // DEPRECATED in favour of user_left (since v0.21.0)
+        case WebsocketEvents.CALLS_USER_DISCONNECTED:
+            handleCallUserDisconnected(serverUrl, msg);
+            break;
+
         case WebsocketEvents.CALLS_USER_JOINED:
             handleCallUserJoined(serverUrl, msg);
             break;

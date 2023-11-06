@@ -40,7 +40,7 @@ import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/u
 import {newConnection} from '../connection/connection';
 
 import type {AudioDevice, Call, CallSession, CallsConnection} from '@calls/types/calls';
-import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
+import type {CallChannelState, CallState, EmojiData, SessionState} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
 let connection: CallsConnection | null = null;
@@ -59,8 +59,8 @@ export const loadConfig = async (serverUrl: string, force = false) => {
 
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const data = await client.getCallsConfig();
-        const nextConfig = {...data, last_retrieved_at: now};
+        const configs = await Promise.all([client.getCallsConfig(), client.getVersion()]);
+        const nextConfig = {...configs[0], version: configs[1], last_retrieved_at: now};
         setConfig(serverUrl, nextConfig);
         return {data: nextConfig};
     } catch (error) {
@@ -87,7 +87,7 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
 
     for (const channel of resp) {
         if (channel.call) {
-            callsResults[channel.channel_id] = createCallAndAddToIds(channel.channel_id, channel.call, ids);
+            callsResults[channel.channel_id] = createCallAndAddToIds(channel.channel_id, convertOldCallToNew(channel.call), ids);
         }
 
         if (typeof channel.enabled !== 'undefined') {
@@ -119,7 +119,7 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
     let call: Call | undefined;
     const ids = new Set<string>();
     if (resp.call) {
-        call = createCallAndAddToIds(channelId, resp.call, ids);
+        call = createCallAndAddToIds(channelId, convertOldCallToNew(resp.call), ids);
     }
 
     // Batch load user models async because we'll need them later
@@ -130,6 +130,29 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
     setCallForChannel(serverUrl, channelId, resp.enabled, call);
 
     return {data: {call, enabled: resp.enabled}};
+};
+
+// Converts pre-0.21.0 call to 0.21.0+ call. Can be removed when we stop supporting pre-0.21.0
+// Also can be removed: all code prefaced with a "Pre v0.21.0, sessionID == userID" comment
+// Does nothing if the call is in the new format.
+const convertOldCallToNew = (call: CallState): CallState => {
+    if (call.sessions) {
+        return call;
+    }
+
+    return {
+        ...call,
+        sessions: call.users.reduce((accum, cur, curIdx) => {
+            accum.push({
+                session_id: cur,
+                user_id: cur,
+                unmuted: call.states && call.states[curIdx] ? call.states[curIdx].unmuted : false,
+                raised_hand: call.states && call.states[curIdx] ? call.states[curIdx].raised_hand : 0,
+            });
+            return accum;
+        }, [] as SessionState[]),
+        screen_sharing_session_id: call.screen_sharing_id,
+    };
 };
 
 const createCallAndAddToIds = (channelId: string, call: CallState, ids: Set<string>) => {
@@ -150,7 +173,7 @@ const createCallAndAddToIds = (channelId: string, call: CallState, ids: Set<stri
         channelId,
         id: call.id,
         startTime: call.start_at,
-        screenOn: call.screen_sharing_id,
+        screenOn: call.screen_sharing_session_id,
         threadId: call.thread_id,
         ownerId: call.owner_id,
         hostId: call.host_id,

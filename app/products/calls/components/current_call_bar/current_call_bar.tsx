@@ -168,7 +168,7 @@ const CurrentCallBar = ({
         leaveCall();
     }, []);
 
-    const myParticipant = currentCall?.sessions[currentCall.mySessionId];
+    const mySession = currentCall?.sessions[currentCall.mySessionId];
 
     // Since we can only see one user talking, it doesn't really matter who we show here (e.g., we can't
     // tell who is speaking louder).
@@ -196,7 +196,7 @@ const CurrentCallBar = ({
     }
 
     const muteUnmute = () => {
-        if (myParticipant?.muted) {
+        if (mySession?.muted) {
             unmuteMyself();
         } else {
             muteMyself();
@@ -207,7 +207,7 @@ const CurrentCallBar = ({
 
     // The user should receive an alert if all of the following conditions apply:
     // - Recording has started and recording has not ended.
-    const isHost = Boolean(currentCall?.hostId === myParticipant?.userId);
+    const isHost = Boolean(currentCall?.hostId === mySession?.userId);
     if (currentCall?.recState?.start_at && !currentCall?.recState?.end_at) {
         recordingAlert(isHost, intl);
     }
@@ -253,11 +253,11 @@ const CurrentCallBar = ({
                     <View style={style.buttonContainer}>
                         <Pressable
                             onPress={muteUnmute}
-                            style={[style.pressable, style.micIconContainer, myParticipant?.muted && style.muted]}
+                            style={[style.pressable, style.micIconContainer, mySession?.muted && style.muted]}
                             disabled={!micPermissionsGranted}
                         >
                             <UnavailableIconWrapper
-                                name={myParticipant?.muted ? 'microphone-off' : 'microphone'}
+                                name={mySession?.muted ? 'microphone-off' : 'microphone'}
                                 size={24}
                                 unavailable={!micPermissionsGranted}
                                 style={style.micIcon}

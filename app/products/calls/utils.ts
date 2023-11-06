@@ -8,7 +8,7 @@ import {Calls, Post} from '@constants';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
-import type {CallSession, CallsTheme} from '@calls/types/calls';
+import type {CallSession, CallsTheme, CallsVersion} from '@calls/types/calls';
 import type {CallsConfig} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -85,6 +85,15 @@ export function isSupportedServerCalls(serverVersion?: string) {
     return false;
 }
 
+export function isMultiSessionSupported(callsVersion: CallsVersion) {
+    return isMinimumServerVersion(
+        callsVersion.version,
+        Calls.MultiSessionCallsVersion.MAJOR_VERSION,
+        Calls.MultiSessionCallsVersion.MIN_VERSION,
+        Calls.MultiSessionCallsVersion.PATCH_VERSION,
+    );
+}
+
 export function isCallsCustomMessage(post: PostModel | Post): boolean {
     return Boolean(post.type && post.type === Post.POST_TYPES.CUSTOM_CALLS);
 }
@@ -155,6 +164,7 @@ export function makeCallsTheme(theme: Theme): CallsTheme {
 interface HasUserId {
     userId: string;
 }
+
 export function userIds<T extends HasUserId>(hasUserId: T[]): string[] {
     const ids: string[] = [];
     const seen: Record<string, boolean> = {};
@@ -162,21 +172,6 @@ export function userIds<T extends HasUserId>(hasUserId: T[]): string[] {
         if (!seen[p.userId]) {
             ids.push(p.userId);
             seen[p.userId] = true;
-        }
-    }
-    return ids;
-}
-
-interface HasSessionId {
-    sessionId: string;
-}
-export function sessionIds<T extends HasSessionId>(hasSessionId: T[]): string[] {
-    const ids: string[] = [];
-    const seen: Record<string, boolean> = {};
-    for (const p of hasSessionId) {
-        if (!seen[p.sessionId]) {
-            ids.push(p.sessionId);
-            seen[p.sessionId] = true;
         }
     }
     return ids;

@@ -57,6 +57,7 @@ const mockClient = {
         DefaultEnabled: true,
         last_retrieved_at: 1234,
     })),
+    getVersion: jest.fn(() => ({})),
     getPluginsManifests: jest.fn(() => (
         [
             {id: 'playbooks'},

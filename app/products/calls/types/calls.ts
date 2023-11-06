@@ -137,11 +137,13 @@ export type CallsConnection = {
 export type CallsConfigState = CallsConfig & {
     AllowEnableCalls: boolean;
     pluginEnabled: boolean;
+    version: CallsVersion;
     last_retrieved_at: number;
 }
 
 export const DefaultCallsConfig: CallsConfigState = {
     pluginEnabled: false,
+    version: {},
     ICEServers: [], // deprecated
     ICEServersConfigs: [],
     AllowEnableCalls: false,
@@ -185,4 +187,9 @@ export type AudioDeviceInfoRaw = {
 export type AudioDeviceInfo = {
     availableAudioDeviceList: AudioDevice[];
     selectedAudioDevice: AudioDevice;
+};
+
+export type CallsVersion = {
+    version?: string;
+    build?: string;
 };
