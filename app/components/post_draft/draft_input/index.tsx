@@ -168,7 +168,7 @@ export default function DraftInput({
         } else {
             sendMessage();
         }
-    }, [serverUrl, mentionsList, persistentNotificationsEnabled, persistentNotificationMaxRecipients, sendMessage, value]);
+    }, [serverUrl, mentionsList, persistentNotificationsEnabled, persistentNotificationMaxRecipients, sendMessage, value, channelType]);
 
     const sendActionDisabled = !canSend || noMentionsError;
 
