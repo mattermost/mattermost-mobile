@@ -96,11 +96,8 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
         const updatedChannel = JSON.parse(msg.data.channel) as Channel;
 
         if (EphemeralStore.isConvertingChannel(updatedChannel.id)) {
-            logDebug('Already processing.....');
             return;
         }
-
-        logDebug(`updatedChannel.id: ${updatedChannel.id}`);
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const existingChannel = await getChannelById(database, updatedChannel.id);

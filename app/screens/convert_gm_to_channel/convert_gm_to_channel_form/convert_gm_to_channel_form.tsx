@@ -61,21 +61,17 @@ export const ConvertGMToChannelForm = ({
     });
 
     useEffect(() => {
-        logDebug(`BBB commonTeams.length: ${commonTeams.length}`);
         if (commonTeams.length > 0) {
-            logDebug(`BBB commonTeams[0]: ${commonTeams[0].display_name}`);
             setSelectedTeam(commonTeams[0]);
         }
     }, [commonTeams]);
 
     const handleOnPress = useCallback(async () => {
         if (!selectedTeam || !newChannelName.current) {
-            logDebug(`!selectedTeam: ${selectedTeam} || !newChannelName.current: ${newChannelName.current}`);
             return;
         }
 
         const {updatedChannel, error} = await convertGroupMessageToPrivateChannel(serverUrl, channelId, selectedTeam.id, newChannelName.current);
-        logDebug(updatedChannel);
 
         if (error) {
             logError(error);

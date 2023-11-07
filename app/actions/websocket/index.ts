@@ -163,8 +163,6 @@ async function doReconnect(serverUrl: string) {
 }
 
 export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
-    logDebug(msg);
-
     switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:

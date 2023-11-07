@@ -441,6 +441,7 @@ export async function handleEntryAfterLoadNavigation(
     initialChannelId: string,
 ) {
     try {
+        logDebug('handleEntryAfterLoadNavigation');
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const currentTeamIdAfterLoad = await getCurrentTeamId(database);

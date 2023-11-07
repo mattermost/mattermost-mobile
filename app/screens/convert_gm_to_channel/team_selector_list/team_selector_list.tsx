@@ -34,7 +34,6 @@ const TeamSelectorList = ({teams, selectTeam}: Props) => {
     const [filteredTeams, setFilteredTeam] = useState(teams);
 
     const handleOnChangeSearchText = useCallback((searchTerm: string) => {
-        logDebug(searchTerm);
         if (searchTerm === '') {
             setFilteredTeam(teams);
         } else {

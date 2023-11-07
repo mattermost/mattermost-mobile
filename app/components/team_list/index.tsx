@@ -6,12 +6,12 @@ import React, {useCallback, useMemo} from 'react';
 import {type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler'; // Keep the FlatList from gesture handler so it works well with bottom sheet
 
+import {logDebug} from '@app/utils/log';
 import Loading from '@components/loading';
 
 import TeamListItem from './team_list_item';
 
 import type TeamModel from '@typings/database/models/servers/team';
-import { logDebug } from '@app/utils/log';
 
 type Props = {
     iconBackgroundColor?: string;
@@ -68,8 +68,6 @@ export default function TeamList({
     if (loading) {
         footer = (<Loading/>);
     }
-
-    logDebug(teams);
 
     return (
         <View style={styles.container}>
