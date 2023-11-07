@@ -20,6 +20,7 @@ import {updateThread} from '@actions/local/thread';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
 import {isCallsStartedMessage} from '@calls/utils';
 import {Device, Events, Navigation, PushNotification, Screens} from '@constants';
+import {NOTIFICATION_TYPE} from '@constants/push_notification';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
@@ -109,7 +110,7 @@ class PushNotifications {
         const {payload} = notification;
 
         // Do not show overlay if this is a call-started message (the call_notification will alert the user)
-        if (isCallsStartedMessage(notification.payload?.message)) {
+        if (notification.type === NOTIFICATION_TYPE.CALLS || isCallsStartedMessage(notification.payload?.message)) {
             return;
         }
 
