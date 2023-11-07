@@ -70,6 +70,8 @@ const launchAppFromNotification = async (notification: NotificationWithData, col
 
  * @returns a redirection to a screen, either onboarding, add_server, login or home depending on the scenario
  */
+
+// LOL
 const launchApp = async (props: LaunchProps) => {
     let serverUrl: string | undefined;
     switch (props?.launchType) {

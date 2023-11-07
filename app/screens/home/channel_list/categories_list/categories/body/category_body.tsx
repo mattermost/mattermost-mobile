@@ -6,6 +6,7 @@ import {FlatList} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {fetchDirectChannelsInfo} from '@actions/remote/channel';
+import {logDebug} from '@app/utils/log';
 import ChannelItem from '@components/channel_item';
 import {ROW_HEIGHT as CHANNEL_ROW_HEIGHT} from '@components/channel_item/channel_item';
 import {useServerUrl} from '@context/server';
@@ -25,6 +26,8 @@ type Props = {
 const extractKey = (item: ChannelModel) => item.id;
 
 const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChannelSwitch}: Props) => {
+    sortedChannels.forEach((c) => logDebug(c.displayName));
+
     const serverUrl = useServerUrl();
     const ids = useMemo(() => {
         const filteredChannels = unreadsOnTop ? sortedChannels.filter((c) => !unreadIds.has(c.id)) : sortedChannels;

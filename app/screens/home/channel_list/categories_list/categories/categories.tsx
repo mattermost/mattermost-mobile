@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {FlatList, StyleSheet, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
+import {logDebug} from '@app/utils/log';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';

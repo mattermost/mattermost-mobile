@@ -1277,7 +1277,7 @@ export const getGroupMessageMembersCommonTeams = async (serverUrl: string, chann
     }
 };
 
-export const convertGroupMessageToPrivateChannel = async (serverUrl: string, channelId: string, teamId: string, displayName: string) => {
+export const convertGroupMessageToPrivateChannel = async (serverUrl: string, channelId: string, targetTeamId: string, displayName: string) => {
     try {
         const name = generateChannelNameFromDisplayName(displayName);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -1288,18 +1288,19 @@ export const convertGroupMessageToPrivateChannel = async (serverUrl: string, cha
         }
 
         const client = NetworkManager.getClient(serverUrl);
-        const updatedChannel = await client.convertGroupMessageToPrivateChannel(channelId, teamId, displayName, name);
+        const updatedChannel = await client.convertGroupMessageToPrivateChannel(channelId, targetTeamId, displayName, name);
 
         if (existingChannel) {
             existingChannel.prepareUpdate((channel) => {
                 channel.type = General.PRIVATE_CHANNEL;
                 channel.displayName = displayName;
                 channel.name = name;
+                channel.teamId = targetTeamId;
             });
 
             const models: any[] = [existingChannel];
 
-            const {models: categoryUpdateModels} = await putGMInCorrectCategory(serverUrl, channelId, teamId, true);
+            const {models: categoryUpdateModels} = await putGMInCorrectCategory(serverUrl, channelId, targetTeamId, true);
             if (categoryUpdateModels) {
                 models.push(...categoryUpdateModels);
             }

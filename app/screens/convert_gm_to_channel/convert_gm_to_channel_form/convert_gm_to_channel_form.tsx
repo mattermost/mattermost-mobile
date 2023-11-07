@@ -86,7 +86,7 @@ export const ConvertGMToChannelForm = ({
             return;
         }
 
-        switchToChannelById(serverUrl, updatedChannel.id, selectedTeam.id);
+        await switchToChannelById(serverUrl, updatedChannel.id, selectedTeam.id);
     }, [selectedTeam]);
 
     const handleOnChannelNameChange = useCallback((newName: string) => {
