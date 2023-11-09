@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {toMilliseconds} from '@utils/datetime';
-import {logDebug} from '@utils/log';
 
 import type ClientBase from './base';
 import type {ClientResponse, ClientResponseError, ProgressPromise, UploadRequestOptions} from '@mattermost/react-native-network-client';

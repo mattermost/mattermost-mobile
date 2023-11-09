@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 import {DeviceEventEmitter} from 'react-native';
 
-import {addChannelToDefaultCategory, putGMInCorrectCategory, storeCategories} from '@actions/local/category';
+import {addChannelToDefaultCategory, handleConvertedGMCategories, storeCategories} from '@actions/local/category';
 import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
@@ -232,7 +232,6 @@ export async function createChannel(serverUrl: string, displayName: string, purp
             models.push(...resolvedModels.flat());
         }
 
-        // LOL
         const categoriesModels = await addChannelToDefaultCategory(serverUrl, channelData, true);
         if (categoriesModels.models?.length) {
             models.push(...categoriesModels.models);
@@ -1300,7 +1299,7 @@ export const convertGroupMessageToPrivateChannel = async (serverUrl: string, cha
 
             const models: any[] = [existingChannel];
 
-            const {models: categoryUpdateModels} = await putGMInCorrectCategory(serverUrl, channelId, targetTeamId, true);
+            const {models: categoryUpdateModels} = await handleConvertedGMCategories(serverUrl, channelId, targetTeamId, true);
             if (categoryUpdateModels) {
                 models.push(...categoryUpdateModels);
             }

@@ -105,8 +105,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 200),
         },
         row: {
-
-            // flex: 1,
             flexDirection: 'row',
         },
     };

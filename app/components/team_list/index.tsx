@@ -6,7 +6,6 @@ import React, {useCallback, useMemo} from 'react';
 import {type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler'; // Keep the FlatList from gesture handler so it works well with bottom sheet
 
-import {logDebug} from '@app/utils/log';
 import Loading from '@components/loading';
 
 import TeamListItem from './team_list_item';

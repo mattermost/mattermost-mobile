@@ -42,7 +42,6 @@ const ConvertPrivate = ({canConvert, channelId, displayName}: Props) => {
         );
     };
 
-    // LOL LOL
     const convertToPrivate = preventDoubleTap(async () => {
         const result = await convertChannelToPrivate(serverUrl, channelId);
         const {formatMessage} = intl;

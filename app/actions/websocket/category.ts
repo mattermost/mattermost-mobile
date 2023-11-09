@@ -44,7 +44,6 @@ export async function handleCategoryCreatedEvent(serverUrl: string, msg: Websock
     }
 }
 
-// LOL
 export async function handleCategoryUpdatedEvent(serverUrl: string, msg: WebsocketCategoriesMessage) {
     let categories;
 

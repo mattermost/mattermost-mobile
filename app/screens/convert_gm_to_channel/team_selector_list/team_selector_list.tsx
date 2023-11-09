@@ -7,11 +7,10 @@ import {View} from 'react-native';
 import TeamList from '@app/components/team_list';
 import {useTheme} from '@app/context/theme';
 import {popTopScreen} from '@app/screens/navigation';
-import {logDebug} from '@app/utils/log';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@app/utils/theme';
 import SearchBar from '@components/search';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     container: {
         padding: 12,
     },

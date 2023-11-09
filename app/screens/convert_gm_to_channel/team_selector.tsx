@@ -9,7 +9,6 @@ import OptionItem from '@app/components/option_item';
 import {Screens} from '@app/constants';
 import {useTheme} from '@app/context/theme';
 import {dismissBottomSheet, goToScreen} from '@app/screens/navigation';
-import {logDebug} from '@app/utils/log';
 import {preventDoubleTap} from '@app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 

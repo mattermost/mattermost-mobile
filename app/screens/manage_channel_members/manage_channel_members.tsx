@@ -231,9 +231,6 @@ export default function ManageChannelMembers({
 
     useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
 
-    // ###################################################################################################
-    // ###################################################################################################
-    // ###################################################################################################
     useEffect(() => {
         mounted.current = true;
         const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT};

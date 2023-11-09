@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {addChannelToDefaultCategory, putGMInCorrectCategory} from '@actions/local/category';
+import {addChannelToDefaultCategory, handleConvertedGMCategories} from '@actions/local/category';
 import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
     storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket,
 } from '@actions/local/channel';
 import {storePostsForChannel} from '@actions/local/post';
-import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, handleKickFromChannel, goToNPSChannel, switchToChannelById} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, handleKickFromChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
@@ -112,7 +112,7 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
 
         // This indicates a GM was converted to a private channel
         if (existingChannelType === General.GM_CHANNEL && updatedChannel.type === General.PRIVATE_CHANNEL) {
-            await putGMInCorrectCategory(serverUrl, updatedChannel.id, updatedChannel.team_id);
+            await handleConvertedGMCategories(serverUrl, updatedChannel.id, updatedChannel.team_id);
 
             const currentChannelId = await getCurrentChannelId(database);
             const currentTeamId = await getCurrentTeamId(database);

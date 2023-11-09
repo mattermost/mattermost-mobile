@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import {convertGroupMessageToPrivateChannel, switchToChannelById} from '@actions/remote/channel';
 import {useServerUrl} from '@app/context/server';
 import {useTheme} from '@app/context/theme';
-import {logDebug, logError} from '@app/utils/log';
+import {logError} from '@app/utils/log';
 import {makeStyleSheetFromTheme} from '@app/utils/theme';
 import {displayUsername} from '@app/utils/user';
 import Button from '@components/button';
@@ -19,7 +19,7 @@ import {TeamSelector} from '../team_selector';
 
 import {NoCommonTeamForm} from './no_common_teams_form';
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme(() => {
     return {
         container: {
             paddingVertical: 24,
@@ -52,7 +52,9 @@ export const ConvertGMToChannelForm = ({
     const intl = useIntl();
 
     const [selectedTeam, setSelectedTeam] = useState<Team>();
-    const newChannelName = useRef<string>();
+    const [newChannelName, setNewChannelName] = useState<string>('');
+
+    const submitButtonEnabled = selectedTeam && newChannelName.trim();
 
     const {formatMessage} = useIntl();
     const confirmButtonText = formatMessage({
@@ -67,11 +69,11 @@ export const ConvertGMToChannelForm = ({
     }, [commonTeams]);
 
     const handleOnPress = useCallback(async () => {
-        if (!selectedTeam || !newChannelName.current) {
+        if (!submitButtonEnabled) {
             return;
         }
 
-        const {updatedChannel, error} = await convertGroupMessageToPrivateChannel(serverUrl, channelId, selectedTeam.id, newChannelName.current);
+        const {updatedChannel, error} = await convertGroupMessageToPrivateChannel(serverUrl, channelId, selectedTeam.id, newChannelName);
 
         if (error) {
             logError(error);
@@ -83,11 +85,7 @@ export const ConvertGMToChannelForm = ({
         }
 
         await switchToChannelById(serverUrl, updatedChannel.id, selectedTeam.id);
-    }, [selectedTeam]);
-
-    const handleOnChannelNameChange = useCallback((newName: string) => {
-        newChannelName.current = newName;
-    }, []);
+    }, [selectedTeam, newChannelName, submitButtonEnabled]);
 
     const messageBoxHeader = intl.formatMessage({
         id: 'channel_info.convert_gm_to_channel.warning.header',
@@ -125,13 +123,13 @@ export const ConvertGMToChannelForm = ({
                 />
             }
             <ChannelNameInput
-                onChange={handleOnChannelNameChange}
+                onChange={setNewChannelName}
             />
             <Button
                 onPress={handleOnPress}
                 text={confirmButtonText}
                 theme={theme}
-                buttonType='destructive'
+                buttonType={submitButtonEnabled ? 'destructive' : 'disabled'}
                 size='lg'
             />
         </View>

@@ -99,7 +99,6 @@ export async function handleClose(serverUrl: string, lastDisconnect: number) {
     });
 }
 
-// LOL
 async function doReconnect(serverUrl: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {

@@ -11,7 +11,7 @@ import {queryUsersById} from '@queries/servers/user';
 import ManageMembersLabel from './manage_members_label';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
- 
+
 type OwnProps = WithDatabaseArgs & {
     isDefaultChannel: boolean;
     userId: string;

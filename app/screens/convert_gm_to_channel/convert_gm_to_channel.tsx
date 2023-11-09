@@ -13,7 +13,6 @@ import {Loader} from './loader';
 type Props = {
     channelId: string;
     currentUserId?: string;
-    teammateNameDisplay: string;
 }
 
 const loadingIndicatorTimeout = 1200;
@@ -21,7 +20,6 @@ const loadingIndicatorTimeout = 1200;
 const ConvertGMToChannel = ({
     channelId,
     currentUserId,
-    teammateNameDisplay,
 }: Props) => {
     const [loadingAnimationTimeout, setLoadingAnimationTimeout] = useState(false);
     const [commonTeamsFetched, setCommonTeamsFetched] = useState(false);
@@ -34,7 +32,6 @@ const ConvertGMToChannel = ({
 
     useEffect(() => {
         setTimeout(() => setLoadingAnimationTimeout(true), loadingIndicatorTimeout);
-
         async function work() {
             const {teams} = await getGroupMessageMembersCommonTeams(serverUrl, channelId);
             if (!teams) {
@@ -97,7 +94,6 @@ const ConvertGMToChannel = ({
         <ConvertGMToChannelForm
             commonTeams={commonTeams}
             profiles={profiles}
-            teammateNameDisplay={teammateNameDisplay}
             channelId={channelId}
         />
     );

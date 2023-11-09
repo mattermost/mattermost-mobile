@@ -430,7 +430,6 @@ export async function verifyPushProxy(serverUrl: string) {
     }
 }
 
-// LOL
 export async function handleEntryAfterLoadNavigation(
     serverUrl: string,
     teamMembers: TeamMembership[],
@@ -441,7 +440,6 @@ export async function handleEntryAfterLoadNavigation(
     initialChannelId: string,
 ) {
     try {
-        logDebug('handleEntryAfterLoadNavigation');
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const currentTeamIdAfterLoad = await getCurrentTeamId(database);

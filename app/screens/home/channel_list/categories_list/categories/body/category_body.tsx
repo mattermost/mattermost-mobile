@@ -6,7 +6,6 @@ import {FlatList} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {fetchDirectChannelsInfo} from '@actions/remote/channel';
-import {logDebug} from '@app/utils/log';
 import ChannelItem from '@components/channel_item';
 import {ROW_HEIGHT as CHANNEL_ROW_HEIGHT} from '@components/channel_item/channel_item';
 import {useServerUrl} from '@context/server';

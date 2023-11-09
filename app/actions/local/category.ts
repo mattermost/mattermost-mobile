@@ -3,11 +3,11 @@
 
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
-import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels, queryAllCategories, queryCategoryChannelsByChannelId} from '@queries/servers/categories';
+import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels, queryCategoryChannelsByChannelId} from '@queries/servers/categories';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
-import {logDebug, logError} from '@utils/log';
+import {logError} from '@utils/log';
 
 import type {Database, Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -30,7 +30,6 @@ export const deleteCategory = async (serverUrl: string, categoryId: string) => {
     }
 };
 
-// LOL use this
 export async function storeCategories(serverUrl: string, categories: CategoryWithChannels[], prune = false, prepareRecordsOnly = false) {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -125,7 +124,7 @@ async function prepareAddNonGMDMChannelToDefaultCategory(database: Database, tea
     return undefined;
 }
 
-export async function putGMInCorrectCategory(serverUrl: string, channelId: string, targetTeamID: string, prepareRecordsOnly = false) {
+export async function handleConvertedGMCategories(serverUrl: string, channelId: string, targetTeamID: string, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const categoryChannels = await queryCategoryChannelsByChannelId(database, channelId).fetch();

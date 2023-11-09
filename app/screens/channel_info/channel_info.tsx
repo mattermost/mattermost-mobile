@@ -22,8 +22,8 @@ import Extra from './extra';
 import Options from './options';
 import Title from './title';
 
+import type {UserModel} from '@app/database/models/server';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import type { UserModel } from '@app/database/models/server';
 
 type Props = {
     channelId: string;
@@ -80,7 +80,6 @@ const ChannelInfo = ({
     useNavButtonPressed(closeButtonId, componentId, onPressed, [onPressed]);
     useAndroidHardwareBackHandler(componentId, onPressed);
 
-    // LOL
     return (
         <SafeAreaView
             edges={edges}
@@ -114,7 +113,6 @@ const ChannelInfo = ({
                     canManageSettings={canManageSettings}
                 />
                 <View style={styles.separator}/>
-                {/* LOL hide this option for guest users */}
                 {type === General.GM_CHANNEL && !currentUser.isGuest &&
                 <>
                     <ConvertToChannelLabel

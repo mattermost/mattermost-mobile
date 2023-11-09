@@ -49,7 +49,7 @@ const messages = defineMessages({
 
 type Props = {
     canRemoveUser: boolean;
-        channelId: string;
+    channelId: string;
     manageOption: ManageOptionsTypes;
     testID?: string;
     userId: string;

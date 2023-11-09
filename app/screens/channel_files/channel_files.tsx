@@ -94,7 +94,6 @@ function ChannelFiles({
 
     useAndroidHardwareBackHandler(componentId, close);
 
-    // LOL
     const handleSearch = useCallback(async (searchTerm: string, ftr: FileFilter) => {
         const t = Date.now();
         lastSearchRequest.current = t;

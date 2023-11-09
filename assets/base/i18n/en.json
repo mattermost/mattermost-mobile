@@ -1090,6 +1090,7 @@
   "video.failed_description": "An error occurred while trying to play the video.",
   "your.servers": "Your servers",
   "channel_info.convert_gm_to_channel": "Convert to a Private Channel",
+  "channel_info.convert_gm_to_channel.screen_title": "Convert to Private Channel",
   "channel_info.convert_gm_to_channel.warning.header": "Conversation history will be visible to any channel members",
   "channel_info.convert_gm_to_channel.warning.body": "You are about to convert the Group Message with {memberNames} to a Channel. This cannot be undone.",
   "channel_info.convert_gm_to_channel.warning.no_teams.header": "Unable to convert to a channel because group members are part of different teams",

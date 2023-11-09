@@ -114,7 +114,6 @@ const MessageBox = ({
     const styles = getBaseStyles(theme);
     const foo = getStyleFromTheme(theme, type);
 
-
     return (
         <View style={[styles.container, foo.container]}>
             <View style={styles.iconContainer}>
