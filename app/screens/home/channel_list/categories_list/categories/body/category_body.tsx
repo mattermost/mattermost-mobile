@@ -26,8 +26,6 @@ type Props = {
 const extractKey = (item: ChannelModel) => item.id;
 
 const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChannelSwitch}: Props) => {
-    sortedChannels.forEach((c) => logDebug(c.displayName));
-
     const serverUrl = useServerUrl();
     const ids = useMemo(() => {
         const filteredChannels = unreadsOnTop ? sortedChannels.filter((c) => !unreadIds.has(c.id)) : sortedChannels;
