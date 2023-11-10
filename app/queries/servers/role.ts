@@ -5,6 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
+import {logDebug} from '@app/utils/log';
 import {Database as DatabaseConstants, General, Permissions} from '@constants';
 import {isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
@@ -69,8 +70,11 @@ export function observePermissionForTeam(database: Database, team: TeamModel | u
         switchMap((myTeam) => {
             const rolesArray = [...user.roles.split(' ')];
 
+            logDebug(`user.roles: ${user.roles}`);
+
             if (myTeam) {
                 rolesArray.push(...myTeam.roles.split(' '));
+                logDebug(`myTeam.roles: ${myTeam.roles}`);
             }
 
             return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']).pipe(

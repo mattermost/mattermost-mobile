@@ -1297,7 +1297,7 @@ export const convertGroupMessageToPrivateChannel = async (serverUrl: string, cha
                 channel.teamId = targetTeamId;
             });
 
-            const models: any[] = [existingChannel];
+            const models: Model[] = [existingChannel];
 
             const {models: categoryUpdateModels} = await handleConvertedGMCategories(serverUrl, channelId, targetTeamId, true);
             if (categoryUpdateModels) {

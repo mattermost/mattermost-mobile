@@ -7,7 +7,7 @@ import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prep
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 import type {Database, Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -106,6 +106,7 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
 
         return {models};
     } catch (error) {
+        logError('Failed to add channel to default category', error);
         return {error};
     }
 }
@@ -115,7 +116,7 @@ async function prepareAddNonGMDMChannelToDefaultCategory(database: Database, tea
     const channelCategory = categories.find((category) => category.type === CHANNELS_CATEGORY);
     if (channelCategory) {
         const cwc = await channelCategory.toCategoryWithChannels();
-        if (!cwc.channel_ids.indexOf(channelId)) {
+        if (cwc.channel_ids.indexOf(channelId) < 0) {
             cwc.channel_ids.unshift(channelId);
             return cwc;
         }
@@ -132,16 +133,25 @@ export async function handleConvertedGMCategories(serverUrl: string, channelId: 
         const categories = await queryCategoriesByTeamIds(database, [targetTeamID]).fetch();
         const channelCategory = categories.find((category) => category.type === CHANNELS_CATEGORY);
 
-        categoryChannels.
-            filter((categoryChannel) => categoryChannel.categoryId !== channelCategory?.id).
-            forEach((categoryChannel) => categoryChannel.prepareDestroyPermanently());
+        if (!channelCategory) {
+            logError('Failed to find default category when handling category of converted GM');
+            return {};
+        }
 
-        const models: Model[] = categoryChannels;
+        const models: Model[] = [];
+
+        categoryChannels.forEach((categoryChannel) => {
+            if (categoryChannel.categoryId !== channelCategory.id) {
+                models.push(categoryChannel.prepareDestroyPermanently());
+            }
+        });
 
         const cwc = await prepareAddNonGMDMChannelToDefaultCategory(database, targetTeamID, channelId);
         if (cwc) {
             const model = await prepareCategoryChannels(operator, [cwc]);
             models.push(...model);
+        } else {
+            logDebug('handleConvertedGMCategories: could not find channel category of target team');
         }
 
         if (models.length > 0 && !prepareRecordsOnly) {
@@ -150,6 +160,7 @@ export async function handleConvertedGMCategories(serverUrl: string, channelId: 
 
         return {models};
     } catch (error) {
+        logError('Failed to handle category update for GM converted to channel', error);
         return {error};
     }
 }

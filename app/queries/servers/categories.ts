@@ -52,7 +52,7 @@ export async function prepareCategoriesAndCategoriesChannels(operator: ServerDat
         const teamIdToChannelIds = new Map<String, Set<String>>();
         categories.forEach((category) => {
             const value = teamIdToChannelIds.get(category.team_id) || new Set();
-            category.channel_ids.forEach((channelId) => value.add(channelId));
+            category.channel_ids.forEach(value.add, value);
             teamIdToChannelIds.set(category.team_id, value);
         });
 

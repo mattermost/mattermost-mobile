@@ -5,10 +5,10 @@ import React, {useCallback} from 'react';
 import {ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import ConvertToChannelLabel from '@app/components/channel_actions/convert_to_channel/convert_to_channel_label';
 import {General} from '@app/constants';
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ChannelActions from '@components/channel_actions';
+import ConvertToChannelLabel from '@components/channel_actions/convert_to_channel/convert_to_channel_label';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -80,6 +80,8 @@ const ChannelInfo = ({
     useNavButtonPressed(closeButtonId, componentId, onPressed, [onPressed]);
     useAndroidHardwareBackHandler(componentId, onPressed);
 
+    const convertGMOptionAvailable = type === General.GM_CHANNEL && !currentUser.isGuest;
+
     return (
         <SafeAreaView
             edges={edges}
@@ -113,11 +115,9 @@ const ChannelInfo = ({
                     canManageSettings={canManageSettings}
                 />
                 <View style={styles.separator}/>
-                {type === General.GM_CHANNEL && !currentUser.isGuest &&
+                {convertGMOptionAvailable &&
                 <>
-                    <ConvertToChannelLabel
-                        channelId={channelId}
-                    />
+                    <ConvertToChannelLabel channelId={channelId}/>
                     <View style={styles.separator}/>
                 </>
                 }

@@ -65,7 +65,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginTop: DESCRIPTION_MARGIN_TOP,
         },
         iconContainer: {marginRight: 16},
-        infoContainer: {marginRight: 2},
         info: {
             flex: 1,
             textAlign: 'right',
