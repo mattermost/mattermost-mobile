@@ -22,7 +22,6 @@ import Extra from './extra';
 import Options from './options';
 import Title from './title';
 
-import type {UserModel} from '@app/database/models/server';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -34,7 +33,7 @@ type Props = {
     isCallsEnabledInChannel: boolean;
     canManageMembers: boolean;
     canManageSettings: boolean;
-    currentUser: UserModel;
+    isGuestUser: boolean;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -63,7 +62,7 @@ const ChannelInfo = ({
     isCallsEnabledInChannel,
     canManageMembers,
     canManageSettings,
-    currentUser,
+    isGuestUser,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -80,7 +79,7 @@ const ChannelInfo = ({
     useNavButtonPressed(closeButtonId, componentId, onPressed, [onPressed]);
     useAndroidHardwareBackHandler(componentId, onPressed);
 
-    const convertGMOptionAvailable = type === General.GM_CHANNEL && !currentUser.isGuest;
+    const convertGMOptionAvailable = type === General.GM_CHANNEL && !isGuestUser;
 
     return (
         <SafeAreaView

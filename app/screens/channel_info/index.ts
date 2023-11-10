@@ -112,13 +112,18 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         distinctUntilChanged(),
     );
 
+    const isGuestUser = currentUser.pipe(
+        switchMap((u) => (u ? of$(u.isGuest) : of$(false))),
+        distinctUntilChanged(),
+    );
+
     return {
         type,
         canEnableDisableCalls,
         isCallsEnabledInChannel,
         canManageMembers,
         canManageSettings,
-        currentUser,
+        isGuestUser,
     };
 });
 
