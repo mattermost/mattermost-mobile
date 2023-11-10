@@ -4,20 +4,20 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {View} from 'react-native';
 
-import TeamList from '@app/components/team_list';
-import {useTheme} from '@app/context/theme';
-import {popTopScreen} from '@app/screens/navigation';
-import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@app/utils/theme';
 import SearchBar from '@components/search';
+import TeamList from '@components/team_list';
+import {useTheme} from '@context/theme';
+import {popTopScreen} from '@screens/navigation';
+import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 
-const getStyleSheet = makeStyleSheetFromTheme(() => ({
+const style = StyleSheet.create({
     container: {
         padding: 12,
     },
     listContainer: {
         marginTop: 12,
     },
-}));
+});
 
 type Props = {
     teams: Team[];

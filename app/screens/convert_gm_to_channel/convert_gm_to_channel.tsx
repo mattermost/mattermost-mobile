@@ -4,8 +4,8 @@
 import React, {useEffect, useRef, useState} from 'react';
 
 import {fetchChannelMemberships, getGroupMessageMembersCommonTeams} from '@actions/remote/channel';
-import {PER_PAGE_DEFAULT} from '@app/client/rest/constants';
-import {useServerUrl} from '@app/context/server';
+import {PER_PAGE_DEFAULT} from '@client/rest/constants';
+import {useServerUrl} from '@context/server';
 
 import ConvertGMToChannelForm from './convert_gm_to_channel_form';
 import {Loader} from './loader';

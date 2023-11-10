@@ -4,11 +4,11 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
 
-import FloatingTextInput from '@app/components/floating_text_input_label';
-import {Channel} from '@app/constants';
-import {useTheme} from '@app/context/theme';
-import {t} from '@app/i18n';
-import {getKeyboardAppearanceFromTheme} from '@app/utils/theme';
+import FloatingTextInput from '@components/floating_text_input_label';
+import {Channel} from '@constants';
+import {useTheme} from '@context/theme';
+import {t} from '@i18n';
+import {getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 type Props = {
     error?: string;

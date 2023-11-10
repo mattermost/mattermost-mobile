@@ -5,9 +5,9 @@ import React from 'react';
 import {Text, View} from 'react-native';
 
 import CompassIcon from '@app/components/compass_icon';
-import {useTheme} from '@app/context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import {typography} from '@app/utils/typography';
+import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type MessageBoxTypes = 'default' | 'danger'
 

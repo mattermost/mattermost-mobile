@@ -5,11 +5,11 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, type ViewStyle} from 'react-native';
 
-import Button from '@app/components/button';
-import {useTheme} from '@app/context/theme';
-import {popTopScreen} from '@app/screens/navigation';
+import Button from '@components/button';
+import {useTheme} from '@context/theme';
+import {popTopScreen} from '@screens/navigation';
 
-import MessageBox from '../message_box/message_box';
+import MessageBox from '../message_box';
 
 type Props = {
     containerStyles: ViewStyle;

@@ -6,7 +6,7 @@ import {switchMap, distinctUntilChanged} from '@nozbe/watermelondb/utils/rx';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 
-import {observeCurrentUser, observeTeammateNameDisplay} from '@app/queries/servers/user';
+import {observeCurrentUser, observeTeammateNameDisplay} from '@queries/servers/user';
 
 import {ConvertGMToChannelForm} from './convert_gm_to_channel_form';
 

@@ -6,11 +6,11 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import {convertGroupMessageToPrivateChannel, switchToChannelById} from '@actions/remote/channel';
-import {useServerUrl} from '@app/context/server';
-import {useTheme} from '@app/context/theme';
-import {logError} from '@app/utils/log';
-import {makeStyleSheetFromTheme} from '@app/utils/theme';
-import {displayUsername} from '@app/utils/user';
+import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
+import {logError} from '@utils/log';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {displayUsername} from '@utils/user';
 import Button from '@components/button';
 
 import {ChannelNameInput} from '../channel_name_input';
@@ -122,9 +122,7 @@ export const ConvertGMToChannelForm = ({
                     selectedTeamId={selectedTeam?.id}
                 />
             }
-            <ChannelNameInput
-                onChange={setNewChannelName}
-            />
+            <ChannelNameInput onChange={setNewChannelName}/>
             <Button
                 onPress={handleOnPress}
                 text={confirmButtonText}

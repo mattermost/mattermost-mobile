@@ -5,12 +5,12 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
-import OptionItem from '@app/components/option_item';
-import {Screens} from '@app/constants';
-import {useTheme} from '@app/context/theme';
-import {dismissBottomSheet, goToScreen} from '@app/screens/navigation';
-import {preventDoubleTap} from '@app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
+import OptionItem from '@components/option_item';
+import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
+import {dismissBottomSheet, goToScreen} from '@screens/navigation';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {

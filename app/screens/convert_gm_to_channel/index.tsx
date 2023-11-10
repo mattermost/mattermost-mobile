@@ -4,8 +4,8 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {observeCurrentUserId} from '@app/queries/servers/system';
-import {observeTeammateNameDisplay} from '@app/queries/servers/user';
+import {observeCurrentUserId} from '@queries/servers/system';
+import {observeTeammateNameDisplay} from '@queries/servers/user';
 
 import ConvertGMToChannel from './convert_gm_to_channel';
 
