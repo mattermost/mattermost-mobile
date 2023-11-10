@@ -110,7 +110,7 @@ class PushNotifications {
         const {payload} = notification;
 
         // Do not show overlay if this is a call-started message (the call_notification will alert the user)
-        if (notification.type === NOTIFICATION_TYPE.CALLS || isCallsStartedMessage(notification.payload?.message)) {
+        if (payload?.type === NOTIFICATION_TYPE.CALLS || isCallsStartedMessage(payload?.message)) {
             return;
         }
 
@@ -204,6 +204,7 @@ class PushNotifications {
                 case PushNotification.NOTIFICATION_TYPE.CLEAR:
                     this.handleClearNotification(notification);
                     break;
+                case PushNotification.NOTIFICATION_TYPE.CALLS:
                 case PushNotification.NOTIFICATION_TYPE.MESSAGE:
                     this.handleMessageNotification(notification);
                     break;
