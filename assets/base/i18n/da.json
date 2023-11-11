@@ -1,0 +1,19 @@
+{
+    "post_body.check_for_out_of_channel_mentions.link.and": " og ",
+    "mobile.server_url.invalid_format": "URL skal starte med http:// eller https://",
+    "mobile.managed.exit": "Afslut",
+    "mobile.suggestion.members": "Medlemmer",
+    "channel_modal.name": "Navn",
+    "mobile.tos_link": "Betingelser for brug",
+    "about.teamEditiont0": "Team Edition",
+    "about.teamEditionSt": "Al kommunikation i dit team på ét sted, søgbart og tilgængeligt overalt.",
+    "about.teamEditionLearn": "Bliv medlem i Mattermost kliken på ",
+    "mobile.privacy_link": "Privatlivspolitik",
+    "about.hashee": "EE Build Hash:",
+    "about.hash": "Build Hash:",
+    "about.enterpriseEditionSt": "Moderne kommunikation bag din firewall.",
+    "about.enterpriseEditionLearn": "Lær mere om Enterprise versionen på ",
+    "about.date": "Byggedato:",
+    "about.enterpriseEditione1": "Virksomhedsudgave",
+    "about.teamEditiont1": "Virksomhedsudgave"
+}

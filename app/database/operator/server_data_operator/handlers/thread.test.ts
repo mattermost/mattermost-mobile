@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
+import {shouldUpdateThreadRecord} from '@database/operator/server_data_operator/comparators/thread';
 import {transformThreadRecord, transformThreadParticipantRecord, transformThreadInTeamRecord, transformTeamThreadsSyncRecord} from '@database/operator/server_data_operator/transformers/thread';
 
 import type ServerDataOperator from '..';
@@ -59,6 +60,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
             createOrUpdateRawValues: threads,
             tableName: 'Thread',
             prepareRecordsOnly: true,
+            shouldUpdate: shouldUpdateThreadRecord,
         }, 'handleThreads(NEVER)');
 
         // Should handle participants

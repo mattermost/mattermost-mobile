@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, TouchableOpacity} from 'react-native';
 
@@ -81,7 +81,10 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
         getAllCachedFiles();
     }, []);
 
-    const close = () => popTopScreen(componentId);
+    const close = useCallback(() => {
+        popTopScreen(componentId);
+    }, [componentId]);
+
     useAndroidHardwareBackHandler(componentId, close);
 
     const hasData = Boolean(dataSize && dataSize > 0);

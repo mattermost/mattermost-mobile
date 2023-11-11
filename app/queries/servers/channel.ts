@@ -11,7 +11,6 @@ import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {sanitizeLikeString} from '@helpers/database';
 import {hasPermission} from '@utils/role';
-import {getUserIdFromChannelName} from '@utils/user';
 
 import {prepareDeletePost} from './post';
 import {queryRoles} from './role';
@@ -68,17 +67,17 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
     }
 }
 
-export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean, isGraphQL = false) => {
+export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean) => {
     const {database} = operator;
 
-    const channelsQuery = isGraphQL ? queryAllChannels(database) : queryAllChannelsForTeam(database, teamId);
+    const channelsQuery = queryAllChannelsForTeam(database, teamId);
     const allChannelsForTeam = (await channelsQuery.fetch()).
         reduce((map: Record<string, ChannelModel>, channel) => {
             map[channel.id] = channel;
             return map;
         }, {});
 
-    const channelInfosQuery = isGraphQL ? queryAllChannelsInfo(database) : queryAllChannelsInfoForTeam(database, teamId);
+    const channelInfosQuery = queryAllChannelsInfoForTeam(database, teamId);
     const allChannelsInfoForTeam = (await channelInfosQuery.fetch()).
         reduce((map: Record<string, ChannelInfoModel>, info) => {
             map[info.id] = info;
@@ -198,6 +197,16 @@ export const queryAllMyChannel = (database: Database) => {
 export const queryAllMyChannelsForTeam = (database: Database, teamId: string) => {
     return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(CHANNEL, Q.where('team_id', Q.oneOf([teamId, '']))),
+    );
+};
+
+export const queryAllUnreadDMsAndGMsIds = (database: Database) => {
+    return database.get<ChannelModel>(CHANNEL).query(
+        Q.on(MY_CHANNEL, Q.or(
+            Q.where('mentions_count', Q.gt(0)),
+            Q.where('message_count', Q.gt(0)),
+        )),
+        Q.where('type', Q.oneOf([General.GM_CHANNEL, General.DM_CHANNEL])),
     );
 };
 
@@ -460,38 +469,6 @@ export const queryMyChannelUnreads = (database: Database, currentTeamId: string)
             Q.where('mentions_count', Q.gte(0)),
         ),
         Q.sortBy('last_post_at', Q.desc),
-    );
-};
-
-export const observeArchivedDirectChannels = (database: Database, currentUserId: string) => {
-    const deactivated = database.get<UserModel>(USER).query(
-        Q.where('delete_at', Q.gt(0)),
-    ).observe();
-
-    return deactivated.pipe(
-        switchMap((users) => {
-            const usersMap = new Map(users.map((u) => [u.id, u]));
-            return database.get<ChannelModel>(CHANNEL).query(
-                Q.on(
-                    CHANNEL_MEMBERSHIP,
-                    Q.and(
-                        Q.where('user_id', Q.notEq(currentUserId)),
-                        Q.where('user_id', Q.oneOf(Array.from(usersMap.keys()))),
-                    ),
-                ),
-                Q.where('type', 'D'),
-            ).observe().pipe(
-                switchMap((channels) => {
-                    // eslint-disable-next-line max-nested-callbacks
-                    return of$(new Map(channels.map((c) => {
-                        const teammateId = getUserIdFromChannelName(currentUserId, c.name);
-                        const user = usersMap.get(teammateId);
-
-                        return [c.id, user];
-                    })));
-                }),
-            );
-        }),
     );
 };
 

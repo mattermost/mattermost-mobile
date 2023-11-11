@@ -110,8 +110,8 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 479
-        versionName "2.6.0"
+        versionCode 493
+        versionName "2.10.0"
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }

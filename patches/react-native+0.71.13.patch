@@ -1,0 +1,341 @@
+diff --git a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
+index 0c2ecf2..a04414f 100644
+--- a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
++++ b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
+@@ -1819,9 +1819,14 @@ class ScrollView extends React.Component<Props, State> {
+         // Note: we should split props.style on the inner and outer props
+         // however, the ScrollView still needs the baseStyle to be scrollable
+         const {outer, inner} = splitLayoutProps(flattenStyle(props.style));
++        let inverted;
++        if (inner.scaleY) {
++          inverted = {scaleY: -1};
++          delete inner['scaleY']
++        }
+         return React.cloneElement(
+           refreshControl,
+-          {style: StyleSheet.compose(baseStyle, outer)},
++          {style: StyleSheet.compose(baseStyle, outer, inverted)},
+           <NativeDirectionalScrollView
+             {...props}
+             style={StyleSheet.compose(baseStyle, inner)}
+diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
+index 4534330..2c6487f 100644
+--- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
++++ b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
+@@ -30,6 +30,7 @@ import flattenStyle from '../StyleSheet/flattenStyle';
+ import StyleSheet from '../StyleSheet/StyleSheet';
+ import clamp from '../Utilities/clamp';
+ import infoLog from '../Utilities/infoLog';
++import Platform from '../Utilities/Platform';
+ import {CellRenderMask} from './CellRenderMask';
+ import ChildListCollection from './ChildListCollection';
+ import FillRateHelper from './FillRateHelper';
+@@ -1847,7 +1848,10 @@ export default class VirtualizedList extends StateSafePureComponent<
+ 
+ const styles = StyleSheet.create({
+   verticallyInverted: {
+-    transform: [{scaleY: -1}],
++    ...Platform.select({
++      android: {scaleY: -1},
++      ios: {transform: [{scaleY: -1}]},
++    }),
+   },
+   horizontallyInverted: {
+     transform: [{scaleX: -1}],
+diff --git a/node_modules/react-native/jest/react-native-env.js b/node_modules/react-native/jest/react-native-env.js
+index 624d364..bb09c57 100644
+--- a/node_modules/react-native/jest/react-native-env.js
++++ b/node_modules/react-native/jest/react-native-env.js
+@@ -13,6 +13,6 @@ const NodeEnv = require('jest-environment-node').TestEnvironment;
+ 
+ module.exports = class ReactNativeEnv extends NodeEnv {
+   exportConditions() {
+-    return ['react-native'];
++    return ['react-native', 'node'];
+   }
+ };
+diff --git a/node_modules/react-native/jest/setup.js b/node_modules/react-native/jest/setup.js
+index 3738bd2..547e0c0 100644
+--- a/node_modules/react-native/jest/setup.js
++++ b/node_modules/react-native/jest/setup.js
+@@ -21,6 +21,7 @@ global.performance = {
+   now: jest.fn(Date.now),
+ };
+ 
++global.Promise = jest.requireActual('promise');
+ global.regeneratorRuntime = jest.requireActual('regenerator-runtime/runtime');
+ global.window = global;
+ 
+diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
+index 250299b..6e8e6a0 100644
+--- a/node_modules/react-native/react.gradle
++++ b/node_modules/react-native/react.gradle
+@@ -159,7 +159,7 @@ def enableHermesForVariant = config.enableHermesForVariant ?: {
+ def hermesFlagsForVariant = config.hermesFlagsForVariant ?: {
+     def variant ->
+         def hermesFlags;
+-        if (variant.name.toLowerCase().contains("release")) {
++        if (variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")) {
+             // Can't use ?: since that will also substitute valid empty lists
+             hermesFlags = config.hermesFlagsRelease
+             if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
+@@ -175,7 +175,7 @@ def hermesFlagsForVariant = config.hermesFlagsForVariant ?: {
+ def disableDevForVariant = config.disableDevForVariant ?: {
+     def variant ->
+       config."devDisabledIn${variant.name.capitalize()}" ||
+-      variant.name.toLowerCase().contains("release")
++      variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")
+ }
+ 
+ // Set bundleForVariant to a function to configure per variant,
+@@ -184,13 +184,13 @@ def bundleForVariant = config.bundleForVariant ?: {
+     def variant ->
+       config."bundleIn${variant.name.capitalize()}" ||
+       config."bundleIn${variant.buildType.name.capitalize()}" ||
+-      variant.name.toLowerCase().contains("release")
++      variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")
+ }
+ 
+ // Set deleteDebugFilesForVariant to a function to configure per variant,
+ // defaults to True for Release variants and False for debug variants
+ def deleteDebugFilesForVariant = config.deleteDebugFilesForVariant ?: {
+-    def variant -> variant.name.toLowerCase().contains("release")
++    def variant -> variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")
+ }
+ 
+ android {
+diff --git a/node_modules/react-native/scripts/cocoapods/helpers.rb b/node_modules/react-native/scripts/cocoapods/helpers.rb
+index 03e3a5c..f3ae5a1 100644
+--- a/node_modules/react-native/scripts/cocoapods/helpers.rb
++++ b/node_modules/react-native/scripts/cocoapods/helpers.rb
+@@ -11,6 +11,22 @@ class SysctlChecker
+     end
+ end
+ 
++# Helper class that is used to easily send commands to Xcodebuild
++# And that can be subclassed for testing purposes.
++class Xcodebuild
++    def self.version
++        `xcodebuild -version`
++    end
++end
++
++module Helpers
++    class Constants
++        def self.min_ios_version_supported
++            return '12.4'
++        end
++    end
++end
++
+ # Helper object to wrap system properties like RUBY_PLATFORM
+ # This makes it easier to mock the behaviour in tests
+ class Environment
+diff --git a/node_modules/react-native/scripts/cocoapods/utils.rb b/node_modules/react-native/scripts/cocoapods/utils.rb
+index df23da4..0560567 100644
+--- a/node_modules/react-native/scripts/cocoapods/utils.rb
++++ b/node_modules/react-native/scripts/cocoapods/utils.rb
+@@ -131,15 +131,29 @@ class ReactNativePodsUtils
+         end
+     end
+ 
+-    def self.apply_xcode_15_patch(installer)
+-        installer.target_installation_results.pod_target_installation_results
+-            .each do |pod_name, target_installation_result|
+-                target_installation_result.native_target.build_configurations.each do |config|
+-                    # unary_function and binary_function are no longer provided in C++17 and newer standard modes as part of Xcode 15. They can be re-enabled with setting _LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION
+-                    # Ref: https://developer.apple.com/documentation/xcode-release-notes/xcode-15-release-notes#Deprecations
+-                    config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= '$(inherited) '
+-                    config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << '"_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION" '
++    def self.apply_xcode_15_patch(installer, xcodebuild_manager: Xcodebuild)
++        projects = self.extract_projects(installer)
++
++        gcc_preprocessor_definition_key = 'GCC_PREPROCESSOR_DEFINITIONS'
++        other_ld_flags_key = 'OTHER_LDFLAGS'
++        libcpp_cxx17_fix = '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION'
++        xcode15_compatibility_flags = '-Wl -ld_classic '
++
++        projects.each do |project|
++            project.build_configurations.each do |config|
++                # fix for unary_function and binary_function
++                self.safe_init(config, gcc_preprocessor_definition_key)
++                self.add_value_to_setting_if_missing(config, gcc_preprocessor_definition_key, libcpp_cxx17_fix)
++
++                # fix for weak linking
++                self.safe_init(config, other_ld_flags_key)
++                if self.is_using_xcode15_or_greter(:xcodebuild_manager => xcodebuild_manager)
++                    self.add_value_to_setting_if_missing(config, other_ld_flags_key, xcode15_compatibility_flags)
++                else
++                    self.remove_value_to_setting_if_present(config, other_ld_flags_key, xcode15_compatibility_flags)
++                end
+             end
++            project.save()
+         end
+     end
+ 
+@@ -197,4 +211,89 @@ class ReactNativePodsUtils
+             ENV['USE_FRAMEWORKS'] = nil
+         end
+     end
++
++    # ========= #
++    # Utilities #
++    # ========= #
++
++    def self.extract_projects(installer)
++        return installer.aggregate_targets
++            .map{ |t| t.user_project }
++            .uniq{ |p| p.path }
++            .push(installer.pods_project)
++    end
++
++    def self.safe_init(config, setting_name)
++        old_config = config.build_settings[setting_name]
++        if old_config == nil
++            config.build_settings[setting_name] ||= '$(inherited) '
++        end
++    end
++
++    def self.add_value_to_setting_if_missing(config, setting_name, value)
++        old_config = config.build_settings[setting_name]
++        if !old_config.include?(value)
++            config.build_settings[setting_name] << value
++        end
++    end
++
++    def self.remove_value_to_setting_if_present(config, setting_name, value)
++        old_config = config.build_settings[setting_name]
++        if old_config.include?(value)
++            # Old config can be either an Array or a String
++            if old_config.is_a?(Array)
++                old_config = old_config.join(" ")
++            end
++            new_config = old_config.gsub(value,  "")
++            config.build_settings[setting_name] = new_config
++        end
++    end
++
++    def self.is_using_xcode15_or_greter(xcodebuild_manager: Xcodebuild)
++        xcodebuild_version = xcodebuild_manager.version
++
++        # The output of xcodebuild -version is something like
++        # Xcode 15.0
++        # or
++        # Xcode 14.3.1
++        # We want to capture the version digits
++        regex = /(\d+)\.(\d+)(?:\.(\d+))?/
++        if match_data = xcodebuild_version.match(regex)
++            major = match_data[1].to_i
++            return major >= 15
++        end
++
++        return false
++    end
++
++    def self.updateIphoneOSDeploymentTarget(installer)
++        pod_to_update = Set.new([
++            "boost",
++            "CocoaAsyncSocket",
++            "Flipper",
++            "Flipper-DoubleConversion",
++            "Flipper-Fmt",
++            "Flipper-Boost-iOSX",
++            "Flipper-Folly",
++            "Flipper-Glog",
++            "Flipper-PeerTalk",
++            "FlipperKit",
++            "fmt",
++            "libevent",
++            "OpenSSL-Universal",
++            "RCT-Folly",
++            "SocketRocket",
++            "YogaKit"
++        ])
++
++        installer.target_installation_results.pod_target_installation_results
++            .each do |pod_name, target_installation_result|
++                unless pod_to_update.include?(pod_name)
++                    next
++                end
++                target_installation_result.native_target.build_configurations.each do |config|
++                    config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = Helpers::Constants.min_ios_version_supported
++                end
++            end
++    end
+ end
+diff --git a/node_modules/react-native/scripts/react_native_pods.rb b/node_modules/react-native/scripts/react_native_pods.rb
+index 6be4109..ea4ebaa 100644
+--- a/node_modules/react-native/scripts/react_native_pods.rb
++++ b/node_modules/react-native/scripts/react_native_pods.rb
+@@ -27,7 +27,7 @@ $START_TIME = Time.now.to_i
+ # By using this function, you won't have to manualy change your Podfile
+ # when we change the minimum version supported by the framework.
+ def min_ios_version_supported
+-  return '12.4'
++  return Helpers::Constants.min_ios_version_supported
+ end
+ 
+ # This function prepares the project for React Native, before processing
+@@ -224,6 +224,7 @@ def react_native_post_install(installer, react_native_path = "../node_modules/re
+   ReactNativePodsUtils.fix_library_search_paths(installer)
+   ReactNativePodsUtils.set_node_modules_user_settings(installer, react_native_path)
+   ReactNativePodsUtils.apply_xcode_15_patch(installer)
++  ReactNativePodsUtils.updateIphoneOSDeploymentTarget(installer)
+ 
+   NewArchitectureHelper.set_clang_cxx_language_standard_if_needed(installer)
+   is_new_arch_enabled = ENV['RCT_NEW_ARCH_ENABLED'] == "1"
+diff --git a/node_modules/react-native/sdks/hermes-engine/utils/build-apple-framework.sh b/node_modules/react-native/sdks/hermes-engine/utils/build-apple-framework.sh
+index 87faae6..caae918 100755
+--- a/node_modules/react-native/sdks/hermes-engine/utils/build-apple-framework.sh
++++ b/node_modules/react-native/sdks/hermes-engine/utils/build-apple-framework.sh
+@@ -52,7 +52,7 @@ function build_host_hermesc {
+ 
+ # Utility function to configure an Apple framework
+ function configure_apple_framework {
+-  local build_cli_tools enable_bitcode enable_debugger cmake_build_type
++  local build_cli_tools enable_bitcode enable_debugger cmake_build_type xcode_15_flags xcode_major_version
+ 
+   if [[ $1 == iphoneos || $1 == catalyst ]]; then
+     enable_bitcode="true"
+@@ -77,8 +77,15 @@ function configure_apple_framework {
+     cmake_build_type="MinSizeRel"
+   fi
+ 
++  xcode_15_flags=""
++  xcode_major_version=$(xcodebuild -version | grep -oE '[0-9]*' | head -n 1)
++  if [[ $xcode_major_version -ge 15 ]]; then
++    xcode_15_flags="LINKER:-ld_classic"
++  fi
++
+   pushd "$HERMES_PATH" > /dev/null || exit 1
+     cmake -S . -B "build_$1" \
++      -DHERMES_EXTRA_LINKER_FLAGS="$xcode_15_flags" \
+       -DHERMES_APPLE_TARGET_PLATFORM:STRING="$1" \
+       -DCMAKE_OSX_ARCHITECTURES:STRING="$2" \
+       -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING="$3" \
+diff --git a/node_modules/react-native/sdks/hermes-engine/utils/build-hermes-xcode.sh b/node_modules/react-native/sdks/hermes-engine/utils/build-hermes-xcode.sh
+index 37faee3..fa2ebe9 100755
+--- a/node_modules/react-native/sdks/hermes-engine/utils/build-hermes-xcode.sh
++++ b/node_modules/react-native/sdks/hermes-engine/utils/build-hermes-xcode.sh
+@@ -33,6 +33,13 @@ if [ -z "$deployment_target" ]; then
+   deployment_target=${MACOSX_DEPLOYMENT_TARGET}
+ fi
+ 
++xcode_15_flags=""
++xcode_major_version=$(xcodebuild -version | grep -oE '[0-9]*' | head -n 1)
++if [[ $xcode_major_version -ge 15 ]]; then
++  echo "########### Using LINKER:-ld_classic ###########"
++  xcode_15_flags="LINKER:-ld_classic"
++fi
++
+ architectures=$( echo "$ARCHS" | tr  " " ";" )
+ 
+ echo "Configure Apple framework"
+@@ -40,6 +47,7 @@ echo "Configure Apple framework"
+ "$CMAKE_BINARY" \
+   -S "${PODS_ROOT}/hermes-engine" \
+   -B "${PODS_ROOT}/hermes-engine/build/${PLATFORM_NAME}" \
++  -DHERMES_EXTRA_LINKER_FLAGS="$xcode_15_flags" \
+   -DHERMES_APPLE_TARGET_PLATFORM:STRING="$PLATFORM_NAME" \
+   -DCMAKE_OSX_ARCHITECTURES:STRING="$architectures" \
+   -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING="$deployment_target" \

@@ -7,7 +7,6 @@ import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import {Screens} from '@constants';
@@ -23,18 +22,24 @@ import EphemeralStore from '@store/ephemeral_store';
 
 import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
+import useGMasDMNotice from './use_gm_as_dm_notice';
 
+import type PreferenceModel from '@typings/database/models/servers/preference';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
 type ChannelProps = {
     channelId: string;
     componentId?: AvailableScreens;
-    isCallInCurrentChannel: boolean;
+    showJoinCallBanner: boolean;
     isInACall: boolean;
-    isInCurrentChannelCall: boolean;
     isCallsEnabledInChannel: boolean;
+    showIncomingCalls: boolean;
     isTabletView?: boolean;
+    dismissedGMasDMNotice: PreferenceModel[];
+    currentUserId: string;
+    channelType: ChannelType;
+    hasGMasDMFeature: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -49,12 +54,17 @@ const styles = StyleSheet.create({
 const Channel = ({
     channelId,
     componentId,
-    isCallInCurrentChannel,
+    showJoinCallBanner,
     isInACall,
-    isInCurrentChannelCall,
     isCallsEnabledInChannel,
+    showIncomingCalls,
     isTabletView,
+    dismissedGMasDMNotice,
+    channelType,
+    currentUserId,
+    hasGMasDMFeature,
 }: ChannelProps) => {
+    useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const [shouldRenderPosts, setShouldRenderPosts] = useState(false);
@@ -64,9 +74,9 @@ const Channel = ({
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
-    const handleBack = () => {
+    const handleBack = useCallback(() => {
         popTopScreen(componentId);
-    };
+    }, [componentId]);
 
     useKeyboardTrackingPaused(postDraftRef, channelId, trackKeyboardForScreens);
     useAndroidHardwareBackHandler(componentId, handleBack);
@@ -98,8 +108,7 @@ const Channel = ({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
-    const renderCallsComponents = showJoinCallBanner || isInACall;
+    const showFloatingCallContainer = showJoinCallBanner || isInACall || showIncomingCalls;
 
     return (
         <FreezeScreen>
@@ -116,15 +125,12 @@ const Channel = ({
                     callsEnabledInChannel={isCallsEnabledInChannel}
                     isTabletView={isTabletView}
                 />
-                {showJoinCallBanner && <RoundedHeaderCalls/>}
                 {shouldRender &&
                 <>
                     <View style={[styles.flex, {marginTop}]}>
                         <ChannelPostList
                             channelId={channelId}
                             nativeID={channelId}
-                            currentCallBarVisible={isInACall}
-                            joinCallBannerVisible={showJoinCallBanner}
                         />
                     </View>
                     <PostDraft
@@ -139,10 +145,11 @@ const Channel = ({
                     />
                 </>
                 }
-                {renderCallsComponents &&
+                {showFloatingCallContainer &&
                     <FloatingCallContainer
                         channelId={channelId}
                         showJoinCallBanner={showJoinCallBanner}
+                        showIncomingCalls={showIncomingCalls}
                         isInACall={isInACall}
                     />
                 }

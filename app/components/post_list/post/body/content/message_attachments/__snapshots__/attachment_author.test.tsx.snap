@@ -1,0 +1,135 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AttachmentAuthor it matches snapshot when both name and icon are provided 1`] = `
+<View
+  style={
+    {
+      "flex": 1,
+      "flexDirection": "row",
+    }
+  }
+>
+  <View
+    style={
+      [
+        {
+          "overflow": "hidden",
+        },
+        {
+          "height": 12,
+          "marginRight": 3,
+          "width": 12,
+        },
+      ]
+    }
+  >
+    <FastImageView
+      defaultSource={null}
+      resizeMode="cover"
+      source={
+        {
+          "uri": "https://images.com/image.png",
+        }
+      }
+      style={
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        }
+      }
+    />
+  </View>
+  <Text
+    onPress={[Function]}
+    style={
+      [
+        {
+          "color": "rgba(63,67,80,0.5)",
+          "fontSize": 11,
+        },
+        {
+          "color": "rgba(28,88,217,0.5)",
+        },
+      ]
+    }
+  >
+    jhondoe
+  </Text>
+</View>
+`;
+
+exports[`AttachmentAuthor it matches snapshot when only icon is provided 1`] = `
+<View
+  style={
+    {
+      "flex": 1,
+      "flexDirection": "row",
+    }
+  }
+>
+  <View
+    style={
+      [
+        {
+          "overflow": "hidden",
+        },
+        {
+          "height": 12,
+          "marginRight": 3,
+          "width": 12,
+        },
+      ]
+    }
+  >
+    <FastImageView
+      defaultSource={null}
+      resizeMode="cover"
+      source={
+        {
+          "uri": "https://images.com/image.png",
+        }
+      }
+      style={
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        }
+      }
+    />
+  </View>
+</View>
+`;
+
+exports[`AttachmentAuthor it matches snapshot when only name is provided 1`] = `
+<View
+  style={
+    {
+      "flex": 1,
+      "flexDirection": "row",
+    }
+  }
+>
+  <Text
+    onPress={[Function]}
+    style={
+      [
+        {
+          "color": "rgba(63,67,80,0.5)",
+          "fontSize": 11,
+        },
+        {
+          "color": "rgba(28,88,217,0.5)",
+        },
+      ]
+    }
+  >
+    jhondoe
+  </Text>
+</View>
+`;

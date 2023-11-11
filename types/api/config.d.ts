@@ -119,7 +119,6 @@ interface ClientConfig {
     ExtendSessionLengthWithActivity: string;
     FeatureFlagAppsEnabled?: string;
     FeatureFlagCollapsedThreads?: string;
-    FeatureFlagGraphQL?: string;
     FeatureFlagPostPriority?: string;
     ForgotPasswordLink?: string;
     GfycatApiKey: string;
@@ -143,6 +142,7 @@ interface ClientConfig {
     LdapPositionAttributeSet: string;
     LockTeammateNameDisplay: string;
     MaxFileSize: string;
+    MaxMarkdownNodes: string;
     MaxNotificationsPerChannel: string;
     MaxPostSize: string;
     MinimumHashtagLength: string;

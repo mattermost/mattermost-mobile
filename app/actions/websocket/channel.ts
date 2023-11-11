@@ -18,6 +18,7 @@ import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCu
 import {getConfig, getCurrentChannelId} from '@queries/servers/system';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
+import MyChannelModel from '@typings/database/models/servers/my_channel';
 import {logDebug} from '@utils/log';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -116,6 +117,43 @@ export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
 
         if (activeServerUrl !== serverUrl || (currentChannelId !== channelId && !EphemeralStore.isSwitchingToChannel(channelId))) {
             await markChannelAsViewed(serverUrl, channelId);
+        }
+    } catch {
+        // do nothing
+    }
+}
+
+export async function handleMultipleChannelsViewedEvent(serverUrl: string, msg: any) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const {channel_times: channelTimes} = msg.data;
+
+        const activeServerUrl = await DatabaseManager.getActiveServerUrl();
+        const currentChannelId = await getCurrentChannelId(database);
+
+        const promises: Array<ReturnType<typeof markChannelAsViewed>> = [];
+        for (const id of Object.keys(channelTimes)) {
+            if (activeServerUrl === serverUrl && (currentChannelId === id || EphemeralStore.isSwitchingToChannel(id))) {
+                continue;
+            }
+            promises.push(markChannelAsViewed(serverUrl, id, false, true));
+        }
+
+        const members = (await Promise.allSettled(promises)).reduce<MyChannelModel[]>((acum, v) => {
+            if (v.status === 'rejected') {
+                return acum;
+            }
+
+            const value = v.value;
+            if (value.member) {
+                acum.push(value.member);
+            }
+            return acum;
+        }, []);
+
+        if (members.length) {
+            operator.batchRecords(members, 'handleMultipleCahnnelViewedEvent');
         }
     } catch {
         // do nothing

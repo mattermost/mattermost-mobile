@@ -7,21 +7,21 @@ import InCallManager from 'react-native-incall-manager';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
-import {leaveAndJoinWithAlert, needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
+import {leaveAndJoinWithAlert, needsRecordingErrorAlert, needsRecordingWillBePostedAlert} from '@calls/alerts';
 import {
     getCallsConfig,
     getCallsState,
+    getChannelsWithCalls,
+    getCurrentCall,
+    myselfLeftCall,
+    newCurrentCall,
+    setCallForChannel,
     setCalls,
     setChannelEnabled,
     setConfig,
     setPluginEnabled,
     setScreenShareURL,
     setSpeakerPhone,
-    setCallForChannel,
-    newCurrentCall,
-    myselfLeftCall,
-    getCurrentCall,
-    getChannelsWithCalls,
 } from '@calls/state';
 import {General, Preferences} from '@constants';
 import Calls from '@constants/calls';
@@ -39,12 +39,7 @@ import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/u
 
 import {newConnection} from '../connection/connection';
 
-import type {
-    AudioDevice,
-    Call,
-    CallParticipant,
-    CallsConnection,
-} from '@calls/types/calls';
+import type {AudioDevice, Call, CallParticipant, CallsConnection} from '@calls/types/calls';
 import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
@@ -150,12 +145,14 @@ const createCallAndAddToIds = (channelId: string, call: CallState, ids: Set<stri
             return accum;
         }, {} as Dictionary<CallParticipant>),
         channelId,
+        id: call.id,
         startTime: call.start_at,
         screenOn: call.screen_sharing_id,
         threadId: call.thread_id,
         ownerId: call.owner_id,
         hostId: call.host_id,
         recState: call.recording,
+        dismissed: call.dismissed_notification || {},
     } as Call;
 };
 
@@ -412,6 +409,21 @@ export const stopCallRecording = async (serverUrl: string, callId: string) => {
         return data;
     } catch (error) {
         logDebug('error on stopCallRecording', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
+        return error;
+    }
+};
+
+export const dismissIncomingCall = async (serverUrl: string, channelId: string) => {
+    if (!getCallsConfig(serverUrl).EnableRinging) {
+        return {};
+    }
+
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return await client.dismissCall(channelId);
+    } catch (error) {
+        logDebug('error on dismissIncomingCall', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
         return error;
     }

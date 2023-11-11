@@ -4,7 +4,7 @@
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, Platform, type StyleProp, StyleSheet, type ViewStyle} from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, {type AnimatedStyle} from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
 import CombinedUserActivity from '@components/post_list/combined_user_activity';
@@ -27,7 +27,7 @@ import type PostModel from '@typings/database/models/servers/post';
 type Props = {
     appsEnabled: boolean;
     channelId: string;
-    contentContainerStyle?: StyleProp<ViewStyle>;
+    contentContainerStyle?: StyleProp<AnimatedStyle<ViewStyle>>;
     currentTimezone: string | null;
     currentUserId: string;
     currentUsername: string;
@@ -52,7 +52,6 @@ type Props = {
     header?: ReactElement;
     testID: string;
     currentCallBarVisible?: boolean;
-    joinCallBannerVisible?: boolean;
     savedPostIds: Set<string>;
 }
 
@@ -111,8 +110,6 @@ const PostList = ({
     showMoreMessages,
     showNewMessageLine = true,
     testID,
-    currentCallBarVisible,
-    joinCallBannerVisible,
     savedPostIds,
 }: Props) => {
     const listRef = useRef<FlatList<string | PostModel>>(null);
@@ -354,6 +351,8 @@ const PostList = ({
                     onScroll={onScroll}
                     onScrollToIndexFailed={onScrollToIndexFailed}
                     onViewableItemsChanged={onViewableItemsChanged}
+
+                    // @ts-expect-error old style ref
                     ref={listRef}
                     removeClippedSubviews={true}
                     renderItem={renderItem}
@@ -375,8 +374,6 @@ const PostList = ({
                 scrollToIndex={scrollToIndex}
                 theme={theme}
                 testID={`${testID}.more_messages_button`}
-                currentCallBarVisible={Boolean(currentCallBarVisible)}
-                joinCallBannerVisible={Boolean(joinCallBannerVisible)}
             />
             }
         </>

@@ -219,7 +219,7 @@ const FilteredList = ({
                 />
             );
         }
-        if ('teamId' in item) {
+        if ('teamId' in item || 'team_id' in item) {
             return (
                 <ChannelItem
                     channel={item}

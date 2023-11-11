@@ -7,6 +7,7 @@ import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
+import {getErrorMessage} from '@utils/errors';
 
 import DisabledFields from './disabled_fields';
 import EmailField from './email_field';
@@ -25,6 +26,7 @@ type Props = {
     lockedNickname: boolean;
     lockedPosition: boolean;
     onUpdateField: (fieldKey: string, name: string) => void;
+    error?: unknown;
     userInfo: UserInfo;
     submitUser: () => void;
 }
@@ -72,16 +74,19 @@ const styles = StyleSheet.create({
 const ProfileForm = ({
     canSave, currentUser, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition,
-    onUpdateField, userInfo, submitUser,
+    onUpdateField, userInfo, submitUser, error,
 }: Props) => {
     const theme = useTheme();
-    const {formatMessage} = useIntl();
+    const intl = useIntl();
     const firstNameRef = useRef<FloatingTextInputRef>(null);
     const lastNameRef = useRef<FloatingTextInputRef>(null);
     const usernameRef = useRef<FloatingTextInputRef>(null);
     const emailRef = useRef<FloatingTextInputRef>(null);
     const nicknameRef = useRef<FloatingTextInputRef>(null);
     const positionRef = useRef<FloatingTextInputRef>(null);
+
+    const {formatMessage} = intl;
+    const errorMessage = error == null ? undefined : getErrorMessage(error, intl) as string;
 
     const userProfileFields: FieldSequence = useMemo(() => {
         const service = currentUser.authService;
@@ -187,6 +192,7 @@ const ProfileForm = ({
             <Field
                 fieldKey='username'
                 fieldRef={usernameRef}
+                error={errorMessage}
                 isDisabled={userProfileFields.username.isDisabled}
                 label={formatMessage(FIELDS.username)}
                 maxLength={22}

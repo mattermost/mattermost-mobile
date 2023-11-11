@@ -1,8 +1,25 @@
+diff --git a/node_modules/react-native-reanimated/lib/typescript/reanimated2/hook/utils.d.ts b/node_modules/react-native-reanimated/lib/typescript/reanimated2/hook/utils.d.ts
+index 67c921b..cbb6f83 100644
+--- a/node_modules/react-native-reanimated/lib/typescript/reanimated2/hook/utils.d.ts
++++ b/node_modules/react-native-reanimated/lib/typescript/reanimated2/hook/utils.d.ts
+@@ -9,7 +9,11 @@ interface Handlers<T, TContext extends Context> {
+     [key: string]: Handler<T, TContext> | undefined;
+ }
+ type useEventType = <T extends object>(handler: (e: T) => void, eventNames?: string[], rebuild?: boolean) => (e: NativeSyntheticEvent<T>) => void;
+-export declare const useEvent: useEventType;
++export declare function useEvent<T, K>(
++    handler: T,
++    events: string[],
++    rebuild: boolean,
++): K;
+ type useHandlerType = <T, TContext extends Context = Record<string, never>>(handlers: Handlers<T, TContext>, deps?: DependencyList) => {
+     context: TContext;
+     doDependenciesDiffer: boolean;
 diff --git a/node_modules/react-native-reanimated/src/reanimated2/mutables.ts b/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
-index 90de1f1..ae59355 100644
+index 6c4213d..e3cc49c 100644
 --- a/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
 +++ b/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
-@@ -95,25 +95,25 @@ export function makeMutable<T>(
+@@ -94,25 +94,25 @@ export function makeMutable<T>(
        }
        return value;
      },

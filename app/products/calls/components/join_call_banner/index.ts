@@ -41,7 +41,12 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
         distinctUntilChanged(),
     );
 
+    const callId = callsState.pipe(
+        switchMap((state) => of$(state?.id || '')),
+    );
+
     return {
+        callId,
         participants,
         channelCallStartTime,
         limitRestrictedInfo: observeIsCallLimitRestricted(database, serverUrl, channelId),

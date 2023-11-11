@@ -486,6 +486,48 @@ SOFTWARE.
 
 ---
 
+## @react-native/eslint-config
+
+This product contains '@react-native/eslint-config' by Meta.	
+
+ESLint config for React Native
+
+* HOMEPAGE:	
+  * https://github.com/facebook/react-native/tree/HEAD/packages/eslint-config-react-native-community#readme
+
+* LICENSE: MIT
+
+
+---
+
+## @react-native/metro-config
+
+This product contains '@react-native/metro-config' by Meta.	
+
+Config resolver and transformer for Metro.
+
+* HOMEPAGE:	
+  * https://github.com/facebook/react-native#readme
+
+* LICENSE: MIT
+
+
+---
+
+## @tsconfig/react-native
+
+This product contains '@tsconfig/react-native' by TSC Base.	
+
+Hosts TSConfigs for you to extend in your apps, tuned to a particular runtime environment. Owned and improved by the community. Basically Definitely Typed for TSConfigs.
+
+* HOMEPAGE:	
+  * https://github.com/tsconfig/bases#readme
+
+* LICENSE: MIT
+
+
+---
+
 ## @react-navigation/bottom-tabs
 
 This product contains '@react-navigation/bottom-tabs' by react-navigation.	
@@ -552,42 +594,6 @@ Stack navigator component for iOS and Android with animated transitions and gest
 
 * LICENSE: MIT
 
-
-
----
-
-## @rudderstack/rudder-sdk-react-native
-
-This product contains '@rudderstack/rudder-sdk-react-native' by RudderStack.
-
-Rudder React Native SDK
-
-* HOMEPAGE:
-  * https://github.com/rudderlabs/rudder-sdk-reactnative#readme
-
-* LICENSE: Apache-2.0
-
-MIT License
-
-Copyright (c) 2021 RudderStack
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
 
 
 ---
@@ -661,6 +667,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+---
+
+## @voximplant/react-native-foreground-service
+
+This product contains a modified version of '@voximplant/react-native-foreground-service' by Voximplant.
+
+A foreground service performs some operation that is noticeable to the user.
+
+* HOMEPAGE:
+  * https://github.com/voximplant/react-native-foreground-service
+
+* LICENSE: MIT License
+
+Copyright (c) 2019 Zingaya, Inc
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ---
 

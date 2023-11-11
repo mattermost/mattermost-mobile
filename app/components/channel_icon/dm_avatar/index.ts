@@ -28,6 +28,7 @@ const enhance = withObservables(['channelName'], ({channelName, database}: {chan
     );
 
     return {
+        authorId,
         author,
     };
 });

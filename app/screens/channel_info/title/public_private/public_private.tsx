@@ -1,10 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {Text} from 'react-native';
+import {useManagedConfig} from '@mattermost/react-native-emm';
+import Clipboard from '@react-native-clipboard/clipboard';
+import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
+import {Platform, StyleSheet, Text, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {ANDROID_33, OS_VERSION} from '@constants/versions';
 import {useTheme} from '@context/theme';
+import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
+import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -25,10 +35,68 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const style = StyleSheet.create({
+    bottomsheet: {
+        flex: 1,
+    },
+});
+
 const PublicPrivate = ({displayName, purpose}: Props) => {
+    const intl = useIntl();
     const theme = useTheme();
+    const managedConfig = useManagedConfig<ManagedConfig>();
+    const {bottom} = useSafeAreaInsets();
+
     const styles = getStyleSheet(theme);
     const publicPrivateTestId = 'channel_info.title.public_private';
+
+    const onCopy = useCallback(async () => {
+        Clipboard.setString(purpose!);
+        await dismissBottomSheet();
+        if ((Platform.OS === OS_VERSION.ANDROID && Number(Platform.Version) < ANDROID_33) || Platform.OS === OS_VERSION.IOS) {
+            showSnackBar({barType: SNACK_BAR_TYPE.TEXT_COPIED});
+        }
+    }, [purpose]);
+
+    const handleLongPress = useCallback(() => {
+        if (managedConfig?.copyAndPasteProtection !== 'true') {
+            const renderContent = () => {
+                return (
+                    <View style={style.bottomsheet}>
+                        <SlideUpPanelItem
+                            leftIcon='content-copy'
+                            onPress={onCopy}
+                            testID={`${publicPrivateTestId}.bottom_sheet.copy_purpose`}
+                            text={intl.formatMessage({id: 'channel_info.copy_purpose_text', defaultMessage: 'Copy Purpose Text'})}
+                        />
+                        <SlideUpPanelItem
+                            destructive={true}
+                            leftIcon='cancel'
+                            onPress={() => {
+                                dismissBottomSheet();
+                            }}
+                            testID={`${publicPrivateTestId}.bottom_sheet.cancel`}
+                            text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        />
+                    </View>
+                );
+            };
+
+            bottomSheet({
+                closeButtonId: 'close-mardown-link',
+                renderContent,
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
+                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
+                theme,
+            });
+        }
+    }, [
+        bottom,
+        theme,
+        onCopy,
+        intl.formatMessage,
+        managedConfig?.copyAndPasteProtection,
+    ]);
 
     return (
         <>
@@ -40,6 +108,7 @@ const PublicPrivate = ({displayName, purpose}: Props) => {
             </Text>
             {Boolean(purpose) &&
             <Text
+                onLongPress={handleLongPress}
                 style={styles.purpose}
                 testID={`${publicPrivateTestId}.purpose`}
             >

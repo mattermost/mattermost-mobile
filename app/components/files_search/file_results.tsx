@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
+import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import NoResults from '@components/files_search/no_results';
+import FormattedText from '@components/formatted_text';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -20,6 +21,8 @@ import {
 import {openGalleryAtIndex} from '@utils/gallery';
 import {TabTypes} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import {showMobileOptionsBottomSheet} from './file_options/mobile_options';
 import Toasts from './file_options/toasts';
@@ -27,6 +30,14 @@ import FileResult from './file_result';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type {GalleryAction} from '@typings/screens/gallery';
+
+const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
+    resultsNumber: {
+        ...typography('Heading', 300),
+        padding: 20,
+        color: theme.centerChannelColor,
+    },
+}));
 
 type Props = {
     canDownloadFiles: boolean;
@@ -41,6 +52,9 @@ type Props = {
 
 const galleryIdentifier = 'search-files-location';
 
+const separatorStyle = {height: 10};
+const Separator = () => <View style={separatorStyle}/>;
+
 const FileResults = ({
     canDownloadFiles,
     fileChannels,
@@ -52,13 +66,14 @@ const FileResults = ({
     isFilterEnabled,
 }: Props) => {
     const theme = useTheme();
+    const styles = getStyles(theme);
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
 
     const [action, setAction] = useState<GalleryAction>('none');
     const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
 
-    const containerStyle = useMemo(() => ([paddingTop, {top: fileInfos.length ? 8 : 0, flexGrow: 1}]), [fileInfos, paddingTop]);
+    const containerStyle = useMemo(() => ([paddingTop, {flexGrow: 1}]), [paddingTop]);
     const numOptions = getNumberFileMenuOptions(canDownloadFiles, publicLinkEnabled);
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
@@ -141,6 +156,15 @@ const FileResults = ({
     return (
         <>
             <FlatList
+                ListHeaderComponent={
+                    <FormattedText
+                        style={styles.resultsNumber}
+                        id='mobile.search.results'
+                        defaultMessage='{count} search {count, plural, one {result} other {results}}'
+                        values={{count: orderedFileInfos.length}}
+                    />
+                }
+                ItemSeparatorComponent={Separator}
                 ListEmptyComponent={noResults}
                 contentContainerStyle={containerStyle}
                 data={orderedFileInfos}

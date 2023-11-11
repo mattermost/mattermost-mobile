@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState, useEffect} from 'react';
 
 import {savePreference} from '@actions/remote/preference';
 import SettingContainer from '@components/settings/container';
@@ -25,41 +25,53 @@ type DisplayThemeProps = {
 const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUserId}: DisplayThemeProps) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const initialTheme = useMemo(() => theme.type, [/* dependency array should remain empty */]);
+    const initialTheme = useMemo(() => theme, [/* dependency array should remain empty */]);
+    const [newTheme, setNewTheme] = useState<string | undefined>(undefined);
 
     const close = () => popTopScreen(componentId);
 
-    const setThemePreference = useCallback((newTheme?: string) => {
-        const allowedTheme = allowedThemeKeys.find((tk) => tk === newTheme);
-        const differentTheme = initialTheme?.toLowerCase() !== newTheme?.toLowerCase();
+    useEffect(() => {
+        const differentTheme = theme.type?.toLowerCase() !== newTheme?.toLowerCase();
 
-        if (!allowedTheme || !differentTheme) {
+        if (!differentTheme) {
             close();
             return;
         }
+        setThemePreference();
+    }, [newTheme]);
+
+    const setThemePreference = useCallback(() => {
+        const allowedTheme = allowedThemeKeys.find((tk) => tk === newTheme);
+
+        const themeJson = Preferences.THEMES[allowedTheme as ThemeKey] || initialTheme;
 
         const pref: PreferenceType = {
             category: Preferences.CATEGORIES.THEME,
             name: currentTeamId,
             user_id: currentUserId,
-            value: JSON.stringify(Preferences.THEMES[allowedTheme as ThemeKey]),
+            value: JSON.stringify(themeJson),
         };
         savePreference(serverUrl, [pref]);
-    }, [allowedThemeKeys, currentTeamId, initialTheme, serverUrl]);
+    }, [allowedThemeKeys, currentTeamId, theme.type, serverUrl, newTheme]);
 
-    useAndroidHardwareBackHandler(componentId, setThemePreference);
+    const onAndroidBack = () => {
+        setThemePreference();
+        close();
+    };
+
+    useAndroidHardwareBackHandler(componentId, onAndroidBack);
 
     return (
         <SettingContainer testID='theme_display_settings'>
             <ThemeTiles
                 allowedThemeKeys={allowedThemeKeys}
-                onThemeChange={setThemePreference}
-                selectedTheme={initialTheme}
+                onThemeChange={setNewTheme}
+                selectedTheme={theme.type}
             />
-            {theme.type === 'custom' && (
+            {initialTheme.type === 'custom' && (
                 <CustomTheme
                     setTheme={setThemePreference}
-                    displayTheme={initialTheme}
+                    displayTheme={initialTheme.type}
                 />
             )}
         </SettingContainer>

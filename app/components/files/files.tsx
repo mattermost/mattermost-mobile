@@ -43,6 +43,9 @@ const styles = StyleSheet.create({
     failed: {
         opacity: 0.5,
     },
+    marginTop: {
+        marginTop: 10,
+    },
 });
 
 const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, location, postId, publicLinkEnabled}: FilesProps) => {
@@ -86,7 +89,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
             }
             return (
                 <View
-                    style={container}
+                    style={[container, styles.marginTop]}
                     key={file.id}
                 >
                     <File
