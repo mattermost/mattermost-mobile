@@ -13,7 +13,7 @@
     "@types/tough-cookie": "4.0.3",
     "@types/uuid": "9.0.4",
     "aws-sdk": "2.1462.0",
-    "axios": "1.5.0",
+    "axios": "1.6.0",
     "axios-cookiejar-support": "4.0.7",
     "babel-jest": "29.7.0",
     "babel-plugin-module-resolver": "5.0.0",
