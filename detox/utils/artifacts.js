@@ -6,9 +6,9 @@
 const fs = require('fs');
 const path = require('path');
 
+const {S3} = require('@aws-sdk/client-s3');
+const {Upload} = require('@aws-sdk/lib-storage');
 const async = require('async');
-const { Upload } = require('@aws-sdk/lib-storage');
-const { S3 } = require('@aws-sdk/client-s3');
 const mime = require('mime-types');
 const readdir = require('recursive-readdir');
 
@@ -30,7 +30,7 @@ const platform = IOS === 'true' ? 'ios' : 'android';
 const s3 = new S3({
     credentials: {
         accessKeyId: DETOX_AWS_ACCESS_KEY_ID,
-        secretAccessKey: DETOX_AWS_SECRET_ACCESS_KEY
+        secretAccessKey: DETOX_AWS_SECRET_ACCESS_KEY,
     },
 });
 
