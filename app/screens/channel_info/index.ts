@@ -117,6 +117,10 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         distinctUntilChanged(),
     );
 
+    const isConvertGMFeatureAvailable = observeConfigValue(database, 'Version').pipe(
+        switchMap((version) => of$(isMinimumServerVersion(version || '', 9, 1))),
+    );
+
     return {
         type,
         canEnableDisableCalls,
@@ -124,6 +128,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         canManageMembers,
         canManageSettings,
         isGuestUser,
+        isConvertGMFeatureAvailable,
     };
 });
 
