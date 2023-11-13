@@ -200,6 +200,8 @@
   "last_users_message.first": "{firstUser} i ",
   "last_users_message.others": "{numOthers} drugih ",
   "login.email": "E-mail",
+  "login.forgot": "Ne sjećaš se lozinke?",
+  "login.ldapUsername": "AD/LDAP korisničko ime",
   "login.or": "ili",
   "login.password": "Lozinka",
   "login.signIn": "Prijavi se",
