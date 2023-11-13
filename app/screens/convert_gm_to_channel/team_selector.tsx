@@ -39,7 +39,7 @@ export const TeamSelector = ({commonTeams, onSelectTeam, selectedTeamId}: Props)
     const placeholder = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.placeholder', defaultMessage: 'Select a Team'});
 
     useEffect(() => {
-        if (selectedTeamId) {
+        if (selectedTeamId && !selectedTeam) {
             const team = commonTeams.find((t) => t.id === selectedTeamId);
             setSelectedTeam(team);
         }

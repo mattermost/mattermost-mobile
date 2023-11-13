@@ -3,15 +3,16 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {convertGroupMessageToPrivateChannel, switchToChannelById} from '@actions/remote/channel';
+import {isErrorWithMessage} from '@app/utils/errors';
+import {preventDoubleTap} from '@app/utils/tap';
+import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {logError} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
-import Button from '@components/button';
 
 import {ChannelNameInput} from '../channel_name_input';
 import MessageBox from '../message_box/message_box';
@@ -19,7 +20,7 @@ import {TeamSelector} from '../team_selector';
 
 import {NoCommonTeamForm} from './no_common_teams_form';
 
-const getStyleFromTheme = makeStyleSheetFromTheme(() => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             paddingVertical: 24,
@@ -27,6 +28,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme(() => {
             display: 'flex',
             flexDirection: 'column',
             gap: 24,
+        },
+        errorMessage: {
+            color: theme.dndIndicator,
         },
     };
 });
@@ -53,6 +57,7 @@ export const ConvertGMToChannelForm = ({
 
     const [selectedTeam, setSelectedTeam] = useState<Team>();
     const [newChannelName, setNewChannelName] = useState<string>('');
+    const [errorMessage, setErrorMessage] = useState<string>('Something went wrong. Failed to convert Group Message to Private Channel');
 
     const submitButtonEnabled = selectedTeam && newChannelName.trim();
 
@@ -66,26 +71,32 @@ export const ConvertGMToChannelForm = ({
         if (commonTeams.length > 0) {
             setSelectedTeam(commonTeams[0]);
         }
-    }, [commonTeams]);
+    }, []);
 
-    const handleOnPress = useCallback(async () => {
+    const handleOnPress = useCallback(preventDoubleTap(async () => {
         if (!submitButtonEnabled) {
             return;
         }
 
         const {updatedChannel, error} = await convertGroupMessageToPrivateChannel(serverUrl, channelId, selectedTeam.id, newChannelName);
-
         if (error) {
-            logError(error);
+            if (isErrorWithMessage(error)) {
+                setErrorMessage(error.message);
+            } else {
+                setErrorMessage(formatMessage({id: 'channel_info.convert_gm_to_channel.conversion_error', defaultMessage: 'Something went wrong. Failed to convert Group Message to Private Channel.'}));
+            }
+
             return;
         }
 
         if (!updatedChannel) {
+            setErrorMessage(formatMessage({id: 'channel_info.convert_gm_to_channel.conversion_error', defaultMessage: 'Something went wrong. Failed to convert Group Message to Private Channel.'}));
             return;
         }
 
-        await switchToChannelById(serverUrl, updatedChannel.id, selectedTeam.id);
-    }, [selectedTeam, newChannelName, submitButtonEnabled]);
+        setErrorMessage('');
+        switchToChannelById(serverUrl, updatedChannel.id, selectedTeam.id);
+    }), [selectedTeam, newChannelName, submitButtonEnabled]);
 
     const messageBoxHeader = intl.formatMessage({
         id: 'channel_info.convert_gm_to_channel.warning.header',
@@ -130,6 +141,12 @@ export const ConvertGMToChannelForm = ({
                 buttonType={submitButtonEnabled ? 'destructive' : 'disabled'}
                 size='lg'
             />
+            {
+                errorMessage &&
+                <Text style={styles.errorMessage}>
+                    {errorMessage}
+                </Text>
+            }
         </View>
     );
 };

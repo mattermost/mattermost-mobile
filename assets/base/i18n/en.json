@@ -1099,6 +1099,7 @@
   "channel_into.convert_gm_to_channel.team_selector.label": "Team",
   "channel_into.convert_gm_to_channel.team_selector.placeholder": "Select a Team",
   "channel_info.convert_gm_to_channel.button_text": "Convert to Private Channel",
+  "channel_info.convert_gm_to_channel.conversion_error": "Something went wrong. Failed to convert Group Message to Private Channel.",
   "channel_info.convert_gm_to_channel.team_selector_list.title": "Select Team",
   "generic.back": "Back"
 }

@@ -5,11 +5,12 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, type ViewStyle} from 'react-native';
 
+import {preventDoubleTap} from '@app/utils/tap';
 import Button from '@components/button';
 import {useTheme} from '@context/theme';
 import {popTopScreen} from '@screens/navigation';
 
-import MessageBox from '../message_box';
+import MessageBox from '../message_box/message_box';
 
 type Props = {
     containerStyles: ViewStyle;
@@ -31,9 +32,9 @@ export const NoCommonTeamForm = ({
         defaultMessage: 'Group Message cannot be converted to a channel because members are not a part of the same team. Add all members to a single team to convert this group message to a channel.',
     });
 
-    const handleOnPress = useCallback(() => {
+    const handleOnPress = useCallback(preventDoubleTap(() => {
         popTopScreen();
-    }, []);
+    }), []);
 
     const buttonText = formatMessage({
         id: 'generic.back',

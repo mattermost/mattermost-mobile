@@ -85,8 +85,6 @@ const getDangerStylesFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const getStyleFromTheme = (theme: Theme, kind: MessageBoxTypes | undefined) => {
-    const baseStyles = getBaseStyles(theme);
-
     let kindStyles;
     switch (kind) {
         case 'danger': {
@@ -100,7 +98,6 @@ const getStyleFromTheme = (theme: Theme, kind: MessageBoxTypes | undefined) => {
     }
 
     return {
-        ...baseStyles,
         ...kindStyles,
     };
 };
@@ -111,25 +108,25 @@ const MessageBox = ({
     type,
 }: Props) => {
     const theme = useTheme();
-    const styles = getBaseStyles(theme);
-    const foo = getStyleFromTheme(theme, type);
+    const baseStyle = getBaseStyles(theme);
+    const kindStyle = getStyleFromTheme(theme, type);
 
     return (
-        <View style={[styles.container, foo.container]}>
-            <View style={styles.iconContainer}>
+        <View style={[baseStyle.container, kindStyle.container]}>
+            <View style={baseStyle.iconContainer}>
                 <CompassIcon
                     name='exclamation-thick'
-                    style={[styles.icon, foo.icon]}
+                    style={[baseStyle.icon, kindStyle.icon]}
                 />
             </View>
-            <View style={styles.textContainer}>
+            <View style={baseStyle.textContainer}>
                 <View>
-                    <Text style={[styles.heading, foo.heading]}>
+                    <Text style={baseStyle.heading}>
                         {header}
                     </Text>
                 </View>
                 <View>
-                    <Text style={[styles.body, foo.body]}>
+                    <Text style={baseStyle.body}>
                         {body}
                     </Text>
                 </View>

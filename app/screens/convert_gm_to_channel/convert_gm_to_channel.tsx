@@ -10,6 +10,8 @@ import {useServerUrl} from '@context/server';
 import ConvertGMToChannelForm from './convert_gm_to_channel_form';
 import {Loader} from './loader';
 
+import type UserProfile from '../user_profile/user_profile';
+
 type Props = {
     channelId: string;
     currentUserId?: string;
@@ -30,20 +32,48 @@ const ConvertGMToChannel = ({
     const serverUrl = useServerUrl();
     const mounted = useRef(false);
 
+    const loadingAnimationTimeoutRef = useRef<NodeJS.Timeout>();
+
     useEffect(() => {
-        setTimeout(() => setLoadingAnimationTimeout(true), loadingIndicatorTimeout);
+        loadingAnimationTimeoutRef.current = setTimeout(() => setLoadingAnimationTimeout(true), loadingIndicatorTimeout);
         async function work() {
             const {teams} = await getGroupMessageMembersCommonTeams(serverUrl, channelId);
-            if (!teams) {
+            if (!teams || !mounted.current) {
                 return;
             }
-
             setCommonTeams(teams);
             setCommonTeamsFetched(true);
         }
 
         work();
+
+        return () => {
+            if (loadingAnimationTimeoutRef.current) {
+                clearTimeout(loadingAnimationTimeoutRef.current);
+            }
+        };
     }, []);
+
+    const matchUserProfiles = (users: UserProfile[], members: ChannelMembership[]) => {
+        // Gotta make sure we use profiles that are in members.
+        // See comment in fetchChannelMemberships for more details.
+
+        const usersById: {[id: string]: UserProfile} = {};
+        users.forEach((profile) => {
+            if (profile.id !== currentUserId) {
+                usersById[profile.id] = profile;
+            }
+        });
+
+        const filteredUsers: UserProfile[] = [];
+        members.forEach((member) => {
+            if (usersById[member.user_id]) {
+                filteredUsers.push(usersById[member.user_id]);
+            }
+        });
+
+        return filteredUsers;
+    };
 
     useEffect(() => {
         mounted.current = true;
@@ -55,26 +85,7 @@ const ConvertGMToChannel = ({
             }
 
             if (users.length) {
-                // Gotta make sure we use profiles that are in members.
-                // See comment in fetchChannelMemberships for more details.
-
-                const usersById: {[id: string]: UserProfile} = {};
-                // eslint-disable-next-line max-nested-callbacks
-                users.forEach((profile) => {
-                    if (profile.id !== currentUserId) {
-                        usersById[profile.id] = profile;
-                    }
-                });
-
-                // eslint-disable-next-line max-nested-callbacks
-                const filteredUsers: UserProfile[] = [];
-                // eslint-disable-next-line max-nested-callbacks
-                members.forEach((member) => {
-                    if (usersById[member.user_id]) {
-                        filteredUsers.push(usersById[member.user_id]);
-                    }
-                });
-                setProfiles(filteredUsers);
+                setProfiles(matchUserProfiles(users, members));
             }
 
             setChannelMembersFetched(true);
