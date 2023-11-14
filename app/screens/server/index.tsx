@@ -17,6 +17,7 @@ import AppVersion from '@components/app_version';
 import {Screens, Launch} from '@constants';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
+import {getServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
 import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
@@ -244,7 +245,8 @@ const Server = ({
         }
 
         const server = await getServerByDisplayName(displayName);
-        if (server && server.lastActiveAt > 0) {
+        const credentials = await getServerCredentials(serverUrl);
+        if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
             setDisplayNameError(formatMessage({
                 id: 'mobile.server_name.exists',
@@ -330,9 +332,10 @@ const Server = ({
         }
 
         const server = await getServerByIdentifier(data.config.DiagnosticId);
+        const credentials = await getServerCredentials(serverUrl);
         setConnecting(false);
 
-        if (server && server.lastActiveAt > 0) {
+        if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
             setUrlError(formatMessage({
                 id: 'mobile.server_identifier.exists',
