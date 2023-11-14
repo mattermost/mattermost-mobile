@@ -2,13 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useRef, useState} from 'react';
+import {useIntl} from 'react-intl';
 
 import {fetchChannelMemberships, getGroupMessageMembersCommonTeams} from '@actions/remote/channel';
+import Loading from '@app/components/loading';
+import {useTheme} from '@app/context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
+import {typography} from '@app/utils/typography';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {useServerUrl} from '@context/server';
 
 import ConvertGMToChannelForm from './convert_gm_to_channel_form';
-import {Loader} from './loader';
+
+// import {Loader} from './loader';
 
 import type UserProfile from '../user_profile/user_profile';
 
@@ -19,10 +25,30 @@ type Props = {
 
 const loadingIndicatorTimeout = 1200;
 
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        loadingContainer: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+            gap: 24,
+        },
+        text: {
+            color: changeOpacity(theme.centerChannelColor, 0.56),
+            ...typography('Body', 300, 'SemiBold'),
+        },
+    };
+});
+
 const ConvertGMToChannel = ({
     channelId,
     currentUserId,
 }: Props) => {
+    const theme = useTheme();
+    const style = getStyleFromTheme(theme);
+
+    const {formatMessage} = useIntl();
+
     const [loadingAnimationTimeout, setLoadingAnimationTimeout] = useState(false);
     const [commonTeamsFetched, setCommonTeamsFetched] = useState(false);
     const [channelMembersFetched, setChannelMembersFetched] = useState(false);
@@ -97,8 +123,17 @@ const ConvertGMToChannel = ({
     }, []);
 
     const showLoader = !loadingAnimationTimeout || !commonTeamsFetched || !channelMembersFetched;
+
     if (showLoader) {
-        return (<Loader/>);
+        return (
+            <Loading
+                containerStyle={style.loadingContainer}
+                size='large'
+                color={theme.buttonBg}
+                footerText={formatMessage({id: 'channel_info.convert_gm_to_channel.loading.footer', defaultMessage: 'Fetching details...'})}
+                footerTextStyles={style.text}
+            />
+        );
     }
 
     return (

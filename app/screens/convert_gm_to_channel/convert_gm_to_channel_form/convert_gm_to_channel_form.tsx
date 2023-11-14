@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -57,7 +57,7 @@ export const ConvertGMToChannelForm = ({
 
     const [selectedTeam, setSelectedTeam] = useState<Team>();
     const [newChannelName, setNewChannelName] = useState<string>('');
-    const [errorMessage, setErrorMessage] = useState<string>('Something went wrong. Failed to convert Group Message to Private Channel');
+    const [errorMessage, setErrorMessage] = useState<string>('');
 
     const submitButtonEnabled = selectedTeam && newChannelName.trim();
 
@@ -103,7 +103,7 @@ export const ConvertGMToChannelForm = ({
         defaultMessage: 'Conversation history will be visible to any channel members',
     });
 
-    const userDisplayNames = profiles.map((profile) => displayUsername(profile, locale, teammateNameDisplay));
+    const userDisplayNames = useMemo(() => profiles.map((profile) => displayUsername(profile, locale, teammateNameDisplay)), [profiles]);
     const defaultUserDisplayNames = intl.formatMessage({id: 'channel_info.convert_gm_to_channel.warning.body.yourself', defaultMessage: 'yourself'});
     const memberNames = profiles.length > 0 ? intl.formatList(userDisplayNames) : defaultUserDisplayNames;
     const messageBoxBody = intl.formatMessage({

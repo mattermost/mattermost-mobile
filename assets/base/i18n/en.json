@@ -1101,5 +1101,6 @@
   "channel_info.convert_gm_to_channel.button_text": "Convert to Private Channel",
   "channel_info.convert_gm_to_channel.conversion_error": "Something went wrong. Failed to convert Group Message to Private Channel.",
   "channel_info.convert_gm_to_channel.team_selector_list.title": "Select Team",
+  "channel_info.convert_gm_to_channel.loading.footer": "Fetching details...",
   "generic.back": "Back"
 }

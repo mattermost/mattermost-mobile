@@ -74,7 +74,6 @@ export function observePermissionForTeam(database: Database, team: TeamModel | u
 
             if (myTeam) {
                 rolesArray.push(...myTeam.roles.split(' '));
-                logDebug(`myTeam.roles: ${myTeam.roles}`);
             }
 
             return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']).pipe(

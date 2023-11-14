@@ -16,7 +16,7 @@ type Props = {
 const ConvertToChannelLabel = ({channelId}: Props) => {
     const {formatMessage} = useIntl();
 
-    const goToConvertToPrivateChannl = preventDoubleTap(async () => {
+    const goToConvertToPrivateChannel = preventDoubleTap(async () => {
         await dismissBottomSheet();
         const title = formatMessage({id: 'channel_info.convert_gm_to_channel.screen_title', defaultMessage: 'Convert to Private Channel'});
         goToScreen(Screens.CONVERT_GM_TO_CHANNEL, title, {channelId});
@@ -24,7 +24,7 @@ const ConvertToChannelLabel = ({channelId}: Props) => {
 
     return (
         <OptionItem
-            action={goToConvertToPrivateChannl}
+            action={goToConvertToPrivateChannel}
             icon='lock-outline'
             label={formatMessage({id: 'channel_info.convert_gm_to_channel', defaultMessage: 'Convert to a Private Channel'})}
             type='default'

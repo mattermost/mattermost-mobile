@@ -5,10 +5,10 @@ import React, {useCallback} from 'react';
 import {ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {General} from '@app/constants';
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ChannelActions from '@components/channel_actions';
 import ConvertToChannelLabel from '@components/channel_actions/convert_to_channel/convert_to_channel_label';
+import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
