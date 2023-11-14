@@ -5,28 +5,32 @@ import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
-import {t} from '@app/i18n';
-import {alertErrorWithFallback} from '@app/utils/draft';
 import OptionItem from '@components/option_item';
+import {
+    CHANNEL_AUTO_FOLLOW_THREADS_FALSE,
+    CHANNEL_AUTO_FOLLOW_THREADS_TRUE,
+} from '@constants/channel';
 import {useServerUrl} from '@context/server';
+import {t} from '@i18n';
+import {alertErrorWithFallback} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
     channelId: string;
-    ignoring: boolean;
+    followedStatus: boolean;
     displayName: string;
-}
+};
 
-const IgnoreMentions = ({channelId, ignoring, displayName}: Props) => {
-    const [ignored, setIgnored] = useState(ignoring);
+const AutoFollowThreads = ({channelId, displayName, followedStatus}: Props) => {
+    const [autoFollow, setAutoFollow] = useState(followedStatus);
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const toggleIgnore = preventDoubleTap(async () => {
+    const toggleFollow = preventDoubleTap(async () => {
         const props: Partial<ChannelNotifyProps> = {
-            ignore_channel_mentions: ignoring ? 'off' : 'on',
+            channel_auto_follow_threads: followedStatus ? CHANNEL_AUTO_FOLLOW_THREADS_FALSE : CHANNEL_AUTO_FOLLOW_THREADS_TRUE,
         };
-        setIgnored((v) => !v);
+        setAutoFollow((v) => !v);
         const result = await updateChannelNotifyProps(serverUrl, channelId, props);
         if (result?.error) {
             alertErrorWithFallback(
@@ -38,20 +42,20 @@ const IgnoreMentions = ({channelId, ignoring, displayName}: Props) => {
                 },
                 {displayName},
             );
-            setIgnored((v) => !v);
+            setAutoFollow((v) => !v);
         }
     });
 
     return (
         <OptionItem
-            action={toggleIgnore}
-            label={intl.formatMessage({id: 'channel_info.ignore_mentions', defaultMessage: 'Ignore @channel, @here, @all'})}
-            icon='at'
+            action={toggleFollow}
+            label={intl.formatMessage({id: 'channel_info.channel_auto_follow_threads', defaultMessage: 'Follow all threads in this channel'})}
+            icon='message-plus-outline'
             type='toggle'
-            selected={ignored}
-            testID={`channel_info.options.ignore_mentions.option.toggled.${ignored}`}
+            selected={autoFollow}
+            testID={`channel_info.options.channel_auto_follow_threads.option.toggled.${autoFollow}`}
         />
     );
 };
 
-export default IgnoreMentions;
+export default AutoFollowThreads;
