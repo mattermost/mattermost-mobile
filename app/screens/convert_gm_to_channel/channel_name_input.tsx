@@ -7,7 +7,6 @@ import {useIntl} from 'react-intl';
 import FloatingTextInput from '@components/floating_text_input_label';
 import {Channel} from '@constants';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
 import {getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 type Props = {
@@ -19,8 +18,8 @@ export const ChannelNameInput = ({error, onChange}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
 
-    const labelDisplayName = formatMessage({id: t('channel_modal.name'), defaultMessage: 'Name'});
-    const placeholder = formatMessage({id: t('"channel_modal.name": "Name",'), defaultMessage: 'Channel Name'});
+    const labelDisplayName = formatMessage({id: 'channel_modal.name', defaultMessage: 'Name'});
+    const placeholder = formatMessage({id: 'channel_modal.name', defaultMessage: 'Channel Name'});
 
     return (
         <FloatingTextInput

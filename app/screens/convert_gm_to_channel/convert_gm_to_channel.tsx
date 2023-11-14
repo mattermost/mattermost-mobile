@@ -14,10 +14,6 @@ import {useServerUrl} from '@context/server';
 
 import ConvertGMToChannelForm from './convert_gm_to_channel_form';
 
-// import {Loader} from './loader';
-
-import type UserProfile from '../user_profile/user_profile';
-
 type Props = {
     channelId: string;
     currentUserId?: string;
