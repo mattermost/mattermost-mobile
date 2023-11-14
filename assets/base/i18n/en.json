@@ -112,6 +112,7 @@
   "channel_info.archive_description.cannot_view_archived": "This will archive the channel from the team and remove it from the user interface. Archived channels can be unarchived if needed again.\n\nAre you sure you wish to archive the {term} {name}?",
   "channel_info.archive_failed": "An error occurred trying to archive the channel {displayName}",
   "channel_info.archive_title": "Archive {term}",
+  "channel_info.channel_auto_follow_threads": "Follow all threads in this channel",
   "channel_info.channel_files": "Files",
   "channel_info.close": "Close",
   "channel_info.close_dm": "Close direct message",
