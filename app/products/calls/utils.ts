@@ -5,6 +5,7 @@ import {makeCallsBaseAndBadgeRGB, rgbToCSS} from '@mattermost/calls';
 import {Alert} from 'react-native';
 
 import {Calls, Post} from '@constants';
+import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
@@ -153,6 +154,10 @@ export function makeCallsTheme(theme: Theme): CallsTheme {
     return newTheme;
 }
 
-export function isCallsStartedMessage(message = '') {
-    return (message === 'You\'ve been invited to a call' || callsMessageRegex.test(message));
+export function isCallsStartedMessage(payload?: NotificationData) {
+    if (payload?.sub_type === NOTIFICATION_SUB_TYPE.CALLS) {
+        return true;
+    }
+
+    return (payload?.message === 'You\'ve been invited to a call' || callsMessageRegex.test(payload?.message || ''));
 }

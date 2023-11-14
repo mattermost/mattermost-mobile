@@ -9,6 +9,9 @@ export const NOTIFICATION_TYPE = {
     CLEAR: 'clear',
     MESSAGE: 'message',
     SESSION: 'session',
+};
+
+export const NOTIFICATION_SUB_TYPE = {
     CALLS: 'calls',
 };
 

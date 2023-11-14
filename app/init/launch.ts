@@ -24,7 +24,7 @@ import {convertToNotificationData} from '@utils/notification';
 
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
-const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, PushNotification.NOTIFICATION_TYPE.SESSION, PushNotification.NOTIFICATION_TYPE.CALLS];
+const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, PushNotification.NOTIFICATION_TYPE.SESSION];
 
 export const initialLaunch = async () => {
     const deepLinkUrl = await Linking.getInitialURL();
