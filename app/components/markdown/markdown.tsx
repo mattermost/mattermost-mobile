@@ -29,11 +29,11 @@ import MarkdownTable from './markdown_table';
 import MarkdownTableCell, {type MarkdownTableCellProps} from './markdown_table_cell';
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow, {type MarkdownTableRowProps} from './markdown_table_row';
-import {addListItemIndices, combineTextNodes, highlightMentions, highlightSearchPatterns, parseTaskLists, pullOutImages} from './transform';
+import {addListItemIndices, combineTextNodes, highlightMentions, highlightWithoutNotification, highlightSearchPatterns, parseTaskLists, pullOutImages} from './transform';
 
 import type {
     MarkdownAtMentionRenderer, MarkdownBaseRenderer, MarkdownBlockStyles, MarkdownChannelMentionRenderer,
-    MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownLatexRenderer, MarkdownTextStyles, SearchPattern, UserMentionKey,
+    MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownLatexRenderer, MarkdownTextStyles, SearchPattern, UserMentionKey, HighlightWithoutNotificationKey,
 } from '@typings/global/markdown';
 
 type MarkdownProps = {
@@ -55,6 +55,7 @@ type MarkdownProps = {
     disableTables?: boolean;
     enableLatex: boolean;
     enableInlineLatex: boolean;
+    highlightKeys?: HighlightWithoutNotificationKey[];
     imagesMetadata?: Record<string, PostImage | undefined>;
     isEdited?: boolean;
     isReplyPost?: boolean;
@@ -607,7 +608,6 @@ const Markdown = ({
     if (searchPatterns) {
         ast = highlightSearchPatterns(ast, searchPatterns);
     }
-
     if (isEdited) {
         const editIndicatorNode = new Node('edited_indicator');
         if (ast.lastChild && ['heading', 'paragraph'].includes(ast.lastChild.type)) {

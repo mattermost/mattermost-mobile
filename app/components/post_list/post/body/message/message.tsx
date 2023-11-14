@@ -66,6 +66,10 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
         return currentUser?.mentionKeys;
     }, [currentUser]);
 
+    const highlightKeys = useMemo(() => {
+        return currentUser?.highlightKeys;
+    }, [currentUser]);
+
     const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);
     const onPress = () => setOpen(!open);
 
@@ -97,6 +101,7 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
                             textStyles={textStyles}
                             value={post.message}
                             mentionKeys={mentionKeys}
+                            highlightKeys={highlightKeys}
                             searchPatterns={searchPatterns}
                             theme={theme}
                         />
