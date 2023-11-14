@@ -159,5 +159,7 @@ export function isCallsStartedMessage(payload?: NotificationData) {
         return true;
     }
 
+    // MM-55506 - Remove once we can assume MM servers will be >= 9.3.0, mobile will be >= 2.11.0,
+    // calls will be >= 0.21.0, and push proxy will be >= 5.27.0
     return (payload?.message === 'You\'ve been invited to a call' || callsMessageRegex.test(payload?.message || ''));
 }
