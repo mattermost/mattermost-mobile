@@ -7,10 +7,10 @@ import {Text, View} from 'react-native';
 
 import {convertGroupMessageToPrivateChannel, switchToChannelById} from '@actions/remote/channel';
 import {isErrorWithMessage} from '@app/utils/errors';
-import {preventDoubleTap} from '@app/utils/tap';
 import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
@@ -59,13 +59,9 @@ export const ConvertGMToChannelForm = ({
     const [newChannelName, setNewChannelName] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string>('');
 
-    const submitButtonEnabled = selectedTeam && newChannelName.trim();
-
     const {formatMessage} = useIntl();
-    const confirmButtonText = formatMessage({
-        id: 'channel_info.convert_gm_to_channel.button_text',
-        defaultMessage: 'Convert to Private Channel',
-    });
+    const userDisplayNames = useMemo(() => profiles.map((profile) => displayUsername(profile, locale, teammateNameDisplay)), [profiles]);
+    const submitButtonEnabled = selectedTeam && newChannelName.trim();
 
     useEffect(() => {
         if (commonTeams.length > 0) {
@@ -98,12 +94,22 @@ export const ConvertGMToChannelForm = ({
         switchToChannelById(serverUrl, updatedChannel.id, selectedTeam.id);
     }), [selectedTeam, newChannelName, submitButtonEnabled]);
 
+    if (commonTeams.length === 0) {
+        return (
+            <NoCommonTeamForm containerStyles={styles.container}/>
+        );
+    }
+
     const messageBoxHeader = intl.formatMessage({
         id: 'channel_info.convert_gm_to_channel.warning.header',
         defaultMessage: 'Conversation history will be visible to any channel members',
     });
 
-    const userDisplayNames = useMemo(() => profiles.map((profile) => displayUsername(profile, locale, teammateNameDisplay)), [profiles]);
+    const confirmButtonText = formatMessage({
+        id: 'channel_info.convert_gm_to_channel.button_text',
+        defaultMessage: 'Convert to Private Channel',
+    });
+
     const defaultUserDisplayNames = intl.formatMessage({id: 'channel_info.convert_gm_to_channel.warning.body.yourself', defaultMessage: 'yourself'});
     const memberNames = profiles.length > 0 ? intl.formatList(userDisplayNames) : defaultUserDisplayNames;
     const messageBoxBody = intl.formatMessage({
@@ -112,12 +118,6 @@ export const ConvertGMToChannelForm = ({
     }, {
         memberNames,
     });
-
-    if (commonTeams.length === 0) {
-        return (
-            <NoCommonTeamForm containerStyles={styles.container}/>
-        );
-    }
 
     return (
         <View style={styles.container}>

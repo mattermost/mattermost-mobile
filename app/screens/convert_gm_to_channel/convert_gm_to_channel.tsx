@@ -70,9 +70,7 @@ const ConvertGMToChannel = ({
         work();
 
         return () => {
-            if (loadingAnimationTimeoutRef.current) {
-                clearTimeout(loadingAnimationTimeoutRef.current);
-            }
+            clearTimeout(loadingAnimationTimeoutRef.current);
         };
     }, []);
 

@@ -4,11 +4,11 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import {preventDoubleTap} from '@app/utils/tap';
 import SearchBar from '@components/search';
 import TeamList from '@components/team_list';
 import {useTheme} from '@context/theme';
 import {popTopScreen} from '@screens/navigation';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 const styles = StyleSheet.create({

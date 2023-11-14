@@ -38,13 +38,6 @@ export const TeamSelector = ({commonTeams, onSelectTeam, selectedTeamId}: Props)
     const label = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.label', defaultMessage: 'Team'});
     const placeholder = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.placeholder', defaultMessage: 'Select a Team'});
 
-    useEffect(() => {
-        if (selectedTeamId && !selectedTeam) {
-            const team = commonTeams.find((t) => t.id === selectedTeamId);
-            setSelectedTeam(team);
-        }
-    }, [selectedTeamId]);
-
     const selectTeam = useCallback((teamId: string) => {
         const team = commonTeams.find((t) => t.id === teamId);
         if (team) {
@@ -53,12 +46,18 @@ export const TeamSelector = ({commonTeams, onSelectTeam, selectedTeamId}: Props)
         }
     }, []);
 
-    const goToTeamSelectorList = preventDoubleTap(async () => {
+    const goToTeamSelectorList = useCallback(preventDoubleTap(async () => {
         await dismissBottomSheet();
-
         const title = formatMessage({id: 'channel_info.convert_gm_to_channel.team_selector_list.title', defaultMessage: 'Select Team'});
         goToScreen(Screens.TEAM_SELECTOR_LIST, title, {teams: commonTeams, selectTeam, selectedTeamId});
-    });
+    }), [commonTeams, selectTeam, selectedTeamId]);
+
+    useEffect(() => {
+        if (selectedTeamId && !selectedTeam) {
+            const team = commonTeams.find((t) => t.id === selectedTeamId);
+            setSelectedTeam(team);
+        }
+    }, [selectedTeamId]);
 
     return (
         <OptionItem
