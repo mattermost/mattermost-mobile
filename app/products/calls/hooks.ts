@@ -8,12 +8,6 @@ import {useIntl} from 'react-intl';
 import {Alert, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
-import {
-    CALL_ERROR_BAR_HEIGHT,
-    CALL_NOTIFICATION_BAR_HEIGHT,
-    CURRENT_CALL_BAR_HEIGHT,
-    JOIN_CALL_BAR_HEIGHT,
-} from '@app/constants/view';
 import {initializeVoiceTrack} from '@calls/actions/calls';
 import {
     setMicPermissionsGranted,
@@ -24,6 +18,12 @@ import {
     useIncomingCalls,
 } from '@calls/state';
 import {errorAlert} from '@calls/utils';
+import {
+    CALL_ERROR_BAR_HEIGHT,
+    CALL_NOTIFICATION_BAR_HEIGHT,
+    CURRENT_CALL_BAR_HEIGHT,
+    JOIN_CALL_BAR_HEIGHT,
+} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useAppState} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';

@@ -165,7 +165,7 @@
     "jest-cli": "29.6.2",
     "jetifier": "2.0.0",
     "metro-react-native-babel-preset": "0.77.0",
-    "mmjstool": "github:mattermost/mattermost-utilities#e65ab00f22628cbdee736fd2e4f192f07225e82d",
+    "mmjstool": "github:mattermost/mattermost-utilities#83b1b311972b8f5e750aae4019457a40abb5aa44",
     "mock-async-storage": "2.2.0",
     "nock": "13.3.2",
     "patch-package": "8.0.0",
