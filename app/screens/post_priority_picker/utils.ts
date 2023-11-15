@@ -29,7 +29,7 @@ export const labels = {
         },
         description: {
             id: t('post_priority.picker.label.request_ack.description'),
-            defaultMessage: 'An acknowledgement button will appear with your message',
+            defaultMessage: 'An acknowledgement button will appear with your message An acknowledgement button will appear with your message An acknowledgement button will appear with your message',
         },
     },
     persistentNotifications: {

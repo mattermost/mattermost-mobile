@@ -32,14 +32,14 @@ export const NoCommonTeamForm = ({
         defaultMessage: 'Group Message cannot be converted to a channel because members are not a part of the same team. Add all members to a single team to convert this group message to a channel.',
     });
 
-    const handleOnPress = useCallback(preventDoubleTap(() => {
-        popTopScreen();
-    }), []);
-
     const buttonText = formatMessage({
         id: 'generic.back',
         defaultMessage: 'back',
     });
+
+    const handleOnPress = useCallback(preventDoubleTap(() => {
+        popTopScreen();
+    }), []);
 
     return (
         <View style={containerStyles}>
