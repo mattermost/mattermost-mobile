@@ -6,12 +6,14 @@ import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import {convertGroupMessageToPrivateChannel, switchToChannelById} from '@actions/remote/channel';
-import {isErrorWithMessage} from '@app/utils/errors';
+import Loading from '@app/components/loading';
+import {logError} from '@app/utils/log';
 import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {isErrorWithMessage} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
 import {ChannelNameInput} from '../channel_name_input';
@@ -31,6 +33,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         errorMessage: {
             color: theme.dndIndicator,
+        },
+        loadingContainerStyle: {
+            marginRight: 10,
+            padding: 0,
+            top: -2,
         },
     };
 });
@@ -58,10 +65,11 @@ export const ConvertGMToChannelForm = ({
     const [selectedTeam, setSelectedTeam] = useState<Team>();
     const [newChannelName, setNewChannelName] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string>('');
+    const [conversionInProgress, setConversionInProgress] = useState(false); // LOL revert this default value back to false
 
     const {formatMessage} = useIntl();
     const userDisplayNames = useMemo(() => profiles.map((profile) => displayUsername(profile, locale, teammateNameDisplay)), [profiles]);
-    const submitButtonEnabled = selectedTeam && newChannelName.trim();
+    const submitButtonEnabled = !conversionInProgress && selectedTeam && newChannelName.trim();
 
     useEffect(() => {
         if (commonTeams.length > 0) {
@@ -74,6 +82,8 @@ export const ConvertGMToChannelForm = ({
             return;
         }
 
+        setConversionInProgress(true);
+
         const {updatedChannel, error} = await convertGroupMessageToPrivateChannel(serverUrl, channelId, selectedTeam.id, newChannelName);
         if (error) {
             if (isErrorWithMessage(error)) {
@@ -82,16 +92,20 @@ export const ConvertGMToChannelForm = ({
                 setErrorMessage(formatMessage({id: 'channel_info.convert_gm_to_channel.conversion_error', defaultMessage: 'Something went wrong. Failed to convert Group Message to Private Channel.'}));
             }
 
+            setConversionInProgress(false);
             return;
         }
 
         if (!updatedChannel) {
+            logError('No updated channel received from server when converting GM to private channel');
             setErrorMessage(formatMessage({id: 'channel_info.convert_gm_to_channel.conversion_error', defaultMessage: 'Something went wrong. Failed to convert Group Message to Private Channel.'}));
+            setConversionInProgress(false);
             return;
         }
 
         setErrorMessage('');
         switchToChannelById(serverUrl, updatedChannel.id, selectedTeam.id);
+        setConversionInProgress(false);
     }), [selectedTeam, newChannelName, submitButtonEnabled]);
 
     if (commonTeams.length === 0) {
@@ -105,11 +119,17 @@ export const ConvertGMToChannelForm = ({
         defaultMessage: 'Conversation history will be visible to any channel members',
     });
 
-    const confirmButtonText = formatMessage({
+    const textConvert = formatMessage({
         id: 'channel_info.convert_gm_to_channel.button_text',
         defaultMessage: 'Convert to Private Channel',
     });
 
+    const textConverting = formatMessage({
+        id: 'channel_info.convert_gm_to_channel.button_text_converting',
+        defaultMessage: 'Converting...',
+    });
+
+    const confirmButtonText = conversionInProgress ? textConverting : textConvert;
     const defaultUserDisplayNames = intl.formatMessage({id: 'channel_info.convert_gm_to_channel.warning.body.yourself', defaultMessage: 'yourself'});
     const memberNames = profiles.length > 0 ? intl.formatList(userDisplayNames) : defaultUserDisplayNames;
     const messageBoxBody = intl.formatMessage({
@@ -118,6 +138,13 @@ export const ConvertGMToChannelForm = ({
     }, {
         memberNames,
     });
+
+    const buttonIcon = conversionInProgress ? (
+        <Loading
+            containerStyle={styles.loadingContainerStyle}
+            color={changeOpacity(theme.centerChannelColor, 0.32)}
+        />
+    ) : null;
 
     return (
         <View style={styles.container}>
@@ -140,6 +167,7 @@ export const ConvertGMToChannelForm = ({
                 theme={theme}
                 buttonType={submitButtonEnabled ? 'destructive' : 'disabled'}
                 size='lg'
+                iconComponent={buttonIcon}
             />
             {
                 errorMessage &&

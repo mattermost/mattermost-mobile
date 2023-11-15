@@ -21,6 +21,27 @@ type Props = {
 
 const loadingIndicatorTimeout = 1200;
 
+const matchUserProfiles = (users: UserProfile[], members: ChannelMembership[], currentUserId: string) => {
+    // Gotta make sure we use profiles that are in members.
+    // See comment in fetchChannelMemberships for more details.
+
+    const usersById: {[id: string]: UserProfile} = {};
+    users.forEach((profile) => {
+        if (profile.id !== currentUserId) {
+            usersById[profile.id] = profile;
+        }
+    });
+
+    const filteredUsers: UserProfile[] = [];
+    members.forEach((member) => {
+        if (usersById[member.user_id]) {
+            filteredUsers.push(usersById[member.user_id]);
+        }
+    });
+
+    return filteredUsers;
+};
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         loadingContainer: {
@@ -74,47 +95,28 @@ const ConvertGMToChannel = ({
         };
     }, []);
 
-    const matchUserProfiles = (users: UserProfile[], members: ChannelMembership[]) => {
-        // Gotta make sure we use profiles that are in members.
-        // See comment in fetchChannelMemberships for more details.
-
-        const usersById: {[id: string]: UserProfile} = {};
-        users.forEach((profile) => {
-            if (profile.id !== currentUserId) {
-                usersById[profile.id] = profile;
-            }
-        });
-
-        const filteredUsers: UserProfile[] = [];
-        members.forEach((member) => {
-            if (usersById[member.user_id]) {
-                filteredUsers.push(usersById[member.user_id]);
-            }
-        });
-
-        return filteredUsers;
-    };
-
     useEffect(() => {
         mounted.current = true;
-
-        const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT};
-        fetchChannelMemberships(serverUrl, channelId, options, true).then(({users, members}) => {
-            if (!mounted.current) {
-                return;
-            }
-
-            if (users.length) {
-                setProfiles(matchUserProfiles(users, members));
-            }
-
-            setChannelMembersFetched(true);
-        });
 
         return () => {
             mounted.current = false;
         };
     }, []);
+
+    useEffect(() => {
+        const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT};
+        fetchChannelMemberships(serverUrl, channelId, options, true).then(({users, members}) => {
+            if (!mounted.current || !currentUserId) {
+                return;
+            }
+
+            if (users.length) {
+                setProfiles(matchUserProfiles(users, members, currentUserId));
+            }
+
+            setChannelMembersFetched(true);
+        });
+    }, [serverUrl, channelId, currentUserId]);
 
     const showLoader = !loadingAnimationTimeout || !commonTeamsFetched || !channelMembersFetched;
 

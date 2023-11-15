@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import OptionItem from '@components/option_item';
@@ -16,11 +16,11 @@ type Props = {
 const ConvertToChannelLabel = ({channelId}: Props) => {
     const {formatMessage} = useIntl();
 
-    const goToConvertToPrivateChannel = preventDoubleTap(async () => {
+    const goToConvertToPrivateChannel = useCallback(preventDoubleTap(async () => {
         await dismissBottomSheet();
         const title = formatMessage({id: 'channel_info.convert_gm_to_channel.screen_title', defaultMessage: 'Convert to Private Channel'});
         goToScreen(Screens.CONVERT_GM_TO_CHANNEL, title, {channelId});
-    });
+    }), [channelId]);
 
     return (
         <OptionItem

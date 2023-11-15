@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
@@ -19,6 +19,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             borderBottomWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
+        labelContainerStyle: {
+            flexShrink: 0,
+        },
     };
 });
 
@@ -33,15 +36,14 @@ export const TeamSelector = ({commonTeams, onSelectTeam, selectedTeamId}: Props)
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
 
-    const [selectedTeam, setSelectedTeam] = useState<Team>();
-
     const label = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.label', defaultMessage: 'Team'});
     const placeholder = formatMessage({id: 'channel_into.convert_gm_to_channel.team_selector.placeholder', defaultMessage: 'Select a Team'});
+
+    const selectedTeam = useMemo(() => commonTeams.find((t) => t.id === selectedTeamId), [commonTeams, selectedTeamId]);
 
     const selectTeam = useCallback((teamId: string) => {
         const team = commonTeams.find((t) => t.id === teamId);
         if (team) {
-            setSelectedTeam(team);
             onSelectTeam(team);
         }
     }, []);
@@ -52,13 +54,6 @@ export const TeamSelector = ({commonTeams, onSelectTeam, selectedTeamId}: Props)
         goToScreen(Screens.TEAM_SELECTOR_LIST, title, {teams: commonTeams, selectTeam, selectedTeamId});
     }), [commonTeams, selectTeam, selectedTeamId]);
 
-    useEffect(() => {
-        if (selectedTeamId && !selectedTeam) {
-            const team = commonTeams.find((t) => t.id === selectedTeamId);
-            setSelectedTeam(team);
-        }
-    }, [selectedTeamId]);
-
     return (
         <OptionItem
             action={goToTeamSelectorList}
@@ -66,7 +61,7 @@ export const TeamSelector = ({commonTeams, onSelectTeam, selectedTeamId}: Props)
             label={label}
             type={Platform.select({ios: 'arrow', default: 'default'})}
             info={selectedTeam ? selectedTeam.display_name : placeholder}
-            labelContainerStyle={{flexShrink: 0}}
+            labelContainerStyle={styles.labelContainerStyle}
         />
     );
 };

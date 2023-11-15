@@ -1309,7 +1309,7 @@ export const convertGroupMessageToPrivateChannel = async (serverUrl: string, cha
 
         return {updatedChannel};
     } catch (error) {
-        logDebug('error on convertGroupMessageToPrivateChannel', getFullErrorMessage(error));
+        logError('error on convertGroupMessageToPrivateChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     } finally {

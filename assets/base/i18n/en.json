@@ -1,5 +1,4 @@
 {
-  "\"channel_modal.name\": \"Name\",": "",
   "about.date": "Build Date:",
   "about.enterpriseEditione1": "Enterprise Edition",
   "about.enterpriseEditionLearn": "Learn more about Enterprise Edition at ",
@@ -122,6 +121,7 @@
   "channel_info.convert_failed": "We were unable to convert {displayName} to a private channel.",
   "channel_info.convert_gm_to_channel": "Convert to a Private Channel",
   "channel_info.convert_gm_to_channel.button_text": "Convert to Private Channel",
+  "channel_info.convert_gm_to_channel.button_text_converting": "Converting...",
   "channel_info.convert_gm_to_channel.conversion_error": "Something went wrong. Failed to convert Group Message to Private Channel.",
   "channel_info.convert_gm_to_channel.loading.footer": "Fetching details...",
   "channel_info.convert_gm_to_channel.screen_title": "Convert to Private Channel",

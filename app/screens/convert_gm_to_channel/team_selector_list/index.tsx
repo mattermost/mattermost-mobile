@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {debounce} from 'lodash';
 import React, {useCallback, useMemo, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
@@ -27,18 +28,16 @@ type Props = {
 
 const TeamSelectorList = ({teams, selectTeam}: Props) => {
     const theme = useTheme();
-
+    const [filteredTeams, setFilteredTeam] = useState(teams);
     const color = useMemo(() => changeOpacity(theme.centerChannelColor, 0.72), [theme]);
 
-    const [filteredTeams, setFilteredTeam] = useState(teams);
-
-    const handleOnChangeSearchText = useCallback((searchTerm: string) => {
+    const handleOnChangeSearchText = useCallback(debounce((searchTerm: string) => {
         if (searchTerm === '') {
             setFilteredTeam(teams);
         } else {
             setFilteredTeam(teams.filter((team) => team.display_name.includes(searchTerm) || team.name.includes(searchTerm)));
         }
-    }, [teams]);
+    }, 200), [teams]);
 
     const handleOnPress = useCallback(preventDoubleTap((teamId: string) => {
         selectTeam(teamId);
