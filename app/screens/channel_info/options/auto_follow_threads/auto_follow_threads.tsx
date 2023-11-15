@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
@@ -11,7 +11,6 @@ import {
     CHANNEL_AUTO_FOLLOW_THREADS_TRUE,
 } from '@constants/channel';
 import {useServerUrl} from '@context/server';
-import {t} from '@i18n';
 import {alertErrorWithFallback} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -36,10 +35,10 @@ const AutoFollowThreads = ({channelId, displayName, followedStatus}: Props) => {
             alertErrorWithFallback(
                 intl,
                 result.error,
-                {
-                    id: t('channel_info.channel_auto_follow_threads_failed'),
+                defineMessage({
+                    id: 'channel_info.channel_auto_follow_threads_failed',
                     defaultMessage: 'An error occurred trying to auto follow all threads in channel {displayName}',
-                },
+                }),
                 {displayName},
             );
             setAutoFollow((v) => !v);
