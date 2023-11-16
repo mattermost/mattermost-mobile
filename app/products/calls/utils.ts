@@ -5,6 +5,7 @@ import {makeCallsBaseAndBadgeRGB, rgbToCSS} from '@mattermost/calls';
 import {Alert} from 'react-native';
 
 import {Calls, Post} from '@constants';
+import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
@@ -14,6 +15,8 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 import type {RTCIceServer} from 'react-native-webrtc';
+
+const callsMessageRegex = /^\u200b.* is inviting you to a call$/;
 
 export function sortSessions(locale: string, teammateNameDisplay: string, sessions?: Dictionary<CallSession>, presenterID?: string): CallSession[] {
     if (!sessions) {
@@ -189,3 +192,13 @@ export function fillUserModels(sessions: Dictionary<CallSession>, models: UserMo
     return sessions;
 }
 
+
+export function isCallsStartedMessage(payload?: NotificationData) {
+    if (payload?.sub_type === NOTIFICATION_SUB_TYPE.CALLS) {
+        return true;
+    }
+
+    // MM-55506 - Remove once we can assume MM servers will be >= 9.3.0, mobile will be >= 2.11.0,
+    // calls will be >= 0.21.0, and push proxy will be >= 5.27.0
+    return (payload?.message === 'You\'ve been invited to a call' || callsMessageRegex.test(payload?.message || ''));
+}
