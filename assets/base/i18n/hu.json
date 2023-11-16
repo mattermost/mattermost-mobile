@@ -110,7 +110,7 @@
   "channel_info.archive": "Csatorna archiválása",
   "channel_info.archive_description.can_view_archived": "Ez archiválja a csatornát a csapattól. A csatorna tartalma továbbra is elérhető marad a csatornatagok számára.\n\nBiztos, hogy archiválni szeretné a {term} {name} csatornát?",
   "channel_info.archive_description.cannot_view_archived": "",
-  "channel_info.archive_failed": "",
+  "channel_info.archive_failed": "Hiba történt a {displayName} csatorna archiválása közben",
   "channel_info.archive_title": "{term} archiválása",
   "channel_info.channel_auto_follow_threads": "Kövesse az összes üzenetszálat ezen a csatornán",
   "channel_info.channel_files": "Fájlok",
