@@ -8,6 +8,7 @@ import {General} from '@constants';
 import {isTypeDMorGM} from '@utils/channel';
 
 import AddMembers from './add_members';
+import AutoFollowThreads from './auto_follow_threads';
 import ChannelFiles from './channel_files';
 import EditChannel from './edit_channel';
 import IgnoreMentions from './ignore_mentions';
@@ -20,6 +21,7 @@ type Props = {
     type?: ChannelType;
     callsEnabled: boolean;
     canManageMembers: boolean;
+    isCRTEnabled: boolean;
     canManageSettings: boolean;
 }
 
@@ -28,15 +30,21 @@ const Options = ({
     type,
     callsEnabled,
     canManageMembers,
+    isCRTEnabled,
     canManageSettings,
 }: Props) => {
     const isDMorGM = isTypeDMorGM(type);
 
     return (
         <>
-            {type !== General.DM_CHANNEL &&
-                <IgnoreMentions channelId={channelId}/>
-            }
+            {type !== General.DM_CHANNEL && (
+                <>
+                    {isCRTEnabled && (
+                        <AutoFollowThreads channelId={channelId}/>
+                    )}
+                    <IgnoreMentions channelId={channelId}/>
+                </>
+            )}
             <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
             <ChannelFiles channelId={channelId}/>

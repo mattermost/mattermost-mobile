@@ -21,10 +21,10 @@ export const KEYBOARD_TRACKING_OFFSET = 72;
 export const SEARCH_INPUT_HEIGHT = Platform.select({android: 40, default: 36});
 export const SEARCH_INPUT_MARGIN = 5;
 
-export const JOIN_CALL_BAR_HEIGHT = 38;
-export const CURRENT_CALL_BAR_HEIGHT = 68;
-export const CALL_ERROR_BAR_HEIGHT = 62;
-export const CALL_NOTIFICATION_BAR_HEIGHT = 60;
+export const JOIN_CALL_BAR_HEIGHT = 40;
+export const CURRENT_CALL_BAR_HEIGHT = 60;
+export const CALL_ERROR_BAR_HEIGHT = 52;
+export const CALL_NOTIFICATION_BAR_HEIGHT = 40;
 
 export const ANNOUNCEMENT_BAR_HEIGHT = 40;
 

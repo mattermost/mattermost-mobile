@@ -5,7 +5,9 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {View, Pressable} from 'react-native';
 
+import {dismissIncomingCall} from '@calls/actions';
 import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
+import {removeIncomingCall} from '@calls/state';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
@@ -21,6 +23,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     channelId: string;
+    callId: string;
     serverUrl: string;
     participants: UserModel[];
     channelCallStartTime: number;
@@ -29,38 +32,57 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     outerContainer: {
-        backgroundColor: theme.sidebarBg,
+        borderRadius: 8,
+        height: JOIN_CALL_BAR_HEIGHT,
+        marginRight: 8,
+        marginLeft: 8,
+        shadowColor: theme.centerChannelColor,
+        shadowOffset: {
+            width: 0,
+            height: 6,
+        },
+        shadowOpacity: 0.12,
+        shadowRadius: 4,
+        elevation: 4,
     },
     innerContainer: {
         flexDirection: 'row',
-        backgroundColor: '#339970', // intentionally not themed
         width: '100%',
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
-        paddingTop: 5,
-        paddingBottom: 5,
-        paddingLeft: 12,
-        paddingRight: 12,
-        justifyContent: 'center',
+        height: '100%',
+        borderRadius: 8,
+        paddingTop: 4,
+        paddingRight: 4,
+        paddingBottom: 4,
+        paddingLeft: 8,
         alignItems: 'center',
-        height: JOIN_CALL_BAR_HEIGHT,
+        backgroundColor: '#339970', // intentionally not themed
     },
     innerContainerRestricted: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.48),
     },
-    joinCallIcon: {
-        color: theme.buttonColor,
-        marginRight: 7,
+    iconContainer: {
+        top: 1,
+        width: 32,
     },
-    joinCall: {
+    icon: {
+        fontSize: 18,
+        color: theme.buttonColor,
+        alignSelf: 'center',
+    },
+    textContainer: {
+        flexDirection: 'row',
+        flex: 1,
+        marginLeft: 8,
+    },
+    joinCallText: {
         color: theme.buttonColor,
         ...typography('Body', 100, 'SemiBold'),
     },
-    started: {
+    startedText: {
         flex: 1,
-        color: changeOpacity(theme.buttonColor, 0.84),
+        color: changeOpacity(theme.buttonColor, 0.80),
         ...typography(),
-        marginLeft: 10,
+        marginLeft: 6,
     },
     limitReached: {
         flex: 1,
@@ -70,18 +92,47 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.84),
         fontWeight: '400',
     },
-    headerText: {
-        color: changeOpacity(theme.centerChannelColor, 0.56),
-        fontSize: 12,
-        fontWeight: '600',
-        paddingHorizontal: 16,
-        paddingVertical: 0,
-        top: 16,
+    avatarStyle: {
+        borderColor: '#339970',
+        backgroundColor: '#339970',
+    },
+    overflowContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: (24 / 2),
+        borderColor: '#339970',
+        backgroundColor: '#339970',
+        borderRadius: 24 / 2,
+        marginTop: 1,
+    },
+    overflowItem: {
+        width: 26,
+        height: 26,
+        borderRadius: 26 / 2,
+        borderWidth: 1,
+        borderColor: '#339970',
+        backgroundColor: changeOpacity(theme.buttonColor, 0.24),
+    },
+    overflowText: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: changeOpacity(theme.buttonColor, 0.80),
+        textAlign: 'center',
+    },
+    dismissContainer: {
+        alignItems: 'center',
+        width: 32,
+        height: '100%',
+        justifyContent: 'center',
+    },
+    closeIcon: {
+        color: changeOpacity(theme.buttonColor, 0.56),
     },
 }));
 
 const JoinCallBanner = ({
     channelId,
+    callId,
     serverUrl,
     participants,
     channelCallStartTime,
@@ -100,42 +151,61 @@ const JoinCallBanner = ({
         leaveAndJoinWithAlert(intl, serverUrl, channelId);
     };
 
+    const onDismissPress = () => {
+        removeIncomingCall(serverUrl, callId, channelId);
+        dismissIncomingCall(serverUrl, channelId);
+    };
+
     return (
         <View style={style.outerContainer}>
             <Pressable
                 style={[style.innerContainer, isLimitRestricted && style.innerContainerRestricted]}
                 onPress={joinHandler}
             >
-                <CompassIcon
-                    name='phone-in-talk'
-                    size={18}
-                    style={style.joinCallIcon}
-                />
-                <FormattedText
-                    id={'mobile.calls_join_call'}
-                    defaultMessage={'Join call'}
-                    style={style.joinCall}
-                />
-                {isLimitRestricted ? (
+                <View style={style.iconContainer}>
+                    <CompassIcon
+                        name='phone-in-talk'
+                        style={style.icon}
+                    />
+                </View>
+                <View style={style.textContainer}>
                     <FormattedText
-                        id={'mobile.calls_limit_reached'}
-                        defaultMessage={'Participant limit reached'}
-                        style={style.limitReached}
+                        id={'mobile.calls_join_call'}
+                        defaultMessage={'Join call'}
+                        style={style.joinCallText}
                     />
-                ) : (
-                    <FormattedRelativeTime
-                        value={channelCallStartTime}
-                        updateIntervalInSeconds={1}
-                        style={style.started}
-                    />
-                )}
+                    {isLimitRestricted ? (
+                        <FormattedText
+                            id={'mobile.calls_limit_reached'}
+                            defaultMessage={'Participant limit reached'}
+                            style={style.limitReached}
+                        />
+                    ) : (
+                        <FormattedRelativeTime
+                            value={channelCallStartTime}
+                            updateIntervalInSeconds={1}
+                            style={style.startedText}
+                        />
+                    )}
+                </View>
                 <UserAvatarsStack
                     channelId={channelId}
                     location={Screens.CHANNEL}
                     users={participants}
-                    breakAt={1}
-                    noBorder={true}
+                    breakAt={3}
+                    avatarStyle={style.avatarStyle}
+                    overflowContainerStyle={style.overflowContainer}
+                    overflowItemStyle={style.overflowItem}
+                    overflowTextStyle={style.overflowText}
                 />
+                <Pressable onPress={onDismissPress}>
+                    <View style={style.dismissContainer}>
+                        <CompassIcon
+                            name='close'
+                            style={[style.icon, style.closeIcon]}
+                        />
+                    </View>
+                </Pressable>
             </Pressable>
         </View>
     );

@@ -39,7 +39,8 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
     return {
         wrapper: {
-            margin: 8,
+            marginRight: 8,
+            marginLeft: 8,
             backgroundColor: theme.callsBg,
             borderRadius: 8,
         },
@@ -55,27 +56,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
             paddingTop: 8,
             paddingRight: 12,
             paddingBottom: 8,
-            paddingLeft: 12,
-            height: CURRENT_CALL_BAR_HEIGHT - 10,
+            paddingLeft: 6,
+            height: CURRENT_CALL_BAR_HEIGHT,
+        },
+        avatarOutline: {
+            height: 40,
+            width: 40,
+            borderRadius: 20,
+            backgroundColor: changeOpacity(theme.buttonColor, 0.08),
+            padding: 2,
+            marginRight: 6,
+            marginLeft: 6,
         },
         pressable: {
             zIndex: 10,
         },
-        profilePic: {
-            marginTop: 4,
-            marginRight: Platform.select({android: -8}),
-            marginLeft: Platform.select({android: -8}),
-        },
-        userInfo: {
+        text: {
             flex: 1,
+            flexDirection: 'column',
             paddingLeft: 6,
+            gap: 2,
         },
         speakingUser: {
             color: theme.buttonColor,
-            ...typography('Body', 200, 'SemiBold'),
+            ...typography('Body', 100, 'SemiBold'),
         },
         speakingPostfix: {
-            ...typography('Body', 200, 'Regular'),
+            ...typography('Body', 100, 'Regular'),
         },
         channelAndTime: {
             color: changeOpacity(theme.buttonColor, 0.56),
@@ -224,15 +231,15 @@ const CurrentCallBar = ({
                     style={style.container}
                     onPress={goToCallScreen}
                 >
-                    <View style={style.profilePic}>
+                    <View style={[!speaker && style.avatarOutline]}>
                         <CallAvatar
                             userModel={userModelsDict[speaker || '']}
-                            volume={speaker ? 0.5 : 0}
+                            speaking={Boolean(speaker)}
                             serverUrl={currentCall?.serverUrl || ''}
-                            size={32}
+                            size={speaker ? 40 : 24}
                         />
                     </View>
-                    <View style={style.userInfo}>
+                    <View style={style.text}>
                         {talkingMessage}
                         <Text style={style.channelAndTime}>
                             {`~${displayName}`}
@@ -274,13 +281,13 @@ const CurrentCallBar = ({
             {micPermissionsError &&
                 <MessageBar
                     type={Calls.MessageBarType.Microphone}
-                    onPress={setMicPermissionsErrorDismissed}
+                    onDismiss={setMicPermissionsErrorDismissed}
                 />
             }
             {currentCall?.callQualityAlert &&
                 <MessageBar
                     type={Calls.MessageBarType.CallQuality}
-                    onPress={setCallQualityAlertDismissed}
+                    onDismiss={setCallQualityAlertDismissed}
                 />
             }
         </>
