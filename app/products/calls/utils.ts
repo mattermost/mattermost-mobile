@@ -192,7 +192,6 @@ export function fillUserModels(sessions: Dictionary<CallSession>, models: UserMo
     return sessions;
 }
 
-
 export function isCallsStartedMessage(payload?: NotificationData) {
     if (payload?.sub_type === NOTIFICATION_SUB_TYPE.CALLS) {
         return true;
