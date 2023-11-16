@@ -8,9 +8,10 @@ import {Text, View} from 'react-native';
 import {convertGroupMessageToPrivateChannel, switchToChannelById} from '@actions/remote/channel';
 import Button from '@components/button';
 import Loading from '@components/loading';
+import {ServerErrors} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {isErrorWithMessage} from '@utils/errors';
+import {isErrorWithMessage, isServerError} from '@utils/errors';
 import {logError} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -65,6 +66,7 @@ export const ConvertGMToChannelForm = ({
     const [selectedTeam, setSelectedTeam] = useState<Team>(commonTeams[0]);
     const [newChannelName, setNewChannelName] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string>('');
+    const [channelNameErrorMessage, setChannelNameErrorMessage] = useState<string>('');
     const [conversionInProgress, setConversionInProgress] = useState(false);
 
     const userDisplayNames = useMemo(() => profiles.map((profile) => displayUsername(profile, locale, teammateNameDisplay)), [profiles, teammateNameDisplay, locale]);
@@ -79,7 +81,9 @@ export const ConvertGMToChannelForm = ({
 
         const {updatedChannel, error} = await convertGroupMessageToPrivateChannel(serverUrl, channelId, selectedTeam.id, newChannelName);
         if (error) {
-            if (isErrorWithMessage(error)) {
+            if (isServerError(error) && error.server_error_id === ServerErrors.DUPLICATE_CHANNEL_NAME && isErrorWithMessage(error)) {
+                setChannelNameErrorMessage(error.message);
+            } else if (isErrorWithMessage(error)) {
                 setErrorMessage(error.message);
             } else {
                 setErrorMessage(formatMessage({id: 'channel_info.convert_gm_to_channel.conversion_error', defaultMessage: 'Something went wrong. Failed to convert Group Message to Private Channel.'}));
@@ -153,7 +157,10 @@ export const ConvertGMToChannelForm = ({
                     selectedTeamId={selectedTeam?.id}
                 />
             }
-            <ChannelNameInput onChange={setNewChannelName}/>
+            <ChannelNameInput
+                onChange={setNewChannelName}
+                error={channelNameErrorMessage}
+            />
             <Button
                 onPress={handleOnPress}
                 text={confirmButtonText}
