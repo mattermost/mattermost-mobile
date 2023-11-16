@@ -113,6 +113,7 @@
   "channel_info.archive_failed": "Wystąpił błąd podczas próby archiwizacji kanału {displayName}",
   "channel_info.archive_title": "Archiwizuj {term}",
   "channel_info.channel_auto_follow_threads": "Śledź wszystkie wątki w tym kanale",
+  "channel_info.channel_auto_follow_threads_failed": "Wystąpił błąd podczas próby automatycznego śledzenia wszystkich wątków na kanale {displayName}",
   "channel_info.channel_files": "Pliki",
   "channel_info.close": "Zamknij",
   "channel_info.close_dm": "Zamknij wiadomość bezpośrednią",
