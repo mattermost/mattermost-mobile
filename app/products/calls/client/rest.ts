@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {ApiResp} from '@calls/types/calls';
+import type {ApiResp, CallsVersion} from '@calls/types/calls';
 import type {CallChannelState, CallRecordingState, CallsConfig} from '@mattermost/calls/lib/types';
 import type {RTCIceServer} from 'react-native-webrtc';
 
@@ -10,6 +10,7 @@ export interface ClientCallsMix {
     getCalls: () => Promise<CallChannelState[]>;
     getCallForChannel: (channelId: string) => Promise<CallChannelState>;
     getCallsConfig: () => Promise<CallsConfig>;
+    getVersion: () => Promise<CallsVersion>;
     enableChannelCalls: (channelId: string, enable: boolean) => Promise<CallChannelState>;
     endCall: (channelId: string) => Promise<ApiResp>;
     genTURNCredentials: () => Promise<RTCIceServer[]>;
@@ -50,6 +51,17 @@ const ClientCalls = (superclass: any) => class extends superclass {
             `${this.getCallsRoute()}/config`,
             {method: 'get'},
         ) as CallsConfig;
+    };
+
+    getVersion = async () => {
+        try {
+            return this.doFetch(
+                `${this.getCallsRoute()}/version`,
+                {method: 'get'},
+            );
+        } catch (e) {
+            return {};
+        }
     };
 
     enableChannelCalls = async (channelId: string, enable: boolean) => {

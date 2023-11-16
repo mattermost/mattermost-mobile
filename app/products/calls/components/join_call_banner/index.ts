@@ -10,7 +10,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 import JoinCallBanner from '@calls/components/join_call_banner/join_call_banner';
 import {observeIsCallLimitRestricted} from '@calls/observers';
 import {observeCallsState} from '@calls/state';
-import {idsAreEqual} from '@calls/utils';
+import {idsAreEqual, userIds} from '@calls/utils';
 import {queryUsersById} from '@queries/servers/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -28,10 +28,10 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
     const callsState = observeCallsState(serverUrl).pipe(
         switchMap((state) => of$(state.calls[channelId])),
     );
-    const participants = callsState.pipe(
-        distinctUntilChanged((prev, curr) => prev?.participants === curr?.participants), // Did the participants object ref change?
-        switchMap((call) => (call ? of$(Object.keys(call.participants)) : of$([]))),
-        distinctUntilChanged((prev, curr) => idsAreEqual(prev, curr)), // Continue only if we have a different set of participant ids
+    const userModels = callsState.pipe(
+        distinctUntilChanged((prev, curr) => prev?.sessions === curr?.sessions), // Did the userModels object ref change?
+        switchMap((call) => (call ? of$(userIds(Object.values(call.sessions))) : of$([]))),
+        distinctUntilChanged((prev, curr) => idsAreEqual(prev, curr)), // Continue only if we have a different set of participant userIds
         switchMap((ids) => (ids.length > 0 ? queryUsersById(database, ids).observeWithColumns(['last_picture_update']) : of$([]))),
     );
     const channelCallStartTime = callsState.pipe(
@@ -47,7 +47,7 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
 
     return {
         callId,
-        participants,
+        userModels,
         channelCallStartTime,
         limitRestrictedInfo: observeIsCallLimitRestricted(database, serverUrl, channelId),
     };
