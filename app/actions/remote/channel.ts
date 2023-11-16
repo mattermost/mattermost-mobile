@@ -1264,7 +1264,7 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
     }
 };
 
-export const getGroupMessageMembersCommonTeams = async (serverUrl: string, channelId: string) => {
+export const fetchGroupMessageMembersCommonTeams = async (serverUrl: string, channelId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const teams = await client.getGroupMessageMembersCommonTeams(channelId);

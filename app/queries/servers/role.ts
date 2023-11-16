@@ -68,6 +68,7 @@ export function observePermissionForTeam(database: Database, team: TeamModel | u
     return observeMyTeam(database, team.id).pipe(
         switchMap((myTeam) => {
             const rolesArray = [...user.roles.split(' ')];
+
             if (myTeam) {
                 rolesArray.push(...myTeam.roles.split(' '));
             }

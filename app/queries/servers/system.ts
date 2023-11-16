@@ -5,11 +5,11 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {logError} from '@app/utils/log';
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import {isMinimumServerVersion} from '@utils/helpers';
+import {logError} from '@utils/log';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ConfigModel from '@typings/database/models/servers/config';

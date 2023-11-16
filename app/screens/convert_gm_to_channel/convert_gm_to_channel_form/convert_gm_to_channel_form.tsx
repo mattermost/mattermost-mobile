@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import {convertGroupMessageToPrivateChannel, switchToChannelById} from '@actions/remote/channel';
-import Loading from '@app/components/loading';
-import {logError} from '@app/utils/log';
 import Button from '@components/button';
+import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {isErrorWithMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
@@ -60,22 +60,15 @@ export const ConvertGMToChannelForm = ({
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const serverUrl = useServerUrl();
-    const intl = useIntl();
+    const {formatList, formatMessage} = useIntl();
 
-    const [selectedTeam, setSelectedTeam] = useState<Team>();
+    const [selectedTeam, setSelectedTeam] = useState<Team>(commonTeams[0]);
     const [newChannelName, setNewChannelName] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string>('');
-    const [conversionInProgress, setConversionInProgress] = useState(false); // LOL revert this default value back to false
+    const [conversionInProgress, setConversionInProgress] = useState(false);
 
-    const {formatMessage} = useIntl();
-    const userDisplayNames = useMemo(() => profiles.map((profile) => displayUsername(profile, locale, teammateNameDisplay)), [profiles]);
+    const userDisplayNames = useMemo(() => profiles.map((profile) => displayUsername(profile, locale, teammateNameDisplay)), [profiles, teammateNameDisplay, locale]);
     const submitButtonEnabled = !conversionInProgress && selectedTeam && newChannelName.trim();
-
-    useEffect(() => {
-        if (commonTeams.length > 0) {
-            setSelectedTeam(commonTeams[0]);
-        }
-    }, []);
 
     const handleOnPress = useCallback(preventDoubleTap(async () => {
         if (!submitButtonEnabled) {
@@ -114,7 +107,7 @@ export const ConvertGMToChannelForm = ({
         );
     }
 
-    const messageBoxHeader = intl.formatMessage({
+    const messageBoxHeader = formatMessage({
         id: 'channel_info.convert_gm_to_channel.warning.header',
         defaultMessage: 'Conversation history will be visible to any channel members',
     });
@@ -130,9 +123,9 @@ export const ConvertGMToChannelForm = ({
     });
 
     const confirmButtonText = conversionInProgress ? textConverting : textConvert;
-    const defaultUserDisplayNames = intl.formatMessage({id: 'channel_info.convert_gm_to_channel.warning.body.yourself', defaultMessage: 'yourself'});
-    const memberNames = profiles.length > 0 ? intl.formatList(userDisplayNames) : defaultUserDisplayNames;
-    const messageBoxBody = intl.formatMessage({
+    const defaultUserDisplayNames = formatMessage({id: 'channel_info.convert_gm_to_channel.warning.body.yourself', defaultMessage: 'yourself'});
+    const memberNames = profiles.length > 0 ? formatList(userDisplayNames) : defaultUserDisplayNames;
+    const messageBoxBody = formatMessage({
         id: 'channel_info.convert_gm_to_channel.warning.bodyXXXX',
         defaultMessage: 'You are about to convert the Group Message with {memberNames} to a Channel. This cannot be undone.',
     }, {

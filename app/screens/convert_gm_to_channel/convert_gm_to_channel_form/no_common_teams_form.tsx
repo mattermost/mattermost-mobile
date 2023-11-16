@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {View, type ViewStyle} from 'react-native';
 
@@ -15,6 +15,10 @@ import MessageBox from '../message_box/message_box';
 type Props = {
     containerStyles: ViewStyle;
 }
+
+const handleOnPress = preventDoubleTap(() => {
+    popTopScreen();
+});
 
 export const NoCommonTeamForm = ({
     containerStyles,
@@ -36,10 +40,6 @@ export const NoCommonTeamForm = ({
         id: 'generic.back',
         defaultMessage: 'back',
     });
-
-    const handleOnPress = useCallback(preventDoubleTap(() => {
-        popTopScreen();
-    }), []);
 
     return (
         <View style={containerStyles}>

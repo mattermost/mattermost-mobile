@@ -4,13 +4,13 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 
-import {fetchChannelMemberships, getGroupMessageMembersCommonTeams} from '@actions/remote/channel';
-import Loading from '@app/components/loading';
-import {useTheme} from '@app/context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import {typography} from '@app/utils/typography';
+import {fetchChannelMemberships, fetchGroupMessageMembersCommonTeams} from '@actions/remote/channel';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
+import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import ConvertGMToChannelForm from './convert_gm_to_channel_form';
 
@@ -54,6 +54,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             ...typography('Body', 300, 'SemiBold'),
         },
+        container: {
+            paddingVertical: 24,
+            paddingHorizontal: 20,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 24,
+        },
     };
 });
 
@@ -62,7 +69,7 @@ const ConvertGMToChannel = ({
     currentUserId,
 }: Props) => {
     const theme = useTheme();
-    const style = getStyleFromTheme(theme);
+    const styles = getStyleFromTheme(theme);
 
     const {formatMessage} = useIntl();
 
@@ -80,7 +87,7 @@ const ConvertGMToChannel = ({
     useEffect(() => {
         loadingAnimationTimeoutRef.current = setTimeout(() => setLoadingAnimationTimeout(true), loadingIndicatorTimeout);
         async function work() {
-            const {teams} = await getGroupMessageMembersCommonTeams(serverUrl, channelId);
+            const {teams} = await fetchGroupMessageMembersCommonTeams(serverUrl, channelId);
             if (!teams || !mounted.current) {
                 return;
             }
@@ -104,9 +111,13 @@ const ConvertGMToChannel = ({
     }, []);
 
     useEffect(() => {
+        if (!currentUserId) {
+            return;
+        }
+
         const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT};
         fetchChannelMemberships(serverUrl, channelId, options, true).then(({users, members}) => {
-            if (!mounted.current || !currentUserId) {
+            if (!mounted.current) {
                 return;
             }
 
@@ -123,11 +134,11 @@ const ConvertGMToChannel = ({
     if (showLoader) {
         return (
             <Loading
-                containerStyle={style.loadingContainer}
+                containerStyle={styles.loadingContainer}
                 size='large'
                 color={theme.buttonBg}
                 footerText={formatMessage({id: 'channel_info.convert_gm_to_channel.loading.footer', defaultMessage: 'Fetching details...'})}
-                footerTextStyles={style.text}
+                footerTextStyles={styles.text}
             />
         );
     }
