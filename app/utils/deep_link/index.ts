@@ -131,7 +131,7 @@ type ChannelPathParams = {
     postId?: string;
 };
 
-const CHANNEL_PATH = `/:subpath?/:teamName(${TEAM_NAME_PATH_PATTERN})/:path(channels|messages)/:identifier(${IDENTIFIER_PATH_PATTERN}|${ID_PATH_PATTERN})/:postId(${ID_PATH_PATTERN})?`;
+const CHANNEL_PATH = `/:subpath*/:teamName(${TEAM_NAME_PATH_PATTERN})/:path(channels|messages)/:identifier(${IDENTIFIER_PATH_PATTERN})/:postId(${ID_PATH_PATTERN})?`;
 export const matchChannelDeeplink = match<ChannelPathParams>(CHANNEL_PATH, matcherOpts);
 
 type PermalinkPathParams = {
@@ -140,16 +140,16 @@ type PermalinkPathParams = {
     teamName: string;
     postId: string;
 };
-const PERMALINK_PATH = `/:subpath?/:teamName(${TEAM_NAME_PATH_PATTERN})/pl/:postId(${ID_PATH_PATTERN})`;
+const PERMALINK_PATH = `/:subpath*/:teamName(${TEAM_NAME_PATH_PATTERN})/pl/:postId(${ID_PATH_PATTERN})`;
 export const matchPermalinkDeeplink = match<PermalinkPathParams>(PERMALINK_PATH, matcherOpts);
 
 const getServerUrl = (host: string, subpath?: string) => host + (subpath ? '/' + subpath : '');
 
 export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
     try {
-        const {host, pathname} = urlParse(decodeURIComponent(deepLinkUrl));
-        const channelMatch = matchChannelDeeplink(pathname);
+        const {host, pathname} = urlParse(deepLinkUrl);
 
+        const channelMatch = matchChannelDeeplink(pathname);
         if (channelMatch) {
             const {params: {subpath, teamName, path, identifier, postId}} = channelMatch;
             const serverUrl = getServerUrl(host, subpath);
@@ -175,7 +175,7 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
             return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl, teamName, postId}};
         }
 
-        const pluginMatch = match<{subpath?: string; id: string}>(`/:subpath?/plugins/:id(${PLUGIN_ID_PATH_PATTERN})`, matcherOpts)(pathname);
+        const pluginMatch = match<{subpath?: string; id: string}>(`/:subpath*/plugins/:id(${PLUGIN_ID_PATH_PATTERN})`, matcherOpts)(pathname);
         if (pluginMatch) {
             const {params: {subpath, id}} = pluginMatch;
             const serverUrl = getServerUrl(host, subpath);
