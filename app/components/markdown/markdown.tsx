@@ -134,7 +134,7 @@ const Markdown = ({
     disableCodeBlock, disableGallery, disableHashtags, disableHeading, disableTables,
     enableInlineLatex, enableLatex, maxNodes,
     imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutHeight, layoutWidth,
-    location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
+    location, mentionKeys, highlightKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
     textStyles = {}, theme, value = '', baseParagraphStyle, onLinkLongPress,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
@@ -579,6 +579,7 @@ const Markdown = ({
 
             mention_highlight: Renderer.forwardChildren,
             search_highlight: Renderer.forwardChildren,
+            highlight_without_notification: Renderer.forwardChildren,
             checkbox: renderCheckbox,
 
             editedIndicator: renderEditedIndicator,
@@ -604,6 +605,9 @@ const Markdown = ({
     ast = parseTaskLists(ast);
     if (mentionKeys) {
         ast = highlightMentions(ast, mentionKeys);
+    }
+    if (highlightKeys) {
+        ast = highlightWithoutNotification(ast, highlightKeys);
     }
     if (searchPatterns) {
         ast = highlightSearchPatterns(ast, searchPatterns);

@@ -5,7 +5,7 @@ import {Node, type NodeType} from 'commonmark';
 
 import {escapeRegex} from '@utils/markdown';
 
-import type {SearchPattern, UserMentionKey} from '@typings/global/markdown';
+import type {HighlightWithoutNotificationKey, SearchPattern, UserMentionKey} from '@typings/global/markdown';
 
 /* eslint-disable no-underscore-dangle */
 
@@ -172,6 +172,52 @@ export function mentionKeysToPatterns(mentionKeys: UserMentionKey[]) {
 
         return pattern;
     });
+}
+
+export function highlightWithoutNotification(ast: Node, highlightKeys: HighlightWithoutNotificationKey[]) {
+    const walker = ast.walker();
+
+    const patterns = highlightKeysToPatterns(highlightKeys);
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node = e.node;
+        if (node.type === 'text' && node.literal) {
+            for (const pattern of patterns) {
+                const {index, length} = getFirstMatch(node.literal, [pattern]);
+
+                if (index === -1) {
+                    continue;
+                }
+
+                const matchNode = highlightTextNode(node, index, index + length, 'highlight_without_notification');
+
+                // Resume processing on the next node after the match node which may include any remaining text
+                // that was part of this one
+                walker.resumeAt(matchNode, false);
+            }
+        }
+    }
+    return ast;
+}
+
+export function highlightKeysToPatterns(highlightKeys: HighlightWithoutNotificationKey[]) {
+    return highlightKeys.
+        filter((highlight) => highlight.key.trim() !== '').
+        sort((a, b) => b.key.length - a.key.length).
+        map(({key}) => {
+            if (cjkPattern.test(key)) {
+                // If the key contains Chinese, Japanese, Korean or Russian characters, don't mark word boundaries
+                return new RegExp(`${escapeRegex(key)}`, 'gi');
+            }
+
+            // If the key contains only English characters, mark word boundaries
+            return new RegExp(`\\b${escapeRegex(key)}(?=_*\\b)`, 'gi');
+        });
 }
 
 export function highlightSearchPatterns(ast: Node, searchPatterns: SearchPattern[]) {
