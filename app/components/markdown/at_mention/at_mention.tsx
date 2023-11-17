@@ -11,24 +11,20 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
-import {MM_TABLES} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import GroupModel from '@database/models/server/group';
-import UserModel from '@database/models/server/user';
+import {useMemoMentionedGroup, useMemoMentionedUser} from '@hooks/markdown';
 import {bottomSheet, dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {displayUsername, getUsersByUsername} from '@utils/user';
+import {displayUsername} from '@utils/user';
 
-import type {Database} from '@nozbe/watermelondb';
-import type GroupModelType from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
     channelId?: string;
     currentUserId: string;
-    database: Database;
     disableAtChannelMentionHighlight?: boolean;
     isSearchResult?: boolean;
     location: string;
@@ -43,8 +39,6 @@ type AtMentionProps = {
     groupMemberships: GroupMembershipModel[];
 }
 
-const {SERVER: {GROUP, USER}} = MM_TABLES;
-
 const style = StyleSheet.create({
     bottomSheet: {flex: 1},
 });
@@ -52,7 +46,6 @@ const style = StyleSheet.create({
 const AtMention = ({
     channelId,
     currentUserId,
-    database,
     disableAtChannelMentionHighlight,
     isSearchResult,
     location,
@@ -72,30 +65,14 @@ const AtMention = ({
     const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
 
-    const user = useMemo(() => {
-        const usersByUsername = getUsersByUsername(users);
-        let mn = mentionName.toLowerCase();
-
-        while (mn.length > 0) {
-            if (usersByUsername[mn]) {
-                return usersByUsername[mn];
-            }
-
-            // Repeatedly trim off trailing punctuation in case this is at the end of a sentence
-            if ((/[._-]$/).test(mn)) {
-                mn = mn.substring(0, mn.length - 1);
-            } else {
-                break;
-            }
-        }
-
-        // @ts-expect-error: The model constructor is hidden within WDB type definition
-        return new UserModel(database.get(USER), {username: ''});
-    }, [users, mentionName]);
+    const user = useMemoMentionedUser(users, mentionName);
 
     const userMentionKeys = useMemo(() => {
         if (mentionKeys) {
             return mentionKeys;
+        }
+        if (!user) {
+            return [];
         }
 
         if (user.id !== currentUserId) {
@@ -105,50 +82,21 @@ const AtMention = ({
         return user.mentionKeys;
     }, [currentUserId, mentionKeys, user]);
 
-    // Checks if the mention is a group
-    const group = useMemo(() => {
-        if (user?.username) {
-            return undefined;
-        }
-        const getGroupsByName = (gs: GroupModelType[]) => {
-            const groupsByName: Dictionary<GroupModelType> = {};
-
-            for (const g of gs) {
-                groupsByName[g.name] = g;
-            }
-
-            return groupsByName;
-        };
-
-        const groupsByName = getGroupsByName(groups);
-        let mn = mentionName.toLowerCase();
-
-        while (mn.length > 0) {
-            if (groupsByName[mn]) {
-                return groupsByName[mn];
-            }
-
-            // Repeatedly trim off trailing punctuation in case this is at the end of a sentence
-            if ((/[._-]$/).test(mn)) {
-                mn = mn.substring(0, mn.length - 1);
-            } else {
-                break;
-            }
-        }
-
-        // @ts-expect-error: The model constructor is hidden within WDB type definition
-        return new GroupModel(database.get(GROUP), {name: ''});
-    }, [groups, user, mentionName]);
+    const group = useMemoMentionedGroup(groups, user, mentionName);
 
     // Effects
     useEffect(() => {
         // Fetches and updates the local db store with the mention
-        if (!user.username && !group?.name) {
+        if (!user?.username && !group?.name) {
             fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
         }
     }, []);
 
     const openUserProfile = () => {
+        if (!user) {
+            return;
+        }
+
         const screen = Screens.USER_PROFILE;
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const closeButtonId = 'close-user-profile';
@@ -171,7 +119,7 @@ const AtMention = ({
                             onPress={() => {
                                 dismissBottomSheet();
                                 let username = mentionName;
-                                if (user.username) {
+                                if (user?.username) {
                                     username = user.username;
                                 }
 
