@@ -38,7 +38,7 @@ export const NoCommonTeamForm = ({
 
     const buttonText = formatMessage({
         id: 'generic.back',
-        defaultMessage: 'back',
+        defaultMessage: 'Back',
     });
 
     return (
