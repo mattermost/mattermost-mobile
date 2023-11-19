@@ -351,8 +351,6 @@ const PostList = ({
                     onScroll={onScroll}
                     onScrollToIndexFailed={onScrollToIndexFailed}
                     onViewableItemsChanged={onViewableItemsChanged}
-
-                    // @ts-expect-error old style ref
                     ref={listRef}
                     removeClippedSubviews={true}
                     renderItem={renderItem}
