@@ -3,11 +3,11 @@ package com.mattermost.helpers.database_extension
 import com.facebook.react.bridge.ReadableMap
 import com.mattermost.helpers.DatabaseHelper
 import com.mattermost.helpers.ReadableMapUtils
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 import org.json.JSONException
 import org.json.JSONObject
 
-fun findChannel(db: Database?, channelId: String): Boolean {
+fun findChannel(db: WMDatabase?, channelId: String): Boolean {
     if (db != null) {
         val team = find(db, "Channel", channelId)
         return team != null
@@ -15,7 +15,7 @@ fun findChannel(db: Database?, channelId: String): Boolean {
     return false
 }
 
-fun findMyChannel(db: Database?, channelId: String): Boolean {
+fun findMyChannel(db: WMDatabase?, channelId: String): Boolean {
     if (db != null) {
         val team = find(db, "MyChannel", channelId)
         return team != null
@@ -23,7 +23,7 @@ fun findMyChannel(db: Database?, channelId: String): Boolean {
     return false
 }
 
-internal fun handleChannel(db: Database, channel: ReadableMap) {
+internal fun handleChannel(db: WMDatabase, channel: ReadableMap) {
     try {
         val exists = channel.getString("id")?.let { findChannel(db, it) } ?: false
         if (!exists) {
@@ -37,7 +37,7 @@ internal fun handleChannel(db: Database, channel: ReadableMap) {
     }
 }
 
-internal fun DatabaseHelper.handleMyChannel(db: Database, myChannel: ReadableMap, postsData: ReadableMap?, receivingThreads: Boolean) {
+internal fun DatabaseHelper.handleMyChannel(db: WMDatabase, myChannel: ReadableMap, postsData: ReadableMap?, receivingThreads: Boolean) {
     try {
         val json = ReadableMapUtils.toJSONObject(myChannel)
         val exists = myChannel.getString("id")?.let { findMyChannel(db, it) } ?: false
@@ -71,7 +71,7 @@ internal fun DatabaseHelper.handleMyChannel(db: Database, myChannel: ReadableMap
     }
 }
 
-fun insertChannel(db: Database, channel: JSONObject): Boolean {
+fun insertChannel(db: WMDatabase, channel: JSONObject): Boolean {
     val id = try { channel.getString("id") } catch (e: JSONException) { return false }
     val createAt = try { channel.getDouble("create_at") } catch (e: JSONException) { 0 }
     val deleteAt = try { channel.getDouble("delete_at") } catch (e: JSONException) { 0 }
@@ -104,7 +104,7 @@ fun insertChannel(db: Database, channel: JSONObject): Boolean {
     }
 }
 
-fun insertChannelInfo(db: Database, channel: JSONObject) {
+fun insertChannelInfo(db: WMDatabase, channel: JSONObject) {
     val id = try { channel.getString("id") } catch (e: JSONException) { return }
     val header = try { channel.getString("header") } catch (e: JSONException) { "" }
     val purpose = try { channel.getString("purpose") } catch (e: JSONException) { "" }
@@ -123,7 +123,7 @@ fun insertChannelInfo(db: Database, channel: JSONObject) {
     }
 }
 
-fun insertMyChannel(db: Database, myChanel: JSONObject): Boolean {
+fun insertMyChannel(db: WMDatabase, myChanel: JSONObject): Boolean {
     return try {
         val id = try { myChanel.getString("id") } catch (e: JSONException) { return false }
         val roles = try { myChanel.getString("roles") } catch (e: JSONException) { "" }
@@ -156,7 +156,7 @@ fun insertMyChannel(db: Database, myChanel: JSONObject): Boolean {
     }
 }
 
-fun insertMyChannelSettings(db: Database, myChanel: JSONObject) {
+fun insertMyChannelSettings(db: WMDatabase, myChanel: JSONObject) {
     try {
         val id = try { myChanel.getString("id") } catch (e: JSONException) { return }
         val notifyProps = try { myChanel.getString("notify_props") } catch (e: JSONException) { return }
@@ -173,7 +173,7 @@ fun insertMyChannelSettings(db: Database, myChanel: JSONObject) {
     }
 }
 
-fun insertChannelMember(db: Database, myChanel: JSONObject) {
+fun insertChannelMember(db: WMDatabase, myChanel: JSONObject) {
     try {
         val userId = queryCurrentUserId(db) ?: return
         val channelId = try { myChanel.getString("id") } catch (e: JSONException) { return }
@@ -193,7 +193,7 @@ fun insertChannelMember(db: Database, myChanel: JSONObject) {
     }
 }
 
-fun updateMyChannel(db: Database, myChanel: JSONObject) {
+fun updateMyChannel(db: WMDatabase, myChanel: JSONObject) {
     try {
         val id = try { myChanel.getString("id") } catch (e: JSONException) { return }
         val msgCount = try { myChanel.getInt("message_count") } catch (e: JSONException) { 0 }

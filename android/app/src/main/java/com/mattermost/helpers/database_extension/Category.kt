@@ -2,9 +2,9 @@ package com.mattermost.helpers.database_extension
 
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 
-fun insertCategory(db: Database, category: ReadableMap) {
+fun insertCategory(db: WMDatabase, category: ReadableMap) {
     try {
         val id = category.getString("id") ?: return
         val collapsed = false
@@ -31,7 +31,7 @@ fun insertCategory(db: Database, category: ReadableMap) {
     }
 }
 
-fun insertCategoryChannels(db: Database, categoryId: String, teamId: String, channelIds: ReadableArray) {
+fun insertCategoryChannels(db: WMDatabase, categoryId: String, teamId: String, channelIds: ReadableArray) {
     try {
         for (i in 0 until channelIds.size()) {
             val channelId = channelIds.getString(i)
@@ -50,7 +50,7 @@ fun insertCategoryChannels(db: Database, categoryId: String, teamId: String, cha
     }
 }
 
-fun insertCategoriesWithChannels(db: Database, orderCategories: ReadableMap) {
+fun insertCategoriesWithChannels(db: WMDatabase, orderCategories: ReadableMap) {
     val categories = orderCategories.getArray("categories") ?: return
     for (i in 0 until categories.size()) {
         val category = categories.getMap(i)
@@ -64,7 +64,7 @@ fun insertCategoriesWithChannels(db: Database, orderCategories: ReadableMap) {
     }
 }
 
-fun insertChannelToDefaultCategory(db: Database, categoryChannels: ReadableArray) {
+fun insertChannelToDefaultCategory(db: WMDatabase, categoryChannels: ReadableArray) {
     try {
         for (i in 0 until categoryChannels.size()) {
             val cc = categoryChannels.getMap(i)

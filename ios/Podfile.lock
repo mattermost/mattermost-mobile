@@ -586,7 +586,7 @@ PODS:
   - Starscream (4.0.4)
   - SwiftyJSON (5.0.1)
   - Swime (3.0.6)
-  - WatermelonDB (0.26.0):
+  - WatermelonDB (0.27.1):
     - React
     - simdjson
   - Yoga (1.14.0)
@@ -997,7 +997,7 @@ SPEC CHECKSUMS:
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
   SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
-  WatermelonDB: cd71a1085182aca9e5d2164b7af9ef2a3aaca571
+  WatermelonDB: 842d22ba555425aa9f3ce551239a001200c539bc
   Yoga: 135109c9b8c5d1a8af3a58d21cd4c7aa7f3bf555
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 

@@ -3,8 +3,7 @@
 
 /* eslint-disable max-nested-callbacks */
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, map} from 'rxjs/operators';
 
