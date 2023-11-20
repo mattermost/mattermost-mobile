@@ -5,7 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
+import {Preferences, License} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -541,5 +541,43 @@ export const observeLastServerVersionCheck = (database: Database) => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_SERVER_VERSION_CHECK).observeWithColumns(['value']).pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: 0}))),
         switchMap((model) => of$(parseInt(model.value, 10))),
+    );
+};
+
+export const observeIfHighlightWithoutNotificationHasLicense = (database: Database) => {
+    const IsLicensed = observeLicense(database).pipe(
+        switchMap((l) => of$(l?.IsLicensed === 'true')),
+        distinctUntilChanged(),
+    );
+
+    const isCloudStarterFree = observeLicense(database).pipe(
+        switchMap((l) => {
+            const isCloud = l?.Cloud === 'true';
+            const isStarterSKU = l?.SkuShortName === License.SKU_SHORT_NAME.Starter;
+
+            return of$(isCloud && isStarterSKU);
+        }),
+        distinctUntilChanged(),
+    );
+
+    const isStarterSKULicense = observeLicense(database).pipe(
+        switchMap((l) => {
+            const isLicensed = l?.IsLicensed === 'true';
+            const isSelfHostedStarterProduct = l?.SelfHostedProducts === License.SelfHostedProducts.STARTER;
+
+            return of$(isLicensed && isSelfHostedStarterProduct);
+        }),
+        distinctUntilChanged(),
+    );
+
+    const isEnterpriseReady = observeConfigBooleanValue(database, 'BuildEnterpriseReady', false);
+
+    return combineLatest([isCloudStarterFree, isStarterSKULicense, isEnterpriseReady, IsLicensed]).pipe(
+        switchMap(([isCSF, isSKL, isEnt, isLic]) => {
+            const isSelfHostedStarter = isEnt && isLic === false;
+            const isEnterpriseOrCloudOrSKUStarterFree = isCSF || isSKL || isSelfHostedStarter;
+
+            return of$(!isEnterpriseOrCloudOrSKUStarterFree && isEnt);
+        }),
     );
 };

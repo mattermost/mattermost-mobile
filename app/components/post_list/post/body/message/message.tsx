@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {type LayoutChangeEvent, ScrollView, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -20,6 +20,7 @@ import type {SearchPattern} from '@typings/global/markdown';
 
 type MessageProps = {
     currentUser?: UserModel;
+    isHighlightWithoutNotificationLicensed?: boolean;
     highlight: boolean;
     isEdited: boolean;
     isPendingOrFailed: boolean;
@@ -52,7 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, searchPatterns, theme}: MessageProps) => {
+const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, searchPatterns, theme}: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
@@ -61,14 +62,6 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
     const style = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
     const textStyles = getMarkdownTextStyles(theme);
-
-    const mentionKeys = useMemo(() => {
-        return currentUser?.mentionKeys;
-    }, [currentUser]);
-
-    const highlightKeys = useMemo(() => {
-        return currentUser?.highlightKeys;
-    }, [currentUser]);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);
     const onPress = () => setOpen(!open);
@@ -100,8 +93,8 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
                             postId={post.id}
                             textStyles={textStyles}
                             value={post.message}
-                            mentionKeys={mentionKeys}
-                            highlightKeys={highlightKeys}
+                            mentionKeys={currentUser?.mentionKeys ?? []}
+                            highlightKeys={isHighlightWithoutNotificationLicensed ? (currentUser?.highlightKeys ?? []) : []}
                             searchPatterns={searchPatterns}
                             theme={theme}
                         />
