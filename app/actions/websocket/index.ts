@@ -152,6 +152,7 @@ async function doReconnect(serverUrl: string) {
 
     const currentTeamId = await getCurrentTeamId(database);
     const currentChannelId = await getCurrentChannelId(database);
+    console.log(`@@@ doReconnect currentChannelId: ${currentChannelId}`);
 
     setTeamLoading(serverUrl, true);
     const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastDisconnectedAt);

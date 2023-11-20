@@ -19,7 +19,7 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
-import {queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
+import {getChannelById, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getConfig, getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
@@ -128,7 +128,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
         return {error: fetchedData.error};
     }
 
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, isCRTEnabled} = fetchedData;
+    const {initialTeamId: fetchedTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, isCRTEnabled} = fetchedData;
     const chError = chData?.error;
     if (isErrorWithStatusCode(chError) && chError.status_code === 403) {
         // if the user does not have appropriate permissions, which means the user those not belong to the team,
@@ -142,7 +142,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
 
     const rolesData = await fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData.user, true);
 
-    const initialChannelId = await entryInitialChannelId(database, channelId, teamId, initialTeamId, meData?.user?.locale || '', chData?.channels, chData?.memberships);
+    const {channelId: initialChannelId, teamId: initialTeamId} = await entryInitialChannelId(database, channelId, teamId, fetchedTeamId, meData?.user?.locale || '', chData?.channels, chData?.memberships);
 
     const removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
 
@@ -294,24 +294,34 @@ const fetchAlternateTeamData = async (
 };
 
 async function entryInitialChannelId(database: Database, requestedChannelId = '', requestedTeamId = '', initialTeamId: string, locale: string, channels?: Channel[], memberships?: ChannelMember[]) {
+    console.log('aaa');
     const membershipIds = new Set(memberships?.map((m) => m.channel_id));
     const requestedChannel = channels?.find((c) => (c.id === requestedChannelId) && membershipIds.has(c.id));
 
     // If team and channel are the requested, return the channel
     if (initialTeamId === requestedTeamId && requestedChannel) {
-        return requestedChannelId;
+        return {channelId: requestedChannelId, teamId: requestedTeamId};
     }
+
+    console.log('bbb');
 
     // DM or GMs don't care about changes in teams, so return directly
     if (requestedChannel && isDMorGM(requestedChannel)) {
-        return requestedChannelId;
+        return {channelId: requestedChannelId, teamId: requestedTeamId};
+    }
+
+    console.log('ccc');
+    const existingChannel = await getChannelById(database, requestedChannelId);
+    if (existingChannel && existingChannel.type === General.GM_CHANNEL) {
+        console.log(`Display name: ${existingChannel?.displayName} type: ${existingChannel?.type} teamid: ${existingChannel?.teamId}`);
+        return {channelId: requestedChannelId, teamId: existingChannel.teamId};
     }
 
     // Check if we are still members of any channel on the history
     const teamChannelHistory = await getTeamChannelHistory(database, initialTeamId);
-    for (const c of teamChannelHistory) {
-        if (membershipIds.has(c) || c === Screens.GLOBAL_THREADS) {
-            return c;
+    for (const channelId of teamChannelHistory) {
+        if (membershipIds.has(channelId) || channelId === Screens.GLOBAL_THREADS) {
+            return {channelId, teamId: requestedTeamId};
         }
     }
 
@@ -319,7 +329,8 @@ async function entryInitialChannelId(database: Database, requestedChannelId = ''
     const defaultChannel = channels?.find((c) => c.name === General.DEFAULT_CHANNEL && c.team_id === initialTeamId);
     const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannel && membershipIds.has(defaultChannel.id));
     if (iAmMemberOfTheTeamDefaultChannel) {
-        return defaultChannel!.id;
+        // return defaultChannel!.id;
+        return {channelId: defaultChannel!.id, teamId: requestedTeamId};
     }
 
     // Get the first channel of the list, based on the locale.
@@ -328,7 +339,9 @@ async function entryInitialChannelId(database: Database, requestedChannelId = ''
         c.type === General.OPEN_CHANNEL &&
         membershipIds.has(c.id),
     ).sort(sortChannelsByDisplayName.bind(null, locale))[0];
-    return myFirstTeamChannel?.id || '';
+
+    // return myFirstTeamChannel?.id || '';
+    return {channelId: myFirstTeamChannel?.id || '', teamId: requestedTeamId};
 }
 
 async function restDeferredAppEntryActions(
@@ -430,6 +443,7 @@ export async function verifyPushProxy(serverUrl: string) {
     }
 }
 
+// LOL
 export async function handleEntryAfterLoadNavigation(
     serverUrl: string,
     teamMembers: TeamMembership[],
@@ -448,6 +462,12 @@ export async function handleEntryAfterLoadNavigation(
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadsMounted = mountedScreens.includes(Screens.THREAD);
         const tabletDevice = await isTablet();
+
+        console.log(`### currentTeamIdAfterLoad: ${currentTeamIdAfterLoad}`);
+        console.log(`### currentChannelIdAfterLoad: ${currentChannelIdAfterLoad}`);
+        console.log(`### currentTeamId: ${currentTeamId}`);
+        console.log(`### initialTeamId: ${initialTeamId}`);
+        console.log(`### initialChannelId: ${initialChannelId}`);
 
         if (!currentTeamIdAfterLoad) {
             // First load or no team

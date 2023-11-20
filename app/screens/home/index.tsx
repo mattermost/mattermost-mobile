@@ -78,6 +78,7 @@ export default function HomeScreen(props: HomeProps) {
         });
 
         const leaveChannelListener = DeviceEventEmitter.addListener(Events.LEAVE_CHANNEL, (displayName: string) => {
+            console.log('alertChannelRemovealertChannelRemovealertChannelRemove');
             alertChannelRemove(displayName, intl);
         });
 
