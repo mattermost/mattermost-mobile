@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Image, type ColorValue, type StyleProp, type ImageStyle} from 'react-native';
-import FastImage, {type Source} from 'react-native-fast-image';
+import FastImage, {type ImageStyle as FastImageStyle, type Source} from 'react-native-fast-image';
 import Animated, {type SharedValue} from 'react-native-reanimated';
 
 // @ts-expect-error FastImage does work with Animated.createAnimatedComponent
@@ -25,7 +25,7 @@ const Thumbnail = ({onError, opacity, style, source, tintColor}: ThumbnailProps)
                 onError={onError}
                 resizeMode='cover'
                 source={source}
-                style={style}
+                style={(style as StyleProp<FastImageStyle>)}
                 testID='progressive_image.miniPreview'
             />
         );

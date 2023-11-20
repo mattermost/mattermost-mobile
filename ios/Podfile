@@ -1,7 +1,14 @@
-require_relative '../node_modules/react-native/scripts/react_native_pods'
-require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
-require_relative '../node_modules/react-native-permissions/scripts/setup'
+def node_require(script)
+  # Resolve script with node to allow for hoisting
+  require Pod::Executable.execute_command('node', ['-p',
+    "require.resolve(
+      '#{script}',
+      {paths: [process.argv[1]]},
+    )", __dir__]).strip
+end
 
+node_require('react-native/scripts/react_native_pods.rb')
+node_require('react-native-permissions/scripts/setup.rb')
 
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
@@ -40,8 +47,6 @@ target 'Mattermost' do
   use_react_native!(
     :path => config[:reactNativePath],
     # Hermes is now enabled by default. Disable by setting this flag to false.
-    # Upcoming versions of React Native may rely on get_default_flags(), but
-    # we make it explicit here to aid in the React Native upgrade process.
     :hermes_enabled => true,
     :fabric_enabled => false,
     # Enables Flipper.
@@ -60,24 +65,24 @@ target 'Mattermost' do
   # TODO: Remove this once upstream PR https://github.com/daltoniam/Starscream/pull/871 is merged
   pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => '9575b6781d1262247096af73617ae3acb2b139a0'
 
-end
 
-post_install do |installer|
-  react_native_post_install(
-    installer,
-    # Set `mac_catalyst_enabled` to `true` in order to apply patches
-    # necessary for Mac Catalyst builds
-    :mac_catalyst_enabled => false
-  )
-
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.4'
+  post_install do |installer|
+    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false
+    )
+  
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.4'
+      end
     end
+    __apply_Xcode_12_5_M1_post_install_workaround(installer)
+  
+    puts 'Patching Alamofire to include X-Uncompressed-Content-Length to measure download progress'
+    %x(patch Pods/Alamofire/Source/SessionDelegate.swift < patches/SessionDelegate.patch)
+  
   end
-  __apply_Xcode_12_5_M1_post_install_workaround(installer)
-
-  puts 'Patching Alamofire to include X-Uncompressed-Content-Length to measure download progress'
-  %x(patch Pods/Alamofire/Source/SessionDelegate.swift < patches/SessionDelegate.patch)
-
 end

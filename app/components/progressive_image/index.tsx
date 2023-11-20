@@ -3,7 +3,7 @@
 
 import React, {type ReactNode, useEffect, useState} from 'react';
 import {ImageBackground, type ImageStyle, type StyleProp, StyleSheet, View, type ViewStyle, Image} from 'react-native';
-import FastImage, {type ResizeMode} from 'react-native-fast-image';
+import FastImage, {type ResizeMode, type ImageStyle as FastImageStyle} from 'react-native-fast-image';
 import Animated, {interpolate, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';
@@ -121,7 +121,7 @@ const ProgressiveImage = ({
             image = (
                 <AnimatedFastImage
 
-                    // @ts-expect-error old style ref
+                    // @ts-expect-error ref not present in type
                     ref={forwardRef}
                     nativeID={`image-${id}`}
                     resizeMode={resizeMode}
@@ -129,7 +129,7 @@ const ProgressiveImage = ({
                     source={{uri: imageUri}}
                     style={[
                         StyleSheet.absoluteFill,
-                        imageStyle,
+                        (imageStyle as StyleProp<FastImageStyle>),
                         animatedOpacity,
                     ]}
                     testID='progressive_image.highResImage'
@@ -141,13 +141,13 @@ const ProgressiveImage = ({
         image = (
             <AnimatedFastImage
 
-                // @ts-expect-error old style ref
+                // @ts-expect-error ref not present in type
                 ref={forwardRef}
                 nativeID={`image-${id}`}
                 resizeMode={resizeMode}
                 onError={onError}
                 source={{uri: imageUri}}
-                style={[StyleSheet.absoluteFill, imageStyle, animatedOpacity]}
+                style={[StyleSheet.absoluteFill, (imageStyle as StyleProp<FastImageStyle>), animatedOpacity]}
                 onLoadEnd={onLoadImageEnd}
                 testID='progressive_image.highResImage'
             />

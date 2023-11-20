@@ -8,8 +8,9 @@ import {
     Platform,
     StyleSheet,
     Text,
+    type StyleProp,
 } from 'react-native';
-import FastImage from 'react-native-fast-image';
+import FastImage, {type ImageStyle} from 'react-native-fast-image';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -129,7 +130,7 @@ const Emoji = (props: EmojiProps) => {
     return (
         <FastImage
             key={key}
-            style={[commonStyle, imageStyle, {width, height}]}
+            style={[(commonStyle as StyleProp<ImageStyle>), (imageStyle as StyleProp<ImageStyle>), {width, height}]}
             source={{uri: imageUrl}}
             resizeMode={FastImage.resizeMode.contain}
             testID={testID}
