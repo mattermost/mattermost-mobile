@@ -202,7 +202,7 @@ export default class UserModel extends Model implements UserModelInterface {
 
         const highlightWithoutNotificationKeys: HighlightWithoutNotificationKey[] = [];
 
-        if (this.notifyProps?.highlight_keys?.length > 0) {
+        if (this.notifyProps?.highlight_keys?.length) {
             this.notifyProps.highlight_keys.
                 split(',').
                 forEach((key) => {
