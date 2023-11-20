@@ -13,6 +13,7 @@ import {
     highlightTextNode,
     mentionKeysToPatterns,
     pullOutImages,
+    highlightWithoutNotification,
     highlightKeysToPatterns,
 } from '@components/markdown/transform';
 import {logError} from '@utils/log';
@@ -2603,7 +2604,7 @@ describe('Components.Markdown.transform', () => {
         }
     });
 
-    describe('getFirstMention', () => {
+    describe('getFirstMention with mentionKeysToPatterns', () => {
         const tests = [{
             name: 'no mention keys',
             input: 'apple banana orange',
@@ -2799,6 +2800,251 @@ describe('Components.Markdown.transform', () => {
 
                 assert.ok(verifyAst(actual));
                 assert.deepStrictEqual(actual, expected);
+            });
+        }
+    });
+
+    describe('highlightWithoutNotification', () => {
+        const tests = [{
+            name: 'no highlights',
+            input: 'Cant put down an anti gravity book',
+            highlightKeys: [],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Cant put down an anti gravity book',
+                    }],
+                }],
+            },
+        }, {
+            name: 'a word highlight',
+            input: 'Cant put down an anti gravity book',
+            highlightKeys: [{key: 'anti'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'text',
+                            literal: 'Cant put down an ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'anti',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' gravity book',
+                        },
+                    ],
+                }],
+            },
+        }, {
+            name: 'a sentence highlight',
+            input: 'Cant put down an anti gravity book',
+            highlightKeys: [{key: 'anti gravity'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'text',
+                            literal: 'Cant put down an ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'anti gravity',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' book',
+                        },
+                    ],
+                }],
+            },
+        }, {
+            name: 'insensitive keywords',
+            input: 'Cant put down an anti gravity book',
+            highlightKeys: [{key: 'dOwN'}, {key: 'Anti'}, {key: 'BOOK'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'text',
+                            literal: 'Cant put ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'down',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' an ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'anti',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' gravity ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'book',
+                            }],
+                        },
+                    ],
+                }],
+            },
+        }, {
+            name: 'insensitive keywords',
+            input: 'Cant put down an anti gravity book',
+            highlightKeys: [{key: 'dOwN'}, {key: 'Anti'}, {key: 'BOOK'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'text',
+                            literal: 'Cant put ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'down',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' an ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'anti',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' gravity ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'book',
+                            }],
+                        },
+                    ],
+                }],
+            },
+        }, {
+            name: 'words with characters surrounding them',
+            input: 'peace& ^peace -peace-',
+            highlightKeys: [{key: 'PEACE'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'peace',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: '& ^',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'peace',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' -',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'peace',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: '-',
+                        },
+                    ],
+                }],
+            },
+        }, {
+            name: 'CJK word highlight',
+            input: '我确实喜欢我的同事。',
+            highlightKeys: [{key: '喜欢'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'text',
+                            literal: '我确实',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: '喜欢',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: '我的同事。',
+                        },
+                    ],
+                }],
+            },
+        }];
+
+        for (const test of tests) {
+            it(test.name, () => {
+                const input = combineTextNodes(parser.parse(test.input));
+                const expected = makeAst(test.expected);
+                const actual = highlightWithoutNotification(input, test.highlightKeys);
+
+                assert.ok(verifyAst(actual));
+                assert.deepStrictEqual(stripUnusedFields(actual), stripUnusedFields(expected));
             });
         }
     });
