@@ -13,6 +13,7 @@ import {
     highlightTextNode,
     mentionKeysToPatterns,
     pullOutImages,
+    highlightKeysToPatterns,
 } from '@components/markdown/transform';
 import {logError} from '@utils/log';
 
@@ -2798,6 +2799,71 @@ describe('Components.Markdown.transform', () => {
 
                 assert.ok(verifyAst(actual));
                 assert.deepStrictEqual(actual, expected);
+            });
+        }
+    });
+
+    describe('getFirstMatch with highlightKeysToPatterns', () => {
+        const tests = [{
+            name: 'text with space before',
+            input: ' lol',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        },
+        {
+            name: 'text with space afterwards and before',
+            input: ' Lol ',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        },
+        {
+            name: 'text with a non word character before (?)',
+            input: '?Lol',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        },
+        {
+            name: 'text with a non word character before (.)',
+            input: '?Lol',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        },
+        {
+            name: 'text with a non word character before (_)',
+            input: '?Lol',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        },
+        {
+            name: 'text with non word character after (.)',
+            input: 'Lol.',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 0, length: 3},
+        },
+        {
+            name: 'text with non word character after (?)',
+            input: 'Lol?',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 0, length: 3},
+        },
+        {
+            name: 'text with non word character after (_)',
+            input: 'Lol_',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 0, length: 3},
+        },
+        {
+            name: 'text with non word character before and after',
+            input: '?Lol?',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        }];
+
+        for (const test of tests) {
+            it(test.name, () => {
+                const actual = getFirstMatch(test.input, test.patterns);
+
+                assert.deepStrictEqual(actual, test.expected);
             });
         }
     });

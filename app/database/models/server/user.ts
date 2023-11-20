@@ -196,12 +196,20 @@ export default class UserModel extends Model implements UserModelInterface {
     }
 
     get highlightKeys() {
+        if (!this.notifyProps) {
+            return [];
+        }
+
         const highlightWithoutNotificationKeys: HighlightWithoutNotificationKey[] = [];
 
-        if (this.notifyProps && this.notifyProps.highlight_keys && this.notifyProps.highlight_keys.length > 0) {
-            this.notifyProps.highlight_keys.split(',').forEach((key) => {
-                highlightWithoutNotificationKeys.push({key});
-            });
+        if (this.notifyProps?.highlight_keys?.length > 0) {
+            this.notifyProps.highlight_keys.
+                split(',').
+                forEach((key) => {
+                    if (key.trim().length > 0) {
+                        highlightWithoutNotificationKeys.push({key: key.trim()});
+                    }
+                });
         }
 
         return highlightWithoutNotificationKeys;
