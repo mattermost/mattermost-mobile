@@ -262,7 +262,7 @@ export function getFirstMatch(str: string, patterns: RegExp[]) {
 
     for (const pattern of patterns) {
         let matchResult;
-        if (pattern.flags.includes('g') || pattern.flags.includes('y')) {
+        if (pattern.global || pattern.sticky) {
             // Since regex objects are stateful in global or sticky flags, we need to reset
             const regex = new RegExp(pattern.source, pattern.flags);
             matchResult = regex.exec(str);
