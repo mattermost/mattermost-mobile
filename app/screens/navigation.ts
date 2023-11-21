@@ -4,8 +4,8 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
-import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent} from 'react-native-navigation';
+import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert, type EmitterSubscription} from 'react-native';
+import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -30,14 +30,19 @@ const alpha = {
     to: 1,
     duration: 150,
 };
+let subscriptions: Array<EmitterSubscription | EventSubscription> | undefined;
 
 export const allOrientations: LayoutOrientation[] = ['sensor', 'sensorLandscape', 'sensorPortrait', 'landscape', 'portrait'];
 export const portraitOrientation: LayoutOrientation[] = ['portrait'];
 
 export function registerNavigationListeners() {
-    Navigation.events().registerScreenPoppedListener(onPoppedListener);
-    Navigation.events().registerCommandListener(onCommandListener);
-    Navigation.events().registerComponentWillAppearListener(onScreenWillAppear);
+    if (!subscriptions) {
+        subscriptions = [
+            Navigation.events().registerScreenPoppedListener(onPoppedListener),
+            Navigation.events().registerCommandListener(onCommandListener),
+            Navigation.events().registerComponentWillAppearListener(onScreenWillAppear),
+        ];
+    }
 }
 
 function onCommandListener(name: string, params: any) {

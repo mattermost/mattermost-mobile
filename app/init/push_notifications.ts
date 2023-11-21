@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, DeviceEventEmitter, Platform} from 'react-native';
+import {AppState, DeviceEventEmitter, Platform, type EmitterSubscription} from 'react-native';
 import {
     Notification,
     NotificationAction,
@@ -36,12 +36,17 @@ import {convertToNotificationData} from '@utils/notification';
 
 class PushNotifications {
     configured = false;
+    subscriptions?: EmitterSubscription[];
 
     init(register: boolean) {
-        Notifications.events().registerNotificationOpened(this.onNotificationOpened);
-        Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered);
-        Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
-        Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
+        if (!this.subscriptions) {
+            this.subscriptions = [
+                Notifications.events().registerNotificationOpened(this.onNotificationOpened),
+                Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered),
+                Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground),
+                Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground),
+            ];
+        }
 
         if (register) {
             this.registerIfNeeded();
