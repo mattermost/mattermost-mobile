@@ -39,14 +39,13 @@ class PushNotifications {
     subscriptions?: EmitterSubscription[];
 
     init(register: boolean) {
-        if (!this.subscriptions) {
-            this.subscriptions = [
-                Notifications.events().registerNotificationOpened(this.onNotificationOpened),
-                Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered),
-                Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground),
-                Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground),
-            ];
-        }
+        this.subscriptions?.forEach((v) => v.remove());
+        this.subscriptions = [
+            Notifications.events().registerNotificationOpened(this.onNotificationOpened),
+            Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered),
+            Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground),
+            Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground),
+        ];
 
         if (register) {
             this.registerIfNeeded();

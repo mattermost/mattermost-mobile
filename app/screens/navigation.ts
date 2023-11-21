@@ -36,13 +36,12 @@ export const allOrientations: LayoutOrientation[] = ['sensor', 'sensorLandscape'
 export const portraitOrientation: LayoutOrientation[] = ['portrait'];
 
 export function registerNavigationListeners() {
-    if (!subscriptions) {
-        subscriptions = [
-            Navigation.events().registerScreenPoppedListener(onPoppedListener),
-            Navigation.events().registerCommandListener(onCommandListener),
-            Navigation.events().registerComponentWillAppearListener(onScreenWillAppear),
-        ];
-    }
+    subscriptions?.forEach((v) => v.remove());
+    subscriptions = [
+        Navigation.events().registerScreenPoppedListener(onPoppedListener),
+        Navigation.events().registerCommandListener(onCommandListener),
+        Navigation.events().registerComponentWillAppearListener(onScreenWillAppear),
+    ];
 }
 
 function onCommandListener(name: string, params: any) {
