@@ -16,7 +16,7 @@ import ShowMoreButton from './show_more_button';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import type {SearchPattern} from '@typings/global/markdown';
+import type {HighlightWithoutNotificationKey, SearchPattern, UserMentionKey} from '@typings/global/markdown';
 
 type MessageProps = {
     currentUser?: UserModel;
@@ -33,6 +33,9 @@ type MessageProps = {
 }
 
 const SHOW_MORE_HEIGHT = 54;
+
+const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
+const EMPTY_HIGHLIGHT_KEYS: HighlightWithoutNotificationKey[] = [];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -93,8 +96,8 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
                             postId={post.id}
                             textStyles={textStyles}
                             value={post.message}
-                            mentionKeys={currentUser?.mentionKeys ?? []}
-                            highlightKeys={isHighlightWithoutNotificationLicensed ? (currentUser?.highlightKeys ?? []) : []}
+                            mentionKeys={currentUser?.mentionKeys ?? EMPTY_MENTION_KEYS}
+                            highlightKeys={isHighlightWithoutNotificationLicensed ? (currentUser?.highlightKeys ?? EMPTY_HIGHLIGHT_KEYS) : EMPTY_HIGHLIGHT_KEYS}
                             searchPatterns={searchPatterns}
                             theme={theme}
                         />

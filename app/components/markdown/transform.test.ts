@@ -2820,6 +2820,48 @@ describe('Components.Markdown.transform', () => {
                 }],
             },
         }, {
+            name: 'key bigger than input',
+            input: 'incredible',
+            highlightKeys: [{key: 'incredible and industructable'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'incredible',
+                    }],
+                }],
+            },
+        }, {
+            name: 'key part of the word',
+            input: 'Sesquipedalian',
+            highlightKeys: [{key: 'quipedalian'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Sesquipedalian',
+                    }],
+                }],
+            },
+        }, {
+            name: 'word part of key',
+            input: 'floccinauc',
+            highlightKeys: [{key: 'floccinaucinihilipilification'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'floccinauc',
+                    }],
+                }],
+            },
+        }, {
             name: 'a word highlight',
             input: 'Cant put down an anti gravity book',
             highlightKeys: [{key: 'anti'}],
@@ -3006,6 +3048,109 @@ describe('Components.Markdown.transform', () => {
                             literal: '-',
                         },
                     ],
+                }],
+            },
+        }, {
+            name: 'input in code block',
+            input: '```\nTurning it off and\non\n```',
+            highlightKeys: [{key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'code_block',
+                    literal: 'Turning it off and\non\n',
+                }],
+            },
+        }, {
+            name: 'key in bold',
+            input: 'Actions speak **louder** than words',
+            highlightKeys: [{key: 'louder'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Actions speak ',
+                    }, {
+                        type: 'strong',
+                        children: [{
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'louder',
+                            }],
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' than words',
+                    }],
+                }],
+            },
+        }, {
+            name: 'key in italic',
+            input: 'Actions speak *louder* than words',
+            highlightKeys: [{key: 'louder'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Actions speak ',
+                    }, {
+                        type: 'emph',
+                        children: [{
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'louder',
+                            }],
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' than words',
+                    }],
+                }],
+            },
+        }, {
+            name: 'key in heading',
+            input: '### Actions speak louder than words',
+            highlightKeys: [{key: 'Actions'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'heading',
+                    level: 3,
+                    children: [
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'Actions',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' speak louder than words',
+                        }],
+                }],
+            },
+        }, {
+            name: 'Do not mention partial keys',
+            input: 'Adding more memory wont help @bob',
+            highlightKeys: [{key: 'bob'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Adding more memory wont help ',
+                    }, {
+                        type: 'at_mention',
+                        _mentionName: 'bob',
+                    }],
                 }],
             },
         }, {
