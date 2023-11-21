@@ -37,9 +37,9 @@ export async function toggleReaction(serverUrl: string, postId: string, emojiNam
         const isReactionAlreadyAddedToPost = await getIsReactionAlreadyAddedToPost(serverUrl, postId, emojiName);
 
         if (isReactionAlreadyAddedToPost) {
-            return await removeReaction(serverUrl, postId, emojiName);
+            return removeReaction(serverUrl, postId, emojiName);
         }
-        return await addReaction(serverUrl, postId, emojiName);
+        return addReaction(serverUrl, postId, emojiName);
     } catch (error) {
         logDebug('error on toggleReaction', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
