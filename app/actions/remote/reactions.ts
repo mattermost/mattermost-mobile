@@ -16,6 +16,37 @@ import {forceLogoutIfNecessary} from './session';
 import type {Model} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
 
+export async function getIsReactionAlreadyAddedToPost(serverUrl: string, postId: string, emojiName: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const currentUserId = await getCurrentUserId(database);
+        const emojiAlias = getEmojiFirstAlias(emojiName);
+        const isReactionAlreadyAddedToPost = await queryReaction(database, emojiAlias, postId, currentUserId).fetchCount() > 0;
+
+        return isReactionAlreadyAddedToPost;
+    } catch (error) {
+        logDebug('error on getIsReactionAlreadyAddedToPost', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
+
+export async function toggleReaction(serverUrl: string, postId: string, emojiName: string) {
+    try {
+        const isReactionAlreadyAddedToPost = await getIsReactionAlreadyAddedToPost(serverUrl, postId, emojiName);
+
+        if (isReactionAlreadyAddedToPost) {
+            return await removeReaction(serverUrl, postId, emojiName);
+        }
+        return await addReaction(serverUrl, postId, emojiName);
+    } catch (error) {
+        logDebug('error on toggleReaction', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
+
 export async function addReaction(serverUrl: string, postId: string, emojiName: string) {
     try {
         const client = NetworkManager.getClient(serverUrl);
