@@ -22,9 +22,7 @@ export async function getIsReactionAlreadyAddedToPost(serverUrl: string, postId:
 
         const currentUserId = await getCurrentUserId(database);
         const emojiAlias = getEmojiFirstAlias(emojiName);
-        const isReactionAlreadyAddedToPost = await queryReaction(database, emojiAlias, postId, currentUserId).fetchCount() > 0;
-
-        return isReactionAlreadyAddedToPost;
+        return await queryReaction(database, emojiAlias, postId, currentUserId).fetchCount() > 0;
     } catch (error) {
         logDebug('error on getIsReactionAlreadyAddedToPost', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
