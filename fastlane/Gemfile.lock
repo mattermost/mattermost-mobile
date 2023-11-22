@@ -8,8 +8,8 @@ GEM
     artifactory (3.0.15)
     atomos (0.1.3)
     aws-eventstream (1.2.0)
-    aws-partitions (1.853.0)
-    aws-sdk-core (3.187.0)
+    aws-partitions (1.855.0)
+    aws-sdk-core (3.187.1)
       aws-eventstream (~> 1, >= 1.0.2)
       aws-partitions (~> 1, >= 1.651.0)
       aws-sigv4 (~> 1.5)
@@ -17,7 +17,7 @@ GEM
     aws-sdk-kms (1.72.0)
       aws-sdk-core (~> 3, >= 3.184.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-s3 (1.137.0)
+    aws-sdk-s3 (1.138.0)
       aws-sdk-core (~> 3, >= 3.181.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.6)
@@ -32,8 +32,7 @@ GEM
     declarative (0.0.20)
     digest-crc (0.6.5)
       rake (>= 12.0.0, < 14.0.0)
-    domain_name (0.5.20190701)
-      unf (>= 0.0.5, < 1.0.0)
+    domain_name (0.6.20231109)
     dotenv (2.8.1)
     emoji_regex (3.2.3)
     excon (0.104.0)
@@ -162,9 +161,9 @@ GEM
     multipart-post (2.3.0)
     nanaimo (0.3.0)
     naturally (2.2.1)
-    nokogiri (1.13.10-arm64-darwin)
+    nokogiri (1.15.5-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.13.10-x86_64-darwin)
+    nokogiri (1.15.5-x86_64-darwin)
       racc (~> 1.4)
     optparse (0.1.1)
     os (1.1.4)
@@ -199,9 +198,6 @@ GEM
     tty-spinner (0.9.3)
       tty-cursor (~> 0.7)
     uber (0.1.0)
-    unf (0.1.4)
-      unf_ext
-    unf_ext (0.0.9.1)
     unicode-display_width (2.5.0)
     webrick (1.8.1)
     word_wrap (1.0.0)
@@ -218,6 +214,7 @@ GEM
       xcpretty (~> 0.2, >= 0.0.7)
 
 PLATFORMS
+  arm64-darwin-22
   arm64-darwin-23
   x86_64-darwin-23
 
