@@ -154,14 +154,16 @@ async function doReconnect(serverUrl: string) {
     const currentChannelId = await getCurrentChannelId(database);
 
     setTeamLoading(serverUrl, true);
+
+    // LOL reset currentTeamId and currentChannelId with results from this function
     const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastDisconnectedAt);
     if ('error' in entryData) {
         setTeamLoading(serverUrl, false);
         return entryData.error;
     }
-    const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
+    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, gmConverted} = entryData;
 
-    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId);
+    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, Boolean(gmConverted));
 
     const dt = Date.now();
     if (models?.length) {

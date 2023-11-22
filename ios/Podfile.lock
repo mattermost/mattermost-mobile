@@ -570,9 +570,9 @@ PODS:
     - React-Core
   - RNVectorIcons (10.0.0):
     - React-Core
-  - SDWebImage (5.18.2):
-    - SDWebImage/Core (= 5.18.2)
-  - SDWebImage/Core (5.18.2)
+  - SDWebImage (5.18.3):
+    - SDWebImage/Core (= 5.18.3)
+  - SDWebImage/Core (5.18.3)
   - SDWebImageWebPCoder (0.13.0):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
@@ -986,7 +986,7 @@ SPEC CHECKSUMS:
   RNShare: da6d90b6dc332f51f86498041d6e34211f96b630
   RNSVG: 03e4d258ca355d7836a0a5dd4d4dc63c1eb49cbb
   RNVectorIcons: 8b5bb0fa61d54cd2020af4f24a51841ce365c7e9
-  SDWebImage: c0de394d7cf7f9838aed1fd6bb6037654a4572e4
+  SDWebImage: 96e0c18ef14010b7485210e92fac888587ebb958
   SDWebImageWebPCoder: af09429398d99d524cae2fe00f6f0f6e491ed102
   Sentry: 56c76eed917f7dffd46db50906afbf5c9aa2673a
   SentryPrivate: f3be34b5deb9fe676fdfb1f1ad5cdb1b740c5688
