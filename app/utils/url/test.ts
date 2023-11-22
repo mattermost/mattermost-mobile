@@ -129,7 +129,7 @@ describe('UrlUtils', () => {
 
     describe('matchDeepLink', () => {
         const URL_NO_PROTOCOL = 'localhost:8065';
-        const URL_PATH_NO_PROTOCOL = 'localhost:8065/subpath';
+        const URL_PATH_NO_PROTOCOL = 'localhost:8065/subpath/deepsubpath';
         const SITE_URL = `http://${URL_NO_PROTOCOL}`;
         const SERVER_URL = `http://${URL_NO_PROTOCOL}`;
         const SERVER_WITH_SUBPATH = `http://${URL_PATH_NO_PROTOCOL}`;
@@ -280,9 +280,41 @@ describe('UrlUtils', () => {
                 },
             },
             {
+                name: 'should match channel link (channel name: messages) with deeplink prefix',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/messages',
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: {
+                    data: {
+                        channelName: 'messages',
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'ad-1',
+                    },
+                    type: DeepLinkType.Channel,
+                },
+            },
+            {
+                name: 'should match channel link (team name: channels, channel name: messages) with deeplink prefix',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/channels/channels/messages',
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: {
+                    data: {
+                        channelName: 'messages',
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'channels',
+                    },
+                    type: DeepLinkType.Channel,
+                },
+            },
+            {
                 name: 'should match permalink with deeplink prefix on a Server hosted in a Subpath',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/subpath/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsrr',
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsrr',
                     serverURL: SERVER_WITH_SUBPATH,
                     siteURL: SERVER_WITH_SUBPATH,
                 },
@@ -291,6 +323,22 @@ describe('UrlUtils', () => {
                         postId: 'qe93kkfd7783iqwuwfcwcxbsrr',
                         serverUrl: URL_PATH_NO_PROTOCOL,
                         teamName: 'ad-1',
+                    },
+                    type: DeepLinkType.Permalink,
+                },
+            },
+            {
+                name: 'should match permalink (team name: channels) with deeplink prefix on a Server hosted in a Subpath',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/channels/pl/qe93kkfd7783iqwuwfcwcxbsrr',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: {
+                    data: {
+                        postId: 'qe93kkfd7783iqwuwfcwcxbsrr',
+                        serverUrl: URL_PATH_NO_PROTOCOL,
+                        teamName: 'channels',
                     },
                     type: DeepLinkType.Permalink,
                 },
