@@ -113,7 +113,7 @@
   "channel_info.archive_failed": "Beim Versuch, den Kanal {displayName} zu archivieren, ist ein Fehler aufgetreten",
   "channel_info.archive_title": "{term} archivieren",
   "channel_info.channel_auto_follow_threads": "Allen Unterhaltungen in diesem Kanal folgen",
-  "channel_info.channel_auto_follow_threads_failed": "Beim Versuch, allen Unterhaltungen im Kanal automatisch zu verfolgen, ist ein Fehler aufgetreten {displayName}",
+  "channel_info.channel_auto_follow_threads_failed": "Beim Versuch, allen Unterhaltungen im Kanal {displayName} automatisch zu verfolgen, ist ein Fehler aufgetreten",
   "channel_info.channel_files": "Dateien",
   "channel_info.close": "Schliessen",
   "channel_info.close_dm": "Direktnachricht schließen",

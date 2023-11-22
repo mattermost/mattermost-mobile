@@ -112,8 +112,6 @@
   "channel_info.archive_description.cannot_view_archived": "Это архивирует канал из команды и удаляет его из пользовательского интерфейса. Заархивированные каналы могут быть разархивированы при необходимости.\n\nВы уверены, что хотите архивировать {term} {name}?",
   "channel_info.archive_failed": "Произошла ошибка при попытке архивирования канала {displayName}",
   "channel_info.archive_title": "Архивировать {term}",
-  "channel_info.channel_auto_follow_threads": "Следить за всеми обсуждениями в этом канале",
-  "channel_info.channel_auto_follow_threads_failed": "Произошла ошибка при попытке автоматического отслеживания всех обсуждений в канале {displayName}",
   "channel_info.channel_files": "Файлы",
   "channel_info.close": "Закрыть",
   "channel_info.close_dm": "Закрыть личную переписку",
