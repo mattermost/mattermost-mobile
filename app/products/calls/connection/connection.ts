@@ -76,7 +76,7 @@ export async function newConnection(
             voiceTrack.enabled = false;
             streams.push(stream);
         } catch (err) {
-            logError('Unable to get media device:', err);
+            logError('calls: unable to get media device:', err);
         }
     };
 
@@ -146,7 +146,7 @@ export async function newConnection(
                 peer.replaceTrack(voiceTrack.id, null);
             }
         } catch (e) {
-            logError('From RTCPeer:', e);
+            logError('calls: from RTCPeer, error on mute:', e);
             return;
         }
 
@@ -177,7 +177,7 @@ export async function newConnection(
                 voiceTrackAdded = true;
             }
         } catch (e) {
-            logError('From RTCPeer:', e);
+            logError('calls: from RTCPeer, error on unmute:', e);
             return;
         }
 
@@ -214,16 +214,35 @@ export async function newConnection(
         }
     });
 
-    ws.on('close', () => {
-        logDebug('calls: ws close');
+    ws.on('close', (event: WebSocketCloseEvent) => {
+        logDebug('calls: ws close, code:', event?.code, 'reason:', event?.reason, 'message:', event?.message);
+    });
+
+    ws.on('open', (originalConnID: string, prevConnID: string, isReconnect: boolean) => {
+        if (isReconnect) {
+            logDebug('calls: ws reconnect, sending reconnect msg');
+            ws.send('reconnect', {
+                channelID,
+                originalConnID,
+                prevConnID,
+            });
+        } else {
+            logDebug('calls: ws open, sending join msg');
+            ws.send('join', {
+                channelID,
+                title,
+                threadID: rootId,
+            });
+        }
     });
 
     ws.on('join', async () => {
+        logDebug('calls: join ack received, initializing connection');
         let config;
         try {
             config = await client.getCallsConfig();
         } catch (err) {
-            logError('FETCHING CALLS CONFIG:', getFullErrorMessage(err));
+            logError('calls: fetching calls config:', getFullErrorMessage(err));
             return;
         }
 
@@ -232,7 +251,7 @@ export async function newConnection(
             try {
                 iceConfigs.push(...await client.genTURNCredentials());
             } catch (err) {
-                logWarning('failed to fetch TURN credentials:', getFullErrorMessage(err));
+                logWarning('calls: failed to fetch TURN credentials:', getFullErrorMessage(err));
             }
         }
 
@@ -249,7 +268,7 @@ export async function newConnection(
                     selectedAudioDevice: data.selectedAudioDevice,
                 };
                 setAudioDeviceInfo(info);
-                logDebug('AudioDeviceChanged. info:', info);
+                logDebug('calls: AudioDeviceChanged, info:', info);
 
                 // Auto switch to bluetooth the first time we connect to bluetooth, but not after.
                 if (!btInitialized) {
@@ -274,7 +293,7 @@ export async function newConnection(
                 // Log for customer debugging. For the moment we're not changing output labels because of incall-manager iOS
                 // limitations with how it reports Bluetooth -- namely that it doesn't, so we don't know when Bluetooth is
                 // overriding the earpiece and/or headset.
-                logDebug('WiredHeadset plugged in. Data:', data);
+                logDebug('calls: WiredHeadset plugged in, data:', data);
 
                 // iOS switches to the headset when we connect it, so turn off speakerphone to keep UI in sync.
                 if (data.isPlugged) {
@@ -308,20 +327,21 @@ export async function newConnection(
         rtcMonitor.on('mos', processMeanOpinionScore);
 
         peer.on('offer', (sdp) => {
-            logDebug(`local offer, sending: ${JSON.stringify(sdp)}`);
+            logDebug(`calls: local offer, sending: ${JSON.stringify(sdp)}`);
             ws.send('sdp', {
                 data: deflate(JSON.stringify(sdp)),
             }, true);
         });
 
         peer.on('answer', (sdp) => {
-            logDebug(`local answer, sending: ${JSON.stringify(sdp)}`);
+            logDebug(`calls: local answer, sending: ${JSON.stringify(sdp)}`);
             ws.send('sdp', {
                 data: deflate(JSON.stringify(sdp)),
             }, true);
         });
 
         peer.on('candidate', (candidate) => {
+            logDebug(`calls: local candidate: ${JSON.stringify(candidate)}`);
             ws.send('ice', {
                 data: JSON.stringify(candidate),
             });
@@ -335,9 +355,9 @@ export async function newConnection(
         });
 
         peer.on('stream', (remoteStream: MediaStream) => {
-            logDebug('new remote stream received', remoteStream.id);
+            logDebug('calls: new remote stream received', remoteStream.id);
             for (const track of remoteStream.getTracks()) {
-                logDebug('remote track', track.id);
+                logDebug('calls: remote track', track.id);
             }
 
             streams.push(remoteStream);
@@ -354,25 +374,14 @@ export async function newConnection(
         });
     });
 
-    ws.on('open', (originalConnID: string, prevConnID: string, isReconnect: boolean) => {
-        if (isReconnect) {
-            logDebug('calls: ws reconnect, sending reconnect msg');
-            ws.send('reconnect', {
-                channelID,
-                originalConnID,
-                prevConnID,
-            });
-        } else {
-            ws.send('join', {
-                channelID,
-                title,
-                threadID: rootId,
-            });
-        }
-    });
-
     ws.on('message', ({data}: { data: string }) => {
         const msg = JSON.parse(data);
+        if (!msg) {
+            return;
+        }
+        if (msg.type !== 'ping') {
+            logDebug('calls: remote signal', data);
+        }
         if (msg.type === 'answer' || msg.type === 'candidate' || msg.type === 'offer') {
             peer?.signal(data);
         }
