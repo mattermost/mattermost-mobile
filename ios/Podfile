@@ -63,7 +63,7 @@ target 'Mattermost' do
   pod 'simdjson', path: '../node_modules/@nozbe/simdjson', :modular_headers => true
 
   # TODO: Remove this once upstream PR https://github.com/daltoniam/Starscream/pull/871 is merged
-  pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => '9575b6781d1262247096af73617ae3acb2b139a0'
+  pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => '7494780a021e44873e6e5fde5026ef96696c1865'
 
 
   post_install do |installer|

@@ -1,5 +1,5 @@
 PODS:
-  - Alamofire (5.6.4)
+  - Alamofire (5.8.1)
   - boost (1.76.0)
   - BVLinearGradient (2.8.3):
     - React-Core
@@ -96,8 +96,8 @@ PODS:
   - libwebp/sharpyuv (1.3.2)
   - libwebp/webp (1.3.2):
     - libwebp/sharpyuv
-  - mattermost-react-native-turbo-log (0.2.3):
-    - CocoaLumberjack
+  - mattermost-react-native-turbo-log (0.3.1):
+    - CocoaLumberjack (~> 3.8.2)
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - OpenSSL-Universal (1.1.1100)
@@ -408,7 +408,7 @@ PODS:
     - glog
   - react-native-background-timer (2.4.1):
     - React-Core
-  - react-native-cameraroll (6.0.2):
+  - react-native-cameraroll (7.0.0):
     - React-Core
   - react-native-cookies (6.2.1):
     - React-Core
@@ -416,7 +416,7 @@ PODS:
     - React-Core
   - react-native-document-picker (9.0.1):
     - React-Core
-  - react-native-emm (1.3.5):
+  - react-native-emm (1.4.0):
     - React-Core
   - react-native-hw-keyboard-event (0.0.4):
     - React
@@ -426,14 +426,14 @@ PODS:
     - React-Core
   - react-native-netinfo (11.1.0):
     - React-Core
-  - react-native-network-client (1.4.1):
-    - Alamofire (~> 5.6.4)
+  - react-native-network-client (1.5.0):
+    - Alamofire (~> 5.8.1)
     - React-Core
     - Starscream (~> 4.0.4)
     - SwiftyJSON (~> 5.0)
   - react-native-notifications (5.1.0):
     - React-Core
-  - react-native-paste-input (0.6.4):
+  - react-native-paste-input (0.7.0):
     - React-Core
     - Swime (= 3.0.6)
   - react-native-safe-area-context (4.7.4):
@@ -446,7 +446,7 @@ PODS:
   - react-native-webrtc (111.0.6):
     - JitsiWebRTC (~> 111.0.0)
     - React-Core
-  - react-native-webview (13.6.2):
+  - react-native-webview (13.6.3):
     - React-Core
   - React-NativeModulesApple (0.72.7):
     - hermes-engine
@@ -771,7 +771,7 @@ DEPENDENCIES:
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - "simdjson (from `../node_modules/@nozbe/simdjson`)"
-  - Starscream (from `https://github.com/mattermost/Starscream.git`, commit `9575b6781d1262247096af73617ae3acb2b139a0`)
+  - Starscream (from `https://github.com/mattermost/Starscream.git`, commit `7494780a021e44873e6e5fde5026ef96696c1865`)
   - "WatermelonDB (from `../node_modules/@nozbe/watermelondb`)"
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -968,7 +968,7 @@ EXTERNAL SOURCES:
   simdjson:
     :path: "../node_modules/@nozbe/simdjson"
   Starscream:
-    :commit: 9575b6781d1262247096af73617ae3acb2b139a0
+    :commit: 7494780a021e44873e6e5fde5026ef96696c1865
     :git: https://github.com/mattermost/Starscream.git
   WatermelonDB:
     :path: "../node_modules/@nozbe/watermelondb"
@@ -977,11 +977,11 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   Starscream:
-    :commit: 9575b6781d1262247096af73617ae3acb2b139a0
+    :commit: 7494780a021e44873e6e5fde5026ef96696c1865
     :git: https://github.com/mattermost/Starscream.git
 
 SPEC CHECKSUMS:
-  Alamofire: 4e95d97098eacb88856099c4fc79b526a299e48c
+  Alamofire: 3ca42e259043ee0dc5c0cdd76c4bc568b8e42af7
   boost: 57d2868c099736d80fcd648bf211b4431e51a558
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
@@ -1005,7 +1005,7 @@ SPEC CHECKSUMS:
   JitsiWebRTC: 80f62908fcf2a1160e0d14b584323fb6e6be630b
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
-  mattermost-react-native-turbo-log: a00b39dafdef7905164110466e7d725f6f079751
+  mattermost-react-native-turbo-log: bf99c70309c19f81719f044f068c1b9c0baf5e94
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: 83bca1c184feb4d2e51c72c8369b83d641443f95
@@ -1024,22 +1024,22 @@ SPEC CHECKSUMS:
   React-jsinspector: 8baadae51f01d867c3921213a25ab78ab4fbcd91
   React-logger: 8edc785c47c8686c7962199a307015e2ce9a0e4f
   react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
-  react-native-cameraroll: 2a5be165d8799664f658569496f1e08178dc3eab
+  react-native-cameraroll: b474e88bc3d27a85315115d26c796cef4586c5ab
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
   react-native-create-thumbnail: e022bcdcba8a0b4529a50d3fa1a832ec921be39d
   react-native-document-picker: 2b8f18667caee73a96708a82b284a4f40b30a156
-  react-native-emm: 5aaacd33453894ec64b9c774f735b6bf1a92b89f
+  react-native-emm: 17ba66e81c93429b2bb288848d706e2e485b02e8
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 2e2e82aba9b6a91a7c78f7d9afde341a2659c7b8
   react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
   react-native-netinfo: 3aa5637c18834966e0c932de8ae1ae56fea20a97
-  react-native-network-client: 953ab4d0914fdde6dc40924b5faad8631a587d4e
+  react-native-network-client: 7ca5125fe613d2085c8ee12723a4ba9bca04f948
   react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
-  react-native-paste-input: 09f14cbfb646ad9d2ef79cdc6f3d45f337c10ad1
+  react-native-paste-input: 325908063bb38c88d96b43c8304021b1978402b6
   react-native-safe-area-context: 2cd91d532de12acdb0a9cbc8d43ac72a8e4c897c
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
   react-native-webrtc: 255a1172fd31525b952b36aef7b8e9a41de325e5
-  react-native-webview: 8fc09f66a1a5b16bbe37c3878fda27d5982bb776
+  react-native-webview: 88293a0f23eca8465c0433c023ec632930e644d0
   React-NativeModulesApple: b6868ee904013a7923128892ee4a032498a1024a
   React-perflogger: 31ea61077185eb1428baf60c0db6e2886f141a5a
   React-RCTActionSheet: 392090a3abc8992eb269ef0eaa561750588fc39d
@@ -1084,13 +1084,13 @@ SPEC CHECKSUMS:
   SentryPrivate: b2f7996f37781080f04a946eb4e377ff63c64195
   simdjson: e6bfae9ce4bcdc80452d388d593816f1ca2106f3
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
-  Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
+  Starscream: e7497aedb1c2e27d2a672d40286fd1b34f20f2e4
   SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
   WatermelonDB: 842d22ba555425aa9f3ce551239a001200c539bc
   Yoga: 4c3aa327e4a6a23eeacd71f61c81df1bcdf677d5
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: dd85a4bc8803f2f35a280b1e52206e421bff1492
+PODFILE CHECKSUM: 4038d03c79dbdfa3f38aed2618ea63c872d39bce
 
-COCOAPODS: 1.14.2
+COCOAPODS: 1.14.3
