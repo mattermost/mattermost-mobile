@@ -8,6 +8,7 @@ import urlParse from 'url-parse';
 import {makeDirectChannel, switchToChannelByName} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchUsersByUsernames} from '@actions/remote/user';
+import DeepLinkType from '@app/constants/deep_linking';
 import {DeepLink, Launch, Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
@@ -28,6 +29,8 @@ import {
     ID_PATH_PATTERN,
     PLUGIN_ID_PATH_PATTERN,
 } from '@utils/url/path';
+
+import {removeProtocol} from '../url';
 
 import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -124,35 +127,31 @@ const matcherOpts: Parameters<typeof match>[1] = {decode: decodeURIComponent};
 
 type ChannelPathParams = {
     hostname: string;
-    subpath?: string;
+    serverUrl: string;
     teamName: string;
     path: 'channels' | 'messages';
     identifier: string;
     postId?: string;
 };
 
-const CHANNEL_PATH = `/:subpath*/:teamName(${TEAM_NAME_PATH_PATTERN})/:path(channels|messages)/:identifier(${IDENTIFIER_PATH_PATTERN})/:postId(${ID_PATH_PATTERN})?`;
+const CHANNEL_PATH = `:serverUrl(.*)/:teamName(${TEAM_NAME_PATH_PATTERN})/:path(channels|messages)/:identifier(${IDENTIFIER_PATH_PATTERN})/:postId(${ID_PATH_PATTERN})?`;
 export const matchChannelDeeplink = match<ChannelPathParams>(CHANNEL_PATH, matcherOpts);
 
 type PermalinkPathParams = {
-    hostname: string;
-    subpath?: string;
+    serverUrl: string;
     teamName: string;
     postId: string;
 };
-const PERMALINK_PATH = `/:subpath*/:teamName(${TEAM_NAME_PATH_PATTERN})/pl/:postId(${ID_PATH_PATTERN})`;
+const PERMALINK_PATH = `:serverUrl(.*)/:teamName(${TEAM_NAME_PATH_PATTERN})/pl/:postId(${ID_PATH_PATTERN})`;
 export const matchPermalinkDeeplink = match<PermalinkPathParams>(PERMALINK_PATH, matcherOpts);
-
-const getServerUrl = (host: string, subpath?: string) => host + (subpath ? '/' + subpath : '');
 
 export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
     try {
-        const {host, pathname} = urlParse(deepLinkUrl);
+        const url = removeProtocol(deepLinkUrl);
 
-        const channelMatch = matchChannelDeeplink(pathname);
+        const channelMatch = matchChannelDeeplink(url);
         if (channelMatch) {
-            const {params: {subpath, teamName, path, identifier, postId}} = channelMatch;
-            const serverUrl = getServerUrl(host, subpath);
+            const {params: {serverUrl, teamName, path, identifier, postId}} = channelMatch;
 
             if (path === 'channels') {
                 return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl, teamName, channelName: identifier, postId}};
@@ -160,43 +159,39 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
 
             if (path === 'messages') {
                 if (identifier.startsWith('@')) {
-                    return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl, teamName, userName: identifier}};
+                    return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl, teamName, userName: identifier.substring(1)}};
                 }
 
                 return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl, teamName, channelId: identifier}};
             }
         }
 
-        const permalinkMatch = matchPermalinkDeeplink(pathname);
+        const permalinkMatch = matchPermalinkDeeplink(url);
         if (permalinkMatch) {
-            const {params: {subpath, teamName, postId}} = permalinkMatch;
-            const serverUrl = getServerUrl(host, subpath);
-
+            const {params: {serverUrl, teamName, postId}} = permalinkMatch;
             return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl, teamName, postId}};
         }
 
-        const pluginMatch = match<{subpath?: string; id: string}>(`/:subpath*/plugins/:id(${PLUGIN_ID_PATH_PATTERN})`, matcherOpts)(pathname);
+        const pluginMatch = match<{serverUrl: string; id: string}>(`:serverUrl(.*)/plugins/:id(${PLUGIN_ID_PATH_PATTERN})`, matcherOpts)(url);
         if (pluginMatch) {
-            const {params: {subpath, id}} = pluginMatch;
-            const serverUrl = getServerUrl(host, subpath);
+            const {params: {serverUrl, id}} = pluginMatch;
             return {type: DeepLink.Plugin, url: deepLinkUrl, data: {serverUrl, teamName: '', id}};
         }
-    } catch {
+    } catch (err) {
         // do nothing just return invalid deeplink
     }
 
     return {type: DeepLink.Invalid, url: deepLinkUrl};
 }
 
-export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string) {
+export function matchDeepLink(url: string, serverURL?: string, siteURL?: string) {
     if (!url || (!serverURL && !siteURL)) {
-        return '';
+        return null;
     }
 
     let urlToMatch = url;
     const urlBase = serverURL || siteURL || '';
     const parsedUrl = urlParse(url);
-    const parsedBase = urlParse(urlBase);
 
     if (!parsedUrl.protocol) {
         // If url doesn't contain site or server URL, tack it on.
@@ -207,22 +202,13 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
         }
     }
 
-    const finalUrl = urlParse(urlToMatch);
-    const baseSubpath = parsedBase.pathname.replace('/', '');
-    const baseHostname = parsedBase.hostname;
-    const urlSubpath = finalUrl.pathname.split('/')[1];
-    const urlHostname = finalUrl.hostname;
+    const parsed = parseDeepLink(urlToMatch);
 
-    if (baseSubpath) {
-        // if the server is in a subpath
-        if (urlHostname === baseHostname && urlSubpath === baseSubpath) {
-            return urlToMatch;
-        }
-    } else if (urlHostname === baseHostname) {
-        return urlToMatch;
+    if (parsed.type === DeepLinkType.Invalid) {
+        return null;
     }
 
-    return '';
+    return parsed;
 }
 
 export const getLaunchPropsFromDeepLink = (deepLinkUrl: string, coldStart = false): LaunchProps => {

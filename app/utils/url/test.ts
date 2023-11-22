@@ -5,7 +5,7 @@ import {Linking} from 'react-native';
 
 import DeepLinkType from '@constants/deep_linking';
 import TestHelper from '@test/test_helper';
-import {matchDeepLink, parseDeepLink} from '@utils/deep_link';
+import {matchDeepLink} from '@utils/deep_link';
 import * as UrlUtils from '@utils/url';
 
 /* eslint-disable max-nested-callbacks */
@@ -135,26 +135,29 @@ describe('UrlUtils', () => {
         const SERVER_WITH_SUBPATH = `http://${URL_PATH_NO_PROTOCOL}`;
         const DEEPLINK_URL_ROOT = `mattermost://${URL_NO_PROTOCOL}`;
 
+        const DM_USER = TestHelper.fakeUserWithId();
+        const GM_CHANNEL_NAME = '4862db64e76a321d167fe6677f16e96e9275dabe';
+
         const tests = [
             {
                 name: 'should return null if all inputs are empty',
                 input: {url: '', serverURL: '', siteURL: ''},
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: '', serverURL: '', siteURL: null},
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: '', serverURL: null, siteURL: ''},
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: null, serverURL: '', siteURL: ''},
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
             {
                 name: 'should return null for not supported link',
@@ -163,12 +166,12 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
             {
                 name: 'should return null despite url subset match',
                 input: {url: 'http://myserver.com', serverURL: 'http://myserver.co'},
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
             {
                 name: 'should match despite no server URL in input link',
@@ -193,7 +196,7 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
             {
                 name: 'should return null for backslash-invalid deeplink',
@@ -202,7 +205,7 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
             {
                 name: 'should return null for backslash-invalid-alt deeplink',
@@ -211,7 +214,7 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
             {
                 name: 'should return null for double encoded invalid deeplink',
@@ -220,7 +223,7 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
             {
                 name: 'should return null for double encoded backslash-invalid deeplink',
@@ -229,7 +232,7 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
             {
                 name: 'should match channel link',
@@ -296,9 +299,41 @@ describe('UrlUtils', () => {
                 },
             },
             {
-                name: 'should match channel link (team name: channels, channel name: messages) with deeplink prefix',
+                name: 'should match DM channel link with deeplink prefix',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/channels/channels/messages',
+                    url: DEEPLINK_URL_ROOT + `/pl/messages/@${DM_USER.username}`,
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: {
+                    data: {
+                        userName: DM_USER.username,
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'pl',
+                    },
+                    type: DeepLinkType.DirectMessage,
+                },
+            },
+            {
+                name: 'should match GM channel link with deeplink prefix',
+                input: {
+                    url: DEEPLINK_URL_ROOT + `/pl/messages/${GM_CHANNEL_NAME}`,
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: {
+                    data: {
+                        channelId: GM_CHANNEL_NAME,
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'pl',
+                    },
+                    type: DeepLinkType.GroupMessage,
+                },
+            },
+            {
+                name: 'should match channel link (team name: pl, channel name: messages) with deeplink prefix',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/pl/channels/messages',
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
@@ -306,7 +341,7 @@ describe('UrlUtils', () => {
                     data: {
                         channelName: 'messages',
                         serverUrl: URL_NO_PROTOCOL,
-                        teamName: 'channels',
+                        teamName: 'pl',
                     },
                     type: DeepLinkType.Channel,
                 },
@@ -328,9 +363,9 @@ describe('UrlUtils', () => {
                 },
             },
             {
-                name: 'should match permalink (team name: channels) with deeplink prefix on a Server hosted in a Subpath',
+                name: 'should match permalink (team name: pl) with deeplink prefix on a Server hosted in a Subpath',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/channels/pl/qe93kkfd7783iqwuwfcwcxbsrr',
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/pl/pl/qe93kkfd7783iqwuwfcwcxbsrr',
                     serverURL: SERVER_WITH_SUBPATH,
                     siteURL: SERVER_WITH_SUBPATH,
                 },
@@ -338,7 +373,7 @@ describe('UrlUtils', () => {
                     data: {
                         postId: 'qe93kkfd7783iqwuwfcwcxbsrr',
                         serverUrl: URL_PATH_NO_PROTOCOL,
-                        teamName: 'channels',
+                        teamName: 'pl',
                     },
                     type: DeepLinkType.Permalink,
                 },
@@ -366,7 +401,7 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_WITH_SUBPATH,
                     siteURL: SERVER_WITH_SUBPATH,
                 },
-                expected: {type: DeepLinkType.Invalid},
+                expected: null,
             },
         ];
 
@@ -374,10 +409,11 @@ describe('UrlUtils', () => {
             const {name, input, expected} = test;
 
             it(name, () => {
-                const match = matchDeepLink(input.url!, input.serverURL!, input.siteURL!);
-                const parsed = parseDeepLink(match);
-                Reflect.deleteProperty(parsed, 'url');
-                expect(parsed).toEqual(expected);
+                const matched = matchDeepLink(input.url!, input.serverURL!, input.siteURL!);
+                if (matched) {
+                    Reflect.deleteProperty(matched, 'url');
+                }
+                expect(matched).toEqual(expected);
             });
         }
     });
