@@ -15,7 +15,7 @@ const style = StyleSheet.create({
 });
 
 type Props = {
-    channelId: string;
+    channelId?: string;
 }
 
 export const IncomingCallsContainer = ({
