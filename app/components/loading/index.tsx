@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {ActivityIndicator, type StyleProp, View, type ViewStyle} from 'react-native';
+import {ActivityIndicator, type StyleProp, View, type ViewStyle, Text, type TextStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 
@@ -11,9 +11,18 @@ type LoadingProps = {
     size?: number | 'small' | 'large';
     color?: string;
     themeColor?: keyof Theme;
+    footerText?: string;
+    footerTextStyles?: TextStyle;
 }
 
-const Loading = ({containerStyle, size, color, themeColor}: LoadingProps) => {
+const Loading = ({
+    containerStyle,
+    size,
+    color,
+    themeColor,
+    footerText,
+    footerTextStyles,
+}: LoadingProps) => {
     const theme = useTheme();
     const indicatorColor = themeColor ? theme[themeColor] : color;
 
@@ -23,6 +32,10 @@ const Loading = ({containerStyle, size, color, themeColor}: LoadingProps) => {
                 color={indicatorColor}
                 size={size}
             />
+            {
+                footerText &&
+                <Text style={footerTextStyles}>{footerText}</Text>
+            }
         </View>
     );
 };
