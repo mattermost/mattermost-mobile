@@ -112,6 +112,8 @@
   "channel_info.archive_description.cannot_view_archived": "Detta kommer att arkivera kanalen från teamet och ta bort den från användargränssnittet. Arkiverade kanaler kan hämtas från arkivet om de behövs igen.\n\nÄr du säker på att du vill arkivera {term} {name}?",
   "channel_info.archive_failed": "Ett fel inträffade när kanalen {displayName} skulle arkiveras",
   "channel_info.archive_title": "Arkivera {term}",
+  "channel_info.channel_auto_follow_threads": "Följ alla trådar i den här kanalen",
+  "channel_info.channel_auto_follow_threads_failed": "Ett fel uppstod när alla trådar i kanalen {displayName} skulle följas",
   "channel_info.channel_files": "Filer",
   "channel_info.close": "Stäng",
   "channel_info.close_dm": "Stäng direktmeddelande",

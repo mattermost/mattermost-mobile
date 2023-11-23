@@ -112,6 +112,8 @@
   "channel_info.archive_description.cannot_view_archived": "Dies wird den Kanal für das Team archivieren und aus der Benutzeroberfläche entfernen. Archivierte Kanäle könne bei Bedard wieder aktiviert werden. \n \nBist du dir sicher, dass du {term} {name} archivieren möchtest?",
   "channel_info.archive_failed": "Beim Versuch, den Kanal {displayName} zu archivieren, ist ein Fehler aufgetreten",
   "channel_info.archive_title": "{term} archivieren",
+  "channel_info.channel_auto_follow_threads": "Allen Unterhaltungen in diesem Kanal folgen",
+  "channel_info.channel_auto_follow_threads_failed": "Beim Versuch, allen Unterhaltungen im Kanal {displayName} automatisch zu verfolgen, ist ein Fehler aufgetreten",
   "channel_info.channel_files": "Dateien",
   "channel_info.close": "Schliessen",
   "channel_info.close_dm": "Direktnachricht schließen",
