@@ -323,7 +323,7 @@ describe('UrlUtils', () => {
                 },
                 expected: {
                     data: {
-                        channelId: GM_CHANNEL_NAME,
+                        channelName: GM_CHANNEL_NAME,
                         serverUrl: URL_NO_PROTOCOL,
                         teamName: 'pl',
                     },

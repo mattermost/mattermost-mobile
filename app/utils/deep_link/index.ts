@@ -95,7 +95,7 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
             }
             case DeepLink.GroupMessage: {
                 const deepLinkData = parsed.data as DeepLinkGM;
-                switchToChannelByName(existingServerUrl, deepLinkData.channelId, deepLinkData.teamName, errorBadChannel, intl);
+                switchToChannelByName(existingServerUrl, deepLinkData.channelName, deepLinkData.teamName, errorBadChannel, intl);
                 break;
             }
             case DeepLink.Permalink: {
@@ -131,10 +131,9 @@ type ChannelPathParams = {
     teamName: string;
     path: 'channels' | 'messages';
     identifier: string;
-    postId?: string;
 };
 
-const CHANNEL_PATH = `:serverUrl(.*)/:teamName(${TEAM_NAME_PATH_PATTERN})/:path(channels|messages)/:identifier(${IDENTIFIER_PATH_PATTERN})/:postId(${ID_PATH_PATTERN})?`;
+const CHANNEL_PATH = `:serverUrl(.*)/:teamName(${TEAM_NAME_PATH_PATTERN})/:path(channels|messages)/:identifier(${IDENTIFIER_PATH_PATTERN})`;
 export const matchChannelDeeplink = match<ChannelPathParams>(CHANNEL_PATH, matcherOpts);
 
 type PermalinkPathParams = {
@@ -151,10 +150,10 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
 
         const channelMatch = matchChannelDeeplink(url);
         if (channelMatch) {
-            const {params: {serverUrl, teamName, path, identifier, postId}} = channelMatch;
+            const {params: {serverUrl, teamName, path, identifier}} = channelMatch;
 
             if (path === 'channels') {
-                return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl, teamName, channelName: identifier, postId}};
+                return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl, teamName, channelName: identifier}};
             }
 
             if (path === 'messages') {
@@ -162,7 +161,7 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
                     return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl, teamName, userName: identifier.substring(1)}};
                 }
 
-                return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl, teamName, channelId: identifier}};
+                return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl, teamName, channelName: identifier}};
             }
         }
 
