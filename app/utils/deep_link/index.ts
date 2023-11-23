@@ -123,8 +123,6 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
     }
 }
 
-const matcherOpts: Parameters<typeof match>[1] = {decode: decodeURIComponent};
-
 type ChannelPathParams = {
     hostname: string;
     serverUrl: string;
@@ -134,7 +132,7 @@ type ChannelPathParams = {
 };
 
 const CHANNEL_PATH = `:serverUrl(.*)/:teamName(${TEAM_NAME_PATH_PATTERN})/:path(channels|messages)/:identifier(${IDENTIFIER_PATH_PATTERN})`;
-export const matchChannelDeeplink = match<ChannelPathParams>(CHANNEL_PATH, matcherOpts);
+export const matchChannelDeeplink = match<ChannelPathParams>(CHANNEL_PATH);
 
 type PermalinkPathParams = {
     serverUrl: string;
@@ -142,7 +140,7 @@ type PermalinkPathParams = {
     postId: string;
 };
 const PERMALINK_PATH = `:serverUrl(.*)/:teamName(${TEAM_NAME_PATH_PATTERN})/pl/:postId(${ID_PATH_PATTERN})`;
-export const matchPermalinkDeeplink = match<PermalinkPathParams>(PERMALINK_PATH, matcherOpts);
+export const matchPermalinkDeeplink = match<PermalinkPathParams>(PERMALINK_PATH);
 
 export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
     try {
@@ -171,7 +169,7 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
             return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl, teamName, postId}};
         }
 
-        const pluginMatch = match<{serverUrl: string; id: string}>(`:serverUrl(.*)/plugins/:id(${PLUGIN_ID_PATH_PATTERN})`, matcherOpts)(url);
+        const pluginMatch = match<{serverUrl: string; id: string}>(`:serverUrl(.*)/plugins/:id(${PLUGIN_ID_PATH_PATTERN})`)(url);
         if (pluginMatch) {
             const {params: {serverUrl, id}} = pluginMatch;
             return {type: DeepLink.Plugin, url: deepLinkUrl, data: {serverUrl, teamName: '', id}};
