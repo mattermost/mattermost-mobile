@@ -159,9 +159,9 @@ async function doReconnect(serverUrl: string) {
         setTeamLoading(serverUrl, false);
         return entryData.error;
     }
-    const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
+    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, gmConverted} = entryData;
 
-    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId);
+    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, Boolean(gmConverted));
 
     const dt = Date.now();
     if (models?.length) {
