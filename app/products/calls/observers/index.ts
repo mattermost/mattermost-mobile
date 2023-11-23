@@ -3,7 +3,13 @@
 
 import {distinctUntilChanged, switchMap, combineLatest, Observable, of as of$} from 'rxjs';
 
-import {observeCallsConfig, observeCallsState, observeCurrentCall} from '@calls/state';
+import {
+    observeCallsConfig,
+    observeCallsState,
+    observeChannelsWithCalls,
+    observeCurrentCall,
+    observeIncomingCalls,
+} from '@calls/state';
 import {fillUserModels, userIds} from '@calls/utils';
 import {License} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -87,4 +93,42 @@ export const observeCurrentSessionsDict = () => {
             switchMap((ps: UserModel[]) => of$(fillUserModels(call?.sessions || {}, ps))),
         )),
     ) as Observable<Dictionary<CallSession>>;
+};
+
+export const observeCallStateInChannel = (serverUrl: string, database: Database, channelId: Observable<string>) => {
+    const isCallInCurrentChannel = combineLatest([channelId, observeChannelsWithCalls(serverUrl)]).pipe(
+        switchMap(([id, calls]) => of$(Boolean(calls[id]))),
+        distinctUntilChanged(),
+    );
+    const currentCall = observeCurrentCall();
+    const ccChannelId = currentCall.pipe(
+        switchMap((call) => of$(call?.channelId)),
+        distinctUntilChanged(),
+    );
+    const isInACall = currentCall.pipe(
+        switchMap((call) => of$(Boolean(call?.connected))),
+        distinctUntilChanged(),
+    );
+    const dismissed = combineLatest([channelId, observeCallsState(serverUrl)]).pipe(
+        switchMap(([id, state]) => of$(Boolean(state.calls[id]?.dismissed[state.myUserId]))),
+        distinctUntilChanged(),
+    );
+    const isInCurrentChannelCall = combineLatest([channelId, ccChannelId]).pipe(
+        switchMap(([id, ccId]) => of$(id === ccId)),
+        distinctUntilChanged(),
+    );
+    const showJoinCallBanner = combineLatest([isCallInCurrentChannel, dismissed, isInCurrentChannelCall]).pipe(
+        switchMap(([isCall, dism, inCurrCall]) => of$(Boolean(isCall && !dism && !inCurrCall))),
+        distinctUntilChanged(),
+    );
+    const showIncomingCalls = observeIncomingCalls().pipe(
+        switchMap((ics) => of$(ics.incomingCalls.length > 0)),
+        distinctUntilChanged(),
+    );
+
+    return {
+        showJoinCallBanner,
+        isInACall,
+        showIncomingCalls,
+    };
 };

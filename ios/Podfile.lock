@@ -420,7 +420,7 @@ PODS:
     - React-Core
   - react-native-hw-keyboard-event (0.0.4):
     - React
-  - react-native-image-picker (7.0.2):
+  - react-native-image-picker (7.0.3):
     - React-Core
   - react-native-in-app-review (4.3.3):
     - React-Core
@@ -634,7 +634,7 @@ PODS:
   - RNScreens (3.27.0):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
-  - RNSentry (5.13.0):
+  - RNSentry (5.14.0):
     - React-Core
     - Sentry/HybridSDK (= 8.15.2)
   - RNShare (10.0.1):
@@ -1030,7 +1030,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: 2b8f18667caee73a96708a82b284a4f40b30a156
   react-native-emm: 17ba66e81c93429b2bb288848d706e2e485b02e8
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
-  react-native-image-picker: 2e2e82aba9b6a91a7c78f7d9afde341a2659c7b8
+  react-native-image-picker: 2381c008bbb09e72395a2d043c147b11bd1523d9
   react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
   react-native-netinfo: 3aa5637c18834966e0c932de8ae1ae56fea20a97
   react-native-network-client: 7ca5125fe613d2085c8ee12723a4ba9bca04f948
@@ -1074,7 +1074,7 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: ec56a5f81c3941206fd85625fa669ffc7b4545f9
   RNReanimated: ab2e96c6d5591c3dfbb38a464f54c8d17fb34a87
   RNScreens: 3c2d122f5e08c192e254c510b212306da97d2581
-  RNSentry: 82667e9889782365bf801645ef4d2a731dcf60df
+  RNSentry: e12330e6fc1b2fc2347babdd8aba346d1211ef75
   RNShare: bed7c4fbe615f3d977f22feb0902af9a790c1660
   RNSVG: 255767813dac22db1ec2062c8b7e7b856d4e5ae6
   RNVectorIcons: 23b6e11af4aaf104d169b1b0afa7e5cf96c676ce

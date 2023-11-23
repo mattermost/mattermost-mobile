@@ -112,6 +112,8 @@
   "channel_info.archive_description.cannot_view_archived": "Dit archiveert het kanaal van het team en verwijdert het uit de gebruikersinterface. Gearchiveerde kanalen kunnen worden gearchiveerd als ze weer nodig zijn.\n\nWeet je zeker dat je de {term} {name} wil archiveren?",
   "channel_info.archive_failed": "Er is een fout opgetreden bij het archiveren van het kanaal {displayName}",
   "channel_info.archive_title": "Archiveer {term}",
+  "channel_info.channel_auto_follow_threads": "Volg alle draadjes in dit kanaal",
+  "channel_info.channel_auto_follow_threads_failed": "Er is een fout opgetreden bij het automatisch volgen van alle draadjes in kanaal {displayName}",
   "channel_info.channel_files": "Bestanden",
   "channel_info.close": "Sluiten",
   "channel_info.close_dm": "Direct bericht sluiten",

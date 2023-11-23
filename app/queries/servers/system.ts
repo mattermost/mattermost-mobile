@@ -9,6 +9,7 @@ import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import {isMinimumServerVersion} from '@utils/helpers';
+import {logError} from '@utils/log';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ConfigModel from '@typings/database/models/servers/config';
@@ -430,6 +431,22 @@ export async function setCurrentChannelId(operator: ServerDataOperator, channelI
 
         return {currentChannelId: channelId};
     } catch (error) {
+        return {error};
+    }
+}
+
+export async function setCurrentTeamId(operator: ServerDataOperator, teamId: string) {
+    try {
+        const models = await prepareCommonSystemValues(operator, {
+            currentTeamId: teamId,
+        });
+        if (models) {
+            await operator.batchRecords(models, 'setCurrentTeamId');
+        }
+
+        return {currentTeamId: teamId};
+    } catch (error) {
+        logError(error);
         return {error};
     }
 }
