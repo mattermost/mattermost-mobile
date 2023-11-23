@@ -5,7 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
+import {Preferences, License} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -560,3 +560,60 @@ export const observeLastServerVersionCheck = (database: Database) => {
         switchMap((model) => of$(parseInt(model.value, 10))),
     );
 };
+
+export const observeIfHighlightWithoutNotificationHasLicense = (database: Database) => {
+    const license = observeLicense(database);
+
+    const isCloudStarterFree = checkIsCloudStarterFree(license);
+    const isStarterSKULicense = checkIsStarterSKULicense(license);
+    const isSelfHostedStarter = observeIsSelfHosterStarter(database);
+    const isEnterpriseReady = observeConfigBooleanValue(database, 'BuildEnterpriseReady', false);
+
+    return combineLatest([isCloudStarterFree, isStarterSKULicense, isSelfHostedStarter, isEnterpriseReady]).pipe(
+        switchMap(([isCSF, isSSL, isSHS, isEnt]) => {
+            // It should have enterprise build AND not have a starter license of any kind
+            const highlightWithoutNotificationHasLicense = isEnt && !(isCSF || isSSL || isSHS);
+
+            return of$(highlightWithoutNotificationHasLicense);
+        }),
+    );
+};
+
+function checkIsCloudStarterFree(license: Observable<ClientLicense | undefined>) {
+    return license.pipe(
+        switchMap((l) => {
+            const isCloud = l?.Cloud === 'true';
+            const isStarterSKU = l?.SkuShortName === License.SKU_SHORT_NAME.Starter;
+
+            return of$(isCloud && isStarterSKU);
+        }),
+        distinctUntilChanged(),
+    );
+}
+
+function checkIsStarterSKULicense(license: Observable<ClientLicense | undefined>) {
+    return license.pipe(
+        switchMap((l) => {
+            const isLicensed = l?.IsLicensed === 'true';
+            const isSelfHostedStarterProduct = l?.SelfHostedProducts === License.SelfHostedProducts.STARTER;
+
+            return of$(isLicensed && isSelfHostedStarterProduct);
+        }),
+        distinctUntilChanged(),
+    );
+}
+
+const observeIsSelfHosterStarter = (database: Database) => {
+    const license = observeLicense(database);
+    const isEnterpriseReady = observeConfigBooleanValue(database, 'BuildEnterpriseReady', false);
+
+    return combineLatest([license, isEnterpriseReady]).pipe(
+        switchMap(([lic, isEnt]) => {
+            const isLicensed = lic?.IsLicensed === 'true';
+            const isSelfHostedStarter = isEnt && !isLicensed;
+
+            return of$(isSelfHostedStarter);
+        }),
+    );
+};
+

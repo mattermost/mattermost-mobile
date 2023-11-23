@@ -13,6 +13,7 @@ type UserNotifyProps = {
     first_name: 'true' | 'false';
     mark_unread?: 'all' | 'mention';
     mention_keys: string;
+    highlight_keys: string;
     push: 'default' | 'all' | 'mention' | 'none';
     push_status: 'ooo' | 'offline' | 'away' | 'dnd' | 'online';
     user_id?: string;
