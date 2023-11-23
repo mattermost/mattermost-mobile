@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {type LayoutChangeEvent, ScrollView, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -16,10 +16,11 @@ import ShowMoreButton from './show_more_button';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import type {SearchPattern} from '@typings/global/markdown';
+import type {HighlightWithoutNotificationKey, SearchPattern, UserMentionKey} from '@typings/global/markdown';
 
 type MessageProps = {
     currentUser?: UserModel;
+    isHighlightWithoutNotificationLicensed?: boolean;
     highlight: boolean;
     isEdited: boolean;
     isPendingOrFailed: boolean;
@@ -32,6 +33,9 @@ type MessageProps = {
 }
 
 const SHOW_MORE_HEIGHT = 54;
+
+const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
+const EMPTY_HIGHLIGHT_KEYS: HighlightWithoutNotificationKey[] = [];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -52,7 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, searchPatterns, theme}: MessageProps) => {
+const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, searchPatterns, theme}: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
@@ -61,10 +65,6 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
     const style = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
     const textStyles = getMarkdownTextStyles(theme);
-
-    const mentionKeys = useMemo(() => {
-        return currentUser?.mentionKeys;
-    }, [currentUser]);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);
     const onPress = () => setOpen(!open);
@@ -96,7 +96,8 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
                             postId={post.id}
                             textStyles={textStyles}
                             value={post.message}
-                            mentionKeys={mentionKeys}
+                            mentionKeys={currentUser?.mentionKeys ?? EMPTY_MENTION_KEYS}
+                            highlightKeys={isHighlightWithoutNotificationLicensed ? (currentUser?.highlightKeys ?? EMPTY_HIGHLIGHT_KEYS) : EMPTY_HIGHLIGHT_KEYS}
                             searchPatterns={searchPatterns}
                             theme={theme}
                         />
