@@ -1,31 +1,32 @@
 ---
-name: trigger-beta-builds
+name: bump-build-number
 on:
-  push:
+  push: #TODO remove before merging
   workflow_dispatch:
-  #schedule:
-  #- cron: '0 18 * * 5' # Run every Friday, at 6PM
+  schedule:
+  - cron: '0 18 * * 5' # Run every Friday, at 6PM
 
 permissions:
   contents: write
 
 jobs:
-  trigger-beta-builds:
-    #runs-on: ubuntu-22.04
+  bump-build-number:
+    # This is required to run on MacOS
     runs-on: macos-latest
     steps:
-    - name: trigger-beta/checkout-repo
+    - name: bump-build-number/checkout-repo
       uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       with:
         fetch-depth: 0
+        ref: main
 
-    - name: trigger-beta/setup-ruby
+    - name: bump-build-number/setup-ruby
       uses: ruby/setup-ruby@9669f3ee51dc3f4eda8447ab696b3ab19a90d14b # v1.144.0
       with:
         ruby-version: "2.7"
         working-directory: fastlane
         bundler-cache: true
 
-    - name: trigger-beta/create-beta-branch
-      run: ./scripts/trigger_beta_build.sh
+    - name: bump-build-number/bump-build-number
+      run: ./scripts/bump_build_number.sh
 ...
