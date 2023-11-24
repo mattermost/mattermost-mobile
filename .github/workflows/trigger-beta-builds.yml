@@ -18,7 +18,8 @@ jobs:
       with:
         fetch-depth: 0
 
-    - uses: trigger-beta/setup-ruby@9669f3ee51dc3f4eda8447ab696b3ab19a90d14b # v1.144.0
+    - name: trigger-beta/setup-ruby
+      uses: ruby/setup-ruby@9669f3ee51dc3f4eda8447ab696b3ab19a90d14b # v1.144.0
       with:
         ruby-version: "2.7"
 
