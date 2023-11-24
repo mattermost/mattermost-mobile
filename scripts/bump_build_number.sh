@@ -25,7 +25,7 @@ git checkout $BRANCH_TO_BUILD
 git pull
 
 log "Generating env file required by Fastlane..."
-tee fastlane/.env <<EOF
+tee .env <<EOF
 export INCREMENT_BUILD_NUMBER=true
 export BUILD_NUMBER=${BUILD_NUMBER}
 export COMMIT_CHANGES_TO_GIT=true
@@ -34,7 +34,7 @@ export GIT_LOCAL_BRANCH=${GIT_LOCAL_BRANCH}
 EOF
 
 log "Running the fastlane branch generation script"
-(cd fastlane && . .env && bundle exec fastlane set_app_build_number)
+(set -xa && . .env && cd fastlane && bundle exec fastlane set_app_build_number)
 
 # TODO implement
 git branch -l -a
