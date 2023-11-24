@@ -13,17 +13,21 @@ is_build_pr = false
 before_all do
   ENV['SPACESHIP_SKIP_2FA_UPGRADE'] = '1'
 
+  UI.success("breakpoint1")
   is_build_pr = ENV['BUILD_PR'] == 'true'
   if is_build_pr && ENV['CI'] == 'true'
     ENV['BRANCH_TO_BUILD'] = ENV['GITHUB_REF_NAME']
   end
 
+  UI.success("breakpoint2")
   if ENV['CI'] != 'true'
+    UI.success("breakpoint3")
     # Raises an error is git is not clean
     if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
       ensure_git_status_clean
     end
 
+    UI.success("breakpoint4")
     # Block to ensure we are on the right branch
     branch = ENV['BRANCH_TO_BUILD'] || ENV['GIT_BRANCH']
     begin
@@ -35,6 +39,7 @@ before_all do
       UI.success("Using branch \"#{branch}\"")
     end
 
+    UI.success("breakpoint5")
     # If we are going to commit changes to git create a separate branch
     # so no changes are done in the branch that is being built
     if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
@@ -42,7 +47,9 @@ before_all do
       sh "git checkout -b #{local_branch}"
       UI.success("Creating branch \"#{local_branch}\"")
     end
+    UI.success("breakpoint6")
   end
+  UI.success("breakpoint7")
 end
 
 after_all do |lane|
