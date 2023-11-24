@@ -4,6 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
+import {observeIfHighlightWithoutNotificationHasLicense} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import Message from './message';
@@ -12,8 +13,10 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const withMessageInput = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
+    const isHighlightWithoutNotificationLicensed = observeIfHighlightWithoutNotificationHasLicense(database);
     return {
         currentUser,
+        isHighlightWithoutNotificationLicensed,
     };
 });
 
