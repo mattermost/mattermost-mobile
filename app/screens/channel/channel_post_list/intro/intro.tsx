@@ -29,11 +29,6 @@ const styles = StyleSheet.create({
         marginVertical: 12,
         paddingTop: PADDING_TOP,
         overflow: 'hidden',
-        ...Platform.select({
-            android: {
-                scaleY: -1,
-            },
-        }),
     },
 });
 

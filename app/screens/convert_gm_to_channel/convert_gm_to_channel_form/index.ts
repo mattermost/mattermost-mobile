@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {switchMap, distinctUntilChanged} from '@nozbe/watermelondb/utils/rx';
-import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 
 import {observeCurrentUser, observeTeammateNameDisplay} from '@queries/servers/user';

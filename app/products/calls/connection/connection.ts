@@ -207,7 +207,7 @@ export async function newConnection(
         }
     };
 
-    ws.on('error', (err: Event) => {
+    ws.on('error', (err: Error) => {
         logDebug('calls: ws error', err);
         if (err === wsReconnectionTimeoutErr) {
             disconnect();
