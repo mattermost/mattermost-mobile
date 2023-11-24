@@ -22,6 +22,7 @@ log "Build number to use for the beta build: $BUILD_NUMBER"
 
 log "Checking out branch to build: $BRANCH_TO_BUILD"
 git checkout $BRANCH_TO_BUILD
+git pull
 
 log "Generating env file required by Fastlane..."
 tee .env <<EOF
@@ -33,7 +34,7 @@ export GIT_LOCAL_BRANCH=${GIT_LOCAL_BRANCH}
 EOF
 
 log "Running the fastlane branch generation script"
-(. .env && cd fastlane && bundle exec fastlane set_app_build_number)
+(. .env && env && cd fastlane && bundle exec fastlane set_app_build_number)
 
 # TODO implement
 git branch -l -a
