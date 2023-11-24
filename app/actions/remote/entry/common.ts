@@ -43,7 +43,7 @@ export type AppEntryData = {
     removeChannelIds?: string[];
     isCRTEnabled: boolean;
     initialChannelId?: string;
-    gmConverted?: boolean;
+    gmConverted: boolean;
 }
 
 export type AppEntryError = {
@@ -58,7 +58,7 @@ export type EntryResponse = {
     teamData: MyTeamsRequest;
     chData?: MyChannelsRequest;
     meData?: MyUserRequest;
-    gmConverted?: boolean;
+    gmConverted: boolean;
 } | {
     error: unknown;
 }
