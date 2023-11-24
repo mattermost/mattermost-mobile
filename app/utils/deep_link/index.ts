@@ -169,16 +169,10 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
             return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl, teamName, postId}};
         }
 
-        const pluginMatch = match<{serverUrl: string; id: string; route?: string[]}>(`:serverUrl(.*)/plugins/:id(${PLUGIN_ID_PATH_PATTERN})/:route+`)(url);
+        const pluginMatch = match<{serverUrl: string; id: string; route?: string}>(`:serverUrl(.*)/plugins/:id(${PLUGIN_ID_PATH_PATTERN})/:route(.*)?`)(url);
         if (pluginMatch) {
             const {params: {serverUrl, id, route}} = pluginMatch;
-            const data: DeepLinkWithData['data'] = {serverUrl, teamName: '', id};
-
-            if (route) {
-                data.route = route.join('/');
-            }
-
-            return {type: DeepLink.Plugin, url: deepLinkUrl, data};
+            return {type: DeepLink.Plugin, url: deepLinkUrl, data: {serverUrl, teamName: '', id, route}};
         }
     } catch (err) {
         // do nothing just return invalid deeplink
