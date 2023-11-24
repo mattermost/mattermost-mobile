@@ -5,7 +5,7 @@ import DatabaseManager from '@database/manager';
 
 import {handleConvertedGMCategories} from './category';
 
-import type ServerDataOperator from '@app/database/operator/server_data_operator';
+import type ServerDataOperator from '@database/operator/server_data_operator';
 
 describe('handleConvertedGMCategories', () => {
     const serverUrl = 'baseHandler.test.com';
