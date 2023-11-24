@@ -20,9 +20,10 @@ LATEST_BUILD_NUMBER=$(./scripts/get_latest_build_number.sh)
 BUILD_NUMBER=$(($LATEST_BUILD_NUMBER + 1))
 log "Build number to use for the beta build: $BUILD_NUMBER"
 
-log "Checking out branch to build: $BRANCH_TO_BUILD"
-#git checkout $BRANCH_TO_BUILD
-#git pull
+log "Creating branch '${GIT_LOCAL_BRANCH}' based on branch '$BRANCH_TO_BUILD'"
+git checkout $BRANCH_TO_BUILD
+git pull
+git checkout -b $GIT_LOCAL_BRANCH
 
 log "Generating env file required by Fastlane..."
 tee .env <<EOF
