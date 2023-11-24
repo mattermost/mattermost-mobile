@@ -134,8 +134,9 @@ export async function handleConvertedGMCategories(serverUrl: string, channelId: 
         const channelCategory = categories.find((category) => category.type === CHANNELS_CATEGORY);
 
         if (!channelCategory) {
-            logError('Failed to find default category when handling category of converted GM');
-            return {};
+            const error = 'Failed to find default category when handling category of converted GM';
+            logError(error);
+            return {error};
         }
 
         const models: Model[] = [];
