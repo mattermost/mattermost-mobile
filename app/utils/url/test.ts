@@ -403,6 +403,67 @@ describe('UrlUtils', () => {
                 },
                 expected: null,
             },
+            {
+                name: 'should match plugin path on a Server hosted in a Subpath',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/plugins/com.acme.abc-test/api/testroute',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: {
+                    data: {
+                        id: 'com.acme.abc-test',
+                        route: 'api/testroute',
+                        serverUrl: URL_PATH_NO_PROTOCOL,
+                        teamName: '',
+                    },
+                    type: DeepLinkType.Plugin,
+                },
+            },
+            {
+                name: 'should match plugin path with single-level route',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/plugins/abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_ab/testroute',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: {
+                    data: {
+                        id: 'abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_ab',
+                        route: 'testroute',
+                        serverUrl: URL_PATH_NO_PROTOCOL,
+                        teamName: '',
+                    },
+                    type: DeepLinkType.Plugin,
+                },
+            },
+            {
+                name: 'should not match plugin path with invalid plugin id len=2',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/plugins/ab/api/testroute',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: null,
+            },
+            {
+                name: 'should not match plugin path with invalid plugin id len=191',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/plugins/abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc/api/testroute',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: null,
+            },
+            {
+                name: 'should not match plugin path without a route',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/plugins/abc',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: null,
+            },
         ];
 
         for (const test of tests) {

@@ -26,6 +26,7 @@ export interface DeepLinkGM extends DeepLink {
 
 export interface DeepLinkPlugin extends DeepLink {
     id: string;
+    route?: string;
 }
 
 export type DeepLinkType = typeof DeepLink[keyof typeof DeepLink];
