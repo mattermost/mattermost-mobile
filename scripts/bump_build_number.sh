@@ -34,7 +34,7 @@ export GIT_LOCAL_BRANCH=${GIT_LOCAL_BRANCH}
 EOF
 
 log "Running the fastlane branch generation script"
-(. cd fastlane && . .env && bundle exec fastlane set_app_build_number)
+(cd fastlane && . .env && bundle exec fastlane set_app_build_number)
 
 # TODO implement
 git branch -l -a
