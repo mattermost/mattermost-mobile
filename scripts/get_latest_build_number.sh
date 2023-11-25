@@ -7,7 +7,7 @@ print_all_remote_refs () {
 
 BUILD_NUMBERS=""
 for REMOTE_BRANCH in $(print_all_remote_refs); do
-  # Purposely swallow errors here, and continue to loop if the file we get the versionCode from is absent
+  # Intentionally ignore errors here: we don't want invalid brances, e.g. where the required file is removed, to make this script fail
   BUILD_NUMBER=$(git cat-file -p ${REMOTE_BRANCH}:android/app/build.gradle | grep -E 'versionCode [0-9]+' | awk '{ print $2; }') || continue
   BUILD_NUMBERS="$BUILD_NUMBERS $BUILD_NUMBER"
 done

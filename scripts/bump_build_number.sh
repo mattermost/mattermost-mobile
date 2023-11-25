@@ -5,7 +5,7 @@ cd "$(dirname "$0")"/..
 log () { echo "[$(date +%Y-%m-%dT%H:%M:%S%Z)]" "$@"; }
 
 log "Asserting that the workdir is clean"
-if ! git diff --quiet; then
+if [ -n "$(git status --porcelain)" ]; then
   log "Error, workdir is not clean: aborting" >&2
   exit 1
 fi
@@ -15,6 +15,8 @@ CURRENT_BRANCH=$(git branch --show-current)
 trap "git checkout $CURRENT_BRANCH" EXIT
 
 : ${BRANCH_TO_BUILD:=main}
+: ${PR_REVIEWERS:=mattermost/core-build-engineers}
+: ${DRY_RUN:=}
 LATEST_BUILD_NUMBER=$(./scripts/get_latest_build_number.sh)
 BUILD_NUMBER=$(($LATEST_BUILD_NUMBER + 1))
 GIT_LOCAL_BRANCH=bump-build-${BRANCH_TO_BUILD}-${BUILD_NUMBER}
@@ -37,6 +39,26 @@ EOF
 log "Running the fastlane build number bumper script"
 (. .env && cd fastlane && bundle exec fastlane set_app_build_number)
 
-# TODO push the ${GIT_LOCAL_BRANCH} branch, and create a PR for it
-# TODO put the core-build-engineers as PR reviewers
-git branch -l -a
+if [ -n "${DRY_RUN}" ]; then
+  log "Pushing branch ${GIT_LOCAL_BRANCH}, and creating a corresponding PR to ${BRANCH_TO_BUILD}"
+  git push origin ${GIT_LOCAL_BRANCH}
+
+  log "Creating PR"
+  gh pr create \
+    --repo mattermost/mattermost-mobile \
+    --base main \
+    --head "${GIT_LOCAL_BRANCH}" \
+    --reviewer "${PR_REVIEWERS}"
+    --title "Bump app build number to $BUILD_NUMBER" \
+    --body-file - <<EOF
+#### Summary
+Bump app build number to $BUILD_NUMBER
+
+#### Release Note
+```release-note
+NONE
+```
+EOF
+else
+  log "Running in DRY_RUN mode: skipping branch push and PR creation"
+fi
