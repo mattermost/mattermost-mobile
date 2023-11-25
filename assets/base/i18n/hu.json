@@ -72,7 +72,7 @@
   "apps.error.responses.form.no_form": "",
   "apps.error.responses.navigate.no_url": "Válasz típusa `navigate`, de nem volt url megadva a válaszban.",
   "apps.error.responses.unexpected_error": "Váratlan hiba érkezett.",
-  "apps.error.responses.unexpected_type": "",
+  "apps.error.responses.unexpected_type": "Az alkalmazás válaszának típusa nem várt. Válasz típusa: {type}",
   "apps.error.responses.unknown_field_error": "Hiba érkezett egy ismeretlen mezőhöz. Mező neve: `{field}`. Hiba: `{error}`.",
   "apps.error.responses.unknown_type": "Az alkalmazás válasz típusa nem támogatott. Válasz típusa: {type}.",
   "apps.error.unknown": "Ismeretlen hiba történt.",
