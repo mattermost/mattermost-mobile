@@ -5,7 +5,7 @@ cd "$(dirname "$0")"/..
 log () { echo "[$(date +%Y-%m-%dT%H:%M:%S%Z)]" "$@"; }
 
 log "Asserting that the workdir is clean"
-if [ -n "$(git status --porcelain)" ]; then
+if ! git diff --quiet; then
   log "Error, workdir is not clean: aborting" >&2
   exit 1
 fi
