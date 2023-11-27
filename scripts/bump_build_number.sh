@@ -48,7 +48,7 @@ if grep -qiE '^(no?|false)$' <<<$DRY_RUN; then
     --repo mattermost/mattermost-mobile \
     --base main \
     --head "${GIT_LOCAL_BRANCH}" \
-    --reviewer "${PR_REVIEWERS}"
+    --reviewer "${PR_REVIEWERS}" \
     --title "Bump app build number to $BUILD_NUMBER" \
     --body-file - <<EOF
 #### Summary
