@@ -1,5 +1,14 @@
 {
-    "about.date": "วันที่สร้าง:",
-    "about.enterpriseEditionLearn": "เรียนรู้เกี่ยวกับ Enterprise Edition ที่ : ",
-    "about.teamEditionLearn": "เข้าร่วมกับ Mattermost Community ที่ "
+  "about.date": "วันที่สร้าง:",
+  "about.enterpriseEditionLearn": "เรียนรู้เกี่ยวกับ Enterprise Edition ที่ : ",
+  "about.teamEditionLearn": "เข้าร่วมกับ Mattermost Community ที่ ",
+  "last_users_message.added_to_channel.type": "ถูก **เพิ่มเข้าห้อง** โดย [actor]",
+  "last_users_message.added_to_team.type": "ถูก **เพิ่มเข้าห้อง** โดย [actor].",
+  "last_users_message.first": "{ผู้ใช้คนแรก} และ ",
+  "last_users_message.joined_channel.type": "**เข้าร่วมห้องนี้แล้ว**.",
+  "last_users_message.joined_team.type": "**เข้าร่วมทีม**.",
+  "last_users_message.left_channel.type": "**ออกจากห้องแล้ว**.",
+  "last_users_message.left_team.type": "**ออกจากทีมแล้ว**.",
+  "last_users_message.removed_from_channel.type": "ถูก **ลบออกจากห้องนี้แล้ว**.",
+  "last_users_message.removed_from_team.type": "ถูก **ลบออกจากทีมนี้แล้ว**."
 }
