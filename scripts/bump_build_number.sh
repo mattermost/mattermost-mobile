@@ -55,9 +55,9 @@ if grep -qiE '^(no?|false)$' <<<$DRY_RUN; then
 Bump app build number to $BUILD_NUMBER
 
 #### Release Note
-```release-note
+\`\`\`release-note
 NONE
-```
+\`\`\`
 EOF
 else
   log "Running in DRY_RUN mode: skipping branch push and PR creation"
