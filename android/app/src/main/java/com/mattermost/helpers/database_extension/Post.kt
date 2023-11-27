@@ -3,13 +3,13 @@ package com.mattermost.helpers.database_extension
 import com.facebook.react.bridge.ReadableMap
 import com.mattermost.helpers.DatabaseHelper
 import com.mattermost.helpers.ReadableMapUtils
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import kotlin.Exception
 
-internal fun queryLastPostCreateAt(db: Database?, channelId: String): Double? {
+internal fun queryLastPostCreateAt(db: WMDatabase?, channelId: String): Double? {
     try {
         if (db != null) {
             val postsInChannelQuery = "SELECT earliest, latest FROM PostsInChannel WHERE channel_id=? ORDER BY latest DESC LIMIT 1"
@@ -35,7 +35,7 @@ internal fun queryLastPostCreateAt(db: Database?, channelId: String): Double? {
     return null
 }
 
-fun queryPostSinceForChannel(db: Database?, channelId: String): Double? {
+fun queryPostSinceForChannel(db: WMDatabase?, channelId: String): Double? {
     try {
         if (db != null) {
             val postsInChannelQuery = "SELECT last_fetched_at FROM MyChannel WHERE id=? LIMIT 1"
@@ -57,7 +57,7 @@ fun queryPostSinceForChannel(db: Database?, channelId: String): Double? {
     return null
 }
 
-fun queryLastPostInThread(db: Database?, rootId: String): Double? {
+fun queryLastPostInThread(db: WMDatabase?, rootId: String): Double? {
     try {
         if (db != null) {
             val query = "SELECT create_at FROM Post WHERE root_id=? AND delete_at=0 ORDER BY create_at DESC LIMIT 1"
@@ -75,7 +75,7 @@ fun queryLastPostInThread(db: Database?, rootId: String): Double? {
     return null
 }
 
-internal fun insertPost(db: Database, post: JSONObject) {
+internal fun insertPost(db: WMDatabase, post: JSONObject) {
     try {
         val id = try { post.getString("id") } catch (e: JSONException) { return }
         val channelId = try { post.getString("channel_id") } catch (e: JSONException) { return }
@@ -129,7 +129,7 @@ internal fun insertPost(db: Database, post: JSONObject) {
     }
 }
 
-internal fun updatePost(db: Database, post: JSONObject) {
+internal fun updatePost(db: WMDatabase, post: JSONObject) {
     try {
         val id = try { post.getString("id") } catch (e: JSONException) { return }
         val channelId = try { post.getString("channel_id") } catch (e: JSONException) { return }
@@ -182,7 +182,7 @@ internal fun updatePost(db: Database, post: JSONObject) {
     }
 }
 
-fun DatabaseHelper.handlePosts(db: Database, postsData: ReadableMap?, channelId: String, receivingThreads: Boolean) {
+fun DatabaseHelper.handlePosts(db: WMDatabase, postsData: ReadableMap?, channelId: String, receivingThreads: Boolean) {
     // Posts, PostInChannel, PostInThread, Reactions, Files, CustomEmojis, Users
     try {
         if (postsData != null) {

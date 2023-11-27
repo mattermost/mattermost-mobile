@@ -36,6 +36,7 @@ interface NotificationData {
     server_url?: string;
     team_id?: string;
     type: string;
+    sub_type?: string;
     use_user_icon?: string;
     userInfo?: NotificationUserInfo;
     version: string;

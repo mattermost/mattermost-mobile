@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {addChannelToDefaultCategory} from '@actions/local/category';
+import {addChannelToDefaultCategory, handleConvertedGMCategories} from '@actions/local/category';
 import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
     storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket,
@@ -12,10 +12,10 @@ import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
 import {loadCallForChannel} from '@calls/actions/calls';
-import {Events} from '@constants';
+import {Events, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
-import {getConfig, getCurrentChannelId} from '@queries/servers/system';
+import {getConfig, getCurrentChannelId, getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -93,14 +93,35 @@ export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
 export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const updatedChannel = JSON.parse(msg.data.channel) as Channel;
 
-        const updatedChannel = JSON.parse(msg.data.channel);
+        if (EphemeralStore.isConvertingChannel(updatedChannel.id)) {
+            return;
+        }
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const existingChannel = await getChannelById(database, updatedChannel.id);
+        const existingChannelType = existingChannel?.type;
+
         const models: Model[] = await operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: true});
         const infoModel = await updateChannelInfoFromChannel(serverUrl, updatedChannel, true);
         if (infoModel.model) {
             models.push(...infoModel.model);
         }
         operator.batchRecords(models, 'handleChannelUpdatedEvent');
+
+        // This indicates a GM was converted to a private channel
+        if (existingChannelType === General.GM_CHANNEL && updatedChannel.type === General.PRIVATE_CHANNEL) {
+            await handleConvertedGMCategories(serverUrl, updatedChannel.id, updatedChannel.team_id);
+
+            const currentChannelId = await getCurrentChannelId(database);
+            const currentTeamId = await getCurrentTeamId(database);
+
+            // Making sure user is in the correct team
+            if (currentChannelId === updatedChannel.id && currentTeamId !== updatedChannel.team_id) {
+                await setCurrentTeamId(operator, updatedChannel.team_id);
+            }
+        }
     } catch {
         // Do nothing
     }

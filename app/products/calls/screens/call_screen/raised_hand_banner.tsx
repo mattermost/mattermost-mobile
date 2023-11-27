@@ -12,11 +12,11 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {CallParticipant, CallsTheme} from '@calls/types/calls';
+import type {CallSession, CallsTheme} from '@calls/types/calls';
 
 export type Props = {
-    raisedHands: CallParticipant[];
-    currentUserId: string;
+    raisedHands: CallSession[];
+    sessionId: string;
     teammateNameDisplay: string;
 }
 
@@ -53,7 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     },
 }));
 
-export const RaisedHandBanner = ({raisedHands, currentUserId, teammateNameDisplay}: Props) => {
+export const RaisedHandBanner = ({raisedHands, sessionId, teammateNameDisplay}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
@@ -63,7 +63,7 @@ export const RaisedHandBanner = ({raisedHands, currentUserId, teammateNameDispla
         return <View style={style.raisedHandBannerContainer}/>;
     }
 
-    const names = getHandsRaisedNames(raisedHands, currentUserId, intl.locale, teammateNameDisplay, intl);
+    const names = getHandsRaisedNames(raisedHands, sessionId, intl.locale, teammateNameDisplay, intl);
 
     return (
         <View style={style.raisedHandBannerContainer}>

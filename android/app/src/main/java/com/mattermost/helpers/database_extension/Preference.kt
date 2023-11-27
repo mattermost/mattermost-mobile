@@ -1,10 +1,10 @@
 package com.mattermost.helpers.database_extension
 
 import com.facebook.react.bridge.Arguments
-import com.nozbe.watermelondb.Database
-import com.nozbe.watermelondb.mapCursor
+import com.mattermost.helpers.mapCursor
+import com.nozbe.watermelondb.WMDatabase
 
-fun getTeammateDisplayNameSetting(db: Database): String {
+fun getTeammateDisplayNameSetting(db: WMDatabase): String {
     val configSetting = queryConfigDisplayNameSetting(db)
     if (configSetting != null) {
         return configSetting

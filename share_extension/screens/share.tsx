@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import withObservables from '@nozbe/with-observables';
+import {withObservables} from '@nozbe/watermelondb/react';
 import {useNavigation} from '@react-navigation/native';
 import React, {useEffect, useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
