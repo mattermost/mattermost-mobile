@@ -24,7 +24,7 @@ jobs:
       with:
         ruby-version: "2.7"
         working-directory: fastlane
-        bundler-cache: true
+        bundler-cache: false
 
     - name: bump-build-number/bump-build-number
       run: ./scripts/bump_build_number.sh
