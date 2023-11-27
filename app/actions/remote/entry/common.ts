@@ -191,50 +191,44 @@ const fetchAppEntryData = async (serverUrl: string, sinceArg: number, onLoadTeam
         }
     }
 
-    // Fetch in parallel teams / team membership / channels for current team / user preferences / user
-    const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyUserRequest>] = [
+    // Fetch in parallel teams / team membership / user preferences / user
+    const promises: [Promise<MyTeamsRequest>, Promise<MyUserRequest>] = [
         fetchMyTeams(serverUrl, fetchOnly),
-        onLoadTeamId ? fetchMyChannelsForTeam(serverUrl, onLoadTeamId, includeDeletedChannels, since, fetchOnly, false, isCRTEnabled) : Promise.resolve(undefined),
         fetchMe(serverUrl, fetchOnly),
     ];
 
     const resolution = await Promise.all(promises);
-    const [teamData, , meData] = resolution;
-    let [, chData] = resolution;
+    const [teamData, meData] = resolution;
+    let chData;
 
     let initialTeamId = onLoadTeamId;
     let initialChannelId = channelId;
     let gmConverted = false;
 
-    if (channelId && chData?.channels) {
-        // check if channelId is in list of team's channels returned by server
-        const channelInServerData = chData.channels.find((channel) => channel.id === channelId);
+    if (channelId) {
+        const existingChannel = await getChannelById(database, channelId);
+        if (existingChannel && existingChannel.type === General.GM_CHANNEL) {
+            // Okay, so now we know the channel existsin in mobile app's database as a GM.
+            // We now need to also check if channel on server is actually a private channel,
+            // and if so, which team does it belong to now. That team will become the
+            // active team on mobile app after this point.
 
-        // if channel is not found in server data, we need to check if it
-        // was a GM that is converted to a private or public channel in a different team than
-        // the team the mobile app was last closed in.
-        // Although yon can convert GM only to a pirvate channel, a private channel can furthur be converted to a public channel.
-        // So between the mobile app being on the GM and reconnecting,
-        // it may have become either a public or a private channel. So we need to check for both.
-        if (!channelInServerData) {
-            const existingChannel = await getChannelById(database, channelId);
-            if (existingChannel && existingChannel.type === General.GM_CHANNEL) {
-                // Okay, so now we know the channel existsin in mobile app's database as a GM.
-                // We now need to also check if channel on server is actually a private channel,
-                // and if so, which team does it belong to now. That team will become the
-                // active team on mobile app after this point.
+            const client = NetworkManager.getClient(serverUrl);
+            const serverChannel = await client.getChannel(channelId);
 
-                const client = NetworkManager.getClient(serverUrl);
-                const serverChannel = await client.getChannel(channelId);
-                if (serverChannel.type === General.PRIVATE_CHANNEL || serverChannel.type === General.OPEN_CHANNEL) {
-                    initialTeamId = serverChannel.team_id;
-                    initialChannelId = channelId;
-                    gmConverted = true;
-
-                    chData = await fetchMyChannelsForTeam(serverUrl, serverChannel.team_id, includeDeletedChannels, since, fetchOnly, false, isCRTEnabled);
-                }
+            // Although yon can convert GM only to a pirvate channel, a private channel can furthur be converted to a public channel.
+            // So between the mobile app being on the GM and reconnecting,
+            // it may have become either a public or a private channel. So we need to check for both.
+            if (serverChannel.type === General.PRIVATE_CHANNEL || serverChannel.type === General.OPEN_CHANNEL) {
+                initialTeamId = serverChannel.team_id;
+                initialChannelId = channelId;
+                gmConverted = true;
             }
         }
+    }
+
+    if (initialTeamId) {
+        chData = await fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, since, fetchOnly, false, isCRTEnabled);
     }
 
     if (!initialTeamId && teamData.teams?.length && teamData.memberships?.length) {
