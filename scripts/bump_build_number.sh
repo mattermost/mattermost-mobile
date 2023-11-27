@@ -37,7 +37,7 @@ export GIT_LOCAL_BRANCH=${GIT_LOCAL_BRANCH}
 EOF
 
 log "Running the fastlane build number bumper script"
-(. .env && cd fastlane && bundle exec fastlane set_app_build_number)
+(. .env && cd fastlane && bundle install && bundle exec fastlane set_app_build_number)
 
 if [ -n "${DRY_RUN}" ]; then
   log "Pushing branch ${GIT_LOCAL_BRANCH}, and creating a corresponding PR to ${BRANCH_TO_BUILD}"
