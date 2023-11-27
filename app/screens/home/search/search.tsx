@@ -396,8 +396,6 @@ const SearchScreen = ({teamId, teams}: Props) => {
                             removeClippedSubviews={false}
                             scrollToOverflowEnabled={true}
                             overScrollMode='always'
-
-                            // @ts-expect-error old style ref
                             ref={scrollRef}
                             renderItem={renderInitialOrLoadingItem}
                         />

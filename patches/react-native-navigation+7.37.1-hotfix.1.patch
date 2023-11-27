@@ -82,19 +82,10 @@ index 8ddc3d5..609e359 100644
          if (mPermissionListener != null && mPermissionListener.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
              mPermissionListener = null;
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-index a34598c..4247607 100644
+index 195973f..c5dbafe 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-@@ -59,20 +59,30 @@ public class NavigationModule extends ReactContextBaseJavaModule {
-             @Override
-             public void onHostPause() {
-                 super.onHostPause();
--                UiUtils.runOnMainThread(() -> navigator().onHostPause());
-+                Navigator navigator = navigator();
-+                if (navigator != null) {
-+                    UiUtils.runOnMainThread(() -> navigator().onHostPause());
-+                }
-             }
+@@ -66,15 +66,22 @@ public class NavigationModule extends ReactContextBaseJavaModule {
  
              @Override
              public void onHostResume() {
@@ -111,14 +102,14 @@ index a34598c..4247607 100644
 +                    eventEmitter = new EventEmitter(reactContext);
 +                    Navigator navigator = navigator();
 +                    if (navigator != null) {
-+                            navigator.setEventEmitter(eventEmitter);
-+                            layoutFactory.init(
++                        navigator().setEventEmitter(eventEmitter);
++                        layoutFactory.init(
 +                                activity(),
 +                                eventEmitter,
-+                                navigator.getChildRegistry(),
++                                navigator().getChildRegistry(),
 +                                ((NavigationApplication) activity().getApplication()).getExternalComponents()
-+                            );
-+                            UiUtils.runOnMainThread(() -> navigator.onHostResume());
++                        );
++                        UiUtils.runOnMainThread(() -> navigator().onHostResume());
 +                    }
 +                } catch (ClassCastException e) {
 +                    // The most current activity is not a NavigationActivity
@@ -126,7 +117,7 @@ index a34598c..4247607 100644
              }
          });
      }
-@@ -210,7 +220,10 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -212,7 +219,10 @@ public class NavigationModule extends ReactContextBaseJavaModule {
      }
  
      private Navigator navigator() {
@@ -138,7 +129,7 @@ index a34598c..4247607 100644
      }
  
      private Options parse(@Nullable ReadableMap mergeOptions) {
-@@ -221,19 +234,23 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -223,19 +233,23 @@ public class NavigationModule extends ReactContextBaseJavaModule {
  
      protected void handle(Runnable task) {
          UiThread.post(() -> {
@@ -186,7 +177,7 @@ diff --git a/node_modules/react-native-navigation/lib/ios/RNNComponentViewContro
 index fc482a6..9406bbf 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
-@@ -94,6 +94,7 @@ - (void)renderReactViewIfNeeded {
+@@ -94,6 +94,7 @@
                                                                 }];
                                    }];
          self.reactView.backgroundColor = UIColor.clearColor;
@@ -207,7 +198,7 @@ index b44f24f..bf4e1c3 100644
  
  @implementation RNNOverlayWindow
  
-@@ -9,6 +11,8 @@ - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+@@ -9,6 +11,8 @@
  
      if ([hitTestResult isKindOfClass:[UIWindow class]] ||
          [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class] ||
@@ -216,41 +207,6 @@ index b44f24f..bf4e1c3 100644
          [hitTestResult isKindOfClass:[RCTModalHostView class]] ||
          [hitTestResult isKindOfClass:NSClassFromString(@"RCTRootComponentView")]) {
          return nil;
-diff --git a/node_modules/react-native-navigation/lib/ios/RNNUIBarButtonItem.m b/node_modules/react-native-navigation/lib/ios/RNNUIBarButtonItem.m
-index ece1da1..26730ae 100644
---- a/node_modules/react-native-navigation/lib/ios/RNNUIBarButtonItem.m
-+++ b/node_modules/react-native-navigation/lib/ios/RNNUIBarButtonItem.m
-@@ -87,9 +87,28 @@ - (instancetype)initWithCustomView:(RNNReactView *)reactView
-                      buttonOptions:(RNNButtonOptions *)buttonOptions
-                            onPress:(RNNButtonPressCallback)onPress {
-     self = [super initWithCustomView:reactView];
--    [reactView setFrame:CGRectMake(0, 0, 50, 50)];
-     [self applyOptions:buttonOptions];
--
-+    reactView.sizeFlexibility = RCTRootViewSizeFlexibilityWidthAndHeight;
-+    reactView.hidden = CGRectEqualToRect(reactView.frame, CGRectZero);
-+
-+    [NSLayoutConstraint deactivateConstraints:reactView.constraints];
-+    self.widthConstraint =
-+        [NSLayoutConstraint constraintWithItem:reactView
-+                                     attribute:NSLayoutAttributeWidth
-+                                     relatedBy:NSLayoutRelationEqual
-+                                        toItem:nil
-+                                     attribute:NSLayoutAttributeNotAnAttribute
-+                                    multiplier:1.0
-+                                      constant:reactView.intrinsicContentSize.width];
-+    self.heightConstraint =
-+        [NSLayoutConstraint constraintWithItem:reactView
-+                                     attribute:NSLayoutAttributeHeight
-+                                     relatedBy:NSLayoutRelationEqual
-+                                        toItem:nil
-+                                     attribute:NSLayoutAttributeNotAnAttribute
-+                                    multiplier:1.0
-+                                      constant:reactView.intrinsicContentSize.height];
-+    [NSLayoutConstraint activateConstraints:@[ self.widthConstraint, self.heightConstraint ]];
-     reactView.delegate = self;
- 
-     reactView.backgroundColor = [UIColor clearColor];
 diff --git a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts b/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
 index 4851b40..e891183 100644
 --- a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts

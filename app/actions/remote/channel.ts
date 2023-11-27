@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 import {DeviceEventEmitter} from 'react-native';
 
-import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
+import {addChannelToDefaultCategory, handleConvertedGMCategories, storeCategories} from '@actions/local/category';
 import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
@@ -231,6 +231,7 @@ export async function createChannel(serverUrl: string, displayName: string, purp
             const resolvedModels = await Promise.all(channelModels);
             models.push(...resolvedModels.flat());
         }
+
         const categoriesModels = await addChannelToDefaultCategory(serverUrl, channelData, true);
         if (categoriesModels.models?.length) {
             models.push(...categoriesModels.models);
@@ -1260,5 +1261,58 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         }
     } catch (error) {
         logDebug('cannot kick user from channel', error);
+    }
+};
+
+export const fetchGroupMessageMembersCommonTeams = async (serverUrl: string, channelId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const teams = await client.getGroupMessageMembersCommonTeams(channelId);
+        return {teams};
+    } catch (error) {
+        logDebug('error on getGroupMessageMembersCommonTeams', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const convertGroupMessageToPrivateChannel = async (serverUrl: string, channelId: string, targetTeamId: string, displayName: string) => {
+    try {
+        const name = generateChannelNameFromDisplayName(displayName);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const existingChannel = await getChannelById(database, channelId);
+        if (existingChannel) {
+            EphemeralStore.addConvertingChannel(channelId);
+        }
+
+        const client = NetworkManager.getClient(serverUrl);
+        const updatedChannel = await client.convertGroupMessageToPrivateChannel(channelId, targetTeamId, displayName, name);
+
+        if (existingChannel) {
+            existingChannel.prepareUpdate((channel) => {
+                channel.type = General.PRIVATE_CHANNEL;
+                channel.displayName = displayName;
+                channel.name = name;
+                channel.teamId = targetTeamId;
+            });
+
+            const models: Model[] = [existingChannel];
+
+            const {models: categoryUpdateModels} = await handleConvertedGMCategories(serverUrl, channelId, targetTeamId, true);
+            if (categoryUpdateModels) {
+                models.push(...categoryUpdateModels);
+            }
+
+            await operator.batchRecords(models, 'convertGroupMessageToPrivateChannel');
+        }
+
+        return {updatedChannel};
+    } catch (error) {
+        logError('error on convertGroupMessageToPrivateChannel', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    } finally {
+        EphemeralStore.removeConvertingChannel(channelId);
     }
 };

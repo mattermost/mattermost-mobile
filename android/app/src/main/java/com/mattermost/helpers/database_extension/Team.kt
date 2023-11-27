@@ -3,10 +3,10 @@ package com.mattermost.helpers.database_extension
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.NoSuchKeyException
 import com.facebook.react.bridge.ReadableMap
-import com.nozbe.watermelondb.Database
-import com.nozbe.watermelondb.mapCursor
+import com.mattermost.helpers.mapCursor
+import com.nozbe.watermelondb.WMDatabase
 
-fun findTeam(db: Database?, teamId: String): Boolean {
+fun findTeam(db: WMDatabase?, teamId: String): Boolean {
     if (db != null) {
         val team = find(db, "Team", teamId)
         return team != null
@@ -14,7 +14,7 @@ fun findTeam(db: Database?, teamId: String): Boolean {
     return false
 }
 
-fun findMyTeam(db: Database?, teamId: String): Boolean {
+fun findMyTeam(db: WMDatabase?, teamId: String): Boolean {
     if (db != null) {
         val team = find(db, "MyTeam", teamId)
         return team != null
@@ -22,7 +22,7 @@ fun findMyTeam(db: Database?, teamId: String): Boolean {
     return false
 }
 
-fun queryMyTeams(db: Database?): ArrayList<ReadableMap>? {
+fun queryMyTeams(db: WMDatabase?): ArrayList<ReadableMap>? {
     db?.rawQuery("SELECT * FROM MyTeam")?.use { cursor ->
         val results = ArrayList<ReadableMap>()
         if (cursor.count > 0) {
@@ -38,7 +38,7 @@ fun queryMyTeams(db: Database?): ArrayList<ReadableMap>? {
     return null
 }
 
-fun insertTeam(db: Database, team: ReadableMap): Boolean {
+fun insertTeam(db: WMDatabase, team: ReadableMap): Boolean {
     val id = try { team.getString("id") } catch (e: Exception) { return false }
     val deleteAt = try {team.getDouble("delete_at") } catch (e: Exception) { 0 }
     if (deleteAt.toInt() > 0) {
@@ -78,7 +78,7 @@ fun insertTeam(db: Database, team: ReadableMap): Boolean {
     }
 }
 
-fun insertMyTeam(db: Database, myTeam: ReadableMap): Boolean {
+fun insertMyTeam(db: WMDatabase, myTeam: ReadableMap): Boolean {
     val currentUserId = queryCurrentUserId(db) ?: return false
     val id = try { myTeam.getString("id") } catch (e: NoSuchKeyException) { return false }
     val roles = try { myTeam.getString("roles") } catch (e: NoSuchKeyException) { "" }

@@ -219,7 +219,7 @@ export const setCallForChannel = (serverUrl: string, channelId: string, enabled?
     }
 };
 
-export const userJoinedCall = (serverUrl: string, channelId: string, userId: string) => {
+export const userJoinedCall = (serverUrl: string, channelId: string, userId: string, sessionId: string) => {
     const callsState = getCallsState(serverUrl);
     if (!callsState.calls[channelId]) {
         return;
@@ -227,10 +227,11 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
 
     const nextCall = {
         ...callsState.calls[channelId],
-        participants: {...callsState.calls[channelId].participants},
+        sessions: {...callsState.calls[channelId].sessions},
     };
-    nextCall.participants[userId] = {
-        id: userId,
+    nextCall.sessions[sessionId] = {
+        userId,
+        sessionId,
         muted: true,
         raisedHand: 0,
     };
@@ -242,46 +243,48 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
     const currentCall = getCurrentCall();
     if (currentCall && currentCall.channelId === channelId) {
         const voiceOn = {...currentCall.voiceOn};
-        delete voiceOn[userId];
+        delete voiceOn[sessionId];
 
         const nextCurrentCall = {
             ...currentCall,
-            participants: {...currentCall.participants, [userId]: nextCall.participants[userId]},
+            sessions: {...currentCall.sessions, [sessionId]: nextCall.sessions[sessionId]},
             voiceOn,
         };
 
         // If this is the currentUser, that means we've connected to the call we created.
-        if (userId === nextCurrentCall.myUserId) {
+        if (userId === nextCurrentCall.myUserId && !nextCurrentCall.connected) {
             nextCurrentCall.connected = true;
+            nextCurrentCall.mySessionId = sessionId;
         }
 
         setCurrentCall(nextCurrentCall);
     }
 
+    // We've joined (from whatever client), so remove that call's notification
     if (userId === callsState.myUserId) {
         removeIncomingCall(serverUrl, callsState.calls[channelId].id, channelId);
     }
 };
 
-export const userLeftCall = (serverUrl: string, channelId: string, userId: string) => {
+export const userLeftCall = (serverUrl: string, channelId: string, sessionId: string) => {
     const callsState = getCallsState(serverUrl);
-    if (!callsState.calls[channelId]?.participants[userId]) {
+    if (!callsState.calls[channelId]?.sessions[sessionId]) {
         return;
     }
 
     const nextCall = {
         ...callsState.calls[channelId],
-        participants: {...callsState.calls[channelId].participants},
+        sessions: {...callsState.calls[channelId].sessions},
     };
-    delete nextCall.participants[userId];
+    delete nextCall.sessions[sessionId];
 
     // If they were screensharing, remove that.
-    if (nextCall.screenOn === userId) {
+    if (nextCall.screenOn === sessionId) {
         nextCall.screenOn = '';
     }
 
     const nextCalls = {...callsState.calls};
-    if (Object.keys(nextCall.participants).length === 0) {
+    if (Object.keys(nextCall.sessions).length === 0) {
         delete nextCalls[channelId];
 
         const callId = callsState.calls[channelId].id;
@@ -303,25 +306,24 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
         return;
     }
 
-    // Was the user me?
-    if (userId === callsState.myUserId) {
+    if (sessionId === currentCall.mySessionId) {
         myselfLeftCall();
         return;
     }
 
     // Clear them from the voice list
     const voiceOn = {...currentCall.voiceOn};
-    delete voiceOn[userId];
+    delete voiceOn[sessionId];
 
     const nextCurrentCall = {
         ...currentCall,
-        participants: {...currentCall.participants},
+        sessions: {...currentCall.sessions},
         voiceOn,
     };
-    delete nextCurrentCall.participants[userId];
+    delete nextCurrentCall.sessions[sessionId];
 
     // If they were screensharing, remove that.
-    if (nextCurrentCall.screenOn === userId) {
+    if (nextCurrentCall.screenOn === sessionId) {
         nextCurrentCall.screenOn = '';
     }
 
@@ -407,18 +409,18 @@ export const callEnded = (serverUrl: string, channelId: string) => {
     // currentCall is set to null by the disconnect.
 };
 
-export const setUserMuted = (serverUrl: string, channelId: string, userId: string, muted: boolean) => {
+export const setUserMuted = (serverUrl: string, channelId: string, sessionId: string, muted: boolean) => {
     const callsState = getCallsState(serverUrl);
-    if (!callsState.calls[channelId] || !callsState.calls[channelId].participants[userId]) {
+    if (!callsState.calls[channelId] || !callsState.calls[channelId].sessions[sessionId]) {
         return;
     }
 
-    const nextUser = {...callsState.calls[channelId].participants[userId], muted};
+    const nextUser = {...callsState.calls[channelId].sessions[sessionId], muted};
     const nextCall = {
         ...callsState.calls[channelId],
-        participants: {...callsState.calls[channelId].participants},
+        sessions: {...callsState.calls[channelId].sessions},
     };
-    nextCall.participants[userId] = nextUser;
+    nextCall.sessions[sessionId] = nextUser;
     const nextCalls = {...callsState.calls};
     nextCalls[channelId] = nextCall;
     setCallsState(serverUrl, {...callsState, calls: nextCalls});
@@ -431,15 +433,15 @@ export const setUserMuted = (serverUrl: string, channelId: string, userId: strin
 
     const nextCurrentCall = {
         ...currentCall,
-        participants: {
-            ...currentCall.participants,
-            [userId]: {...currentCall.participants[userId], muted},
+        sessions: {
+            ...currentCall.sessions,
+            [sessionId]: {...currentCall.sessions[sessionId], muted},
         },
     };
     setCurrentCall(nextCurrentCall);
 };
 
-export const setUserVoiceOn = (channelId: string, userId: string, voiceOn: boolean) => {
+export const setUserVoiceOn = (channelId: string, sessionId: string, voiceOn: boolean) => {
     const currentCall = getCurrentCall();
     if (!currentCall || currentCall.channelId !== channelId) {
         return;
@@ -447,9 +449,9 @@ export const setUserVoiceOn = (channelId: string, userId: string, voiceOn: boole
 
     const nextVoiceOn = {...currentCall.voiceOn};
     if (voiceOn) {
-        nextVoiceOn[userId] = true;
+        nextVoiceOn[sessionId] = true;
     } else {
-        delete nextVoiceOn[userId];
+        delete nextVoiceOn[sessionId];
     }
 
     const nextCurrentCall = {
@@ -459,18 +461,18 @@ export const setUserVoiceOn = (channelId: string, userId: string, voiceOn: boole
     setCurrentCall(nextCurrentCall);
 };
 
-export const setRaisedHand = (serverUrl: string, channelId: string, userId: string, timestamp: number) => {
+export const setRaisedHand = (serverUrl: string, channelId: string, sessionId: string, timestamp: number) => {
     const callsState = getCallsState(serverUrl);
-    if (!callsState.calls[channelId] || !callsState.calls[channelId].participants[userId]) {
+    if (!callsState.calls[channelId] || !callsState.calls[channelId].sessions[sessionId]) {
         return;
     }
 
-    const nextUser = {...callsState.calls[channelId].participants[userId], raisedHand: timestamp};
+    const nextUser = {...callsState.calls[channelId].sessions[sessionId], raisedHand: timestamp};
     const nextCall = {
         ...callsState.calls[channelId],
-        participants: {...callsState.calls[channelId].participants},
+        sessions: {...callsState.calls[channelId].sessions},
     };
-    nextCall.participants[userId] = nextUser;
+    nextCall.sessions[sessionId] = nextUser;
     const nextCalls = {...callsState.calls};
     nextCalls[channelId] = nextCall;
     setCallsState(serverUrl, {...callsState, calls: nextCalls});
@@ -483,21 +485,21 @@ export const setRaisedHand = (serverUrl: string, channelId: string, userId: stri
 
     const nextCurrentCall = {
         ...currentCall,
-        participants: {
-            ...currentCall.participants,
-            [userId]: {...currentCall.participants[userId], raisedHand: timestamp},
+        sessions: {
+            ...currentCall.sessions,
+            [sessionId]: {...currentCall.sessions[sessionId], raisedHand: timestamp},
         },
     };
     setCurrentCall(nextCurrentCall);
 };
 
-export const setCallScreenOn = (serverUrl: string, channelId: string, userId: string) => {
+export const setCallScreenOn = (serverUrl: string, channelId: string, sessionId: string) => {
     const callsState = getCallsState(serverUrl);
-    if (!callsState.calls[channelId] || !callsState.calls[channelId].participants[userId]) {
+    if (!callsState.calls[channelId] || !callsState.calls[channelId].sessions[sessionId]) {
         return;
     }
 
-    const nextCall = {...callsState.calls[channelId], screenOn: userId};
+    const nextCall = {...callsState.calls[channelId], screenOn: sessionId};
     const nextCalls = {...callsState.calls};
     nextCalls[channelId] = nextCall;
     setCallsState(serverUrl, {...callsState, calls: nextCalls});
@@ -510,14 +512,14 @@ export const setCallScreenOn = (serverUrl: string, channelId: string, userId: st
 
     const nextCurrentCall = {
         ...currentCall,
-        screenOn: userId,
+        screenOn: sessionId,
     };
     setCurrentCall(nextCurrentCall);
 };
 
-export const setCallScreenOff = (serverUrl: string, channelId: string) => {
+export const setCallScreenOff = (serverUrl: string, channelId: string, sessionId: string) => {
     const callsState = getCallsState(serverUrl);
-    if (!callsState.calls[channelId]) {
+    if (!callsState.calls[channelId] || callsState.calls[channelId].screenOn !== sessionId) {
         return;
     }
 
@@ -634,16 +636,16 @@ export const userReacted = (serverUrl: string, channelId: string, reaction: User
     }
 
     // Update the participant.
-    const nextParticipants = {...currentCall.participants};
-    if (nextParticipants[reaction.user_id]) {
-        const nextUser = {...nextParticipants[reaction.user_id], reaction};
-        nextParticipants[reaction.user_id] = nextUser;
+    const nextSessions = {...currentCall.sessions};
+    if (nextSessions[reaction.session_id]) {
+        const nextUser = {...nextSessions[reaction.session_id], reaction};
+        nextSessions[reaction.session_id] = nextUser;
     }
 
     const nextCurrentCall: CurrentCall = {
         ...currentCall,
         reactionStream: newReactionStream,
-        participants: nextParticipants,
+        sessions: nextSessions,
     };
     setCurrentCall(nextCurrentCall);
 
@@ -661,17 +663,17 @@ const userReactionTimeout = (serverUrl: string, channelId: string, reaction: Use
     // Remove the reaction only if it was the last time that emoji was used.
     const newReactions = currentCall.reactionStream.filter((e) => e.latestTimestamp !== reaction.timestamp);
 
-    const nextParticipants = {...currentCall.participants};
-    if (nextParticipants[reaction.user_id] && nextParticipants[reaction.user_id].reaction?.timestamp === reaction.timestamp) {
-        const nextUser = {...nextParticipants[reaction.user_id]};
+    const nextSessions = {...currentCall.sessions};
+    if (nextSessions[reaction.session_id] && nextSessions[reaction.session_id].reaction?.timestamp === reaction.timestamp) {
+        const nextUser = {...nextSessions[reaction.session_id]};
         delete nextUser.reaction;
-        nextParticipants[reaction.user_id] = nextUser;
+        nextSessions[reaction.session_id] = nextUser;
     }
 
     const nextCurrentCall: CurrentCall = {
         ...currentCall,
         reactionStream: newReactions,
-        participants: nextParticipants,
+        sessions: nextSessions,
     };
     setCurrentCall(nextCurrentCall);
 };

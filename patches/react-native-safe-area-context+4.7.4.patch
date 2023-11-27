@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt b/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt
+index ca5646c..7bcc64d 100644
+--- a/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt
++++ b/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt
+@@ -13,7 +13,7 @@ import java.util.*
+ import java.util.concurrent.locks.ReentrantLock
+ import kotlin.concurrent.withLock
+ 
+-private const val MAX_WAIT_TIME_NANO = 500000000L // 500ms
++private const val MAX_WAIT_TIME_NANO = 5000000L // 5ms
+ 
+ class SafeAreaView(context: Context?) :
+     ReactViewGroup(context), ViewTreeObserver.OnPreDrawListener, HasFabricViewStateManager {

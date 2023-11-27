@@ -19,7 +19,6 @@ import {typography} from '@utils/typography';
 import UserAvatar from './user_avatar';
 import UsersList from './users_list';
 
-import type {BottomSheetProps} from '@gorhom/bottom-sheet';
 import type UserModel from '@typings/database/models/servers/user';
 
 const OVERFLOW_DISPLAY_LIMIT = 99;
@@ -125,7 +124,7 @@ const UserAvatarsStack = ({
             </>
         );
 
-        const snapPoints: BottomSheetProps['snapPoints'] = [1, bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT, bottom) + TITLE_HEIGHT];
+        const snapPoints: Array<string | number> = [1, bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT, bottom) + TITLE_HEIGHT];
         if (users.length > 5) {
             snapPoints.push('80%');
         }

@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {Channel} from '@constants';
-import {observeChannelSettings} from '@queries/servers/channel';
+import {observeChannel, observeChannelSettings} from '@queries/servers/channel';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import IgnoreMentions from './ignore_mentions';
@@ -34,6 +33,7 @@ const isChannelMentionsIgnored = (channelNotifyProps?: Partial<ChannelNotifyProp
 };
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
+    const channel = observeChannel(database, channelId);
     const currentUser = observeCurrentUser(database);
     const settings = observeChannelSettings(database, channelId);
     const ignoring = currentUser.pipe(
@@ -43,6 +43,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
 
     return {
         ignoring,
+        displayName: channel.pipe(switchMap((c) => of$(c?.displayName))),
     };
 });
 

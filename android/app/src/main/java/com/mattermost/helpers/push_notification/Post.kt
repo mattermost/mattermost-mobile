@@ -9,10 +9,10 @@ import com.mattermost.helpers.PushNotificationDataRunnable
 import com.mattermost.helpers.ReadableArrayUtils
 import com.mattermost.helpers.ReadableMapUtils
 import com.mattermost.helpers.database_extension.*
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 
 internal suspend fun PushNotificationDataRunnable.Companion.fetchPosts(
-        db: Database, serverUrl: String, channelId: String, isCRTEnabled: Boolean,
+        db: WMDatabase, serverUrl: String, channelId: String, isCRTEnabled: Boolean,
         rootId: String?, loadedProfiles: ReadableArray?
 ): ReadableMap? {
     return try {

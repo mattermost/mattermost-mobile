@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
+import {DatabaseProvider} from '@nozbe/watermelondb/react';
 import {render} from '@testing-library/react-native';
 import React, {type ReactElement} from 'react';
 import {IntlProvider} from 'react-intl';

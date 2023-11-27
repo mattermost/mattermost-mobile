@@ -12,7 +12,7 @@ index 861ed06..d2d6527 100644
  
    // (experimental) puts Database in a broken state
 diff --git a/node_modules/@nozbe/watermelondb/Database/index.js b/node_modules/@nozbe/watermelondb/Database/index.js
-index fa82516..aa88fe9 100644
+index fa82516..de24ff2 100644
 --- a/node_modules/@nozbe/watermelondb/Database/index.js
 +++ b/node_modules/@nozbe/watermelondb/Database/index.js
 @@ -91,7 +91,9 @@ var Database = /*#__PURE__*/function () {
@@ -37,11 +37,10 @@ index fa82516..aa88fe9 100644
          }
          if (!changeNotifications[table]) {
            changeNotifications[table] = [];
-@@ -379,6 +385,59 @@ var Database = /*#__PURE__*/function () {
+@@ -379,6 +385,57 @@ var Database = /*#__PURE__*/function () {
        }
      }.bind(this));
    };
-+
 +  _proto.unsafeVacuum = function unsafeVacuum() {
 +    return new Promise(function ($return, $error) {
 +      var $Try_3_Finally = function ($Try_3_Exit) {
@@ -93,7 +92,6 @@ index fa82516..aa88fe9 100644
 +      }
 +    }.bind(this));
 +  };
-+
    _proto._ensureInWriter = function _ensureInWriter(diagnosticMethodName) {
      (0, _common.invariant)(this._workQueue.isWriterRunning, "".concat(diagnosticMethodName, " can only be called from inside of a Writer. See docs for more details."));
    }
@@ -111,20 +109,20 @@ index 96114ec..ecfe3c1 100644
  
    prepareDestroyPermanently(): this
 diff --git a/node_modules/@nozbe/watermelondb/Model/index.js b/node_modules/@nozbe/watermelondb/Model/index.js
-index 10ee0a5..3d0bf77 100644
+index dbfdf6e..2e63166 100644
 --- a/node_modules/@nozbe/watermelondb/Model/index.js
 +++ b/node_modules/@nozbe/watermelondb/Model/index.js
 @@ -80,7 +80,17 @@ var Model = /*#__PURE__*/function () {
     */;
    _proto.prepareUpdate = function prepareUpdate(recordUpdater = _noop.default) {
      var _this = this;
--    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes");
+-    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes. Update attempted for table ".concat(this.table, " and record ").concat(this.id, "."));
++    // (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes. Update attempted for table ".concat(this.table, " and record ").concat(this.id, "."));
 +    if ('deleted' === this._raw._status) {
 +      console.debug("Updating a deleted record in table " + _this.table);
 +      return this;
 +    }
 +
-+    // (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes");
 +    if (this._preparedState) {
 +      console.debug("Updating a record with pending changes in table " + _this.table)
 +    } else {
@@ -181,7 +179,7 @@ index 51879c7..435ad72 100644
  
    getLocal(key: string): Promise<string | undefined>
 diff --git a/node_modules/@nozbe/watermelondb/adapters/compat.js b/node_modules/@nozbe/watermelondb/adapters/compat.js
-index 4a0b5ef..0980828 100644
+index 4a0b5ef..9b8ff13 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/compat.js
 +++ b/node_modules/@nozbe/watermelondb/adapters/compat.js
 @@ -76,6 +76,12 @@ var DatabaseAdapterCompat = /*#__PURE__*/function () {
@@ -193,7 +191,7 @@ index 4a0b5ef..0980828 100644
 +    return (0, _Result.toPromise)(function (callback) {
 +      return _this16.underlyingAdapter.unsafeVacuum(callback);
 +    });
-+  }
++  };
    _proto.unsafeExecute = function unsafeExecute(work) {
      var _this12 = this;
      return (0, _Result.toPromise)(function (callback) {
@@ -263,21 +261,22 @@ index ca35a79..7079572 100644
        } else {
          var response = this._driverAction(type).apply(void 0, (0, _toConsumableArray2.default)(payload));
 diff --git a/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseDriver.js b/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseDriver.js
-index ee89cff..9c1f6ce 100644
+index ee89cff..04de604 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseDriver.js
 +++ b/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseDriver.js
-@@ -215,6 +215,11 @@ var DatabaseDriver = /*#__PURE__*/function () {
-       }.bind(this), $error);
+@@ -216,6 +216,12 @@ var DatabaseDriver = /*#__PURE__*/function () {
      }.bind(this));
    }
+ 
 +  _proto.unsafeVacuum = function unsafeVacuum() {
 +    return new Promise(function ($return, $error) {
 +      return Promise.resolve(0);
 +    }.bind(this));
 +  }
- 
++
    // *** LocalStorage ***
    ;
+   _proto.getLocal = function getLocal(key) {
 diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
 index 88c43a0..cef8232 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
@@ -292,10 +291,10 @@ index 88c43a0..cef8232 100644
  
    getLocal(key: string, callback: ResultCallback<string | undefined>): void
 diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js
-index bb80355..897f4d5 100644
+index 985dbd6..bcc232d 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js
 +++ b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js
-@@ -238,6 +238,14 @@ var SQLiteAdapter = /*#__PURE__*/function () {
+@@ -237,6 +237,14 @@ var SQLiteAdapter = /*#__PURE__*/function () {
        callback(result);
      });
    };
@@ -345,10 +344,10 @@ index 483884c..c325299 100644
      var _this6 = this;
      var databaseVersion = this.database.userVersion;
 diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/type.d.ts b/node_modules/@nozbe/watermelondb/adapters/sqlite/type.d.ts
-index 8131fa1..6053628 100644
+index 16a8a71..ce6e743 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/sqlite/type.d.ts
 +++ b/node_modules/@nozbe/watermelondb/adapters/sqlite/type.d.ts
-@@ -49,6 +49,7 @@ export type SqliteDispatcherMethod =
+@@ -45,6 +45,7 @@ export type SqliteDispatcherMethod =
    | 'unsafeLoadFromSync'
    | 'provideSyncJson'
    | 'unsafeResetDatabase'
@@ -357,7 +356,7 @@ index 8131fa1..6053628 100644
    | 'unsafeExecuteMultiple'
  
 diff --git a/node_modules/@nozbe/watermelondb/adapters/type.d.ts b/node_modules/@nozbe/watermelondb/adapters/type.d.ts
-index 027c366..35b5a29 100644
+index 027c366..5807e79 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/type.d.ts
 +++ b/node_modules/@nozbe/watermelondb/adapters/type.d.ts
 @@ -66,6 +66,9 @@ export interface DatabaseAdapter {
@@ -366,96 +365,10 @@ index 027c366..35b5a29 100644
  
 +  // Vacuum the whole database.
 +  unsafeVacuum(callback: ResultCallback<void>): void
-+
++  
    // Performs work on the underlying database - see concrete DatabaseAdapter implementation for more details
    unsafeExecute(work: UnsafeExecuteOperations, callback: ResultCallback<void>): void
  
-diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
-index b7f750d..052f5a4 100644
---- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
-+++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
-@@ -19,8 +19,7 @@ class Database private constructor(private val db: SQLiteDatabase) {
-         fun getInstance(
-             name: String,
-             context: Context,
--            openFlags: Int = SQLiteDatabase.CREATE_IF_NECESSARY or
--                SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING
-+            openFlags: Int = SQLiteDatabase.CREATE_IF_NECESSARY
-         ): Database =
-             synchronized(this) {
-                 if (INSTANCES[name]?.isOpen != true) {
-@@ -37,8 +36,7 @@ class Database private constructor(private val db: SQLiteDatabase) {
-         fun buildDatabase(
-             name: String,
-             context: Context,
--            openFlags: Int = SQLiteDatabase.CREATE_IF_NECESSARY or
--                SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING
-+            openFlags: Int = SQLiteDatabase.CREATE_IF_NECESSARY
-         ) = Database(createSQLiteDatabase(name, context, openFlags))
- 
-         private fun createSQLiteDatabase(
-@@ -50,6 +48,21 @@ class Database private constructor(private val db: SQLiteDatabase) {
-                 if (name == ":memory:" || name.contains("mode=memory")) {
-                     context.cacheDir.delete()
-                     File(context.cacheDir, name).path
-+                } else if (name.contains("/") || name.contains("file")) {
-+                    // Extracts the database name from the path
-+                    val dbName = name.substringAfterLast("/")
-+
-+                    // Extracts the real path where the *.db file will be created
-+                    val truePath = name.substringAfterLast("file://").substringBeforeLast("/")
-+
-+                    // Creates the directory
-+                    if (!truePath.contains("databases")) {
-+                        val fileObj = File(truePath, "databases")
-+                        fileObj.mkdir()
-+                        File("${truePath}/databases", dbName).path
-+                    } else {
-+                        File(truePath, dbName).path
-+                    }
-                 } else {
-                     // On some systems there is some kind of lock on `/databases` folder ¯\_(ツ)_/¯
-                     context.getDatabasePath("$name.db").path.replace("/databases", "")
-@@ -131,6 +144,10 @@ class Database private constructor(private val db: SQLiteDatabase) {
-             execute("pragma writable_schema=0")
-         }
- 
-+    fun unsafeVacuum() {
-+        execute("vacuum")
-+    }
-+
-     private fun getAllTables(): ArrayList<String> {
-         val allTables: ArrayList<String> = arrayListOf()
-         rawQuery(Queries.select_tables).use {
-diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/DatabaseBridge.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/DatabaseBridge.kt
-index 62d9d92..2415956 100644
---- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/DatabaseBridge.kt
-+++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/DatabaseBridge.kt
-@@ -153,6 +153,9 @@ class DatabaseBridge(private val reactContext: ReactApplicationContext) :
-         promise: Promise
-     ) = withDriver(tag, promise) { it.unsafeResetDatabase(Schema(schemaVersion, schema)) }
- 
-+    @ReactMethod
-+    fun unsafeVacuum(tag: ConnectionTag, promise: Promise) = withDriver(tag, promise) { it.unsafeVacuum() }
-+
-     @ReactMethod
-     fun getLocal(tag: ConnectionTag, key: String, promise: Promise) =
-         withDriver(tag, promise) { it.getLocal(key) }
-diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/DatabaseDriver.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/DatabaseDriver.kt
-index 36909ae..eeacc6e 100644
---- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/DatabaseDriver.kt
-+++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/DatabaseDriver.kt
-@@ -177,6 +177,10 @@ class DatabaseDriver(context: Context, dbName: String, unsafeNativeReuse: Boolea
-         }
-     }
- 
-+    fun unsafeVacuum() {
-+        database.unsafeVacuum()
-+    }
-+
-     fun close() = database.close()
- 
-     private fun markAsCached(table: TableName, id: RecordID) {
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java
 index 2f170e0..bac0352 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java
@@ -513,7 +426,7 @@ index 2f170e0..bac0352 100644
          void applyTransactionFunction();
      }
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java
-index be92429..847746d 100644
+index 117b2bc..57e4abb 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java
 +++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java
 @@ -122,6 +122,14 @@ public class WMDatabaseBridge extends ReactContextBaseJavaModule {
@@ -576,7 +489,7 @@ index f199fdc..01ba3b7 100644
  @end
  
 diff --git a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/objc/WMDatabase.m b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/objc/WMDatabase.m
-index 04fc2e5..e6d1a5b 100644
+index 04fc2e5..f141aea 100644
 --- a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/objc/WMDatabase.m
 +++ b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/objc/WMDatabase.m
 @@ -125,6 +125,15 @@
@@ -588,7 +501,7 @@ index 04fc2e5..e6d1a5b 100644
 +    if (![self executeStatements:@"vacuum" error:errorPtr]) {
 +        return NO;
 +    }
-+    
++
 +    return YES;
 +}
 +
@@ -628,69 +541,6 @@ index 0224cc3..085a10c 100644
  
  @end
  
-diff --git a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/Database.swift b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/Database.swift
-index b4d7151..6a71821 100644
---- a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/Database.swift
-+++ b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/Database.swift
-@@ -136,6 +136,10 @@ class Database {
-         }
-     }
- 
-+    func unsafeVacuum() throws {
-+        try executeStatements("vacuum")
-+    }
-+
-     private var isInMemoryDatabase: Bool {
-         return path == ":memory:" || path == "file::memory:" || path.contains("?mode=memory")
-     }
-diff --git a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseBridge.m b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseBridge.m
-index eb039db..6837d3a 100644
---- a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseBridge.m
-+++ b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseBridge.m
-@@ -63,6 +63,8 @@ WMELON_BRIDGE_METHOD(unsafeResetDatabase,
-   schemaVersion:(nonnull NSNumber *)version
- )
- 
-+WMELON_BRIDGE_METHOD(unsafeVacuum, null)
-+
- WMELON_BRIDGE_METHOD(getLocal,
-   key:(nonnull NSString *)key
- )
-diff --git a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseBridge.swift b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseBridge.swift
-index bca17d8..634818e 100644
---- a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseBridge.swift
-+++ b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseBridge.swift
-@@ -184,6 +184,15 @@ extension DatabaseBridge {
-         }
-     }
- 
-+    @objc(unsafeVacuum:resolve:reject:)
-+    func unsafeVacuum(tag: ConnectionTag,
-+                      resolve: @escaping RCTPromiseResolveBlock,
-+                      reject: @escaping RCTPromiseRejectBlock) {
-+        withDriver(tag, resolve, reject) {
-+            try $0.database.unsafeVacuum()
-+        }
-+    }
-+
-     @objc(getLocal:key:resolve:reject:)
-     func getLocal(tag: ConnectionTag, key: String,
-                   resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-diff --git a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseDriver.swift b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseDriver.swift
-index fd8ba18..6f2b3fe 100644
---- a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseDriver.swift
-+++ b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/swift/DatabaseDriver.swift
-@@ -207,6 +207,10 @@ class DatabaseDriver {
-         }
-     }
- 
-+    func unsafeVaccum() throws {
-+        try database.unsafeVacuum()
-+    }
-+
-     private func migrate(with migrations: MigrationSet) throws {
-         precondition(
-             database.userVersion == migrations.from,
 diff --git a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
 index 8a4e9b4..dc567c6 100644
 --- a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
@@ -716,10 +566,10 @@ index 8a4e9b4..dc567c6 100644
      auto &rt = getRt();
      const std::lock_guard<std::mutex> lock(mutex_);
 diff --git a/node_modules/@nozbe/watermelondb/native/shared/Database.h b/node_modules/@nozbe/watermelondb/native/shared/Database.h
-index cf53686..97f5a4b 100644
+index f0073c5..028031b 100644
 --- a/node_modules/@nozbe/watermelondb/native/shared/Database.h
 +++ b/node_modules/@nozbe/watermelondb/native/shared/Database.h
-@@ -38,6 +38,7 @@ public:
+@@ -40,6 +40,7 @@ public:
      void batchJSON(jsi::String &&operationsJson);
      jsi::Value unsafeLoadFromSync(int jsonId, jsi::Object &schema, std::string preamble, std::string postamble);
      void unsafeResetDatabase(jsi::String &schema, int schemaVersion);
@@ -766,7 +616,7 @@ index e08153b..2fca075 100644
      destroy();
  }
 diff --git a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h b/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h
-index 22cffa7..4b74a7f 100644
+index 4fe52f1..a4a99da 100644
 --- a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h
 +++ b/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h
 @@ -11,6 +11,7 @@ public:
@@ -834,15 +684,14 @@ index 9f1e847..cdd3af4 100644
        'setLocal',
        'removeLocal',
 diff --git a/node_modules/@nozbe/watermelondb/src/adapters/sqlite/index.js b/node_modules/@nozbe/watermelondb/src/adapters/sqlite/index.js
-index 0111c87..2f9456a 100644
+index 72a5af9..908ef6d 100644
 --- a/node_modules/@nozbe/watermelondb/src/adapters/sqlite/index.js
 +++ b/node_modules/@nozbe/watermelondb/src/adapters/sqlite/index.js
-@@ -340,6 +340,20 @@ export default class SQLiteAdapter implements DatabaseAdapter {
+@@ -339,6 +339,19 @@ export default class SQLiteAdapter implements DatabaseAdapter {
      )
    }
  
 +  unsafeVacuum(callback: ResultCallback<void): void {
-+    console.log('CALL THIS')
 +    this._dispatcher.call(
 +      'unsafeVacuum',
 +      [],
@@ -852,7 +701,7 @@ index 0111c87..2f9456a 100644
 +        }
 +        callback(result)
 +      },
-+    )
++      )
 +  }
 +
    unsafeExecute(operations: UnsafeExecuteOperations, callback: ResultCallback<void>): void {
@@ -895,10 +744,10 @@ index fc1351a..5cb7e68 100644
      const databaseVersion = this.database.userVersion
  
 diff --git a/node_modules/@nozbe/watermelondb/src/adapters/sqlite/type.js b/node_modules/@nozbe/watermelondb/src/adapters/sqlite/type.js
-index 8cb606b..4ed59bd 100644
+index 63c955f..4e2f43e 100644
 --- a/node_modules/@nozbe/watermelondb/src/adapters/sqlite/type.js
 +++ b/node_modules/@nozbe/watermelondb/src/adapters/sqlite/type.js
-@@ -85,6 +85,7 @@ export type SqliteDispatcherMethod =
+@@ -81,6 +81,7 @@ export type SqliteDispatcherMethod =
    | 'unsafeLoadFromSync'
    | 'provideSyncJson'
    | 'unsafeResetDatabase'
