@@ -9,6 +9,7 @@ log () { echo "[$(date +%Y-%m-%dT%H:%M:%S%Z)]" "$@"; }
 : ${BUMP_BUILD_NUMBER:=}
 : ${BUMP_VERSION_NUMBER:=}  # If enabled, you must populate the VERSION variable as well
 : ${CREATE_PR:=}            # Enable CREATE_PR to push the commit to origin, and create a corresponding PR
+: ${PR_EXTRA_MESSAGE:=}     # Optional message to add in the PR description
 : ${GIT_LOCAL_BRANCH:=chore-bump-${BRANCH_TO_BUILD}-$(date +%s)}
 
 log "Checking that the configuration is sane"
@@ -77,6 +78,7 @@ if [ -n "${CREATE_PR}" ]; then
     --head "${GIT_LOCAL_BRANCH}" \
     --reviewer "${PR_REVIEWERS}" \
     --title "Bump app build number to $BUILD_NUMBER" \
+    $([ -z "$BUMP_VERSION_NUMBER" ] || echo -n "--milestone v${VERSION} --label CherryPick/Approved") \
     --body-file - <<EOF
 #### Summary
 $([ -z "$BUMP_BUILD_NUMBER" ] || echo "\
@@ -85,6 +87,7 @@ Bump app build number to $BUILD_NUMBER
 $([ -z "$BUMP_VERSION_NUMBER" ] || echo "\
 Bump app version number to ${VERSION}
 ")
+${PR_EXTRA_MESSAGE}
 
 #### Release Note
 \`\`\`release-note
