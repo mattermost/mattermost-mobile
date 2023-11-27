@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   bump-build-number:
@@ -28,6 +29,7 @@ jobs:
 
     - name: bump-build-number/bump-build-number
       env:
+        GH_TOKEN: "${{ github.token }}"
         DRY_RUN: no
       run: ./scripts/bump_build_number.sh
 ...
