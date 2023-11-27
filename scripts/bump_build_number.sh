@@ -39,7 +39,7 @@ EOF
 log "Running the fastlane build number bumper script"
 (. .env && cd fastlane && bundle install && bundle exec fastlane set_app_build_number)
 
-if [ -n "${DRY_RUN}" ]; then
+if grep -qiE '^(no?|false)$' <<<$DRY_RUN; then
   log "Pushing branch ${GIT_LOCAL_BRANCH}, and creating a corresponding PR to ${BRANCH_TO_BUILD}"
   git push origin ${GIT_LOCAL_BRANCH}
 
@@ -61,4 +61,5 @@ NONE
 EOF
 else
   log "Running in DRY_RUN mode: skipping branch push and PR creation"
+  log "Run with DRY_RUN=false to disable dry run mode"
 fi
