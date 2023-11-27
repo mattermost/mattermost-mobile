@@ -5,11 +5,11 @@ import com.facebook.react.bridge.NoSuchKeyException
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.mattermost.helpers.RandomId
-import com.nozbe.watermelondb.Database
-import com.nozbe.watermelondb.mapCursor
+import com.mattermost.helpers.mapCursor
+import com.nozbe.watermelondb.WMDatabase
 import org.json.JSONObject
 
-internal fun insertThread(db: Database, thread: ReadableMap) {
+internal fun insertThread(db: WMDatabase, thread: ReadableMap) {
     // These fields are not present when we extract threads from posts
     try {
         val id = try { thread.getString("id") } catch (e: NoSuchKeyException) { return }
@@ -36,7 +36,7 @@ internal fun insertThread(db: Database, thread: ReadableMap) {
     }
 }
 
-internal fun updateThread(db: Database, thread: ReadableMap, existingRecord: ReadableMap) {
+internal fun updateThread(db: WMDatabase, thread: ReadableMap, existingRecord: ReadableMap) {
     try {
         // These fields are not present when we extract threads from posts
         val id = try { thread.getString("id") } catch (e: NoSuchKeyException) { return }
@@ -63,7 +63,7 @@ internal fun updateThread(db: Database, thread: ReadableMap, existingRecord: Rea
     }
 }
 
-internal fun insertThreadParticipants(db: Database, threadId: String, participants: ReadableArray) {
+internal fun insertThreadParticipants(db: WMDatabase, threadId: String, participants: ReadableArray) {
     for (i in 0 until participants.size()) {
         try {
             val participant = participants.getMap(i)
@@ -82,7 +82,7 @@ internal fun insertThreadParticipants(db: Database, threadId: String, participan
     }
 }
 
-fun insertTeamThreadsSync(db: Database, teamId: String, earliest: Double, latest: Double) {
+fun insertTeamThreadsSync(db: WMDatabase, teamId: String, earliest: Double, latest: Double) {
     try {
         val query = """
             INSERT INTO TeamThreadsSync (id, _changed, _status, earliest, latest)
@@ -94,7 +94,7 @@ fun insertTeamThreadsSync(db: Database, teamId: String, earliest: Double, latest
     }
 }
 
-fun updateTeamThreadsSync(db: Database, teamId: String, earliest: Double, latest: Double, existingRecord: ReadableMap) {
+fun updateTeamThreadsSync(db: WMDatabase, teamId: String, earliest: Double, latest: Double, existingRecord: ReadableMap) {
     try {
         val storeEarliest = minOf(earliest, existingRecord.getDouble("earliest"))
         val storeLatest = maxOf(latest, existingRecord.getDouble("latest"))
@@ -105,7 +105,7 @@ fun updateTeamThreadsSync(db: Database, teamId: String, earliest: Double, latest
     }
 }
 
-fun syncParticipants(db: Database, thread: ReadableMap) {
+fun syncParticipants(db: WMDatabase, thread: ReadableMap) {
     try {
         val threadId = thread.getString("id")
         val participants = thread.getArray("participants")
@@ -121,7 +121,7 @@ fun syncParticipants(db: Database, thread: ReadableMap) {
     }
 }
 
-internal fun handlePostsInThread(db: Database, postsInThread: Map<String, List<JSONObject>>) {
+internal fun handlePostsInThread(db: WMDatabase, postsInThread: Map<String, List<JSONObject>>) {
     postsInThread.forEach { (key, list) ->
         try {
             val sorted = list.sortedBy { it.getDouble("create_at") }
@@ -161,7 +161,7 @@ internal fun handlePostsInThread(db: Database, postsInThread: Map<String, List<J
     }
 }
 
-fun handleThreads(db: Database, threads: ArrayList<ReadableMap>, teamId: String?) {
+fun handleThreads(db: WMDatabase, threads: ArrayList<ReadableMap>, teamId: String?) {
     val teamIds = ArrayList<String>()
     if (teamId.isNullOrEmpty()) {
         val myTeams = queryMyTeams(db)
@@ -186,7 +186,7 @@ fun handleThreads(db: Database, threads: ArrayList<ReadableMap>, teamId: String?
     handleTeamThreadsSync(db, threads, teamIds)
 }
 
-fun handleThread(db: Database, thread: ReadableMap, teamIds: ArrayList<String>) {
+fun handleThread(db: WMDatabase, thread: ReadableMap, teamIds: ArrayList<String>) {
     // Insert/Update the thread
     val threadId = thread.getString("id")
     val isFollowing = thread.getBoolean("is_following")
@@ -207,7 +207,7 @@ fun handleThread(db: Database, thread: ReadableMap, teamIds: ArrayList<String>) 
     }
 }
 
-fun handleThreadInTeam(db: Database, thread: ReadableMap, teamId: String) {
+fun handleThreadInTeam(db: WMDatabase, thread: ReadableMap, teamId: String) {
     val threadId = thread.getString("id") ?: return
     val existingRecord = findByColumns(
             db,
@@ -229,7 +229,7 @@ fun handleThreadInTeam(db: Database, thread: ReadableMap, teamId: String) {
     }
 }
 
-fun handleTeamThreadsSync(db: Database, threadList: ArrayList<ReadableMap>, teamIds: ArrayList<String>) {
+fun handleTeamThreadsSync(db: WMDatabase, threadList: ArrayList<ReadableMap>, teamIds: ArrayList<String>) {
     val sortedList = threadList.filter{ it.getBoolean("is_following") }
             .sortedBy { it.getDouble("last_reply_at") }
             .map { it.getDouble("last_reply_at") }
