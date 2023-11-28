@@ -117,6 +117,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     label={intl.formatMessage(label)}
                     multiline={true}
+                    multilineInputHeight={154}
                     onChangeText={setAutoResponderMessage}
                     placeholder={intl.formatMessage(label)}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
