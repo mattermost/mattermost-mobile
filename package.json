@@ -51,6 +51,7 @@
     "mime-db": "1.52.0",
     "moment-timezone": "0.5.43",
     "pako": "2.1.0",
+    "path-to-regexp": "6.2.1",
     "react": "18.2.0",
     "react-freeze": "1.0.3",
     "react-intl": "6.5.5",
