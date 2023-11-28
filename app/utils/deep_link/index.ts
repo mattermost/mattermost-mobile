@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {match} from 'path-to-regexp';
 import {createIntl, type IntlShape} from 'react-intl';
 import urlParse from 'url-parse';
 
 import {makeDirectChannel, switchToChannelByName} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchUsersByUsernames} from '@actions/remote/user';
+import DeepLinkType from '@app/constants/deep_linking';
 import {DeepLink, Launch, Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
@@ -21,7 +23,14 @@ import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/d
 import {logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
 import {addNewServer} from '@utils/server';
-import {removeProtocol} from '@utils/url';
+import {
+    TEAM_NAME_PATH_PATTERN,
+    IDENTIFIER_PATH_PATTERN,
+    ID_PATH_PATTERN,
+    PLUGIN_ID_PATH_PATTERN,
+} from '@utils/url/path';
+
+import {removeProtocol} from '../url';
 
 import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -86,7 +95,7 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
             }
             case DeepLink.GroupMessage: {
                 const deepLinkData = parsed.data as DeepLinkGM;
-                switchToChannelByName(existingServerUrl, deepLinkData.channelId, deepLinkData.teamName, errorBadChannel, intl);
+                switchToChannelByName(existingServerUrl, deepLinkData.channelName, deepLinkData.teamName, errorBadChannel, intl);
                 break;
             }
             case DeepLink.Permalink: {
@@ -114,80 +123,89 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
     }
 }
 
+type ChannelPathParams = {
+    hostname: string;
+    serverUrl: string;
+    teamName: string;
+    path: 'channels' | 'messages';
+    identifier: string;
+};
+
+const CHANNEL_PATH = `:serverUrl(.*)/:teamName(${TEAM_NAME_PATH_PATTERN})/:path(channels|messages)/:identifier(${IDENTIFIER_PATH_PATTERN})`;
+export const matchChannelDeeplink = match<ChannelPathParams>(CHANNEL_PATH);
+
+type PermalinkPathParams = {
+    serverUrl: string;
+    teamName: string;
+    postId: string;
+};
+const PERMALINK_PATH = `:serverUrl(.*)/:teamName(${TEAM_NAME_PATH_PATTERN})/pl/:postId(${ID_PATH_PATTERN})`;
+export const matchPermalinkDeeplink = match<PermalinkPathParams>(PERMALINK_PATH);
+
 export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
     try {
-        const url = removeProtocol(decodeURIComponent(deepLinkUrl));
+        const url = removeProtocol(deepLinkUrl);
 
-        if (url.includes('../') || url.includes('/..')) {
-            return {type: DeepLink.Invalid, url: deepLinkUrl};
+        const channelMatch = matchChannelDeeplink(url);
+        if (channelMatch) {
+            const {params: {serverUrl, teamName, path, identifier}} = channelMatch;
+
+            if (path === 'channels') {
+                return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl, teamName, channelName: identifier}};
+            }
+
+            if (path === 'messages') {
+                if (identifier.startsWith('@')) {
+                    return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl, teamName, userName: identifier.substring(1)}};
+                }
+
+                return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl, teamName, channelName: identifier}};
+            }
         }
 
-        let match = new RegExp('(.*)\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
-        if (match) {
-            return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], channelName: match[3]}};
+        const permalinkMatch = matchPermalinkDeeplink(url);
+        if (permalinkMatch) {
+            const {params: {serverUrl, teamName, postId}} = permalinkMatch;
+            return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl, teamName, postId}};
         }
 
-        match = new RegExp('(.*)\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
-        if (match) {
-            return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], postId: match[3]}};
+        const pluginMatch = match<{serverUrl: string; id: string; route?: string}>(`:serverUrl(.*)/plugins/:id(${PLUGIN_ID_PATH_PATTERN})/:route(.*)?`)(url);
+        if (pluginMatch) {
+            const {params: {serverUrl, id, route}} = pluginMatch;
+            return {type: DeepLink.Plugin, url: deepLinkUrl, data: {serverUrl, teamName: '', id, route}};
         }
-
-        match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(url);
-        if (match) {
-            return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], userName: match[3]}};
-        }
-
-        match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/(\\S+)').exec(url);
-        if (match) {
-            return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl: match[1], teamName: match[2], channelId: match[3]}};
-        }
-
-        match = new RegExp('(.*)\\/plugins\\/([^\\/]+)\\/(\\S+)').exec(url);
-        if (match) {
-            return {type: DeepLink.Plugin, url: deepLinkUrl, data: {serverUrl: match[1], id: match[2], teamName: ''}};
-        }
-    } catch {
+    } catch (err) {
         // do nothing just return invalid deeplink
     }
 
     return {type: DeepLink.Invalid, url: deepLinkUrl};
 }
 
-export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string) {
+export function matchDeepLink(url: string, serverURL?: string, siteURL?: string) {
     if (!url || (!serverURL && !siteURL)) {
-        return '';
+        return null;
     }
 
     let urlToMatch = url;
     const urlBase = serverURL || siteURL || '';
     const parsedUrl = urlParse(url);
-    const parsedBase = urlParse(urlBase);
 
     if (!parsedUrl.protocol) {
         // If url doesn't contain site or server URL, tack it on.
         // e.g. <jump to convo> URLs from autolink plugin.
-        const match = new RegExp(escapeRegex(urlBase)).exec(url);
-        if (!match) {
+        const deepLinkMatch = new RegExp(escapeRegex(urlBase)).exec(url);
+        if (!deepLinkMatch) {
             urlToMatch = urlBase + url;
         }
     }
 
-    const finalUrl = urlParse(urlToMatch);
-    const baseSubpath = parsedBase.pathname.replace('/', '');
-    const baseHostname = parsedBase.hostname;
-    const urlSubpath = finalUrl.pathname.split('/')[1];
-    const urlHostname = finalUrl.hostname;
+    const parsed = parseDeepLink(urlToMatch);
 
-    if (baseSubpath) {
-        // if the server is in a subpath
-        if (urlHostname === baseHostname && urlSubpath === baseSubpath) {
-            return urlToMatch;
-        }
-    } else if (urlHostname === baseHostname) {
-        return urlToMatch;
+    if (parsed.type === DeepLinkType.Invalid) {
+        return null;
     }
 
-    return '';
+    return parsed;
 }
 
 export const getLaunchPropsFromDeepLink = (deepLinkUrl: string, coldStart = false): LaunchProps => {
