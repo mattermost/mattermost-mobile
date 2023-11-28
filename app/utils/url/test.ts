@@ -5,7 +5,7 @@ import {Linking} from 'react-native';
 
 import DeepLinkType from '@constants/deep_linking';
 import TestHelper from '@test/test_helper';
-import {matchDeepLink, parseDeepLink} from '@utils/deep_link';
+import {matchDeepLink} from '@utils/deep_link';
 import * as UrlUtils from '@utils/url';
 
 /* eslint-disable max-nested-callbacks */
@@ -129,32 +129,35 @@ describe('UrlUtils', () => {
 
     describe('matchDeepLink', () => {
         const URL_NO_PROTOCOL = 'localhost:8065';
-        const URL_PATH_NO_PROTOCOL = 'localhost:8065/subpath';
+        const URL_PATH_NO_PROTOCOL = 'localhost:8065/subpath/deepsubpath';
         const SITE_URL = `http://${URL_NO_PROTOCOL}`;
         const SERVER_URL = `http://${URL_NO_PROTOCOL}`;
         const SERVER_WITH_SUBPATH = `http://${URL_PATH_NO_PROTOCOL}`;
         const DEEPLINK_URL_ROOT = `mattermost://${URL_NO_PROTOCOL}`;
 
+        const DM_USER = TestHelper.fakeUserWithId();
+        const GM_CHANNEL_NAME = '4862db64e76a321d167fe6677f16e96e9275dabe';
+
         const tests = [
             {
                 name: 'should return null if all inputs are empty',
                 input: {url: '', serverURL: '', siteURL: ''},
-                expected: {type: 'invalid'},
+                expected: null,
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: '', serverURL: '', siteURL: null},
-                expected: {type: 'invalid'},
+                expected: null,
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: '', serverURL: null, siteURL: ''},
-                expected: {type: 'invalid'},
+                expected: null,
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: null, serverURL: '', siteURL: ''},
-                expected: {type: 'invalid'},
+                expected: null,
             },
             {
                 name: 'should return null for not supported link',
@@ -163,12 +166,12 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
-                expected: {type: 'invalid'},
+                expected: null,
             },
             {
                 name: 'should return null despite url subset match',
                 input: {url: 'http://myserver.com', serverURL: 'http://myserver.co'},
-                expected: {type: 'invalid'},
+                expected: null,
             },
             {
                 name: 'should match despite no server URL in input link',
@@ -185,6 +188,51 @@ describe('UrlUtils', () => {
                     },
                     type: DeepLinkType.Permalink,
                 },
+            },
+            {
+                name: 'should return null for invalid deeplink',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/../town-square',
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: null,
+            },
+            {
+                name: 'should return null for backslash-invalid deeplink',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/\\..town-square',
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: null,
+            },
+            {
+                name: 'should return null for backslash-invalid-alt deeplink',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/t..\\town-square',
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: null,
+            },
+            {
+                name: 'should return null for double encoded invalid deeplink',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/%252f%252e.town-square',
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: null,
+            },
+            {
+                name: 'should return null for double encoded backslash-invalid deeplink',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/%255C%252e.town-square',
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: null,
             },
             {
                 name: 'should match channel link',
@@ -235,9 +283,73 @@ describe('UrlUtils', () => {
                 },
             },
             {
+                name: 'should match channel link (channel name: messages) with deeplink prefix',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/ad-1/channels/messages',
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: {
+                    data: {
+                        channelName: 'messages',
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'ad-1',
+                    },
+                    type: DeepLinkType.Channel,
+                },
+            },
+            {
+                name: 'should match DM channel link with deeplink prefix',
+                input: {
+                    url: DEEPLINK_URL_ROOT + `/pl/messages/@${DM_USER.username}`,
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: {
+                    data: {
+                        userName: DM_USER.username,
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'pl',
+                    },
+                    type: DeepLinkType.DirectMessage,
+                },
+            },
+            {
+                name: 'should match GM channel link with deeplink prefix',
+                input: {
+                    url: DEEPLINK_URL_ROOT + `/pl/messages/${GM_CHANNEL_NAME}`,
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: {
+                    data: {
+                        channelName: GM_CHANNEL_NAME,
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'pl',
+                    },
+                    type: DeepLinkType.GroupMessage,
+                },
+            },
+            {
+                name: 'should match channel link (team name: pl, channel name: messages) with deeplink prefix',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/pl/channels/messages',
+                    serverURL: SERVER_URL,
+                    siteURL: SITE_URL,
+                },
+                expected: {
+                    data: {
+                        channelName: 'messages',
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'pl',
+                    },
+                    type: DeepLinkType.Channel,
+                },
+            },
+            {
                 name: 'should match permalink with deeplink prefix on a Server hosted in a Subpath',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/subpath/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsrr',
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsrr',
                     serverURL: SERVER_WITH_SUBPATH,
                     siteURL: SERVER_WITH_SUBPATH,
                 },
@@ -247,7 +359,23 @@ describe('UrlUtils', () => {
                         serverUrl: URL_PATH_NO_PROTOCOL,
                         teamName: 'ad-1',
                     },
-                    type: 'permalink',
+                    type: DeepLinkType.Permalink,
+                },
+            },
+            {
+                name: 'should match permalink (team name: pl) with deeplink prefix on a Server hosted in a Subpath',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/pl/pl/qe93kkfd7783iqwuwfcwcxbsrr',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: {
+                    data: {
+                        postId: 'qe93kkfd7783iqwuwfcwcxbsrr',
+                        serverUrl: URL_PATH_NO_PROTOCOL,
+                        teamName: 'pl',
+                    },
+                    type: DeepLinkType.Permalink,
                 },
             },
             {
@@ -263,7 +391,7 @@ describe('UrlUtils', () => {
                         serverUrl: URL_PATH_NO_PROTOCOL,
                         teamName: 'ad-1',
                     },
-                    type: 'permalink',
+                    type: DeepLinkType.Permalink,
                 },
             },
             {
@@ -273,8 +401,75 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_WITH_SUBPATH,
                     siteURL: SERVER_WITH_SUBPATH,
                 },
+                expected: null,
+            },
+            {
+                name: 'should match plugin path on a Server hosted in a Subpath',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/plugins/com.acme.abc-test/api/testroute',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
                 expected: {
-                    type: 'invalid',
+                    data: {
+                        id: 'com.acme.abc-test',
+                        route: 'api/testroute',
+                        serverUrl: URL_PATH_NO_PROTOCOL,
+                        teamName: '',
+                    },
+                    type: DeepLinkType.Plugin,
+                },
+            },
+            {
+                name: 'should match plugin path with single-level route',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/plugins/abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_ab/testroute',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: {
+                    data: {
+                        id: 'abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_ab',
+                        route: 'testroute',
+                        serverUrl: URL_PATH_NO_PROTOCOL,
+                        teamName: '',
+                    },
+                    type: DeepLinkType.Plugin,
+                },
+            },
+            {
+                name: 'should not match plugin path with invalid plugin id len=2',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/plugins/ab/api/testroute',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: null,
+            },
+            {
+                name: 'should not match plugin path with invalid plugin id len=191',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/plugins/abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc_abc/api/testroute',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: null,
+            },
+            {
+                name: 'should match plugin path without a route',
+                input: {
+                    url: DEEPLINK_URL_ROOT + '/subpath/deepsubpath/plugins/abc',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: {
+                    data: {
+                        id: 'abc',
+                        route: undefined,
+                        serverUrl: URL_PATH_NO_PROTOCOL,
+                        teamName: '',
+                    },
+                    type: DeepLinkType.Plugin,
                 },
             },
         ];
@@ -283,10 +478,11 @@ describe('UrlUtils', () => {
             const {name, input, expected} = test;
 
             it(name, () => {
-                const match = matchDeepLink(input.url!, input.serverURL!, input.siteURL!);
-                const parsed = parseDeepLink(match);
-                Reflect.deleteProperty(parsed, 'url');
-                expect(parsed).toEqual(expected);
+                const matched = matchDeepLink(input.url!, input.serverURL!, input.siteURL!);
+                if (matched) {
+                    Reflect.deleteProperty(matched, 'url');
+                }
+                expect(matched).toEqual(expected);
             });
         }
     });
