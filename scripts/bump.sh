@@ -15,6 +15,11 @@ log () { echo "[$(date +%Y-%m-%dT%H:%M:%S%Z)]" "$@"; }
 log "Checking that the configuration is sane"
 if [ -n "$BUMP_VERSION_NUMBER" ]; then
   : ${VERSION:?Setting this variable is required when BUMP_VERSION_NUMBER is set.}
+  VERSION_REGEXP='^[0-9]+\.[0-9]+\.[0-9]+$'
+  if ! grep -qE $VERSION_REGEXP"" <<<$VERSION; then
+    log "Error: the VERSION variable value should match regexp '$VERSION_REGEXP'. Aborting." >&2
+    exit 1
+  fi
 fi
 
 log "Asserting that the workdir is clean"
@@ -59,12 +64,12 @@ log "Setting up fastlane environment"
 
 if [ -n "$BUMP_BUILD_NUMBER" ]; then
   log "Bumping build number..."
-  (. .env && cd fastlane && bundle exec set_app_build_number)
+  (. .env && cd fastlane && CI=true bundle exec set_app_build_number)
 fi
 
 if [ -n "$BUMP_VERSION_NUMBER" ]; then
   log "Bumping version number..."
-  (. .env && cd fastlane && bundle exec set_app_version)
+  (. .env && cd fastlane && CI=true bundle exec set_app_version)
 fi
 
 if [ -n "${CREATE_PR}" ]; then
