@@ -23,14 +23,13 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
-import type {CallsTheme, CurrentCall} from '@calls/types/calls';
-import type UserModel from '@typings/database/models/servers/user';
+import type {CallSession, CallsTheme, CurrentCall} from '@calls/types/calls';
 import type {Options} from 'react-native-navigation';
 
 type Props = {
     displayName: string;
     currentCall: CurrentCall | null;
-    userModelsDict: Dictionary<UserModel>;
+    sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
     micPermissionsGranted: boolean;
     threadScreen?: boolean;
@@ -39,7 +38,8 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
     return {
         wrapper: {
-            margin: 8,
+            marginRight: 8,
+            marginLeft: 8,
             backgroundColor: theme.callsBg,
             borderRadius: 8,
         },
@@ -55,27 +55,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
             paddingTop: 8,
             paddingRight: 12,
             paddingBottom: 8,
-            paddingLeft: 12,
-            height: CURRENT_CALL_BAR_HEIGHT - 10,
+            paddingLeft: 6,
+            height: CURRENT_CALL_BAR_HEIGHT,
+        },
+        avatarOutline: {
+            height: 40,
+            width: 40,
+            borderRadius: 20,
+            backgroundColor: changeOpacity(theme.buttonColor, 0.08),
+            padding: 2,
+            marginRight: 6,
+            marginLeft: 6,
         },
         pressable: {
             zIndex: 10,
         },
-        profilePic: {
-            marginTop: 4,
-            marginRight: Platform.select({android: -8}),
-            marginLeft: Platform.select({android: -8}),
-        },
-        userInfo: {
+        text: {
             flex: 1,
+            flexDirection: 'column',
             paddingLeft: 6,
+            gap: 2,
         },
         speakingUser: {
             color: theme.buttonColor,
-            ...typography('Body', 200, 'SemiBold'),
+            ...typography('Body', 100, 'SemiBold'),
         },
         speakingPostfix: {
-            ...typography('Body', 200, 'Regular'),
+            ...typography('Body', 100, 'Regular'),
         },
         channelAndTime: {
             color: changeOpacity(theme.buttonColor, 0.56),
@@ -128,7 +134,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
 const CurrentCallBar = ({
     displayName,
     currentCall,
-    userModelsDict,
+    sessionsDict,
     teammateNameDisplay,
     micPermissionsGranted,
     threadScreen,
@@ -162,7 +168,7 @@ const CurrentCallBar = ({
         leaveCall();
     }, []);
 
-    const myParticipant = currentCall?.participants[currentCall.myUserId];
+    const mySession = currentCall?.sessions[currentCall.mySessionId];
 
     // Since we can only see one user talking, it doesn't really matter who we show here (e.g., we can't
     // tell who is speaking louder).
@@ -178,7 +184,7 @@ const CurrentCallBar = ({
     if (speaker) {
         talkingMessage = (
             <Text style={style.speakingUser}>
-                {displayUsername(userModelsDict[speaker], intl.locale, teammateNameDisplay)}
+                {displayUsername(sessionsDict[speaker].userModel, intl.locale, teammateNameDisplay)}
                 {' '}
                 <Text style={style.speakingPostfix}>{
                     formatMessage({
@@ -190,7 +196,7 @@ const CurrentCallBar = ({
     }
 
     const muteUnmute = () => {
-        if (myParticipant?.muted) {
+        if (mySession?.muted) {
             unmuteMyself();
         } else {
             muteMyself();
@@ -201,7 +207,7 @@ const CurrentCallBar = ({
 
     // The user should receive an alert if all of the following conditions apply:
     // - Recording has started and recording has not ended.
-    const isHost = Boolean(currentCall?.hostId === myParticipant?.id);
+    const isHost = Boolean(currentCall?.hostId === mySession?.userId);
     if (currentCall?.recState?.start_at && !currentCall?.recState?.end_at) {
         recordingAlert(isHost, intl);
     }
@@ -224,15 +230,15 @@ const CurrentCallBar = ({
                     style={style.container}
                     onPress={goToCallScreen}
                 >
-                    <View style={style.profilePic}>
+                    <View style={[!speaker && style.avatarOutline]}>
                         <CallAvatar
-                            userModel={userModelsDict[speaker || '']}
-                            volume={speaker ? 0.5 : 0}
+                            userModel={sessionsDict[speaker || '']?.userModel}
+                            speaking={Boolean(speaker)}
                             serverUrl={currentCall?.serverUrl || ''}
-                            size={32}
+                            size={speaker ? 40 : 24}
                         />
                     </View>
-                    <View style={style.userInfo}>
+                    <View style={style.text}>
                         {talkingMessage}
                         <Text style={style.channelAndTime}>
                             {`~${displayName}`}
@@ -247,11 +253,11 @@ const CurrentCallBar = ({
                     <View style={style.buttonContainer}>
                         <Pressable
                             onPress={muteUnmute}
-                            style={[style.pressable, style.micIconContainer, myParticipant?.muted && style.muted]}
+                            style={[style.pressable, style.micIconContainer, mySession?.muted && style.muted]}
                             disabled={!micPermissionsGranted}
                         >
                             <UnavailableIconWrapper
-                                name={myParticipant?.muted ? 'microphone-off' : 'microphone'}
+                                name={mySession?.muted ? 'microphone-off' : 'microphone'}
                                 size={24}
                                 unavailable={!micPermissionsGranted}
                                 style={style.micIcon}
@@ -274,13 +280,13 @@ const CurrentCallBar = ({
             {micPermissionsError &&
                 <MessageBar
                     type={Calls.MessageBarType.Microphone}
-                    onPress={setMicPermissionsErrorDismissed}
+                    onDismiss={setMicPermissionsErrorDismissed}
                 />
             }
             {currentCall?.callQualityAlert &&
                 <MessageBar
                     type={Calls.MessageBarType.CallQuality}
-                    onPress={setCallQualityAlertDismissed}
+                    onDismiss={setCallQualityAlertDismissed}
                 />
             }
         </>

@@ -17,7 +17,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     userModel?: UserModel;
-    volume?: number;
+    speaking?: boolean;
     serverUrl: string;
     size: number;
     muted?: boolean;
@@ -27,49 +27,47 @@ type Props = {
 }
 
 // Note: microSize is 32, smallSize is 72
-const mediumSize = 96;
+const mediumSize = 72;
+const mediumBorderWidth = 3;
+const largeBorderWidth = 6;
 
-const getStyleSheet = ({
-    theme,
-    volume,
-    size,
-}: { theme: CallsTheme; volume: number; size: number }) => {
+const getStyleSheet = ({theme, size}: { theme: CallsTheme; size: number }) => {
     // Note: we are using the same mute/reaction sizes for small and medium sizes
     const mediumIcon = size <= mediumSize;
     const muteWidthHeight = mediumIcon ? 28 : 36;
     const muteBorderRadius = mediumIcon ? 14 : 18;
     const reactWidthHeight = mediumIcon ? 32 : 40;
     const reactBorderRadius = mediumIcon ? 16 : 20;
+    const borderWidth = size <= mediumSize ? mediumBorderWidth : largeBorderWidth;
 
     return StyleSheet.create({
+        pictureContainer: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: size + (borderWidth * 4),
+            width: size + (borderWidth * 4),
+        },
         pictureHalo: {
-            backgroundColor: changeOpacity(theme.onlineIndicator, 0.24 * volume),
-            height: size + 16,
-            width: size + 16,
-            padding: 4,
-            borderRadius: (size + 16) / 2,
+            backgroundColor: changeOpacity(theme.onlineIndicator, 0.24),
+            height: size + (borderWidth * 4),
+            width: size + (borderWidth * 4),
+            padding: borderWidth,
+            borderRadius: (size + (borderWidth * 4)) / 2,
         },
         pictureHalo2: {
-            backgroundColor: changeOpacity(theme.onlineIndicator, 0.32 * volume),
-            height: size + 8,
-            width: size + 8,
-            padding: 3,
-            borderRadius: (size + 8) / 2,
+            backgroundColor: changeOpacity(theme.onlineIndicator, 0.32),
+            height: size + (borderWidth * 2),
+            width: size + (borderWidth * 2),
+            padding: borderWidth,
+            borderRadius: (size + (borderWidth * 4)) / 2,
         },
         picture: {
             borderRadius: size / 2,
             height: size,
             width: size,
-            marginBottom: 5,
         },
         profileIcon: {
-            color: changeOpacity(theme.buttonColor, 0.16),
-        },
-        voiceShadow: {
-            shadowColor: 'rgb(61, 184, 135)',
-            shadowOffset: {width: 0, height: 0},
-            shadowOpacity: 1,
-            shadowRadius: 10,
+            color: changeOpacity(theme.buttonColor, 0.56),
         },
         muteIconContainer: {
             position: 'absolute',
@@ -143,23 +141,31 @@ const getStyleSheet = ({
             paddingTop: Platform.select({ios: 5}),
         },
         emoji: {
-            paddingLeft: Platform.select({ios: 5, default: 5}),
-            paddingTop: Platform.select({ios: 7, default: 3}),
+            paddingLeft: Platform.select({ios: mediumIcon ? 4 : 6, default: 5}),
+            paddingTop: Platform.select({ios: 5, default: 3}),
         },
     });
 };
 
-const CallAvatar = ({userModel, volume = 0, serverUrl, sharingScreen, size, muted, raisedHand, reaction}: Props) => {
+const CallAvatar = ({
+    userModel,
+    speaking = false,
+    serverUrl,
+    sharingScreen,
+    size,
+    muted,
+    raisedHand,
+    reaction,
+}: Props) => {
     const theme = useTheme();
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
-    const style = useMemo(() => getStyleSheet({theme: callsTheme, volume, size}), [callsTheme, volume, size]);
+    const style = useMemo(() => getStyleSheet({theme: callsTheme, size}), [callsTheme, size]);
 
     const iconSize = size <= mediumSize ? 18 : 24;
-    const reactionSize = size <= mediumSize ? 22 : 26;
-    const styleShadow = volume > 0 ? style.voiceShadow : undefined;
+    const reactionSize = size <= mediumSize ? 22 : 28;
 
     // Only show one or the other.
-    let topRightIcon: JSX.Element | null = null;
+    let topRightIcon: React.JSX.Element | null = null;
     if (sharingScreen) {
         topRightIcon = (
             <View style={style.reactionContainer}>
@@ -190,7 +196,7 @@ const CallAvatar = ({userModel, volume = 0, serverUrl, sharingScreen, size, mute
                     <Emoji
                         emojiName={reaction.name}
                         literal={reaction.literal}
-                        size={reactionSize - Platform.select({ios: 6, default: 4})}
+                        size={reactionSize - Platform.select({ios: 3, default: 4})}
                     />
                 </View>
             </View>
@@ -212,34 +218,28 @@ const CallAvatar = ({userModel, volume = 0, serverUrl, sharingScreen, size, mute
         />
     );
 
-    const view = (
-        <View style={[style.picture, styleShadow]}>
-            {profile}
-            {
-                muted !== undefined &&
-                <View style={style.muteIconContainer}>
-                    <CompassIcon
-                        name={muted ? 'microphone-off' : 'microphone'}
-                        size={iconSize}
-                        style={[style.muteIcon, !muted && style.muteIconUnmuted]}
-                    />
-                </View>
-            }
-            {topRightIcon}
-        </View>
-    );
-
-    if (Platform.OS === 'android') {
-        return (
-            <View style={style.pictureHalo}>
-                <View style={style.pictureHalo2}>
-                    {view}
+    return (
+        <View style={style.pictureContainer}>
+            <View style={[speaking && style.pictureHalo]}>
+                <View style={[speaking && style.pictureHalo2]}>
+                    <View style={[style.picture]}>
+                        {profile}
+                        {
+                            muted !== undefined &&
+                            <View style={style.muteIconContainer}>
+                                <CompassIcon
+                                    name={muted ? 'microphone-off' : 'microphone'}
+                                    size={iconSize}
+                                    style={[style.muteIcon, !muted && style.muteIconUnmuted]}
+                                />
+                            </View>
+                        }
+                        {topRightIcon}
+                    </View>
                 </View>
             </View>
-        );
-    }
-
-    return view;
+        </View>
+    );
 };
 
 export default CallAvatar;

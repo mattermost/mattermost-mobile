@@ -31,7 +31,7 @@ class WebsocketManager {
     private isBackgroundTimerRunning = false;
     private netConnected = false;
     private previousActiveState: boolean;
-    private statusUpdatesIntervalIDs: Record<string, NodeJS.Timer> = {};
+    private statusUpdatesIntervalIDs: Record<string, NodeJS.Timeout> = {};
     private backgroundIntervalId: number | undefined;
     private firstConnectionSynced: Record<string, boolean> = {};
 

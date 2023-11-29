@@ -3,7 +3,7 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, Platform, type StyleProp, StyleSheet, type ViewStyle} from 'react-native';
+import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle} from 'react-native';
 import Animated, {type AnimatedStyle} from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -19,7 +19,6 @@ import {getDateForDateLine, preparePostList} from '@utils/post_list';
 
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
 import MoreMessages from './more_messages';
-import PostListRefreshControl from './refresh_control';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged, ViewableItemsChangedListenerEvent} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
@@ -52,7 +51,6 @@ type Props = {
     header?: ReactElement;
     testID: string;
     currentCallBarVisible?: boolean;
-    joinCallBannerVisible?: boolean;
     savedPostIds: Set<string>;
 }
 
@@ -73,14 +71,6 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        scaleY: -1,
-    },
-    scale: {
-        ...Platform.select({
-            android: {
-                scaleY: -1,
-            },
-        }),
     },
 });
 
@@ -111,15 +101,12 @@ const PostList = ({
     showMoreMessages,
     showNewMessageLine = true,
     testID,
-    currentCallBarVisible,
-    joinCallBannerVisible,
     savedPostIds,
 }: Props) => {
     const listRef = useRef<FlatList<string | PostModel>>(null);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
-    const [enableRefreshControl, setEnableRefreshControl] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -172,13 +159,6 @@ const PostList = ({
         }
         setRefreshing(false);
     }, [channelId, location, posts, rootId]);
-
-    const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        if (Platform.OS === 'android') {
-            const {y} = event.nativeEvent.contentOffset;
-            setEnableRefreshControl(y === 0);
-        }
-    }, []);
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
         const index = Math.min(info.highestMeasuredFrameIndex, info.index);
@@ -236,7 +216,6 @@ const PostList = ({
                         key={item.value}
                         theme={theme}
                         testID={`${testID}.new_messages_line`}
-                        style={styles.scale}
                     />
                 );
             case 'date':
@@ -244,7 +223,6 @@ const PostList = ({
                     <DateSeparator
                         key={item.value}
                         date={getDateForDateLine(item.value)}
-                        style={styles.scale}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
@@ -254,7 +232,6 @@ const PostList = ({
                         key={item.value}
                         rootId={rootId!}
                         testID={`${testID}.thread_overview`}
-                        style={styles.scale}
                     />
                 );
             case 'user-activity': {
@@ -263,7 +240,7 @@ const PostList = ({
                     key: item.value,
                     postId: item.value,
                     location,
-                    style: Platform.OS === 'ios' ? styles.scale : styles.container,
+                    style: styles.container,
                     testID: `${testID}.combined_user_activity`,
                     showJoinLeave: shouldShowJoinLeaveMessages,
                     theme,
@@ -291,7 +268,6 @@ const PostList = ({
                     rootId,
                     shouldRenderReplyButton,
                     skipSaveddHeader,
-                    style: styles.scale,
                     testID: `${testID}.post`,
                 };
 
@@ -331,40 +307,33 @@ const PostList = ({
 
     return (
         <>
-            <PostListRefreshControl
-                enabled={!disablePullToRefresh && enableRefreshControl}
+            <AnimatedFlatList
+                contentContainerStyle={contentContainerStyle}
+                data={orderedPosts}
+                keyboardDismissMode='interactive'
+                keyboardShouldPersistTaps='handled'
+                keyExtractor={keyExtractor}
+                initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
+                ListHeaderComponent={header}
+                ListFooterComponent={footer}
+                maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+                maxToRenderPerBatch={10}
+                nativeID={nativeID}
+                onEndReached={onEndReached}
+                onEndReachedThreshold={0.9}
+                onScrollToIndexFailed={onScrollToIndexFailed}
+                onViewableItemsChanged={onViewableItemsChanged}
+                ref={listRef}
+                removeClippedSubviews={true}
+                renderItem={renderItem}
+                scrollEventThrottle={60}
+                style={styles.flex}
+                viewabilityConfig={VIEWABILITY_CONFIG}
+                testID={`${testID}.flat_list`}
+                inverted={true}
                 refreshing={refreshing}
-                onRefresh={onRefresh}
-                style={styles.container}
-            >
-                <AnimatedFlatList
-                    contentContainerStyle={contentContainerStyle}
-                    data={orderedPosts}
-                    keyboardDismissMode='interactive'
-                    keyboardShouldPersistTaps='handled'
-                    keyExtractor={keyExtractor}
-                    initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                    ListHeaderComponent={header}
-                    ListFooterComponent={footer}
-                    maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                    maxToRenderPerBatch={10}
-                    nativeID={nativeID}
-                    onEndReached={onEndReached}
-                    onEndReachedThreshold={0.9}
-                    onScroll={onScroll}
-                    onScrollToIndexFailed={onScrollToIndexFailed}
-                    onViewableItemsChanged={onViewableItemsChanged}
-
-                    // @ts-expect-error old style ref
-                    ref={listRef}
-                    removeClippedSubviews={true}
-                    renderItem={renderItem}
-                    scrollEventThrottle={60}
-                    style={styles.flex}
-                    viewabilityConfig={VIEWABILITY_CONFIG}
-                    testID={`${testID}.flat_list`}
-                />
-            </PostListRefreshControl>
+                onRefresh={disablePullToRefresh ? undefined : onRefresh}
+            />
             {showMoreMessages &&
             <MoreMessages
                 channelId={channelId}
@@ -377,8 +346,6 @@ const PostList = ({
                 scrollToIndex={scrollToIndex}
                 theme={theme}
                 testID={`${testID}.more_messages_button`}
-                currentCallBarVisible={Boolean(currentCallBarVisible)}
-                joinCallBannerVisible={Boolean(joinCallBannerVisible)}
             />
             }
         </>

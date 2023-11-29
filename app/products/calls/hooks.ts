@@ -9,11 +9,25 @@ import {Alert, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
 import {initializeVoiceTrack} from '@calls/actions/calls';
-import {setMicPermissionsGranted} from '@calls/state';
+import {
+    setMicPermissionsGranted,
+    useCallsState,
+    useChannelsWithCalls,
+    useCurrentCall,
+    useGlobalCallsState,
+    useIncomingCalls,
+} from '@calls/state';
 import {errorAlert} from '@calls/utils';
+import {
+    CALL_ERROR_BAR_HEIGHT,
+    CALL_NOTIFICATION_BAR_HEIGHT,
+    CURRENT_CALL_BAR_HEIGHT,
+    JOIN_CALL_BAR_HEIGHT,
+} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useAppState} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
+import {queryAllActiveServers} from '@queries/app/servers';
 import {getFullErrorMessage} from '@utils/errors';
 
 import type {Client} from '@client/rest';
@@ -107,4 +121,37 @@ export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
             asyncFn();
         }
     }, [appState]);
+};
+
+export const useCallsAdjustment = (serverUrl: string, channelId: string): number => {
+    const incomingCalls = useIncomingCalls().incomingCalls;
+    const channelsWithCalls = useChannelsWithCalls(serverUrl);
+    const callsState = useCallsState(serverUrl);
+    const globalCallsState = useGlobalCallsState();
+    const currentCall = useCurrentCall();
+    const [numServers, setNumServers] = useState(1);
+    const dismissed = Boolean(callsState.calls[channelId]?.dismissed[callsState.myUserId]);
+    const inCurrentCall = currentCall?.id === channelId;
+    const joinCallBannerVisible = Boolean(channelsWithCalls[channelId]) && !dismissed && !inCurrentCall;
+
+    useEffect(() => {
+        const getNumServers = async () => {
+            const query = await queryAllActiveServers()?.fetch();
+            setNumServers(query?.length || 0);
+        };
+        getNumServers();
+    }, []);
+
+    // Do we have calls banners?
+    const currentCallBarVisible = Boolean(currentCall);
+    const micPermissionsError = !globalCallsState.micPermissionsGranted && (currentCall && !currentCall.micPermissionsErrorDismissed);
+    const callQualityAlert = Boolean(currentCall?.callQualityAlert);
+    const incomingCallsShowing = incomingCalls.filter((ic) => ic.channelID !== channelId);
+    const notificationBarHeight = CALL_NOTIFICATION_BAR_HEIGHT + (numServers > 1 ? 8 : 0);
+    const callsIncomingAdjustment = (incomingCallsShowing.length * notificationBarHeight) + (incomingCallsShowing.length * 8);
+    return (currentCallBarVisible ? CURRENT_CALL_BAR_HEIGHT + 8 : 0) +
+        (micPermissionsError ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
+        (callQualityAlert ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
+        (joinCallBannerVisible ? JOIN_CALL_BAR_HEIGHT + 8 : 0) +
+        callsIncomingAdjustment;
 };

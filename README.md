@@ -1,6 +1,6 @@
 # Mattermost Mobile v2
 
-- **Minimum Server versions:** Current ESR version (7.8.0+)
+- **Minimum Server versions:** Current ESR version (8.1.0+)
 - **Supported iOS versions:** 12.4+
 - **Supported Android versions:** 7.0+
 

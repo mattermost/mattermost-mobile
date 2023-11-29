@@ -4,9 +4,9 @@ import com.facebook.react.bridge.ReadableMap
 import com.mattermost.helpers.PushNotificationDataRunnable
 import com.mattermost.helpers.database_extension.findMyTeam
 import com.mattermost.helpers.database_extension.findTeam
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 
-suspend fun PushNotificationDataRunnable.Companion.fetchTeamIfNeeded(db: Database, serverUrl: String, teamId: String): Pair<ReadableMap?, ReadableMap?> {
+suspend fun PushNotificationDataRunnable.Companion.fetchTeamIfNeeded(db: WMDatabase, serverUrl: String, teamId: String): Pair<ReadableMap?, ReadableMap?> {
     return try {
         var team: ReadableMap? = null
         var myTeam: ReadableMap? = null

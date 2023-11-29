@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap, combineLatestWith} from 'rxjs/operators';
 
@@ -17,6 +16,7 @@ import {
     observeCurrentTeamId,
     observeCurrentUserId,
 } from '@queries/servers/system';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
 import {isTypeDMorGM} from '@utils/channel';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -112,12 +112,24 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         distinctUntilChanged(),
     );
 
+    const isGuestUser = currentUser.pipe(
+        switchMap((u) => (u ? of$(u.isGuest) : of$(false))),
+        distinctUntilChanged(),
+    );
+
+    const isConvertGMFeatureAvailable = observeConfigValue(database, 'Version').pipe(
+        switchMap((version) => of$(isMinimumServerVersion(version || '', 9, 1))),
+    );
+
     return {
         type,
         canEnableDisableCalls,
         isCallsEnabledInChannel,
         canManageMembers,
+        isCRTEnabled: observeIsCRTEnabled(database),
         canManageSettings,
+        isGuestUser,
+        isConvertGMFeatureAvailable,
     };
 });
 

@@ -28,6 +28,8 @@ interface ClientLicense {
     OpenId: string;
     RemoteClusterService: string;
     SAML: string;
+    SelfHostedProducts: string;
     SharedChannels: string;
+    SkuShortName: string;
     Users: string;
  }

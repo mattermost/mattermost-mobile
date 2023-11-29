@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import moment from 'moment-timezone';
 import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
@@ -10,7 +9,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 import JoinCallBanner from '@calls/components/join_call_banner/join_call_banner';
 import {observeIsCallLimitRestricted} from '@calls/observers';
 import {observeCallsState} from '@calls/state';
-import {idsAreEqual} from '@calls/utils';
+import {idsAreEqual, userIds} from '@calls/utils';
 import {queryUsersById} from '@queries/servers/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -28,10 +27,10 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
     const callsState = observeCallsState(serverUrl).pipe(
         switchMap((state) => of$(state.calls[channelId])),
     );
-    const participants = callsState.pipe(
-        distinctUntilChanged((prev, curr) => prev?.participants === curr?.participants), // Did the participants object ref change?
-        switchMap((call) => (call ? of$(Object.keys(call.participants)) : of$([]))),
-        distinctUntilChanged((prev, curr) => idsAreEqual(prev, curr)), // Continue only if we have a different set of participant ids
+    const userModels = callsState.pipe(
+        distinctUntilChanged((prev, curr) => prev?.sessions === curr?.sessions), // Did the userModels object ref change?
+        switchMap((call) => (call ? of$(userIds(Object.values(call.sessions))) : of$([]))),
+        distinctUntilChanged((prev, curr) => idsAreEqual(prev, curr)), // Continue only if we have a different set of participant userIds
         switchMap((ids) => (ids.length > 0 ? queryUsersById(database, ids).observeWithColumns(['last_picture_update']) : of$([]))),
     );
     const channelCallStartTime = callsState.pipe(
@@ -41,8 +40,13 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
         distinctUntilChanged(),
     );
 
+    const callId = callsState.pipe(
+        switchMap((state) => of$(state?.id || '')),
+    );
+
     return {
-        participants,
+        callId,
+        userModels,
         channelCallStartTime,
         limitRestrictedInfo: observeIsCallLimitRestricted(database, serverUrl, channelId),
     };

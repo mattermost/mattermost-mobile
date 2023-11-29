@@ -4,8 +4,8 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.mattermost.helpers.RandomId
-import com.nozbe.watermelondb.Database
-import com.nozbe.watermelondb.mapCursor
+import com.mattermost.helpers.mapCursor
+import com.nozbe.watermelondb.WMDatabase
 
 internal fun findPostInChannel(chunks: ReadableArray, earliest: Double, latest: Double): ReadableMap? {
     for (i in 0 until chunks.size()) {
@@ -18,7 +18,7 @@ internal fun findPostInChannel(chunks: ReadableArray, earliest: Double, latest: 
     return null
 }
 
-internal fun insertPostInChannel(db: Database, channelId: String, earliest: Double, latest: Double): ReadableMap? {
+internal fun insertPostInChannel(db: WMDatabase, channelId: String, earliest: Double, latest: Double): ReadableMap? {
     return try {
         val id = RandomId.generate()
         db.execute(
@@ -41,7 +41,7 @@ internal fun insertPostInChannel(db: Database, channelId: String, earliest: Doub
     }
 }
 
-internal fun mergePostsInChannel(db: Database, existingChunks: ReadableArray, newChunk: ReadableMap) {
+internal fun mergePostsInChannel(db: WMDatabase, existingChunks: ReadableArray, newChunk: ReadableMap) {
     for (i in 0 until existingChunks.size()) {
         try {
             val chunk = existingChunks.getMap(i)
@@ -56,7 +56,7 @@ internal fun mergePostsInChannel(db: Database, existingChunks: ReadableArray, ne
     }
 }
 
-internal fun handlePostsInChannel(db: Database, channelId: String, earliest: Double, latest: Double) {
+internal fun handlePostsInChannel(db: WMDatabase, channelId: String, earliest: Double, latest: Double) {
     try {
         db.rawQuery(
                 "SELECT id, channel_id, earliest, latest FROM PostsInChannel WHERE channel_id = ?",
