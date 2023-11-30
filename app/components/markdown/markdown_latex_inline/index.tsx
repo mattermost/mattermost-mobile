@@ -23,7 +23,7 @@ type MathViewErrorProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         mathStyle: {
-            marginVertical: 3,
+            marginBottom: 1.5,
             color: theme.centerChannelColor,
         },
         viewStyle: {
