@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Animated, DeviceEventEmitter, InteractionManager, Platform, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
@@ -159,6 +159,7 @@ const ServerItem = ({
     const viewRef = useRef<View>(null);
     const [showTutorial, setShowTutorial] = useState(false);
     const [itemBounds, setItemBounds] = useState<TutorialItemBounds>({startX: 0, startY: 0, endX: 0, endY: 0});
+    const tutorialShown = useRef(false);
 
     let displayName = server.displayName;
 
@@ -213,11 +214,24 @@ const ServerItem = ({
     };
 
     const onLayout = useCallback(() => {
-        if (showTutorial) {
-            swipeable.current?.close();
-            startTutorial();
+        if (highlight && !tutorialWatched) {
+            if (isTablet) {
+                setShowTutorial(true);
+                return;
+            }
+            InteractionManager.runAfterInteractions(() => {
+                setShowTutorial(true);
+            });
         }
     }, [showTutorial]);
+
+    useLayoutEffect(() => {
+        if (showTutorial && !tutorialShown.current) {
+            swipeable.current?.close();
+            tutorialShown.current = true;
+            startTutorial();
+        }
+    });
 
     const containerStyle = useMemo(() => {
         const style: StyleProp<ViewStyle> = [styles.container];
@@ -348,18 +362,6 @@ const ServerItem = ({
             subscription.current = undefined;
         };
     }, [server.lastActiveAt, isActive]);
-
-    useEffect(() => {
-        if (highlight && !tutorialWatched) {
-            if (isTablet) {
-                setShowTutorial(true);
-                return;
-            }
-            InteractionManager.runAfterInteractions(() => {
-                setShowTutorial(true);
-            });
-        }
-    }, [highlight, tutorialWatched, isTablet]);
 
     const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
     const serverItemTestId = isActive ? `${serverItem}.active` : `${serverItem}.inactive`;
