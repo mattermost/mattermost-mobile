@@ -17,10 +17,10 @@ import useBackNavigation from '@hooks/navigate_back';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import ReplySettings from '@screens/settings/notification_mention/reply_settings';
+import {areBothStringArraysEqual} from '@utils/helpers';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
-import {areBothStringArraysEqual} from '@utils/helpers';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
