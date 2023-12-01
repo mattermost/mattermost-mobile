@@ -18,7 +18,7 @@ import java.util.Objects;
 
 public class MainActivity extends NavigationActivity {
     private boolean HWKeyboardConnected = false;
-    private final FoldableObserver foldableObserver = new FoldableObserver(this);
+    private final FoldableObserver foldableObserver = FoldableObserver.Companion.getInstance(this);
 
     @Override
     protected String getMainComponentName() {

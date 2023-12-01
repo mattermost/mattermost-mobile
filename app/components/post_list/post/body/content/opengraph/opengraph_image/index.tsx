@@ -6,12 +6,13 @@ import {TouchableWithoutFeedback, useWindowDimensions} from 'react-native';
 import FastImage, {type Source} from 'react-native-fast-image';
 import Animated from 'react-native-reanimated';
 
-import {Device as DeviceConstant, View as ViewConstants} from '@constants';
+import {View as ViewConstants} from '@constants';
 import {GalleryInit} from '@context/gallery';
 import {useGalleryItem} from '@hooks/gallery';
 import {lookupMimeType} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
+import {isTablet} from '@utils/helpers';
 import {calculateDimensions} from '@utils/images';
 import {type BestImage, getNearestPoint} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -51,7 +52,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const getViewPostWidth = (isReplyPost: boolean, deviceHeight: number, deviceWidth: number) => {
     const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
     const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
-    const tabletOffset = DeviceConstant.IS_TABLET ? ViewConstants.TABLET_SIDEBAR_WIDTH : 0;
+    const tabletOffset = isTablet() ? ViewConstants.TABLET_SIDEBAR_WIDTH : 0;
 
     return viewPortWidth - tabletOffset;
 };

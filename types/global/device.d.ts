@@ -2,6 +2,6 @@
 // See LICENSE.txt for license information.
 
 type SplitViewResult = {
-    isSplitView?: boolean;
-    isTablet?: boolean;
+    isSplitView: boolean;
+    isTablet: boolean;
 }

@@ -44,8 +44,8 @@ exports[`Thread item in the channel list Threads Component should match snapshot
           "flexDirection": "row",
         },
         false,
-        false,
-        false,
+        undefined,
+        undefined,
         {
           "minHeight": 40,
         },
@@ -82,7 +82,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
             "color": "rgba(255,255,255,0.72)",
           },
           false,
-          false,
+          undefined,
           undefined,
         ]
       }
@@ -137,8 +137,8 @@ exports[`Thread item in the channel list Threads Component should match snapshot
           "flexDirection": "row",
         },
         false,
-        false,
-        false,
+        undefined,
+        undefined,
         {
           "minHeight": 40,
         },
@@ -177,7 +177,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
             "color": "rgba(255,255,255,0.72)",
           },
           false,
-          false,
+          undefined,
           {
             "color": "#3f4350",
           },
@@ -236,8 +236,8 @@ exports[`Thread item in the channel list Threads Component should match snapshot
           "flexDirection": "row",
         },
         false,
-        false,
-        false,
+        undefined,
+        undefined,
         {
           "minHeight": 40,
         },
@@ -274,7 +274,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
             "color": "rgba(255,255,255,0.72)",
           },
           false,
-          false,
+          undefined,
           undefined,
         ]
       }

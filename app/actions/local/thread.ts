@@ -43,7 +43,7 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
             await operator.batchRecords(models, 'switchToGlobalThreads');
         }
 
-        const isTabletDevice = await isTablet();
+        const isTabletDevice = isTablet();
         if (isTabletDevice) {
             DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
         } else {
@@ -75,7 +75,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
         }
 
         const currentTeamId = await getCurrentTeamId(database);
-        const isTabletDevice = await isTablet();
+        const isTabletDevice = isTablet();
         const teamId = channel.teamId || currentTeamId;
         const currentThreadId = EphemeralStore.getCurrentThreadId();
 

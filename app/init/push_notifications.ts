@@ -115,7 +115,7 @@ class PushNotifications {
 
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (database) {
-            const isTabletDevice = await isTablet();
+            const isTabletDevice = isTablet();
             const displayName = await getServerDisplayName(serverUrl);
             const channelId = await getCurrentChannelId(database);
             const isCRTEnabled = await getIsCRTEnabled(database);

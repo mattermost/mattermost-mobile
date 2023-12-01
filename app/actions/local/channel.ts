@@ -32,7 +32,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         let models: Model[] = [];
         const dt = Date.now();
-        const isTabletDevice = await isTablet();
+        const isTabletDevice = isTablet();
         const system = await getCommonSystemValues(database);
         const member = await getMyChannel(database, channelId);
 
