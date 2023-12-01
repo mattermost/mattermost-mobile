@@ -147,28 +147,28 @@ export default function DraftInput({
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
 
-    const persistenNotificationsEnabled = postPriority.persistent_notifications && postPriority.priority === PostPriorityType.URGENT;
+    const persistentNotificationsEnabled = postPriority.persistent_notifications && postPriority.priority === PostPriorityType.URGENT;
     const {noMentionsError, mentionsList} = useMemo(() => {
         let error = false;
         let mentions: string[] = [];
         if (
             channelType !== General.DM_CHANNEL &&
-            persistenNotificationsEnabled
+            persistentNotificationsEnabled
         ) {
             mentions = (value.match(MENTIONS_REGEX) || []);
             error = mentions.length === 0;
         }
 
         return {noMentionsError: error, mentionsList: mentions};
-    }, [channelType, persistenNotificationsEnabled, value]);
+    }, [channelType, persistentNotificationsEnabled, value]);
 
     const handleSendMessage = useCallback(async () => {
-        if (persistenNotificationsEnabled) {
-            persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval);
+        if (persistentNotificationsEnabled) {
+            persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, channelType);
         } else {
             sendMessage();
         }
-    }, [serverUrl, mentionsList, persistenNotificationsEnabled, persistentNotificationMaxRecipients, sendMessage, value]);
+    }, [serverUrl, mentionsList, persistentNotificationsEnabled, persistentNotificationMaxRecipients, sendMessage, value, channelType]);
 
     const sendActionDisabled = !canSend || noMentionsError;
 
