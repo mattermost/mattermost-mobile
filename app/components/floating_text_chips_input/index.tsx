@@ -34,6 +34,7 @@ import Animated, {
 import CompassIcon from '@components/compass_icon';
 import SelectedChip, {USER_CHIP_HEIGHT} from '@components/selected_chip';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import {getLabelPositions, onExecution} from './utils';
 
@@ -46,23 +47,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     errorContainer: {
         flexDirection: 'row',
-
-        // Hack to properly place text in flexbox
-        borderColor: 'transparent',
+        borderColor: 'transparent', // Hack to properly place text in flexbox
         borderWidth: 1,
     },
     errorIcon: {
         color: theme.errorTextColor,
-        fontSize: 14,
         marginRight: 7,
         top: 5,
+        ...typography('Body', 100),
     },
     errorText: {
         color: theme.errorTextColor,
-        fontFamily: 'OpenSans',
-        fontSize: 12,
-        lineHeight: 16,
         paddingVertical: 5,
+        ...typography('Body', 75),
     },
     input: {
         backgroundColor: 'transparent',
@@ -77,19 +74,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignSelf: 'stretch',
     },
     label: {
+        ...typography('Body', 200),
         position: 'absolute',
+        lineHeight: 16,
         color: changeOpacity(theme.centerChannelColor, 0.64),
         left: 16,
-        fontFamily: 'OpenSans',
-        fontSize: 16,
         zIndex: 10,
-        maxWidth: 315,
     },
     readOnly: {
         backgroundColor: changeOpacity(theme.centerChannelBg, 0.16),
     },
     smallLabel: {
-        fontSize: 10,
+        ...typography('Body', 25),
     },
     textInput: {
         display: 'flex',
@@ -99,8 +95,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignContent: 'flex-start',
         alignItems: 'flex-start',
         textAlignVertical: 'top',
-        fontFamily: 'OpenSans',
-        fontSize: 16,
         paddingTop: 12,
         paddingBottom: 12,
         paddingHorizontal: 16,
@@ -109,6 +103,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: 4,
         borderWidth: BORDER_DEFAULT_WIDTH,
         backgroundColor: theme.centerChannelBg,
+        ...typography('Body', 200),
     },
     chipContainer: {
         flexGrow: 0,
@@ -223,7 +218,7 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
         }
     }
 
-    const containerStyles = useMemo(() => {
+    const textInputContainerStyles = useMemo(() => {
         const res: StyleProp<TextStyle> = [styles.textInput];
         if (!editable) {
             res.push(styles.readOnly);
@@ -247,7 +242,7 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
         const inputText = placeholder || hasValues;
         const index = inputText || focusedLabel ? 1 : 0;
         const toValue = positions[index];
-        const toSize = size[index];
+        const toSize = size[index] as number;
 
         let color = styles.label.color;
         if (shouldShowError) {
@@ -279,9 +274,7 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
                     >
                         {label}
                     </Animated.Text>
-                    <View
-                        style={containerStyles}
-                    >
+                    <View style={textInputContainerStyles}>
                         {props.chipsValues && props.chipsValues?.length > 0 && props.chipsValues.map((chipValue) => (
                             <SelectedChip
                                 key={chipValue}

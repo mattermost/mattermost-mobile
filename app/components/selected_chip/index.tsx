@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Text, TouchableOpacity, useWindowDimensions, type ViewStyle} from 'react-native';
+import {Text, TouchableOpacity, useWindowDimensions, type StyleProp, type ViewStyle} from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -17,7 +17,7 @@ type SelectedChipProps = {
     extra?: React.ReactNode;
     onRemove: (id: string) => void;
     testID?: string;
-    containerStyle?: ViewStyle;
+    containerStyle?: StyleProp<ViewStyle>;
 }
 
 export const USER_CHIP_HEIGHT = 32;

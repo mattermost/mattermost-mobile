@@ -20,6 +20,7 @@ import ReplySettings from '@screens/settings/notification_mention/reply_settings
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
+import {areBothStringArraysEqual} from '@utils/helpers';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -41,7 +42,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignSelf: 'center',
             paddingHorizontal: 18.5,
         },
-        labelTextStyle: {left: 32},
         keywordLabelStyle: {
             paddingHorizontal: 18.5,
             marginTop: 4,
@@ -56,6 +56,49 @@ type Props = {
     currentUser?: UserModel;
     isCRTEnabled: boolean;
 };
+
+export function getMentionProps(currentUser?: UserModel) {
+    const notifyProps = getNotificationProps(currentUser);
+    const mentionKeys = notifyProps?.mention_keys ?? '';
+
+    let mentionKeywords: string[] = [];
+    let usernameMention = false;
+    mentionKeys.split(',').forEach((mentionKey) => {
+        if (currentUser && mentionKey === currentUser.username) {
+            usernameMention = true;
+        } else if (mentionKey) {
+            mentionKeywords = [...mentionKeywords, mentionKey];
+        }
+    });
+
+    return {
+        mentionKeywords,
+        usernameMention,
+        channel: notifyProps.channel === 'true',
+        first_name: notifyProps.first_name === 'true',
+        comments: notifyProps.comments || '',
+        notifyProps,
+    };
+}
+
+export type CanSaveSettings = {
+    channelMentionOn: boolean;
+    replyNotificationType: string;
+    firstNameMentionOn: boolean;
+    mentionKeywords: string[];
+    usernameMentionOn: boolean;
+    mentionProps: ReturnType<typeof getMentionProps>;
+}
+
+export function canSaveSettings({channelMentionOn, replyNotificationType, firstNameMentionOn, mentionKeywords, usernameMentionOn, mentionProps}: CanSaveSettings) {
+    const channelChanged = channelMentionOn !== mentionProps.channel;
+    const replyChanged = replyNotificationType !== mentionProps.comments;
+    const firstNameChanged = firstNameMentionOn !== mentionProps.first_name;
+    const userNameChanged = usernameMentionOn !== mentionProps.usernameMention;
+    const mentionKeywordsChanged = !areBothStringArraysEqual(mentionKeywords, mentionProps.mentionKeywords);
+
+    return channelChanged || replyChanged || firstNameChanged || userNameChanged || mentionKeywordsChanged;
+}
 
 const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     const serverUrl = useServerUrl();
@@ -145,8 +188,10 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
         // Check if the keyword is not empty and not already in the list
         if (mentionKeywordsInput.length > 0 && !mentionKeywords.includes(mentionKeywordsInput)) {
             const formattedKeyword = mentionKeywordsInput.trim().replace(/ /g, '');
-            setMentionKeywords([...mentionKeywords, formattedKeyword]);
             setMentionKeywordsInput('');
+            requestAnimationFrame(() => {
+                setMentionKeywords([...mentionKeywords, formattedKeyword]);
+            });
         }
     }
 
@@ -218,7 +263,6 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                     chipsValues={mentionKeywords}
                     textInputValue={mentionKeywordsInput}
                     onTextInputSubmitted={handleMentionKeywordEntered}
-                    labelTextStyle={styles.labelTextStyle}
                 />
                 <Text
                     style={styles.keywordLabelStyle}
@@ -240,63 +284,5 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
         </>
     );
 };
-
-export function getMentionProps(currentUser?: UserModel) {
-    const notifyProps = getNotificationProps(currentUser);
-    const mentionKeys = notifyProps?.mention_keys ?? '';
-
-    let mentionKeywords: string[] = [];
-    let usernameMention = false;
-    mentionKeys.split(',').forEach((mentionKey) => {
-        if (currentUser && mentionKey === currentUser.username) {
-            usernameMention = true;
-        } else if (mentionKey) {
-            mentionKeywords = [...mentionKeywords, mentionKey];
-        }
-    });
-
-    return {
-        mentionKeywords,
-        usernameMention,
-        channel: notifyProps.channel === 'true',
-        first_name: notifyProps.first_name === 'true',
-        comments: notifyProps.comments || '',
-        notifyProps,
-    };
-}
-
-export type CanSaveSettings = {
-    channelMentionOn: boolean;
-    replyNotificationType: string;
-    firstNameMentionOn: boolean;
-    mentionKeywords: string[];
-    usernameMentionOn: boolean;
-    mentionProps: ReturnType<typeof getMentionProps>;
-}
-
-export function canSaveSettings({channelMentionOn, replyNotificationType, firstNameMentionOn, mentionKeywords, usernameMentionOn, mentionProps}: CanSaveSettings) {
-    const channelChanged = channelMentionOn !== mentionProps.channel;
-    const replyChanged = replyNotificationType !== mentionProps.comments;
-    const firstNameChanged = firstNameMentionOn !== mentionProps.first_name;
-    const userNameChanged = usernameMentionOn !== mentionProps.usernameMention;
-    const mentionKeywordsChanged = stringArraysAreNotEqual(mentionKeywords, mentionProps.mentionKeywords);
-
-    return channelChanged || replyChanged || firstNameChanged || userNameChanged || mentionKeywordsChanged;
-}
-
-export function stringArraysAreNotEqual(a: string[], b: string[]) {
-    if (a.length !== b.length) {
-        return true;
-    }
-
-    if (a.length === 0 && b.length === 0) {
-        return false;
-    }
-
-    const aSorted = a.sort();
-    const bSorted = b.sort();
-    const isEqual = aSorted.every((value, index) => value === bSorted[index]);
-    return !isEqual;
-}
 
 export default MentionSettings;
