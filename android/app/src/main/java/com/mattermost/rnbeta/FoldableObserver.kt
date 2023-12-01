@@ -9,7 +9,6 @@ import androidx.window.layout.WindowInfoTracker
 import androidx.window.layout.WindowLayoutInfo
 import androidx.window.layout.WindowMetricsCalculator
 import androidx.window.rxjava3.layout.windowLayoutInfoObservable
-import com.facebook.react.bridge.ReactApplicationContext
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -47,7 +46,7 @@ class FoldableObserver(private val activity: Activity) {
         disposable = observable.observeOn(AndroidSchedulers.mainThread())
                 .subscribe { layoutInfo ->
                     val splitViewModule = SplitViewModule.getInstance()
-                    isFolded(layoutInfo)
+                    setIsDeviceFolded(layoutInfo)
                     splitViewModule?.setDeviceFolded()
                 }
     }
@@ -56,7 +55,7 @@ class FoldableObserver(private val activity: Activity) {
         disposable?.dispose()
     }
 
-    private fun isFolded(layoutInfo: WindowLayoutInfo) {
+    private fun setIsDeviceFolded(layoutInfo: WindowLayoutInfo) {
         val foldingFeature = layoutInfo.displayFeatures
                 .filterIsInstance<FoldingFeature>()
                 .firstOrNull()
@@ -69,7 +68,7 @@ class FoldableObserver(private val activity: Activity) {
         }
     }
 
-    public fun isCompactView(): Boolean {
+    fun isCompactView(): Boolean {
         val metrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(activity)
         val width = metrics.bounds.width()
         val height = metrics.bounds.height()

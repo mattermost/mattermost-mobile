@@ -776,7 +776,7 @@ type BottomSheetArgs = {
     title: string;
 }
 
-export async function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId}: BottomSheetArgs) {
+export function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId}: BottomSheetArgs) {
     if (isTablet()) {
         showModal(Screens.BOTTOM_SHEET, title, {
             closeButtonId,
@@ -808,7 +808,7 @@ type AsBottomSheetArgs = {
     title: string;
 }
 
-export async function openAsBottomSheet({closeButtonId, screen, theme, title, props}: AsBottomSheetArgs) {
+export function openAsBottomSheet({closeButtonId, screen, theme, title, props}: AsBottomSheetArgs) {
     if (isTablet()) {
         showModal(screen, title, {
             closeButtonId,

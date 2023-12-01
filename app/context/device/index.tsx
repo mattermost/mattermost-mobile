@@ -34,13 +34,4 @@ const DeviceInfoProvider = ({children}: Props) => {
         </Provider>);
 };
 
-export function useIsTablet() {
-    const {isSplitView, isTablet} = React.useContext(DeviceContext);
-    return isTablet && !isSplitView;
-}
-
-export function useIsSplitView() {
-    return React.useContext(DeviceContext).isSplitView || false;
-}
-
 export default DeviceInfoProvider;
