@@ -185,12 +185,13 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     }
 
     function handleMentionKeywordEntered() {
+        const formattedMentionKeywordsInput = mentionKeywordsInput.trim().replace(/ /g, '');
+
         // Check if the keyword is not empty and not already in the list
-        if (mentionKeywordsInput.length > 0 && !mentionKeywords.includes(mentionKeywordsInput)) {
-            const formattedKeyword = mentionKeywordsInput.trim().replace(/ /g, '');
+        if (formattedMentionKeywordsInput.length > 0 && !mentionKeywords.includes(formattedMentionKeywordsInput)) {
             setMentionKeywordsInput('');
             requestAnimationFrame(() => {
-                setMentionKeywords([...mentionKeywords, formattedKeyword]);
+                setMentionKeywords([...mentionKeywords, formattedMentionKeywordsInput]);
             });
         }
     }

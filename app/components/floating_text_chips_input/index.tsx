@@ -176,9 +176,6 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
     const inputRef = useRef<TextInput>(null);
     const styles = getStyleSheet(theme);
 
-    const positions = useMemo(() => getLabelPositions(styles.textInput, styles.label, styles.smallLabel), [styles]);
-    const size = useMemo(() => [styles.textInput.fontSize, styles.smallLabel.fontSize], [styles]);
-
     const hasValues = textInputValue.length > 0 || (chipsValues?.length ?? 0) > 0;
 
     const shouldShowError = !focused && error;
@@ -241,7 +238,11 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
     const textAnimatedTextStyle = useAnimatedStyle(() => {
         const inputText = placeholder || hasValues;
         const index = inputText || focusedLabel ? 1 : 0;
+
+        const positions = getLabelPositions(styles.textInput, styles.label, styles.smallLabel);
         const toValue = positions[index];
+
+        const size = [styles.textInput.fontSize, styles.smallLabel.fontSize];
         const toSize = size[index] as number;
 
         let color = styles.label.color;
