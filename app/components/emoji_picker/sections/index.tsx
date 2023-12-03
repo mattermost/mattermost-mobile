@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import withObservables from '@nozbe/with-observables';
+import {withObservables} from '@nozbe/watermelondb/react';
 
-import emojiStore from '@app/store/emoji_picker';
+import emojiStore from '@store/emoji_picker';
 
 import EmojiSections from './sections';
 

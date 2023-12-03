@@ -3,11 +3,11 @@
 
 import {chunk} from 'lodash';
 
-import {Device} from '@app/constants';
-import {CategoryNames, EmojiIndicesByAlias, EmojiIndicesByCategory} from '@app/utils/emoji';
-import {fillEmoji} from '@app/utils/emoji/helpers';
+import {Device} from '@constants';
+import {CategoryNames, EmojiIndicesByAlias, EmojiIndicesByCategory} from '@utils/emoji';
+import {fillEmoji} from '@utils/emoji/helpers';
 
-import type {EmojiCategoryType, EmojiRowType} from '@app/store/emoji_picker/interface';
+import type {EmojiCategoryType, EmojiRowType} from '@store/emoji_picker/interface';
 
 const EMOJIS_PER_ROW = 7;
 const EMOJIS_PER_ROW_TABLET = 9;

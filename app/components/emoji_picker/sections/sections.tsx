@@ -7,16 +7,16 @@ import React, {useCallback, useEffect, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 
-import emojiStore from '@app/store/emoji_picker';
-import {isCategoryItem} from '@app/utils/emoji/picker';
 import TouchableEmoji from '@components/touchable_emoji';
+import emojiStore from '@store/emoji_picker';
+import {isCategoryItem} from '@utils/emoji/picker';
 
 import {EMOJI_ROW_MARGIN, EMOJI_SIZE} from '../constant';
 import EmojiCategoryBar from '../emoji_category_bar';
 
 import SectionHeader from './section_header';
 
-import type {EmojiCategoryType, EmojiRowType} from '@app/store/emoji_picker/interface';
+import type {EmojiCategoryType, EmojiRowType} from '@store/emoji_picker/interface';
 import type {ViewableItemsChanged} from '@typings/components/post_list';
 
 const styles = StyleSheet.create(({

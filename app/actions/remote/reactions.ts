@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {addRecentReaction} from '@actions/local/reactions';
-import emojiStore from '@app/store/emoji_picker';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getRecentPostsInChannel, getRecentPostsInThread} from '@queries/servers/post';
 import {queryReaction} from '@queries/servers/reaction';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
+import emojiStore from '@store/emoji_picker';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';

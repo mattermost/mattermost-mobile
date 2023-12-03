@@ -5,9 +5,9 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import emojiStore from '@app/store/emoji_picker';
 import {Preferences} from '@constants';
 import {queryEmojiPreferences} from '@queries/servers/preference';
+import emojiStore from '@store/emoji_picker';
 
 import EmojiFiltered from './filtered';
 

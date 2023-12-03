@@ -4,15 +4,15 @@
 import React, {memo} from 'react';
 import {View} from 'react-native';
 
-import {CategoryMessage, CategoryTranslations} from '@app/utils/emoji';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {CategoryMessage, CategoryTranslations} from '@utils/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import {SECTION_HEADER_HEIGHT} from '../constant';
 
-import type {EmojiCategoryType} from '@app/store/emoji_picker/interface';
+import type {EmojiCategoryType} from '@store/emoji_picker/interface';
 
 type Props = {
     section?: EmojiCategoryType;

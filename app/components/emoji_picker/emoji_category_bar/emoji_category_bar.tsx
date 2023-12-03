@@ -4,15 +4,15 @@
 import React, {useCallback} from 'react';
 import {View} from 'react-native';
 
-import emojiStore from '@app/store/emoji_picker';
 import {useTheme} from '@context/theme';
+import emojiStore from '@store/emoji_picker';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {ICONS} from '../constant';
 
 import EmojiCategoryBarIcon from './icon';
 
-import type {EmojiCategoryType} from '@app/store/emoji_picker/interface';
+import type {EmojiCategoryType} from '@store/emoji_picker/interface';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {

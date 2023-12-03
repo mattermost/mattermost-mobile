@@ -6,10 +6,10 @@ import {StyleSheet, View} from 'react-native';
 
 import {addRecentReaction} from '@actions/local/reactions';
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
-import emojiStore from '@app/store/emoji_picker';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
+import emojiStore from '@store/emoji_picker';
 import {getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import EmojiFiltered from './filtered';

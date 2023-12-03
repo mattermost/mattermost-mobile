@@ -3,11 +3,11 @@
 
 import Fuse from 'fuse.js';
 
-import {Preferences} from '@app/constants';
-import {queryAllCustomEmojis} from '@app/queries/servers/custom_emoji';
-import {queryEmojiPreferences} from '@app/queries/servers/preference';
-import {getRecentReactions} from '@app/queries/servers/system';
-import {getEmojis, searchEmojis} from '@app/utils/emoji/helpers';
+import {Preferences} from '@constants';
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {queryEmojiPreferences} from '@queries/servers/preference';
+import {getRecentReactions} from '@queries/servers/system';
+import {getEmojis, searchEmojis} from '@utils/emoji/helpers';
 import {buildEmojiSections} from '@utils/emoji/picker';
 import {SubjectStore} from '@utils/subject_store';
 

@@ -4,16 +4,16 @@
 import FastImage from 'react-native-fast-image';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
-import emojiStore from '@app/store/emoji_picker';
 import {Emoji, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
+import emojiStore from '@store/emoji_picker';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
-import type {Client} from '@app/client/rest';
+import type {Client} from '@client/rest';
 
 export const fetchCustomEmojis = async (serverUrl: string, page = 0, perPage = General.PAGE_SIZE_DEFAULT, sort = Emoji.SORT_BY_NAME) => {
     try {

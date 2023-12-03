@@ -5,8 +5,8 @@ import {FlashList, type ListRenderItemInfo} from '@shopify/flash-list';
 import React, {useCallback, useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import NoResultsWithTerm from '@app/components/no_results_with_term';
-import emojiStore from '@app/store/emoji_picker';
+import NoResultsWithTerm from '@components/no_results_with_term';
+import emojiStore from '@store/emoji_picker';
 
 import EmojiItem from './emoji_item';
 
