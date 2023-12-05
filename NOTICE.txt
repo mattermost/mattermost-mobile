@@ -46,8 +46,6 @@ This repository is the home of FormatJS and related libraries.
 
 * LICENSE MIT
 
-
-
 ---
 
 ## @formatjs/intl-locale
