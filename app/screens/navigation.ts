@@ -4,16 +4,17 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert, type EmitterSubscription} from 'react-native';
+import {Appearance, DeviceEventEmitter, StatusBar, Platform, Alert, type EmitterSubscription} from 'react-native';
 import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
-import {Device, Events, Screens, Launch} from '@constants';
+import {Events, Screens, Launch} from '@constants';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
@@ -21,9 +22,6 @@ import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
-
-const {SplitView} = NativeModules;
-const {isRunningInSplitView} = SplitView;
 
 const alpha = {
     from: 0,
@@ -193,7 +191,7 @@ Navigation.setDefaultOptions({
         },
     },
     layout: {
-        orientation: Device.IS_TABLET ? allOrientations : portraitOrientation,
+        orientation: isTablet() ? allOrientations : portraitOrientation,
     },
     topBar: {
         title: {
@@ -782,11 +780,8 @@ type BottomSheetArgs = {
     title: string;
 }
 
-export async function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId}: BottomSheetArgs) {
-    const {isSplitView} = await isRunningInSplitView();
-    const isTablet = Device.IS_TABLET && !isSplitView;
-
-    if (isTablet) {
+export function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId}: BottomSheetArgs) {
+    if (isTablet()) {
         showModal(Screens.BOTTOM_SHEET, title, {
             closeButtonId,
             initialSnapIndex,
@@ -817,11 +812,8 @@ type AsBottomSheetArgs = {
     title: string;
 }
 
-export async function openAsBottomSheet({closeButtonId, screen, theme, title, props}: AsBottomSheetArgs) {
-    const {isSplitView} = await isRunningInSplitView();
-    const isTablet = Device.IS_TABLET && !isSplitView;
-
-    if (isTablet) {
+export function openAsBottomSheet({closeButtonId, screen, theme, title, props}: AsBottomSheetArgs) {
+    if (isTablet()) {
         showModal(screen, title, {
             closeButtonId,
             ...props,

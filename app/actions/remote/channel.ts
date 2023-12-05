@@ -295,7 +295,7 @@ export async function leaveChannel(serverUrl: string, channelId: string) {
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const isTabletDevice = await isTablet();
+        const isTabletDevice = isTablet();
         const user = await getCurrentUser(database);
         const models: Model[] = [];
 
@@ -1239,7 +1239,7 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
             await dismissAllModalsAndPopToRoot();
         }
 
-        const tabletDevice = await isTablet();
+        const tabletDevice = isTablet();
 
         if (tabletDevice) {
             const teamId = await getCurrentTeamId(database);

@@ -504,7 +504,7 @@ const CallScreen = ({
         };
 
         const items = isHost && EnableRecordings ? 3 : 2;
-        await bottomSheet({
+        bottomSheet({
             closeButtonId: 'close-other-actions',
             renderContent,
             snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom)],

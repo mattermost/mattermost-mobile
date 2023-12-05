@@ -5,7 +5,7 @@ import {Dimensions} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
 import LocalConfig from '@assets/config.json';
-import {Device} from '@constants';
+import {isTablet} from '@utils/helpers';
 import {isSystemAdmin} from '@utils/user';
 
 const clientMap: Record<string, Analytics> = {};
@@ -50,7 +50,7 @@ export class Analytics {
                             height,
                             width,
                         },
-                        isTablet: Device.IS_TABLET,
+                        isTablet: isTablet(),
                         os: DeviceInfo.getSystemVersion(),
                     },
                     ip: '0.0.0.0',
