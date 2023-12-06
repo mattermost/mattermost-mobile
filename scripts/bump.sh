@@ -42,6 +42,13 @@ git checkout $BRANCH_TO_BUILD
 git pull
 git checkout -b $GIT_LOCAL_BRANCH
 
+if [ -n "$BUMP_BUILD_NUMBER" ]; then
+  log "Selecting the next largest build number..."
+  LATEST_BUILD_NUMBER=$(./scripts/get_latest_build_number.sh)
+  BUILD_NUMBER=$(($LATEST_BUILD_NUMBER + 1))
+  log "Build number to use for the beta build: $BUILD_NUMBER"
+fi
+
 log "Generating env file required by Fastlane..."
 tee .env <<EOF
 export BRANCH_TO_BUILD=${BRANCH_TO_BUILD}
@@ -49,8 +56,6 @@ export GIT_LOCAL_BRANCH=${GIT_LOCAL_BRANCH}
 export COMMIT_CHANGES_TO_GIT=true
 $([ -n "$BUMP_BUILD_NUMBER" ] && echo "\
 export INCREMENT_BUILD_NUMBER=true
-" || :)
-$([ -n "$BUMP_BUILD_NUMBER" -a -n "${BUILD_NUMBER:-}" ] && echo "\
 export BUILD_NUMBER=${BUILD_NUMBER}
 " || :)
 $([ -n "$BUMP_VERSION_NUMBER" ] && echo "\
@@ -88,7 +93,7 @@ if [ -n "${CREATE_PR}" ]; then
     --body-file - <<EOF
 #### Summary
 $([ -z "$BUMP_BUILD_NUMBER" ] || echo "\
-Bump app build number to ${BUILD_NUMBER:-immediately next available}
+Bump app build number to ${BUILD_NUMBER}
 ")
 $([ -z "$BUMP_VERSION_NUMBER" ] || echo "\
 Bump app version number to ${VERSION}
