@@ -59,17 +59,14 @@ export VERSION=${VERSION}
 " || :)
 EOF
 
-log "Setting up fastlane environment"
-(. .env && cd fastlane && bundle install)
-
 if [ -n "$BUMP_BUILD_NUMBER" ]; then
   log "Bumping build number..."
-  (. .env && cd fastlane && CI=true bundle exec set_app_build_number)
+  (. .env && cd fastlane && bundle install && CI=true bundle exec set_app_build_number)
 fi
 
 if [ -n "$BUMP_VERSION_NUMBER" ]; then
   log "Bumping version number..."
-  (. .env && cd fastlane && CI=true bundle exec set_app_version)
+  (. .env && cd fastlane && bundle install && CI=true bundle exec set_app_version)
 fi
 
 if [ -n "${CREATE_PR}" ]; then
