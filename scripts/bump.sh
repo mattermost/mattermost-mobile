@@ -6,7 +6,8 @@ log () { echo "[$(date +%Y-%m-%dT%H:%M:%S%Z)]" "$@"; }
 
 : ${BRANCH_TO_BUILD:=main}
 : ${PR_REVIEWERS:=mattermost/core-build-engineers}
-: ${BUMP_BUILD_NUMBER:=}
+: ${BUMP_BUILD_NUMBER:=}    # You can optionally specify the BUILD_NUMBER variable for selecting the next build number
+                            # If you don't, then the Fastlane action will pick the next build number automatically
 : ${BUMP_VERSION_NUMBER:=}  # If enabled, you must populate the VERSION variable as well
 : ${CREATE_PR:=}            # Enable CREATE_PR to push the commit to origin, and create a corresponding PR
 : ${PR_EXTRA_MESSAGE:=}     # Optional message to add in the PR description
@@ -44,6 +45,8 @@ export GIT_LOCAL_BRANCH=${GIT_LOCAL_BRANCH}
 export COMMIT_CHANGES_TO_GIT=true
 $([ -z "$BUMP_BUILD_NUMBER" ] || echo "\
 export INCREMENT_BUILD_NUMBER=true
+")
+$([ -z "${BUILD_NUMBER:-}" ] || echo "\
 export BUILD_NUMBER=${BUILD_NUMBER}
 ")
 $([ -z "$BUMP_VERSION_NUMBER" ] || echo "\
