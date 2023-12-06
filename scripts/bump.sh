@@ -37,13 +37,6 @@ git checkout $BRANCH_TO_BUILD
 git pull
 git checkout -b $GIT_LOCAL_BRANCH
 
-if [ -n "$BUMP_BUILD_NUMBER" ]; then
-  log "Selecting the next largest build number..."
-  LATEST_BUILD_NUMBER=$(./scripts/get_latest_build_number.sh)
-  BUILD_NUMBER=$(($LATEST_BUILD_NUMBER + 1))
-  log "Build number to use for the beta build: $BUILD_NUMBER"
-fi
-
 log "Generating env file required by Fastlane..."
 tee .env <<EOF
 export BRANCH_TO_BUILD=${BRANCH_TO_BUILD}
