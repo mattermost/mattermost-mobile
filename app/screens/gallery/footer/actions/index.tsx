@@ -48,7 +48,7 @@ const Actions = ({
             {hasCaptions &&
             <InvertedAction
                 activated={captionEnabled}
-                iconName='text-box-outline'
+                iconName='closed-caption-outline'
                 onPress={onCaptionsPress}
             />
             }
