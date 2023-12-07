@@ -26,9 +26,7 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
-    },
-    action: {
-        marginLeft: 24,
+        gap: 8,
     },
 });
 
@@ -60,13 +58,11 @@ const Actions = ({
                     disabled={disabled}
                     iconName='download-outline'
                     onPress={onDownload}
-                    style={styles.action}
                 />
                 <Action
                     disabled={disabled}
                     iconName='export-variant'
                     onPress={onShare}
-                    style={styles.action}
                 />
             </>
             }
