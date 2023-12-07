@@ -1,7 +1,8 @@
 diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules/react-native-video/ios/Video/RCTVideo.m
+index a757c08..2e402e2 100644
 --- a/node_modules/react-native-video/ios/Video/RCTVideo.m
 +++ b/node_modules/react-native-video/ios/Video/RCTVideo.m
-@@ -35,26 +35,26 @@
+@@ -35,26 +35,26 @@ @implementation RCTVideo
    NSURL *_videoURL;
    BOOL _requestingCertificate;
    BOOL _requestingCertificateErrored;
@@ -33,7 +34,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    /* Keep track of any modifiers, need to be applied after each play */
    float _volume;
    float _rate;
-@@ -130,23 +130,23 @@
+@@ -130,23 +130,23 @@ - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
                                               selector:@selector(applicationWillResignActive:)
                                                   name:UIApplicationWillResignActiveNotification
                                                 object:nil];
@@ -61,7 +62,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    return self;
  }
  
-@@ -156,7 +156,7 @@
+@@ -156,7 +156,7 @@ - (RCTVideoPlayerViewController*)createPlayerViewController:(AVPlayer*)player
    viewController.showsPlaybackControls = YES;
    viewController.rctDelegate = self;
    viewController.preferredOrientation = _fullscreenOrientation;
@@ -70,7 +71,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    viewController.view.frame = self.bounds;
    viewController.player = player;
    return viewController;
-@@ -173,7 +173,7 @@
+@@ -173,7 +173,7 @@ - (CMTime)playerItemDuration
    {
      return([playerItem duration]);
    }
@@ -79,7 +80,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    return(kCMTimeInvalid);
  }
  
-@@ -184,7 +184,7 @@
+@@ -184,7 +184,7 @@ - (CMTimeRange)playerItemSeekableTimeRange
    {
      return [playerItem seekableTimeRanges].firstObject.CMTimeRangeValue;
    }
@@ -88,7 +89,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    return (kCMTimeRangeZero);
  }
  
-@@ -226,7 +226,7 @@
+@@ -226,7 +226,7 @@ - (void)dealloc
  - (void)applicationWillResignActive:(NSNotification *)notification
  {
    if (_playInBackground || _playWhenInactive || _paused) return;
@@ -97,7 +98,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    [_player pause];
    [_player setRate:0.0];
  }
-@@ -268,19 +268,19 @@
+@@ -268,19 +268,19 @@ - (void)sendProgressUpdate
    if (video == nil || video.status != AVPlayerItemStatusReadyToPlay) {
      return;
    }
@@ -121,7 +122,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    if( currentTimeSecs >= 0 && self.onVideoProgress) {
      self.onVideoProgress(@{
                             @"currentTime": [NSNumber numberWithFloat:CMTimeGetSeconds(currentTime)],
-@@ -361,7 +361,7 @@
+@@ -361,7 +361,7 @@ - (void)setSrc:(NSDictionary *)source
    [self removePlayerTimeObserver];
    [self removePlayerItemObservers];
    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) 0), dispatch_get_main_queue(), ^{
@@ -130,7 +131,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
      // perform on next run loop, otherwise other passed react-props may not be set
      [self playerItemForSource:self->_source withCallback:^(AVPlayerItem * playerItem) {
        self->_playerItem = playerItem;
-@@ -370,9 +370,9 @@
+@@ -370,9 +370,9 @@ - (void)setSrc:(NSDictionary *)source
        [self addPlayerItemObservers];
        [self setFilter:self->_filterName];
        [self setMaxBitRate:self->_maxBitRate];
@@ -142,7 +143,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
        if (_playbackRateObserverRegistered) {
          [_player removeObserver:self forKeyPath:playbackRate context:nil];
          _playbackRateObserverRegistered = NO;
-@@ -381,16 +381,16 @@
+@@ -381,16 +381,16 @@ - (void)setSrc:(NSDictionary *)source
          [self->_player removeObserver:self forKeyPath:externalPlaybackActive context:nil];
          self->_isExternalPlaybackActiveObserverRegistered = NO;
        }
@@ -163,7 +164,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
        [self addPlayerTimeObserver];
        if (@available(iOS 10.0, *)) {
          [self setAutomaticallyWaitsToMinimizeStalling:_automaticallyWaitsToMinimizeStalling];
-@@ -421,7 +421,7 @@
+@@ -421,7 +421,7 @@ - (NSURL*) urlFilePath:(NSString*) filepath {
    if ([filepath containsString:@"file://"]) {
      return [NSURL URLWithString:filepath];
    }
@@ -172,7 +173,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    // if no file found, check if the file exists in the Document directory
    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
    NSString* relativeFilePath = [filepath lastPathComponent];
-@@ -430,7 +430,7 @@
+@@ -430,7 +430,7 @@ - (NSURL*) urlFilePath:(NSString*) filepath {
    if (fileComponents.count > 1) {
      relativeFilePath = [fileComponents objectAtIndex:1];
    }
@@ -181,7 +182,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    NSString *path = [paths.firstObject stringByAppendingPathComponent:relativeFilePath];
    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
      return [NSURL fileURLWithPath:path];
-@@ -444,52 +444,82 @@
+@@ -444,52 +444,81 @@ - (void)playerItemPrepareText:(AVAsset *)asset assetOptions:(NSDictionary * __nu
      handler([AVPlayerItem playerItemWithAsset:asset]);
      return;
    }
@@ -237,6 +238,9 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
 -                           ofTrack:textTrackAsset
 -                            atTime:kCMTimeZero
 -                             error:nil];
+-  }
+-  if (validTextTracks.count != _textTracks.count) {
+-    [self setTextTracks:validTextTracks];
 +
 +    dispatch_group_enter(textTracksDispatchGroup); // completionHandler runs async
 +
@@ -268,9 +272,6 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
 +      dispatch_group_leave(textTracksDispatchGroup);
 +    }];
    }
--  if (validTextTracks.count != _textTracks.count) {
--    [self setTextTracks:validTextTracks];
--  }
 -  
 -  handler([AVPlayerItem playerItemWithAsset:mixComposition]);
 +
@@ -284,7 +285,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
  }
  
  - (void)playerItemForSource:(NSDictionary *)source withCallback:(void(^)(AVPlayerItem *))handler
-@@ -504,12 +534,12 @@
+@@ -504,12 +533,12 @@ - (void)playerItemForSource:(NSDictionary *)source withCallback:(void(^)(AVPlaye
      DebugLog(@"Could not find video URL in source '%@'", source);
      return;
    }
@@ -299,7 +300,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    if (isNetwork) {
      NSDictionary *headers = [source objectForKey:@"requestHeaders"];
      if ([headers count] > 0) {
-@@ -517,7 +547,7 @@
+@@ -517,7 +546,7 @@ - (void)playerItemForSource:(NSDictionary *)source withCallback:(void(^)(AVPlaye
      }
      NSArray *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
      [assetOptions setObject:cookies forKey:AVURLAssetHTTPCookiesKey];
@@ -308,7 +309,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
  #if __has_include(<react-native-video/RCTVideoCache.h>)
      if (shouldCache && (!_textTracks || !_textTracks.count)) {
        /* The DVURLAsset created by cache doesn't have a tracksWithMediaType property, so trying
-@@ -529,7 +559,7 @@
+@@ -529,7 +558,7 @@ - (void)playerItemForSource:(NSDictionary *)source withCallback:(void(^)(AVPlaye
        return;
      }
  #endif
@@ -317,7 +318,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
      asset = [AVURLAsset URLAssetWithURL:url options:assetOptions];
    } else if (isAsset) {
      asset = [AVURLAsset URLAssetWithURL:url options:nil];
-@@ -547,7 +577,7 @@
+@@ -547,7 +576,7 @@ - (void)playerItemForSource:(NSDictionary *)source withCallback:(void(^)(AVPlaye
      dispatch_queue_t queue = dispatch_queue_create("assetQueue", nil);
      [asset.resourceLoader setDelegate:self queue:queue];
    }
@@ -326,7 +327,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    [self playerItemPrepareText:asset assetOptions:assetOptions withCallback:handler];
  }
  
-@@ -577,10 +607,10 @@
+@@ -577,10 +606,10 @@ - (void)playerItemForSourceUsingCache:(NSString *)uri assetOptions:(NSDictionary
            return;
          }
      }
@@ -339,7 +340,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
      /* More granular code to have control over the DVURLAsset
       DVAssetLoaderDelegate *resourceLoaderDelegate = [[DVAssetLoaderDelegate alloc] initWithURL:url];
       resourceLoaderDelegate.delegate = self;
-@@ -589,7 +619,7 @@
+@@ -589,7 +618,7 @@ - (void)playerItemForSourceUsingCache:(NSString *)uri assetOptions:(NSDictionary
       AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:[components URL] options:options];
       [asset.resourceLoader setDelegate:resourceLoaderDelegate queue:dispatch_get_main_queue()];
       */
@@ -348,7 +349,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
      handler([AVPlayerItem playerItemWithAsset:asset]);
    }];
  }
-@@ -622,40 +652,40 @@
+@@ -622,40 +651,40 @@ - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(N
          for (AVMetadataItem *item in items) {
            NSString *value = (NSString *)item.value;
            NSString *identifier = item.identifier;
@@ -397,7 +398,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
            if ((videoTrack.naturalSize.width == preferredTransform.tx
                 && videoTrack.naturalSize.height == preferredTransform.ty)
                || (preferredTransform.tx == 0 && preferredTransform.ty == 0))
-@@ -674,7 +704,7 @@
+@@ -674,7 +703,7 @@ - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(N
            [self setCurrentTime:_pendingSeekTime];
            _pendingSeek = false;
          }
@@ -406,7 +407,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
          if (self.onVideoLoad && _videoLoadStarted) {
            self.onVideoLoad(@{@"duration": [NSNumber numberWithFloat:duration],
                               @"currentTime": [NSNumber numberWithFloat:CMTimeGetSeconds(_playerItem.currentTime)],
-@@ -694,7 +724,7 @@
+@@ -694,7 +723,7 @@ - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(N
                               @"target": self.reactTag});
          }
          _videoLoadStarted = NO;
@@ -415,7 +416,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
          [self attachListeners];
          [self applyModifiers];
        } else if (_playerItem.status == AVPlayerItemStatusFailed && self.onVideoError) {
-@@ -770,7 +800,7 @@
+@@ -770,7 +799,7 @@ - (void)attachListeners
                                             selector:@selector(playerItemDidReachEnd:)
                                                 name:AVPlayerItemDidPlayToEndTimeNotification
                                               object:[_player currentItem]];
@@ -424,7 +425,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    [[NSNotificationCenter defaultCenter] removeObserver:self
                                                    name:AVPlayerItemPlaybackStalledNotification
                                                  object:nil];
-@@ -778,7 +808,7 @@
+@@ -778,7 +807,7 @@ - (void)attachListeners
                                             selector:@selector(playbackStalled:)
                                                 name:AVPlayerItemPlaybackStalledNotification
                                               object:nil];
@@ -433,7 +434,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    [[NSNotificationCenter defaultCenter] removeObserver:self
                                                    name:AVPlayerItemNewAccessLogEntryNotification
                                                  object:nil];
-@@ -793,13 +823,13 @@
+@@ -793,13 +822,13 @@ - (void)attachListeners
                                             selector:@selector(didFailToFinishPlaying:)
                                                 name: AVPlayerItemFailedToPlayToEndTimeNotification
                                               object:nil];
@@ -449,7 +450,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    /* TODO: get this working
     if (self.onBandwidthUpdate) {
     self.onBandwidthUpdate(@{@"bitrate": [NSNumber numberWithFloat:lastEvent.observedBitrate]});
-@@ -830,7 +860,7 @@
+@@ -830,7 +859,7 @@ - (void)playerItemDidReachEnd:(NSNotification *)notification
    if(self.onVideoEnd) {
      self.onVideoEnd(@{@"target": self.reactTag});
    }
@@ -458,7 +459,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    if (_repeat) {
      AVPlayerItem *item = [notification object];
      [item seekToTime:kCMTimeZero];
-@@ -883,7 +913,7 @@
+@@ -883,7 +912,7 @@ - (void)setPictureInPicture:(BOOL)pictureInPicture
    if (_pictureInPicture == pictureInPicture) {
      return;
    }
@@ -467,7 +468,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    _pictureInPicture = pictureInPicture;
    if (_pipController && _pictureInPicture && ![_pipController isPictureInPictureActive]) {
      dispatch_async(dispatch_get_main_queue(), ^{
-@@ -945,7 +975,7 @@
+@@ -945,7 +974,7 @@ - (void)setPaused:(BOOL)paused
      }
      [_player setRate:_rate];
    }
@@ -476,7 +477,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    _paused = paused;
  }
  
-@@ -967,19 +997,19 @@
+@@ -967,19 +996,19 @@ - (void)setSeek:(NSDictionary *)info
  {
    NSNumber *seekTime = info[@"time"];
    NSNumber *seekTolerance = info[@"tolerance"];
@@ -500,7 +501,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
      if (CMTimeCompare(current, cmSeekTime) != 0) {
        if (!wasPaused) [_player pause];
        [_player seekToTime:cmSeekTime toleranceBefore:tolerance toleranceAfter:tolerance completionHandler:^(BOOL finished) {
-@@ -995,10 +1025,10 @@
+@@ -995,10 +1024,10 @@ - (void)setSeek:(NSDictionary *)info
                               @"target": self.reactTag});
          }
        }];
@@ -513,7 +514,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    } else {
      _pendingSeek = true;
      _pendingSeekTime = [seekTime floatValue];
-@@ -1058,7 +1088,7 @@
+@@ -1058,7 +1087,7 @@ - (void)applyModifiers
    } else {
        // Fallback on earlier versions
    }
@@ -522,7 +523,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    [self setMaxBitRate:_maxBitRate];
    [self setSelectedAudioTrack:_selectedAudioTrack];
    [self setSelectedTextTrack:_selectedTextTrack];
-@@ -1107,7 +1137,7 @@
+@@ -1107,7 +1136,7 @@ - (void)setMediaSelectionTrackForCharacteristic:(AVMediaCharacteristic)character
    AVMediaSelectionGroup *group = [_player.currentItem.asset
                                    mediaSelectionGroupForMediaCharacteristic:characteristic];
    AVMediaSelectionOption *mediaOption;
@@ -531,7 +532,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    if ([type isEqualToString:@"disabled"]) {
      // Do nothing. We want to ensure option is nil
    } else if ([type isEqualToString:@"language"] || [type isEqualToString:@"title"]) {
-@@ -1172,7 +1202,7 @@
+@@ -1172,7 +1201,7 @@ - (void)setSelectedTextTrack:(NSDictionary *)selectedTextTrack {
  - (void) setSideloadedText {
    NSString *type = _selectedTextTrack[@"type"];
    NSArray *textTracks = [self getTextTrackInfo];
@@ -540,7 +541,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    // The first few tracks will be audio & video track
    int firstTextIndex = 0;
    for (firstTextIndex = 0; firstTextIndex < _player.currentItem.tracks.count; ++firstTextIndex) {
-@@ -1180,9 +1210,9 @@
+@@ -1180,9 +1209,9 @@ - (void) setSideloadedText {
        break;
      }
    }
@@ -552,7 +553,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    if ([type isEqualToString:@"disabled"]) {
      // Do nothing. We want to ensure option is nil
    } else if ([type isEqualToString:@"language"]) {
-@@ -1211,7 +1241,7 @@
+@@ -1211,7 +1240,7 @@ - (void) setSideloadedText {
        }
      }
    }
@@ -561,7 +562,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    // in the situation that a selected text track is not available (eg. specifies a textTrack not available)
    if (![type isEqualToString:@"disabled"] && selectedTrackIndex == RCTVideoUnset) {
      CFArrayRef captioningMediaCharacteristics = MACaptionAppearanceCopyPreferredCaptioningMediaCharacteristics(kMACaptionAppearanceDomainUser);
-@@ -1228,7 +1258,7 @@
+@@ -1228,7 +1257,7 @@ - (void) setSideloadedText {
        }
      }
    }
@@ -570,7 +571,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    for (int i = firstTextIndex; i < _player.currentItem.tracks.count; ++i) {
      BOOL isEnabled = NO;
      if (selectedTrackIndex != RCTVideoUnset) {
-@@ -1243,7 +1273,7 @@
+@@ -1243,7 +1272,7 @@ -(void) setStreamingText {
    AVMediaSelectionGroup *group = [_player.currentItem.asset
                                    mediaSelectionGroupForMediaCharacteristic:AVMediaCharacteristicLegible];
    AVMediaSelectionOption *mediaOption;
@@ -579,7 +580,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    if ([type isEqualToString:@"disabled"]) {
      // Do nothing. We want to ensure option is nil
    } else if ([type isEqualToString:@"language"] || [type isEqualToString:@"title"]) {
-@@ -1276,7 +1306,7 @@
+@@ -1276,7 +1305,7 @@ -(void) setStreamingText {
      [_player.currentItem selectMediaOptionAutomaticallyInMediaSelectionGroup:group];
      return;
    }
@@ -588,7 +589,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    // If a match isn't found, option will be nil and text tracks will be disabled
    [_player.currentItem selectMediaOption:mediaOption inMediaSelectionGroup:group];
  }
-@@ -1284,7 +1314,7 @@
+@@ -1284,7 +1313,7 @@ -(void) setStreamingText {
  - (void)setTextTracks:(NSArray*) textTracks;
  {
    _textTracks = textTracks;
@@ -597,7 +598,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    // in case textTracks was set after selectedTextTrack
    if (_selectedTextTrack) [self setSelectedTextTrack:_selectedTextTrack];
  }
-@@ -1316,7 +1346,7 @@
+@@ -1316,7 +1345,7 @@ - (NSArray *)getTextTrackInfo
  {
    // if sideloaded, textTracks will already be set
    if (_textTracks) return _textTracks;
@@ -606,7 +607,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    // if streaming video, we extract the text tracks
    NSMutableArray *textTracks = [[NSMutableArray alloc] init];
    AVMediaSelectionGroup *group = [_player.currentItem.asset
-@@ -1354,7 +1384,7 @@
+@@ -1354,7 +1383,7 @@ - (void)setFullscreen:(BOOL) fullscreen {
      }
      // Set presentation style to fullscreen
      [_playerViewController setModalPresentationStyle:UIModalPresentationFullScreen];
@@ -615,7 +616,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
      // Find the nearest view controller
      UIViewController *viewController = [self firstAvailableUIViewController];
      if( !viewController )
-@@ -1415,15 +1445,15 @@
+@@ -1415,15 +1444,15 @@ - (void)usePlayerViewController
      // to prevent video from being animated when resizeMode is 'cover'
      // resize mode must be set before subview is added
      [self setResizeMode:_resizeMode];
@@ -634,7 +635,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
      [_playerViewController.contentOverlayView addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
    }
  }
-@@ -1435,13 +1465,13 @@
+@@ -1435,13 +1464,13 @@ - (void)usePlayerLayer
      _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
      _playerLayer.frame = self.bounds;
      _playerLayer.needsDisplayOnBoundsChange = YES;
@@ -650,7 +651,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
      [self.layer addSublayer:_playerLayer];
      self.layer.needsDisplayOnBoundsChange = YES;
      #if TARGET_OS_IOS
-@@ -1472,7 +1502,7 @@
+@@ -1472,7 +1501,7 @@ - (void)setControls:(BOOL)controls
  - (void)setProgressUpdateInterval:(float)progressUpdateInterval
  {
    _progressUpdateInterval = progressUpdateInterval;
@@ -659,7 +660,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    if (_timeObserver) {
      [self removePlayerTimeObserver];
      [self addPlayerTimeObserver];
-@@ -1525,7 +1555,7 @@
+@@ -1525,7 +1554,7 @@ - (void)videoPlayerViewControllerDidDismiss:(AVPlayerViewController *)playerView
  
  - (void)setFilter:(NSString *)filterName {
    _filterName = filterName;
@@ -668,7 +669,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    if (!_filterEnabled) {
      return;
    } else if ([[_source objectForKey:@"uri"] rangeOfString:@"m3u8"].location != NSNotFound) {
-@@ -1533,7 +1563,7 @@
+@@ -1533,7 +1562,7 @@ - (void)setFilter:(NSString *)filterName {
    } else if (!_playerItem.asset) {
      return;
    }
@@ -677,7 +678,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    CIFilter *filter = [CIFilter filterWithName:filterName];
    _playerItem.videoComposition = [AVVideoComposition
                                    videoCompositionWithAsset:_playerItem.asset
-@@ -1563,7 +1593,7 @@
+@@ -1563,7 +1592,7 @@ - (void)insertReactSubview:(UIView *)view atIndex:(NSInteger)atIndex
    {
      [self setControls:true];
    }
@@ -686,7 +687,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    if( _controls )
    {
      view.frame = self.bounds;
-@@ -1595,7 +1625,7 @@
+@@ -1595,7 +1624,7 @@ - (void)layoutSubviews
    if( _controls )
    {
      _playerViewController.view.frame = self.bounds;
@@ -695,7 +696,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
      // also adjust all subviews of contentOverlayView
      for (UIView* subview in _playerViewController.contentOverlayView.subviews) {
        subview.frame = self.bounds;
-@@ -1624,36 +1654,36 @@
+@@ -1624,36 +1653,36 @@ - (void)removeFromSuperview
      _isExternalPlaybackActiveObserverRegistered = NO;
    }
    _player = nil;
@@ -741,7 +742,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
      if (exportSession != nil) {
        NSString *path = nil;
        NSArray *array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-@@ -1665,7 +1695,7 @@
+@@ -1665,7 +1694,7 @@ - (void)save:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve rej
        exportSession.videoComposition = _playerItem.videoComposition;
        exportSession.shouldOptimizeForNetworkUse = true;
        [exportSession exportAsynchronouslyWithCompletionHandler:^{
@@ -750,7 +751,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
          switch ([exportSession status]) {
            case AVAssetExportSessionStatusFailed:
              reject(@"ERROR_COULD_NOT_EXPORT_VIDEO", @"Could not export video", exportSession.error);
-@@ -1677,19 +1707,19 @@
+@@ -1677,19 +1706,19 @@ - (void)save:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve rej
              resolve(@{@"uri": url.absoluteString});
              break;
          }
@@ -777,7 +778,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    }
  }
  
-@@ -1802,7 +1832,7 @@
+@@ -1802,7 +1831,7 @@ - (BOOL)loadingRequestHandling:(AVAssetResourceLoadingRequest *)loadingRequest {
            if ([self->_drm objectForKey:@"base64Certificate"]) {
              certificateData = [[NSData alloc] initWithBase64EncodedData:certificateData options:NSDataBase64DecodingIgnoreUnknownCharacters];
            }
@@ -786,7 +787,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
            if (certificateData != nil) {
              NSData *contentIdData;
              if(self.onGetLicense) {
-@@ -1854,7 +1884,7 @@
+@@ -1854,7 +1883,7 @@ - (BOOL)loadingRequestHandling:(AVAssetResourceLoadingRequest *)loadingRequest {
                      NSData *postData = [post dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:YES];
                      [request setHTTPBody: postData];
                    }
@@ -795,7 +796,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
                    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
                    NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
                    NSURLSessionDataTask *postDataTask = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-@@ -1901,7 +1931,7 @@
+@@ -1901,7 +1930,7 @@ - (BOOL)loadingRequestHandling:(AVAssetResourceLoadingRequest *)loadingRequest {
                    }];
                    [postDataTask resume];
                  }
@@ -804,7 +805,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
                } else {
                  NSError *licenseError = [NSError errorWithDomain: @"RCTVideo"
                                                              code: RCTVideoErrorNoSPC
-@@ -1914,7 +1944,7 @@
+@@ -1914,7 +1943,7 @@ - (BOOL)loadingRequestHandling:(AVAssetResourceLoadingRequest *)loadingRequest {
                  [self finishLoadingWithError:licenseError];
                  self->_requestingCertificateErrored = YES;
                }
@@ -813,7 +814,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
              } else {
                NSError *licenseError = [NSError errorWithDomain: @"RCTVideo"
                                                            code: RCTVideoErrorNoDataRequest
-@@ -1963,7 +1993,7 @@
+@@ -1963,7 +1992,7 @@ - (BOOL)loadingRequestHandling:(AVAssetResourceLoadingRequest *)loadingRequest {
                                 ];
        return [self finishLoadingWithError:licenseError];
      }
@@ -822,7 +823,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    } else {
      NSError *licenseError = [NSError errorWithDomain: @"RCTVideo"
                                                  code: RCTVideoErrorNoDRMData
-@@ -1975,8 +2005,8 @@
+@@ -1975,8 +2004,8 @@ - (BOOL)loadingRequestHandling:(AVAssetResourceLoadingRequest *)loadingRequest {
                               ];
      return [self finishLoadingWithError:licenseError];
    }
@@ -833,7 +834,7 @@ diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules
    return NO;
  }
  
-@@ -2008,15 +2038,15 @@
+@@ -2008,15 +2037,15 @@ - (void)pictureInPictureControllerDidStartPictureInPicture:(AVPictureInPictureCo
  }
  
  - (void)pictureInPictureControllerWillStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController {
