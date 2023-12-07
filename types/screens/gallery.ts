@@ -71,6 +71,7 @@ export type GalleryItemType = {
     authorId?: string;
     size?: number;
     postId?: string;
+    postProps?: Record<string, any>;
 };
 
 export type GalleryAction = 'none' | 'downloading' | 'copying' | 'sharing' | 'opening' | 'external';

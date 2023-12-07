@@ -45,6 +45,7 @@ const enhance = withObservables(['post'], ({database, post}: EnhanceProps) => {
     return {
         canDownloadFiles: observeCanDownloadFiles(database),
         postId: of$(post.id),
+        postProps: of$(post.props),
         publicLinkEnabled,
         filesInfo,
     };

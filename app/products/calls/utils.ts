@@ -3,13 +3,15 @@
 
 import {makeCallsBaseAndBadgeRGB, rgbToCSS} from '@mattermost/calls';
 import {Alert} from 'react-native';
+import {TextTrackType} from 'react-native-video';
 
+import {buildFileUrl} from '@actions/remote/file';
 import {Calls, Post} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
-import type {CallSession, CallsTheme, CallsVersion} from '@calls/types/calls';
+import type {CallSession, CallsTheme, CallsVersion, SelectedSubtitleTrack, SubtitleTrack} from '@calls/types/calls';
 import type {CallsConfig} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -201,3 +203,29 @@ export function isCallsStartedMessage(payload?: NotificationData) {
     // calls will be >= 0.21.0, and push proxy will be >= 5.27.0
     return (payload?.message === 'You\'ve been invited to a call' || callsMessageRegex.test(payload?.message || ''));
 }
+
+export const getHasTranscript = (postProps?: Record<string, any>): boolean => {
+    return !(!postProps || !postProps.captions_file_id);
+};
+
+export const getTranscriptionUri = (serverUrl: string, postProps?: Record<string, any>): {
+    track?: SubtitleTrack;
+    selected?: SelectedSubtitleTrack;
+} => {
+    if (!postProps || !postProps.captions_file_id) {
+        return {};
+    }
+
+    const language = 'en'; // Note: will be changed when we support multiple languages.
+    const uri = buildFileUrl(serverUrl, postProps.captions_file_id);
+
+    return {
+        track: {
+            title: 'subtitles',
+            language,
+            type: TextTrackType.VTT,
+            uri,
+        },
+        selected: {type: 'index', value: 0},
+    };
+};
