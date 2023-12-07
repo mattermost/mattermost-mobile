@@ -243,7 +243,7 @@ export const needsRecordingAlert = () => {
     recordingAlertLock = false;
 };
 
-export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
+export const recordingAlert = (isHost: boolean, transcriptionsEnabled: boolean, intl: IntlShape) => {
     if (recordingAlertLock) {
         return;
     }
@@ -251,22 +251,46 @@ export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
 
     const {formatMessage} = intl;
 
-    const participantTitle = formatMessage({
-        id: 'mobile.calls_participant_rec_title',
-        defaultMessage: 'Recording is in progress',
-    });
     const hostTitle = formatMessage({
         id: 'mobile.calls_host_rec_title',
         defaultMessage: 'You are recording',
+    });
+    const hostMessage = formatMessage({
+        id: 'mobile.calls_host_rec',
+        defaultMessage: 'Consider letting everyone know that this meeting is being recorded.',
+    });
+
+    const participantTitle = formatMessage({
+        id: 'mobile.calls_participant_rec_title',
+        defaultMessage: 'Recording is in progress',
     });
     const participantMessage = formatMessage({
         id: 'mobile.calls_participant_rec',
         defaultMessage: 'The host has started recording this meeting. By staying in the meeting you give consent to being recorded.',
     });
-    const hostMessage = formatMessage({
-        id: 'mobile.calls_host_rec',
-        defaultMessage: 'You are recording this meeting. Consider letting everyone know that this meeting is being recorded.',
+
+    const hostTranscriptionTitle = formatMessage({
+        id: 'mobile.calls_host_transcription_title',
+        defaultMessage: 'Recording and transcription has started',
     });
+    const hostTranscriptionMessage = formatMessage({
+        id: 'mobile.calls_host_transcription',
+        defaultMessage: 'Consider letting everyone know that this meeting is being recorded and transcribed.',
+    });
+
+    const participantTranscriptionTitle = formatMessage({
+        id: 'mobile.calls_participant_transcription_title',
+        defaultMessage: 'Recording and transcription is in progress',
+    });
+    const participantTranscriptionMessage = formatMessage({
+        id: 'mobile.calls_participant_transcription',
+        defaultMessage: 'The host has started recording and transcription for this meeting. By staying in the meeting, you give consent to being recorded and transcribed.',
+    });
+
+    const hTitle = transcriptionsEnabled ? hostTranscriptionTitle : hostTitle;
+    const hMessage = transcriptionsEnabled ? hostTranscriptionMessage : hostMessage;
+    const pTitle = transcriptionsEnabled ? participantTranscriptionTitle : participantTitle;
+    const pMessage = transcriptionsEnabled ? participantTranscriptionMessage : participantMessage;
 
     const participantButtons = [
         {
@@ -295,8 +319,8 @@ export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
     }];
 
     Alert.alert(
-        isHost ? hostTitle : participantTitle,
-        isHost ? hostMessage : participantMessage,
+        isHost ? hTitle : pTitle,
+        isHost ? hMessage : pMessage,
         isHost ? hostButton : participantButtons,
     );
 };
