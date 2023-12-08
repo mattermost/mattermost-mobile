@@ -75,8 +75,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const [downloading, setDownloading] = useState(false);
     const [hasError, setHasError] = useState(false);
     const source = useMemo(() => ({uri: videoUri}), [videoUri]);
-
-    const {track, selected} = getTranscriptionUri(serverUrl, item.postProps);
+    const {track, selected} = useMemo(() => getTranscriptionUri(serverUrl, item.postProps), [serverUrl, item.postProps]);
 
     const setFullscreen = (value: boolean) => {
         fullscreen.value = value;
