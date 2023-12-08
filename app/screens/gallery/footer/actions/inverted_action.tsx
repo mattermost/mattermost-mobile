@@ -57,7 +57,7 @@ const InvertedAction = ({activated, iconName, onPress, style}: Props) => {
     return (
         <Pressable
             android_ripple={androidRippleConfig}
-            hitSlop={24}
+            hitSlop={4}
             onPress={onPress}
             style={pressableStyle}
         >

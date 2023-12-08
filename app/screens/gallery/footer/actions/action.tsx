@@ -56,7 +56,7 @@ const Action = ({disabled, iconName, onPress, style}: Props) => {
         <Pressable
             android_ripple={androidRippleConfig}
             disabled={disabled}
-            hitSlop={24}
+            hitSlop={4}
             onPress={onPress}
             style={pressableStyle}
         >
