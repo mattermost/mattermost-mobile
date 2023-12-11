@@ -38,9 +38,11 @@ CURRENT_BRANCH=$(git branch --show-current)
 trap "git checkout $CURRENT_BRANCH" EXIT
 
 if [ -n "$BUMP_BUILD_NUMBER" ]; then
-  log "Selecting the next largest build number..."
-  LATEST_BUILD_NUMBER=$(./scripts/get_latest_build_number.sh)
-  BUILD_NUMBER=$(($LATEST_BUILD_NUMBER + 1))
+  if [ -z "${BUILD_NUMBER:-}" ]; then
+    log "Selecting the next largest build number..."
+    LATEST_BUILD_NUMBER=$(./scripts/get_latest_build_number.sh)
+    BUILD_NUMBER=$(($LATEST_BUILD_NUMBER + 1))
+  fi
   log "Build number to use for the beta build: $BUILD_NUMBER"
 fi
 
