@@ -8,7 +8,7 @@ log () { echo "[$(date +%Y-%m-%dT%H:%M:%S%Z)]" "$@"; }
 : ${PR_REVIEWERS:=mattermost/core-build-engineers}
 : ${BUMP_BUILD_NUMBER:=}    # You can optionally specify the BUILD_NUMBER variable for selecting the next build number
                             # If you don't, then the Fastlane action will pick the next build number automatically
-: ${BUMP_VERSION_NUMBER:=}  # If enabled, you must populate the VERSION variable as well
+: ${BUMP_VERSION_NUMBER:=}  # If enabled, you must populate the VERSION_NUMBER variable as well
 : ${CREATE_PR:=}            # Enable CREATE_PR to push the commit to origin, and create a corresponding PR
 : ${PR_EXTRA_MESSAGE:=}     # Optional message to add in the PR description
 : ${GIT_LOCAL_BRANCH:=chore-bump-${BRANCH_TO_BUILD}-$(date +%s)}
@@ -19,10 +19,10 @@ if [ -z "${BUMP_BUILD_NUMBER}" -a -z "${BUMP_VERSION_NUMBER}" ]; then
   exit 1
 fi
 if [ -n "$BUMP_VERSION_NUMBER" ]; then
-  : ${VERSION:?Setting this variable is required when BUMP_VERSION_NUMBER is set.}
+  : ${VERSION_NUMBER:?Setting this variable is required when BUMP_VERSION_NUMBER is set.}
   VERSION_REGEXP='^[0-9]+\.[0-9]+\.[0-9]+$'
-  if ! grep -qE $VERSION_REGEXP"" <<<$VERSION; then
-    log "Error: the VERSION variable value should match regexp '$VERSION_REGEXP'. Aborting." >&2
+  if ! grep -qE $VERSION_REGEXP"" <<<$VERSION_NUMBER; then
+    log "Error: the VERSION_NUMBER variable value should match regexp '$VERSION_REGEXP'. Aborting." >&2
     exit 2
   fi
 fi
@@ -60,7 +60,7 @@ export BUILD_NUMBER=${BUILD_NUMBER}
 " || :)
 $([ -n "$BUMP_VERSION_NUMBER" ] && echo "\
 export INCREMENT_VERSION_NUMBER=true
-export VERSION=${VERSION}
+export VERSION_NUMBER=${VERSION_NUMBER}
 " || :)
 EOF
 
@@ -89,14 +89,14 @@ if [ -n "${CREATE_PR}" ]; then
     --head "${GIT_LOCAL_BRANCH}" \
     --reviewer "${PR_REVIEWERS}" \
     --title "$PR_TITLE" \
-    $([ -z "$BUMP_VERSION_NUMBER" ] || echo -n "--milestone v${VERSION} --label CherryPick/Approved") \
+    $([ -z "$BUMP_VERSION_NUMBER" ] || echo -n "--milestone v${VERSION_NUMBER} --label CherryPick/Approved") \
     --body-file - <<EOF
 #### Summary
 $([ -z "$BUMP_BUILD_NUMBER" ] || echo "\
 Bump app build number to ${BUILD_NUMBER}
 ")
 $([ -z "$BUMP_VERSION_NUMBER" ] || echo "\
-Bump app version number to ${VERSION}
+Bump app version number to ${VERSION_NUMBER}
 ")
 ${PR_EXTRA_MESSAGE}
 
