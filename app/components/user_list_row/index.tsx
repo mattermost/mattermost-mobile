@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState, type ComponentProps} from 'react';
 import {useIntl} from 'react-intl';
 import {
     InteractionManager,
     Platform,
     View,
+
 } from 'react-native';
 
 import {storeProfileLongPressTutorial} from '@actions/app/global';
@@ -39,6 +40,7 @@ type Props = {
     testID: string;
     tutorialWatched?: boolean;
     user: UserProfile;
+    spacing: ComponentProps<typeof UserItem>['spacing'];
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -71,12 +73,12 @@ const DEFAULT_ICON_OPACITY = 0.32;
 
 function UserListRow({
     id,
-    includeMargin,
     isMyUser,
     highlight,
     isChannelAdmin,
     onPress,
     onLongPress,
+    spacing = 'normal',
     manageMode = false,
     selectable,
     disabled,
@@ -147,12 +149,12 @@ function UserListRow({
                 />
                 <CompassIcon
                     name={'chevron-down'}
-                    size={18}
+                    size={({compact: 28, normal: 32, spacious: 32})[spacing]}
                     color={color}
                 />
             </View>
         );
-    }, [isChannelAdmin, showManageMode, theme]);
+    }, [isChannelAdmin, showManageMode, theme, spacing]);
 
     const onLayout = useCallback(() => {
         if (showTutorial) {
@@ -160,7 +162,7 @@ function UserListRow({
         }
     }, [showTutorial]);
 
-    const icon = useMemo(() => {
+    const selectIcon = useMemo(() => {
         if (!selectable && !selected) {
             return null;
         }
@@ -170,7 +172,7 @@ function UserListRow({
             <View style={style.selector}>
                 <CompassIcon
                     name={selected ? 'check-circle' : 'circle-outline'}
-                    size={28}
+                    size={({compact: 28, normal: 32, spacious: 32})[spacing]}
                     color={color}
                 />
             </View>
@@ -187,11 +189,10 @@ function UserListRow({
                 onUserPress={handlePress}
                 showBadges={true}
                 testID={userItemTestID}
-                rightDecorator={manageMode ? manageModeIcon : icon}
+                rightDecorator={manageMode ? manageModeIcon : selectIcon}
                 disabled={!(selectable || selected || !disabled)}
                 viewRef={viewRef}
-                padding={20}
-                includeMargin={includeMargin}
+                spacing={spacing}
                 onLayout={onLayout}
             />
             {showTutorial &&

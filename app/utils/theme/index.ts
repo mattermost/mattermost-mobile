@@ -3,11 +3,13 @@
 
 import deepEqual from 'deep-equal';
 import merge from 'deepmerge';
+import {useMemo, type DependencyList} from 'react';
 import {StatusBar, StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {Preferences} from '@constants';
 import {MODAL_SCREENS_WITHOUT_BACK, SCREENS_AS_BOTTOM_SHEET, SCREENS_WITH_TRANSPARENT_BACKGROUND} from '@constants/screens';
+import {useTheme} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
@@ -53,10 +55,10 @@ export function getComponents(inColor: string): {red: number; green: number; blu
     };
 }
 
-export function makeStyleSheetFromTheme<T extends NamedStyles<T>>(getStyleFromTheme: (a: Theme) => T): (a: Theme) => T {
+export function makeStyleSheetFromTheme<T extends NamedStyles<T>>(getStyleFromTheme: (theme: Theme) => T): (theme: Theme) => T {
     let lastTheme: Theme;
     let style: T;
-    return (theme: Theme) => {
+    return (theme) => {
         if (!style || theme !== lastTheme) {
             style = StyleSheet.create(getStyleFromTheme(theme));
             lastTheme = theme;
@@ -64,6 +66,13 @@ export function makeStyleSheetFromTheme<T extends NamedStyles<T>>(getStyleFromTh
 
         return style;
     };
+}
+
+export function useStyling<T extends NamedStyles<T>>(getDynamicStyles: (theme: Theme) => T, deps: DependencyList): {style: T; theme: Theme} {
+    const theme = useTheme();
+    const style = useMemo(() => StyleSheet.create(getDynamicStyles(theme)), [theme, ...deps]);
+
+    return {style, theme};
 }
 
 export function changeOpacity(oldColor: string, opacity: number): string {

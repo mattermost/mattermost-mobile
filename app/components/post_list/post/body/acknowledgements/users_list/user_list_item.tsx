@@ -66,7 +66,7 @@ const UserListItem = ({
 
     return (
         <UserItem
-            FooterComponent={
+            footer={
                 <FormattedRelativeTime
                     value={userAcknowledgement}
                     timezone={timezone}
@@ -75,7 +75,7 @@ const UserListItem = ({
             }
             containerStyle={style.container}
             onUserPress={handleUserPress}
-            size={40}
+            spacing={'spacious'}
             user={user}
         />
     );

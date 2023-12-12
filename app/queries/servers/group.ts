@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
+import {switchMap, of as of$} from '@nozbe/watermelondb/utils/rx';
 
 import {MM_TABLES} from '@constants/database';
 import {sanitizeLikeString} from '@helpers/database';
@@ -17,6 +18,24 @@ export const queryGroupsByName = (database: Database, name: string) => {
     return database.collections.get<GroupModel>(GROUP).query(
         Q.where('name', Q.like(`%${sanitizeLikeString(name)}%`)),
     );
+};
+
+export const getGroupByName = async (database: Database, name: string) => {
+    const groups = await database.collections.get<GroupModel>(GROUP).query(
+        Q.where('name', name),
+    ).fetch();
+
+    if (!groups.length) {
+        return undefined;
+    }
+
+    return groups[0];
+};
+
+export const observeGroup = (database: Database, name: string) => {
+    return database.get<GroupModel>(GROUP).query(Q.where('name', name), Q.take(1)).
+        observeWithColumns(['memberCount', 'displayName']).
+        pipe(switchMap((result) => (result.length ? result[0].observe() : of$(undefined))));
 };
 
 export const queryGroupsByNames = (database: Database, names: string[]) => {

@@ -27,6 +27,7 @@ export interface ClientUsersMix {
     getProfilesNotInTeam: (teamId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getProfilesWithoutTeam: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
     getProfilesInChannel: (channelId: string, options?: GetUsersOptions) => Promise<UserProfile[]>;
+    getProfilesInGroup: (groupId: string, options?: GetUsersOptions) => Promise<UserProfile[]>;
     getProfilesInGroupChannels: (channelsIds: string[]) => Promise<{[x: string]: UserProfile[]}>;
     getProfilesNotInChannel: (teamId: string, channelId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getMe: () => Promise<UserProfile>;
@@ -256,6 +257,16 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         this.analytics?.trackAPI('api_profiles_get_in_channel', {channel_id: channelId});
 
         const queryStringObj = {in_channel: channelId, ...options};
+        return this.doFetch(
+            `${this.getUsersRoute()}${buildQueryString(queryStringObj)}`,
+            {method: 'get'},
+        );
+    };
+
+    getProfilesInGroup = async (groupId: string, options: GetUsersOptions = {page: 0, per_page: PER_PAGE_DEFAULT}) => {
+        this.analytics?.trackAPI('api_profiles_get_in_group', {in_group: groupId});
+
+        const queryStringObj = {in_group: groupId, ...options};
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString(queryStringObj)}`,
             {method: 'get'},

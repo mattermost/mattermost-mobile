@@ -301,6 +301,7 @@ export default function ManageChannelMembers({
                 testID='manage_members.user_list'
                 tutorialWatched={tutorialWatched}
                 includeUserMargin={true}
+                spacing={'spacious'}
             />
         </SafeAreaView>
     );

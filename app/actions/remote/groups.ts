@@ -36,7 +36,7 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
     }
 };
 
-export const fetchGroupsByNames = async (serverUrl: string, names: string[], fetchOnly = false) => {
+export const fetchGroupsByNames = async (serverUrl: string, names: string[], fetchOnly = false, includeMemberCount = false) => {
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const license = await getLicense(database);
@@ -48,7 +48,7 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
         const promises: Array <Promise<Group[]>> = [];
 
         names.forEach((name) => {
-            promises.push(client.getGroups({query: name}));
+            promises.push(client.getGroups({query: name, includeMemberCount}));
         });
 
         const groups = (await Promise.all(promises)).flat();

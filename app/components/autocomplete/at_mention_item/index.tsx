@@ -27,6 +27,7 @@ const AtMentionItem = ({
             user={user}
             testID={testID}
             onUserPress={completeMention}
+            padding={0}
         />
     );
 };

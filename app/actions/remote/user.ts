@@ -522,6 +522,32 @@ export const fetchProfiles = async (serverUrl: string, page = 0, perPage: number
     }
 };
 
+export const fetchProfilesInGroup = async (serverUrl: string, groupId: string, page = 0, perPage: number = General.PROFILE_CHUNK_SIZE, sort = '', options: any = {}, fetchOnly = false) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const users = await client.getProfilesInGroup(groupId, {page, per_page: perPage, sort, ...options});
+
+        if (!fetchOnly) {
+            const currentUserId = await getCurrentUserId(database);
+            const toStore = removeUserFromList(currentUserId, users);
+            if (toStore.length) {
+                await operator.handleUsers({
+                    users: toStore,
+                    prepareRecordsOnly: false,
+                });
+            }
+        }
+
+        return {users};
+    } catch (error) {
+        logDebug('error on fetchProfilesInGroup', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export const fetchProfilesInTeam = async (serverUrl: string, teamId: string, page = 0, perPage: number = General.PROFILE_CHUNK_SIZE, sort = '', options: any = {}, fetchOnly = false) => {
     try {
         const client = NetworkManager.getClient(serverUrl);

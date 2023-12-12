@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import {BottomSheetFlatList, BottomSheetSectionList} from '@gorhom/bottom-sheet';
+import React, {useCallback, useMemo, type ComponentProps} from 'react';
 import {defineMessages, type IntlShape, useIntl} from 'react-intl';
-import {FlatList, Keyboard, type ListRenderItemInfo, Platform, SectionList, type SectionListData, Text, View} from 'react-native';
+import {Keyboard, type ListRenderItemInfo, Platform, FlatList, SectionList, type SectionListData, Text, View} from 'react-native';
 
 import {storeProfile} from '@actions/local/user';
+import {fetchUsersByIds} from '@actions/remote/user';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import UserListRow from '@components/user_list_row';
@@ -139,8 +141,17 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
         },
+        flatList: {
+            backgroundColor: theme.centerChannelBg,
+            flex: 1,
+            paddingTop: 8,
+        },
         container: {
             flexGrow: 1,
+        },
+        flatContainer: {
+            flexGrow: 1,
+            paddingBottom: 16,
         },
         loadingContainer: {
             flex: 1,
@@ -172,17 +183,21 @@ type Props = {
     profiles: UserProfile[];
     channelMembers?: ChannelMembership[];
     currentUserId: string;
-    handleSelectProfile: (user: UserProfile | UserModel) => void;
+    handleSelectProfile?: (user: UserProfile | UserModel) => void;
+    forceFetchProfile?: boolean;
     fetchMore?: () => void;
     loading: boolean;
+    flatten?: boolean;
     manageMode?: boolean;
     showManageMode?: boolean;
     showNoResults: boolean;
-    selectedIds: {[id: string]: UserProfile};
+    selectedIds?: {[id: string]: UserProfile};
     testID?: string;
     term?: string;
     tutorialWatched: boolean;
     includeUserMargin?: boolean;
+    spacing?: ComponentProps<typeof UserListRow>['spacing'];
+    inBottomSheet?: boolean;
 }
 
 export default function UserList({
@@ -191,21 +206,25 @@ export default function UserList({
     selectedIds,
     currentUserId,
     handleSelectProfile,
+    forceFetchProfile,
     fetchMore,
     loading,
     manageMode = false,
     showManageMode = false,
     showNoResults,
     term,
+    flatten = Boolean(term),
     testID,
     tutorialWatched,
-    includeUserMargin,
+    spacing,
+    inBottomSheet,
 }: Props) {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const style = getStyleFromTheme(theme);
     const keyboardHeight = useKeyboardHeight();
+
     const noResutsStyle = useMemo(() => [
         style.noResultContainer,
         {paddingBottom: keyboardHeight},
@@ -216,14 +235,18 @@ export default function UserList({
             return [];
         }
 
-        if (term) {
+        if (flatten) {
             return createProfiles(profiles, channelMembers);
         }
 
         return createProfilesSections(intl, profiles, channelMembers);
-    }, [channelMembers, loading, profiles, term]);
+    }, [channelMembers, loading, profiles, term, flatten]);
 
     const openUserProfile = useCallback(async (profile: UserProfile | UserModel) => {
+        if (profile.id !== currentUserId && forceFetchProfile) {
+            await fetchUsersByIds(serverUrl, [profile.id]);
+        }
+
         let user: UserModel;
         if ('create_at' in profile) {
             const res = await storeProfile(serverUrl, profile);
@@ -250,8 +273,8 @@ export default function UserList({
 
     const renderItem = useCallback(({item, index, section}: RenderItemType) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
-        const selected = Boolean(selectedIds[item.id]);
-        const canAdd = Object.keys(selectedIds).length < General.MAX_USERS_IN_GM;
+        const selected = Boolean(selectedIds?.[item.id]);
+        const canAdd = Boolean(selectedIds && (Object.keys(selectedIds).length < General.MAX_USERS_IN_GM));
 
         const isChAdmin = item.scheme_admin || false;
 
@@ -263,19 +286,19 @@ export default function UserList({
                 isChannelAdmin={isChAdmin}
                 isMyUser={currentUserId === item.id}
                 manageMode={manageMode}
-                onPress={handleSelectProfile}
+                onPress={handleSelectProfile ?? openUserProfile}
                 onLongPress={openUserProfile}
                 selectable={manageMode || canAdd}
-                disabled={!canAdd}
+                disabled={selectedIds && !canAdd}
                 selected={selected}
                 showManageMode={showManageMode}
                 testID='create_direct_message.user_list.user_item'
                 tutorialWatched={tutorialWatched}
                 user={item}
-                includeMargin={includeUserMargin}
+                spacing={spacing}
             />
         );
-    }, [selectedIds, handleSelectProfile, showManageMode, manageMode, tutorialWatched, includeUserMargin]);
+    }, [selectedIds, handleSelectProfile, openUserProfile, showManageMode, manageMode, tutorialWatched]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {
@@ -313,12 +336,15 @@ export default function UserList({
         );
     }, [style]);
 
+    const Flat = inBottomSheet ? BottomSheetFlatList : FlatList;
+    const Sectioned = inBottomSheet ? BottomSheetSectionList : SectionList;
+
     const renderFlatList = (items: UserProfile[]) => {
         return (
-            <FlatList
-                contentContainerStyle={style.container}
-                data={items}
+            <Flat
+                contentContainerStyle={style.flatContainer}
                 keyboardShouldPersistTaps='always'
+                data={items}
                 {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
@@ -328,7 +354,7 @@ export default function UserList({
                 removeClippedSubviews={true}
                 renderItem={renderItem}
                 scrollEventThrottle={SCROLL_EVENT_THROTTLE}
-                style={style.list}
+                style={style.flatList}
                 testID={`${testID}.flat_list`}
             />
         );
@@ -336,7 +362,7 @@ export default function UserList({
 
     const renderSectionList = (sections: Array<SectionListData<UserProfile>>) => {
         return (
-            <SectionList
+            <Sectioned
                 contentContainerStyle={style.container}
                 keyboardShouldPersistTaps='always'
                 {...keyboardDismissProp}
@@ -358,7 +384,7 @@ export default function UserList({
         );
     };
 
-    if (term) {
+    if (flatten) {
         return renderFlatList(data as UserProfileWithChannelAdmin[]);
     }
     return renderSectionList(data as Array<SectionListData<UserProfileWithChannelAdmin>>);

@@ -279,6 +279,7 @@ export default function ChannelAddMembers({
                 fetchFunction={userFetchFunction}
                 searchFunction={userSearchFunction}
                 createFilter={createUserFilter}
+                spacing={'spacious'}
             />
             <SelectedUsers
                 keyboardOverlap={keyboardOverlap}

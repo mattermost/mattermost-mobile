@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState, type ComponentProps} from 'react';
 
 import UserList from '@components/user_list';
 import {General} from '@constants';
@@ -12,25 +12,35 @@ import {filterProfilesMatchingTerm} from '@utils/user';
 type Props = {
     currentUserId: string;
     tutorialWatched: boolean;
-    handleSelectProfile: (user: UserProfile) => void;
+    handleSelectProfile?: (user: UserProfile) => void;
+    forceFetchProfile?: boolean;
     term: string;
-    selectedIds: {[id: string]: UserProfile};
+    flatten?: boolean;
+    includeUserMargin?: boolean;
+    selectedIds?: {[id: string]: UserProfile};
     fetchFunction: (page: number) => Promise<UserProfile[]>;
     searchFunction: (term: string) => Promise<UserProfile[]>;
-    createFilter: (exactMatches: UserProfile[], term: string) => ((p: UserProfile) => boolean);
+    createFilter?: (exactMatches: UserProfile[], term: string) => ((p: UserProfile) => boolean);
     testID: string;
+    spacing?: ComponentProps<typeof UserList>['spacing'];
+    inBottomSheet?: boolean;
 }
 
 export default function ServerUserList({
     currentUserId,
     tutorialWatched,
     handleSelectProfile,
+    forceFetchProfile,
+    flatten,
+    includeUserMargin = true,
     term,
     selectedIds,
     fetchFunction,
     searchFunction,
     createFilter,
     testID,
+    spacing,
+    inBottomSheet,
 }: Props) {
     const serverUrl = useServerUrl();
 
@@ -102,10 +112,14 @@ export default function ServerUserList({
     const data = useMemo(() => {
         if (isSearch) {
             const exactMatches: UserProfile[] = [];
-            const filterByTerm = createFilter(exactMatches, term);
-
             const profilesToFilter = searchResults.length ? searchResults : profiles;
-            const results = filterProfilesMatchingTerm(profilesToFilter, term).filter(filterByTerm);
+            let results = filterProfilesMatchingTerm(profilesToFilter, term);
+
+            const filterByTerm = createFilter?.(exactMatches, term);
+            if (filterByTerm) {
+                results = results.filter(filterByTerm);
+            }
+
             return [...exactMatches, ...results];
         }
         return profiles;
@@ -123,7 +137,11 @@ export default function ServerUserList({
             term={term}
             testID={testID}
             tutorialWatched={tutorialWatched}
-            includeUserMargin={true}
+            includeUserMargin={includeUserMargin}
+            forceFetchProfile={forceFetchProfile}
+            flatten={flatten}
+            spacing={spacing}
+            inBottomSheet={inBottomSheet}
         />
     );
 }

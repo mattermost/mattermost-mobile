@@ -106,6 +106,20 @@ const AtMention = ({
         openAsBottomSheet({screen, title, theme, closeButtonId, props});
     };
 
+    const openGroupInfo = () => {
+        if (!group?.name) {
+            return;
+        }
+
+        const screen = Screens.GROUP_INFO;
+        const title = intl.formatMessage({id: 'mobile.routes.group_info', defaultMessage: 'Profile'});
+        const closeButtonId = 'close-user-profile';
+        const props = {closeButtonId, location, groupName: group.name, channelId};
+
+        Keyboard.dismiss();
+        openAsBottomSheet({screen, title, theme, closeButtonId, props});
+    };
+
     const handleLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
             const renderContent = () => {
@@ -154,7 +168,6 @@ const AtMention = ({
     const mentionTextStyle: StyleProp<TextStyle> = [];
 
     let backgroundColor;
-    let canPress = false;
     let highlighted;
     let isMention = false;
     let mention;
@@ -174,12 +187,12 @@ const AtMention = ({
         highlighted = userMentionKeys.some((item) => item.key.includes(user.username));
         mention = displayUsername(user, user.locale, teammateNameDisplay);
         isMention = true;
-        canPress = true;
+        onPress = openUserProfile;
     } else if (group?.name) {
         mention = group.name;
         highlighted = groupMemberships.some((gm) => gm.groupId === group.id);
         isMention = true;
-        canPress = false;
+        onPress = openGroupInfo;
     } else {
         const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
         const mentionMatch = pattern.exec(mentionName);
@@ -194,9 +207,9 @@ const AtMention = ({
         }
     }
 
-    if (canPress) {
+    if (onPress) {
         onLongPress = handleLongPress;
-        onPress = (isSearchResult ? onPostPress : openUserProfile);
+        onPress = isSearchResult ? onPostPress : onPress;
     }
 
     if (suffix) {
