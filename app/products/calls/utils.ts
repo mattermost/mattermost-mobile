@@ -12,7 +12,7 @@ import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
 import type {CallSession, CallsTheme, CallsVersion, SelectedSubtitleTrack, SubtitleTrack} from '@calls/types/calls';
-import type {CallsConfig} from '@mattermost/calls/lib/types';
+import type {CallsConfig, Caption} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
@@ -204,27 +204,26 @@ export function isCallsStartedMessage(payload?: NotificationData) {
     return (payload?.message === 'You\'ve been invited to a call' || callsMessageRegex.test(payload?.message || ''));
 }
 
-export const getHasTranscript = (postProps?: Record<string, any>): boolean => {
-    return !(!postProps || !postProps.captions_file_id);
+export const hasCaptions = (postProps?: Record<string, any> & { captions?: Caption[] }): boolean => {
+    return !(!postProps || !postProps.captions?.[0]);
 };
 
-export const getTranscriptionUri = (serverUrl: string, postProps?: Record<string, any>): {
+export const getTranscriptionUri = (serverUrl: string, postProps?: Record<string, any> & { captions?: Caption[] }): {
     track?: SubtitleTrack;
     selected?: SelectedSubtitleTrack;
 } => {
-    if (!postProps || !postProps.captions_file_id) {
+    // Note: We're not using hasCaptions above because this tells typescript that the caption exists later.
+    // We could use some fancy typescript to do the same, but it's not worth the complexity.
+    if (!postProps || !postProps.captions?.[0]) {
         return {};
     }
 
-    const language = 'en'; // Note: will be changed when we support multiple languages.
-    const uri = buildFileUrl(serverUrl, postProps.captions_file_id);
-
     return {
         track: {
-            title: 'subtitles',
-            language,
+            title: postProps.captions[0].title,
+            language: postProps.captions[0].language,
             type: TextTrackType.VTT,
-            uri,
+            uri: buildFileUrl(serverUrl, postProps.captions[0].file_id),
         },
         selected: {type: 'index', value: 0},
     };

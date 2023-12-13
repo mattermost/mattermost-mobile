@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {NativeModules, useWindowDimensions, Platform} from 'react-native';
 
 import {CaptionsEnabledContext} from '@calls/context';
-import {getHasTranscript} from '@calls/utils';
+import {hasCaptions} from '@calls/utils';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
@@ -32,17 +32,17 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const isTablet = useIsTablet();
     const [localIndex, setLocalIndex] = useState(initialIndex);
     const [captionsEnabled, setCaptionsEnabled] = useState<boolean[]>(new Array(items.length).fill(true));
-    const [hasCaptions, setHasCaptions] = useState<boolean[]>([]);
+    const [captionsAvailable, setCaptionsAvailable] = useState<boolean[]>([]);
     const {setControlsHidden, headerStyles, footerStyles} = useGalleryControls();
     const dimensions = useMemo(() => ({width: dim.width, height: dim.height}), [dim.width]);
     const galleryRef = useRef<GalleryRef>(null);
 
     useEffect(() => {
         const captions = items.reduce((acc, item) => {
-            acc.push(getHasTranscript(item.postProps));
+            acc.push(hasCaptions(item.postProps));
             return acc;
         }, [] as boolean[]);
-        setHasCaptions(captions);
+        setCaptionsAvailable(captions);
     }, [items]);
 
     const onCaptionsPressIdx = useCallback((idx: number) => {
@@ -103,7 +103,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
                 hideActions={hideActions}
                 item={items[localIndex]}
                 style={footerStyles}
-                hasCaptions={hasCaptions[localIndex]}
+                hasCaptions={captionsAvailable[localIndex]}
                 captionEnabled={captionsEnabled[localIndex]}
                 onCaptionsPress={onCaptionsPress}
             />
