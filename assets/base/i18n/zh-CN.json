@@ -1,6 +1,6 @@
 {
   "about.date": "编译日期：",
-  "about.enterpriseEditionLearn": "了解更多关于企业版 ",
+  "about.enterpriseEditionLearn": "深入了解企业版： ",
   "about.enterpriseEditionSt": "位于防火墙后的现代通讯方式。",
   "about.enterpriseEditione1": "企业版",
   "about.hash": "编译哈希：",
@@ -74,7 +74,7 @@
   "apps.error.responses.unexpected_error": "收到未预料的错误。",
   "apps.error.responses.unexpected_type": "应用响应类型不是预期的。响应类型：{type}",
   "apps.error.responses.unknown_field_error": "收到未知字段的错误。字段名称：`{field}`。错误：`{error}`。",
-  "apps.error.responses.unknown_type": "不支援应用响应的类型。响应类型：{type}。",
+  "apps.error.responses.unknown_type": "不支持此应用的响应类型。响应类型：{type}。",
   "apps.error.unknown": "发生未知错误。",
   "apps.suggestion.dynamic.error": "动态选择错误",
   "apps.suggestion.errors.parser_error": "解析错误",
