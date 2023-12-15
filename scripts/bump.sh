@@ -87,7 +87,7 @@ if [ -n "${CREATE_PR}" ]; then
   PR_TITLE="Bump app ${BUMP_BUILD_NUMBER:+build}${BUMP_VERSION_NUMBER:+${BUMP_BUILD_NUMBER:+ and }version} number"
   gh pr create \
     --repo mattermost/mattermost-mobile \
-    --base main \
+    --base "${BRANCH_TO_BUILD}" \
     --head "${GIT_LOCAL_BRANCH}" \
     --reviewer "${PR_REVIEWERS}" \
     --title "$PR_TITLE" \
