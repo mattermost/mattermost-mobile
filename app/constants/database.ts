@@ -13,6 +13,7 @@ export const MM_TABLES = {
         CATEGORY: 'Category',
         CATEGORY_CHANNEL: 'CategoryChannel',
         CHANNEL: 'Channel',
+        CHANNEL_BOOKMARK: 'ChannelBookmark',
         CHANNEL_INFO: 'ChannelInfo',
         CHANNEL_MEMBERSHIP: 'ChannelMembership',
         CONFIG: 'Config',
