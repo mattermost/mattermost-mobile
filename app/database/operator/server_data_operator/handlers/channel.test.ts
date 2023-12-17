@@ -138,9 +138,10 @@ describe('*** Operator: Channel Handlers tests ***', () => {
     });
 
     it('=> HandleMyChannel: should write to the MY_CHANNEL table', async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+        const spyOnBatchRecords = jest.spyOn(operator, 'batchRecords');
         const channels: Channel[] = [{
             id: 'c',
             name: 'channel',
@@ -192,10 +193,111 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             fieldName: 'id',
             createOrUpdateRawValues: myChannels,
             tableName: 'MyChannel',
-            prepareRecordsOnly: false,
+            prepareRecordsOnly: true,
             buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelRecord,
         }, 'handleMyChannel');
+        expect(spyOnBatchRecords).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleMyChannel: should write to the MY_CHANNEL and CHANNEL_BOOKMARK tables', async () => {
+        // expect.assertions(5);
+
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+        const spyOnHandleChannelBookmark = jest.spyOn(operator, 'handleChannelBookmark');
+        const spyOnHandleFiles = jest.spyOn(operator, 'handleFiles');
+        const spyOnBatchRecords = jest.spyOn(operator, 'batchRecords');
+        const channels: Channel[] = [{
+            id: 'c',
+            name: 'channel',
+            display_name: 'Channel',
+            type: 'O',
+            create_at: 1,
+            update_at: 1,
+            delete_at: 0,
+            team_id: '123',
+            header: '',
+            purpose: '',
+            last_post_at: 2,
+            creator_id: 'me',
+            total_msg_count: 20,
+            extra_update_at: 0,
+            shared: false,
+            scheme_id: null,
+            group_constrained: false,
+            bookmarks: [{
+                id: 'idforthefirstbookmark',
+                create_at: 123456,
+                update_at: 123456,
+                delete_at: 0,
+                channel_id: 'c',
+                owner_id: 'me',
+                display_name: 'Some link',
+                sort_order: 0,
+                link_url: 'https://mattermost.com',
+                type: 'link',
+            }, {
+                id: 'idforsecondbookmark',
+                create_at: 873762,
+                update_at: 873762,
+                delete_at: 0,
+                channel_id: 'c',
+                owner_id: 'me',
+                file_id: 'f1oxe5rtepfs7n3zifb4sso7po',
+                file: {
+                    id: 'f1oxe5rtepfs7n3zifb4sso7po',
+                    user_id: '89ertha8xpfsumpucqppy5knao',
+                    post_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                    create_at: 1608270920357,
+                    update_at: 1608270920357,
+                    delete_at: 0,
+                    name: '4qtwrg.jpg',
+                    extension: 'jpg',
+                    size: 89208,
+                    mime_type: 'image/jpeg',
+                    width: 500,
+                    height: 656,
+                    has_preview_image: true,
+                    mini_preview:
+                        '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
+                },
+                display_name: 'some filename',
+                sort_order: 1,
+                emoji: 'smile',
+                type: 'file',
+            }],
+        }];
+        const myChannels: ChannelMembership[] = [
+            {
+                id: 'c',
+                user_id: 'me',
+                channel_id: 'c',
+                last_post_at: 1617311494451,
+                last_viewed_at: 1617311494451,
+                last_update_at: 1617311494451,
+                mention_count: 3,
+                msg_count: 10,
+                roles: 'guest',
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    mark_unread: 'mention',
+                    push: 'mention',
+                    ignore_channel_mentions: 'default',
+                },
+            },
+        ];
+
+        await operator.handleMyChannel({
+            channels,
+            myChannels,
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnBatchRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleChannelBookmark).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleFiles).toHaveBeenCalledTimes(1);
     });
 
     it('=> HandleMyChannel: should keep the previous lastFetchedAt for MY_CHANNEL', async () => {
@@ -253,7 +355,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(updated[0].lastFetchedAt).toBe(123456789);
+        expect(updated[0]).toHaveProperty('lastFetchedAt', 123456789);
     });
 
     it('=> HandleChannelMembership: should write to the CHANNEL_MEMBERSHIP table', async () => {
