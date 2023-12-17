@@ -44,6 +44,7 @@ type Channel = {
     fake?: boolean;
     group_constrained: boolean|null;
     shared: boolean;
+    bookmarks?: ChannelBookmark[];
 };
 type ChannelPatch = {
     name?: string;
@@ -134,3 +135,24 @@ type ChannelMemberCountByGroup = {
 };
 
 type ChannelMemberCountsByGroup = Record<string, ChannelMemberCountByGroup>;
+
+type ChannelBookmarkType = 'link' | 'file';
+
+type ChannelBookmark = {
+    id: string;
+    create_at: number;
+    update_at: number;
+    delete_at: number;
+    channel_id: string;
+    owner_id: string;
+    file_id?: string;
+    file?: FileInfo;
+    display_name: string;
+    sort_order: number;
+    link_url?: string;
+    image_url?: string;
+    emoji?: string;
+    type: ChannelBookmarkType;
+    original_id?: string;
+    parent_id?: string;
+}
