@@ -4,29 +4,36 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchChannelMemberships} from '@actions/remote/channel';
 import {fetchUsersByIds, searchProfiles} from '@actions/remote/user';
+import {preventDoubleTap} from '@app/utils/tap';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
+import CompassIcon from '@components/compass_icon';
 import Search from '@components/search';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import UserList from '@components/user_list';
 import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {openAsBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
+import {bottomSheet, openAsBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
+
+import DotMenu from './dot_menu';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     canManageAndRemoveMembers: boolean;
     channelId: string;
+    channelDisplayName: string;
     componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
@@ -72,6 +79,7 @@ const CLOSE_BUTTON_ID = 'close-user-profile';
 export default function ManageChannelMembers({
     canManageAndRemoveMembers,
     channelId,
+    channelDisplayName,
     componentId,
     currentTeamId,
     currentUserId,
@@ -81,6 +89,7 @@ export default function ManageChannelMembers({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const {formatMessage, locale} = useIntl();
+    const {bottom} = useSafeAreaInsets();
 
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const mounted = useRef(false);
@@ -163,23 +172,62 @@ export default function ManageChannelMembers({
         }, General.SEARCH_TIMEOUT_MILLISECONDS);
     }, [searchUsers, clearSearch]);
 
+    const openDotMenu = useCallback(preventDoubleTap(() => {
+        const renderContent = () => {
+            return (
+                <DotMenu
+                    enterManageMode={enterManageMode}
+                    channelId={channelId}
+                    channelDisplayName={channelDisplayName}
+                />
+            );
+        };
+
+        const closeButtonId = 'close-dot-menu';
+        const items = 2;
+
+        bottomSheet({
+            closeButtonId,
+            renderContent,
+            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom)],
+            theme,
+            title: formatMessage({id: 'manage_channel_members.header.dot_menu', defaultMessage: 'Options'}),
+        });
+    }), [locale, bottom, theme]);
+
     const updateNavigationButtons = useCallback((manage: boolean) => {
         setButtons(componentId, {
             rightButtons: [{
-                color: theme.sidebarHeaderTextColor,
                 enabled: true,
                 id: MANAGE_BUTTON,
                 showAsAction: 'always',
                 testID: 'manage_members.button',
-                text: formatMessage(manage ? messages.button_done : messages.button_manage),
+                ...manage ? {
+                    color: theme.sidebarHeaderTextColor,
+                    text: formatMessage(messages.button_done),
+                } : {
+                    icon: CompassIcon.getImageSourceSync(Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}), 24, theme.sidebarHeaderTextColor),
+                    buttonType: 'opacity',
+                },
             }],
         });
     }, [theme.sidebarHeaderTextColor]);
 
-    const toggleManageEnabled = useCallback(() => {
-        updateNavigationButtons(!isManageMode);
-        setIsManageMode((prev) => !prev);
+    const onManageButtonPressed = useCallback(() => {
+        if (isManageMode) {
+            updateNavigationButtons(false);
+            setIsManageMode(false);
+        } else {
+            openDotMenu();
+        }
     }, [isManageMode, updateNavigationButtons]);
+
+    const enterManageMode = useCallback(() => {
+        updateNavigationButtons(true);
+        setIsManageMode(true);
+    }, [updateNavigationButtons]);
+
+    useNavButtonPressed(MANAGE_BUTTON, componentId, onManageButtonPressed, [onManageButtonPressed]);
 
     const handleRemoveUser = useCallback(async (userId: string) => {
         const pIndex = profiles.findIndex((user) => user.id === userId);
@@ -229,8 +277,6 @@ export default function ManageChannelMembers({
         }
     }, [Boolean(term)]);
 
-    useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
-
     useEffect(() => {
         mounted.current = true;
         const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT};
@@ -255,7 +301,7 @@ export default function ManageChannelMembers({
 
     useEffect(() => {
         if (canManageAndRemoveMembers) {
-            updateNavigationButtons(false);
+            updateNavigationButtons(isManageMode);
         }
     }, [canManageAndRemoveMembers]);
 
@@ -300,7 +346,6 @@ export default function ManageChannelMembers({
                 term={searchedTerm}
                 testID='manage_members.user_list'
                 tutorialWatched={tutorialWatched}
-                includeUserMargin={true}
                 spacing={'spacious'}
             />
         </SafeAreaView>

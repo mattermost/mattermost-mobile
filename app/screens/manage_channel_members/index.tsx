@@ -3,6 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, combineLatest, switchMap} from 'rxjs';
+import {distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions, Tutorial} from '@constants';
 import {observeTutorialWatched} from '@queries/app/global';
@@ -33,6 +34,10 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         currentUserId: observeCurrentUserId(database),
         currentTeamId: observeCurrentTeamId(database),
+        channelDisplayName: currentChannel.pipe(
+            switchMap((c) => of$(c?.displayName)),
+            distinctUntilChanged(),
+        ),
         canManageAndRemoveMembers,
         tutorialWatched: observeTutorialWatched(Tutorial.PROFILE_LONG_PRESS),
         canChangeMemberRoles,

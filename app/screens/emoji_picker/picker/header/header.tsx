@@ -5,11 +5,10 @@ import React, {useCallback, useEffect} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {useSharedValue} from 'react-native-reanimated';
 
-import SearchBar, {type SearchProps} from '@components/search';
+import SearchBar, {BottomSheetSearch, type SearchProps} from '@components/search';
 import {useIsTablet} from '@hooks/device';
 import {setEmojiSkinTone} from '@hooks/emoji_category_bar';
 
-import BottomSheetSearch from './bottom_sheet_search';
 import SkinToneSelector from './skintone_selector';
 
 type Props = SearchProps & {

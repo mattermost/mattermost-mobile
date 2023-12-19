@@ -7,8 +7,7 @@ import {withObservables} from '@nozbe/watermelondb/react';
 import {Tutorial} from '@constants';
 import {observeTutorialWatched} from '@queries/app/global';
 import {observeGroup} from '@queries/servers/group';
-import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
-import {observeTeammateNameDisplay} from '@queries/servers/user';
+import {observeCurrentUserId} from '@queries/servers/system';
 
 import GroupInfo from './group_info';
 
@@ -25,9 +24,7 @@ const enhanced = withObservables([], ({database, groupName}: EnhancedProps) => {
     return {
         currentUserId,
         group,
-        teammateNameNameDisplay: observeTeammateNameDisplay(database),
         tutorialWatched: observeTutorialWatched(Tutorial.PROFILE_LONG_PRESS),
-        hideGuestTags: observeConfigBooleanValue(database, 'HideGuestTags'),
     };
 });
 

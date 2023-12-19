@@ -28,7 +28,7 @@ type Props = {
     contentStyle?: StyleProp<ViewStyle>;
     initialSnapIndex?: number;
     footerComponent?: React.FC<BottomSheetFooterProps>;
-    renderContent: () => ReactNode;
+    renderContent: (isTablet: boolean) => ReactNode;
     snapPoints?: Array<string | number>;
     testID?: string;
 }
@@ -40,8 +40,8 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         bottomSheet: {
             backgroundColor: theme.centerChannelBg,
-            borderTopStartRadius: 24,
-            borderTopEndRadius: 24,
+            borderTopStartRadius: 16,
+            borderTopEndRadius: 16,
             shadowOffset: {
                 width: 0,
                 height: 8,
@@ -183,7 +183,7 @@ const BottomSheet = ({
             style={[styles.content, isTablet && styles.contentTablet, contentStyle]}
             testID={`${testID}.screen`}
         >
-            {renderContent()}
+            {renderContent(isTablet)}
         </View>
     );
 

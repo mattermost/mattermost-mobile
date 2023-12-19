@@ -195,7 +195,6 @@ type Props = {
     testID?: string;
     term?: string;
     tutorialWatched: boolean;
-    includeUserMargin?: boolean;
     spacing?: ComponentProps<typeof UserListRow>['spacing'];
     inBottomSheet?: boolean;
 }

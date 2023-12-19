@@ -68,11 +68,11 @@ export function makeStyleSheetFromTheme<T extends NamedStyles<T>>(getStyleFromTh
     };
 }
 
-export function useStyling<T extends NamedStyles<T>>(getDynamicStyles: (theme: Theme) => T, deps: DependencyList): {style: T; theme: Theme} {
+export function useStyling<T extends NamedStyles<T>>(getDynamicStyles: (theme: Theme) => T, deps: DependencyList): {styles: T; theme: Theme} {
     const theme = useTheme();
-    const style = useMemo(() => StyleSheet.create(getDynamicStyles(theme)), [theme, ...deps]);
+    const styles = useMemo(() => StyleSheet.create(getDynamicStyles(theme)), [theme, ...deps]);
 
-    return {style, theme};
+    return {styles, theme};
 }
 
 export function changeOpacity(oldColor: string, opacity: number): string {

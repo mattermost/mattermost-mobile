@@ -55,8 +55,8 @@ const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
         },
         rowUsername: {
             ...typography('Body', 100),
-            flex: 1,
-            flexShrink: 0,
+            flex: 0,
+            flexShrink: 1,
             color: changeOpacity(theme.centerChannelColor, 0.64),
         },
     };
@@ -78,6 +78,12 @@ const nonThemedStyles = StyleSheet.create({
     },
     profile: {
         marginRight: 12,
+    },
+    details: {
+        flex: 0,
+        flexShrink: 1,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
     },
     tag: {
         marginLeft: 6,
@@ -108,7 +114,7 @@ const UserItem = ({
     padding = 20,
     hideGuestTags,
 }: Props) => {
-    const {style, theme} = useStyling((t) => ({
+    const {styles, theme} = useStyling((t) => ({
         ...getThemedStyles(t),
         row: {
             height: ({compact: 32, normal: 48, spacious: 56})[spacing],
@@ -151,16 +157,18 @@ const UserItem = ({
 
     const username = showTeammateDisplay && Boolean(user?.username) && (
         <Text
-            style={style.rowUsername}
+            style={styles.rowUsername}
             testID={`${userItemTestId}.username`}
+            numberOfLines={1}
         >
-            {nonBreakingString(` @${user?.username}`)}
+            {nonBreakingString(`@${user?.username}`)}
         </Text>
     );
     const deactivated = userIsDeactivated && (
         <Text
-            style={style.rowUsername}
+            style={styles.rowUsername}
             testID={`${userItemTestId}.deactivated`}
+            numberOfLines={1}
         >
             {nonBreakingString(` ${intl.formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}`)}
         </Text>
@@ -191,10 +199,6 @@ const UserItem = ({
             style={nonThemedStyles.icon}
         />
     );
-
-    const details: ReactNode = [username, deactivated];
-    const badges: ReactNode = [botBadge, guestBadge, customStatusEmoji, sharedBadge];
-
     return (
         <TouchableOpacity
             onPress={onPress}
@@ -204,7 +208,7 @@ const UserItem = ({
         >
             <View
                 ref={viewRef}
-                style={[style.row, containerStyle]}
+                style={[styles.row, containerStyle]}
                 testID={userItemTestId}
             >
                 <ProfilePicture
@@ -217,16 +221,16 @@ const UserItem = ({
                 <View style={nonThemedStyles.rowInfoBaseContainer}>
                     <View style={nonThemedStyles.rowInfoContainer}>
                         <Text
-                            style={style.rowFullname}
+                            style={styles.rowFullname}
                             numberOfLines={1}
                             testID={`${userItemTestId}.display_name`}
                         >
                             {nonBreakingString(displayName)}
-                            {!footer && spacing !== 'spacious' && details}
+                            {!footer && spacing !== 'spacious' && <>{' '}{username}{deactivated}</>}
                         </Text>
-                        {showBadges && badges}
+                        {showBadges && <>{botBadge}{guestBadge}{customStatusEmoji}{sharedBadge}</>}
                     </View>
-                    {footer ?? (spacing === 'spacious' && details)}
+                    {footer ?? (spacing === 'spacious' && <View style={nonThemedStyles.details}>{username}{deactivated}</View>)}
                 </View>
                 {Boolean(rightDecorator) && <View style={nonThemedStyles.rightContainer}>{rightDecorator}</View>}
             </View>

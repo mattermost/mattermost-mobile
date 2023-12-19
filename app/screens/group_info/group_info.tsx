@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useCallback, useState} from 'react';
+import React, {useEffect, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -10,7 +10,7 @@ import {fetchProfilesInGroup, searchProfiles} from '@actions/remote/user';
 import {useServerUrl} from '@app/context/server';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@app/utils/theme';
 import {typography} from '@app/utils/typography';
-import Search from '@components/search';
+import Search, {BottomSheetSearch, useSearchTerm} from '@components/search';
 import ServerUserList from '@components/server_user_list';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -22,8 +22,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     currentUserId: string;
     group: GroupModel;
-    teammateDisplayName: string;
-    hideGuestTags: boolean;
     closeButtonId: string;
     location: AvailableScreens;
     tutorialWatched: boolean;
@@ -45,9 +43,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginBottom: 8,
         ...typography('Heading', 600, 'SemiBold'),
     },
+    subheading: {
+        color: theme.centerChannelColor,
+        ...typography('Body', 200),
+    },
     searchBar: {
-        marginLeft: 0,
-        marginRight: 0,
+        marginHorizontal: 0,
         marginVertical: 20,
     },
     divider: {
@@ -55,16 +56,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 1,
     },
 }));
-
-const useSearchTerm = () => {
-    const [term, setTerm] = useState('');
-
-    const clear = useCallback(() => {
-        setTerm('');
-    }, []);
-
-    return [term, setTerm, {clear}] as const;
-};
 
 const GroupInfo = ({
     closeButtonId,
@@ -106,7 +97,9 @@ const GroupInfo = ({
         return [];
     }, [serverUrl, group.id]);
 
-    const renderContent = () => {
+    const renderContent = (isTablet: boolean) => {
+        const SearchBar = isTablet ? Search : BottomSheetSearch;
+
         return (
             <View style={styles.container}>
                 <View style={styles.header}>
@@ -116,14 +109,17 @@ const GroupInfo = ({
                     >
                         {group.displayName}
                     </Text>
-                    <Text>
+                    <Text
+                        style={styles.subheading}
+                        testID='group_info.subheading'
+                    >
                         {`@${group.name}`}
                         {' • '}
                         {formatMessage({id: 'mobile.group_info.group_members', defaultMessage: '{count} members'}, {count: group.memberCount})}
                     </Text>
                     {showSearch && (
                         <View style={styles.searchBar}>
-                            <Search
+                            <SearchBar
                                 testID='group_info.search_bar'
                                 placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                                 cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -147,7 +143,7 @@ const GroupInfo = ({
                     searchFunction={search}
                     forceFetchProfile={true}
                     flatten={true}
-                    inBottomSheet={true}
+                    inBottomSheet={!isTablet}
                 />
             </View>
         );

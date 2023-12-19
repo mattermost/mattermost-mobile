@@ -4,9 +4,22 @@
 /* eslint-disable react/prop-types */
 // We disable the prop types check here as forwardRef & typescript has a bug
 
+import {useBottomSheet} from '@gorhom/bottom-sheet';
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type ActivityIndicatorProps, Keyboard, Platform, type StyleProp, TextInput, type TextInputProps, type TextStyle, type TouchableOpacityProps, type ViewStyle} from 'react-native';
+import {
+    type ActivityIndicatorProps,
+    Keyboard,
+    Platform,
+    type StyleProp,
+    TextInput,
+    type TextInputProps,
+    type TextStyle,
+    type TouchableOpacityProps,
+    type ViewStyle,
+    type NativeSyntheticEvent,
+    type TextInputFocusEventData,
+} from 'react-native';
 import {SearchBar} from 'react-native-elements';
 
 import CompassIcon from '@components/compass_icon';
@@ -192,3 +205,32 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
 Search.displayName = 'SeachBar';
 
 export default Search;
+
+/**
+ * Auto expand bottom sheet on-focus
+ */
+export const BottomSheetSearch = ({onFocus, ...props}: SearchProps) => {
+    const {expand} = useBottomSheet();
+
+    const handleOnFocus = useCallback((event: NativeSyntheticEvent<TextInputFocusEventData>) => {
+        expand();
+        onFocus?.(event);
+    }, [onFocus, expand]);
+
+    return (
+        <Search
+            onFocus={handleOnFocus}
+            {...props}
+        />
+    );
+};
+
+export const useSearchTerm = () => {
+    const [term, setTerm] = useState('');
+
+    const clear = useCallback(() => {
+        setTerm('');
+    }, []);
+
+    return [term, setTerm, {clear}] as const;
+};
