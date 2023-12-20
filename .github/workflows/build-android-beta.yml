@@ -5,8 +5,7 @@ on:
   push:
     branches:
       - build-beta-[0-9]+
-      - build-android-[0-9]+
-      - build-android-beta-[0-9]+
+      - build-beta-android-[0-9]+
 
 env:
   NODE_VERSION: 18.7.0
