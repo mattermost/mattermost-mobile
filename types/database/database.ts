@@ -227,7 +227,7 @@ export type HandleChannelArgs = PrepareOnly & {
 };
 
 export type HandleChannelBookmarkArgs = PrepareOnly & {
-  bookmarks?: ChannelBookmark[];
+  bookmarks?: ChannelBookmarkWithFileInfo[];
 };
 
 export type HandleCategoryArgs = PrepareOnly & {

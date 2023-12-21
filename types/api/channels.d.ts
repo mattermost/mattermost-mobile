@@ -44,7 +44,7 @@ type Channel = {
     fake?: boolean;
     group_constrained: boolean|null;
     shared: boolean;
-    bookmarks?: ChannelBookmark[];
+    bookmarks?: ChannelBookmarkWithFileInfo[];
 };
 type ChannelPatch = {
     name?: string;
@@ -146,7 +146,6 @@ type ChannelBookmark = {
     channel_id: string;
     owner_id: string;
     file_id?: string;
-    file?: FileInfo;
     display_name: string;
     sort_order: number;
     link_url?: string;
@@ -155,4 +154,13 @@ type ChannelBookmark = {
     type: ChannelBookmarkType;
     original_id?: string;
     parent_id?: string;
+}
+
+type ChannelBookmarkWithFileInfo = ChannelBookmark & {
+    file?: FileInfo;
+}
+
+type UpdateChannelBookmarkResponse = {
+    updated: ChannelBookmarkWithFileInfo;
+    deleted: ChannelBookmarkWithFileInfo;
 }

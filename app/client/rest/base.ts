@@ -134,6 +134,14 @@ export default class ClientBase {
         return `${this.getChannelsRoute()}/${channelId}`;
     }
 
+    getChannelBookmarksRoute(channelId: string) {
+        return `${this.getChannelRoute(channelId)}/bookmarks`;
+    }
+
+    getChannelBookmarkRoute(channelId: string, bookmarkId: string) {
+        return `${this.getChannelBookmarksRoute(channelId)}/${bookmarkId}`;
+    }
+
     getSharedChannelsRoute() {
         return `${this.urlVersion}/sharedchannels`;
     }
