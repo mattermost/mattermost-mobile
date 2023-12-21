@@ -23,12 +23,15 @@ type MathViewErrorProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         mathStyle: {
-            marginVertical: 3,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
             color: theme.centerChannelColor,
         },
         viewStyle: {
             flexDirection: 'row',
-            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
         },
         errorText: {
             color: theme.errorTextColor,
