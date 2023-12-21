@@ -209,22 +209,27 @@ export const hasCaptions = (postProps?: Record<string, any> & { captions?: Capti
 };
 
 export const getTranscriptionUri = (serverUrl: string, postProps?: Record<string, any> & { captions?: Caption[] }): {
-    track?: SubtitleTrack;
-    selected?: SelectedSubtitleTrack;
+    tracks?: SubtitleTrack[];
+    selected: SelectedSubtitleTrack;
 } => {
     // Note: We're not using hasCaptions above because this tells typescript that the caption exists later.
     // We could use some fancy typescript to do the same, but it's not worth the complexity.
     if (!postProps || !postProps.captions?.[0]) {
-        return {};
+        return {
+            tracks: undefined,
+            selected: {type: 'disabled'},
+        };
     }
 
+    const tracks: SubtitleTrack[] = postProps.captions.map((t) => ({
+        title: t.title,
+        language: t.language,
+        type: TextTrackType.VTT,
+        uri: buildFileUrl(serverUrl, t.file_id),
+    }));
+
     return {
-        track: {
-            title: postProps.captions[0].title,
-            language: postProps.captions[0].language,
-            type: TextTrackType.VTT,
-            uri: buildFileUrl(serverUrl, postProps.captions[0].file_id),
-        },
+        tracks,
         selected: {type: 'index', value: 0},
     };
 };

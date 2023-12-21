@@ -75,7 +75,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const [downloading, setDownloading] = useState(false);
     const [hasError, setHasError] = useState(false);
     const source = useMemo(() => ({uri: videoUri}), [videoUri]);
-    const {track, selected} = useMemo(() => getTranscriptionUri(serverUrl, item.postProps), [serverUrl, item.postProps]);
+    const {tracks, selected} = useMemo(() => getTranscriptionUri(serverUrl, item.postProps), [serverUrl, item.postProps]);
 
     const setFullscreen = (value: boolean) => {
         fullscreen.value = value;
@@ -194,8 +194,8 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 onReadyForDisplay={onReadyForDisplay}
                 onEnd={onEnd}
                 onTouchStart={handleTouchStart}
-                textTracks={track ? [track] : undefined}
-                selectedTextTrack={track && captionsEnabled[index] ? selected : {type: 'disabled'}}
+                textTracks={tracks}
+                selectedTextTrack={captionsEnabled[index] ? selected : {type: 'disabled'}}
             />
             {Platform.OS === 'android' && paused && videoReady &&
             <Animated.View style={styles.playContainer}>
