@@ -1,13 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, Platform, StyleSheet, useWindowDimensions} from 'react-native';
-import Animated, {Easing, useAnimatedRef, useAnimatedStyle, useSharedValue, withTiming, type WithTimingConfig} from 'react-native-reanimated';
+import Animated, {
+    Easing,
+    useAnimatedRef,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+    type WithTimingConfig,
+} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Video, {type OnPlaybackRateData} from 'react-native-video';
 
 import {updateLocalFilePath} from '@actions/local/file';
+import {CaptionsEnabledContext} from '@calls/context';
+import {getTranscriptionUri} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import {Events} from '@constants';
 import {GALLERY_FOOTER_HEIGHT, VIDEO_INSET} from '@constants/gallery';
@@ -59,12 +68,14 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const serverUrl = useServerUrl();
     const videoRef = useAnimatedRef<Video>();
     const showControls = useRef(!(initialIndex === index));
+    const captionsEnabled = useContext(CaptionsEnabledContext);
     const [paused, setPaused] = useState(!(initialIndex === index));
     const [videoReady, setVideoReady] = useState(false);
     const [videoUri, setVideoUri] = useState(item.uri);
     const [downloading, setDownloading] = useState(false);
     const [hasError, setHasError] = useState(false);
     const source = useMemo(() => ({uri: videoUri}), [videoUri]);
+    const {tracks, selected} = useMemo(() => getTranscriptionUri(serverUrl, item.postProps), [serverUrl, item.postProps]);
 
     const setFullscreen = (value: boolean) => {
         fullscreen.value = value;
@@ -183,6 +194,8 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 onReadyForDisplay={onReadyForDisplay}
                 onEnd={onEnd}
                 onTouchStart={handleTouchStart}
+                textTracks={tracks}
+                selectedTextTrack={captionsEnabled[index] ? selected : {type: 'disabled'}}
             />
             {Platform.OS === 'android' && paused && videoReady &&
             <Animated.View style={styles.playContainer}>

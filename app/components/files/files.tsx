@@ -24,6 +24,7 @@ type FilesProps = {
     location: string;
     isReplyPost: boolean;
     postId: string;
+    postProps: Record<string, any>;
     publicLinkEnabled: boolean;
 }
 
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, location, postId, publicLinkEnabled}: FilesProps) => {
+const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, location, postId, postProps, publicLinkEnabled}: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
     const isTablet = useIsTablet();
@@ -63,7 +64,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
     };
 
     const handlePreviewPress = preventDoubleTap((idx: number) => {
-        const items = filesForGallery.value.map((f) => fileToGalleryItem(f, f.user_id));
+        const items = filesForGallery.value.map((f) => fileToGalleryItem(f, f.user_id, postProps));
         openGalleryAtIndex(galleryIdentifier, idx, items);
     });
 
