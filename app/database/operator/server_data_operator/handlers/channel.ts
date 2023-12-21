@@ -392,7 +392,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
             return [];
         }
 
-        const uniqueRaws = getUniqueRawsBy({raws: bookmarks, key: 'id'}) as ChannelBookmark[];
+        const uniqueRaws = getUniqueRawsBy({raws: bookmarks, key: 'id'}) as ChannelBookmarkWithFileInfo[];
         const keys = uniqueRaws.map((c) => c.id);
         const db: Database = this.database;
         const existing = await db.get<ChannelBookmarkModel>(CHANNEL_BOOKMARK).query(
@@ -400,7 +400,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
         ).fetch();
         const bookmarkMap = new Map<string, ChannelBookmarkModel>(existing.map((b) => [b.id, b]));
         const files: FileInfo[] = [];
-        const raws = uniqueRaws.reduce<{createOrUpdaetRaws: ChannelBookmark[]; deleteRaws: ChannelBookmark[]}>((res, b) => {
+        const raws = uniqueRaws.reduce<{createOrUpdaetRaws: ChannelBookmarkWithFileInfo[]; deleteRaws: ChannelBookmarkWithFileInfo[]}>((res, b) => {
             const e = bookmarkMap.get(b.id);
             if (!e) {
                 if (!b.delete_at) {
