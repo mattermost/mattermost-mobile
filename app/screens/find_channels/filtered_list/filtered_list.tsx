@@ -232,7 +232,7 @@ const FilteredList = ({
                 />
             );
         }
-        
+
         if ('username' in item) {
             return (
                 <UserItem
