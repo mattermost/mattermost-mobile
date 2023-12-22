@@ -33,7 +33,7 @@ function getMaximumLineLength(code: string) {
     return code.split('\n').reduce((prev, v) => Math.max(prev, v.length), 0);
 }
 
-const MAXIMUM_CODE_LINE_LENGTH = 500;
+const MAXIMUM_CODE_LINE_LENGTH = 300;
 
 const Highlighter = ({code, language, textStyle, selectable = false}: SyntaxHiglightProps) => {
     const theme = useTheme();
