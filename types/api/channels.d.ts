@@ -162,5 +162,5 @@ type ChannelBookmarkWithFileInfo = ChannelBookmark & {
 
 type UpdateChannelBookmarkResponse = {
     updated: ChannelBookmarkWithFileInfo;
-    deleted: ChannelBookmarkWithFileInfo;
+    deleted?: ChannelBookmarkWithFileInfo;
 }
