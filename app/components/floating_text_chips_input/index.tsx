@@ -24,6 +24,7 @@ import {
     View,
     type ViewStyle,
     Pressable,
+    type TextInputKeyPressEventData,
 } from 'react-native';
 import Animated, {
     useAnimatedStyle,
@@ -36,10 +37,12 @@ import SelectedChip, {USER_CHIP_HEIGHT} from '@components/selected_chip';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {getLabelPositions, onExecution} from './utils';
+import {getLabelPositions} from './utils';
 
 const BORDER_DEFAULT_WIDTH = 1;
 const BORDER_FOCUSED_WIDTH = 2;
+
+const COMMA_KEY = ',';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -122,7 +125,7 @@ export type Ref = {
 type TextInputPropsFiltered = Omit<TextInputProps, 'value' | 'defaultValue' | 'onChange'>;
 
 type Props = TextInputPropsFiltered & {
-    containerStyle?: ViewStyle;
+    containerStyle?: StyleProp<ViewStyle>;
     editable?: boolean;
     error?: string;
     errorIcon?: string;
@@ -145,40 +148,42 @@ type Props = TextInputPropsFiltered & {
     onTextInputSubmitted: () => void;
 }
 
-const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
-    const {
-        textInputValue,
-        textInputStyle,
-        onTextInputChange,
-        onTextInputSubmitted,
-        chipsValues,
-        onChipRemove,
-        theme,
-        containerStyle,
-        editable = true,
-        error,
-        errorIcon = 'alert-outline',
-        isKeyboardInput = true,
-        label = '',
-        labelTextStyle,
-        onBlur,
-        onFocus,
-        onLayout,
-        onPress,
-        placeholder,
-        showErrorIcon = true,
-        testID,
-        ...restProps
-    } = props;
-
+const FloatingTextChipsInput = forwardRef<Ref, Props>(({
+    textInputValue,
+    textInputStyle,
+    onTextInputChange,
+    onTextInputSubmitted,
+    chipsValues,
+    onChipRemove,
+    theme,
+    containerStyle,
+    editable = true,
+    error,
+    errorIcon = 'alert-outline',
+    isKeyboardInput = true,
+    label = '',
+    labelTextStyle,
+    onBlur,
+    onFocus,
+    onLayout,
+    onPress,
+    placeholder,
+    showErrorIcon = true,
+    testID,
+    ...restProps
+}, ref) => {
     const [focused, setIsFocused] = useState(false);
     const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>();
+
     const inputRef = useRef<TextInput>(null);
+
     const styles = getStyleSheet(theme);
 
     const hasValues = textInputValue.length > 0 || (chipsValues?.length ?? 0) > 0;
 
     const shouldShowError = !focused && error;
+
+    const positions = useMemo(() => getLabelPositions(styles.textInput, styles.label, styles.smallLabel), [styles]);
 
     // Exposes the blur, focus and isFocused methods to the parent component
     useImperativeHandle(ref, () => ({
@@ -187,21 +192,28 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
         isFocused: () => inputRef.current?.isFocused() || false,
     }), [inputRef]);
 
-    const onTextInputBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
-        () => {
-            setIsFocusLabel(hasValues);
-            setIsFocused(false);
-        },
-        onBlur,
-    ), [onBlur, hasValues]);
+    const onTextInputBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+        setIsFocusLabel(hasValues);
+        setIsFocused(false);
 
-    const onTextInputFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
-        () => {
-            setIsFocusLabel(true);
-            setIsFocused(true);
-        },
-        onFocus,
-    ), [onFocus]);
+        onBlur?.(e);
+    }, [onBlur, hasValues]);
+
+    const onTextInputFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+        setIsFocusLabel(true);
+        setIsFocused(true);
+
+        onFocus?.(e);
+    }, [onFocus]);
+
+    const onTextInputKeyPress = useCallback((e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+        if (e.nativeEvent.key === COMMA_KEY) {
+            e.preventDefault();
+
+            inputRef.current?.clear();
+            onTextInputSubmitted();
+        }
+    }, [onTextInputSubmitted]);
 
     function handlePressOnContainer() {
         if (!focused) {
@@ -239,7 +251,6 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
         const inputText = placeholder || hasValues;
         const index = inputText || focusedLabel ? 1 : 0;
 
-        const positions = getLabelPositions(styles.textInput, styles.label, styles.smallLabel);
         const toValue = positions[index];
 
         const size = [styles.textInput.fontSize, styles.smallLabel.fontSize];
@@ -276,7 +287,7 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
                         {label}
                     </Animated.Text>
                     <View style={textInputContainerStyles}>
-                        {props.chipsValues && props.chipsValues?.length > 0 && props.chipsValues.map((chipValue) => (
+                        {chipsValues && chipsValues?.length > 0 && chipsValues.map((chipValue) => (
                             <SelectedChip
                                 key={chipValue}
                                 id={chipValue}
@@ -299,14 +310,7 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>((props, ref) => {
                             onFocus={onTextInputFocus}
                             onBlur={onTextInputBlur}
                             onChangeText={onTextInputChange}
-                            onKeyPress={(e) => {
-                            // Temp fix remove later >>>>>>>>>>>
-                                if (e.nativeEvent.key === ',') {
-                                    inputRef?.current?.clear();
-                                    onTextInputSubmitted();
-                                    e.preventDefault();
-                                }
-                            }}
+                            onKeyPress={onTextInputKeyPress}
                             onSubmitEditing={onTextInputSubmitted}
                             value={textInputValue}
                         />

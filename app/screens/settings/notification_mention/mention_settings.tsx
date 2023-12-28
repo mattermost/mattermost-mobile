@@ -30,6 +30,8 @@ const mentionHeaderText = {
     defaultMessage: 'Keywords that trigger mentions',
 };
 
+const COMMA_KEY = ',';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         input: {
@@ -163,28 +165,27 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
         currentUser,
     ]);
 
-    function handleFirstNameToggle() {
+    const handleFirstNameToggle = useCallback(() => {
         setFirstNameMentionOn(!firstNameMentionOn);
-    }
+    }, [firstNameMentionOn]);
 
-    function handleUsernameToggle() {
+    const handleUsernameToggle = useCallback(() => {
         setUsernameMentionOn(!usernameMentionOn);
-    }
+    }, [usernameMentionOn]);
 
-    function handleChannelToggle() {
+    const handleChannelToggle = useCallback(() => {
         setChannelMentionOn(!channelMentionOn);
-    }
+    }, [channelMentionOn]);
 
-    function handleMentionKeywordsInputChanged(text: string) {
-        // Temp fix remove later >>>>>>>>>>>
-        if (text[text.length - 1] === ',') {
+    const handleMentionKeywordsInputChanged = useCallback((text: string) => {
+        if (text.includes(COMMA_KEY)) {
             setMentionKeywordsInput('');
         } else {
             setMentionKeywordsInput(text);
         }
-    }
+    }, []);
 
-    function handleMentionKeywordEntered() {
+    const handleMentionKeywordEntered = useCallback(() => {
         const formattedMentionKeywordsInput = mentionKeywordsInput.trim().replace(/ /g, '');
 
         // Check if the keyword is not empty and not already in the list
@@ -194,11 +195,11 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                 setMentionKeywords([...mentionKeywords, formattedMentionKeywordsInput]);
             });
         }
-    }
+    }, [mentionKeywordsInput, mentionKeywords]);
 
-    function handleMentionKeywordRemoved(keyword: string) {
+    const handleMentionKeywordRemoved = useCallback((keyword: string) => {
         setMentionKeywords(mentionKeywords.filter((item) => item !== keyword));
-    }
+    }, [mentionKeywords]);
 
     useBackNavigation(saveMention);
 
