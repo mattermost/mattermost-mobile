@@ -166,16 +166,16 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     ]);
 
     const handleFirstNameToggle = useCallback(() => {
-        setFirstNameMentionOn(!firstNameMentionOn);
-    }, [firstNameMentionOn]);
+        setFirstNameMentionOn((prev) => !prev);
+    }, []);
 
     const handleUsernameToggle = useCallback(() => {
-        setUsernameMentionOn(!usernameMentionOn);
-    }, [usernameMentionOn]);
+        setUsernameMentionOn((prev) => !prev);
+    }, []);
 
     const handleChannelToggle = useCallback(() => {
-        setChannelMentionOn(!channelMentionOn);
-    }, [channelMentionOn]);
+        setChannelMentionOn((prev) => !prev);
+    }, []);
 
     const handleMentionKeywordsInputChanged = useCallback((text: string) => {
         if (text.includes(COMMA_KEY)) {
