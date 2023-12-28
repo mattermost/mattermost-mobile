@@ -1,16 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {type NativeSyntheticEvent, Platform, type TargetedEvent, type TextInputFocusEventData, type TextStyle} from 'react-native';
-
-export const onExecution = (
-    e: NativeSyntheticEvent<TextInputFocusEventData>,
-    innerFunc?: () => void,
-    outerFunc?: ((event: NativeSyntheticEvent<TargetedEvent>) => void),
-) => {
-    innerFunc?.();
-    outerFunc?.(e);
-};
+import {Platform, type TextStyle} from 'react-native';
 
 export const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelStyle: TextStyle) => {
     const top = style.paddingTop as number || 0;
