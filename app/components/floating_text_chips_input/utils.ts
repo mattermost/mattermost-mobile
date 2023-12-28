@@ -13,10 +13,10 @@ export const onExecution = (
 };
 
 export const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelStyle: TextStyle) => {
-    const top: number = style.paddingTop as number || 0;
-    const bottom: number = style.paddingBottom as number || 0;
+    const top = style.paddingTop as number || 0;
+    const bottom = style.paddingBottom as number || 0;
 
-    const height: number = (style.height as number || (top + bottom) || style.padding as number) || 0;
+    const height = (style.height as number || (top + bottom) || style.padding as number) || 0;
     const textInputFontSize = style.fontSize || 13;
     const labelFontSize = labelStyle.fontSize || 16;
     const smallLabelFontSize = smallLabelStyle.fontSize || 10;
