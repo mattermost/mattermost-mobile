@@ -47,14 +47,21 @@ class SplitViewModule: RCTEventEmitter {
     }
   }
   
-  @objc(isRunningInSplitView:withRejecter:)
-  func isRunningInSplitView(resolve:@escaping RCTPromiseResolveBlock, reject:RCTPromiseRejectBlock) -> Void {
-    DispatchQueue.main.async { [weak self] in
-      resolve([
-        "isSplitView": !(self?.isRunningInFullScreen() ?? false),
-        "isTablet": UIDevice.current.userInterfaceIdiom == .pad,
-      ])
+  @objc(isRunningInSplitView)
+  func isRunningInSplitView() -> Dictionary<String, Bool> {
+    let queue = DispatchQueue.main
+    let group = DispatchGroup()
+    var shouldBeConsideredFullScreen = true
+    group.enter()
+    queue.async(group: group) { [weak self] in
+      shouldBeConsideredFullScreen = self?.isRunningInFullScreen() ?? true
+      group.leave()
     }
+    group.wait()
+    return [
+      "isSplitView": !shouldBeConsideredFullScreen,
+      "isTablet": UIDevice.current.userInterfaceIdiom == .pad,
+    ]
   }
   
   @objc(unlockOrientation)

@@ -19,10 +19,6 @@ import NavigationStore from '@store/navigation_store';
 // or on the Share Extension, for example.
 let baseAppInitialized = false;
 
-// Controls whether the app initialization (websockets, screen listeners, etc...) is done, mainly
-// on app launch
-let mainAppInitialized = false;
-
 let serverCredentials: ServerCredential[];
 
 // Fallback Polyfill for Promise.allSettle
@@ -55,25 +51,19 @@ export async function initialize() {
 }
 
 export async function start() {
-    if (baseAppInitialized) {
-        // Clean relevant information on ephemeral stores
-        NavigationStore.reset();
-        EphemeralStore.setCurrentThreadId('');
-        EphemeralStore.setProcessingNotification('');
-    }
+    // Clean relevant information on ephemeral stores
+    NavigationStore.reset();
+    EphemeralStore.setCurrentThreadId('');
+    EphemeralStore.setProcessingNotification('');
 
     await initialize();
 
-    if (!mainAppInitialized) {
-        mainAppInitialized = true;
+    PushNotifications.init(serverCredentials.length > 0);
 
-        PushNotifications.init(serverCredentials.length > 0);
+    registerNavigationListeners();
+    registerScreens();
 
-        registerNavigationListeners();
-        registerScreens();
-
-        await WebsocketManager.init(serverCredentials);
-    }
+    await WebsocketManager.init(serverCredentials);
 
     initialLaunch();
 }

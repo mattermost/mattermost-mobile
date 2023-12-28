@@ -482,7 +482,7 @@ export async function handleEntryAfterLoadNavigation(
         const mountedScreens = NavigationStore.getScreensInStack();
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadsMounted = mountedScreens.includes(Screens.THREAD);
-        const tabletDevice = await isTablet();
+        const tabletDevice = isTablet();
 
         if (!currentTeamIdAfterLoad) {
             // First load or no team

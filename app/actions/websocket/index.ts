@@ -168,7 +168,7 @@ async function doReconnect(serverUrl: string) {
         await operator.batchRecords(models, 'doReconnect');
     }
 
-    const tabletDevice = await isTablet();
+    const tabletDevice = isTablet();
     if (tabletDevice && initialChannelId === currentChannelId) {
         await markChannelAsRead(serverUrl, initialChannelId);
         markChannelAsViewed(serverUrl, initialChannelId);
@@ -479,7 +479,7 @@ async function fetchPostDataIfNeeded(serverUrl: string) {
         const mountedScreens = NavigationStore.getScreensInStack();
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadScreenMounted = mountedScreens.includes(Screens.THREAD);
-        const tabletDevice = await isTablet();
+        const tabletDevice = isTablet();
 
         if (isCRTEnabled && isThreadScreenMounted) {
             // Fetch new posts in the thread only when CRT is enabled,

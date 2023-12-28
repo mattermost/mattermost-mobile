@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, DeviceEventEmitter, Platform} from 'react-native';
+import {AppState, DeviceEventEmitter, Platform, type EmitterSubscription} from 'react-native';
 import {
     Notification,
     NotificationAction,
@@ -36,12 +36,16 @@ import {convertToNotificationData} from '@utils/notification';
 
 class PushNotifications {
     configured = false;
+    subscriptions?: EmitterSubscription[];
 
     init(register: boolean) {
-        Notifications.events().registerNotificationOpened(this.onNotificationOpened);
-        Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered);
-        Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
-        Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
+        this.subscriptions?.forEach((v) => v.remove());
+        this.subscriptions = [
+            Notifications.events().registerNotificationOpened(this.onNotificationOpened),
+            Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered),
+            Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground),
+            Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground),
+        ];
 
         if (register) {
             this.registerIfNeeded();
@@ -115,7 +119,7 @@ class PushNotifications {
 
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (database) {
-            const isTabletDevice = await isTablet();
+            const isTabletDevice = isTablet();
             const displayName = await getServerDisplayName(serverUrl);
             const channelId = await getCurrentChannelId(database);
             const isCRTEnabled = await getIsCRTEnabled(database);

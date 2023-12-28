@@ -4,7 +4,6 @@
 import moment, {type Moment} from 'moment-timezone';
 import {NativeModules, Platform} from 'react-native';
 
-import {Device} from '@constants';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
 import {STATUS_BAR_HEIGHT} from '@constants/view';
 
@@ -130,13 +129,9 @@ export function getRoundedTime(value: Moment) {
     return start.add(remainder, 'm').seconds(0).milliseconds(0);
 }
 
-export async function isTablet() {
-    if (Device.IS_TABLET) {
-        const {isSplitView} = await isRunningInSplitView();
-        return !isSplitView;
-    }
-
-    return false;
+export function isTablet() {
+    const result: SplitViewResult = isRunningInSplitView();
+    return result.isTablet && !result.isSplitView;
 }
 
 export const pluckUnique = (key: string) => (array: Array<{[key: string]: unknown}>) => Array.from(new Set(array.map((obj) => obj[key])));
