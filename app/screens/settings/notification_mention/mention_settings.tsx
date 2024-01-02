@@ -259,7 +259,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                     returnKeyType='done'
                     testID='mention_notification_settings.keywords.input'
                     textInputStyle={styles.input}
-                    textAlignVertical='top'
+                    textAlignVertical='center'
                     theme={theme}
                     underlineColorAndroid='transparent'
                     chipsValues={mentionKeywords}

@@ -97,7 +97,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'flex-start',
         alignContent: 'flex-start',
         alignItems: 'flex-start',
-        textAlignVertical: 'top',
+        textAlignVertical: 'center',
         paddingTop: 12,
         paddingBottom: 12,
         paddingHorizontal: 16,
