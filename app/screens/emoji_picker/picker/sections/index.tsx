@@ -5,10 +5,13 @@ import {BottomSheetSectionList} from '@gorhom/bottom-sheet';
 import {chunk} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, SectionList, type SectionListData, StyleSheet, View} from 'react-native';
+import FastImage from 'react-native-fast-image';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
+import FileIcon from '@components/files/file_icon';
 import TouchableEmoji from '@components/touchable_emoji';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {EMOJIS_PER_PAGE} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
@@ -70,6 +73,8 @@ const styles = StyleSheet.create(({
 type Props = {
     customEmojis: CustomEmojiModel[];
     customEmojisEnabled: boolean;
+    imageUrl?: string;
+    file?: ExtractedFileInfo;
     onEmojiPress: (emoji: string) => void;
     recentEmojis: string[];
 }
@@ -90,7 +95,7 @@ const emptyEmoji: EmojiAlias = {
     aliases: [],
 };
 
-const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis}: Props) => {
+const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress, recentEmojis}: Props) => {
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const {currentIndex, selectedIndex} = useEmojiCategoryBar();
@@ -105,7 +110,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
     const sections: EmojiSection[] = useMemo(() => {
         const emojisPerRow = isTablet ? EMOJIS_PER_ROW_TABLET : EMOJIS_PER_ROW;
 
-        return CategoryNames.map((category) => {
+        const sectionsArray = CategoryNames.map<EmojiSection>((category) => {
             const emojiIndices = EmojiIndicesByCategory.get('default')?.get(category);
 
             let data: EmojiAlias[][];
@@ -150,7 +155,48 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                 key: category,
             };
         }).filter((s: EmojiSection) => s.data.length);
-    }, [customEmojis, customEmojisEnabled, isTablet]);
+
+        if (imageUrl || file) {
+            sectionsArray.unshift({
+                data: [[{
+                    aliases: [],
+                    name: imageUrl || file?.name || 'file',
+                    short_name: imageUrl || file?.name || 'file',
+                    category: 'image',
+                }]],
+                defaultMessage: 'Default',
+                icon: 'file-image-outline',
+                id: 'emoji_picker.default',
+                key: 'default',
+                renderItem: ({item}: ListRenderItemInfo<EmojiAlias[]>) => {
+                    return (
+                        <View style={styles.row}>
+                            <View style={styles.emoji}>
+                                <TouchableWithFeedback onPress={() => onEmojiPress('')}>
+                                    <>
+                                        {Boolean(file) &&
+                                        <FileIcon
+                                            file={file as FileInfo}
+                                            iconSize={30}
+                                        />
+                                        }
+                                        {Boolean(imageUrl) &&
+                                        <FastImage
+                                            source={{uri: item[0].name}}
+                                            style={{width: 28, height: 28}}
+                                        />
+                                        }
+                                    </>
+                                </TouchableWithFeedback>
+                            </View>
+                        </View>
+                    );
+                },
+            });
+        }
+
+        return sectionsArray;
+    }, [customEmojis, customEmojisEnabled, isTablet, imageUrl, file]);
 
     useEffect(() => {
         setEmojiCategoryBarIcons(sections.map((s) => ({

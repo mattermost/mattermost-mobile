@@ -7,6 +7,7 @@ import RNButton from 'react-native-button';
 
 import CompassIcon from '@components/compass_icon';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {changeOpacity} from '@utils/theme';
 
 type ConditionalProps = | {iconName: string; iconSize: number} | {iconName?: never; iconSize?: never}
 
@@ -22,6 +23,7 @@ type Props = ConditionalProps & {
     onPress: () => void;
     text: string;
     iconComponent?: ReactNode;
+    disabled?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -43,6 +45,7 @@ const Button = ({
     iconName,
     iconSize,
     iconComponent,
+    disabled,
 }: Props) => {
     const bgStyle = useMemo(() => [
         buttonBackgroundStyle(theme, size, emphasis, buttonType, buttonState),
@@ -63,6 +66,14 @@ const Button = ({
         [iconSize],
     );
 
+    let buttonContainerStyle = StyleSheet.flatten(bgStyle);
+    if (disabled) {
+        buttonContainerStyle = {
+            ...buttonContainerStyle,
+            backgroundColor: changeOpacity(buttonContainerStyle.backgroundColor! as string, 0.4),
+        };
+    }
+
     let icon: ReactNode;
 
     if (iconComponent) {
@@ -80,9 +91,10 @@ const Button = ({
 
     return (
         <RNButton
-            containerStyle={bgStyle}
+            containerStyle={buttonContainerStyle}
             onPress={onPress}
             testID={testID}
+            disabled={disabled}
         >
             <View style={containerStyle}>
                 {icon}

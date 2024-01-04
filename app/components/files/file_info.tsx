@@ -61,6 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const FileInfo = ({file, channelName, showDate, onPress}: FileInfoProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
+
     return (
         <View style={style.attachmentContainer}>
             <TouchableOpacity onPress={onPress}>
@@ -69,7 +70,7 @@ const FileInfo = ({file, channelName, showDate, onPress}: FileInfoProps) => {
                     ellipsizeMode='tail'
                     style={style.fileName}
                 >
-                    {file.name.trim()}
+                    {decodeURIComponent(file.name.trim())}
                 </Text>
                 <View style={style.fileDownloadContainer}>
                     {channelName &&
