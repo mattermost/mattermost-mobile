@@ -153,4 +153,6 @@ export default {
     },
     MANAGE_BOTS: 'manage_bots',
     MANAGE_OTHERS_BOTS: 'manage_others_bots',
+    ADD_BOOKMARK_PUBLIC_CHANNEL: 'add_bookmark_public_channel',
+    ADD_BOOKMARK_PRIVATE_CHANNEL: 'add_bookmark_private_channel',
 };

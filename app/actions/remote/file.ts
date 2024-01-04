@@ -32,7 +32,7 @@ export const uploadFile = (
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return {cancel: client.uploadPostAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
+        return {cancel: client.uploadAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
     } catch (error) {
         logDebug('error on uploadFile', getFullErrorMessage(error));
         return {error};

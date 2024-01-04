@@ -70,10 +70,19 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
     const downloadAndPreviewFile = async () => {
         setDidCancel(false);
         let path;
+        let exists = false;
 
         try {
-            path = getLocalFilePathFromFile(serverUrl, file);
-            const exists = await fileExists(path);
+            path = decodeURIComponent(file.localPath || '');
+            if (path) {
+                exists = await fileExists(path);
+            }
+
+            if (!exists) {
+                path = getLocalFilePathFromFile(serverUrl, file);
+                exists = await fileExists(path);
+            }
+
             if (exists) {
                 openDocument();
             } else {
@@ -123,13 +132,22 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
         setStatusBarColor();
     };
 
-    const openDocument = () => {
+    const openDocument = async () => {
         if (!didCancel && !preview) {
-            const path = getLocalFilePathFromFile(serverUrl, file);
+            let path = decodeURIComponent(file.localPath || '');
+            let exists = false;
+            if (path) {
+                exists = await fileExists(path);
+            }
+
+            if (!exists) {
+                path = getLocalFilePathFromFile(serverUrl, file);
+            }
+
             setPreview(true);
             setStatusBarColor('dark-content');
-            FileViewer.open(path!, {
-                displayName: file.name,
+            FileViewer.open(path!.replace('file://', ''), {
+                displayName: decodeURIComponent(file.name),
                 onDismiss: onDonePreviewingFile,
                 showOpenWithDialog: true,
                 showAppsSuggestions: true,
