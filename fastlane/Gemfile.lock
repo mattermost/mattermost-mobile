@@ -1,3 +1,9 @@
+GIT
+  remote: https://github.com/jonathanneilritchie/fastlane-plugin-find_replace_string
+  revision: 1b71026318ad40abc710d601be48d67bcb353ddf
+  specs:
+    fastlane-plugin-find_replace_string (0.1.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -108,7 +114,6 @@ GEM
     fastlane-plugin-android_change_package_identifier (0.1.0)
     fastlane-plugin-android_change_string_app_name (0.1.1)
       nokogiri
-    fastlane-plugin-find_replace_string (0.1.0)
     fastlane-plugin-versioning_android (0.1.1)
     gh_inspector (1.1.3)
     google-apis-androidpublisher_v3 (0.53.0)
@@ -224,7 +229,7 @@ DEPENDENCIES
   fastlane
   fastlane-plugin-android_change_package_identifier
   fastlane-plugin-android_change_string_app_name
-  fastlane-plugin-find_replace_string
+  fastlane-plugin-find_replace_string!
   fastlane-plugin-versioning_android
   nokogiri
 
