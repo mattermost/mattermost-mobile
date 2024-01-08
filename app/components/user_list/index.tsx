@@ -4,14 +4,14 @@
 import {BottomSheetFlatList, BottomSheetSectionList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo, type ComponentProps} from 'react';
 import {defineMessages, type IntlShape, useIntl} from 'react-intl';
-import {Keyboard, type ListRenderItemInfo, Platform, FlatList, SectionList, type SectionListData, Text, View} from 'react-native';
+import {Keyboard, type ListRenderItemInfo, Platform, FlatList, SectionList, type SectionListData, Text, View, type SectionListRenderItemInfo} from 'react-native';
 
 import {storeProfile} from '@actions/local/user';
 import {fetchUsersByIds} from '@actions/remote/user';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import UserListRow from '@components/user_list_row';
-import {General, Screens} from '@constants';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
@@ -22,10 +22,14 @@ import {
 } from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {GroupModel} from '@app/database/models/server';
 import type UserModel from '@typings/database/models/servers/user';
 
-type UserProfileWithChannelAdmin = UserProfile & {scheme_admin?: boolean}
-type RenderItemType = ListRenderItemInfo<UserProfileWithChannelAdmin> & {section?: SectionListData<UserProfileWithChannelAdmin>}
+type TUser = UserProfile;
+type TUserChannelAdmin = TUser & {scheme_admin?: boolean | undefined}
+type TGroup = Group | GroupModel;
+type TDisplayItem = TUserChannelAdmin | TGroup;
+type RenderItemType = ListRenderItemInfo<TDisplayItem> & Partial<SectionListRenderItemInfo<TDisplayItem>>;
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
@@ -50,39 +54,41 @@ const keyboardDismissProp = Platform.select({
     },
 });
 
-const keyExtractor = (item: UserProfile) => {
+const keyExtractor = (item: {id: string}) => {
     return item.id;
 };
 
-const sectionKeyExtractor = (profile: UserProfile) => {
-    // Group items alphabetically by first letter of username
-    return profile.username[0].toUpperCase();
-};
-
-const sectionRoleKeyExtractor = (cAdmin: boolean) => {
+const sectionRoleKeyExtractor = (cAdmin: boolean | undefined) => {
     // Group items by channel admin or channel member
     return cAdmin ? messages.admins : messages.members;
 };
 
-export function createProfilesSections(intl: IntlShape, profiles: UserProfile[], members?: ChannelMembership[]) {
-    if (!profiles.length) {
+const getName = (x: TUser | TGroup) => {
+    if ('username' in x) {
+        return x.username;
+    }
+    return x.name;
+};
+
+export function createSectionedList(intl: IntlShape, profiles: TUser[], groups: TGroup[] | undefined, members: ChannelMembership[] | undefined) {
+    if (!profiles.length && !groups?.length) {
         return [];
     }
 
-    const sections = new Map<string, UserProfileWithChannelAdmin[]>();
+    const sections = new Map<string, TDisplayItem[]>();
 
-    if (members?.length) {
+    if (members?.length && !groups?.length) {
         // when channel members are provided, build the sections by admins and members
         const membersDictionary = new Map<string, ChannelMembership>();
-        const membersSections = new Map<string, UserProfileWithChannelAdmin[]>();
+        const membersSections = new Map<string, TUserChannelAdmin[]>();
         const {formatMessage} = intl;
         members.forEach((m) => membersDictionary.set(m.user_id, m));
         profiles.forEach((p) => {
             const member = membersDictionary.get(p.id);
             if (member) {
-                const sectionKey = sectionRoleKeyExtractor(member.scheme_admin!).id;
+                const sectionKey = sectionRoleKeyExtractor(member.scheme_admin).id;
                 const section = membersSections.get(sectionKey) || [];
-                section.push({...p, scheme_admin: member.scheme_admin});
+                section.push({...p, scheme_admin: member.scheme_admin ?? false});
                 membersSections.set(sectionKey, section);
             }
         });
@@ -90,22 +96,21 @@ export function createProfilesSections(intl: IntlShape, profiles: UserProfile[],
         sections.set(formatMessage(messages.members), membersSections.get(messages.members.id) || []);
     } else {
         // when channel members are not provided, build the sections alphabetically
-        profiles.forEach((p) => {
-            const sectionKey = sectionKeyExtractor(p);
-            const sectionValue = sections.get(sectionKey) || [];
-            const section = [...sectionValue, p];
-            sections.set(sectionKey, section);
+
+        makeSortedItems(profiles, groups).forEach((item) => {
+            const key = getName(item)[0].toUpperCase();
+            sections.set(key, [...sections.get(key) || [], item]);
         });
     }
 
     const results = [];
     let index = 0;
-    for (const [k, v] of sections) {
-        if (v.length) {
+    for (const [k, items] of sections) {
+        if (items.length) {
             results.push({
                 first: index === 0,
                 id: k,
-                data: v,
+                data: items,
             });
             index++;
         }
@@ -113,26 +118,35 @@ export function createProfilesSections(intl: IntlShape, profiles: UserProfile[],
     return results;
 }
 
-function createProfiles(profiles: UserProfile[], members?: ChannelMembership[]): UserProfileWithChannelAdmin[] {
-    if (!profiles.length) {
+const makeSortedItems = (profiles: TUser[], groups: TGroup[] | undefined) => {
+    if (!groups?.length) {
+        return profiles;
+    }
+
+    return [...profiles, ...groups].sort((a, b) => getName(a).localeCompare(getName(b)));
+};
+
+function createFlatList(profiles: TUser[], groups: TGroup[] | undefined, members?: ChannelMembership[]) {
+    if (!profiles.length && !groups?.length) {
         return [];
     }
 
-    const profileMap = new Map<string, UserProfileWithChannelAdmin>();
-    profiles.forEach((profile) => {
-        profileMap.set(profile.id, profile);
-    });
+    if (members?.length && !groups?.length) {
+        const profileMap = new Map<string, TUserChannelAdmin>();
+        profiles.forEach((profile) => {
+            profileMap.set(profile.id, profile);
+        });
 
-    if (members?.length) {
-        members.forEach((m) => {
-            const profileFound = profileMap.get(m.user_id);
-            if (profileFound) {
-                profileFound.scheme_admin = m.scheme_admin;
+        return members.forEach((m) => {
+            const p = profileMap.get(m.user_id);
+
+            if (p) {
+                profileMap.set(p.id, {...p, scheme_admin: m.scheme_admin ?? false});
             }
         });
     }
 
-    return Array.from(profileMap.values());
+    return makeSortedItems(profiles, groups);
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -180,10 +194,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 });
 
 type Props = {
-    profiles: UserProfile[];
+    profiles: TUser[];
+    groups?: TGroup[];
     channelMembers?: ChannelMembership[];
     currentUserId: string;
-    handleSelectProfile?: (user: UserProfile | UserModel) => void;
+    handleSelectProfile?: (user: TUser) => void;
+    handleSelectGroup?: (group: TGroup) => void;
     forceFetchProfile?: boolean;
     fetchMore?: () => void;
     loading: boolean;
@@ -191,20 +207,24 @@ type Props = {
     manageMode?: boolean;
     showManageMode?: boolean;
     showNoResults: boolean;
-    selectedIds?: {[id: string]: UserProfile};
+    selectedIds?: {[id: string]: UserProfile | Group | GroupModel | false};
+    selectionLimit?: number;
     testID?: string;
     term?: string;
     tutorialWatched: boolean;
     spacing?: ComponentProps<typeof UserListRow>['spacing'];
     inBottomSheet?: boolean;
-}
+};
 
 export default function UserList({
     profiles,
+    groups,
     channelMembers,
     selectedIds,
+    selectionLimit,
     currentUserId,
     handleSelectProfile,
+    handleSelectGroup,
     forceFetchProfile,
     fetchMore,
     loading,
@@ -224,24 +244,27 @@ export default function UserList({
     const style = getStyleFromTheme(theme);
     const keyboardHeight = useKeyboardHeight();
 
+    const Flat = inBottomSheet ? BottomSheetFlatList : FlatList;
+    const Sectioned = inBottomSheet ? BottomSheetSectionList : SectionList;
+
     const noResutsStyle = useMemo(() => [
         style.noResultContainer,
         {paddingBottom: keyboardHeight},
     ], [style, keyboardHeight]);
 
-    const data = useMemo(() => {
-        if (profiles.length === 0 && !loading) {
-            return [];
+    const {flatData, sectionedData} = useMemo(() => {
+        if (profiles.length === 0 && !groups?.length && !loading) {
+            return {sectionedData: []};
         }
 
         if (flatten) {
-            return createProfiles(profiles, channelMembers);
+            return {flatData: createFlatList(profiles, groups, channelMembers)};
         }
 
-        return createProfilesSections(intl, profiles, channelMembers);
-    }, [channelMembers, loading, profiles, term, flatten]);
+        return {sectionedData: createSectionedList(intl, profiles, groups, channelMembers)};
+    }, [channelMembers, loading, profiles, groups, term, flatten]);
 
-    const openUserProfile = useCallback(async (profile: UserProfile | UserModel) => {
+    const openUserProfile = useCallback(async (profile: TUser) => {
         if (profile.id !== currentUserId && forceFetchProfile) {
             await fetchUsersByIds(serverUrl, [profile.id]);
         }
@@ -270,34 +293,19 @@ export default function UserList({
         openAsBottomSheet({screen, title, theme, closeButtonId, props});
     }, []);
 
-    const renderItem = useCallback(({item, index, section}: RenderItemType) => {
-        // The list will re-render when the selection changes because it's passed into the list as extraData
-        const selected = Boolean(selectedIds?.[item.id]);
-        const canAdd = Boolean(selectedIds && (Object.keys(selectedIds).length < General.MAX_USERS_IN_GM));
+    const openGroupInfo = useCallback(async (group: TGroup) => {
+        if (!group?.name) {
+            return;
+        }
 
-        const isChAdmin = item.scheme_admin || false;
+        const screen = Screens.GROUP_INFO;
+        const title = intl.formatMessage({id: 'mobile.routes.group_info', defaultMessage: 'Profile'});
+        const closeButtonId = 'close-group-info';
+        const props = {closeButtonId, groupName: group.name};
 
-        return (
-            <UserListRow
-                key={item.id}
-                highlight={section?.first && index === 0}
-                id={item.id}
-                isChannelAdmin={isChAdmin}
-                isMyUser={currentUserId === item.id}
-                manageMode={manageMode}
-                onPress={handleSelectProfile ?? openUserProfile}
-                onLongPress={openUserProfile}
-                selectable={manageMode || canAdd}
-                disabled={selectedIds && !canAdd}
-                selected={selected}
-                showManageMode={showManageMode}
-                testID='create_direct_message.user_list.user_item'
-                tutorialWatched={tutorialWatched}
-                user={item}
-                spacing={spacing}
-            />
-        );
-    }, [selectedIds, handleSelectProfile, openUserProfile, showManageMode, manageMode, tutorialWatched]);
+        Keyboard.dismiss();
+        openAsBottomSheet({screen, title, theme, closeButtonId, props});
+    }, []);
 
     const renderLoading = useCallback(() => {
         if (!loading) {
@@ -325,7 +333,7 @@ export default function UserList({
         );
     }, [showNoResults && style, term, noResutsStyle]);
 
-    const renderSectionHeader = useCallback(({section}: {section: SectionListData<UserProfile>}) => {
+    const renderSectionHeader = useCallback(({section}: {section: SectionListData<{id: string}>}) => {
         return (
             <View style={style.sectionWrapper}>
                 <View style={style.sectionContainer}>
@@ -335,15 +343,44 @@ export default function UserList({
         );
     }, [style]);
 
-    const Flat = inBottomSheet ? BottomSheetFlatList : FlatList;
-    const Sectioned = inBottomSheet ? BottomSheetSectionList : SectionList;
+    const renderItem: ComponentProps<typeof Flat | typeof Sectioned>['renderItem'] = useCallback(({item, index, section}: RenderItemType) => {
+        const isUser = 'username' in item;
 
-    const renderFlatList = (items: UserProfile[]) => {
+        // The list will re-render when the selection changes because it's passed into the list as extraData
+        const selected = Boolean(selectedIds?.[item.id]);
+        const canAdd = Boolean(selectedIds && Boolean(!selectionLimit || Object.keys(selectedIds).length < selectionLimit));
+
+        const openItem = isUser ? openUserProfile : openGroupInfo;
+        const selectItem = isUser ? handleSelectProfile : handleSelectGroup;
+
+        return (
+            <UserListRow
+                key={item.id}
+                highlight={section?.first && index === 0}
+                id={item.id}
+                isChannelAdmin={(isUser && item.scheme_admin) ?? false}
+                isMyUser={currentUserId === item.id}
+                manageMode={manageMode}
+                onPress={selectItem ? ((canAdd || selected) && selectItem) || undefined : openItem}
+                onLongPress={openItem}
+                selectable={manageMode || canAdd}
+                disabled={selectedIds && !canAdd}
+                selected={selected}
+                showManageMode={showManageMode}
+                testID='create_direct_message.user_list.user_item'
+                tutorialWatched={tutorialWatched}
+                item={item}
+                spacing={spacing}
+            />
+        );
+    }, [selectedIds, handleSelectProfile, handleSelectGroup, openUserProfile, openGroupInfo, showManageMode, manageMode, tutorialWatched]);
+
+    if (flatData) {
         return (
             <Flat
                 contentContainerStyle={style.flatContainer}
                 keyboardShouldPersistTaps='always'
-                data={items}
+                data={flatData}
                 {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
@@ -355,36 +392,30 @@ export default function UserList({
                 scrollEventThrottle={SCROLL_EVENT_THROTTLE}
                 style={style.flatList}
                 testID={`${testID}.flat_list`}
-            />
-        );
-    };
-
-    const renderSectionList = (sections: Array<SectionListData<UserProfile>>) => {
-        return (
-            <Sectioned
-                contentContainerStyle={style.container}
-                keyboardShouldPersistTaps='always'
-                {...keyboardDismissProp}
-                keyExtractor={keyExtractor}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER}
-                ListEmptyComponent={renderNoResults}
-                ListFooterComponent={renderLoading}
-                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
-                removeClippedSubviews={true}
-                renderItem={renderItem}
-                renderSectionHeader={renderSectionHeader}
-                scrollEventThrottle={SCROLL_EVENT_THROTTLE}
-                sections={sections}
-                style={style.list}
-                stickySectionHeadersEnabled={false}
-                testID={`${testID}.section_list`}
                 onEndReached={fetchMore}
             />
         );
-    };
-
-    if (flatten) {
-        return renderFlatList(data as UserProfileWithChannelAdmin[]);
     }
-    return renderSectionList(data as Array<SectionListData<UserProfileWithChannelAdmin>>);
+
+    return sectionedData && (
+        <Sectioned
+            contentContainerStyle={style.container}
+            keyboardShouldPersistTaps='always'
+            {...keyboardDismissProp}
+            keyExtractor={keyExtractor}
+            initialNumToRender={INITIAL_BATCH_TO_RENDER}
+            ListEmptyComponent={renderNoResults}
+            ListFooterComponent={renderLoading}
+            maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
+            removeClippedSubviews={true}
+            renderItem={renderItem}
+            renderSectionHeader={renderSectionHeader}
+            scrollEventThrottle={SCROLL_EVENT_THROTTLE}
+            sections={sectionedData}
+            style={style.list}
+            stickySectionHeadersEnabled={false}
+            testID={`${testID}.section_list`}
+            onEndReached={fetchMore}
+        />
+    );
 }

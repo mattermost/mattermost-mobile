@@ -8,7 +8,6 @@ import {PER_PAGE_DEFAULT} from './constants';
 import type ClientBase from './base';
 
 export interface ClientGroupsMix {
-    getGroup: (id: string, includeMemberCount?: boolean, includeMemberIDs?: boolean) => Promise<Group>;
     getGroups: (params: {query?: string; filterAllowReference?: boolean; page?: number; perPage?: number; since?: number; includeMemberCount?: boolean}) => Promise<Group[]>;
     getAllGroupsAssociatedToChannel: (channelId: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
     getAllGroupsAssociatedToMembership: (userId: string, filterAllowReference?: boolean) => Promise<Group[]>;

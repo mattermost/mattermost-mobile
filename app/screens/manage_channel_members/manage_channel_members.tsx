@@ -346,7 +346,7 @@ export default function ManageChannelMembers({
                 term={searchedTerm}
                 testID='manage_members.user_list'
                 tutorialWatched={tutorialWatched}
-                spacing={'spacious'}
+                spacing={'compact'}
             />
         </SafeAreaView>
     );

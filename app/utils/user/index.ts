@@ -165,6 +165,10 @@ export const getUserCustomStatus = (user?: UserModel | UserProfile): UserCustomS
     }
 };
 
+export function isUserProfile(x: Record<string, unknown>): x is UserProfile {
+    return Boolean(x.username);
+}
+
 export function isCustomStatusExpired(user?: UserModel | UserProfile) {
     if (!user) {
         return true;

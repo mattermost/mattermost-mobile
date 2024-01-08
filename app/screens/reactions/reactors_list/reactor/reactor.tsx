@@ -45,6 +45,10 @@ const Reactor = ({channelId, location, reaction, user}: Props) => {
         }
     }, []);
 
+    if (!user) {
+        return null;
+    }
+
     return (
         <UserItem
             user={user}

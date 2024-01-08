@@ -7,7 +7,6 @@ import {
     InteractionManager,
     Platform,
     View,
-
 } from 'react-native';
 
 import {storeProfileLongPressTutorial} from '@actions/app/global';
@@ -15,6 +14,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TutorialHighlight from '@components/tutorial_highlight';
 import TutorialLongPress from '@components/tutorial_highlight/long_press';
+import UserGroupItem from '@components/user_group_item';
 import UserItem from '@components/user_item';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -22,25 +22,27 @@ import {t} from '@i18n';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type UserModel from '@typings/database/models/servers/user';
+import type {GroupModel, UserModel} from '@app/database/models/server';
 
-type Props = {
+type TUser = UserProfile | UserModel;
+type TGroup = Group | GroupModel;
+
+type Props<T extends TUser | TGroup> = {
     highlight?: boolean;
     id: string;
-    includeMargin?: boolean;
-    isMyUser: boolean;
-    isChannelAdmin: boolean;
     manageMode: boolean;
-    onLongPress: (user: UserProfile | UserModel) => void;
-    onPress?: (user: UserProfile | UserModel) => void;
     selectable: boolean;
     disabled?: boolean;
     selected: boolean;
     showManageMode: boolean;
     testID: string;
     tutorialWatched?: boolean;
-    user: UserProfile;
     spacing: ComponentProps<typeof UserItem>['spacing'];
+    item: T;
+    onLongPress: (item: T) => void;
+    onPress?: (item: T) => void;
+    isChannelAdmin?: boolean;
+    isMyUser?: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -86,8 +88,8 @@ function UserListRow({
     showManageMode = false,
     testID,
     tutorialWatched = false,
-    user,
-}: Props) {
+    item,
+}: Props<TUser | TGroup>) {
     const theme = useTheme();
     const isTablet = useIsTablet();
     const [showTutorial, setShowTutorial] = useState(false);
@@ -126,10 +128,6 @@ function UserListRow({
             });
         }
     }, [highlight, tutorialWatched, isTablet]);
-
-    const handlePress = useCallback((u: UserModel | UserProfile) => {
-        onPress?.(u);
-    }, [onPress]);
 
     const manageModeIcon = useMemo(() => {
         if (!showManageMode || isMyUser) {
@@ -183,18 +181,32 @@ function UserListRow({
 
     return (
         <>
-            <UserItem
-                user={user}
-                onUserLongPress={onLongPress}
-                onUserPress={handlePress}
-                showBadges={true}
-                testID={userItemTestID}
-                rightDecorator={manageMode ? manageModeIcon : selectIcon}
-                disabled={!(selectable || selected || !disabled)}
-                viewRef={viewRef}
-                spacing={spacing}
-                onLayout={onLayout}
-            />
+            {'username' in item ? (
+                <UserItem
+                    user={item}
+                    onUserPress={onPress}
+                    onUserLongPress={onLongPress}
+                    showBadges={true}
+                    testID={userItemTestID}
+                    rightDecorator={manageMode ? manageModeIcon : selectIcon}
+                    disabled={!(selectable || selected || !disabled)}
+                    viewRef={viewRef}
+                    spacing={spacing}
+                    onLayout={onLayout}
+                />
+            ) : (
+                <UserGroupItem
+                    group={item}
+                    onGroupPress={onPress}
+                    onGroupLongPress={onLongPress}
+                    testID={userItemTestID}
+                    rightDecorator={manageMode ? manageModeIcon : selectIcon}
+                    disabled={!(selectable || selected || !disabled)}
+                    viewRef={viewRef}
+                    spacing={spacing}
+                    onLayout={onLayout}
+                />
+            )}
             {showTutorial &&
             <TutorialHighlight
                 itemBounds={itemBounds}
@@ -202,7 +214,7 @@ function UserListRow({
             >
                 {Boolean(itemBounds.endX) &&
                 <TutorialLongPress
-                    message={formatMessage({id: 'user.tutorial.long_press', defaultMessage: "Long-press on an item to view a user's profile"})}
+                    message={formatMessage({id: 'user.tutorial.long_press', defaultMessage: "Long-press on an item to view a user's profile or a group's members"})}
                     style={isTablet ? style.tutorialTablet : style.tutorial}
                 />
                 }

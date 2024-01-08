@@ -18,14 +18,13 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     footer?: ReactNode;
-    user?: UserProfile | UserModel;
+    user: UserProfile | UserModel;
     containerStyle?: StyleProp<ViewStyle>;
     currentUserId: string;
     size?: number;
     testID?: string;
     isCustomStatusEnabled: boolean;
     showBadges?: boolean;
-    locale?: string;
     teammateNameDisplay: string;
     rightDecorator?: React.ReactNode;
     onUserPress?: (user: UserProfile | UserModel) => void;
@@ -103,7 +102,6 @@ const UserItem = ({
     testID,
     isCustomStatusEnabled,
     showBadges = false,
-    locale,
     teammateNameDisplay,
     rightDecorator,
     onLayout,
@@ -147,7 +145,7 @@ const UserItem = ({
     const customStatus = getUserCustomStatus(user);
     const customStatusExpired = isCustomStatusExpired(user);
 
-    let displayName = displayUsername(user, locale, teammateNameDisplay);
+    let displayName = displayUsername(user, intl.locale, teammateNameDisplay);
     const showTeammateDisplay = displayName !== user?.username;
     if (isCurrentUser) {
         displayName = intl.formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});

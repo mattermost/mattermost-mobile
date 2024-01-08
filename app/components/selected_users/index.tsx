@@ -15,6 +15,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SelectedUser from './selected_user';
 
+import type {GroupModel} from '@app/database/models/server';
+
 type Props = {
 
     /**
@@ -45,7 +47,7 @@ type Props = {
     /**
      * An object mapping user ids to a falsey value indicating whether or not they have been selected.
      */
-    selectedIds: {[id: string]: UserProfile};
+    selectedIds: {[id: string]: UserProfile | Group | GroupModel | false};
 
     /**
      * callback to set the value of showToast
@@ -163,28 +165,28 @@ export default function SelectedUsers({
 
     const users = useMemo(() => {
         const u = [];
-        for (const id of Object.keys(selectedIds)) {
-            if (!selectedIds[id]) {
+        for (const [id, item] of Object.entries(selectedIds)) {
+            if (!item) {
                 continue;
             }
 
-            u.push(
-                <SelectedUser
-                    key={id}
-                    user={selectedIds[id]}
-                    teammateNameDisplay={teammateNameDisplay}
-                    onRemove={onRemove}
-                    testID={`${testID}.selected_user`}
-                />,
-            );
+            if ('username' in item) {
+                u.push(
+                    <SelectedUser
+                        key={id}
+                        user={item}
+                        teammateNameDisplay={teammateNameDisplay}
+                        onRemove={onRemove}
+                        testID={`${testID}.selected_user`}
+                    />,
+                );
+            }
         }
         return u;
     }, [selectedIds, teammateNameDisplay, onRemove]);
 
     const totalPanelHeight = useDerivedValue(() => (
-        isVisible ?
-            usersChipsHeight.value + SCROLL_MARGIN_BOTTOM + SCROLL_MARGIN_TOP + BUTTON_HEIGHT :
-            0
+        isVisible ? usersChipsHeight.value + SCROLL_MARGIN_BOTTOM + SCROLL_MARGIN_TOP + BUTTON_HEIGHT : 0
     ), [isVisible]);
 
     const handlePress = useCallback(() => {

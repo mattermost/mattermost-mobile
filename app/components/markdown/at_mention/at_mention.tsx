@@ -113,8 +113,8 @@ const AtMention = ({
 
         const screen = Screens.GROUP_INFO;
         const title = intl.formatMessage({id: 'mobile.routes.group_info', defaultMessage: 'Profile'});
-        const closeButtonId = 'close-user-profile';
-        const props = {closeButtonId, location, groupName: group.name, channelId};
+        const closeButtonId = 'close-group-info';
+        const props = {closeButtonId, location, groupName: group.name};
 
         Keyboard.dismiss();
         openAsBottomSheet({screen, title, theme, closeButtonId, props});

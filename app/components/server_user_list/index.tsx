@@ -9,17 +9,23 @@ import {useServerUrl} from '@context/server';
 import {debounce} from '@helpers/api/general';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
+import type {GroupModel} from '@app/database/models/server';
+
+type TGroup = Group | GroupModel;
+
 type Props = {
     currentUserId: string;
     tutorialWatched: boolean;
     handleSelectProfile?: (user: UserProfile) => void;
+    handleSelectGroup?: (group: TGroup) => void;
     forceFetchProfile?: boolean;
     term: string;
     flatten?: boolean;
     includeUserMargin?: boolean;
-    selectedIds?: {[id: string]: UserProfile};
-    fetchFunction: (page: number) => Promise<UserProfile[]>;
-    searchFunction: (term: string) => Promise<UserProfile[]>;
+    selectedIds?: {[id: string]: UserProfile | TGroup | false};
+    selectionLimit?: number;
+    fetchFunction: (page: number) => Promise<UserProfile[] | {profiles?: UserProfile[]; groups?: TGroup[]}>;
+    searchFunction: (term: string) => Promise<UserProfile[] | {profiles?: UserProfile[]; groups?: TGroup[]}>;
     createFilter?: (exactMatches: UserProfile[], term: string) => ((p: UserProfile) => boolean);
     testID: string;
     spacing?: ComponentProps<typeof UserList>['spacing'];
@@ -30,11 +36,12 @@ export default function ServerUserList({
     currentUserId,
     tutorialWatched,
     handleSelectProfile,
+    handleSelectGroup,
     forceFetchProfile,
     flatten,
-    includeUserMargin = true,
     term,
     selectedIds,
+    selectionLimit,
     fetchFunction,
     searchFunction,
     createFilter,
@@ -50,12 +57,15 @@ export default function ServerUserList({
     const mounted = useRef(false);
 
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
-    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+    const [groups] = useState<TGroup[]>([]);
+    const [profileResults, setProfileResults] = useState<UserProfile[]>([]);
+    const [groupResults, setGroupResults] = useState<TGroup[]>([]);
     const [loading, setLoading] = useState(false);
 
     const isSearch = Boolean(term);
 
-    const loadedProfiles = (users: UserProfile[]) => {
+    const loadedProfiles = (data: UserProfile[]) => {
+        const users = data;
         if (mounted.current) {
             if (!users.length) {
                 next.current = false;
@@ -80,10 +90,19 @@ export default function ServerUserList({
         }
     }, 100), [loading, isSearch, serverUrl]);
 
-    const searchUsers = useCallback(async (searchTerm: string) => {
+    const search = useCallback(async (searchTerm: string) => {
         setLoading(true);
         const data = await searchFunction(searchTerm);
-        setSearchResults(data);
+        if (Array.isArray(data)) {
+            setProfileResults(data);
+        } else {
+            if (data.profiles) {
+                setProfileResults(data.profiles);
+            }
+            if (data.groups) {
+                setGroupResults(data.groups);
+            }
+        }
         setLoading(false);
     }, [serverUrl, searchFunction]);
 
@@ -94,10 +113,11 @@ export default function ServerUserList({
             }
 
             searchTimeoutId.current = setTimeout(() => {
-                searchUsers(term);
+                search(term);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
-            setSearchResults([]);
+            setProfileResults([]);
+            setGroupResults([]);
         }
     }, [term]);
 
@@ -109,10 +129,13 @@ export default function ServerUserList({
         };
     }, []);
 
-    const data = useMemo(() => {
+    const {profileData, groupData} = useMemo(() => {
+        let p = profiles;
+        let g = groups;
+
         if (isSearch) {
             const exactMatches: UserProfile[] = [];
-            const profilesToFilter = searchResults.length ? searchResults : profiles;
+            const profilesToFilter = profileResults.length ? profileResults : profiles;
             let results = filterProfilesMatchingTerm(profilesToFilter, term);
 
             const filterByTerm = createFilter?.(exactMatches, term);
@@ -120,28 +143,31 @@ export default function ServerUserList({
                 results = results.filter(filterByTerm);
             }
 
-            return [...exactMatches, ...results];
+            p = [...exactMatches, ...results];
+            g = groupResults;
         }
-        return profiles;
-    }, [term, isSearch, isSearch && searchResults, profiles]);
+        return {profileData: p, groupData: g};
+    }, [term, isSearch, isSearch && profileResults, isSearch && groupResults, profiles, groups]);
 
     return (
         <UserList
             currentUserId={currentUserId}
             handleSelectProfile={handleSelectProfile}
+            handleSelectGroup={handleSelectGroup}
             loading={loading}
-            profiles={data}
+            profiles={profileData}
+            groups={groupData}
             selectedIds={selectedIds}
             showNoResults={!loading && page.current !== -1}
             fetchMore={getProfiles}
             term={term}
             testID={testID}
             tutorialWatched={tutorialWatched}
-            includeUserMargin={includeUserMargin}
             forceFetchProfile={forceFetchProfile}
             flatten={flatten}
             spacing={spacing}
             inBottomSheet={inBottomSheet}
+            selectionLimit={selectionLimit}
         />
     );
 }

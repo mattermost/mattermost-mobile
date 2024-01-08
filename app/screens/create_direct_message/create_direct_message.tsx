@@ -319,6 +319,7 @@ export default function CreateDirectMessage({
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
                 selectedIds={selectedIds}
+                selectionLimit={General.MAX_USERS_IN_GM}
                 term={term}
                 testID='create_direct_message.user_list'
                 tutorialWatched={tutorialWatched}

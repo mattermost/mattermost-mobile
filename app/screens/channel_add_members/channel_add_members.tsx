@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState, type ComponentProps, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {searchGroupsByName} from '@actions/local/group';
 import {addMembersToChannel} from '@actions/remote/channel';
-import {fetchProfilesNotInChannel, searchProfiles} from '@actions/remote/user';
+import {fetchProfilesInGroup, fetchProfilesNotInChannel, searchProfiles} from '@actions/remote/user';
+import {isUserProfile} from '@app/utils/user';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
@@ -27,12 +29,24 @@ import {showAddChannelMembersSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {GroupModel} from '@app/database/models/server';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const CLOSE_BUTTON_ID = 'close-add-member';
 const TEST_ID = 'add_members';
 const CLOSE_BUTTON_TEST_ID = 'close.button';
+
+type TGroup = Group | GroupModel;
+
+type GroupSelectionDescriptor = {
+    id: string;
+    group: TGroup;
+    profiles: {[id: string]: UserProfile};
+    teamExcluded?: {[id: string]: UserProfile}; // TODO handle members not in team
+    channelExcluded?: {[id: string]: UserProfile}; // TODO handle members already in channel
+}
+type TSelectionValue = false | UserProfile | GroupSelectionDescriptor;
 
 export const getHeaderOptions = async (theme: Theme, displayName: string, inModal = false) => {
     let leftButtons;
@@ -72,7 +86,7 @@ const close = () => {
     dismissModal();
 };
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
@@ -104,11 +118,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
-    const newSelectedIds = Object.assign({}, list);
+function toObj<T extends {id: string}>(item: T | T[], baseObj?: Record<string, T>) {
+    if (Array.isArray(item)) {
+        return item.reduce((acc, x) => {
+            acc[x.id] = x;
+            return acc;
+        }, {...baseObj});
+    }
 
-    Reflect.deleteProperty(newSelectedIds, id);
-    return newSelectedIds;
+    return {...baseObj, [item.id]: item};
 }
 
 export default function ChannelAddMembers({
@@ -131,14 +149,24 @@ export default function ChannelAddMembers({
 
     const [term, setTerm] = useState('');
     const [addingMembers, setAddingMembers] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
+    const [selected, setSelected] = useState<{[id: string]: TSelectionValue}>({});
+
+    const {ids: selectedIds} = useMemo(() => {
+        const ids = Object.entries(selected).reduce((result, [id, item]) => {
+            return !item || isUserProfile(item) ? {...result, [id]: item} : {...item.profiles, [item.group.id]: item.group, ...result};
+        }, {} as {[id: string]: UserProfile | TGroup});
+
+        return {ids};
+    }, [selected]);
 
     const clearSearch = useCallback(() => {
         setTerm('');
     }, []);
 
     const handleRemoveProfile = useCallback((id: string) => {
-        setSelectedIds((current) => removeProfileFromList(current, id));
+        setSelected((list) => {
+            return {...list, [id]: false};
+        });
     }, []);
 
     const addMembers = useCallback(async () => {
@@ -150,34 +178,81 @@ export default function ChannelAddMembers({
             return;
         }
 
-        const idsToUse = Object.keys(selectedIds);
-        if (!idsToUse.length) {
+        const idsToUse = Object.entries(selected).reduce((acc, [, item]) => {
+            if (item) {
+                if (isUserProfile(item)) {
+                    acc.add(item.id);
+                } else {
+                    Object.keys(item.profiles).forEach(acc.add);
+                }
+            }
+
+            return acc;
+        }, new Set<string>());
+
+        if (!idsToUse.size) {
             return;
         }
 
         setAddingMembers(true);
-        const result = await addMembersToChannel(serverUrl, channel.id, idsToUse);
+        const result = await addMembersToChannel(serverUrl, channel.id, Array.from(idsToUse));
 
         if (result.error) {
             alertErrorWithFallback(intl, result.error, {id: t('mobile.channel_add_members.error'), defaultMessage: 'There has been an error and we could not add those users to the channel.'});
             setAddingMembers(false);
         } else {
             close();
-            showAddChannelMembersSnackbar(idsToUse.length);
+            showAddChannelMembersSnackbar(idsToUse.size);
         }
-    }, [channel, addingMembers, selectedIds, serverUrl, intl]);
+    }, [channel, addingMembers, selected, serverUrl, intl]);
 
     const handleSelectProfile = useCallback((user: UserProfile) => {
-        clearSearch();
-        setSelectedIds((current) => {
-            if (current[user.id]) {
-                return removeProfileFromList(current, user.id);
+        // clearSearch();
+        if (user.id === currentUserId) {
+            return;
+        }
+
+        setSelected((list) => {
+            if (selectedIds[user.id]) {
+                return {...list, [user.id]: false};
             }
 
-            const newSelectedIds = Object.assign({}, current);
-            newSelectedIds[user.id] = user;
+            return {...list, [user.id]: user};
+        });
+    }, [selectedIds, currentUserId, clearSearch]);
 
-            return newSelectedIds;
+    const handleSelectGroup = useCallback(async (group: TGroup) => {
+        // clearSearch();
+
+        const users = (await fetchProfilesInGroup(serverUrl, group.id))?.users;
+
+        if (!users) {
+            return;
+        }
+
+        setSelected((current) => {
+            const next = {...current};
+
+            if (next[group.id]) {
+                // deslect group
+
+                Reflect.deleteProperty(next, group.id);
+                return next;
+            }
+
+            const profiles = toObj(users);
+
+            // remove false values to re-select profiles included in group that were individually deslected
+            const removeNegation = (id: string) => {
+                if (next[id] === false) {
+                    Reflect.deleteProperty(next, id);
+                }
+            };
+            Object.keys(profiles).forEach(removeNegation);
+
+            next[group.id] = {id: group.id, group, profiles};
+
+            return next;
         });
     }, [currentUserId, clearSearch]);
 
@@ -194,7 +269,7 @@ export default function ChannelAddMembers({
         mergeNavigationOptions(componentId, options);
     }, [theme, channel?.displayName, inModal, componentId]);
 
-    const userFetchFunction = useCallback(async (page: number) => {
+    const fetchFunc: ComponentProps<typeof ServerUserList>['fetchFunction'] = useCallback(async (page: number) => {
         if (!channel) {
             return [];
         }
@@ -204,22 +279,33 @@ export default function ChannelAddMembers({
             return result.users;
         }
 
+        // TODO listing groups when not searching
+
         return [];
     }, [serverUrl, channel]);
 
-    const userSearchFunction = useCallback(async (searchTerm: string) => {
+    const searchFunc: ComponentProps<typeof ServerUserList>['searchFunction'] = useCallback(async (searchTerm: string) => {
         if (!channel) {
             return [];
         }
 
         const lowerCasedTerm = searchTerm.toLowerCase();
-        const results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: channel.teamId, not_in_channel_id: channel.id, allow_inactive: true});
 
-        if (results.data) {
-            return results.data;
+        const [
+            profileResult,
+            groups,
+        ] = await Promise.all([
+            searchProfiles(serverUrl, lowerCasedTerm, {team_id: channel.teamId, not_in_channel_id: channel.id, allow_inactive: true}),
+            searchGroupsByName(serverUrl, lowerCasedTerm),
+        ]);
+
+        const profiles = profileResult?.data || [];
+
+        if (groups) {
+            return {profiles, groups};
         }
 
-        return [];
+        return profiles;
     }, [serverUrl, channel]);
 
     const createUserFilter = useCallback((exactMatches: UserProfile[], searchTerm: string) => {
@@ -272,12 +358,13 @@ export default function ChannelAddMembers({
             <ServerUserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
+                handleSelectGroup={handleSelectGroup}
                 selectedIds={selectedIds}
                 term={term}
                 testID={`${TEST_ID}.user_list`}
                 tutorialWatched={tutorialWatched}
-                fetchFunction={userFetchFunction}
-                searchFunction={userSearchFunction}
+                fetchFunction={fetchFunc}
+                searchFunction={searchFunc}
                 createFilter={createUserFilter}
                 spacing={'spacious'}
             />

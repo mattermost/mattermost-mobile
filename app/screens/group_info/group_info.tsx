@@ -17,13 +17,11 @@ import {useTheme} from '@context/theme';
 import BottomSheet from '@screens/bottom_sheet';
 
 import type {GroupModel} from '@database/models/server';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     currentUserId: string;
     group: GroupModel;
     closeButtonId: string;
-    location: AvailableScreens;
     tutorialWatched: boolean;
 }
 
