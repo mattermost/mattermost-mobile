@@ -5,7 +5,6 @@ import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEm
 import com.learnium.RNDeviceInfo.resolver.DeviceTypeResolver
 
 class SplitViewModule(private var reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
-    private var isDeviceFolded: Boolean = false
     private var listenerCount = 0
 
     companion object {
@@ -39,7 +38,11 @@ class SplitViewModule(private var reactContext: ReactApplicationContext) : React
         if (currentActivity != null) {
             val deviceResolver = DeviceTypeResolver(this.reactContext)
             val map = Arguments.createMap()
-            map.putBoolean("isSplitView", currentActivity!!.isInMultiWindowMode || folded)
+            var isSplitView = folded;
+            if (currentActivity?.isInMultiWindowMode == true) {
+                isSplitView = FoldableObserver.getInstance()?.isCompactView() == true
+            }
+            map.putBoolean("isSplitView", isSplitView)
             map.putBoolean("isTablet", deviceResolver.isTablet)
             return map
         }
@@ -47,17 +50,16 @@ class SplitViewModule(private var reactContext: ReactApplicationContext) : React
         return null
     }
 
-    fun setDeviceFolded(folded: Boolean) {
-        val map = getSplitViewResults(folded)
-        if (listenerCount > 0 && isDeviceFolded != folded) {
+    fun setDeviceFolded() {
+        val map = getSplitViewResults(FoldableObserver.getInstance()?.isDeviceFolded == true)
+        if (listenerCount > 0) {
             sendEvent(map)
         }
-        isDeviceFolded = folded
     }
 
-    @ReactMethod
-    fun isRunningInSplitView(promise: Promise) {
-        promise.resolve(getSplitViewResults(isDeviceFolded))
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun isRunningInSplitView(): WritableMap? {
+        return getSplitViewResults(FoldableObserver.getInstance()?.isDeviceFolded == true)
     }
 
     @ReactMethod

@@ -70,6 +70,10 @@ class WebsocketManager {
     };
 
     public createClient = (serverUrl: string, bearerToken: string, storedLastDisconnect = 0) => {
+        if (this.clients[serverUrl]) {
+            this.invalidateClient(serverUrl);
+        }
+
         const client = new WebSocketClient(serverUrl, bearerToken, storedLastDisconnect);
 
         client.setFirstConnectCallback(() => this.onFirstConnect(serverUrl));

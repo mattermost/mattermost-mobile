@@ -1,11 +1,9 @@
 ---
 name: build-pr
 on:
-  push:
-    branches:
-      - build-pr-*
-      - build-pr-android-*
-      - build-pr-ios-*
+  pull_request:
+    types:
+      - labeled
 
 env:
   NODE_VERSION: 18.7.0
@@ -14,20 +12,25 @@ env:
 jobs:
   test:
     runs-on: ubuntu-22.04
+    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' }}
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: ci/test
         uses: ./.github/actions/test
 
   build-ios-pr:
     runs-on: macos-12
-    if: ${{ !contains(github.ref_name, 'android') }}
+    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' }}
     needs:
       - test
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
@@ -43,7 +46,7 @@ jobs:
 
       - name: ci/build-ios-pr
         env:
-          BRANCH_TO_BUILD: "${{ github.ref_name }}"
+          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
           AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
           FASTLANE_TEAM_ID: "${{ secrets.MM_MOBILE_FASTLANE_TEAM_ID }}"
@@ -64,12 +67,14 @@ jobs:
 
   build-android-pr:
     runs-on: ubuntu-22.04
-    if: ${{ !contains(github.ref_name, 'ios') }}
+    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for Android' }}
     needs:
       - test
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
@@ -81,7 +86,7 @@ jobs:
 
       - name: ci/build-android-pr
         env:
-          BRANCH_TO_BUILD: "${{ github.ref_name }}"
+          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
           AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"

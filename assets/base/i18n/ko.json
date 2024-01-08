@@ -119,6 +119,8 @@
   "channel_info.close_gm": "그룹 메시지 닫기",
   "channel_info.close_gm_channel": "이 그룹 메시지를 닫으시겠어요? 홈 화면에서 채널에 제거되지만 언제든지 다시 열어볼 수 있습니다.",
   "channel_info.convert_failed": "{displayName} 채널을 비공개 채널로 변환하지 못했습니다.",
+  "channel_info.convert_gm_to_channel.team_selector_list.title": "팀 선택",
+  "channel_info.convert_gm_to_channel.warning.body.yourself": "당신",
   "channel_info.convert_private": "비공개 채널로 변환",
   "channel_info.convert_private_description": "{displayName} 채널을 비공개 채널로 변환할 때, 기록과 권한은 유지됩니다. 링크를 통해 공개적으로 공유된 파일들은 계속 접근할 수 있습니다. 비공개 채널의 접근은 초대를 통해서만 가능합니다.\n\n이 변경은 영구적이며 되돌릴 수 없습니다.\n\n{displayName} 채널을 비공개 채널로 변환하시겠어요?",
   "channel_info.convert_private_success": "{displayName} 채널은 이제 비공개 채널입니다.",

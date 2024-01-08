@@ -43,7 +43,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
     const bluetoothLabel = intl.formatMessage({id: 'mobile.calls_bluetooth', defaultMessage: 'Bluetooth'});
     const headsetLabel = intl.formatMessage({id: 'mobile.calls_headset', defaultMessage: 'Headset'});
 
-    const deviceSelector = useCallback(async () => {
+    const deviceSelector = useCallback(() => {
         const currentDevice = audioDeviceInfo.selectedAudioDevice;
         let available = audioDeviceInfo.availableAudioDeviceList;
         if (available.includes(AudioDevice.WiredHeadset)) {
@@ -106,7 +106,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
             );
         };
 
-        await bottomSheet({
+        bottomSheet({
             closeButtonId: 'close-other-actions',
             renderContent,
             snapPoints: [1, bottomSheetSnapPoint(available.length + 1, ITEM_HEIGHT, bottom)],
