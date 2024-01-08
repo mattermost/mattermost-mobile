@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {NativeModules, useWindowDimensions, Platform} from 'react-native';
 
+import {CaptionsEnabledContext} from '@calls/context';
+import {hasCaptions} from '@calls/utils';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
@@ -29,9 +31,26 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const dim = useWindowDimensions();
     const isTablet = useIsTablet();
     const [localIndex, setLocalIndex] = useState(initialIndex);
+    const [captionsEnabled, setCaptionsEnabled] = useState<boolean[]>(new Array(items.length).fill(true));
+    const [captionsAvailable, setCaptionsAvailable] = useState<boolean[]>([]);
     const {setControlsHidden, headerStyles, footerStyles} = useGalleryControls();
     const dimensions = useMemo(() => ({width: dim.width, height: dim.height}), [dim.width]);
     const galleryRef = useRef<GalleryRef>(null);
+
+    useEffect(() => {
+        const captions = items.reduce((acc, item) => {
+            acc.push(hasCaptions(item.postProps));
+            return acc;
+        }, [] as boolean[]);
+        setCaptionsAvailable(captions);
+    }, [items]);
+
+    const onCaptionsPressIdx = useCallback((idx: number) => {
+        const enabled = [...captionsEnabled];
+        enabled[idx] = !enabled[idx];
+        setCaptionsEnabled(enabled);
+    }, [captionsEnabled, setCaptionsEnabled]);
+    const onCaptionsPress = useCallback(() => onCaptionsPressIdx(localIndex), [localIndex, onCaptionsPressIdx]);
 
     const onClose = useCallback(() => {
         // We keep the un freeze here as we want
@@ -63,7 +82,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     useAndroidHardwareBackHandler(componentId, close);
 
     return (
-        <>
+        <CaptionsEnabledContext.Provider value={captionsEnabled}>
             <Header
                 index={localIndex}
                 onClose={onClose}
@@ -84,8 +103,11 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
                 hideActions={hideActions}
                 item={items[localIndex]}
                 style={footerStyles}
+                hasCaptions={captionsAvailable[localIndex]}
+                captionEnabled={captionsEnabled[localIndex]}
+                onCaptionsPress={onCaptionsPress}
             />
-        </>
+        </CaptionsEnabledContext.Provider>
     );
 };
 
