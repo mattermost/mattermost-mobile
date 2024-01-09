@@ -18,7 +18,12 @@ import {observeCurrentUser} from './user';
 
 const {CHANNEL_BOOKMARK} = MM_TABLES.SERVER;
 
-export const observeCanAddBookmarks = (database: Database, channelId: string) => {
+const observeHasPermissionToBookmarks = (
+    database: Database,
+    channelId: string,
+    public_permission: string,
+    private_permission: string,
+) => {
     const serverVersion = observeConfigValue(database, 'Version');
     const currentUser = observeCurrentUser(database);
 
@@ -33,10 +38,37 @@ export const observeCanAddBookmarks = (database: Database, channelId: string) =>
                 return of$(true);
             }
 
-            const permission = c.type === General.OPEN_CHANNEL ? Permissions.ADD_BOOKMARK_PUBLIC_CHANNEL : Permissions.ADD_BOOKMARK_PRIVATE_CHANNEL;
+            const permission = c.type === General.OPEN_CHANNEL ? public_permission : private_permission;
             return observePermissionForChannel(database, c, user, permission, true);
         }),
         distinctUntilChanged(),
+    );
+};
+
+export const observeCanAddBookmarks = (database: Database, channelId: string) => {
+    return observeHasPermissionToBookmarks(
+        database,
+        channelId,
+        Permissions.ADD_BOOKMARK_PUBLIC_CHANNEL,
+        Permissions.ADD_BOOKMARK_PRIVATE_CHANNEL,
+    );
+};
+
+export const observeCanEditBookmarks = (database: Database, channelId: string) => {
+    return observeHasPermissionToBookmarks(
+        database,
+        channelId,
+        Permissions.EDIT_BOOKMARK_PUBLIC_CHANNEL,
+        Permissions.EDIT_BOOKMARK_PRIVATE_CHANNEL,
+    );
+};
+
+export const observeCanDeleteBookmarks = (database: Database, channelId: string) => {
+    return observeHasPermissionToBookmarks(
+        database,
+        channelId,
+        Permissions.DELETE_BOOKMARK_PUBLIC_CHANNEL,
+        Permissions.DELETE_BOOKMARK_PRIVATE_CHANNEL,
     );
 };
 
