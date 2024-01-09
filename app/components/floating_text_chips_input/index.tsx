@@ -24,7 +24,6 @@ import {
     View,
     type ViewStyle,
     Pressable,
-    type TextInputKeyPressEventData,
 } from 'react-native';
 import Animated, {
     useAnimatedStyle,
@@ -41,8 +40,6 @@ import {getLabelPositions} from './utils';
 
 const BORDER_DEFAULT_WIDTH = 1;
 const BORDER_FOCUSED_WIDTH = 2;
-
-const COMMA_KEY = ',';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -206,15 +203,6 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>(({
         onFocus?.(e);
     }, [onFocus]);
 
-    const onTextInputKeyPress = useCallback((e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-        if (e.nativeEvent.key === COMMA_KEY) {
-            e.preventDefault();
-
-            inputRef.current?.clear();
-            onTextInputSubmitted();
-        }
-    }, [onTextInputSubmitted]);
-
     function handlePressOnContainer() {
         if (!focused) {
             inputRef?.current?.focus();
@@ -310,7 +298,6 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>(({
                             onFocus={onTextInputFocus}
                             onBlur={onTextInputBlur}
                             onChangeText={onTextInputChange}
-                            onKeyPress={onTextInputKeyPress}
                             onSubmitEditing={onTextInputSubmitted}
                             value={textInputValue}
                         />

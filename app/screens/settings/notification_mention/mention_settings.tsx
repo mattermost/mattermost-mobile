@@ -102,6 +102,18 @@ export function canSaveSettings({channelMentionOn, replyNotificationType, firstN
     return channelChanged || replyChanged || firstNameChanged || userNameChanged || mentionKeywordsChanged;
 }
 
+export function getUniqueKeywordsFromInput(inputText: string, keywords: string[]) {
+    // Replace all the spaces and commas
+    const formattedInputText = inputText.trim().replace(/ |,/g, '');
+
+    // Check if the keyword is not empty and not already in the list
+    if (formattedInputText.length > 0 && !keywords.includes(formattedInputText)) {
+        return [...keywords, formattedInputText];
+    }
+
+    return keywords;
+}
+
 const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     const serverUrl = useServerUrl();
     const mentionProps = useMemo(() => getMentionProps(currentUser), []);
@@ -177,24 +189,32 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
         setChannelMentionOn((prev) => !prev);
     }, []);
 
+    function appendKeywordsAndClearInput(key: string, list: string[]) {
+        const keyAppendedToList = getUniqueKeywordsFromInput(key, list);
+
+        setMentionKeywordsInput('');
+        requestAnimationFrame(() => {
+            setMentionKeywords(keyAppendedToList);
+        });
+    }
+
+    /**
+     * Handler on every key press in the input
+     */
     const handleMentionKeywordsInputChanged = useCallback((text: string) => {
         if (text.includes(COMMA_KEY)) {
-            setMentionKeywordsInput('');
+            appendKeywordsAndClearInput(text, mentionKeywords);
         } else {
             setMentionKeywordsInput(text);
         }
-    }, []);
+    }, [mentionKeywords]);
 
+    /**
+     * Handler when the user presses the enter key on keyboard
+     * Takes unsaved keywords from the input and adds them to the list
+     */
     const handleMentionKeywordEntered = useCallback(() => {
-        const formattedMentionKeywordsInput = mentionKeywordsInput.trim().replace(/ /g, '');
-
-        // Check if the keyword is not empty and not already in the list
-        if (formattedMentionKeywordsInput.length > 0 && !mentionKeywords.includes(formattedMentionKeywordsInput)) {
-            setMentionKeywordsInput('');
-            requestAnimationFrame(() => {
-                setMentionKeywords([...mentionKeywords, formattedMentionKeywordsInput]);
-            });
-        }
+        appendKeywordsAndClearInput(mentionKeywordsInput, mentionKeywords);
     }, [mentionKeywordsInput, mentionKeywords]);
 
     const handleMentionKeywordRemoved = useCallback((keyword: string) => {

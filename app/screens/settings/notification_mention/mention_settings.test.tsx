@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getMentionProps, canSaveSettings, type CanSaveSettings} from './mention_settings';
+import {getMentionProps, canSaveSettings, getUniqueKeywordsFromInput, type CanSaveSettings} from './mention_settings';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -90,5 +90,32 @@ describe('canSaveSettings', () => {
         };
 
         expect(canSaveSettings(canSaveSettingParams)).toEqual(true);
+    });
+});
+
+describe('getUniqueKeywordsFromInput', () => {
+    test('Should return empty if input is empty and keywords are empty', () => {
+        expect(getUniqueKeywordsFromInput('', [])).toEqual([]);
+    });
+
+    test('Should return same keywords if input is empty', () => {
+        expect(getUniqueKeywordsFromInput('', ['test1', 'test2'])).toEqual(['test1', 'test2']);
+    });
+
+    test('Should return same input if keywords are empty', () => {
+        expect(getUniqueKeywordsFromInput('test1', [])).toEqual(['test1']);
+    });
+
+    test('Should filter out commas from input', () => {
+        expect(getUniqueKeywordsFromInput('tes,,t1,', [])).toEqual(['test1']);
+        expect(getUniqueKeywordsFromInput(',,    ,', ['test1'])).toEqual(['test1']);
+    });
+
+    test('Should filter out spaces from input', () => {
+        expect(getUniqueKeywordsFromInput('t     es t      1', [])).toEqual(['test1']);
+    });
+
+    test('Should filter out duplicate keywords from input', () => {
+        expect(getUniqueKeywordsFromInput('te,s   t1', ['test1', 'test2'])).toEqual(['test1', 'test2']);
     });
 });
