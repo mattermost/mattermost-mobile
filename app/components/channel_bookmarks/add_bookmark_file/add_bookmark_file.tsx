@@ -112,7 +112,7 @@ const AddBookmarkFile = ({close, disabled, maxFileSize, onError, setBookmark}: P
                         asCard={true}
                         file={file as FileInfo}
                         canDownloadFiles={true}
-                        galleryIdentifier=''
+                        galleryIdentifier='bookmark'
                         index={0}
                         onPress={emptyFunction}
                         publicLinkEnabled={false}
@@ -120,6 +120,9 @@ const AddBookmarkFile = ({close, disabled, maxFileSize, onError, setBookmark}: P
                         inViewPort={false}
                         nonVisibleImagesCount={0}
                         isSingleImage={true}
+                        wrapperWidth={0}
+                        resizeMode='contain'
+                        onPressDisabled={true}
                     />
                 </Shadow>
                 <Button

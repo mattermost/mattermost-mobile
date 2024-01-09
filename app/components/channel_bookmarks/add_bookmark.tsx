@@ -63,12 +63,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         ...typography('Heading', 600, 'SemiBold'),
     },
     smallButton: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+        backgroundColor: undefined,
         paddingHorizontal: undefined,
         paddingVertical: undefined,
         alignItems: 'center',
         justifyContent: 'center',
         margin: undefined,
+        height: 32,
+        top: 3,
     },
     smallButtonText: {
         color: theme.centerChannelColor,
@@ -76,6 +78,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         marginTop: undefined,
         ...typography('Body', 100, 'SemiBold'),
         marginRight: undefined,
+        padding: undefined,
     },
     smallButtonIcon: {
         color: theme.centerChannelColor,
