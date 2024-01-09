@@ -9,7 +9,7 @@ import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannel} from '@queries/servers/channel';
-import {observeAddBookmarks} from '@queries/servers/channel_bookmark';
+import {observeCanAddBookmarks} from '@queries/servers/channel_bookmark';
 import {observeCanManageChannelMembers, observeCanManageChannelSettings} from '@queries/servers/role';
 import {
     observeConfigValue,
@@ -125,7 +125,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
 
     const canAddBookmarks = channelId.pipe(
         switchMap((cId) => {
-            return observeAddBookmarks(database, cId);
+            return observeCanAddBookmarks(database, cId);
         }),
     );
 

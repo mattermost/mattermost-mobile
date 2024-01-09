@@ -107,8 +107,8 @@ const ChannelInfo = ({
                 {canAddBookmarks &&
                     <ChannelBookmarks
                         channelId={channelId}
-                        canAddBookmarks={true}
-                        showButtonWhenEmpty={true}
+                        canAddBookmarks={canAddBookmarks}
+                        showInInfo={true}
                     />
                 }
                 <ChannelActions

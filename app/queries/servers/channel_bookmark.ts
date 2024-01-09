@@ -18,7 +18,7 @@ import {observeCurrentUser} from './user';
 
 const {CHANNEL_BOOKMARK} = MM_TABLES.SERVER;
 
-export const observeAddBookmarks = (database: Database, channelId: string) => {
+export const observeCanAddBookmarks = (database: Database, channelId: string) => {
     const serverVersion = observeConfigValue(database, 'Version');
     const currentUser = observeCurrentUser(database);
 

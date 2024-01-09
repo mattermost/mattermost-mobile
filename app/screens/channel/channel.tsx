@@ -124,6 +124,7 @@ const Channel = ({
                     componentId={componentId}
                     callsEnabledInChannel={isCallsEnabledInChannel}
                     isTabletView={isTabletView}
+                    shouldRenderBookmarks={shouldRender}
                 />
                 {shouldRender &&
                 <>

@@ -1,23 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {FlatList, View} from 'react-native';
+import React, {useCallback} from 'react';
+import {FlatList, View, type ListRenderItemInfo} from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import {GalleryInit} from '@context/gallery';
 import {useTheme} from '@context/theme';
+import {useChannelBookmarkFiles} from '@hooks/files';
+import ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
+import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddBookmark from './add_bookmark';
-
-import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
+import ChannelBookmark from './channel_bookmark';
 
 type Props = {
     bookmarks: ChannelBookmarkModel[];
     canAddBookmarks: boolean;
+    canDownloadFiles: boolean;
     canUploadFiles: boolean;
     channelId: string;
     currentUserId: string;
-    showButtonWhenEmpty: boolean;
+    publicLinkEnabled: boolean;
+    showInInfo: boolean;
+    separator?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -27,48 +35,96 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 8,
         marginBottom: 24,
     },
+    emptyItemSeparator: {
+        width: 12,
+    },
+    addContainer: {
+        marginLeft: 4,
+        width: 40,
+        alignContent: 'center',
+        top: -2,
+    },
 }));
 
 const ChannelBookmarks = ({
-    bookmarks, canAddBookmarks, canUploadFiles,
-    channelId, currentUserId, showButtonWhenEmpty,
+    bookmarks, canAddBookmarks, canDownloadFiles, canUploadFiles,
+    channelId, currentUserId, publicLinkEnabled, showInInfo, separator = true,
 }: Props) => {
+    const galleryIdentifier = `${channelId}-bookmarks`;
+
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const files = useChannelBookmarkFiles(bookmarks, publicLinkEnabled);
 
-    if (!bookmarks.length && showButtonWhenEmpty && canAddBookmarks) {
+    const attachmentIndex = useCallback((fileId: string) => {
+        return files.findIndex((file) => file.id === fileId) || 0;
+    }, [files]);
+
+    const handlePreviewPress = useCallback(preventDoubleTap((idx: number) => {
+        if (files.length) {
+            const items = files.map((f) => fileToGalleryItem(f, f.user_id));
+            openGalleryAtIndex(galleryIdentifier, idx, items);
+        }
+    }), [files]);
+
+    const renderItem = useCallback(({item}: ListRenderItemInfo<ChannelBookmarkModel>) => {
+        return (
+            <ChannelBookmark
+                bookmark={item}
+                canDownloadFiles={canDownloadFiles}
+                galleryIdentifier={galleryIdentifier}
+                index={item.fileId ? attachmentIndex(item.fileId) : undefined}
+                onPress={handlePreviewPress}
+            />
+        );
+    }, [attachmentIndex, bookmarks, canDownloadFiles, handlePreviewPress]);
+
+    const renderItemSeparator = useCallback(() => (<View style={styles.emptyItemSeparator}/>), []);
+
+    if (!bookmarks.length && showInInfo && canAddBookmarks) {
         return (
             <AddBookmark
                 canUploadFiles={canUploadFiles}
                 channelId={channelId}
                 currentUserId={currentUserId}
                 showLarge={true}
-                showInInfo={true}
+                showInInfo={showInInfo}
             />
         );
     }
 
-    return (
-        <>
-            <FlatList
-                data={bookmarks}
-                horizontal={true}
-                ListFooterComponent={(
-                    <AddBookmark
-                        canUploadFiles={canUploadFiles}
-                        channelId={channelId}
-                        currentUserId={currentUserId}
-                        showLarge={false}
-                        showInInfo={showButtonWhenEmpty}
+    if (bookmarks.length) {
+        return (
+            <GalleryInit galleryIdentifier={galleryIdentifier}>
+                <Animated.View>
+                    <FlatList
+                        bounces={true}
+                        alwaysBounceHorizontal={false}
+                        data={bookmarks}
+                        horizontal={true}
+                        ListFooterComponent={canAddBookmarks ? (
+                            <View style={styles.addContainer}>
+                                <AddBookmark
+                                    canUploadFiles={canUploadFiles}
+                                    channelId={channelId}
+                                    currentUserId={currentUserId}
+                                    showLarge={false}
+                                    showInInfo={showInInfo}
+                                />
+                            </View>
+                        ) : undefined}
+                        renderItem={renderItem}
+                        ItemSeparatorComponent={renderItemSeparator}
                     />
-                )}
-                renderItem={() => null}
-            />
-            <View style={styles.separator}/>
-        </>
-    );
+                    {separator &&
+                    <View style={styles.separator}/>
+                    }
+                </Animated.View>
+            </GalleryInit>
+        );
+    }
 
-    // return null;
+    return null;
 };
 
 export default ChannelBookmarks;
