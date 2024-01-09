@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {observeBookmarks} from '@queries/servers/channel_bookmark';
+import {observeBookmarks, observeCanDeleteBookmarks, observeCanEditBookmarks} from '@queries/servers/channel_bookmark';
 import {observeCanDownloadFiles, observeCanUploadFiles, observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
 
 import ChannelBookmarks from './channel_bookmarks';
@@ -17,7 +17,9 @@ type Props = WithDatabaseArgs & {
 const enhanced = withObservables([], ({channelId, database}: Props) => {
     return {
         bookmarks: observeBookmarks(database, channelId),
+        canDeleteBookmarks: observeCanDeleteBookmarks(database, channelId),
         canDownloadFiles: observeCanDownloadFiles(database),
+        canEditBookmarks: observeCanEditBookmarks(database, channelId),
         canUploadFiles: observeCanUploadFiles(database),
         currentUserId: observeCurrentUserId(database),
         publicLinkEnabled: observeConfigBooleanValue(database, 'EnablePublicLink'),

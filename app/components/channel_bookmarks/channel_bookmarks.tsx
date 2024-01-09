@@ -19,7 +19,9 @@ import ChannelBookmark from './channel_bookmark';
 type Props = {
     bookmarks: ChannelBookmarkModel[];
     canAddBookmarks: boolean;
+    canDeleteBookmarks: boolean;
     canDownloadFiles: boolean;
+    canEditBookmarks: boolean;
     canUploadFiles: boolean;
     channelId: string;
     currentUserId: string;
@@ -47,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const ChannelBookmarks = ({
-    bookmarks, canAddBookmarks, canDownloadFiles, canUploadFiles,
+    bookmarks, canAddBookmarks, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, canUploadFiles,
     channelId, currentUserId, publicLinkEnabled, showInInfo, separator = true,
 }: Props) => {
     const galleryIdentifier = `${channelId}-bookmarks`;
@@ -71,13 +73,19 @@ const ChannelBookmarks = ({
         return (
             <ChannelBookmark
                 bookmark={item}
+                canDeleteBookmarks={canDeleteBookmarks}
                 canDownloadFiles={canDownloadFiles}
+                canEditBookmarks={canEditBookmarks}
                 galleryIdentifier={galleryIdentifier}
                 index={item.fileId ? attachmentIndex(item.fileId) : undefined}
                 onPress={handlePreviewPress}
+                publicLinkEnabled={publicLinkEnabled}
             />
         );
-    }, [attachmentIndex, bookmarks, canDownloadFiles, handlePreviewPress]);
+    }, [
+        attachmentIndex, bookmarks, canDownloadFiles, canDeleteBookmarks, canEditBookmarks,
+        handlePreviewPress, publicLinkEnabled,
+    ]);
 
     const renderItemSeparator = useCallback(() => (<View style={styles.emptyItemSeparator}/>), []);
 
