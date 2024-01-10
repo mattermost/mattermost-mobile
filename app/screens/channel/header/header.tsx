@@ -35,6 +35,7 @@ type ChannelProps = {
     channelId: string;
     channelType: ChannelType;
     customStatus?: UserCustomStatus;
+    isBookmarksEnabled: boolean;
     isCustomStatusEnabled: boolean;
     isCustomStatusExpired: boolean;
     hasBookmarks: boolean;
@@ -76,7 +77,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ChannelHeader = ({
     canAddBookmarks, channelId, channelType, componentId, customStatus, displayName, hasBookmarks,
-    isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
+    isBookmarksEnabled, isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
     searchTerm, teamId, callsEnabledInChannel, isTabletView, shouldRenderBookmarks,
 }: ChannelProps) => {
     const intl = useIntl();
@@ -248,7 +249,7 @@ const ChannelHeader = ({
             <View style={contextStyle}>
                 <RoundedHeaderContext/>
             </View>
-            {hasBookmarks && shouldRenderBookmarks &&
+            {isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks &&
             <ChannelHeaderBookmarks
                 canAddBookmarks={canAddBookmarks}
                 channelId={channelId}

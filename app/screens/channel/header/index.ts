@@ -83,6 +83,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         distinctUntilChanged(),
     );
 
+    const isBookmarksEnabled = observeConfigBooleanValue(database, 'FeatureFlagChannelBookmarks');
     const canAddBookmarks = observeCanAddBookmarks(database, channelId);
 
     return {
@@ -91,6 +92,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         customStatus,
         displayName,
         hasBookmarks,
+        isBookmarksEnabled,
         isCustomStatusEnabled,
         isCustomStatusExpired,
         isOwnDirectMessage,

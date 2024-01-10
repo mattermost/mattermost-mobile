@@ -33,6 +33,7 @@ type Props = {
     channelId: string;
     closeButtonId: string;
     componentId: AvailableScreens;
+    isBookmarksEnabled: boolean;
     isCallsEnabledInChannel: boolean;
     isConvertGMFeatureAvailable: boolean;
     isCRTEnabled: boolean;
@@ -65,6 +66,7 @@ const ChannelInfo = ({
     channelId,
     closeButtonId,
     componentId,
+    isBookmarksEnabled,
     isCallsEnabledInChannel,
     isConvertGMFeatureAvailable,
     isCRTEnabled,
@@ -104,7 +106,7 @@ const ChannelInfo = ({
                     channelId={channelId}
                     type={type}
                 />
-                {canAddBookmarks &&
+                {isBookmarksEnabled &&
                     <ChannelBookmarks
                         channelId={channelId}
                         canAddBookmarks={canAddBookmarks}
