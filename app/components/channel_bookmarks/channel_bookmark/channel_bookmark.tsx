@@ -8,9 +8,11 @@ import {Alert, Text, View} from 'react-native';
 import Button from 'react-native-button';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {deleteChannelBookmark} from '@actions/remote/channel_bookmark';
 import CompassIcon from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useGalleryItem} from '@hooks/gallery';
@@ -69,6 +71,7 @@ const ChannelBookmark = ({
 }: Props) => {
     const theme = useTheme();
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const intl = useIntl();
     const {bottom} = useSafeAreaInsets();
@@ -122,6 +125,37 @@ const ChannelBookmark = ({
         }, options);
     }, [bookmark, theme]);
 
+    const handleDelete = useCallback(async () => {
+        const res = await deleteChannelBookmark(serverUrl, bookmark.channelId, bookmark.id);
+        if (res.error) {
+            Alert.alert(
+                intl.formatMessage({id: 'channel_bookmark.delete.failed_title', defaultMessage: 'Error deleting bookmark'}),
+                `Details:\n${res.error}`,
+            );
+            return;
+        }
+
+        await dismissBottomSheet();
+    }, [bookmark, serverUrl]);
+
+    const onDelete = useCallback(async () => {
+        Alert.alert(
+            intl.formatMessage({id: 'channel_bookmark.delete.confirm_title', defaultMessage: 'Delete bookmark'}),
+            intl.formatMessage({id: 'channel_bookmark.delete.confirm', defaultMessage: 'You sure want to delete the bookmark {displayName}?'}, {
+                displayName: bookmark.displayName,
+            }),
+            [{
+                text: intl.formatMessage({id: 'channel_bookmark.delete.yes', defaultMessage: 'Yes'}),
+                style: 'destructive',
+                isPreferred: true,
+                onPress: handleDelete,
+            }, {
+                text: intl.formatMessage({id: 'channel_bookmark.add.file_cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
+            }],
+        );
+    }, [bookmark, handleDelete]);
+
     const handleLongPress = useCallback(() => {
         const renderContent = () => (
             <>
@@ -159,7 +193,7 @@ const ChannelBookmark = ({
                     }
                     {canDeleteBookmarks &&
                     <OptionItem
-                        action={() => null}
+                        action={onDelete}
                         destructive={true}
                         label={intl.formatMessage({id: 'channel_bookmark.delete_option', defaultMessage: 'Delete'})}
                         icon='trash-can-outline'
