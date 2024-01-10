@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
+import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
@@ -9,6 +10,7 @@ import Button from 'react-native-button';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {deleteChannelBookmark} from '@actions/remote/channel_bookmark';
+import {fetchPublicLink} from '@actions/remote/file';
 import CompassIcon from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -20,6 +22,7 @@ import {TITLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
 import {isDocument} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {showSnackBar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
@@ -77,7 +80,7 @@ const ChannelBookmark = ({
     const {bottom} = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
     const canCopyPublicLink = useMemo(() => {
-        return bookmark.type === 'link' || (file?.id && publicLinkEnabled && managedConfig.copyAndPasteProtection !== 'true');
+        return (bookmark.type === 'link' || (file?.id && publicLinkEnabled)) && managedConfig.copyAndPasteProtection !== 'true';
     }, [bookmark.type, file, publicLinkEnabled, managedConfig.copyAndPasteProtection]);
 
     const onLinkError = () => {
@@ -101,7 +104,7 @@ const ChannelBookmark = ({
         onPress?.(index || 0);
     }, [bookmark, index]);
 
-    const handleEdit = useCallback(async () => {
+    const onEdit = useCallback(async () => {
         await dismissBottomSheet();
 
         const title = intl.formatMessage({id: 'screens.channel_bookmark_edit', defaultMessage: 'Edit bookmark'});
@@ -156,6 +159,28 @@ const ChannelBookmark = ({
         );
     }, [bookmark, handleDelete]);
 
+    const onCopy = useCallback(async () => {
+        await dismissBottomSheet();
+
+        if (bookmark.type === 'link' && bookmark.linkUrl) {
+            Clipboard.setString(bookmark.linkUrl);
+            showSnackBar({barType: 'LINK_COPIED'});
+            return;
+        }
+
+        try {
+            const publicLink = await fetchPublicLink(serverUrl, bookmark.fileId!);
+            if ('link' in publicLink) {
+                Clipboard.setString(publicLink.link);
+                showSnackBar({barType: 'LINK_COPIED'});
+            } else {
+                showSnackBar({barType: 'LINK_COPY_FAILED'});
+            }
+        } catch {
+            showSnackBar({barType: 'LINK_COPY_FAILED'});
+        }
+    }, [bookmark, serverUrl]);
+
     const handleLongPress = useCallback(() => {
         const renderContent = () => (
             <>
@@ -169,7 +194,7 @@ const ChannelBookmark = ({
                 <View style={styles.flex}>
                     {canEditBookmarks &&
                     <OptionItem
-                        action={handleEdit}
+                        action={onEdit}
                         label={intl.formatMessage({id: 'channel_bookmark.edit_option', defaultMessage: 'Edit'})}
                         icon='pencil-outline'
                         type='default'
@@ -177,7 +202,7 @@ const ChannelBookmark = ({
                     }
                     {canCopyPublicLink &&
                     <OptionItem
-                        action={() => null}
+                        action={onCopy}
                         label={intl.formatMessage({id: 'channel_bookmark.copy_option', defaultMessage: 'Copy Link'})}
                         icon='content-copy'
                         type='default'
