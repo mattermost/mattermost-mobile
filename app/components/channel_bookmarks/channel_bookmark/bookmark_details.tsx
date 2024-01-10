@@ -21,12 +21,14 @@ type Props = {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    imageContainer: {width: 24, height: 24, marginRight: 2},
+    imageContainer: {width: 24, height: 24},
     image: {width: 20, height: 20, top: 2},
     text: {
         color: theme.centerChannelColor,
         ...typography('Body', 100, 'SemiBold'),
+        marginLeft: 3,
     },
+    emoji: {alignSelf: 'center'},
 }));
 
 const BookmarkDetails = ({bookmark, children, file}: Props) => {
@@ -52,7 +54,8 @@ const BookmarkDetails = ({bookmark, children, file}: Props) => {
                 {Boolean(bookmark.emoji) &&
                 <Emoji
                     emojiName={bookmark.emoji!}
-                    size={24}
+                    size={20}
+                    textStyle={styles.emoji}
                 />
                 }
                 {children}

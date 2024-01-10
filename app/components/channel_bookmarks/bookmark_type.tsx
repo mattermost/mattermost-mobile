@@ -16,7 +16,7 @@ type Props = {
     ownerId: string;
 }
 
-const AddBookmarkType = ({channelId, type, ownerId}: Props) => {
+const BookmarkType = ({channelId, type, ownerId}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
 
@@ -60,4 +60,4 @@ const AddBookmarkType = ({channelId, type, ownerId}: Props) => {
     );
 };
 
-export default AddBookmarkType;
+export default BookmarkType;

@@ -73,6 +73,7 @@ export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
 export const CHANNEL_BOOKMARK_ADD = 'AddChannelBookmark';
+export const CHANNEL_BOOKMARK_EDIT = 'EditChannelBookmark';
 
 export default {
     ABOUT,
@@ -84,6 +85,7 @@ export default {
     CHANNEL,
     CHANNEL_ADD_MEMBERS,
     CHANNEL_BOOKMARK_ADD,
+    CHANNEL_BOOKMARK_EDIT,
     CHANNEL_FILES,
     CHANNEL_INFO,
     CHANNEL_NOTIFICATION_PREFERENCES,

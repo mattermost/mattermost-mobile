@@ -67,6 +67,8 @@ declare class ChannelBookmarkModel extends Model {
 
     /** file : The FILE attached to this CHANNEL BOOKMARK */
     file: Relation<FileModel>;
+
+    toApi(): ChannelBookmark;
 }
 
 export default ChannelBookmarkModel;

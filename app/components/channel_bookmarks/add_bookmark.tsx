@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
+import BookmarkType from '@components/channel_bookmarks/bookmark_type';
 import FormattedText from '@components/formatted_text';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -19,8 +20,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import CompassIcon from '../compass_icon';
-
-import AddBookmarkType from './add_bookmark_type';
 
 type Props = {
     canUploadFiles: boolean;
@@ -131,12 +130,12 @@ const AddBookmark = ({channelId, currentUserId, canUploadFiles, showInInfo, show
                     </View>
                 )}
                 <View style={styles.flex}>
-                    <AddBookmarkType
+                    <BookmarkType
                         channelId={channelId}
                         type='link'
                         ownerId={currentUserId}
                     />
-                    <AddBookmarkType
+                    <BookmarkType
                         channelId={channelId}
                         type='file'
                         ownerId={currentUserId}
