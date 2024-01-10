@@ -214,7 +214,17 @@ const ChannelBookmarkAdd = ({channelId, componentId, closeButtonId, ownerId, typ
             enableSaveButton(false);
             setIsSaving(true);
             if (file && !file.id) {
-                const {cancel, error} = uploadFile(serverUrl, file as FileInfo, channelId, onProgress, onComplete, onError);
+                const {cancel, error} = uploadFile(
+                    serverUrl,
+                    file as FileInfo,
+                    channelId,
+                    onProgress,
+                    onComplete,
+                    onError,
+                    file.bytesRead,
+                    true,
+                );
+
                 if (cancel) {
                     cancelUpload = cancel;
                 }
