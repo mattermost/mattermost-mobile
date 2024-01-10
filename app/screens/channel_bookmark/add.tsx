@@ -9,16 +9,17 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createChannelBookmark} from '@actions/remote/channel_bookmark';
 import {uploadFile} from '@actions/remote/file';
-import ProgressBar from '@app/components/progress_bar';
-import AddBookmarkDetail from '@components/channel_bookmarks/add_bookmark_detail';
-import AddBookmarkFile from '@components/channel_bookmarks/add_bookmark_file';
-import AddBookmarkLink from '@components/channel_bookmarks/add_bookmark_link';
+import ProgressBar from '@components/progress_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
+
+import BookmarkDetail from './components/bookmark_detail';
+import AddBookmarkFile from './components/bookmark_file';
+import BookmarkLink from './components/bookmark_link';
 
 import type {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -248,7 +249,7 @@ const ChannelBookmarkAdd = ({channelId, componentId, closeButtonId, ownerId, typ
             testID='channel_bookmark_add.screen'
         >
             {type === 'link' &&
-                <AddBookmarkLink
+                <BookmarkLink
                     disabled={isSaving}
                     setBookmark={setLinkBookmark}
                     resetBookmark={resetBookmark}
@@ -264,7 +265,7 @@ const ChannelBookmarkAdd = ({channelId, componentId, closeButtonId, ownerId, typ
             }
             {Boolean(bookmark) &&
             <>
-                <AddBookmarkDetail
+                <BookmarkDetail
                     disabled={isSaving}
                     emoji={bookmark?.emoji}
                     imageUrl={bookmark?.image_url}

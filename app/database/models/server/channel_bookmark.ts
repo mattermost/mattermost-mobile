@@ -90,4 +90,26 @@ export default class ChannelBookmarkModel extends Model implements ChannelBookma
 
     /** file : The FILE attached to this CHANNEL_BOOKMARK */
     @immutableRelation(FILE, 'file_id') file!: Relation<FileModel>;
+
+    toApi = () => {
+        const b: ChannelBookmark = {
+            id: this.id,
+            create_at: this.createAt,
+            update_at: this.updateAt,
+            delete_at: this.deleteAt,
+            channel_id: this.channelId,
+            owner_id: this.ownerId,
+            file_id: this.fileId,
+            display_name: this.displayName,
+            sort_order: this.sortOrder,
+            link_url: this.linkUrl,
+            image_url: this.imageUrl,
+            emoji: this.emoji,
+            type: this.type,
+            original_id: this.originalId,
+            parent_id: this.parentId,
+        };
+
+        return b;
+    };
 }

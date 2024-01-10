@@ -20,6 +20,7 @@ import {typography} from '@utils/typography';
 type Props = {
     close: () => void;
     disabled: boolean;
+    initialFile?: FileInfo;
     maxFileSize: number;
     onError: (error: string, buttons?: AlertButton[]) => void;
     setBookmark: (file: ExtractedFileInfo) => void;
@@ -41,11 +42,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const shadowSides = {top: false, bottom: true, end: true, start: false};
 
-const AddBookmarkFile = ({close, disabled, maxFileSize, onError, setBookmark}: Props) => {
+const BookmarkFile = ({close, disabled, initialFile, maxFileSize, onError, setBookmark}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const isTablet = useIsTablet();
-    const [file, setFile] = useState<ExtractedFileInfo|undefined>();
+    const [file, setFile] = useState<ExtractedFileInfo|undefined>(initialFile);
     const styles = getStyleSheet(theme);
     const subContainerStyle = [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 0}];
 
@@ -65,11 +66,13 @@ const AddBookmarkFile = ({close, disabled, maxFileSize, onError, setBookmark}: P
     };
 
     useEffect(() => {
-        browseFile();
+        if (!initialFile) {
+            browseFile();
+        }
     }, []);
 
     useEffect(() => {
-        if ((file?.size || 0) > maxFileSize) {
+        if (!file?.id && (file?.size || 0) > maxFileSize) {
             onError(
                 fileSizeWarning(intl, maxFileSize), [{
                     text: intl.formatMessage({
@@ -89,7 +92,7 @@ const AddBookmarkFile = ({close, disabled, maxFileSize, onError, setBookmark}: P
             return;
         }
 
-        if (file?.name) {
+        if (!file?.id && file?.name) {
             setBookmark(file);
         }
     }, [file, intl, maxFileSize]);
@@ -130,10 +133,10 @@ const AddBookmarkFile = ({close, disabled, maxFileSize, onError, setBookmark}: P
                     size='m'
                     emphasis='primary'
                     buttonType='default'
-                    text='Edit'
+                    text={intl.formatMessage({id: 'channel_bookmark_edit', defaultMessage: 'Edit'})}
                     onPress={browseFile}
                     iconName='pencil-outline'
-                    iconSize={15}
+                    iconSize={18}
                     disabled={disabled}
                 />
             </View>
@@ -143,4 +146,4 @@ const AddBookmarkFile = ({close, disabled, maxFileSize, onError, setBookmark}: P
     return null;
 };
 
-export default AddBookmarkFile;
+export default BookmarkFile;

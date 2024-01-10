@@ -6,7 +6,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {DEFAULT_SERVER_MAX_FILE_SIZE} from '@constants/post_draft';
 import {observeConfigIntValue} from '@queries/servers/system';
 
-import AddBookmarkFile from './add_bookmark_file';
+import BookmarkFile from './bookmark_file';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -16,4 +16,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(enhanced(AddBookmarkFile));
+export default withDatabase(enhanced(BookmarkFile));

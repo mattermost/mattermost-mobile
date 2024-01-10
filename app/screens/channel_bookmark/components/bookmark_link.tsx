@@ -18,6 +18,7 @@ import {getUrlAfterRedirect} from '@utils/url';
 
 type Props = {
     disabled: boolean;
+    initialUrl?: string;
     resetBookmark: () => void;
     setBookmark: (url: string, title: string, imageUrl: string) => void;
 }
@@ -40,12 +41,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AddBookmarkLink = ({disabled, resetBookmark, setBookmark}: Props) => {
+const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const isTablet = useIsTablet();
     const [error, setError] = useState('');
-    const [url, setUrl] = useState('');
+    const [url, setUrl] = useState(initialUrl);
     const [loading, setLoading] = useState(false);
     const styles = getStyleSheet(theme);
     const keyboard = (Platform.OS === 'android') ? 'default' : 'url';
@@ -124,4 +125,4 @@ const AddBookmarkLink = ({disabled, resetBookmark, setBookmark}: Props) => {
     );
 };
 
-export default AddBookmarkLink;
+export default BookmarkLink;

@@ -8,12 +8,14 @@ import {Alert, Text, View} from 'react-native';
 import Button from 'react-native-button';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import CompassIcon from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useGalleryItem} from '@hooks/gallery';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet';
-import {bottomSheet} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
 import {isDocument} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -96,6 +98,30 @@ const ChannelBookmark = ({
         onPress?.(index || 0);
     }, [bookmark, index]);
 
+    const handleEdit = useCallback(async () => {
+        await dismissBottomSheet();
+
+        const title = intl.formatMessage({id: 'screens.channel_bookmark_edit', defaultMessage: 'Edit bookmark'});
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        const closeButtonId = 'close-channel_bookmark_edit';
+
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: closeButtonId,
+                    icon: closeButton,
+                    testID: 'close.channel_bookmark_edit.button',
+                }],
+            },
+        };
+
+        showModal(Screens.CHANNEL_BOOKMARK_EDIT, title, {
+            bookmark: bookmark.toApi(),
+            closeButtonId,
+            file: file?.toFileInfo(bookmark.ownerId),
+        }, options);
+    }, [bookmark, theme]);
+
     const handleLongPress = useCallback(() => {
         const renderContent = () => (
             <>
@@ -109,7 +135,7 @@ const ChannelBookmark = ({
                 <View style={styles.flex}>
                     {canEditBookmarks &&
                     <OptionItem
-                        action={() => null}
+                        action={handleEdit}
                         label={intl.formatMessage({id: 'channel_bookmark.edit_option', defaultMessage: 'Edit'})}
                         icon='pencil-outline'
                         type='default'

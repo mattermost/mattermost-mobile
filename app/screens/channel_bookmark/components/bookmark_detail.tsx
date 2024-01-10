@@ -67,7 +67,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AddBookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName, setBookmarkEmoji, title}: Props) => {
+const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName, setBookmarkEmoji, title}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -136,4 +136,4 @@ const AddBookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayN
     );
 };
 
-export default AddBookmarkDetail;
+export default BookmarkDetail;
