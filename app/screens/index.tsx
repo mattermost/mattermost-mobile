@@ -274,6 +274,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CALL:
             screen = withServerDatabase(require('@calls/screens/call_screen').default);
             break;
+        case Screens.GENERIC_OVERLAY:
+            screen = withServerDatabase(require('@screens/overlay').default);
+            break;
     }
 
     if (screen) {
