@@ -22,12 +22,13 @@ import {useGalleryItem} from '@hooks/gallery';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import {bottomSheet, dismissBottomSheet, dismissOverlay, showModal, showOverlay} from '@screens/navigation';
+import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
 import {isDocument, isImage, isVideo} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {showSnackBar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {tryOpenURL} from '@utils/url';
+import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import BookmarkDetails from './bookmark_details';
 import BookmarkDocument from './bookmark_document';
@@ -46,6 +47,7 @@ type Props = {
     index?: number;
     onPress?: (index: number) => void;
     publicLinkEnabled: boolean;
+    siteURL: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -73,7 +75,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ChannelBookmark = ({
     bookmark, canDeleteBookmarks, canDownloadFiles, canEditBookmarks,
-    file, galleryIdentifier, index, onPress, publicLinkEnabled,
+    file, galleryIdentifier, index, onPress, publicLinkEnabled, siteURL,
 }: Props) => {
     const theme = useTheme();
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -125,9 +127,28 @@ const ChannelBookmark = ({
         );
     };
 
+    const openLink = async (href: string) => {
+        const url = normalizeProtocol(href);
+        if (!url) {
+            return;
+        }
+
+        const match = matchDeepLink(url, serverUrl, siteURL);
+
+        if (match) {
+            const {error} = await handleDeepLink(match.url, intl);
+            if (error) {
+                tryOpenURL(match.url, onLinkError);
+            }
+        } else {
+            tryOpenURL(url, onLinkError);
+        }
+    };
+
     const handlePress = useCallback(() => {
         if (bookmark.linkUrl) {
-            tryOpenURL(bookmark.linkUrl, onLinkError);
+            openLink(bookmark.linkUrl);
+            return;
         }
 
         onPress?.(index || 0);

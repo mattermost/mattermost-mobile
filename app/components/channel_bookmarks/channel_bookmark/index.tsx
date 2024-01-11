@@ -4,6 +4,7 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
 import {observeFileById} from '@queries/servers/file';
+import {observeConfigValue} from '@queries/servers/system';
 
 import ChannelBookmark from './channel_bookmark';
 
@@ -18,6 +19,7 @@ const enhanced = withObservables([], ({bookmark, database}: Props) => {
     return {
         bookmark: bookmark.observe(),
         file: observeFileById(database, bookmark.fileId || ''),
+        siteURL: observeConfigValue(database, 'SiteURL'),
     };
 });
 
