@@ -225,7 +225,7 @@ const ChannelBookmark = ({
                             setAction={setAction}
                         />
                     ),
-                });
+                }, {}, bookmark.id);
             }
             return;
         }
@@ -308,8 +308,8 @@ const ChannelBookmark = ({
     const {onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index || 0, handlePress);
 
     useEffect(() => {
-        if (action === 'none') {
-            dismissOverlay(Screens.GENERIC_OVERLAY);
+        if (action === 'none' && bookmark.id) {
+            dismissOverlay(bookmark.id);
         }
     }, [action]);
 
