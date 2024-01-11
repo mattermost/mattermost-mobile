@@ -8,6 +8,7 @@ import BackgroundTimer from 'react-native-background-timer';
 import {BehaviorSubject} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 
+import {setAppInactiveSince} from '@actions/app/global';
 import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchStatusByIds} from '@actions/remote/user';
 import {handleClose, handleFirstConnect, handleReconnect} from '@actions/websocket';
@@ -54,6 +55,9 @@ class WebsocketManager {
         );
 
         AppState.addEventListener('change', this.onAppStateChange);
+        AppState.addEventListener('blur', () => {
+            setAppInactiveSince(Date.now());
+        });
         NetInfo.addEventListener(this.onNetStateChange);
     };
 
@@ -231,6 +235,7 @@ class WebsocketManager {
 
         this.cancelAllConnections();
         if (!isActive && !this.isBackgroundTimerRunning) {
+            setAppInactiveSince(Date.now());
             this.isBackgroundTimerRunning = true;
             this.cancelAllConnections();
             this.backgroundIntervalId = BackgroundTimer.setInterval(() => {

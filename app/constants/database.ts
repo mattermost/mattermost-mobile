@@ -84,6 +84,7 @@ export const GLOBAL_IDENTIFIERS = {
     LAST_VIEWED_CHANNEL: 'lastViewedChannel',
     LAST_VIEWED_THREAD: 'lastViewedThread',
     PUSH_DISABLED_ACK: 'pushDisabledAck',
+    APP_INACTIVE_SINCE: 'appInactiveSince',
 };
 
 export enum OperationType {
