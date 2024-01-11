@@ -11,6 +11,7 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
+import useDidUpdate from '@hooks/did_update';
 import {fetchOpenGraph} from '@utils/opengraph';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -87,6 +88,10 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
             validateAndFetchOG(url);
         }
     }, [url, error]);
+
+    useDidUpdate(debounce(() => {
+        onSubmitEditing();
+    }, 300), [onSubmitEditing]);
 
     return (
         <View style={subContainerStyle}>
