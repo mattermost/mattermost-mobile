@@ -210,7 +210,7 @@ export default class BaseDataOperator {
      * @returns {Promise<Model[]>}
      */
     async handleRecords<T extends Model>({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true, shouldUpdate}: HandleRecordsArgs<T>, description: string): Promise<T[]> {
-        if (!createOrUpdateRawValues.length) {
+        if (!createOrUpdateRawValues.length && !deleteRawValues.length) {
             logWarning(
                 `An empty "rawValues" array has been passed to the handleRecords method for tableName ${tableName}`,
             );

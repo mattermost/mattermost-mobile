@@ -72,6 +72,15 @@ export const observeCanDeleteBookmarks = (database: Database, channelId: string)
     );
 };
 
+export const getChannelBookmarkById = async (database: Database, bookmarkId: string) => {
+    try {
+        const bookmark = await database.get<ChannelBookmarkModel>(CHANNEL_BOOKMARK).find(bookmarkId);
+        return bookmark;
+    } catch {
+        return undefined;
+    }
+};
+
 export const queryBookmarks = (database: Database, channelId: string) => {
     return database.get<ChannelBookmarkModel>(CHANNEL_BOOKMARK).query(
         Q.and(
