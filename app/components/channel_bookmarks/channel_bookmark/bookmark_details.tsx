@@ -21,6 +21,7 @@ type Props = {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    row: {flexDirection: 'row'},
     imageContainer: {width: 24, height: 24},
     image: {width: 20, height: 20, top: 2},
     text: {
@@ -36,7 +37,7 @@ const BookmarkDetails = ({bookmark, children, file}: Props) => {
     const styles = getStyleSheet(theme);
 
     return (
-        <>
+        <View style={styles.row}>
             <View style={styles.imageContainer}>
                 {Boolean(file) && !bookmark.emoji &&
                 <FileIcon
@@ -61,7 +62,7 @@ const BookmarkDetails = ({bookmark, children, file}: Props) => {
                 {children}
             </View>
             <Text style={styles.text}>{bookmark.displayName}</Text>
-        </>
+        </View>
     );
 };
 
