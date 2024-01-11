@@ -275,7 +275,10 @@ const ChannelBookmark = ({
             <>
                 {!isTablet && (
                     <View style={styles.bottomSheetHeader}>
-                        <Text style={styles.bottomSheetHeaderText}>
+                        <Text
+                            style={styles.bottomSheetHeaderText}
+                            numberOfLines={1}
+                        >
                             {bookmark.displayName}
                         </Text>
                     </View>
