@@ -151,7 +151,7 @@ export default class FilePickerUtil {
         let permissionRequest;
 
         const targetSource = Platform.select({
-            ios: source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY,
+            ios: source === 'camera' ? Permissions.PERMISSIONS.IOS.MICROPHONE : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY,
             default: Permissions.PERMISSIONS.ANDROID.CAMERA,
         });
 
