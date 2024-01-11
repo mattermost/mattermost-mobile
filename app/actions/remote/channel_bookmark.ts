@@ -4,6 +4,7 @@
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import websocketManager from '@managers/websocket_manager';
+import {getChannelBookmarkById} from '@queries/servers/channel_bookmark';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
@@ -52,13 +53,18 @@ export async function editChannelBookmark(serverUrl: string, bookmark: ChannelBo
 export async function deleteChannelBookmark(serverUrl: string, channelId: string, bookmarkId: string, fetchOnly = false) {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const ws = websocketManager.getClient(serverUrl);
 
         const result = await client.deleteChannelBookmark(channelId, bookmarkId, ws?.getConnectionId());
-        if (!fetchOnly) {
-            await operator.handleChannelBookmark({bookmarks: [result], prepareRecordsOnly: false});
+
+        const bookmark = await getChannelBookmarkById(database, bookmarkId);
+        if (bookmark && !fetchOnly) {
+            const b = bookmark.toApi();
+            b.delete_at = Date.now();
+            await operator.handleChannelBookmark({bookmarks: [b], prepareRecordsOnly: false});
         }
+
         return {bookmarks: result};
     } catch (error) {
         logError('error on deleteChannelBookmark', getFullErrorMessage(error));
