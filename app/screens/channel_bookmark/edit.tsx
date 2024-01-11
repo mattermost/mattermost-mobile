@@ -29,6 +29,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     bookmark: ChannelBookmark;
     file?: FileInfo;
+    canDeleteBookmarks: boolean;
     closeButtonId: string;
     componentId: AvailableScreens;
 }
@@ -55,7 +56,7 @@ const RIGHT_BUTTON = buildNavigationButton('edit-bookmark', 'channel_bookmark.ed
 const edges: Edge[] = ['bottom', 'left', 'right'];
 let cancelUpload: () => void | undefined;
 
-const ChannelBookmarkEdit = ({bookmark: original, componentId, closeButtonId, file: originalFile}: Props) => {
+const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentId, closeButtonId, file: originalFile}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -314,6 +315,7 @@ const ChannelBookmarkEdit = ({bookmark: original, componentId, closeButtonId, fi
                     />
                 </View>
                 }
+                {canDeleteBookmarks &&
                 <View style={styles.deleteContainer}>
                     <Button
                         buttonType='destructive'
@@ -328,6 +330,7 @@ const ChannelBookmarkEdit = ({bookmark: original, componentId, closeButtonId, fi
                         disabled={isSaving}
                     />
                 </View>
+                }
             </>
             }
         </SafeAreaView>
