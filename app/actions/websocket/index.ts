@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {setAppInactiveSince} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
@@ -13,6 +14,7 @@ import {
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
+import {getAppInactiveSince} from '@app/queries/app/global';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
@@ -75,7 +77,11 @@ async function doReconnect(serverUrl: string) {
 
     const {database} = operator;
 
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
+    let lastDisconnectedAt = await getWebSocketLastDisconnected(database);
+    if (!lastDisconnectedAt) {
+        lastDisconnectedAt = await getAppInactiveSince();
+    }
+    setAppInactiveSince(0);
     resetWebSocketLastDisconnected(operator);
 
     const currentTeamId = await getCurrentTeamId(database);
