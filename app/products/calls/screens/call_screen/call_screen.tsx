@@ -328,7 +328,7 @@ const CallScreen = ({
     const {width, height} = useWindowDimensions();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
-    const {EnableRecordings} = useCallsConfig(serverUrl);
+    const {EnableRecordings, EnableTranscriptions} = useCallsConfig(serverUrl);
     usePermissionsChecker(micPermissionsGranted);
     const incomingCalls = useIncomingCalls();
 
@@ -453,7 +453,7 @@ const CallScreen = ({
     const isHost = Boolean(currentCall?.hostId === mySession?.userId);
     const recording = Boolean(currentCall?.recState?.start_at && !currentCall.recState.end_at);
     if (recording) {
-        recordingAlert(isHost, intl);
+        recordingAlert(isHost, EnableTranscriptions, intl);
     }
 
     // The user should receive a recording finished alert if all of the following conditions apply:

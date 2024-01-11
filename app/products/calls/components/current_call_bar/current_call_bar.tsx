@@ -12,11 +12,12 @@ import CallDuration from '@calls/components/call_duration';
 import MessageBar from '@calls/components/message_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
-import {setCallQualityAlertDismissed, setMicPermissionsErrorDismissed} from '@calls/state';
+import {setCallQualityAlertDismissed, setMicPermissionsErrorDismissed, useCallsConfig} from '@calls/state';
 import {makeCallsTheme} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import {Calls, Screens} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {allOrientations, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -140,6 +141,8 @@ const CurrentCallBar = ({
     threadScreen,
 }: Props) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const {EnableTranscriptions} = useCallsConfig(serverUrl);
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
     const style = getStyleSheet(callsTheme);
     const intl = useIntl();
@@ -209,7 +212,7 @@ const CurrentCallBar = ({
     // - Recording has started and recording has not ended.
     const isHost = Boolean(currentCall?.hostId === mySession?.userId);
     if (currentCall?.recState?.start_at && !currentCall?.recState?.end_at) {
-        recordingAlert(isHost, intl);
+        recordingAlert(isHost, EnableTranscriptions, intl);
     }
 
     // The user should receive a recording finished alert if all of the following conditions apply:
