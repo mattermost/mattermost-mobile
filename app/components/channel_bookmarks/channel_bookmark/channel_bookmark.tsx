@@ -154,8 +154,9 @@ const ChannelBookmark = ({
             bookmark: bookmark.toApi(),
             closeButtonId,
             file: file?.toFileInfo(bookmark.ownerId),
+            canDeleteBookmarks,
         }, options);
-    }, [bookmark, theme]);
+    }, [bookmark, canDeleteBookmarks, theme]);
 
     const handleDelete = useCallback(async () => {
         const res = await deleteChannelBookmark(serverUrl, bookmark.channelId, bookmark.id);
