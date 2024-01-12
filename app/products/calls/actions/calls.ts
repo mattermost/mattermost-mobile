@@ -297,7 +297,6 @@ export const joinCall = async (
 
 export const leaveCall = (err?: Error) => {
     if (connection) {
-        logDebug(err);
         connection.disconnect(err);
         connection = null;
     }
