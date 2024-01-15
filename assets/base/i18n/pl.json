@@ -782,7 +782,7 @@
   "notification_settings.mentions": "Wzmianki",
   "notification_settings.mentions..keywordsDescription": "Inne słowa, które uruchamiają wzmianki",
   "notification_settings.mentions.channelWide": "Wzmianki na kanale",
-  "notification_settings.mentions.keywords": "Słowa kluczowe",
+  "notification_settings.mentions.keywords": "Wprowadź inne słowa kluczowe",
   "notification_settings.mentions.keywordsLabel": "W słowach kluczowych nie jest rozróżniana wielkość liter. Słowa kluczowe należy oddzielać przecinkami.",
   "notification_settings.mentions.keywords_mention": "Słowa kluczowe, które wywołują wzmianki",
   "notification_settings.mentions.sensitiveName": "Twoje imię z rozróżnianiem wielkich i małych liter",
