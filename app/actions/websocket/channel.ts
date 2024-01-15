@@ -11,7 +11,9 @@ import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetch
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
-import {loadCallForChannel} from '@calls/actions/calls';
+import {loadCallForChannel, leaveCall} from '@calls/actions/calls';
+import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
+import {getCurrentCall} from '@calls/state';
 import {Events, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
@@ -360,6 +362,9 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         const channelId = msg.data.channel_id || msg.broadcast.channel_id;
 
         if (EphemeralStore.isLeavingChannel(channelId)) {
+            if (getCurrentCall()?.channelId === channelId) {
+                leaveCall(userLeftChannelErr);
+            }
             return;
         }
 
@@ -382,7 +387,12 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
             if (currentChannelId && currentChannelId === channelId) {
                 await handleKickFromChannel(serverUrl, currentChannelId);
             }
+
             await removeCurrentUserFromChannel(serverUrl, channelId);
+
+            if (getCurrentCall()?.channelId === channelId) {
+                leaveCall(userRemovedFromChannelErr);
+            }
         } else {
             const {models: deleteMemberModels} = await deleteChannelMembership(operator, userId, channelId, true);
             if (deleteMemberModels) {

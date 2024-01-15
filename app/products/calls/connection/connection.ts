@@ -39,7 +39,7 @@ if (Platform.OS === 'android') {
 export async function newConnection(
     serverUrl: string,
     channelID: string,
-    closeCb: () => void,
+    closeCb: (err?: Error) => void,
     setScreenShareURL: (url: string) => void,
     hasMicPermission: boolean,
     title?: string,
@@ -93,7 +93,7 @@ export async function newConnection(
         initializeVoiceTrack();
     }
 
-    const disconnect = () => {
+    const disconnect = (err?: Error) => {
         if (isClosed) {
             return;
         }
@@ -126,7 +126,7 @@ export async function newConnection(
         }
 
         if (closeCb) {
-            closeCb();
+            closeCb(err);
         }
     };
 
