@@ -782,7 +782,7 @@
   "notification_settings.mentions": "Erwähnungen",
   "notification_settings.mentions..keywordsDescription": "Andere Wörter, die eine Erwähnung auslösen",
   "notification_settings.mentions.channelWide": "Kanalweite Erwähnungen",
-  "notification_settings.mentions.keywords": "Stichwörter",
+  "notification_settings.mentions.keywords": "Andere Schlüsselwörter eingeben",
   "notification_settings.mentions.keywordsLabel": "Bei den Schlüsselwörtern wird nicht zwischen Groß- und Kleinschreibung unterschieden. Trenne die Schlüsselwörter mit Kommas.",
   "notification_settings.mentions.keywords_mention": "Schlüsselwörter, die Erwähnungen auslösen",
   "notification_settings.mentions.sensitiveName": "Dein schreibweisenabhängiger Vorname",

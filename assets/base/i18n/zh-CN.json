@@ -782,7 +782,7 @@
   "notification_settings.mentions": "提及",
   "notification_settings.mentions..keywordsDescription": "其他触发提及的词语",
   "notification_settings.mentions.channelWide": "频道范围的提及",
-  "notification_settings.mentions.keywords": "关键词",
+  "notification_settings.mentions.keywords": "输入其他关键词",
   "notification_settings.mentions.keywordsLabel": "关键词大小写不区分。用逗号分隔关键词。",
   "notification_settings.mentions.keywords_mention": "触发提及的关键词",
   "notification_settings.mentions.sensitiveName": "您的大小写区分名",
