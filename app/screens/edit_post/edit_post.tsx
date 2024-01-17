@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View, StyleSheet} from 'react-native';
 
 import {deletePost, editPost} from '@actions/remote/post';
+import {changeOpacity} from '@app/utils/theme';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
@@ -102,6 +103,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             rightButtons: [{
                 ...RIGHT_BUTTON,
                 color: theme.sidebarHeaderTextColor,
+                disabledColor: changeOpacity(theme.sidebarHeaderTextColor, 0.32),
                 text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
                 enabled,
             }],
