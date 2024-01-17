@@ -7,7 +7,12 @@ import InCallManager from 'react-native-incall-manager';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
-import {leaveAndJoinWithAlert, needsRecordingErrorAlert, needsRecordingWillBePostedAlert} from '@calls/alerts';
+import {
+    leaveAndJoinWithAlert,
+    needsRecordingErrorAlert,
+    needsRecordingWillBePostedAlert,
+    showErrorAlertOnClose,
+} from '@calls/alerts';
 import {
     getCallsConfig,
     getCallsState,
@@ -230,6 +235,7 @@ export const joinCall = async (
     channelId: string,
     userId: string,
     hasMicPermission: boolean,
+    intl: IntlShape,
     title?: string,
     rootId?: string,
 ): Promise<{ error?: unknown; data?: string }> => {
@@ -248,8 +254,12 @@ export const joinCall = async (
     newCurrentCall(serverUrl, channelId, userId);
 
     try {
-        connection = await newConnection(serverUrl, channelId, () => {
+        connection = await newConnection(serverUrl, channelId, (err?: Error) => {
             myselfLeftCall();
+            if (err) {
+                logDebug('calls: error on close', getFullErrorMessage(err));
+                showErrorAlertOnClose(err, intl);
+            }
         }, setScreenShareURL, hasMicPermission, title, rootId);
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error);
@@ -285,9 +295,9 @@ export const joinCall = async (
     }
 };
 
-export const leaveCall = () => {
+export const leaveCall = (err?: Error) => {
     if (connection) {
-        connection.disconnect();
+        connection.disconnect(err);
         connection = null;
     }
 };
