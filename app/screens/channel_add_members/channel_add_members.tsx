@@ -201,7 +201,7 @@ export default function ChannelAddMembers({
 
         const result = await fetchProfilesNotInChannel(serverUrl, channel.teamId, channel.id, channel.isGroupConstrained, page, General.PROFILE_CHUNK_SIZE);
         if (result.users?.length) {
-            return result.users;
+            return result.users.filter((u) => !u.delete_at);
         }
 
         return [];
@@ -213,7 +213,7 @@ export default function ChannelAddMembers({
         }
 
         const lowerCasedTerm = searchTerm.toLowerCase();
-        const results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: channel.teamId, not_in_channel_id: channel.id, allow_inactive: true});
+        const results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: channel.teamId, not_in_channel_id: channel.id, allow_inactive: false});
 
         if (results.data) {
             return results.data;
