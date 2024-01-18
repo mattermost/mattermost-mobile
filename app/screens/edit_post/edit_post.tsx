@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View, StyleSheet} from 'react-native';
 
 import {deletePost, editPost} from '@actions/remote/post';
-import {changeOpacity} from '@app/utils/theme';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
@@ -19,6 +18,7 @@ import {useInputPropagation} from '@hooks/input';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
+import {changeOpacity} from '@utils/theme';
 
 import EditPostInput, {type EditPostInputRef} from './edit_post_input';
 
