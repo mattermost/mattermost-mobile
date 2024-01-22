@@ -85,6 +85,7 @@ if [ -n "${CREATE_PR}" ]; then
 
   log "Creating PR"
   PR_TITLE="Bump app ${BUMP_BUILD_NUMBER:+build}${BUMP_VERSION_NUMBER:+${BUMP_BUILD_NUMBER:+ and }version} number"
+  # We won't specify the milestone when opening the PR if either we're not bumping the version number, or if the milestone is not found
   MILESTONE_FOUND=$(curl -L -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/mattermost/mattermost-mobile/milestones | jq -r ".[] | .title | select(. == \"v${VERSION_NUMBER:-}\")")
   gh pr create \
     --repo mattermost/mattermost-mobile \
@@ -92,7 +93,7 @@ if [ -n "${CREATE_PR}" ]; then
     --head "${GIT_LOCAL_BRANCH}" \
     --reviewer "${PR_REVIEWERS}" \
     --title "$PR_TITLE" \
-    $([ -z "$BUMP_VERSION_NUMBER" -o -z "${MILESTONE_FOUND}" ] || echo -n "--milestone v${VERSION_NUMBER} --label CherryPick/Approved" # Do not specify the milestone if not bumping the version number, or if the milestone is not found) \
+    $([ -z "$BUMP_VERSION_NUMBER" -o -z "${MILESTONE_FOUND}" ] || echo -n "--milestone v${VERSION_NUMBER} --label CherryPick/Approved") \
     --body-file - <<EOF
 #### Summary
 $([ -z "$BUMP_BUILD_NUMBER" ] || echo "\
