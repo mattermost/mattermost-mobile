@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {DeviceEventEmitter} from 'react-native';
+import {chunk} from 'lodash';
 
 import {handleReconnect} from '@actions/websocket';
 import {Events, General, Preferences} from '@constants';
@@ -93,7 +94,11 @@ export const savePreference = async (serverUrl: string, preferences: PreferenceT
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const userId = await getCurrentUserId(database);
-        client.savePreferences(userId, preferences);
+        const chunkSize = 100;
+        const chunks = chunk(preferences, chunkSize);
+        chunks.forEach((chunk: PreferenceType[]) => {
+            client.savePreferences(userId, chunk);
+        });
         const preferenceModels = await operator.handlePreferences({
             preferences,
             prepareRecordsOnly,
