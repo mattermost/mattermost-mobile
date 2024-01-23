@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
 import {chunk} from 'lodash';
+import {DeviceEventEmitter} from 'react-native';
 
 import {handleReconnect} from '@actions/websocket';
 import {Events, General, Preferences} from '@constants';
@@ -96,8 +96,8 @@ export const savePreference = async (serverUrl: string, preferences: PreferenceT
         const userId = await getCurrentUserId(database);
         const chunkSize = 100;
         const chunks = chunk(preferences, chunkSize);
-        chunks.forEach((chunk: PreferenceType[]) => {
-            client.savePreferences(userId, chunk);
+        chunks.forEach((c: PreferenceType[]) => {
+            client.savePreferences(userId, c);
         });
         const preferenceModels = await operator.handlePreferences({
             preferences,
