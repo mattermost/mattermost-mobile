@@ -42,7 +42,6 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
 
     const setThemePreference = useCallback(() => {
         const allowedTheme = allowedThemeKeys.find((tk) => tk === newTheme);
-
         const themeJson = Preferences.THEMES[allowedTheme as ThemeKey] || initialTheme;
 
         const pref: PreferenceType = {
@@ -70,7 +69,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
             />
             {initialTheme.type === 'custom' && (
                 <CustomTheme
-                    setTheme={setThemePreference}
+                    setTheme={setNewTheme}
                     displayTheme={initialTheme.type}
                 />
             )}
