@@ -396,6 +396,7 @@
   "suggestion.search.direct": "Přímé zprávy",
   "suggestion.search.private": "Privátní kanál",
   "suggestion.search.public": "Veřejné kanály",
+  "system_notice.title.gm_as_dm": "Aktualizace skupinových zpráv",
   "terms_of_service.api_error": "Nelze dokončit požadavek. Pokud tento problém přetrvává, kontaktujte vašeho systémového administrátora.",
   "threads": "Vlákno",
   "threads.deleted": "Původní zpráva smazána",
