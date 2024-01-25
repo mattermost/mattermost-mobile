@@ -277,13 +277,13 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         // bookmarks
         case WebsocketEvents.CHANNEL_BOOKMARK_CREATED:
         case WebsocketEvents.CHANNEL_BOOKMARK_DELETED:
-            bookmark.handleBookmarkAddedOrDeleted(serverUrl, msg.data);
+            bookmark.handleBookmarkAddedOrDeleted(serverUrl, msg);
             break;
         case WebsocketEvents.CHANNEL_BOOKMARK_UPDATED:
-            bookmark.handleBookmarkEdited(serverUrl, msg.data);
+            bookmark.handleBookmarkEdited(serverUrl, msg);
             break;
         case WebsocketEvents.CHANNEL_BOOKMARK_SORTED:
-            bookmark.handleBookmarkSorted(serverUrl, msg.data);
+            bookmark.handleBookmarkSorted(serverUrl, msg);
             break;
     }
 }
