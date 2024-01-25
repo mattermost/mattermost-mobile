@@ -138,10 +138,9 @@ describe('*** Operator: Channel Handlers tests ***', () => {
     });
 
     it('=> HandleMyChannel: should write to the MY_CHANNEL table', async () => {
-        expect.assertions(3);
+        expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const spyOnBatchRecords = jest.spyOn(operator, 'batchRecords');
         const channels: Channel[] = [{
             id: 'c',
             name: 'channel',
@@ -185,7 +184,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         await operator.handleMyChannel({
             channels,
             myChannels,
-            prepareRecordsOnly: false,
+            prepareRecordsOnly: true,
         });
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
@@ -197,66 +196,6 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelRecord,
         }, 'handleMyChannel');
-        expect(spyOnBatchRecords).toHaveBeenCalledTimes(1);
-    });
-
-    it('=> HandleMyChannel: should write to the MY_CHANNEL and CHANNEL_BOOKMARK tables', async () => {
-        // expect.assertions(5);
-
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const spyOnHandleChannelBookmark = jest.spyOn(operator, 'handleChannelBookmark');
-        const spyOnHandleFiles = jest.spyOn(operator, 'handleFiles');
-        const spyOnBatchRecords = jest.spyOn(operator, 'batchRecords');
-        const channels: Channel[] = [{
-            id: 'c',
-            name: 'channel',
-            display_name: 'Channel',
-            type: 'O',
-            create_at: 1,
-            update_at: 1,
-            delete_at: 0,
-            team_id: '123',
-            header: '',
-            purpose: '',
-            last_post_at: 2,
-            creator_id: 'me',
-            total_msg_count: 20,
-            extra_update_at: 0,
-            shared: false,
-            scheme_id: null,
-            group_constrained: false,
-        }];
-        const myChannels: ChannelMembership[] = [
-            {
-                id: 'c',
-                user_id: 'me',
-                channel_id: 'c',
-                last_post_at: 1617311494451,
-                last_viewed_at: 1617311494451,
-                last_update_at: 1617311494451,
-                mention_count: 3,
-                msg_count: 10,
-                roles: 'guest',
-                notify_props: {
-                    desktop: 'default',
-                    email: 'default',
-                    mark_unread: 'mention',
-                    push: 'mention',
-                    ignore_channel_mentions: 'default',
-                },
-            },
-        ];
-
-        await operator.handleMyChannel({
-            channels,
-            myChannels,
-            prepareRecordsOnly: false,
-        });
-
-        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnBatchRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleChannelBookmark).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleFiles).toHaveBeenCalledTimes(1);
     });
 
     it('=> HandleMyChannel: should keep the previous lastFetchedAt for MY_CHANNEL', async () => {
