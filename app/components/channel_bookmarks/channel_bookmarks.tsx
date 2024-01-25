@@ -92,6 +92,7 @@ const ChannelBookmarks = ({
     if (!bookmarks.length && showInInfo && canAddBookmarks) {
         return (
             <AddBookmark
+                bookmarksCount={0}
                 canUploadFiles={canUploadFiles}
                 channelId={channelId}
                 currentUserId={currentUserId}
@@ -113,6 +114,7 @@ const ChannelBookmarks = ({
                         ListFooterComponent={canAddBookmarks ? (
                             <View style={styles.addContainer}>
                                 <AddBookmark
+                                    bookmarksCount={bookmarks.length}
                                     canUploadFiles={canUploadFiles}
                                     channelId={channelId}
                                     currentUserId={currentUserId}
