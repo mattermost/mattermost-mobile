@@ -31,7 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     separatorContainer: {
         backgroundColor: theme.centerChannelBg,
-        paddingTop: 2,
+        zIndex: 1,
     },
     padding: {
         paddingTop: 2,

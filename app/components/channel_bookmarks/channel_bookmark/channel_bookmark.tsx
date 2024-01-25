@@ -57,13 +57,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingLeft: 8,
     },
     flex: {flex: 1},
-    imageContainer: {width: 24, height: 24, marginRight: 2},
-    image: {width: 20, height: 20, top: 2},
-    text: {
-        color: theme.centerChannelColor,
-        ...typography('Body', 100, 'SemiBold'),
-    },
-
     bottomSheetHeader: {
         marginBottom: 12,
     },

@@ -65,7 +65,7 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
         if (link.url) {
             const result = await fetchOpenGraph(link.url, true);
             const title = result.title || text;
-            const imageUrl = result.imageURL || result.favIcon || '';
+            const imageUrl = result.favIcon || result.imageURL || '';
             setLoading(false);
             setBookmark(link.url, title, imageUrl);
             return;

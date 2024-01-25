@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {FlatList, View, type ListRenderItemInfo} from 'react-native';
+import React, {useCallback, useMemo, useState} from 'react';
+import {FlatList, View, type ListRenderItemInfo, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import Animated from 'react-native-reanimated';
 
 import {GalleryInit} from '@context/gallery';
@@ -30,7 +31,14 @@ type Props = {
     separator?: boolean;
 }
 
+const GRADIENT_LOCATIONS = [0, 0.64, 1];
+const SCROLL_OFFSET = 10;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    container: {
+        flexDirection: 'row',
+        paddingBottom: 2,
+    },
     separator: {
         height: 1,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -38,13 +46,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginBottom: 24,
     },
     emptyItemSeparator: {
-        width: 12,
+        width: 4,
     },
     addContainer: {
-        marginLeft: 4,
         width: 40,
         alignContent: 'center',
-        top: -2,
+    },
+    gradient: {
+        height: 40,
+        width: 76,
+        position: 'absolute',
+        right: 0,
     },
 }));
 
@@ -53,10 +65,14 @@ const ChannelBookmarks = ({
     channelId, currentUserId, publicLinkEnabled, showInInfo, separator = true,
 }: Props) => {
     const galleryIdentifier = `${channelId}-bookmarks`;
-
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const files = useChannelBookmarkFiles(bookmarks, publicLinkEnabled);
+    const [allowEndFade, setAllowEndFade] = useState(true);
+
+    const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}: NativeScrollEvent) => {
+        return layoutMeasurement.width + contentOffset.x <= contentSize.width - SCROLL_OFFSET;
+    };
 
     const attachmentIndex = useCallback((fileId: string) => {
         return files.findIndex((file) => file.id === fileId) || 0;
@@ -89,6 +105,16 @@ const ChannelBookmarks = ({
 
     const renderItemSeparator = useCallback(() => (<View style={styles.emptyItemSeparator}/>), []);
 
+    const onScrolled = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+        setAllowEndFade(isCloseToBottom(e.nativeEvent));
+    }, []);
+
+    const gradientColors = useMemo(() => [
+        theme.centerChannelBg,
+        changeOpacity(theme.centerChannelBg, 0.6458),
+        changeOpacity(theme.centerChannelBg, 0),
+    ], [theme]);
+
     if (!bookmarks.length && showInInfo && canAddBookmarks) {
         return (
             <AddBookmark
@@ -106,13 +132,29 @@ const ChannelBookmarks = ({
         return (
             <GalleryInit galleryIdentifier={galleryIdentifier}>
                 <Animated.View>
-                    <FlatList
-                        bounces={true}
-                        alwaysBounceHorizontal={false}
-                        data={bookmarks}
-                        horizontal={true}
-                        ListFooterComponent={canAddBookmarks ? (
+                    <Animated.View style={styles.container}>
+                        <FlatList
+                            bounces={true}
+                            alwaysBounceHorizontal={false}
+                            data={bookmarks}
+                            horizontal={true}
+                            renderItem={renderItem}
+                            ItemSeparatorComponent={renderItemSeparator}
+                            onScroll={onScrolled}
+                            showsHorizontalScrollIndicator={false}
+                        />
+                        {canAddBookmarks &&
                             <View style={styles.addContainer}>
+                                {allowEndFade &&
+                                <LinearGradient
+                                    angle={290}
+                                    useAngle={true}
+                                    locations={GRADIENT_LOCATIONS}
+                                    colors={gradientColors}
+                                    style={styles.gradient}
+                                    pointerEvents={'none'}
+                                />
+                                }
                                 <AddBookmark
                                     bookmarksCount={bookmarks.length}
                                     canUploadFiles={canUploadFiles}
@@ -122,10 +164,8 @@ const ChannelBookmarks = ({
                                     showInInfo={showInInfo}
                                 />
                             </View>
-                        ) : undefined}
-                        renderItem={renderItem}
-                        ItemSeparatorComponent={renderItemSeparator}
-                    />
+                        }
+                    </Animated.View>
                     {separator &&
                     <View style={styles.separator}/>
                     }

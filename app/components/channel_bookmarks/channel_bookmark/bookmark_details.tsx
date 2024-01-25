@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {type ReactNode} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, Platform} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import Emoji from '@components/emoji';
@@ -21,15 +21,18 @@ type Props = {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    row: {flexDirection: 'row'},
-    imageContainer: {width: 24, height: 24},
-    image: {width: 20, height: 20, top: 2},
+    row: {flexDirection: 'row', alignItems: 'center'},
+    imageContainer: {width: 24, height: 24, justifyContent: 'center'},
+    image: {width: 20, height: 20},
     text: {
         color: theme.centerChannelColor,
         ...typography('Body', 100, 'SemiBold'),
-        marginLeft: 3,
+        marginLeft: 2,
     },
-    emoji: {alignSelf: 'center'},
+    emoji: {
+        alignSelf: 'center',
+        top: Platform.select({android: -2}),
+    },
 }));
 
 const BookmarkDetails = ({bookmark, children, file}: Props) => {
@@ -55,7 +58,7 @@ const BookmarkDetails = ({bookmark, children, file}: Props) => {
                 {Boolean(bookmark.emoji) &&
                 <Emoji
                     emojiName={bookmark.emoji!}
-                    size={20}
+                    size={Platform.select({ios: 20, default: 19})}
                     textStyle={styles.emoji}
                 />
                 }

@@ -44,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingLeft: 16,
         paddingRight: 8,
         borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-        borderRightColor: 'transparent',
+        borderRightWidth: 0,
         borderTopLeftRadius: 4,
         borderBottomLeftRadius: 4,
         alignItems: 'center',
@@ -115,7 +115,7 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
                         {Boolean(emoji) &&
                         <Emoji
                             emojiName={emoji!}
-                            size={24}
+                            size={22}
                         />
                         }
                     </View>
