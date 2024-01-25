@@ -95,6 +95,7 @@ type FloatingTextInputProps = TextInputProps & {
     label: string;
     labelTextStyle?: TextStyle;
     multiline?: boolean;
+    multilineInputHeight?: number;
     onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
     onFocus?: (e: NativeSyntheticEvent<TargetedEvent>) => void;
     onLayout?: (e: LayoutChangeEvent) => void;
@@ -117,6 +118,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     label = '',
     labelTextStyle,
     multiline,
+    multilineInputHeight,
     onBlur,
     onFocus,
     onLayout,
@@ -199,21 +201,23 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         res.push(textInputStyle);
 
         if (multiline) {
-            res.push({height: 100, textAlignVertical: 'top'});
+            const height = multilineInputHeight || 100;
+            res.push({height, textAlignVertical: 'top'});
         }
 
         return res;
-    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
+    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, multilineInputHeight, editable]);
 
     const combinedTextInputStyle = useMemo(() => {
         const res: StyleProp<TextStyle> = [styles.textInput, styles.input, textInputStyle];
 
         if (multiline) {
-            res.push({height: 80, textAlignVertical: 'top'});
+            const height = multilineInputHeight ? multilineInputHeight - 20 : 80;
+            res.push({height, textAlignVertical: 'top'});
         }
 
         return res;
-    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
+    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, multilineInputHeight, editable]);
 
     const textAnimatedTextStyle = useAnimatedStyle(() => {
         const inputText = placeholder || value || props.defaultValue;

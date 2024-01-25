@@ -157,3 +157,19 @@ export function isMainActivity() {
         android: ShareModule?.getCurrentActivityName() === 'MainActivity',
     });
 }
+
+export function areBothStringArraysEqual(a: string[], b: string[]) {
+    if (a.length !== b.length) {
+        return false;
+    }
+
+    if (a.length === 0 && b.length === 0) {
+        return false;
+    }
+
+    const aSorted = a.sort();
+    const bSorted = b.sort();
+    const areBothEqual = aSorted.every((value, index) => value === bSorted[index]);
+
+    return areBothEqual;
+}
