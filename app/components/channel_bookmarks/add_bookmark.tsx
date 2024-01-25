@@ -83,7 +83,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         padding: undefined,
     },
     smallButtonIcon: {
-        color: theme.centerChannelColor,
+        color: changeOpacity(theme.centerChannelColor, 0.56),
     },
     info: {
         height: 32,
