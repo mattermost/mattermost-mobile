@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {Alert, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
@@ -22,12 +22,15 @@ import {typography} from '@utils/typography';
 import CompassIcon from '../compass_icon';
 
 type Props = {
+    bookmarksCount: number;
     canUploadFiles: boolean;
     channelId: string;
     currentUserId: string;
     showLarge: boolean;
     showInInfo: boolean;
 }
+
+const MAX_BOOKMARKS_PER_CHANNEL = 50;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
@@ -88,7 +91,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-const AddBookmark = ({channelId, currentUserId, canUploadFiles, showInInfo, showLarge}: Props) => {
+const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, showInInfo, showLarge}: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
     const {formatMessage} = useIntl();
@@ -96,6 +99,17 @@ const AddBookmark = ({channelId, currentUserId, canUploadFiles, showInInfo, show
     const styles = getStyleSheet(theme);
 
     const onPress = useCallback(() => {
+        if (bookmarksCount >= MAX_BOOKMARKS_PER_CHANNEL) {
+            Alert.alert(
+                formatMessage({id: 'channel_info.add_bookmark', defaultMessage: 'Add a bookmark'}),
+                formatMessage({
+                    id: 'channel_info.add_bookmark.max_reached',
+                    defaultMessage: 'This channel has reached the maximum number of bookmarks ({count}).',
+                }, {count: MAX_BOOKMARKS_PER_CHANNEL}),
+            );
+            return;
+        }
+
         if (!canUploadFiles) {
             const title = formatMessage({id: 'screens.channel_bookmark_add', defaultMessage: 'Add a bookmark'});
             const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
@@ -118,6 +132,7 @@ const AddBookmark = ({channelId, currentUserId, canUploadFiles, showInInfo, show
             }, options);
             return;
         }
+
         const renderContent = () => (
             <>
                 {!isTablet && (
@@ -151,7 +166,7 @@ const AddBookmark = ({channelId, currentUserId, canUploadFiles, showInInfo, show
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [bottom, canUploadFiles, currentUserId, channelId]);
+    }, [bottom, bookmarksCount, canUploadFiles, currentUserId, channelId]);
 
     if (showLarge) {
         return (
