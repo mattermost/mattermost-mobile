@@ -44,7 +44,6 @@ type Channel = {
     fake?: boolean;
     group_constrained: boolean|null;
     shared: boolean;
-    bookmarks?: ChannelBookmarkWithFileInfo[];
 };
 type ChannelPatch = {
     name?: string;
