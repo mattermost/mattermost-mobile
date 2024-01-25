@@ -5,8 +5,9 @@ import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
 import {logError} from '@utils/log';
 
-export async function handleBookmarkAddedOrDeleted(serverUrl: string, bookmark: ChannelBookmarkWithFileInfo, prepareRecordsOnly = false) {
+export async function handleBookmarkAddedOrDeleted(serverUrl: string, msg: WebSocketMessage<any>, prepareRecordsOnly = false) {
     try {
+        const bookmark: ChannelBookmarkWithFileInfo = JSON.parse(msg.data.bookmark);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const myChannel = await getMyChannel(database, bookmark.channel_id);
 
@@ -22,8 +23,9 @@ export async function handleBookmarkAddedOrDeleted(serverUrl: string, bookmark: 
     }
 }
 
-export async function handleBookmarkEdited(serverUrl: string, edited: UpdateChannelBookmarkResponse, prepareRecordsOnly = false) {
+export async function handleBookmarkEdited(serverUrl: string, msg: WebSocketMessage<any>, prepareRecordsOnly = false) {
     try {
+        const edited: UpdateChannelBookmarkResponse = JSON.parse(msg.data.bookmarks);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const myChannel = await getMyChannel(database, edited.updated.channel_id);
 
@@ -43,8 +45,9 @@ export async function handleBookmarkEdited(serverUrl: string, edited: UpdateChan
     }
 }
 
-export async function handleBookmarkSorted(serverUrl: string, bookmarks: ChannelBookmarkWithFileInfo[]) {
+export async function handleBookmarkSorted(serverUrl: string, msg: WebSocketMessage<any>) {
     try {
+        const bookmarks: ChannelBookmarkWithFileInfo[] = JSON.parse(msg.data.bookmarks);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         if (bookmarks.length) {
             const myChannel = await getMyChannel(database, bookmarks[0].channel_id);
@@ -56,7 +59,7 @@ export async function handleBookmarkSorted(serverUrl: string, bookmarks: Channel
 
         return {models: undefined};
     } catch (error) {
-        logError('cannot handle bookmark updated websocket event', error);
+        logError('cannot handle bookmark sorted websocket event', error);
         return {error};
     }
 }
