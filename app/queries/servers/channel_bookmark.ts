@@ -91,6 +91,27 @@ export const queryBookmarks = (database: Database, channelId: string) => {
     );
 };
 
+export const getBookmarksSince = async (database: Database, channelId: string) => {
+    try {
+        const result = await database.get(CHANNEL_BOOKMARK).query(
+            Q.unsafeSqlQuery(
+                `SELECT 
+                    COALESCE(
+                        MAX (
+                            MAX(COALESCE(create_at, 0)),
+                            MAX(COALESCE(update_at, 0)),
+                            MAX(COALESCE(delete_at, 0))
+                        ) + 1, 0) as mostRecent
+            FROM ChannelBookmark
+            WHERE channel_id='${channelId}'`),
+        ).unsafeFetchRaw();
+
+        return result?.[0]?.mostRecent ?? 0;
+    } catch {
+        return 0;
+    }
+};
+
 export const observeBookmarks = (database: Database, channelId: string) => {
     return queryBookmarks(database, channelId).observe();
 };

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {buildQueryString} from '@utils/helpers';
+
 import type ClientBase from './base';
 
 export interface ClientChannelBookmarksMix {
@@ -8,7 +10,7 @@ export interface ClientChannelBookmarksMix {
     updateChannelBookmark(channelId: string, bookmark: ChannelBookmark, connectionId?: string): Promise<UpdateChannelBookmarkResponse>;
     updateChannelBookmarkSortOrder(channelId: string, bookmarkId: string, newSortOrder: number, connectionId?: string): Promise<ChannelBookmarkWithFileInfo[]>;
     deleteChannelBookmark(channelId: string, bookmarkId: string, connectionId?: string): Promise<ChannelBookmarkWithFileInfo>;
-    getChannelBookmarksForChannel(channelId: string): Promise<ChannelBookmarkWithFileInfo[]>;
+    getChannelBookmarksForChannel(channelId: string, since: number): Promise<ChannelBookmarkWithFileInfo[]>;
 }
 
 const ClientChannelBookmarks = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -63,10 +65,10 @@ const ClientChannelBookmarks = <TBase extends Constructor<ClientBase>>(superclas
         );
     }
 
-    getChannelBookmarksForChannel(channelId: string) {
+    getChannelBookmarksForChannel(channelId: string, since: number) {
         this.analytics?.trackAPI('api_channels_bookmark_get', {channel_id: channelId});
         return this.doFetch(
-            this.getChannelBookmarksRoute(channelId),
+            `${this.getChannelBookmarksRoute(channelId)}${buildQueryString({bookmarks_since: since})}`,
             {method: 'get'},
         );
     }

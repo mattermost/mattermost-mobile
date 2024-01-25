@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {shouldUpdateFileRecord} from '@database/operator/server_data_operator//comparators/files';
+import {shouldUpdateFileRecord} from '@database/operator/server_data_operator/comparators/files';
 import {
     transformConfigRecord,
     transformCustomEmojiRecord,

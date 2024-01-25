@@ -239,12 +239,8 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
         }
 
         const isCRT = isCRTEnabled ?? await getIsCRTEnabled(this.database);
-        const bookmarks: ChannelBookmark[] = [];
         const channelMap = channels.reduce((result: Record<string, Channel>, channel) => {
             result[channel.id] = channel;
-            if (channel.bookmarks?.length) {
-                bookmarks.push(...channel.bookmarks);
-            }
             return result;
         }, {});
 
@@ -291,34 +287,18 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
             return res;
         }, []);
 
-        if (!createOrUpdateRawValues.length && !bookmarks.length) {
+        if (!createOrUpdateRawValues.length) {
             return [];
         }
 
-        const batch: Model[] = [];
-
-        if (createOrUpdateRawValues.length) {
-            const myChannelModels = await this.handleRecords({
-                fieldName: 'id',
-                buildKeyRecordBy: buildMyChannelKey,
-                transformer: transformMyChannelRecord,
-                prepareRecordsOnly: true,
-                createOrUpdateRawValues,
-                tableName: MY_CHANNEL,
-            }, 'handleMyChannel');
-            batch.push(...myChannelModels);
-        }
-
-        if (bookmarks.length) {
-            const bookmarkModels = await this.handleChannelBookmark({bookmarks, prepareRecordsOnly: true});
-            batch.push(...bookmarkModels);
-        }
-
-        if (batch.length && !prepareRecordsOnly) {
-            await this.batchRecords(batch, 'handleMyChannels');
-        }
-
-        return batch;
+        return this.handleRecords({
+            fieldName: 'id',
+            buildKeyRecordBy: buildMyChannelKey,
+            transformer: transformMyChannelRecord,
+            prepareRecordsOnly,
+            createOrUpdateRawValues,
+            tableName: MY_CHANNEL,
+        }, 'handleMyChannel');
     };
 
     /**

@@ -19,11 +19,11 @@ export interface ClientChannelsMix {
     updateChannelPrivacy: (channelId: string, privacy: any) => Promise<Channel>;
     patchChannel: (channelId: string, channelPatch: Partial<Channel>) => Promise<Channel>;
     updateChannelNotifyProps: (props: ChannelNotifyProps & {channel_id: string; user_id: string}) => Promise<any>;
-    getChannel: (channelId: string, bookmarksSince?: number) => Promise<Channel>;
-    getChannelByName: (teamId: string, channelName: string, includeDeleted?: boolean, bookmarksSince?: number) => Promise<Channel>;
+    getChannel: (channelId: string) => Promise<Channel>;
+    getChannelByName: (teamId: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
     getChannelByNameAndTeamName: (teamName: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
-    getChannels: (teamId: string, page?: number, perPage?: number, bookmarksSince?: number) => Promise<Channel[]>;
-    getArchivedChannels: (teamId: string, page?: number, perPage?: number, bookmarksSince?: number) => Promise<Channel[]>;
+    getChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
+    getArchivedChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
     getSharedChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
     getMyChannels: (teamId: string, includeDeleted?: boolean, lastDeleteAt?: number) => Promise<Channel[]>;
     getMyChannelMember: (channelId: string) => Promise<ChannelMembership>;
@@ -41,7 +41,7 @@ export interface ClientChannelsMix {
     autocompleteChannelsForSearch: (teamId: string, name: string) => Promise<Channel[]>;
     searchChannels: (teamId: string, term: string) => Promise<Channel[]>;
     searchArchivedChannels: (teamId: string, term: string) => Promise<Channel[]>;
-    searchAllChannels: (term: string, teamIds: string[], archivedOnly?: boolean, bookmarksSince?: number) => Promise<Channel[]>;
+    searchAllChannels: (term: string, teamIds: string[], archivedOnly?: boolean) => Promise<Channel[]>;
     updateChannelMemberSchemeRoles: (channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean) => Promise<any>;
     getMemberInChannel: (channelId: string, userId: string) => Promise<ChannelMembership>;
     getGroupMessageMembersCommonTeams: (channelId: string) => Promise<Team[]>;
@@ -148,24 +148,19 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    getChannel = async (channelId: string, bookmarksSince = 0) => {
+    getChannel = async (channelId: string) => {
         this.analytics?.trackAPI('api_channel_get', {channel_id: channelId});
 
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}${buildQueryString({
-                include_bookmarks: true,
-                bookmarks_since: bookmarksSince,
-            })}`,
+            this.getChannelRoute(channelId),
             {method: 'get'},
         );
     };
 
-    getChannelByName = async (teamId: string, channelName: string, includeDeleted = false, bookmarksSince = 0) => {
+    getChannelByName = async (teamId: string, channelName: string, includeDeleted = false) => {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/channels/name/${channelName}${buildQueryString({
                 include_deleted: includeDeleted,
-                include_bookmarks: true,
-                bookmarks_since: bookmarksSince,
             })}`,
             {method: 'get'},
         );
@@ -180,25 +175,21 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    getChannels = async (teamId: string, page = 0, perPage = PER_PAGE_DEFAULT, bookmarksSince = 0) => {
+    getChannels = async (teamId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/channels${buildQueryString({
                 page,
                 per_page: perPage,
-                include_bookmarks: true,
-                bookmarks_since: bookmarksSince,
             })}`,
             {method: 'get'},
         );
     };
 
-    getArchivedChannels = async (teamId: string, page = 0, perPage = PER_PAGE_DEFAULT, bookmarksSince = 0) => {
+    getArchivedChannels = async (teamId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/channels/deleted${buildQueryString({
                 page,
                 per_page: perPage,
-                include_bookmarks: true,
-                bookmarks_since: bookmarksSince,
             })}`,
             {method: 'get'},
         );
@@ -216,8 +207,6 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
             `${this.getUserRoute('me')}/teams/${teamId}/channels${buildQueryString({
                 include_deleted: includeDeleted,
                 last_delete_at: since,
-                include_bookmarks: true,
-                bookmarks_since: since,
             })}`,
             {method: 'get'},
         );
@@ -335,7 +324,7 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    searchAllChannels = async (term: string, teamIds: string[], archivedOnly = false, bookmarksSince = 0) => {
+    searchAllChannels = async (term: string, teamIds: string[], archivedOnly = false) => {
         const queryParams = {include_deleted: false, system_console: false, exclude_default_channels: false};
         const body = {
             term,
@@ -345,8 +334,6 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
             exclude_group_constrained: true,
             public: true,
             private: false,
-            include_bookmarks: true,
-            bookmarks_since: bookmarksSince,
         };
 
         return this.doFetch(
