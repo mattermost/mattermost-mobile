@@ -124,7 +124,7 @@ export type CallSession = {
 export type ChannelsWithCalls = Dictionary<boolean>;
 
 export type CallsConnection = {
-    disconnect: () => void;
+    disconnect: (err?: Error) => void;
     mute: () => void;
     unmute: () => void;
     waitForPeerConnection: () => Promise<void>;

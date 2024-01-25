@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "2.12.0",
+  "version": "2.13.0",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
