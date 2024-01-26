@@ -190,6 +190,7 @@
   "global_threads.options.open_in_channel": "Otevřít v kanálu",
   "global_threads.options.title": "AKCE VLÁKNA",
   "global_threads.unreads": "nepřečtené",
+  "interactive_dialog.submit": "Odeslat",
   "last_users_message.added_to_channel.type": "byli **přidáni do kanálu** uživatelem {actor}.",
   "last_users_message.added_to_team.type": "byli **přidáni do týmu** uživatelem {actor}.",
   "last_users_message.first": "{firstUser} a ",
