@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {switchMap} from 'rxjs';
 
 import {observeFileById} from '@queries/servers/file';
 import {observeConfigValue} from '@queries/servers/system';
@@ -16,9 +17,14 @@ type Props = WithDatabaseArgs & {
 }
 
 const enhanced = withObservables([], ({bookmark, database}: Props) => {
+    const observed = bookmark.observe();
+    const file = observed.pipe(
+        switchMap((b) => observeFileById(database, b.fileId || '')),
+    );
+
     return {
-        bookmark: bookmark.observe(),
-        file: observeFileById(database, bookmark.fileId || ''),
+        bookmark: observed,
+        file,
         siteURL: observeConfigValue(database, 'SiteURL'),
     };
 });

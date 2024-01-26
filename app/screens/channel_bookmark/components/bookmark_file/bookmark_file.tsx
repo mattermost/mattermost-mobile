@@ -1,34 +1,41 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, type AlertButton} from 'react-native';
+import {View, Text, Platform} from 'react-native';
+import Button from 'react-native-button';
 import {Shadow} from 'react-native-shadow-2';
 
-import Button from '@components/button';
-import File from '@components/files/file';
+import {uploadFile} from '@actions/remote/file';
+import CompassIcon from '@app/components/compass_icon';
+import FileIcon from '@app/components/files/file_icon';
+import ProgressBar from '@app/components/progress_bar';
 import FormattedText from '@components/formatted_text';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {fileSizeWarning, getExtensionFromMime} from '@utils/file';
+import {fileSizeWarning, getExtensionFromMime, getFormattedFileSize} from '@utils/file';
 import PickerUtil from '@utils/file/file_picker';
-import {emptyFunction} from '@utils/general';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {ClientResponse} from '@mattermost/react-native-network-client';
+
 type Props = {
+    channelId: string;
     close: () => void;
     disabled: boolean;
     initialFile?: FileInfo;
     maxFileSize: number;
-    onError: (error: string, buttons?: AlertButton[]) => void;
     setBookmark: (file: ExtractedFileInfo) => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     viewContainer: {
-        marginVertical: 32,
+        marginTop: 32,
+        marginBottom: 24,
         width: '100%',
         flex: 0,
     },
@@ -37,25 +44,164 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginBottom: 8,
         ...typography('Heading', 100, 'SemiBold'),
     },
-    shadowContainer: {flexDirection: 'row', marginBottom: 16, alignItems: 'center'},
+    shadowContainer: {
+        alignItems: 'center',
+        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+        borderWidth: 1,
+        borderRadius: 4,
+    },
+    fileContainer: {
+        height: 64,
+        flexDirection: 'row',
+        paddingLeft: 12,
+        alignItems: 'center',
+    },
+    fileInfoContainer: {
+        paddingHorizontal: 16,
+        flex: 1,
+        justifyContent: 'center',
+    },
+    filename: {
+        color: theme.centerChannelColor,
+        ...typography('Body', 200, 'SemiBold'),
+    },
+    fileInfo: {
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+        textTransform: 'uppercase',
+        ...typography('Body', 75),
+    },
+    uploadError: {
+        color: theme.errorTextColor,
+        ...typography('Body', 75),
+    },
+    retry: {
+        paddingRight: 20,
+        height: 40,
+        justifyContent: 'center',
+    },
+    removeContainer: {
+        position: 'absolute',
+        elevation: 11,
+        top: -18,
+        right: -12,
+        width: 24,
+        height: 24,
+    },
+    removeButton: {
+        borderRadius: 12,
+        alignSelf: 'center',
+        marginTop: Platform.select({
+            ios: 5.4,
+            android: 4.75,
+        }),
+        backgroundColor: theme.centerChannelBg,
+        width: 24,
+        height: 25,
+    },
+    uploading: {
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+        ...typography('Body', 75),
+    },
+    progressContainer: {
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        bottom: 2,
+        borderBottomRightRadius: 4,
+        borderBottomLeftRadius: 4,
+    },
+    progress: {
+        borderRadius: 4,
+        borderTopRightRadius: 0,
+        borderTopLeftRadius: 0,
+    },
 }));
 
 const shadowSides = {top: false, bottom: true, end: true, start: false};
 
-const BookmarkFile = ({close, disabled, initialFile, maxFileSize, onError, setBookmark}: Props) => {
+const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, setBookmark}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const isTablet = useIsTablet();
+    const serverUrl = useServerUrl();
     const [file, setFile] = useState<ExtractedFileInfo|undefined>(initialFile);
+    const [error, setError] = useState('');
+    const [progress, setProgress] = useState(0);
+    const [uploading, setUploading] = useState(false);
+    const [failed, setFailed] = useState(false);
     const styles = getStyleSheet(theme);
-    const subContainerStyle = [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 0}];
+    const subContainerStyle = useMemo(() => [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 0}], [isTablet]);
+    const cancelUpload = useRef<() => void | undefined>();
+
+    const startUpload = (fileInfo: FileInfo | ExtractedFileInfo) => {
+        setUploading(true);
+
+        const {cancel, error: uploadError} = uploadFile(
+            serverUrl,
+            fileInfo,
+            channelId,
+            onProgress,
+            onComplete,
+            onError,
+            fileInfo.bytesRead,
+            true,
+        );
+
+        if (cancel) {
+            cancelUpload.current = cancel;
+        }
+
+        if (uploadError) {
+            setUploadError();
+            cancelUpload.current?.();
+        }
+    };
+
+    const onProgress = (p: number, bytes: number) => {
+        if (!file) {
+            return;
+        }
+
+        const f: ExtractedFileInfo = {...file};
+        f.bytesRead = bytes;
+
+        setProgress(p);
+        setFile(f);
+    };
+
+    const onComplete = (response: ClientResponse) => {
+        cancelUpload.current = undefined;
+        if (response.code !== 201 || !response.data) {
+            setUploadError();
+            return;
+        }
+
+        const data = response.data.file_infos as FileInfo[] | undefined;
+        if (!data?.length) {
+            setUploadError();
+            return;
+        }
+
+        const fileInfo = data[0];
+        setFile(fileInfo);
+        setBookmark(fileInfo);
+        setUploading(false);
+        setFailed(false);
+        setError('');
+    };
+
+    const onError = () => {
+        cancelUpload.current = undefined;
+        setUploadError();
+    };
 
     const browseFile = async () => {
         const picker = new PickerUtil(intl, (files) => {
             if (files.length) {
                 const f = files[0];
-                const extension = getExtensionFromMime(f.mime_type);
-                setFile({...f, extension});
+                const extension = getExtensionFromMime(f.mime_type) || '';
+                const fileWithExtension: ExtractedFileInfo = {...f, extension};
+                setFile(fileWithExtension);
+                startUpload(fileWithExtension);
             }
         });
 
@@ -65,37 +211,77 @@ const BookmarkFile = ({close, disabled, initialFile, maxFileSize, onError, setBo
         }
     };
 
+    const setUploadError = useCallback(() => {
+        setProgress(0);
+        setUploading(false);
+        setFailed(true);
+
+        setError(intl.formatMessage({
+            id: 'channel_bookmark.add.file_upload_error',
+            defaultMessage: 'Error uploading file. Please try again.',
+        }));
+    }, [file]);
+
+    const retry = useCallback(() => {
+        cancelUpload.current?.();
+        if (file) {
+            startUpload(file);
+        }
+    }, [file]);
+
+    const removeAndUpload = useCallback(() => {
+        cancelUpload.current?.();
+        browseFile();
+    }, [file]);
+
     useEffect(() => {
         if (!initialFile) {
             browseFile();
         }
+
+        return () => {
+            cancelUpload.current?.();
+        };
     }, []);
 
     useEffect(() => {
+        if (uploading) {
+            return;
+        }
+
         if (!file?.id && (file?.size || 0) > maxFileSize) {
-            onError(
-                fileSizeWarning(intl, maxFileSize), [{
-                    text: intl.formatMessage({
-                        id: 'channel_bookmark.add.file_select_another',
-                        defaultMessage: 'Select another file',
-                    }),
-                    onPress: browseFile,
-                    isPreferred: true,
-                }, {
-                    text: intl.formatMessage({
-                        id: 'channel_bookmark.add.file_cancel',
-                        defaultMessage: 'Cancel',
-                    }),
-                    onPress: close,
-                    style: 'cancel',
-                }]);
+            setError(fileSizeWarning(intl, maxFileSize));
             return;
         }
 
         if (!file?.id && file?.name) {
             setBookmark(file);
         }
-    }, [file, intl, maxFileSize]);
+    }, [file, intl, maxFileSize, uploading]);
+
+    let info;
+    if (error) {
+        info = (
+            <Text style={styles.uploadError}>
+                {error}
+            </Text>
+        );
+    } else if (uploading) {
+        info = (
+            <FormattedText
+                id='channel_bookmark.add.file_uploading'
+                defaultMessage='Uploading... ({progress}%)'
+                values={{progress: Math.ceil(progress * 100)}}
+                style={styles.uploading}
+            />
+        );
+    } else if (file) {
+        info = (
+            <Text style={styles.fileInfo}>
+                {`${file.extension} ${getFormattedFileSize(file.size || 0)}`}
+            </Text>
+        );
+    }
 
     if (file) {
         return (
@@ -111,34 +297,55 @@ const BookmarkFile = ({close, disabled, initialFile, maxFileSize, onError, setBo
                     distance={4}
                     sides={shadowSides}
                 >
-                    <File
-                        asCard={true}
-                        file={file as FileInfo}
-                        canDownloadFiles={true}
-                        galleryIdentifier='bookmark'
-                        index={0}
-                        onPress={emptyFunction}
-                        publicLinkEnabled={false}
-                        updateFileForGallery={emptyFunction}
-                        inViewPort={false}
-                        nonVisibleImagesCount={0}
-                        isSingleImage={true}
-                        wrapperWidth={0}
-                        resizeMode='contain'
-                        onPressDisabled={true}
-                    />
+                    <View style={styles.fileContainer}>
+                        <FileIcon file={file}/>
+                        <View style={styles.fileInfoContainer}>
+                            <Text
+                                numberOfLines={1}
+                                ellipsizeMode='tail'
+                                style={styles.filename}
+                            >
+                                {decodeURIComponent(file.name.trim())}
+                            </Text>
+                            {info}
+                        </View>
+                        {failed &&
+                        <Button
+                            onPress={retry}
+                            containerStyle={styles.retry}
+                        >
+                            <CompassIcon
+                                color={changeOpacity(theme.centerChannelColor, 0.56)}
+                                name='refresh'
+                                size={20}
+                            />
+                        </Button>
+                        }
+                    </View>
+                    <TouchableWithFeedback
+                        disabled={disabled}
+                        style={styles.removeContainer}
+                        onPress={removeAndUpload}
+                        type='opacity'
+                    >
+                        <View style={styles.removeButton}>
+                            <CompassIcon
+                                name='close-circle'
+                                color={changeOpacity(theme.centerChannelColor, disabled ? 0.16 : 0.56)}
+                                size={24}
+                            />
+                        </View>
+                    </TouchableWithFeedback>
                 </Shadow>
-                <Button
-                    theme={theme}
-                    size='m'
-                    emphasis='primary'
-                    buttonType='default'
-                    text={intl.formatMessage({id: 'channel_bookmark_edit', defaultMessage: 'Edit'})}
-                    onPress={browseFile}
-                    iconName='pencil-outline'
-                    iconSize={18}
-                    disabled={disabled}
-                />
+                {Boolean(progress) &&
+                <View style={styles.progressContainer}>
+                    <ProgressBar
+                        progress={0}
+                        color={theme.buttonBg}
+                        style={styles.progress}
+                    />
+                </View>
+                }
             </View>
         );
     }

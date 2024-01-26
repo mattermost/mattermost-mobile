@@ -113,5 +113,5 @@ export const getBookmarksSince = async (database: Database, channelId: string) =
 };
 
 export const observeBookmarks = (database: Database, channelId: string) => {
-    return queryBookmarks(database, channelId).observe();
+    return queryBookmarks(database, channelId).observeWithColumns(['file_id']);
 };

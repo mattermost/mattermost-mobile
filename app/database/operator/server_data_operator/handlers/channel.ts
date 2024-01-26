@@ -380,11 +380,11 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
         ).fetch();
         const bookmarkMap = new Map<string, ChannelBookmarkModel>(existing.map((b) => [b.id, b]));
         const files: FileInfo[] = [];
-        const raws = uniqueRaws.reduce<{createOrUpdaetRaws: ChannelBookmarkWithFileInfo[]; deleteRaws: ChannelBookmarkWithFileInfo[]}>((res, b) => {
+        const raws = uniqueRaws.reduce<{createOrUpdateRaws: ChannelBookmarkWithFileInfo[]; deleteRaws: ChannelBookmarkWithFileInfo[]}>((res, b) => {
             const e = bookmarkMap.get(b.id);
             if (!e) {
                 if (!b.delete_at) {
-                    res.createOrUpdaetRaws.push(b);
+                    res.createOrUpdateRaws.push(b);
                     if (b.file) {
                         files.push(b.file);
                     }
@@ -393,7 +393,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
             }
 
             if (e.updateAt !== b.update_at) {
-                res.createOrUpdaetRaws.push(b);
+                res.createOrUpdateRaws.push(b);
                 if (b.file) {
                     files.push(b.file);
                 }
@@ -408,16 +408,16 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
             }
 
             return res;
-        }, {createOrUpdaetRaws: [], deleteRaws: []});
+        }, {createOrUpdateRaws: [], deleteRaws: []});
 
-        if (!raws.createOrUpdaetRaws.length && !raws.deleteRaws.length) {
+        if (!raws.createOrUpdateRaws.length && !raws.deleteRaws.length) {
             return [];
         }
 
         const preparedBookmarks = await this.handleRecords({
             fieldName: 'id',
             transformer: transformChannelBookmarkRecord,
-            createOrUpdateRawValues: raws.createOrUpdaetRaws,
+            createOrUpdateRawValues: raws.createOrUpdateRaws,
             deleteRawValues: raws.deleteRaws,
             tableName: CHANNEL_BOOKMARK,
             prepareRecordsOnly: true,

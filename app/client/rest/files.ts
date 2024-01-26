@@ -12,7 +12,7 @@ export interface ClientFilesMix {
     getFilePreviewUrl: (fileId: string, timestamp: number) => string;
     getFilePublicLink: (fileId: string) => Promise<{link: string}>;
     uploadAttachment: (
-        file: FileInfo,
+        file: FileInfo | ExtractedFileInfo,
         channelId: string,
         onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
         onComplete: (response: ClientResponse) => void,
@@ -60,7 +60,7 @@ const ClientFiles = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     uploadAttachment = (
-        file: FileInfo,
+        file: FileInfo | ExtractedFileInfo,
         channelId: string,
         onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
         onComplete: (response: ClientResponse) => void,

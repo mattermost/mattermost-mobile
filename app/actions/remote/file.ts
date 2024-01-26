@@ -23,7 +23,7 @@ export const downloadProfileImage = (serverUrl: string, userId: string, lastPict
 
 export const uploadFile = (
     serverUrl: string,
-    file: FileInfo,
+    file: FileInfo | ExtractedFileInfo,
     channelId: string,
     onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void = () => {/*Do Nothing*/},
     onComplete: (response: ClientResponse) => void = () => {/*Do Nothing*/},
