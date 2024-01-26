@@ -170,7 +170,7 @@ const ChannelBookmark = ({
             file: file?.toFileInfo(bookmark.ownerId),
             canDeleteBookmarks,
         }, options);
-    }, [bookmark, canDeleteBookmarks, theme]);
+    }, [bookmark, file, canDeleteBookmarks, theme]);
 
     const handleDelete = useCallback(async () => {
         const res = await deleteChannelBookmark(serverUrl, bookmark.channelId, bookmark.id);

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TextInput, View} from 'react-native';
 import Button from 'react-native-button';
@@ -13,6 +13,7 @@ import FileIcon from '@components/files/file_icon';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {openAsBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -70,7 +71,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName, setBookmarkEmoji, title}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
+    const paddingStyle = useMemo(() => ({paddingHorizontal: isTablet ? 42 : 0}), [isTablet]);
 
     const openEmojiPicker = useCallback(() => {
         openAsBottomSheet({
@@ -87,7 +90,7 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
     }, [imageUrl, file, theme, setBookmarkEmoji]);
 
     return (
-        <View>
+        <View style={paddingStyle}>
             <FormattedText
                 id='channel_bookmark.add.detail_title'
                 defaultMessage='Title'

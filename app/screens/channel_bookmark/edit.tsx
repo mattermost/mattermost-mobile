@@ -8,13 +8,10 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {addRecentReaction} from '@actions/local/reactions';
 import {deleteChannelBookmark, editChannelBookmark} from '@actions/remote/channel_bookmark';
-import {uploadFile} from '@actions/remote/file';
 import Button from '@components/button';
-import ProgressBar from '@components/progress_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useDidUpdate from '@hooks/did_update';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -23,7 +20,6 @@ import BookmarkDetail from './components/bookmark_detail';
 import AddBookmarkFile from './components/bookmark_file';
 import BookmarkLink from './components/bookmark_link';
 
-import type {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -54,7 +50,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const RIGHT_BUTTON = buildNavigationButton('edit-bookmark', 'channel_bookmark.edit.save_button');
 const edges: Edge[] = ['bottom', 'left', 'right'];
-let cancelUpload: () => void | undefined;
 
 const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentId, closeButtonId, file: originalFile}: Props) => {
     const {formatMessage} = useIntl();
@@ -64,8 +59,6 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
     const [bookmark, setBookmark] = useState<ChannelBookmark>(original);
     const [file, setFile] = useState<ExtractedFileInfo|undefined>(originalFile);
     const [isSaving, setIsSaving] = useState(false);
-    const [progress, setProgress] = useState(0);
-    const [uploading, setUploading] = useState(false);
 
     const enableSaveButton = (enabled: boolean) => {
         setButtons(componentId, {
@@ -76,50 +69,6 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
                 enabled,
             }],
         });
-    };
-
-    const onProgress = (p: number, bytes: number) => {
-        if (!file) {
-            return;
-        }
-
-        const f: ExtractedFileInfo = {...file};
-        f.bytesRead = bytes;
-
-        setProgress(p);
-        setFile(f);
-    };
-
-    const onComplete = (response: ClientResponse) => {
-        if (!file || !bookmark) {
-            return;
-        }
-
-        if (response.code !== 201) {
-            handleError((response.data?.message as string | undefined) || 'Failed to upload the file: unknown error');
-            return;
-        }
-        if (!response.data) {
-            handleError('Failed to upload the file: no data received');
-            return;
-        }
-        const data = response.data.file_infos as FileInfo[] | undefined;
-        if (!data?.length) {
-            handleError('Failed to upload the file: no data received');
-            return;
-        }
-
-        const fileInfo = data[0];
-        setFile(fileInfo);
-        setUploading(false);
-        const b = {...bookmark, file_id: fileInfo.id};
-        updateBookmark(b);
-    };
-
-    const onError = (response: ClientResponseError) => {
-        const message = `upload error: ${response.message}` || 'Unkown error';
-        setUploading(false);
-        handleError(message);
     };
 
     const handleError = (error: string, buttons?: AlertButton[]) => {
@@ -162,6 +111,7 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
             ...bookmark,
             display_name: decodeURIComponent(f.name),
             type: 'file',
+            file_id: f.id,
         };
         setBookmarkToSave(b);
         setFile(f);
@@ -196,7 +146,7 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
     }, [bookmark, original, serverUrl]);
 
     const setBookmarkToSave = useCallback((b: ChannelBookmark) => {
-        enableSaveButton(Boolean(b));
+        enableSaveButton((b?.type === 'link' && Boolean(b?.link_url)) || (b?.type === 'file' && Boolean(b.file_id)));
         setBookmark(b);
     }, [componentId, formatMessage, theme]);
 
@@ -209,17 +159,6 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
         if (bookmark) {
             enableSaveButton(false);
             setIsSaving(true);
-            if (file && !file.id) {
-                const {cancel, error} = uploadFile(serverUrl, file as FileInfo, bookmark.channel_id, onProgress, onComplete, onError);
-                if (cancel) {
-                    cancelUpload = cancel;
-                }
-                if (error) {
-                    handleError((error as Error).message);
-                }
-                return;
-            }
-
             updateBookmark(bookmark);
         }
     }, [close, setBookmarkToSave, serverUrl, bookmark, file]);
@@ -259,12 +198,6 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
         );
     }, [bookmark, handleDelete]);
 
-    useDidUpdate(() => {
-        if (cancelUpload && uploading) {
-            cancelUpload();
-        }
-    }, [cancelUpload, uploading]);
-
     useEffect(() => {
         enableSaveButton(false);
     }, []);
@@ -289,10 +222,10 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
             }
             {bookmark.type === 'file' &&
                 <AddBookmarkFile
+                    channelId={bookmark.channel_id}
                     close={close}
                     disabled={isSaving}
                     initialFile={originalFile}
-                    onError={handleError}
                     setBookmark={setFileBookmark}
                 />
             }
@@ -307,14 +240,6 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
                     setBookmarkDisplayName={setBookmarkDisplayName}
                     setBookmarkEmoji={setBookmarkEmoji}
                 />
-                {Boolean(progress) &&
-                <View style={styles.progress}>
-                    <ProgressBar
-                        progress={progress || 0}
-                        color={theme.buttonBg}
-                    />
-                </View>
-                }
                 {canDeleteBookmarks &&
                 <View style={styles.deleteContainer}>
                     <Button
