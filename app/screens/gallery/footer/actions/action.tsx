@@ -5,7 +5,15 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Platform, Pressable, type PressableAndroidRippleConfig, type PressableStateCallbackType, type StyleProp, type ViewStyle} from 'react-native';
+import {
+    Platform,
+    Pressable,
+    type PressableAndroidRippleConfig,
+    type PressableStateCallbackType,
+    type StyleProp,
+    StyleSheet,
+    type ViewStyle,
+} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity} from '@utils/theme';
@@ -26,11 +34,21 @@ const pressedStyle = ({pressed}: PressableStateCallbackType) => {
     return [{opacity}];
 };
 
+const baseStyle = StyleSheet.create({
+    container: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+});
+
 const androidRippleConfig: PressableAndroidRippleConfig = {borderless: true, radius: 24, color: '#FFF'};
 
 const Action = ({disabled, iconName, onPress, style}: Props) => {
     const pressableStyle = useCallback((pressed: PressableStateCallbackType) => ([
         pressedStyle(pressed),
+        baseStyle.container,
         style,
     ]), [style]);
 
@@ -38,7 +56,7 @@ const Action = ({disabled, iconName, onPress, style}: Props) => {
         <Pressable
             android_ripple={androidRippleConfig}
             disabled={disabled}
-            hitSlop={24}
+            hitSlop={4}
             onPress={onPress}
             style={pressableStyle}
         >

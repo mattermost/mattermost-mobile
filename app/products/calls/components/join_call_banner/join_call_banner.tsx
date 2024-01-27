@@ -25,7 +25,7 @@ type Props = {
     channelId: string;
     callId: string;
     serverUrl: string;
-    participants: UserModel[];
+    userModels: UserModel[];
     channelCallStartTime: number;
     limitRestrictedInfo: LimitRestrictedInfo;
 }
@@ -134,7 +134,7 @@ const JoinCallBanner = ({
     channelId,
     callId,
     serverUrl,
-    participants,
+    userModels,
     channelCallStartTime,
     limitRestrictedInfo,
 }: Props) => {
@@ -191,7 +191,7 @@ const JoinCallBanner = ({
                 <UserAvatarsStack
                     channelId={channelId}
                     location={Screens.CHANNEL}
-                    users={participants}
+                    users={userModels}
                     breakAt={3}
                     avatarStyle={style.avatarStyle}
                     overflowContainerStyle={style.overflowContainer}

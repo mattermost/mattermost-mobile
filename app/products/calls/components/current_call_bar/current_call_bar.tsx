@@ -12,25 +12,25 @@ import CallDuration from '@calls/components/call_duration';
 import MessageBar from '@calls/components/message_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
-import {setCallQualityAlertDismissed, setMicPermissionsErrorDismissed} from '@calls/state';
+import {setCallQualityAlertDismissed, setMicPermissionsErrorDismissed, useCallsConfig} from '@calls/state';
 import {makeCallsTheme} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import {Calls, Screens} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {allOrientations, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
-import type {CallsTheme, CurrentCall} from '@calls/types/calls';
-import type UserModel from '@typings/database/models/servers/user';
+import type {CallSession, CallsTheme, CurrentCall} from '@calls/types/calls';
 import type {Options} from 'react-native-navigation';
 
 type Props = {
     displayName: string;
     currentCall: CurrentCall | null;
-    userModelsDict: Dictionary<UserModel>;
+    sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
     micPermissionsGranted: boolean;
     threadScreen?: boolean;
@@ -135,12 +135,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
 const CurrentCallBar = ({
     displayName,
     currentCall,
-    userModelsDict,
+    sessionsDict,
     teammateNameDisplay,
     micPermissionsGranted,
     threadScreen,
 }: Props) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const {EnableTranscriptions} = useCallsConfig(serverUrl);
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
     const style = getStyleSheet(callsTheme);
     const intl = useIntl();
@@ -169,7 +171,7 @@ const CurrentCallBar = ({
         leaveCall();
     }, []);
 
-    const myParticipant = currentCall?.participants[currentCall.myUserId];
+    const mySession = currentCall?.sessions[currentCall.mySessionId];
 
     // Since we can only see one user talking, it doesn't really matter who we show here (e.g., we can't
     // tell who is speaking louder).
@@ -185,7 +187,7 @@ const CurrentCallBar = ({
     if (speaker) {
         talkingMessage = (
             <Text style={style.speakingUser}>
-                {displayUsername(userModelsDict[speaker], intl.locale, teammateNameDisplay)}
+                {displayUsername(sessionsDict[speaker].userModel, intl.locale, teammateNameDisplay)}
                 {' '}
                 <Text style={style.speakingPostfix}>{
                     formatMessage({
@@ -197,7 +199,7 @@ const CurrentCallBar = ({
     }
 
     const muteUnmute = () => {
-        if (myParticipant?.muted) {
+        if (mySession?.muted) {
             unmuteMyself();
         } else {
             muteMyself();
@@ -208,9 +210,9 @@ const CurrentCallBar = ({
 
     // The user should receive an alert if all of the following conditions apply:
     // - Recording has started and recording has not ended.
-    const isHost = Boolean(currentCall?.hostId === myParticipant?.id);
+    const isHost = Boolean(currentCall?.hostId === mySession?.userId);
     if (currentCall?.recState?.start_at && !currentCall?.recState?.end_at) {
-        recordingAlert(isHost, intl);
+        recordingAlert(isHost, EnableTranscriptions, intl);
     }
 
     // The user should receive a recording finished alert if all of the following conditions apply:
@@ -233,7 +235,7 @@ const CurrentCallBar = ({
                 >
                     <View style={[!speaker && style.avatarOutline]}>
                         <CallAvatar
-                            userModel={userModelsDict[speaker || '']}
+                            userModel={sessionsDict[speaker || '']?.userModel}
                             speaking={Boolean(speaker)}
                             serverUrl={currentCall?.serverUrl || ''}
                             size={speaker ? 40 : 24}
@@ -254,11 +256,11 @@ const CurrentCallBar = ({
                     <View style={style.buttonContainer}>
                         <Pressable
                             onPress={muteUnmute}
-                            style={[style.pressable, style.micIconContainer, myParticipant?.muted && style.muted]}
+                            style={[style.pressable, style.micIconContainer, mySession?.muted && style.muted]}
                             disabled={!micPermissionsGranted}
                         >
                             <UnavailableIconWrapper
-                                name={myParticipant?.muted ? 'microphone-off' : 'microphone'}
+                                name={mySession?.muted ? 'microphone-off' : 'microphone'}
                                 size={24}
                                 unavailable={!micPermissionsGranted}
                                 style={style.micIcon}

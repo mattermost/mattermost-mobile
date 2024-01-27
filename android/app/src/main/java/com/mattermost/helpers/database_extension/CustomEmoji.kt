@@ -1,9 +1,9 @@
 package com.mattermost.helpers.database_extension
 
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 import org.json.JSONArray
 
-internal fun insertCustomEmojis(db: Database, customEmojis: JSONArray) {
+internal fun insertCustomEmojis(db: WMDatabase, customEmojis: JSONArray) {
     for (i in 0 until customEmojis.length()) {
         try {
             val emoji = customEmojis.getJSONObject(i)

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useMemo, type ReactNode} from 'react';
 import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 import RNButton from 'react-native-button';
 
@@ -21,6 +21,7 @@ type Props = ConditionalProps & {
     testID?: string;
     onPress: () => void;
     text: string;
+    iconComponent?: ReactNode;
 }
 
 const styles = StyleSheet.create({
@@ -41,6 +42,7 @@ const Button = ({
     testID,
     iconName,
     iconSize,
+    iconComponent,
 }: Props) => {
     const bgStyle = useMemo(() => [
         buttonBackgroundStyle(theme, size, emphasis, buttonType, buttonState),
@@ -61,6 +63,21 @@ const Button = ({
         [iconSize],
     );
 
+    let icon: ReactNode;
+
+    if (iconComponent) {
+        icon = iconComponent;
+    } else if (iconName) {
+        icon = (
+            <CompassIcon
+                name={iconName!}
+                size={iconSize}
+                color={StyleSheet.flatten(txtStyle).color}
+                style={styles.icon}
+            />
+        );
+    }
+
     return (
         <RNButton
             containerStyle={bgStyle}
@@ -68,14 +85,7 @@ const Button = ({
             testID={testID}
         >
             <View style={containerStyle}>
-                {Boolean(iconName) &&
-                <CompassIcon
-                    name={iconName!}
-                    size={iconSize}
-                    color={StyleSheet.flatten(txtStyle).color}
-                    style={styles.icon}
-                />
-                }
+                {icon}
                 <Text
                     style={txtStyle}
                     numberOfLines={1}

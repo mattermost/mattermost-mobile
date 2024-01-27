@@ -31,7 +31,7 @@ class WebsocketManager {
     private isBackgroundTimerRunning = false;
     private netConnected = false;
     private previousActiveState: boolean;
-    private statusUpdatesIntervalIDs: Record<string, NodeJS.Timer> = {};
+    private statusUpdatesIntervalIDs: Record<string, NodeJS.Timeout> = {};
     private backgroundIntervalId: number | undefined;
     private firstConnectionSynced: Record<string, boolean> = {};
 
@@ -70,6 +70,10 @@ class WebsocketManager {
     };
 
     public createClient = (serverUrl: string, bearerToken: string, storedLastDisconnect = 0) => {
+        if (this.clients[serverUrl]) {
+            this.invalidateClient(serverUrl);
+        }
+
         const client = new WebSocketClient(serverUrl, bearerToken, storedLastDisconnect);
 
         client.setFirstConnectCallback(() => this.onFirstConnect(serverUrl));

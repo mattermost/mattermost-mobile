@@ -59,8 +59,8 @@ export class WebSocketClient extends EventEmitter {
             this.emit('error', err);
         };
 
-        this.ws.onclose = () => {
-            this.emit('close');
+        this.ws.onclose = (event: WebSocketCloseEvent) => {
+            this.emit('close', event);
             if (!this.closed) {
                 this.reconnect();
             }

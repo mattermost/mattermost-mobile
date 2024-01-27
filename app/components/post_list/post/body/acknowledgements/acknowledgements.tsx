@@ -22,7 +22,6 @@ import {typography} from '@utils/typography';
 import UsersList from './users_list';
 import {USER_ROW_HEIGHT} from './users_list/user_list_item';
 
-import type {BottomSheetProps} from '@gorhom/bottom-sheet';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -146,7 +145,7 @@ const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, loc
 
         const snapPoint1 = bottomSheetSnapPoint(Math.min(userIds.length, 5), USER_ROW_HEIGHT, bottom) + TITLE_HEIGHT;
         const snapPoint2 = height * 0.8;
-        const snapPoints: BottomSheetProps['snapPoints'] = [1, Math.min(snapPoint1, snapPoint2)];
+        const snapPoints: number[] = [1, Math.min(snapPoint1, snapPoint2)];
         if (userIds.length > 5 && snapPoint1 < snapPoint2) {
             snapPoints.push(snapPoint2);
         }

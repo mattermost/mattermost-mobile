@@ -47,6 +47,7 @@ if (global.HermesInternal) {
     require('@formatjs/intl-numberformat/polyfill');
     require('@formatjs/intl-datetimeformat/polyfill');
     require('@formatjs/intl-datetimeformat/add-golden-tz');
+    require('@formatjs/intl-listformat/polyfill');
 }
 
 if (Platform.OS === 'android') {

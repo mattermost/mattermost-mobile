@@ -35,7 +35,7 @@ type LogoutCallbackArg = {
 class SessionManager {
     private previousAppState: AppStateStatus;
     private scheduling = false;
-    private terminatingSessionUrl: undefined|string;
+    private terminatingSessionUrl = new Set<string>();
 
     constructor() {
         if (Platform.OS === 'android') {
@@ -162,9 +162,11 @@ class SessionManager {
     };
 
     private onLogout = async ({serverUrl, removeServer}: LogoutCallbackArg) => {
-        if (this.terminatingSessionUrl === serverUrl) {
+        if (this.terminatingSessionUrl.has(serverUrl)) {
             return;
         }
+        this.terminatingSessionUrl.add(serverUrl);
+
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         const activeServerDisplayName = await DatabaseManager.getActiveServerDisplayName();
 
@@ -190,10 +192,11 @@ class SessionManager {
 
             relaunchApp({launchType, serverUrl, displayName});
         }
+        this.terminatingSessionUrl.delete(serverUrl);
     };
 
     private onSessionExpired = async (serverUrl: string) => {
-        this.terminatingSessionUrl = serverUrl;
+        this.terminatingSessionUrl.add(serverUrl);
         await logout(serverUrl, false, false, true);
         await this.terminateSession(serverUrl, false);
 
@@ -206,7 +209,7 @@ class SessionManager {
         } else {
             EphemeralStore.theme = undefined;
         }
-        this.terminatingSessionUrl = undefined;
+        this.terminatingSessionUrl.delete(serverUrl);
     };
 }
 

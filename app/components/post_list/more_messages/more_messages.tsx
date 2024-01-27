@@ -7,7 +7,7 @@ import Animated, {interpolate, useAnimatedStyle, useSharedValue, withSpring} fro
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {resetMessageCount} from '@actions/local/channel';
-import {useCallsAdjustment} from '@app/products/calls/hooks';
+import {useCallsAdjustment} from '@calls/hooks';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';

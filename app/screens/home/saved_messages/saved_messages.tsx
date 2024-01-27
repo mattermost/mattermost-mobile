@@ -184,8 +184,6 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, i
                         <RoundedHeaderContext/>
                     </Animated.View>
                     <AnimatedFlatList
-
-                        // @ts-expect-error old style ref
                         ref={scrollRef}
                         contentContainerStyle={paddingTop}
                         ListEmptyComponent={emptyList}

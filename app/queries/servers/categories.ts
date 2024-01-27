@@ -34,6 +34,10 @@ export const queryCategoriesByTeamIds = (database: Database, teamIds: string[]) 
     return database.get<CategoryModel>(CATEGORY).query(Q.where('team_id', Q.oneOf(teamIds)));
 };
 
+export const queryCategoryChannelsByChannelId = (database: Database, channelId: string) => {
+    return database.get<CategoryChannelModel>(CATEGORY_CHANNEL).query(Q.where('channel_id', Q.eq(channelId)));
+};
+
 export async function prepareCategoriesAndCategoriesChannels(operator: ServerDataOperator, categories: CategoryWithChannels[], prune = false) {
     try {
         const {database} = operator;
@@ -45,20 +49,34 @@ export async function prepareCategoriesAndCategoriesChannels(operator: ServerDat
         const models = await Promise.all(modelPromises);
         const flattenedModels = models.flat();
 
+        const teamIdToChannelIds = new Map<String, Set<String>>();
+        categories.forEach((category) => {
+            const value = teamIdToChannelIds.get(category.team_id) || new Set();
+            category.channel_ids.forEach(value.add, value);
+            teamIdToChannelIds.set(category.team_id, value);
+        });
+
         if (prune && categories.length) {
             const remoteCategoryIds = new Set(categories.map((cat) => cat.id));
 
             // If the passed categories have more than one team, we want to update across teams
             const teamIds = pluckUnique('team_id')(categories) as string[];
             const localCategories = await queryCategoriesByTeamIds(database, teamIds).fetch();
-            const customCategories = localCategories.filter((c) => c.type === 'custom');
-            for await (const custom of customCategories) {
-                if (!remoteCategoryIds.has(custom.id)) {
-                    const categoryChannels = await custom.categoryChannels.fetch();
-                    for (const cc of categoryChannels) {
+
+            for await (const localCategory of localCategories) {
+                const localCategoryChannels = await localCategory.categoryChannels.fetch();
+
+                if (remoteCategoryIds.has(localCategory.id)) {
+                    for (const localCC of localCategoryChannels) {
+                        if (!teamIdToChannelIds.get(localCategory.teamId)?.has(localCC.channelId)) {
+                            flattenedModels.push(localCC.prepareDestroyPermanently());
+                        }
+                    }
+                } else {
+                    for (const cc of localCategoryChannels) {
                         flattenedModels.push(cc.prepareDestroyPermanently());
                     }
-                    flattenedModels.push(custom.prepareDestroyPermanently());
+                    flattenedModels.push(localCategory.prepareDestroyPermanently());
                 }
             }
         }

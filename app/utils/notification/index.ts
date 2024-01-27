@@ -6,6 +6,7 @@ import {createIntl, type IntlShape} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
+import {NOTIFICATION_TYPE} from '@constants/push_notification';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import PushNotifications from '@init/push_notifications';
 import {popToRoot} from '@screens/navigation';
@@ -24,7 +25,7 @@ export const convertToNotificationData = (notification: Notification, tapped = t
             channel_name: payload.channel_name,
             identifier: payload.identifier || notification.identifier,
             from_webhook: payload.from_webhook,
-            message: ((payload.type === 'message') ? payload.message || notification.body : payload.body),
+            message: ((payload.type === NOTIFICATION_TYPE.MESSAGE) ? payload.message || notification.body : payload.body),
             override_icon_url: payload.override_icon_url,
             override_username: payload.override_username,
             post_id: payload.post_id,
@@ -35,6 +36,7 @@ export const convertToNotificationData = (notification: Notification, tapped = t
             server_url: payload.server_url,
             team_id: payload.team_id,
             type: payload.type,
+            sub_type: payload.sub_type,
             use_user_icon: payload.use_user_icon,
             version: payload.version,
             isCRTEnabled: typeof payload.is_crt_enabled === 'string' ? payload.is_crt_enabled === 'true' : Boolean(payload.is_crt_enabled),

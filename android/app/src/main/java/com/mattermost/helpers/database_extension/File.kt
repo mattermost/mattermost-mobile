@@ -1,10 +1,10 @@
 package com.mattermost.helpers.database_extension
 
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 import org.json.JSONArray
 import org.json.JSONException
 
-internal fun insertFiles(db: Database, files: JSONArray) {
+internal fun insertFiles(db: WMDatabase, files: JSONArray) {
     try {
         for (i in 0 until files.length()) {
             val file = files.getJSONObject(i)

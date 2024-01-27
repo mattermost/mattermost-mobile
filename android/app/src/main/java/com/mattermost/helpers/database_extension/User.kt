@@ -4,9 +4,9 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.NoSuchKeyException
 import com.facebook.react.bridge.ReadableArray
 import com.mattermost.helpers.ReadableMapUtils
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 
-fun getLastPictureUpdate(db: Database?, userId: String): Double? {
+fun getLastPictureUpdate(db: WMDatabase?, userId: String): Double? {
     try {
         if (db != null) {
             var id = userId
@@ -28,7 +28,7 @@ fun getLastPictureUpdate(db: Database?, userId: String): Double? {
     return null
 }
 
-fun getCurrentUserLocale(db: Database): String {
+fun getCurrentUserLocale(db: WMDatabase): String {
     try {
         val currentUserId = queryCurrentUserId(db) ?: return "en"
         val userQuery = "SELECT locale FROM User WHERE id=?"
@@ -45,7 +45,7 @@ fun getCurrentUserLocale(db: Database): String {
     return "en"
 }
 
-fun handleUsers(db: Database, users: ReadableArray) {
+fun handleUsers(db: WMDatabase, users: ReadableArray) {
     for (i in 0 until users.size()) {
         val user = users.getMap(i)
         val roles =  user.getString("roles") ?: ""

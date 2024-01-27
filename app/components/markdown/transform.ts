@@ -5,7 +5,7 @@ import {Node, type NodeType} from 'commonmark';
 
 import {escapeRegex} from '@utils/markdown';
 
-import type {SearchPattern, UserMentionKey} from '@typings/global/markdown';
+import type {HighlightWithoutNotificationKey, SearchPattern, UserMentionKey} from '@typings/global/markdown';
 
 /* eslint-disable no-underscore-dangle */
 
@@ -174,6 +174,55 @@ export function mentionKeysToPatterns(mentionKeys: UserMentionKey[]) {
     });
 }
 
+export function highlightWithoutNotification(ast: Node, highlightKeys: HighlightWithoutNotificationKey[]) {
+    const walker = ast.walker();
+
+    const patterns = highlightKeysToPatterns(highlightKeys);
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node = e.node;
+        if (node.type === 'text' && node.literal) {
+            const {index, length} = getFirstMatch(node.literal, patterns);
+
+            // If the text node doesn't match any of the patterns, skip the loop
+            if (index === -1) {
+                continue;
+            }
+
+            const matchNode = highlightTextNode(node, index, index + length, 'highlight_without_notification');
+
+            // Resume processing on the next node after the match node which may include any remaining text
+            // that was part of this one
+            walker.resumeAt(matchNode, false);
+        }
+    }
+    return ast;
+}
+
+export function highlightKeysToPatterns(highlightKeys: HighlightWithoutNotificationKey[]) {
+    if (highlightKeys.length === 0) {
+        return [];
+    }
+
+    return highlightKeys.
+        filter((highlight) => highlight.key.trim() !== '').
+        sort((a, b) => b.key.length - a.key.length).
+        map(({key}) => {
+            if (cjkPattern.test(key)) {
+                // If the key contains Chinese, Japanese, Korean or Russian characters, don't mark word boundaries
+                return new RegExp(`${escapeRegex(key)}`, 'gi');
+            }
+
+            // If the key contains only English characters, mark word boundaries
+            return new RegExp(`(^|\\b)(${escapeRegex(key)})(?=_*\\b)`, 'gi');
+        });
+}
+
 export function highlightSearchPatterns(ast: Node, searchPatterns: SearchPattern[]) {
     const walker = ast.walker();
 
@@ -212,14 +261,22 @@ export function getFirstMatch(str: string, patterns: RegExp[]) {
     let firstMatchLength = -1;
 
     for (const pattern of patterns) {
-        const match = pattern.exec(str);
-        if (!match || match[0] === '') {
+        let matchResult;
+        if (pattern.global || pattern.sticky) {
+            // Since regex objects are stateful in global or sticky flags, we need to reset
+            const regex = new RegExp(pattern.source, pattern.flags);
+            matchResult = regex.exec(str);
+        } else {
+            matchResult = pattern.exec(str);
+        }
+
+        if (!matchResult || matchResult[0] === '') {
             continue;
         }
 
-        if (firstMatchIndex === -1 || match.index < firstMatchIndex) {
-            firstMatchIndex = match.index;
-            firstMatchLength = match[0].length;
+        if (firstMatchIndex === -1 || matchResult.index < firstMatchIndex) {
+            firstMatchIndex = matchResult.index;
+            firstMatchLength = matchResult[0].length;
         }
     }
 

@@ -22,14 +22,22 @@ const style = StyleSheet.create({
 });
 
 type Props = {
-    channelId: string;
-    showJoinCallBanner: boolean;
-    showIncomingCalls: boolean;
-    isInACall: boolean;
+    channelId?: string;
+    showJoinCallBanner?: boolean;
+    showIncomingCalls?: boolean;
+    isInACall?: boolean;
     threadScreen?: boolean;
+    channelsScreen?: boolean;
 }
 
-const FloatingCallContainer = ({channelId, showJoinCallBanner, showIncomingCalls, isInACall, threadScreen}: Props) => {
+const FloatingCallContainer = ({
+    channelId,
+    showJoinCallBanner,
+    showIncomingCalls,
+    isInACall,
+    threadScreen,
+    channelsScreen,
+}: Props) => {
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
@@ -39,10 +47,13 @@ const FloatingCallContainer = ({channelId, showJoinCallBanner, showIncomingCalls
     const wrapperTop = {
         top: insets.top + topBarForTablet + topBarChannel,
     };
+    const wrapperBottom = {
+        bottom: 8,
+    };
 
     return (
-        <View style={[style.wrapper, wrapperTop]}>
-            {showJoinCallBanner &&
+        <View style={[style.wrapper, channelsScreen ? wrapperBottom : wrapperTop]}>
+            {showJoinCallBanner && channelId &&
                 <JoinCallBanner
                     serverUrl={serverUrl}
                     channelId={channelId}

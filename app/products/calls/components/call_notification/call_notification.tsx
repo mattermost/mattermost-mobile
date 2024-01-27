@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Pressable, Text, View} from 'react-native';
 
@@ -18,10 +18,13 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
+import {getServerDisplayName} from '@queries/app/servers';
 import ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
+
+import type ServersModel from '@typings/database/models/app/servers';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     outerContainer: {
@@ -38,6 +41,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         shadowOpacity: 0.12,
         shadowRadius: 4,
         elevation: 4,
+    },
+    outerContainerServerName: {
+        height: CALL_NOTIFICATION_BAR_HEIGHT + 8,
     },
     innerContainer: {
         flexDirection: 'row',
@@ -71,6 +77,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     textContainer: {
         flex: 1,
+        flexDirection: 'column',
         marginLeft: 8,
     },
     text: {
@@ -80,6 +87,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     boldText: {
         ...typography('Body', 100, 'SemiBold'),
         lineHeight: 20,
+    },
+    textServerName: {
+        ...typography('Heading', 25),
+        color: changeOpacity(theme.buttonColor, 0.72),
+        textTransform: 'uppercase',
     },
     dismissContainer: {
         alignItems: 'center',
@@ -93,6 +105,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
+    servers: ServersModel[];
     incomingCall: IncomingCallNotification;
     currentUserId: string;
     teammateNameDisplay: string;
@@ -101,6 +114,7 @@ type Props = {
 }
 
 export const CallNotification = ({
+    servers,
     incomingCall,
     currentUserId,
     teammateNameDisplay,
@@ -111,6 +125,8 @@ export const CallNotification = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
+    const [serverName, setServerName] = useState('');
+    const moreThanOneServer = servers.length > 1;
 
     useEffect(() => {
         const channelMembers = members?.filter((m) => m.userId !== currentUserId);
@@ -119,13 +135,24 @@ export const CallNotification = ({
         }
     }, []);
 
+    // We only need to getServerDisplayName once
+    useEffect(() => {
+        async function getName() {
+            setServerName(await getServerDisplayName(incomingCall.serverUrl));
+        }
+
+        if (moreThanOneServer) {
+            getName();
+        }
+    }, [moreThanOneServer, incomingCall.serverUrl]);
+
     const onContainerPress = useCallback(async () => {
-        if (serverUrl !== incomingCall.serverUrl) {
+        if (incomingCall.serverUrl !== serverUrl) {
             await DatabaseManager.setActiveServerDatabase(incomingCall.serverUrl);
             await WebsocketManager.initializeClient(incomingCall.serverUrl);
         }
         switchToChannelById(incomingCall.serverUrl, incomingCall.channelID);
-    }, [serverUrl, incomingCall]);
+    }, [incomingCall, serverUrl]);
 
     const onDismissPress = useCallback(() => {
         removeIncomingCall(serverUrl, incomingCall.callID, incomingCall.channelID);
@@ -143,7 +170,7 @@ export const CallNotification = ({
                     name: displayUsername(incomingCall.callerModel, intl.locale, teammateNameDisplay),
                 }}
                 style={style.text}
-                numberOfLines={2}
+                numberOfLines={1}
                 ellipsizeMode={'tail'}
             />
         );
@@ -158,14 +185,14 @@ export const CallNotification = ({
                     num: (members?.length || 2) - 1,
                 }}
                 style={style.text}
-                numberOfLines={2}
+                numberOfLines={1}
                 ellipsizeMode={'tail'}
             />
         );
     }
 
     return (
-        <View style={[style.outerContainer]}>
+        <View style={[style.outerContainer, moreThanOneServer && style.outerContainerServerName]}>
             <Pressable
                 style={[style.innerContainer, onCallsScreen && style.innerOnCallsScreen]}
                 onPress={onContainerPress}
@@ -180,6 +207,11 @@ export const CallNotification = ({
                 </View>
                 <View style={style.textContainer}>
                     {message}
+                    {moreThanOneServer &&
+                        <Text style={style.textServerName}>
+                            {serverName}
+                        </Text>
+                    }
                 </View>
                 <Pressable onPress={onDismissPress}>
                     <View style={style.dismissContainer}>

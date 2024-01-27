@@ -29,3 +29,5 @@ type EmailMappedObjects<E extends {email: string}> = {
 type Dictionary<T> = {
     [key: string]: T;
 };
+
+type Intersection<T1, T2> = Omit<Omit<T1&T2, keyof(Omit<T1, keyof(T2)>)>, keyof(Omit<T2, keyof(T1)>)>;

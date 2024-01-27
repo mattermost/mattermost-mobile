@@ -9,4 +9,9 @@ export default {
         Professional: 'professional',
         Enterprise: 'enterprise',
     },
+    SelfHostedProducts: {
+        STARTER: 'starter',
+        PROFESSIONAL: 'professional',
+        ENTERPRISE: 'enterprise',
+    },
 };

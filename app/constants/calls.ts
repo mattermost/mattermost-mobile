@@ -12,6 +12,13 @@ const RequiredServer = {
     PATCH_VERSION: 0,
 };
 
+const MultiSessionCallsVersion = {
+    FULL_VERSION: '0.21.0',
+    MAJOR_VERSION: 0,
+    MIN_VERSION: 21,
+    PATCH_VERSION: 0,
+};
+
 const PluginId = 'com.mattermost.calls';
 
 const REACTION_TIMEOUT = 10000;
@@ -26,6 +33,7 @@ export enum MessageBarType {
 export default {
     RefreshConfigMillis,
     RequiredServer,
+    MultiSessionCallsVersion,
     PluginId,
     REACTION_TIMEOUT,
     REACTION_LIMIT,

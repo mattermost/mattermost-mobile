@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
-import {t} from '@app/i18n';
-import {alertErrorWithFallback} from '@app/utils/draft';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
+import {alertErrorWithFallback} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
@@ -32,10 +31,10 @@ const IgnoreMentions = ({channelId, ignoring, displayName}: Props) => {
             alertErrorWithFallback(
                 intl,
                 result.error,
-                {
-                    id: t('channel_info.channel_auto_follow_threads_failed'),
+                defineMessage({
+                    id: 'channel_info.channel_auto_follow_threads_failed',
                     defaultMessage: 'An error occurred trying to auto follow all threads in channel {displayName}',
-                },
+                }),
                 {displayName},
             );
             setIgnored((v) => !v);

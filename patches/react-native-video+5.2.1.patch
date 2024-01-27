@@ -91,3 +91,91 @@ index becee6a..5d4b2cd 100644
      </LinearLayout>
  
  </LinearLayout>
+diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules/react-native-video/ios/Video/RCTVideo.m
+index a757c08..2e402e2 100644
+--- a/node_modules/react-native-video/ios/Video/RCTVideo.m
++++ b/node_modules/react-native-video/ios/Video/RCTVideo.m
+@@ -449,6 +449,7 @@ - (void)playerItemPrepareText:(AVAsset *)asset assetOptions:(NSDictionary * __nu
+   _allowsExternalPlayback = NO;
+ 
+   // sideload text tracks
++  NSLock *mixCompositionLock = [[NSLock alloc] init]; // mixComposition is not thread-safe; lock in the async blocks below
+   AVMutableComposition *mixComposition = [[AVMutableComposition alloc] init];
+ 
+   AVAssetTrack *videoAsset = [asset tracksWithMediaType:AVMediaTypeVideo].firstObject;
+@@ -466,30 +467,58 @@ - (void)playerItemPrepareText:(AVAsset *)asset assetOptions:(NSDictionary * __nu
+                             error:nil];
+ 
+   NSMutableArray* validTextTracks = [NSMutableArray array];
++  NSLock *validTextTracksLock = [[NSLock alloc] init]; // validTextTracks is not thread-safe
++  dispatch_group_t textTracksDispatchGroup = dispatch_group_create();
++
+   for (int i = 0; i < _textTracks.count; ++i) {
+     AVURLAsset *textURLAsset;
+-    NSString *textUri = [_textTracks objectAtIndex:i][@"uri"];
++    NSDictionary *curTrack = _textTracks[i]; // capture the current track, because we're going to set _textTracks in an async block below
++    NSString *textUri = curTrack[@"uri"];
++
+     if ([[textUri lowercaseString] hasPrefix:@"http"]) {
+       textURLAsset = [AVURLAsset URLAssetWithURL:[NSURL URLWithString:textUri] options:assetOptions];
+     } else {
+       textURLAsset = [AVURLAsset URLAssetWithURL:[self urlFilePath:textUri] options:nil];
+     }
+-    AVAssetTrack *textTrackAsset = [textURLAsset tracksWithMediaType:AVMediaTypeText].firstObject;
+-    if (!textTrackAsset) continue; // fix when there's no textTrackAsset
+-    [validTextTracks addObject:[_textTracks objectAtIndex:i]];
+-    AVMutableCompositionTrack *textCompTrack = [mixComposition
+-                                                addMutableTrackWithMediaType:AVMediaTypeText
+-                                                preferredTrackID:kCMPersistentTrackID_Invalid];
+-    [textCompTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, videoAsset.timeRange.duration)
+-                           ofTrack:textTrackAsset
+-                            atTime:kCMTimeZero
+-                             error:nil];
+-  }
+-  if (validTextTracks.count != _textTracks.count) {
+-    [self setTextTracks:validTextTracks];
+-  }
+-  
+-  handler([AVPlayerItem playerItemWithAsset:mixComposition]);
++
++    dispatch_group_enter(textTracksDispatchGroup); // completionHandler runs async
++
++    [textURLAsset loadTracksWithMediaType:AVMediaTypeText completionHandler:^(NSArray<AVAssetTrack *> * trackArr, NSError * error) {
++      if (error) {
++        RCTLogError(@"Error from loadTracksWithMediaType: %@", error);
++        dispatch_group_leave(textTracksDispatchGroup);
++        return;
++      }
++
++      AVAssetTrack *textTrackAsset = trackArr.firstObject;
++
++      if (!textTrackAsset) return;
++
++      [validTextTracksLock lock]; // validTextTracks is not thread-safe
++      [validTextTracks addObject:curTrack];
++      [validTextTracksLock unlock];
++
++      [mixCompositionLock lock]; // mixComposition is not thread-safe
++      AVMutableCompositionTrack *textCompTrack = [mixComposition
++                                                  addMutableTrackWithMediaType:AVMediaTypeText
++                                                  preferredTrackID:kCMPersistentTrackID_Invalid];
++      [textCompTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, videoAsset.timeRange.duration)
++                             ofTrack:textTrackAsset
++                              atTime:kCMTimeZero
++                               error:nil];
++      [mixCompositionLock unlock];
++
++      dispatch_group_leave(textTracksDispatchGroup);
++    }];
++  }
++
++  dispatch_group_notify(textTracksDispatchGroup, dispatch_get_main_queue(), ^{
++      if (validTextTracks.count > 0) {
++        [self setTextTracks:validTextTracks];
++      }
++
++      handler([AVPlayerItem playerItemWithAsset:mixComposition]);
++  });
+ }
+ 
+ - (void)playerItemForSource:(NSDictionary *)source withCallback:(void(^)(AVPlayerItem *))handler

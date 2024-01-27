@@ -7,9 +7,9 @@ import com.mattermost.helpers.PushNotificationDataRunnable
 import com.mattermost.helpers.database_extension.findByColumns
 import com.mattermost.helpers.database_extension.queryCurrentUserId
 import com.mattermost.helpers.database_extension.queryMyTeams
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 
-suspend fun PushNotificationDataRunnable.Companion.fetchMyTeamCategories(db: Database, serverUrl: String, teamId: String): ReadableMap? {
+suspend fun PushNotificationDataRunnable.Companion.fetchMyTeamCategories(db: WMDatabase, serverUrl: String, teamId: String): ReadableMap? {
     return try {
         val userId = queryCurrentUserId(db)
         val categories = fetch(serverUrl, "/api/v4/users/$userId/teams/$teamId/channels/categories")
@@ -20,7 +20,7 @@ suspend fun PushNotificationDataRunnable.Companion.fetchMyTeamCategories(db: Dat
     }
 }
 
-fun PushNotificationDataRunnable.Companion.addToDefaultCategoryIfNeeded(db: Database, channel: ReadableMap): ReadableArray? {
+fun PushNotificationDataRunnable.Companion.addToDefaultCategoryIfNeeded(db: WMDatabase, channel: ReadableMap): ReadableArray? {
     val channelId = channel.getString("id") ?: return null
     val channelType = channel.getString("type")
     val categoryChannels = Arguments.createArray()
@@ -44,7 +44,7 @@ fun PushNotificationDataRunnable.Companion.addToDefaultCategoryIfNeeded(db: Data
     return categoryChannels
 }
 
-private fun categoryChannelForTeam(db: Database, channelId: String, teamId: String?, type: String): ReadableMap? {
+private fun categoryChannelForTeam(db: WMDatabase, channelId: String, teamId: String?, type: String): ReadableMap? {
     teamId?.let { id ->
         val category = findByColumns(db, "Category", arrayOf("type", "team_id"), arrayOf(type, id))
         val categoryId = category?.getString("id")

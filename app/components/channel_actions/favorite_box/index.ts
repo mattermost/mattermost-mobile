@@ -1,11 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See LICENSE.txt for license information.
-
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {observeIsChannelFavorited} from '@queries/servers/categories';

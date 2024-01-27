@@ -11,6 +11,10 @@ export const NOTIFICATION_TYPE = {
     SESSION: 'session',
 };
 
+export const NOTIFICATION_SUB_TYPE = {
+    CALLS: 'calls',
+};
+
 export default {
     CATEGORY,
     NOTIFICATION_TYPE,

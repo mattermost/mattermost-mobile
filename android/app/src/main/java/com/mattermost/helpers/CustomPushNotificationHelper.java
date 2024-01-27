@@ -29,7 +29,7 @@ import androidx.core.app.RemoteInput;
 import androidx.core.graphics.drawable.IconCompat;
 
 import com.mattermost.rnbeta.*;
-import com.nozbe.watermelondb.Database;
+import com.nozbe.watermelondb.WMDatabase;
 
 import java.io.IOException;
 import java.util.Date;
@@ -81,7 +81,7 @@ public class CustomPushNotificationHelper {
                 .setKey(senderId)
                 .setName(senderName);
 
-        if (serverUrl != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
+        if (serverUrl != null && type != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
             try {
                 Bitmap avatar = userAvatar(context, serverUrl, senderId, urlOverride);
                 if (avatar != null) {
@@ -133,7 +133,7 @@ public class CustomPushNotificationHelper {
     private static void addNotificationReplyAction(Context context, NotificationCompat.Builder notification, Bundle bundle, int notificationId) {
         String postId = bundle.getString("post_id");
         String serverUrl = bundle.getString("server_url");
-        boolean canReply = bundle.containsKey("category") && bundle.getString("category").equals(CATEGORY_CAN_REPLY);
+        boolean canReply = bundle.containsKey("category") && Objects.equals(bundle.getString("category"), CATEGORY_CAN_REPLY);
 
         if (android.text.TextUtils.isEmpty(postId) || serverUrl == null || !canReply) {
             return;
@@ -183,7 +183,7 @@ public class CustomPushNotificationHelper {
         String rootId = bundle.getString("root_id");
         int notificationId = postId != null ? postId.hashCode() : MESSAGE_NOTIFICATION_ID;
 
-        boolean is_crt_enabled = bundle.containsKey("is_crt_enabled") && bundle.getString("is_crt_enabled").equals("true");
+        boolean is_crt_enabled = bundle.containsKey("is_crt_enabled") && Objects.equals(bundle.getString("is_crt_enabled"), "true");
         String groupId = is_crt_enabled && !android.text.TextUtils.isEmpty(rootId) ? rootId : channelId;
 
         addNotificationExtras(notification, bundle);
@@ -275,7 +275,7 @@ public class CustomPushNotificationHelper {
                 .setKey(senderId)
                 .setName("Me");
 
-        if (serverUrl != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
+        if (serverUrl != null && type != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
             try {
                 Bitmap avatar = userAvatar(context, serverUrl, "me", urlOverride);
                 if (avatar != null) {
@@ -418,7 +418,7 @@ public class CustomPushNotificationHelper {
             } else {
                 DatabaseHelper dbHelper = DatabaseHelper.Companion.getInstance();
                 if (dbHelper != null) {
-                    Database db = getDatabaseForServer(dbHelper, context, serverUrl);
+                    WMDatabase db = getDatabaseForServer(dbHelper, context, serverUrl);
                     if (db != null) {
                         lastUpdateAt = getLastPictureUpdate(db, userId);
                         if (lastUpdateAt == null) {

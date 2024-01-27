@@ -130,7 +130,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             } else if ((post.channel_id === currentChannelId)) {
                 const isChannelScreenMounted = NavigationStore.getScreensInStack().includes(Screens.CHANNEL);
 
-                const isTabletDevice = await isTablet();
+                const isTabletDevice = isTablet();
                 if (isChannelScreenMounted || isTabletDevice) {
                     markAsViewed = false;
                 }

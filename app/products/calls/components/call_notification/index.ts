@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import withObservables from '@nozbe/with-observables';
+import {withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
+import {observeAllActiveServers} from '@app/queries/app/servers';
 import {CallNotification} from '@calls/components/call_notification/call_notification';
 import DatabaseManager from '@database/manager';
 import {observeChannelMembers} from '@queries/servers/channel';
@@ -33,6 +34,7 @@ const enhanced = withObservables(['incomingCall'], ({incomingCall}: OwnProps) =>
     );
 
     return {
+        servers: observeAllActiveServers(),
         currentUserId,
         teammateNameDisplay,
         members,

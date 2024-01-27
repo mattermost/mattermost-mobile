@@ -111,6 +111,10 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
         mention_highlight: {
             color: theme.mentionHighlightLink,
         },
+        highlight_without_notification: {
+            backgroundColor: theme.mentionHighlightBg,
+            color: theme.mentionHighlightLink,
+        },
         search_highlight: {
             backgroundColor: theme.mentionHighlightBg,
             color: theme.mentionHighlightLink,

@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
+import {DatabaseProvider} from '@nozbe/watermelondb/react';
 import React, {type ComponentType, useEffect, useState} from 'react';
 
+import DeviceInfoProvider from '@context/device';
 import ServerProvider from '@context/server';
 import ThemeProvider from '@context/theme';
 import UserLocaleProvider from '@context/user_locale';
@@ -61,13 +62,15 @@ export function withServerDatabase<T extends JSX.IntrinsicAttributes>(Component:
                 database={state.database}
                 key={state.serverUrl}
             >
-                <UserLocaleProvider database={state.database}>
-                    <ServerProvider server={{displayName: state.serverDisplayName, url: state.serverUrl}}>
-                        <ThemeProvider database={state.database}>
-                            <Component {...props}/>
-                        </ThemeProvider>
-                    </ServerProvider>
-                </UserLocaleProvider>
+                <DeviceInfoProvider>
+                    <UserLocaleProvider database={state.database}>
+                        <ServerProvider server={{displayName: state.serverDisplayName, url: state.serverUrl}}>
+                            <ThemeProvider database={state.database}>
+                                <Component {...props}/>
+                            </ThemeProvider>
+                        </ServerProvider>
+                    </UserLocaleProvider>
+                </DeviceInfoProvider>
             </DatabaseProvider>
         );
     };

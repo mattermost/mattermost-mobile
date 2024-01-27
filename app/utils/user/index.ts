@@ -334,6 +334,7 @@ export function getNotificationProps(user?: UserModel) {
         first_name: (!user || !user.firstName) ? 'false' : 'true',
         mark_unread: 'all',
         mention_keys: user ? `${user.username},@${user.username}` : '',
+        highlight_keys: '',
         push: 'mention',
         push_status: 'online',
         push_threads: 'all',

@@ -1,0 +1,94 @@
+diff --git a/node_modules/react-native-reanimated/lib/.DS_Store b/node_modules/react-native-reanimated/lib/.DS_Store
+new file mode 100644
+index 0000000..42f752f
+Binary files /dev/null and b/node_modules/react-native-reanimated/lib/.DS_Store differ
+diff --git a/node_modules/react-native-reanimated/lib/typescript/reanimated2/hook/utils.d.ts b/node_modules/react-native-reanimated/lib/typescript/reanimated2/hook/utils.d.ts
+index 9f9fa21..c791dab 100644
+--- a/node_modules/react-native-reanimated/lib/typescript/reanimated2/hook/utils.d.ts
++++ b/node_modules/react-native-reanimated/lib/typescript/reanimated2/hook/utils.d.ts
+@@ -9,7 +9,11 @@ interface Handlers<T, TContext extends __Context> {
+     [key: string]: Handler<T, TContext> | undefined;
+ }
+ type useEventType = <T extends object>(handler: (e: T) => void, eventNames?: string[], rebuild?: boolean) => (e: NativeSyntheticEvent<T>) => void;
+-export declare const useEvent: useEventType;
++export declare function useEvent<T, K>(
++    handler: T,
++    events: string[],
++    rebuild: boolean,
++): K;
+ type useHandlerType = <T, TContext extends __Context = Record<string, never>>(handlers: Handlers<T, TContext>, deps?: DependencyList) => {
+     context: TContext;
+     doDependenciesDiffer: boolean;
+diff --git a/node_modules/react-native-reanimated/lib/typescript/reanimated2/index.d.ts b/node_modules/react-native-reanimated/lib/typescript/reanimated2/index.d.ts
+index 3e024d1..129653b 100644
+--- a/node_modules/react-native-reanimated/lib/typescript/reanimated2/index.d.ts
++++ b/node_modules/react-native-reanimated/lib/typescript/reanimated2/index.d.ts
+@@ -1,6 +1,7 @@
+ import './publicGlobals';
+ export type { WorkletRuntime } from './core';
+ export { runOnJS, runOnUI, createWorkletRuntime, makeMutable, makeShareableCloneRecursive, isReanimated3, isConfigured, enableLayoutAnimations, getViewProp, } from './core';
++export {makeRemote} from './mutables';
+ export type { GestureHandlers, AnimatedRef, ScrollHandler, ScrollHandlers, DerivedValue, FrameCallback, } from './hook';
+ export { useAnimatedProps, useEvent, useHandler, useWorkletCallback, useSharedValue, useReducedMotion, useAnimatedStyle, useAnimatedGestureHandler, useAnimatedReaction, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useAnimatedSensor, useFrameCallback, useAnimatedKeyboard, useScrollViewOffset, } from './hook';
+ export type { DelayAnimation, RepeatAnimation, SequenceAnimation, StyleLayoutAnimation, WithTimingConfig, TimingAnimation, WithSpringConfig, SpringAnimation, WithDecayConfig, DecayAnimation, } from './animation';
+diff --git a/node_modules/react-native-reanimated/src/reanimated2/index.ts b/node_modules/react-native-reanimated/src/reanimated2/index.ts
+index 9725e49..c1e63d5 100644
+--- a/node_modules/react-native-reanimated/src/reanimated2/index.ts
++++ b/node_modules/react-native-reanimated/src/reanimated2/index.ts
+@@ -12,6 +12,7 @@ export {
+   enableLayoutAnimations,
+   getViewProp,
+ } from './core';
++export {makeRemote} from './mutables';
+ export type {
+   GestureHandlers,
+   AnimatedRef,
+diff --git a/node_modules/react-native-reanimated/src/reanimated2/mutables.ts b/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
+index 50d80e9..e598ae1 100644
+--- a/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
++++ b/node_modules/react-native-reanimated/src/reanimated2/mutables.ts
+@@ -94,25 +94,25 @@ export function makeMutable<T>(
+       }
+       return value;
+     },
+-    set _value(newValue: T) {
+-      if (NativeReanimatedModule.native) {
+-        throw new Error(
+-          '[Reanimated] Setting `_value` directly is only possible on the UI runtime.'
+-        );
+-      }
+-      value = newValue;
+-      listeners!.forEach((listener) => {
+-        listener(newValue);
+-      });
+-    },
+-    get _value(): T {
+-      if (NativeReanimatedModule.native) {
+-        throw new Error(
+-          '[Reanimated] Reading from `_value` directly is only possible on the UI runtime.'
+-        );
+-      }
+-      return value;
+-    },
++    // set _value(newValue: T) {
++    //   if (NativeReanimatedModule.native) {
++    //     throw new Error(
++    //       '[Reanimated] Setting `_value` directly is only possible on the UI runtime.'
++    //     );
++    //   }
++    //   value = newValue;
++    //   listeners!.forEach((listener) => {
++    //     listener(newValue);
++    //   });
++    // },
++    // get _value(): T {
++    //   if (NativeReanimatedModule.native) {
++    //     throw new Error(
++    //       '[Reanimated] Reading from `_value` directly is only possible on the UI runtime.'
++    //     );
++    //   }
++    //   return value;
++    // },
+     modify: (modifier: (value: T) => T) => {
+       runOnUI(() => {
+         mutable.value = modifier(mutable.value);
