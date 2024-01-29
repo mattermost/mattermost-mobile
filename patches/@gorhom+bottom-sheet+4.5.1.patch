@@ -1,0 +1,40 @@
+diff --git a/node_modules/@gorhom/bottom-sheet/src/hooks/useBottomSheetTimingConfigs.ts b/node_modules/@gorhom/bottom-sheet/src/hooks/useBottomSheetTimingConfigs.ts
+index 9d2f61d..ac91e40 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/hooks/useBottomSheetTimingConfigs.ts
++++ b/node_modules/@gorhom/bottom-sheet/src/hooks/useBottomSheetTimingConfigs.ts
+@@ -1,5 +1,5 @@
+ import { useMemo } from 'react';
+-import type { WithTimingConfig } from 'react-native-reanimated';
++import { ReduceMotion, type WithTimingConfig } from 'react-native-reanimated';
+ import { ANIMATION_DURATION, ANIMATION_EASING } from '../constants';
+ 
+ /**
+@@ -14,6 +14,7 @@ export const useBottomSheetTimingConfigs = (configs: WithTimingConfig) => {
+     const _configs: WithTimingConfig = {
+       easing: configs.easing || ANIMATION_EASING,
+       duration: configs.duration || ANIMATION_DURATION,
++      reduceMotion: ReduceMotion.Never,
+     };
+ 
+     return _configs;
+diff --git a/node_modules/@gorhom/bottom-sheet/src/utilities/animate.ts b/node_modules/@gorhom/bottom-sheet/src/utilities/animate.ts
+index 0ce4c9a..c01a069 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/utilities/animate.ts
++++ b/node_modules/@gorhom/bottom-sheet/src/utilities/animate.ts
+@@ -4,6 +4,7 @@ import {
+   withTiming,
+   withSpring,
+   AnimationCallback,
++  ReduceMotion,
+ } from 'react-native-reanimated';
+ import { ANIMATION_CONFIGS, ANIMATION_METHOD } from '../constants';
+ 
+@@ -26,6 +27,8 @@ export const animate = ({
+     configs = ANIMATION_CONFIGS;
+   }
+ 
++  configs = {...configs, reduceMotion: ReduceMotion.Never};
++
+   // detect animation type
+   const type =
+     'duration' in configs || 'easing' in configs

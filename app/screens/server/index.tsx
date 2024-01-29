@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {Alert, BackHandler, Platform, useWindowDimensions, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {ReduceMotion, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {doPing} from '@actions/remote/general';
@@ -350,7 +350,7 @@ const Server = ({
     const transform = useAnimatedStyle(() => {
         const duration = Platform.OS === 'android' ? 250 : 350;
         return {
-            transform: [{translateX: withTiming(translateX.value, {duration})}],
+            transform: [{translateX: withTiming(translateX.value, {duration, reduceMotion: ReduceMotion.Never})}],
         };
     }, []);
 
