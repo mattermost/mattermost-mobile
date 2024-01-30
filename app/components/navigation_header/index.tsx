@@ -62,13 +62,12 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
 
     const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
     const containerHeight = useAnimatedStyle(() => {
-        const minHeight = defaultHeight;
         const value = -(scrollValue?.value || 0);
         const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + value;
         const height = lockValue?.value ? lockValue.value : calculatedHeight;
         return {
-            height: Math.max(height, minHeight),
-            minHeight,
+            height: Math.max(height, defaultHeight),
+            minHeight: defaultHeight,
             maxHeight: largeHeight + MAX_OVERSCROLL,
         };
     });
@@ -90,7 +89,6 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
     ), [lockValue, headerOffset]);
 
     return (
-        <>
             <Animated.View style={[styles.container, containerHeight]}>
                 <Header
                     defaultHeight={defaultHeight}
@@ -129,7 +127,6 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
                 />
                 }
             </Animated.View>
-        </>
     );
 });
 
