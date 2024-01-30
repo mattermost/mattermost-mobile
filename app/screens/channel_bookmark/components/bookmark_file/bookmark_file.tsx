@@ -235,7 +235,7 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
         if (file) {
             startUpload(file);
         }
-    }, [file]);
+    }, [file, startUpload]);
 
     useEffect(() => {
         if (!initialFile) {
