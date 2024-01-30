@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo, type ReactNode} from 'react';
-import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
 import RNButton from 'react-native-button';
 
 import CompassIcon from '@components/compass_icon';
@@ -24,6 +24,7 @@ type Props = ConditionalProps & {
     text: string;
     iconComponent?: ReactNode;
     disabled?: boolean;
+    hitSlop?: Insets;
 }
 
 const styles = StyleSheet.create({
@@ -46,6 +47,7 @@ const Button = ({
     iconSize,
     iconComponent,
     disabled,
+    hitSlop,
 }: Props) => {
     const bgStyle = useMemo(() => [
         buttonBackgroundStyle(theme, size, emphasis, buttonType, buttonState),
@@ -95,6 +97,7 @@ const Button = ({
             onPress={onPress}
             testID={testID}
             disabled={disabled}
+            hitSlop={hitSlop}
         >
             <View style={containerStyle}>
                 {icon}

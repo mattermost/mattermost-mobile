@@ -7,13 +7,14 @@ import {Alert, View, type AlertButton} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {addRecentReaction} from '@actions/local/reactions';
-import {deleteChannelBookmark, editChannelBookmark} from '@actions/remote/channel_bookmark';
+import {createChannelBookmark, deleteChannelBookmark, editChannelBookmark} from '@actions/remote/channel_bookmark';
 import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
+import {getFullErrorMessage} from '@utils/errors';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import BookmarkDetail from './components/bookmark_detail';
@@ -23,11 +24,14 @@ import BookmarkLink from './components/bookmark_link';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bookmark: ChannelBookmark;
-    file?: FileInfo;
-    canDeleteBookmarks: boolean;
+    bookmark?: ChannelBookmark;
+    canDeleteBookmarks?: boolean;
+    channelId: string;
     closeButtonId: string;
     componentId: AvailableScreens;
+    file?: FileInfo;
+    ownerId: string;
+    type: ChannelBookmarkType;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -50,17 +54,37 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const RIGHT_BUTTON = buildNavigationButton('edit-bookmark', 'channel_bookmark.edit.save_button');
 const edges: Edge[] = ['bottom', 'left', 'right'];
+const emptyBookmark: ChannelBookmark = {
+    id: '',
+    create_at: 0,
+    update_at: 0,
+    delete_at: 0,
+    channel_id: '',
+    owner_id: '',
+    display_name: '',
+    sort_order: 0,
+    type: 'link',
+};
 
-const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentId, closeButtonId, file: originalFile}: Props) => {
+const ChannelBookmarkAddOrEdit = ({
+    bookmark: original,
+    canDeleteBookmarks = false,
+    channelId,
+    closeButtonId,
+    componentId,
+    file: originalFile,
+    ownerId,
+    type,
+}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
-    const [bookmark, setBookmark] = useState<ChannelBookmark>(original);
+    const [bookmark, setBookmark] = useState<ChannelBookmark|undefined>(original);
     const [file, setFile] = useState<ExtractedFileInfo|undefined>(originalFile);
     const [isSaving, setIsSaving] = useState(false);
 
-    const enableSaveButton = (enabled: boolean) => {
+    const enableSaveButton = useCallback((enabled: boolean) => {
         setButtons(componentId, {
             rightButtons: [{
                 ...RIGHT_BUTTON,
@@ -69,21 +93,42 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
                 enabled,
             }],
         });
-    };
+    }, [formatMessage, theme]);
 
-    const handleError = (error: string, buttons?: AlertButton[]) => {
+    const setBookmarkToSave = useCallback((b?: ChannelBookmark) => {
+        enableSaveButton((b?.type === 'link' && Boolean(b?.link_url)) || (b?.type === 'file' && Boolean(b.file_id)));
+        setBookmark(b);
+    }, []);
+
+    const handleError = useCallback((error: string, buttons?: AlertButton[]) => {
+        const title = original ? formatMessage({id: 'channel_bookmark.edit.failed_title', defaultMessage: 'Error editing bookmark'}) : formatMessage({id: 'channel_bookmark.add.failed_title', defaultMessage: 'Error adding bookmark'});
         Alert.alert(
-            formatMessage({id: 'channel_bookmark.edit.failed_title', defaultMessage: 'Error editing bookmark'}),
-            `Details:\n${error}`,
+            title,
+            formatMessage({
+                id: 'channel_bookmark.add_edit.failed_desc',
+                defaultMessage: 'Details: {error}',
+            }, {error}),
             buttons,
         );
         setIsSaving(false);
-        enableSaveButton(Boolean(bookmark));
-    };
+        const enabled = Boolean(bookmark?.display_name &&
+            ((bookmark?.type === 'link' && Boolean(bookmark?.link_url)) || (bookmark?.type === 'file' && Boolean(bookmark.file_id))));
+        enableSaveButton(enabled);
+    }, [bookmark, enableSaveButton, formatMessage]);
 
     const close = useCallback(() => {
         return dismissModal({componentId});
     }, [componentId]);
+
+    const createBookmark = useCallback(async (b: ChannelBookmark) => {
+        const res = await createChannelBookmark(serverUrl, channelId, b);
+        if (res.bookmark) {
+            close();
+            return;
+        }
+
+        handleError((res.error as Error).message);
+    }, [channelId, handleError, serverUrl]);
 
     const updateBookmark = useCallback(async (b: ChannelBookmark) => {
         const res = await editChannelBookmark(serverUrl, b);
@@ -93,109 +138,122 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
         }
 
         handleError((res.error as Error).message);
-    }, [bookmark, serverUrl]);
+    }, [handleError, serverUrl]);
 
     const setLinkBookmark = useCallback((url: string, title: string, imageUrl: string) => {
         const b: ChannelBookmark = {
-            ...bookmark,
+            ...(bookmark || emptyBookmark),
+            owner_id: ownerId,
+            channel_id: channelId,
             link_url: url,
             image_url: imageUrl,
             display_name: title,
             type: 'link',
         };
+
         setBookmarkToSave(b);
-    }, [bookmark]);
+    }, [bookmark, channelId, setBookmarkToSave, ownerId]);
 
     const setFileBookmark = useCallback((f: ExtractedFileInfo) => {
         const b: ChannelBookmark = {
-            ...bookmark,
+            ...(bookmark || emptyBookmark),
+            owner_id: ownerId,
+            channel_id: channelId,
             display_name: decodeURIComponent(f.name),
             type: 'file',
             file_id: f.id,
         };
         setBookmarkToSave(b);
         setFile(f);
-    }, [bookmark]);
+    }, [bookmark, channelId, ownerId]);
 
     const setBookmarkDisplayName = useCallback((displayName: string) => {
         if (bookmark) {
-            setBookmark({
-                ...bookmark,
+            setBookmark((prev) => ({
+                ...(prev!),
                 display_name: displayName,
-            });
+            }));
         }
 
         enableSaveButton(Boolean(displayName));
-    }, [bookmark]);
+    }, [bookmark, enableSaveButton]);
 
     const setBookmarkEmoji = useCallback((emoji?: string) => {
         if (bookmark) {
-            const prev = original.emoji ? original.emoji : '';
-            setBookmark({
-                ...bookmark,
+            setBookmark((prev) => ({
+                ...prev!,
                 emoji,
-            });
+            }));
 
-            if (prev !== emoji) {
+            const prevEmoji = original ? original.emoji : '';
+            if (prevEmoji !== emoji) {
                 enableSaveButton(true);
             }
         }
+
         if (emoji) {
             addRecentReaction(serverUrl, [emoji]);
         }
-    }, [bookmark, original, serverUrl]);
-
-    const setBookmarkToSave = useCallback((b: ChannelBookmark) => {
-        enableSaveButton((b?.type === 'link' && Boolean(b?.link_url)) || (b?.type === 'file' && Boolean(b.file_id)));
-        setBookmark(b);
-    }, [componentId, formatMessage, theme]);
+    }, [bookmark, enableSaveButton, serverUrl]);
 
     const resetBookmark = useCallback(() => {
         setBookmarkToSave(original);
         setFile(originalFile);
-    }, [setBookmarkToSave, original, originalFile]);
+    }, [setBookmarkToSave]);
 
     const onSaveBookmark = useCallback(async () => {
         if (bookmark) {
             enableSaveButton(false);
             setIsSaving(true);
-            updateBookmark(bookmark);
+            if (original) {
+                updateBookmark(bookmark);
+                return;
+            }
+
+            createBookmark(bookmark);
         }
-    }, [close, setBookmarkToSave, serverUrl, bookmark, file]);
+    }, [bookmark, createBookmark, updateBookmark]);
 
     const handleDelete = useCallback(async () => {
-        setIsSaving(true);
-        enableSaveButton(false);
-        const res = await deleteChannelBookmark(serverUrl, bookmark.channel_id, bookmark.id);
-        if (res.error) {
-            Alert.alert(
-                formatMessage({id: 'channel_bookmark.delete.failed_title', defaultMessage: 'Error deleting bookmark'}),
-                `Details:\n${res.error}`,
-            );
-            setIsSaving(false);
-            enableSaveButton(true);
-            return;
-        }
+        if (bookmark) {
+            setIsSaving(true);
+            enableSaveButton(false);
+            const {error} = await deleteChannelBookmark(serverUrl, bookmark.channel_id, bookmark.id);
+            if (error) {
+                Alert.alert(
+                    formatMessage({id: 'channel_bookmark.delete.failed_title', defaultMessage: 'Error deleting bookmark'}),
+                    formatMessage({
+                        id: 'channel_bookmark.add_edit.failed_desc',
+                        defaultMessage: 'Details: {error}',
+                    }, {error: getFullErrorMessage(error)}),
+                );
+                setIsSaving(false);
+                enableSaveButton(true);
+                return;
+            }
 
-        close();
-    }, [bookmark, serverUrl]);
+            close();
+        }
+    }, [bookmark, serverUrl, close]);
 
     const onDelete = useCallback(async () => {
-        Alert.alert(
-            formatMessage({id: 'channel_bookmark.delete.confirm_title', defaultMessage: 'Delete bookmark'}),
-            formatMessage({id: 'channel_bookmark.delete.confirm', defaultMessage: 'You sure want to delete the bookmark {displayName}?'}, {
-                displayName: bookmark.display_name,
-            }),
-            [{
-                text: formatMessage({id: 'channel_bookmark.delete.yes', defaultMessage: 'Yes'}),
-                style: 'destructive',
-                isPreferred: true,
-                onPress: handleDelete,
-            }, {
-                text: formatMessage({id: 'channel_bookmark.add.file_cancel', defaultMessage: 'Cancel'}),
-                style: 'cancel',
-            }],
-        );
+        if (bookmark) {
+            Alert.alert(
+                formatMessage({id: 'channel_bookmark.delete.confirm_title', defaultMessage: 'Delete bookmark'}),
+                formatMessage({id: 'channel_bookmark.delete.confirm', defaultMessage: 'You sure want to delete the bookmark {displayName}?'}, {
+                    displayName: bookmark.display_name,
+                }),
+                [{
+                    text: formatMessage({id: 'channel_bookmark.delete.yes', defaultMessage: 'Yes'}),
+                    style: 'destructive',
+                    isPreferred: true,
+                    onPress: handleDelete,
+                }, {
+                    text: formatMessage({id: 'channel_bookmark.add.file_cancel', defaultMessage: 'Cancel'}),
+                    style: 'cancel',
+                }],
+            );
+        }
     }, [bookmark, handleDelete]);
 
     useEffect(() => {
@@ -210,19 +268,19 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
         <SafeAreaView
             edges={edges}
             style={styles.content}
-            testID='channel_bookmark_add.screen'
+            testID='channel_bookmark.screen'
         >
-            {bookmark.type === 'link' &&
+            {type === 'link' &&
                 <BookmarkLink
                     disabled={isSaving}
-                    initialUrl={bookmark.link_url}
+                    initialUrl={original?.link_url}
                     setBookmark={setLinkBookmark}
                     resetBookmark={resetBookmark}
                 />
             }
-            {bookmark.type === 'file' &&
+            {type === 'file' &&
                 <AddBookmarkFile
-                    channelId={bookmark.channel_id}
+                    channelId={channelId}
                     close={close}
                     disabled={isSaving}
                     initialFile={originalFile}
@@ -233,9 +291,9 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
             <>
                 <BookmarkDetail
                     disabled={isSaving}
-                    emoji={bookmark.emoji}
-                    imageUrl={bookmark.image_url}
-                    title={bookmark.display_name}
+                    emoji={bookmark?.emoji}
+                    imageUrl={bookmark?.image_url}
+                    title={bookmark?.display_name || ''}
                     file={file}
                     setBookmarkDisplayName={setBookmarkDisplayName}
                     setBookmarkEmoji={setBookmarkEmoji}
@@ -262,4 +320,4 @@ const ChannelBookmarkEdit = ({bookmark: original, canDeleteBookmarks, componentI
     );
 };
 
-export default ChannelBookmarkEdit;
+export default ChannelBookmarkAddOrEdit;

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import CompassIcon from '@components/compass_icon';
@@ -35,20 +35,18 @@ const BookmarkType = ({channelId, type, ownerId}: Props) => {
                 }],
             },
         };
-        showModal(Screens.CHANNEL_BOOKMARK_ADD, title, {channelId, closeButtonId, type, ownerId}, options);
+        showModal(Screens.CHANNEL_BOOKMARK, title, {channelId, closeButtonId, type, ownerId}, options);
     }, [channelId, theme, type, ownerId]);
 
-    const label = useMemo(() => {
-        if (type === 'link') {
-            return formatMessage({id: 'channel_info.add_bookmark.link', defaultMessage: 'Add a link'});
-        }
-
-        return formatMessage({id: 'channel_info.add_bookmark.file', defaultMessage: 'Attach a file'});
-    }, [type]);
-
-    const icon = useMemo(() => {
-        return type === 'link' ? 'link-variant' : 'paperclip';
-    }, [type]);
+    let icon;
+    let label;
+    if (type === 'link') {
+        icon = 'link-variant';
+        label = formatMessage({id: 'channel_info.add_bookmark.link', defaultMessage: 'Add a link'});
+    } else {
+        icon = 'paperclip';
+        label = formatMessage({id: 'channel_info.add_bookmark.file', defaultMessage: 'Attach a file'});
+    }
 
     return (
         <OptionItem

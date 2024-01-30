@@ -72,8 +72,7 @@ export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
-export const CHANNEL_BOOKMARK_ADD = 'AddChannelBookmark';
-export const CHANNEL_BOOKMARK_EDIT = 'EditChannelBookmark';
+export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
 export const GENERIC_OVERLAY = 'GenericOverlay';
 
 export default {
@@ -85,8 +84,7 @@ export default {
     CALL,
     CHANNEL,
     CHANNEL_ADD_MEMBERS,
-    CHANNEL_BOOKMARK_ADD,
-    CHANNEL_BOOKMARK_EDIT,
+    CHANNEL_BOOKMARK,
     CHANNEL_FILES,
     CHANNEL_INFO,
     CHANNEL_NOTIFICATION_PREFERENCES,

@@ -206,7 +206,7 @@ const CurrentCallBar = ({
         }
     };
 
-    const micPermissionsError = true;//!micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
+    const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
 
     // The user should receive an alert if all of the following conditions apply:
     // - Recording has started and recording has not ended.

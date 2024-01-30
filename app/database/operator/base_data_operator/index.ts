@@ -39,7 +39,7 @@ export default class BaseDataOperator {
      * the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
      * @param {ProcessRecordsArgs} inputsArg
      * @param {RawValue[]} inputsArg.createOrUpdateRawValues
-     * * @param {RawValue[]} inputsArg.deleteRawValues
+     * @param {RawValue[]} inputsArg.deleteRawValues
      * @param {string} inputsArg.tableName
      * @param {string} inputsArg.fieldName
      * @param {(existing: Model, newElement: RawValue) => boolean} inputsArg.buildKeyRecordBy

@@ -66,6 +66,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 200),
         lineHeight: undefined,
     },
+    genericBookmark: {
+        alignSelf: 'center',
+        top: 2,
+    },
 }));
 
 const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName, setBookmarkEmoji, title}: Props) => {
@@ -88,6 +92,18 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
             },
         });
     }, [imageUrl, file, theme, setBookmarkEmoji]);
+
+    let generic;
+    if (!imageUrl && !emoji && !file) {
+        generic = (
+            <CompassIcon
+                name='book-outline'
+                size={22}
+                color={theme.centerChannelColor}
+                style={styles.genericBookmark}
+            />
+        );
+    }
 
     return (
         <View style={paddingStyle}>
@@ -121,6 +137,7 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
                             size={22}
                         />
                         }
+                        {generic}
                     </View>
                     <CompassIcon
                         size={12}

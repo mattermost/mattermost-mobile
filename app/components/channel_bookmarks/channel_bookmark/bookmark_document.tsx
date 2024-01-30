@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import Button from 'react-native-button';
 
@@ -29,8 +29,6 @@ const styles = StyleSheet.create({
     },
     progress: {
         justifyContent: 'flex-end',
-        left: 2,
-
     },
 });
 
@@ -39,11 +37,11 @@ const BookmarkDocument = ({bookmark, canDownloadFiles, file, onLongPress}: Props
     const document = useRef<DocumentRef>(null);
     const theme = useTheme();
 
-    const handlePress = async () => {
+    const handlePress = useCallback(async () => {
         if (document.current) {
             document.current.handlePreviewPress();
         }
-    };
+    }, []);
 
     return (
         <Document
@@ -62,10 +60,12 @@ const BookmarkDocument = ({bookmark, canDownloadFiles, file, onLongPress}: Props
                     file={file}
                 >
                     <View style={[StyleSheet.absoluteFill, styles.progress]}>
+                        {progress > 0 &&
                         <ProgressBar
                             progress={progress}
                             color={theme.buttonBg}
                         />
+                        }
                     </View>
                 </BookmarkDetails>
             </Button>
