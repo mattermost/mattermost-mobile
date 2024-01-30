@@ -32,7 +32,6 @@ const enhance = withObservables(['channelId'], ({channelId, database}: Props) =>
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
         ),
         isCRTEnabled: observeIsCRTEnabled(database),
-        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
         posts,
     };
 });

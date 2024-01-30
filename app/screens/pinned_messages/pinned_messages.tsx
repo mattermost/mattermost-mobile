@@ -29,7 +29,6 @@ type Props = {
     currentTimezone: string | null;
     customEmojiNames: string[];
     isCRTEnabled: boolean;
-    isTimezoneEnabled: boolean;
     posts: PostModel[];
 }
 
@@ -56,7 +55,6 @@ function SavedMessages({
     currentTimezone,
     customEmojiNames,
     isCRTEnabled,
-    isTimezoneEnabled,
     posts,
 }: Props) {
     const [loading, setLoading] = useState(!posts.length);
@@ -64,7 +62,7 @@ function SavedMessages({
     const theme = useTheme();
     const serverUrl = useServerUrl();
 
-    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
+    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [posts]);
 
     const close = useCallback(() => {
         if (componentId) {
@@ -121,7 +119,7 @@ function SavedMessages({
                     <DateSeparator
                         key={item.value}
                         date={getDateForDateLine(item.value)}
-                        timezone={isTimezoneEnabled ? currentTimezone : null}
+                        timezone={currentTimezone}
                     />
                 );
             case 'post':
@@ -146,7 +144,7 @@ function SavedMessages({
             default:
                 return null;
         }
-    }, [appsEnabled, currentTimezone, customEmojiNames, isTimezoneEnabled, theme]);
+    }, [appsEnabled, currentTimezone, customEmojiNames, theme]);
 
     return (
         <SafeAreaView
