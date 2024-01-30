@@ -1,24 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {forwardRef, useImperativeHandle, useRef, useState, type ReactNode} from 'react';
+import {forwardRef, useImperativeHandle, useRef, useState, type ReactNode, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StatusBar, type StatusBarStyle} from 'react-native';
 import FileViewer from 'react-native-file-viewer';
 import FileSystem from 'react-native-fs';
 import tinyColor from 'tinycolor2';
 
-import {DOWNLOAD_TIMEOUT} from '@constants/network';
+import {downloadFile} from '@actions/remote/file';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import NetworkManager from '@managers/network_manager';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
 import {getFullErrorMessage, isErrorWithMessage} from '@utils/errors';
 import {fileExists, getLocalFilePathFromFile} from '@utils/file';
 import {emptyFunction} from '@utils/general';
 import {logDebug} from '@utils/log';
 
-import type {Client} from '@client/rest';
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 
 export type DocumentRef = {
@@ -39,12 +37,6 @@ const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, chil
     const [didCancel, setDidCancel] = useState(false);
     const [downloading, setDownloading] = useState(false);
     const [preview, setPreview] = useState(false);
-    let client: Client | undefined;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch {
-        // do nothing
-    }
     const downloadTask = useRef<ProgressPromise<ClientResponse>>();
 
     const cancelDownload = () => {
@@ -54,7 +46,7 @@ const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, chil
         }
     };
 
-    const downloadAndPreviewFile = async () => {
+    const downloadAndPreviewFile = useCallback(async () => {
         setDidCancel(false);
         let path;
         let exists = false;
@@ -74,7 +66,7 @@ const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, chil
                 openDocument();
             } else {
                 setDownloading(true);
-                downloadTask.current = client?.apiClient.download(client?.getFileRoute(file.id!), path!.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
+                downloadTask.current = downloadFile(serverUrl, file.id!, path!);
                 downloadTask.current?.progress?.(onProgress);
 
                 await downloadTask.current;
@@ -93,31 +85,24 @@ const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, chil
                 alertDownloadFailed(intl);
             }
         }
-    };
+    }, [file, onProgress]);
 
-    const handlePreviewPress = async () => {
-        if (!canDownloadFiles) {
-            alertDownloadDocumentDisabled(intl);
-            return;
+    const setStatusBarColor = useCallback((style: StatusBarStyle = 'light-content') => {
+        if (Platform.OS === 'ios') {
+            if (style) {
+                StatusBar.setBarStyle(style, true);
+            } else {
+                const headerColor = tinyColor(theme.sidebarHeaderBg);
+                let barStyle: StatusBarStyle = 'light-content';
+                if (headerColor.isLight() && Platform.OS === 'ios') {
+                    barStyle = 'dark-content';
+                }
+                StatusBar.setBarStyle(barStyle, true);
+            }
         }
+    }, [theme]);
 
-        if (downloading) {
-            onProgress(0);
-            cancelDownload();
-            setDownloading(false);
-        } else {
-            downloadAndPreviewFile();
-        }
-    };
-
-    const onDonePreviewingFile = () => {
-        onProgress(0);
-        setDownloading(false);
-        setPreview(false);
-        setStatusBarColor();
-    };
-
-    const openDocument = async () => {
+    const openDocument = useCallback(async () => {
         if (!didCancel && !preview) {
             let path = decodeURIComponent(file.localPath || '');
             let exists = false;
@@ -148,26 +133,33 @@ const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, chil
                 }
             });
         }
-    };
+    }, [didCancel, preview, file, onProgress, setStatusBarColor]);
 
-    const setStatusBarColor = (style: StatusBarStyle = 'light-content') => {
-        if (Platform.OS === 'ios') {
-            if (style) {
-                StatusBar.setBarStyle(style, true);
-            } else {
-                const headerColor = tinyColor(theme.sidebarHeaderBg);
-                let barStyle: StatusBarStyle = 'light-content';
-                if (headerColor.isLight() && Platform.OS === 'ios') {
-                    barStyle = 'dark-content';
-                }
-                StatusBar.setBarStyle(barStyle, true);
-            }
+    const handlePreviewPress = useCallback(async () => {
+        if (!canDownloadFiles) {
+            alertDownloadDocumentDisabled(intl);
+            return;
         }
+
+        if (downloading) {
+            onProgress(0);
+            cancelDownload();
+            setDownloading(false);
+        } else {
+            downloadAndPreviewFile();
+        }
+    }, [canDownloadFiles, downloadAndPreviewFile, downloading, intl, onProgress, openDocument]);
+
+    const onDonePreviewingFile = () => {
+        onProgress(0);
+        setDownloading(false);
+        setPreview(false);
+        setStatusBarColor();
     };
 
     useImperativeHandle(ref, () => ({
         handlePreviewPress,
-    }), []);
+    }), [handlePreviewPress]);
 
     return children;
 });

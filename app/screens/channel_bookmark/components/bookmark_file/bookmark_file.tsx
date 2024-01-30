@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, Platform} from 'react-native';
+import {View, Text, Platform, type Insets} from 'react-native';
 import Button from 'react-native-button';
 import {Shadow} from 'react-native-shadow-2';
 
@@ -117,6 +117,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const shadowSides = {top: false, bottom: true, end: true, start: false};
+const hitSlop: Insets = {top: 10, bottom: 10, left: 10, right: 10};
 
 const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, setBookmark}: Props) => {
     const theme = useTheme();
@@ -132,8 +133,59 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
     const subContainerStyle = useMemo(() => [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 0}], [isTablet]);
     const cancelUpload = useRef<() => void | undefined>();
 
-    const startUpload = (fileInfo: FileInfo | ExtractedFileInfo) => {
+    const onProgress = useCallback((p: number, bytes: number) => {
+        if (!file) {
+            return;
+        }
+
+        const f: ExtractedFileInfo = {...file};
+        f.bytesRead = bytes;
+
+        setProgress(p);
+        setFile(f);
+    }, []);
+
+    const onComplete = useCallback((response: ClientResponse) => {
+        cancelUpload.current = undefined;
+        if (response.code !== 201 || !response.data) {
+            setUploadError();
+            return;
+        }
+
+        const data = response.data.file_infos as FileInfo[] | undefined;
+        if (!data?.length) {
+            setUploadError();
+            return;
+        }
+
+        const fileInfo = data[0];
+        setFile(fileInfo);
+        setBookmark(fileInfo);
+        setUploading(false);
+        setProgress(1);
+        setFailed(false);
+        setError('');
+    }, []);
+
+    const onError = useCallback(() => {
+        cancelUpload.current = undefined;
+        setUploadError();
+    }, []);
+
+    const setUploadError = useCallback(() => {
+        setProgress(0);
+        setUploading(false);
+        setFailed(true);
+
+        setError(intl.formatMessage({
+            id: 'channel_bookmark.add.file_upload_error',
+            defaultMessage: 'Error uploading file. Please try again.',
+        }));
+    }, [file, intl]);
+
+    const startUpload = useCallback((fileInfo: FileInfo | ExtractedFileInfo) => {
         setUploading(true);
+        setProgress(0);
 
         const {cancel, error: uploadError} = uploadFile(
             serverUrl,
@@ -154,47 +206,9 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
             setUploadError();
             cancelUpload.current?.();
         }
-    };
+    }, [channelId, onProgress, onComplete, onError, serverUrl]);
 
-    const onProgress = (p: number, bytes: number) => {
-        if (!file) {
-            return;
-        }
-
-        const f: ExtractedFileInfo = {...file};
-        f.bytesRead = bytes;
-
-        setProgress(p);
-        setFile(f);
-    };
-
-    const onComplete = (response: ClientResponse) => {
-        cancelUpload.current = undefined;
-        if (response.code !== 201 || !response.data) {
-            setUploadError();
-            return;
-        }
-
-        const data = response.data.file_infos as FileInfo[] | undefined;
-        if (!data?.length) {
-            setUploadError();
-            return;
-        }
-
-        const fileInfo = data[0];
-        setFile(fileInfo);
-        setBookmark(fileInfo);
-        setUploading(false);
-        setFailed(false);
-        setError('');
-    };
-
-    const onError = () => {
-        cancelUpload.current = undefined;
-        setUploadError();
-    };
-
-    const browseFile = async () => {
+    const browseFile = useCallback(async () => {
         const picker = new PickerUtil(intl, (files) => {
             if (files.length) {
                 const f = files[0];
@@ -209,29 +223,18 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
         if (res.error) {
             close();
         }
-    };
+    }, [close, startUpload]);
 
-    const setUploadError = useCallback(() => {
-        setProgress(0);
-        setUploading(false);
-        setFailed(true);
-
-        setError(intl.formatMessage({
-            id: 'channel_bookmark.add.file_upload_error',
-            defaultMessage: 'Error uploading file. Please try again.',
-        }));
-    }, [file]);
+    const removeAndUpload = useCallback(() => {
+        cancelUpload.current?.();
+        browseFile();
+    }, [file, browseFile]);
 
     const retry = useCallback(() => {
         cancelUpload.current?.();
         if (file) {
             startUpload(file);
         }
-    }, [file]);
-
-    const removeAndUpload = useCallback(() => {
-        cancelUpload.current?.();
-        browseFile();
     }, [file]);
 
     useEffect(() => {
@@ -324,6 +327,7 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
                     </View>
                     <TouchableWithFeedback
                         disabled={disabled}
+                        hitSlop={hitSlop}
                         style={styles.removeContainer}
                         onPress={removeAndUpload}
                         type='opacity'
@@ -337,10 +341,10 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
                         </View>
                     </TouchableWithFeedback>
                 </Shadow>
-                {Boolean(progress) &&
+                {uploading &&
                 <View style={styles.progressContainer}>
                     <ProgressBar
-                        progress={0}
+                        progress={progress}
                         color={theme.buttonBg}
                         style={styles.progress}
                     />

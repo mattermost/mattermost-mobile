@@ -33,9 +33,7 @@ const DocumentFile = forwardRef<DocumentRef, DocumentFileProps>(({backgroundColo
     const document = useRef<DocumentRef>(null);
 
     const handlePreviewPress = async () => {
-        if (document.current) {
-            document.current.handlePreviewPress();
-        }
+        document.current?.handlePreviewPress();
     };
 
     useImperativeHandle(ref, () => ({
@@ -81,6 +79,6 @@ const DocumentFile = forwardRef<DocumentRef, DocumentFileProps>(({backgroundColo
     );
 });
 
-DocumentFile.displayName = 'Document';
+DocumentFile.displayName = 'DocumentFile';
 
 export default DocumentFile;

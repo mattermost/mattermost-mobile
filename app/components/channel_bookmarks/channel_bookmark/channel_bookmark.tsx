@@ -2,40 +2,30 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {Alert, Text, View} from 'react-native';
+import {useIntl, type IntlShape} from 'react-intl';
+import {Alert, StyleSheet} from 'react-native';
 import Button from 'react-native-button';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Share from 'react-native-share';
 
-import {deleteChannelBookmark} from '@actions/remote/channel_bookmark';
-import {fetchPublicLink} from '@actions/remote/file';
-import CompassIcon from '@components/compass_icon';
-import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
-import {Screens} from '@constants';
+import {ITEM_HEIGHT} from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {useGalleryItem} from '@hooks/gallery';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet';
-import DownloadWithAction from '@screens/gallery/footer/download_with_action';
-import {bottomSheet, dismissBottomSheet, dismissOverlay, showModal, showOverlay} from '@screens/navigation';
+import {bottomSheet, dismissOverlay} from '@screens/navigation';
 import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
-import {isDocument, isImage, isVideo} from '@utils/file';
+import {isDocument} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {showSnackBar} from '@utils/snack_bar';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import BookmarkDetails from './bookmark_details';
 import BookmarkDocument from './bookmark_document';
+import ChannelBookmarkOptions from './bookmark_options';
 
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 import type FileModel from '@typings/database/models/servers/file';
-import type {GalleryAction, GalleryFileType, GalleryItemType} from '@typings/screens/gallery';
+import type {GalleryAction} from '@typings/screens/gallery';
 
 type Props = {
     bookmark: ChannelBookmarkModel;
@@ -50,62 +40,21 @@ type Props = {
     siteURL: string;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         paddingVertical: 6,
-        paddingLeft: 8,
+        height: 48,
     },
-    flex: {flex: 1},
-    bottomSheetHeader: {
-        marginBottom: 12,
-    },
-    bottomSheetHeaderText: {
-        color: theme.centerChannelColor,
-        ...typography('Heading', 600, 'SemiBold'),
-    },
-}));
+});
 
-const ChannelBookmark = ({
-    bookmark, canDeleteBookmarks, canDownloadFiles, canEditBookmarks,
-    file, galleryIdentifier, index, onPress, publicLinkEnabled, siteURL,
-}: Props) => {
-    const theme = useTheme();
-    const managedConfig = useManagedConfig<ManagedConfig>();
-    const serverUrl = useServerUrl();
-    const isTablet = useIsTablet();
-    const intl = useIntl();
-    const {bottom} = useSafeAreaInsets();
-    const [action, setAction] = useState<GalleryAction>('none');
-    const styles = getStyleSheet(theme);
-    const canCopyPublicLink = useMemo(() => {
-        return (bookmark.type === 'link' || (file?.id && publicLinkEnabled)) && managedConfig.copyAndPasteProtection !== 'true';
-    }, [bookmark.type, file, publicLinkEnabled, managedConfig.copyAndPasteProtection]);
-    const isDocumentFile = useMemo(() => isDocument(file), [file]);
-    const isVideoFile = useMemo(() => isVideo(file), [file]);
-    const isImageFile = useMemo(() => isImage(file), [file]);
+const openLink = async (href: string, serverUrl: string, siteURL: string, intl: IntlShape) => {
+    const url = normalizeProtocol(href);
+    if (!url) {
+        return;
+    }
 
-    const galleryItem = useMemo(() => {
-        if (file) {
-            const fileInfo = file.toFileInfo(bookmark.ownerId);
-            let type: GalleryFileType = 'file';
-            if (isImageFile) {
-                type = 'image';
-            } else if (isVideoFile) {
-                type = 'video';
-            }
-            const item: GalleryItemType = {
-                ...fileInfo,
-                id: fileInfo.id!,
-                type,
-                lastPictureUpdate: 0,
-                uri: '',
-            };
-
-            return item;
-        }
-        return null;
-    }, [bookmark, file]);
+    const match = matchDeepLink(url, serverUrl, siteURL);
 
     const onLinkError = () => {
         Alert.alert(
@@ -120,144 +69,37 @@ const ChannelBookmark = ({
         );
     };
 
-    const openLink = async (href: string) => {
-        const url = normalizeProtocol(href);
-        if (!url) {
-            return;
+    if (match) {
+        const {error} = await handleDeepLink(match.url, intl);
+        if (error) {
+            tryOpenURL(match.url, onLinkError);
         }
+    } else {
+        tryOpenURL(url, onLinkError);
+    }
+};
 
-        const match = matchDeepLink(url, serverUrl, siteURL);
-
-        if (match) {
-            const {error} = await handleDeepLink(match.url, intl);
-            if (error) {
-                tryOpenURL(match.url, onLinkError);
-            }
-        } else {
-            tryOpenURL(url, onLinkError);
-        }
-    };
+const ChannelBookmark = ({
+    bookmark, canDeleteBookmarks, canDownloadFiles, canEditBookmarks,
+    file, galleryIdentifier, index, onPress, publicLinkEnabled, siteURL,
+}: Props) => {
+    const theme = useTheme();
+    const managedConfig = useManagedConfig<ManagedConfig>();
+    const serverUrl = useServerUrl();
+    const intl = useIntl();
+    const {bottom} = useSafeAreaInsets();
+    const [action, setAction] = useState<GalleryAction>('none');
+    const isDocumentFile = useMemo(() => isDocument(file), [file]);
+    const canCopyPublicLink = Boolean((bookmark.type === 'link' || (file?.id && publicLinkEnabled)) && managedConfig.copyAndPasteProtection !== 'true');
 
     const handlePress = useCallback(() => {
         if (bookmark.linkUrl) {
-            openLink(bookmark.linkUrl);
+            openLink(bookmark.linkUrl, siteURL, serverUrl, intl);
             return;
         }
 
         onPress?.(index || 0);
-    }, [bookmark, index]);
-
-    const onEdit = useCallback(async () => {
-        await dismissBottomSheet();
-
-        const title = intl.formatMessage({id: 'screens.channel_bookmark_edit', defaultMessage: 'Edit bookmark'});
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const closeButtonId = 'close-channel_bookmark_edit';
-
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: closeButtonId,
-                    icon: closeButton,
-                    testID: 'close.channel_bookmark_edit.button',
-                }],
-            },
-        };
-
-        showModal(Screens.CHANNEL_BOOKMARK_EDIT, title, {
-            bookmark: bookmark.toApi(),
-            closeButtonId,
-            file: file?.toFileInfo(bookmark.ownerId),
-            canDeleteBookmarks,
-        }, options);
-    }, [bookmark, file, canDeleteBookmarks, theme]);
-
-    const handleDelete = useCallback(async () => {
-        const res = await deleteChannelBookmark(serverUrl, bookmark.channelId, bookmark.id);
-        if (res.error) {
-            Alert.alert(
-                intl.formatMessage({id: 'channel_bookmark.delete.failed_title', defaultMessage: 'Error deleting bookmark'}),
-                `Details:\n${res.error}`,
-            );
-            return;
-        }
-
-        await dismissBottomSheet();
-    }, [bookmark, serverUrl]);
-
-    const onDelete = useCallback(async () => {
-        Alert.alert(
-            intl.formatMessage({id: 'channel_bookmark.delete.confirm_title', defaultMessage: 'Delete bookmark'}),
-            intl.formatMessage({id: 'channel_bookmark.delete.confirm', defaultMessage: 'You sure want to delete the bookmark {displayName}?'}, {
-                displayName: bookmark.displayName,
-            }),
-            [{
-                text: intl.formatMessage({id: 'channel_bookmark.delete.yes', defaultMessage: 'Yes'}),
-                style: 'destructive',
-                isPreferred: true,
-                onPress: handleDelete,
-            }, {
-                text: intl.formatMessage({id: 'channel_bookmark.add.file_cancel', defaultMessage: 'Cancel'}),
-                style: 'cancel',
-            }],
-        );
-    }, [bookmark, handleDelete]);
-
-    const onCopy = useCallback(async () => {
-        await dismissBottomSheet();
-
-        if (bookmark.type === 'link' && bookmark.linkUrl) {
-            Clipboard.setString(bookmark.linkUrl);
-            showSnackBar({barType: 'LINK_COPIED'});
-            return;
-        }
-
-        try {
-            const publicLink = await fetchPublicLink(serverUrl, bookmark.fileId!);
-            if ('link' in publicLink) {
-                Clipboard.setString(publicLink.link);
-                showSnackBar({barType: 'LINK_COPIED'});
-            } else {
-                showSnackBar({barType: 'LINK_COPY_FAILED'});
-            }
-        } catch {
-            showSnackBar({barType: 'LINK_COPY_FAILED'});
-        }
-    }, [bookmark, serverUrl]);
-
-    const onShare = useCallback(async () => {
-        await dismissBottomSheet();
-
-        if (bookmark.type === 'file') {
-            if (file) {
-                setAction('sharing');
-                showOverlay(Screens.GENERIC_OVERLAY, {
-                    children: (
-                        <DownloadWithAction
-                            action={'sharing'}
-                            galleryView={false}
-                            item={galleryItem!}
-                            setAction={setAction}
-                        />
-                    ),
-                }, {}, bookmark.id);
-            }
-            return;
-        }
-
-        if (bookmark.type === 'link') {
-            const title = bookmark.displayName;
-            const url = bookmark.linkUrl!;
-            Share.open({
-                title,
-                message: title,
-                url,
-                showAppsToView: true,
-            }).catch(() => {
-                // do nothing
-            });
-        }
-    }, [bookmark, file, serverUrl]);
+    }, [bookmark, index, intl, onPress, serverUrl, siteURL]);
 
     const handleLongPress = useCallback(() => {
         const canShare = canDownloadFiles || bookmark.type === 'link';
@@ -265,53 +107,15 @@ const ChannelBookmark = ({
             filter((e) => e).length;
 
         const renderContent = () => (
-            <>
-                {!isTablet && (
-                    <View style={styles.bottomSheetHeader}>
-                        <Text
-                            style={styles.bottomSheetHeaderText}
-                            numberOfLines={1}
-                        >
-                            {bookmark.displayName}
-                        </Text>
-                    </View>
-                )}
-                <View style={styles.flex}>
-                    {canEditBookmarks &&
-                    <OptionItem
-                        action={onEdit}
-                        label={intl.formatMessage({id: 'channel_bookmark.edit_option', defaultMessage: 'Edit'})}
-                        icon='pencil-outline'
-                        type='default'
-                    />
-                    }
-                    {canCopyPublicLink &&
-                    <OptionItem
-                        action={onCopy}
-                        label={intl.formatMessage({id: 'channel_bookmark.copy_option', defaultMessage: 'Copy Link'})}
-                        icon='content-copy'
-                        type='default'
-                    />
-                    }
-                    {canShare &&
-                    <OptionItem
-                        action={onShare}
-                        label={intl.formatMessage({id: 'channel_bookmark.share_option', defaultMessage: 'Share'})}
-                        icon='share-variant-outline'
-                        type='default'
-                    />
-                    }
-                    {canDeleteBookmarks &&
-                    <OptionItem
-                        action={onDelete}
-                        destructive={true}
-                        label={intl.formatMessage({id: 'channel_bookmark.delete_option', defaultMessage: 'Delete'})}
-                        icon='trash-can-outline'
-                        type='default'
-                    />
-                    }
-                </View>
-            </>
+            <ChannelBookmarkOptions
+                bookmark={bookmark}
+                canCopyPublicLink={canCopyPublicLink}
+                canDeleteBookmarks={canDeleteBookmarks}
+                canDownloadFiles={canDownloadFiles}
+                canEditBookmarks={canEditBookmarks}
+                file={file}
+                setAction={setAction}
+            />
         );
 
         bottomSheet({
@@ -321,7 +125,7 @@ const ChannelBookmark = ({
             theme,
             closeButtonId: 'close-channel-bookmark-actions',
         });
-    }, [bookmark, bottom, canCopyPublicLink, canDeleteBookmarks, canDownloadFiles, canEditBookmarks]);
+    }, [bookmark, bottom, canCopyPublicLink, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, file, theme]);
 
     const {onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index || 0, handlePress);
 

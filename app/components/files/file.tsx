@@ -40,7 +40,7 @@ type FileProps = {
     updateFileForGallery: (idx: number, file: FileInfo) => void;
     asCard?: boolean;
     resizeMode?: ResizeMode;
-    onPressDisabled?: boolean;
+    isPressDisabled?: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -85,7 +85,7 @@ const File = ({
     updateFileForGallery,
     wrapperWidth = 300,
     resizeMode = 'cover',
-    onPressDisabled = false,
+    isPressDisabled = false,
 }: FileProps) => {
     const document = useRef<DocumentRef>(null);
     const theme = useTheme();
@@ -108,7 +108,7 @@ const File = ({
     const renderCardWithImage = (fileIcon: JSX.Element) => {
         const fileInfo = (
             <FileInfo
-                disabled={onPressDisabled}
+                disabled={isPressDisabled}
                 file={file}
                 showDate={showDate}
                 channelName={channelName}
@@ -136,7 +136,7 @@ const File = ({
     if (isVideo(file) && publicLinkEnabled) {
         const renderVideoFile = (
             <TouchableWithoutFeedback
-                disabled={onPressDisabled}
+                disabled={isPressDisabled}
                 onPress={onGestureEvent}
             >
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
@@ -146,7 +146,7 @@ const File = ({
                         inViewPort={inViewPort}
                         isSingleImage={isSingleImage}
                         resizeMode={resizeMode}
-                        wrapperWidth={30}
+                        wrapperWidth={wrapperWidth}
                         updateFileForGallery={updateFileForGallery}
                         index={index}
                     />
@@ -164,7 +164,7 @@ const File = ({
         const renderImageFile = (
             <TouchableWithoutFeedback
                 onPress={onGestureEvent}
-                disabled={onPressDisabled}
+                disabled={isPressDisabled}
             >
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
                     <ImageFile
@@ -191,7 +191,7 @@ const File = ({
                 <DocumentFile
                     ref={document}
                     canDownloadFiles={canDownloadFiles}
-                    disabled={onPressDisabled}
+                    disabled={isPressDisabled}
                     file={file}
                 />
             </View>
@@ -199,7 +199,7 @@ const File = ({
 
         const fileInfo = (
             <FileInfo
-                disabled={onPressDisabled}
+                disabled={isPressDisabled}
                 file={file}
                 showDate={showDate}
                 channelName={channelName}
@@ -223,7 +223,7 @@ const File = ({
         const touchableWithPreview = (
             <TouchableWithFeedback
                 onPress={handlePreviewPress}
-                disabled={onPressDisabled}
+                disabled={isPressDisabled}
                 type={'opacity'}
             >
                 <FileIcon

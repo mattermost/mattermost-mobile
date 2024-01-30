@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, View} from 'react-native';
 
@@ -30,7 +30,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: '100%',
     },
     description: {
-        marginTop: 2,
+        marginTop: 8,
     },
     descriptionText: {
         ...typography('Body', 75),
@@ -51,8 +51,8 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
     const [loading, setLoading] = useState(false);
     const styles = getStyleSheet(theme);
     const keyboard = (Platform.OS === 'android') ? 'default' : 'url';
-    const subContainerStyle = [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 0}];
-    const descContainer = [styles.description, {paddingHorizontal: isTablet ? 42 : 0}];
+    const subContainerStyle = useMemo(() => [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 0}], [isTablet, styles]);
+    const descContainer = useMemo(() => [styles.description, {paddingHorizontal: isTablet ? 42 : 0}], [isTablet, styles]);
 
     const validateAndFetchOG = useCallback(debounce(async (text: string) => {
         setLoading(true);
@@ -75,13 +75,13 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
             defaultMessage: 'Please enter a valid link',
         }));
         setLoading(false);
-    }, 500), []);
+    }, 500), [intl]);
 
     const onChangeText = useCallback((text: string) => {
         resetBookmark();
         setUrl(text);
         setError('');
-    }, []);
+    }, [resetBookmark]);
 
     const onSubmitEditing = useCallback(() => {
         if (url) {

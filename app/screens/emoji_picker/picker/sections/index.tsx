@@ -68,6 +68,10 @@ const styles = StyleSheet.create(({
         height: EMOJI_SIZE,
         width: EMOJI_SIZE,
     },
+    imageEmoji: {
+        width: 28,
+        height: 28,
+    },
 }));
 
 type Props = {
@@ -77,6 +81,13 @@ type Props = {
     file?: ExtractedFileInfo;
     onEmojiPress: (emoji: string) => void;
     recentEmojis: string[];
+}
+
+type ImageEmojiProps = {
+    onEmojiPress: (emoji: string) => void;
+    file?: ExtractedFileInfo;
+    imageUrl?: string;
+    path: string;
 }
 
 CategoryNames.forEach((name: string) => {
@@ -93,6 +104,35 @@ const emptyEmoji: EmojiAlias = {
     name: '',
     short_name: '',
     aliases: [],
+};
+
+const ImageEmoji = ({file, imageUrl, onEmojiPress, path}: ImageEmojiProps) => {
+    const onPress = useCallback(() => {
+        onEmojiPress('');
+    }, [onEmojiPress]);
+
+    return (
+        <View style={styles.row}>
+            <View style={styles.emoji}>
+                <TouchableWithFeedback onPress={onPress}>
+                    <>
+                        {Boolean(file) &&
+                        <FileIcon
+                            file={file}
+                            iconSize={30}
+                        />
+                        }
+                        {Boolean(imageUrl) &&
+                        <FastImage
+                            source={{uri: path}}
+                            style={styles.imageEmoji}
+                        />
+                        }
+                    </>
+                </TouchableWithFeedback>
+            </View>
+        </View>
+    );
 };
 
 const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress, recentEmojis}: Props) => {
@@ -160,36 +200,22 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
             sectionsArray.unshift({
                 data: [[{
                     aliases: [],
-                    name: imageUrl || file?.name || 'file',
-                    short_name: imageUrl || file?.name || 'file',
+                    name: imageUrl || file?.name || '',
+                    short_name: imageUrl || file?.name || '',
                     category: 'image',
                 }]],
                 defaultMessage: 'Default',
-                icon: 'file-image-outline',
+                icon: 'bookmark-outline',
                 id: 'emoji_picker.default',
                 key: 'default',
                 renderItem: ({item}: ListRenderItemInfo<EmojiAlias[]>) => {
                     return (
-                        <View style={styles.row}>
-                            <View style={styles.emoji}>
-                                <TouchableWithFeedback onPress={() => onEmojiPress('')}>
-                                    <>
-                                        {Boolean(file) &&
-                                        <FileIcon
-                                            file={file as FileInfo}
-                                            iconSize={30}
-                                        />
-                                        }
-                                        {Boolean(imageUrl) &&
-                                        <FastImage
-                                            source={{uri: item[0].name}}
-                                            style={{width: 28, height: 28}}
-                                        />
-                                        }
-                                    </>
-                                </TouchableWithFeedback>
-                            </View>
-                        </View>
+                        <ImageEmoji
+                            file={file}
+                            onEmojiPress={onEmojiPress}
+                            imageUrl={imageUrl}
+                            path={item[0].name}
+                        />
                     );
                 },
             });

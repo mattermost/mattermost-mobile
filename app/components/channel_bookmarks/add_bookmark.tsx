@@ -3,16 +3,13 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, View} from 'react-native';
+import {Alert, View, type Insets} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
-import BookmarkType from '@components/channel_bookmarks/bookmark_type';
-import FormattedText from '@components/formatted_text';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet, showModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -21,23 +18,24 @@ import {typography} from '@utils/typography';
 
 import CompassIcon from '../compass_icon';
 
+import AddBookmarkOptions from './add_bookmark_options';
+
 type Props = {
     bookmarksCount: number;
     canUploadFiles: boolean;
     channelId: string;
     currentUserId: string;
     showLarge: boolean;
-    showInInfo: boolean;
 }
 
 const MAX_BOOKMARKS_PER_CHANNEL = 50;
+const hitSlop: Insets = {top: 10, bottom: 10, left: 10, right: 10};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         alignSelf: 'flex-start',
         marginBottom: 16,
     },
-    flex: {flex: 1},
     largeButton: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         height: 32,
@@ -50,29 +48,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         lineHeight: undefined,
         marginTop: undefined,
         ...typography('Body', 100, 'SemiBold'),
-        marginRight: 16,
+        paddingRight: 6,
     },
     largeButtonIcon: {
-        color: theme.centerChannelColor,
-        paddingRight: 6,
-        marginTop: 3,
-    },
-    listHeader: {
-        marginBottom: 12,
-    },
-    listHeaderText: {
-        color: theme.centerChannelColor,
-        ...typography('Heading', 600, 'SemiBold'),
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+        paddingRight: 4,
+        paddingTop: 3,
     },
     smallButton: {
         backgroundColor: undefined,
         paddingHorizontal: undefined,
         paddingVertical: undefined,
-        alignItems: 'center',
+        alignItems: 'flex-end',
         justifyContent: 'center',
         margin: undefined,
-        height: 32,
         top: 3,
+        right: 0,
     },
     smallButtonText: {
         color: theme.centerChannelColor,
@@ -85,15 +76,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     smallButtonIcon: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
     },
-    info: {
-        height: 32,
-        width: 32,
-    },
 }));
 
-const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, showInInfo, showLarge}: Props) => {
+const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, showLarge}: Props) => {
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const {formatMessage} = useIntl();
     const {bottom} = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
@@ -124,7 +110,7 @@ const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, 
                     }],
                 },
             };
-            showModal(Screens.CHANNEL_BOOKMARK_ADD, title, {
+            showModal(Screens.CHANNEL_BOOKMARK, title, {
                 channelId,
                 closeButtonId,
                 type: 'link',
@@ -134,29 +120,10 @@ const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, 
         }
 
         const renderContent = () => (
-            <>
-                {!isTablet && (
-                    <View style={styles.listHeader}>
-                        <FormattedText
-                            id='channel_info.add_bookmark'
-                            defaultMessage={'Add a bookmark'}
-                            style={styles.listHeaderText}
-                        />
-                    </View>
-                )}
-                <View style={styles.flex}>
-                    <BookmarkType
-                        channelId={channelId}
-                        type='link'
-                        ownerId={currentUserId}
-                    />
-                    <BookmarkType
-                        channelId={channelId}
-                        type='file'
-                        ownerId={currentUserId}
-                    />
-                </View>
-            </>
+            <AddBookmarkOptions
+                channelId={channelId}
+                currentUserId={currentUserId}
+            />
         );
 
         bottomSheet({
@@ -168,43 +135,29 @@ const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, 
         });
     }, [bottom, bookmarksCount, canUploadFiles, currentUserId, channelId]);
 
-    if (showLarge) {
-        return (
-            <View style={styles.container}>
-                <Button
-                    backgroundStyle={styles.largeButton}
-                    onPress={onPress}
-                    text={formatMessage({id: 'channel_info.add_bookmark', defaultMessage: 'Add a bookmark'})}
-                    textStyle={styles.smallButtonText}
-                    theme={theme}
-                    iconComponent={
-                        <CompassIcon
-                            name='plus'
-                            size={16}
-                            style={styles.largeButtonIcon}
-                        />
-                    }
-                />
-            </View>
-        );
-    }
-
-    return (
+    const button = (
         <Button
-            backgroundStyle={[styles.smallButton, showInInfo && styles.info]}
+            backgroundStyle={showLarge ? styles.largeButton : styles.smallButton}
             onPress={onPress}
-            text={''}
-            textStyle={styles.smallButtonText}
+            hitSlop={hitSlop}
+            text={showLarge ? formatMessage({id: 'channel_info.add_bookmark', defaultMessage: 'Add a bookmark'}) : ''}
+            textStyle={showLarge ? styles.largeButtonText : styles.smallButtonText}
             theme={theme}
             iconComponent={
                 <CompassIcon
                     name='plus'
-                    size={18}
-                    style={styles.smallButtonIcon}
+                    size={showLarge ? 16 : 18}
+                    style={showLarge ? styles.largeButtonIcon : styles.smallButtonIcon}
                 />
             }
         />
     );
+
+    if (showLarge) {
+        return (<View style={styles.container}>{button}</View>);
+    }
+
+    return button;
 };
 
 export default AddBookmark;

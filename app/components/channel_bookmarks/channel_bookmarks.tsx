@@ -34,6 +34,10 @@ type Props = {
 const GRADIENT_LOCATIONS = [0, 0.64, 1];
 const SCROLL_OFFSET = 10;
 
+const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}: NativeScrollEvent) => {
+    return layoutMeasurement.width + contentOffset.x <= contentSize.width - SCROLL_OFFSET;
+};
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
@@ -46,17 +50,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginBottom: 24,
     },
     emptyItemSeparator: {
-        width: 4,
+        width: 16,
     },
     addContainer: {
         width: 40,
         alignContent: 'center',
     },
     gradient: {
-        height: 40,
+        height: 48,
         width: 76,
         position: 'absolute',
         right: 0,
+    },
+    channelView: {
+        paddingLeft: 8,
     },
 }));
 
@@ -69,10 +76,6 @@ const ChannelBookmarks = ({
     const styles = getStyleSheet(theme);
     const files = useChannelBookmarkFiles(bookmarks, publicLinkEnabled);
     const [allowEndFade, setAllowEndFade] = useState(true);
-
-    const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}: NativeScrollEvent) => {
-        return layoutMeasurement.width + contentOffset.x <= contentSize.width - SCROLL_OFFSET;
-    };
 
     const attachmentIndex = useCallback((fileId: string) => {
         return files.findIndex((file) => file.id === fileId) || 0;
@@ -123,7 +126,6 @@ const ChannelBookmarks = ({
                 channelId={channelId}
                 currentUserId={currentUserId}
                 showLarge={true}
-                showInInfo={showInInfo}
             />
         );
     }
@@ -132,7 +134,7 @@ const ChannelBookmarks = ({
         return (
             <GalleryInit galleryIdentifier={galleryIdentifier}>
                 <Animated.View>
-                    <Animated.View style={styles.container}>
+                    <Animated.View style={[styles.container, showInInfo ? undefined : styles.channelView]}>
                         <FlatList
                             bounces={true}
                             alwaysBounceHorizontal={false}
@@ -142,6 +144,7 @@ const ChannelBookmarks = ({
                             ItemSeparatorComponent={renderItemSeparator}
                             onScroll={onScrolled}
                             showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{height: 48, alignItems: 'center'}}
                         />
                         {canAddBookmarks &&
                             <View style={styles.addContainer}>
@@ -161,7 +164,6 @@ const ChannelBookmarks = ({
                                     channelId={channelId}
                                     currentUserId={currentUserId}
                                     showLarge={false}
-                                    showInInfo={showInInfo}
                                 />
                             </View>
                         }
