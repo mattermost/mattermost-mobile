@@ -163,7 +163,12 @@ RCT_EXPORT_METHOD(createThumbnail:(NSDictionary *)config findEventsWithResolver:
   
   if ([url_ hasPrefix:@"http://"] || [url_ hasPrefix:@"https://"] || [url_ hasPrefix:@"file://"]) {
     vidURL = [NSURL URLWithString:url];
-    NSString *serverUrl = [NSString stringWithFormat:@"%@://%@:%@", vidURL.scheme, vidURL.host, vidURL.port];
+    NSString *serverUrl;
+    if (vidURL.port != nil) {
+      serverUrl = [NSString stringWithFormat:@"%@://%@:%@", vidURL.scheme, vidURL.host, vidURL.port];
+    } else {
+      serverUrl = [NSString stringWithFormat:@"%@://%@", vidURL.scheme, vidURL.host];
+    }
     if (vidURL != nil) {
       NSString *token = [[GekidouWrapper default] getTokenFor:serverUrl];
       if (token != nil) {
