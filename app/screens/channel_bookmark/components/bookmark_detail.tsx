@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {TextInput, View} from 'react-native';
 import Button from 'react-native-button';
@@ -76,8 +76,9 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
-    const styles = getStyleSheet(theme);
     const paddingStyle = useMemo(() => ({paddingHorizontal: isTablet ? 42 : 0}), [isTablet]);
+    const [hasImageError, setHasImageError] = useState(false);
+    const styles = getStyleSheet(theme);
 
     const openEmojiPicker = useCallback(() => {
         openAsBottomSheet({
@@ -93,8 +94,12 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
         });
     }, [imageUrl, file, theme, setBookmarkEmoji]);
 
+    const handleImageError = useCallback(() => {
+        setHasImageError(true);
+    }, []);
+
     let generic;
-    if (!imageUrl && !emoji && !file) {
+    if (hasImageError || (!imageUrl && !emoji && !file)) {
         generic = (
             <CompassIcon
                 name='book-outline'
@@ -125,10 +130,11 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
                             smallImage={true}
                         />
                         }
-                        {Boolean(imageUrl) && !emoji &&
+                        {Boolean(imageUrl && !emoji) && !hasImageError &&
                         <FastImage
                             source={{uri: imageUrl}}
                             style={styles.image}
+                            onError={handleImageError}
                         />
                         }
                         {Boolean(emoji) &&

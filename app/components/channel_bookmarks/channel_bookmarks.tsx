@@ -41,7 +41,6 @@ const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}: Native
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
-        paddingBottom: 2,
     },
     separator: {
         height: 1,
@@ -50,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginBottom: 24,
     },
     emptyItemSeparator: {
-        width: 16,
+        width: 20,
     },
     addContainer: {
         width: 40,
@@ -58,12 +57,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     gradient: {
         height: 48,
-        width: 76,
+        width: 68,
         position: 'absolute',
         right: 0,
     },
     channelView: {
-        paddingLeft: 8,
+        paddingHorizontal: 8,
     },
 }));
 

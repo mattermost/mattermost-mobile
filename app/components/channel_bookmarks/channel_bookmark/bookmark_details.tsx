@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ReactNode} from 'react';
+import React, {useState, type ReactNode, useCallback} from 'react';
 import {View, Text, Platform} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
@@ -51,10 +51,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const BookmarkDetails = ({bookmark, children, file}: Props) => {
     const theme = useTheme();
+    const [hasImageError, setHasImageError] = useState(false);
     const styles = getStyleSheet(theme);
 
+    const handleImageError = useCallback(() => {
+        setHasImageError(true);
+    }, []);
+
     let generic;
-    if (!bookmark.imageUrl && !bookmark.emoji && !file) {
+    if (hasImageError || (!bookmark.imageUrl && !bookmark.emoji && !file)) {
         generic = (
             <CompassIcon
                 name='book-outline'
@@ -75,10 +80,11 @@ const BookmarkDetails = ({bookmark, children, file}: Props) => {
                     smallImage={true}
                 />
                 }
-                {Boolean(bookmark.imageUrl) && !bookmark.emoji &&
+                {Boolean(bookmark.imageUrl && !bookmark.emoji) && !hasImageError &&
                 <FastImage
                     source={{uri: bookmark.imageUrl}}
                     style={styles.image}
+                    onError={handleImageError}
                 />
                 }
                 {Boolean(bookmark.emoji) &&
