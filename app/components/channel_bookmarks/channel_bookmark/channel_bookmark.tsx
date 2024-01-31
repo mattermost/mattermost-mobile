@@ -42,6 +42,7 @@ type Props = {
 
 const styles = StyleSheet.create({
     container: {
+        alignItems: 'center',
         flexDirection: 'row',
         paddingVertical: 6,
         height: 48,

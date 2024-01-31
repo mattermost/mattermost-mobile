@@ -55,7 +55,6 @@ const ChannelHeaderBookmarks = ({canAddBookmarks, channelId}: Props) => {
     return (
         <View style={containerStyle}>
             <View style={styles.content}>
-                <View style={styles.padding}/>
                 <View style={styles.paddingHorizontal}>
                     <ChannelBookmarks
                         channelId={channelId}

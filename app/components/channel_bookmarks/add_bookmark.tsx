@@ -146,7 +146,7 @@ const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, 
             iconComponent={
                 <CompassIcon
                     name='plus'
-                    size={showLarge ? 16 : 18}
+                    size={showLarge ? 16 : 20}
                     style={showLarge ? styles.largeButtonIcon : styles.smallButtonIcon}
                 />
             }
