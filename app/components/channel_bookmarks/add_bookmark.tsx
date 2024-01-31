@@ -133,7 +133,7 @@ const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, 
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [bottom, bookmarksCount, canUploadFiles, currentUserId, channelId]);
+    }, [bottom, bookmarksCount, canUploadFiles, currentUserId, channelId, theme]);
 
     const button = (
         <Button
