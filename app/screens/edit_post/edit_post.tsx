@@ -18,6 +18,7 @@ import {useInputPropagation} from '@hooks/input';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
+import {changeOpacity} from '@utils/theme';
 
 import EditPostInput, {type EditPostInputRef} from './edit_post_input';
 
@@ -102,6 +103,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             rightButtons: [{
                 ...RIGHT_BUTTON,
                 color: theme.sidebarHeaderTextColor,
+                disabledColor: changeOpacity(theme.sidebarHeaderTextColor, 0.32),
                 text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
                 enabled,
             }],

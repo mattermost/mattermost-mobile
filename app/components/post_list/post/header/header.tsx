@@ -34,7 +34,6 @@ type HeaderProps = {
     isMilitaryTime: boolean;
     isPendingOrFailed: boolean;
     isSystemPost: boolean;
-    isTimezoneEnabled: boolean;
     isWebHook: boolean;
     location: string;
     post: PostModel;
@@ -74,7 +73,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Header = (props: HeaderProps) => {
     const {
         author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
-        isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isTimezoneEnabled, isWebHook,
+        isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isWebHook,
         location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton, teammateNameDisplay, hideGuestTags,
     } = props;
     const theme = useTheme();
@@ -116,7 +115,7 @@ const Header = (props: HeaderProps) => {
                     />
                     }
                     <FormattedTime
-                        timezone={isTimezoneEnabled ? getUserTimezone(currentUser) : ''}
+                        timezone={getUserTimezone(currentUser)}
                         isMilitaryTime={isMilitaryTime}
                         value={post.createAt}
                         style={style.time}

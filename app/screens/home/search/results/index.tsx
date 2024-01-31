@@ -31,7 +31,6 @@ const enhance = withObservables(['fileChannelIds'], ({database, fileChannelIds}:
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
         ),
-        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
         fileChannels,
         canDownloadFiles: observeCanDownloadFiles(database),
         publicLinkEnabled: observeConfigBooleanValue(database, 'EnablePublicLink'),

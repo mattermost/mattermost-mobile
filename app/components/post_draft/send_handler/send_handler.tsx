@@ -39,7 +39,6 @@ type Props = {
     currentUserId: string;
     cursorPosition: number;
     enableConfirmNotificationsToChannel?: boolean;
-    isTimezoneEnabled: boolean;
     maxMessageLength: number;
     membersCount?: number;
     useChannelMentions: boolean;
@@ -73,7 +72,6 @@ export default function SendHandler({
     currentUserId,
     enableConfirmNotificationsToChannel,
     files,
-    isTimezoneEnabled,
     maxMessageLength,
     membersCount = 0,
     cursorPosition,
@@ -156,13 +154,13 @@ export default function SendHandler({
     }, [files, currentUserId, channelId, rootId, value, clearDraft, postPriority]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean) => {
-        const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, Boolean(isTimezoneEnabled), channelTimezoneCount, atHere);
+        const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);
         const cancel = () => {
             setSendingMessage(false);
         };
 
         DraftUtils.alertChannelWideMention(intl, notifyAllMessage, doSubmitMessage, cancel);
-    }, [intl, isTimezoneEnabled, channelTimezoneCount, doSubmitMessage]);
+    }, [intl, channelTimezoneCount, doSubmitMessage]);
 
     const sendCommand = useCallback(async () => {
         if (value.trim().startsWith('/call')) {

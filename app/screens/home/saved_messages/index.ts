@@ -9,7 +9,6 @@ import {switchMap} from 'rxjs/operators';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsById} from '@queries/servers/post';
 import {querySavedPostsPreferences} from '@queries/servers/preference';
-import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
 import {getTimezone} from '@utils/user';
@@ -42,7 +41,6 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
         ),
-        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
     };
 });
 

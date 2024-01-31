@@ -113,7 +113,6 @@ interface ClientConfig {
     ExperimentalNormalizeMarkdownLinks: string;
     ExperimentalPrimaryTeam: string;
     ExperimentalSharedChannels: string;
-    ExperimentalTimezone: string;
     ExperimentalTownSquareIsReadOnly: string;
     ExperimentalViewArchivedChannels: string;
     ExtendSessionLengthWithActivity: string;
