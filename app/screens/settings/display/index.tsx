@@ -17,8 +17,6 @@ import DisplaySettings from './display';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
-
     const allowsThemeSwitching = observeConfigBooleanValue(database, 'EnableThemeSelection');
     const allowedThemeKeys = observeAllowedThemesKeys(database);
 
@@ -29,7 +27,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     );
 
     return {
-        isTimezoneEnabled,
         isThemeSwitchingEnabled,
         isCRTEnabled: observeIsCRTEnabled(database),
         isCRTSwitchEnabled: observeCRTUserPreferenceDisplay(database),

@@ -29,7 +29,6 @@ type Props = {
     appsEnabled: boolean;
     currentTimezone: string | null;
     customEmojiNames: string[];
-    isTimezoneEnabled: boolean;
     posts: PostModel[];
 }
 
@@ -50,7 +49,7 @@ const styles = StyleSheet.create({
     },
 });
 
-function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, isTimezoneEnabled}: Props) {
+function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: Props) {
     const intl = useIntl();
     const [loading, setLoading] = useState(!posts.length);
     const [refreshing, setRefreshing] = useState(false);
@@ -88,7 +87,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, i
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<FlatList<string>>(true, onSnap);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
-    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
+    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [posts]);
 
     const animated = useAnimatedStyle(() => {
         return {
@@ -144,7 +143,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, i
                     <DateSeparator
                         key={item.value}
                         date={getDateForDateLine(item.value)}
-                        timezone={isTimezoneEnabled ? currentTimezone : null}
+                        timezone={currentTimezone}
                     />
                 );
             case 'post':
@@ -162,7 +161,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, i
             default:
                 return null;
         }
-    }, [appsEnabled, currentTimezone, customEmojiNames, isTimezoneEnabled, theme]);
+    }, [appsEnabled, currentTimezone, customEmojiNames, theme]);
 
     return (
         <>

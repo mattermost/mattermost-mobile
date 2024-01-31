@@ -3,10 +3,6 @@
 
 import {getTimeZone} from 'react-native-localize';
 
-export const isTimezoneEnabled = (config: Partial<ClientConfig>) => {
-    return config?.ExperimentalTimezone === 'true';
-};
-
 export function getDeviceTimezone() {
     return getTimeZone();
 }
