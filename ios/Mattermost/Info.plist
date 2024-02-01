@@ -58,7 +58,7 @@
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Enabling access to Bluetooth means we can connect to audio peripherals for calls, and synchronize content across your devices and clients.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Enabling access to your device cameras means you can take photos or videos and upload them to $(PRODUCT_NAME).</string>
+	<string>Allowing access to your camera enables you to take photos or videos and attach them to messages.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Enabling access to your Face ID means we can restrict unauthorized users from accessing $(PRODUCT_NAME) on your device.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
@@ -70,7 +70,7 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Enabling write access to your photo library means you can save downloaded photos and videos from $(PRODUCT_NAME) to your device.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Enabling read access to your photo library means you can upload photos and videos from your device to $(PRODUCT_NAME).</string>
+	<string>Allowing access to your photo library enables you to select photos or videos and attach them to messages.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Enabling your device to send user data to Apple means you can send voice messages to $(PRODUCT_NAME).</string>
 	<key>NSUserActivityTypes</key>
