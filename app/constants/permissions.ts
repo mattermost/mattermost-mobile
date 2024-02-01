@@ -18,7 +18,7 @@ export const iosPermissions = defineMessages({
     },
     NSCameraUsageDescription: {
         id: 'mobile.ios.plist.NSCameraUsageDescription',
-        defaultMessage: 'Enabling access to your device cameras means you can take photos or videos and upload them to {applicationName}.',
+        defaultMessage: 'Allowing access to your camera enables you to take photos or videos and attach them to messages.',
     },
     NSFaceIDUsageDescription: {
         id: 'mobile.ios.plist.NSFaceIDUsageDescription',
