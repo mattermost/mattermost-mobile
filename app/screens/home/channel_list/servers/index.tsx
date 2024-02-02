@@ -166,6 +166,9 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             onPress={onPress}
             style={styles.icon}
             testID={'channel_list.servers.server_icon'}
+            badgeBorderColor={theme.sidebarBg}
+            badgeBackgroundColor={theme.mentionBg}
+            badgeColor={theme.mentionColor}
         />
     );
 });
