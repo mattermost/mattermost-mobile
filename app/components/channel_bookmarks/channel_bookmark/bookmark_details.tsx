@@ -1,16 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, type ReactNode, useCallback} from 'react';
+import React, {useMemo, type ReactNode} from 'react';
 import {View, Text, Platform} from 'react-native';
-import FastImage from 'react-native-fast-image';
 
-import CompassIcon from '@components/compass_icon';
-import Emoji from '@components/emoji';
-import FileIcon from '@components/files/file_icon';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import BookmarkIcon from './bookmark_icon';
 
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 import type FileModel from '@typings/database/models/servers/file';
@@ -51,50 +49,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const BookmarkDetails = ({bookmark, children, file}: Props) => {
     const theme = useTheme();
-    const [hasImageError, setHasImageError] = useState(false);
     const styles = getStyleSheet(theme);
-
-    const handleImageError = useCallback(() => {
-        setHasImageError(true);
-    }, []);
-
-    let generic;
-    if (hasImageError || (!bookmark.imageUrl && !bookmark.emoji && !file)) {
-        generic = (
-            <CompassIcon
-                name='book-outline'
-                size={22}
-                color={theme.centerChannelColor}
-                style={styles.genericBookmark}
-            />
-        );
-    }
+    const fileInfo = useMemo(() => file?.toFileInfo(bookmark.ownerId), [file, bookmark.ownerId]);
 
     return (
         <View style={styles.row}>
             <View style={styles.imageContainer}>
-                {Boolean(file) && !bookmark.emoji &&
-                <FileIcon
-                    file={file?.toFileInfo(bookmark.ownerId)}
+                <BookmarkIcon
+                    emoji={bookmark.emoji}
+                    emojiSize={Platform.select({ios: 20, default: 19})}
+                    emojiStyle={styles.emoji}
+                    file={fileInfo}
+                    genericStyle={styles.genericBookmark}
                     iconSize={24}
-                    smallImage={true}
+                    imageStyle={styles.image}
+                    imageUrl={bookmark.imageUrl}
                 />
-                }
-                {Boolean(bookmark.imageUrl && !bookmark.emoji) && !hasImageError &&
-                <FastImage
-                    source={{uri: bookmark.imageUrl}}
-                    style={styles.image}
-                    onError={handleImageError}
-                />
-                }
-                {Boolean(bookmark.emoji) &&
-                <Emoji
-                    emojiName={bookmark.emoji!}
-                    size={Platform.select({ios: 20, default: 19})}
-                    textStyle={styles.emoji}
-                />
-                }
-                {generic}
                 {children}
             </View>
             <Text style={styles.text}>{bookmark.displayName}</Text>

@@ -1,15 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TextInput, View} from 'react-native';
 import Button from 'react-native-button';
-import FastImage from 'react-native-fast-image';
 
+import BookmarkIcon from '@components/channel_bookmarks/channel_bookmark/bookmark_icon';
 import CompassIcon from '@components/compass_icon';
-import Emoji from '@components/emoji';
-import FileIcon from '@components/files/file_icon';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -77,7 +75,6 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
     const theme = useTheme();
     const isTablet = useIsTablet();
     const paddingStyle = useMemo(() => ({paddingHorizontal: isTablet ? 42 : 0}), [isTablet]);
-    const [hasImageError, setHasImageError] = useState(false);
     const styles = getStyleSheet(theme);
 
     const openEmojiPicker = useCallback(() => {
@@ -94,22 +91,6 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
         });
     }, [imageUrl, file, theme, setBookmarkEmoji]);
 
-    const handleImageError = useCallback(() => {
-        setHasImageError(true);
-    }, []);
-
-    let generic;
-    if (hasImageError || (!imageUrl && !emoji && !file)) {
-        generic = (
-            <CompassIcon
-                name='book-outline'
-                size={22}
-                color={theme.centerChannelColor}
-                style={styles.genericBookmark}
-            />
-        );
-    }
-
     return (
         <View style={paddingStyle}>
             <FormattedText
@@ -123,27 +104,15 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
                     onPress={openEmojiPicker}
                 >
                     <View style={styles.imageContainer}>
-                        {Boolean(file) && !emoji &&
-                        <FileIcon
-                            file={file as FileInfo}
+                        <BookmarkIcon
+                            emoji={emoji}
+                            emojiSize={22}
+                            file={file}
+                            genericStyle={styles.genericBookmark}
                             iconSize={30}
-                            smallImage={true}
+                            imageStyle={styles.image}
+                            imageUrl={imageUrl}
                         />
-                        }
-                        {Boolean(imageUrl && !emoji) && !hasImageError &&
-                        <FastImage
-                            source={{uri: imageUrl}}
-                            style={styles.image}
-                            onError={handleImageError}
-                        />
-                        }
-                        {Boolean(emoji) &&
-                        <Emoji
-                            emojiName={emoji!}
-                            size={22}
-                        />
-                        }
-                        {generic}
                     </View>
                     <CompassIcon
                         size={12}
