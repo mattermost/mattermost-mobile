@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database, Model, Q} from '@nozbe/watermelondb';
 
 import {OperationType} from '@constants/database';
 import {
@@ -11,7 +11,6 @@ import {
 } from '@database/operator/utils/general';
 import {logWarning} from '@utils/log';
 
-import type Model from '@nozbe/watermelondb/Model';
 import type {
     HandleRecordsArgs,
     OperationArgs,
@@ -40,10 +39,11 @@ export default class BaseDataOperator {
      * the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
      * @param {ProcessRecordsArgs} inputsArg
      * @param {RawValue[]} inputsArg.createOrUpdateRawValues
+     * @param {RawValue[]} inputsArg.deleteRawValues
      * @param {string} inputsArg.tableName
      * @param {string} inputsArg.fieldName
      * @param {(existing: Model, newElement: RawValue) => boolean} inputsArg.buildKeyRecordBy
-     * @returns {Promise<{ProcessRecordResults}>}
+     * @returns {Promise<{ProcessRecordResults<T>}>}
      */
     processRecords = async <T extends Model>({createOrUpdateRawValues = [], deleteRawValues = [], tableName, buildKeyRecordBy, fieldName, shouldUpdate}: ProcessRecordsArgs): Promise<ProcessRecordResults<T>> => {
         const getRecords = async (rawValues: RawValue[]) => {
@@ -77,7 +77,7 @@ export default class BaseDataOperator {
 
         // for create or update flow
         const createOrUpdateRaws = await getRecords(createOrUpdateRawValues);
-        const recordsByKeys = createOrUpdateRaws.reduce((result: Record<string, Model>, record) => {
+        const recordsByKeys = createOrUpdateRaws.reduce((result: Record<string, T>, record) => {
             // @ts-expect-error object with string key
             const key = buildKeyRecordBy?.(record) || record[fieldName];
             result[key] = record;
@@ -125,9 +125,9 @@ export default class BaseDataOperator {
      * @param {string} prepareRecord.tableName
      * @param {RawValue[]} prepareRecord.createRaws
      * @param {RawValue[]} prepareRecord.updateRaws
-     * @param {Model[]} prepareRecord.deleteRaws
-     * @param {(TransformerArgs) => Promise<Model>;} transformer
-     * @returns {Promise<Model[]>}
+     * @param {T extends Model[]} prepareRecord.deleteRaws
+     * @param {(TransformerArgs) => Promise<T extends Model>;} transformer
+     * @returns {Promise<T extends Model[]>}
      */
     prepareRecords = async <T extends Model>({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs<T>): Promise<T[]> => {
         if (!this.database) {
@@ -210,7 +210,7 @@ export default class BaseDataOperator {
      * @returns {Promise<Model[]>}
      */
     async handleRecords<T extends Model>({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true, shouldUpdate}: HandleRecordsArgs<T>, description: string): Promise<T[]> {
-        if (!createOrUpdateRawValues.length) {
+        if (!createOrUpdateRawValues.length && !deleteRawValues.length) {
             logWarning(
                 `An empty "rawValues" array has been passed to the handleRecords method for tableName ${tableName}`,
             );
