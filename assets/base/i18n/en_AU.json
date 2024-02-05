@@ -784,7 +784,6 @@
   "notification_settings.email.send": "Send email notifications",
   "notification_settings.mention.reply": "Send reply notifications for",
   "notification_settings.mentions": "Mentions",
-  "notification_settings.mentions..keywordsDescription": "Other words that trigger a mention",
   "notification_settings.mentions.channelWide": "Channel-wide mentions",
   "notification_settings.mentions.keywords": "Enter other keywords",
   "notification_settings.mentions.keywordsLabel": "Keywords are not case-sensitive. Separate keywords with commas.",

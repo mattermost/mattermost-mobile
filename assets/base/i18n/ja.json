@@ -784,7 +784,6 @@
   "notification_settings.email.send": "電子メール通知を送信する",
   "notification_settings.mention.reply": "返信通知を送信する",
   "notification_settings.mentions": "メンション",
-  "notification_settings.mentions..keywordsDescription": "メンションとなる別の単語",
   "notification_settings.mentions.channelWide": "チャンネル全体へのメンション",
   "notification_settings.mentions.keywords": "他のキーワードを入力",
   "notification_settings.mentions.keywordsLabel": "キーワードの大文字と小文字は区別されません。キーワードはカンマで区切ってください。",
