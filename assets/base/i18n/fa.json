@@ -697,7 +697,6 @@
   "notification_settings.email.send": "ارسال اعلان‌های رایانامه",
   "notification_settings.mention.reply": "ارسال اعلان‌های پاسخ برای",
   "notification_settings.mentions": "اشاره‌ها",
-  "notification_settings.mentions..keywordsDescription": "کلمات دیگری که اشاره‌ها را به کار می‌اندازد",
   "notification_settings.mentions.channelWide": "اشاره‌ها در کل کانال",
   "notification_settings.mentions.keywords": "کلیدواژه‌ها",
   "notification_settings.mentions.keywordsLabel": "",

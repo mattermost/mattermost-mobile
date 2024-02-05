@@ -784,7 +784,6 @@
   "notification_settings.email.send": "E-mailmeldingen versturen",
   "notification_settings.mention.reply": "Antwoordmeldingen versturen voor",
   "notification_settings.mentions": "@Vermeldingen",
-  "notification_settings.mentions..keywordsDescription": "Andere woorden die een vermelding activeren",
   "notification_settings.mentions.channelWide": "Kanaalbrede vermeldingen",
   "notification_settings.mentions.keywords": "Geef andere trefwoorden op",
   "notification_settings.mentions.keywordsLabel": "Trefwoorden zijn niet hoofdlettergevoelig. Scheid trefwoorden met komma's.",

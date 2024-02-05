@@ -756,7 +756,6 @@
   "notification_settings.email.send": "Envoyer des notifications par e-mail",
   "notification_settings.mention.reply": "Envoyer des notifications de réponse pour",
   "notification_settings.mentions": "Mentions",
-  "notification_settings.mentions..keywordsDescription": "Autres mots qui déclenchent une mention",
   "notification_settings.mentions.channelWide": "Mentions de canal",
   "notification_settings.mentions.keywords": "Mots-clés",
   "notification_settings.mentions.keywordsLabel": "Les mots-clés ne sont pas sensibles à la casse. Mots-clés séparés par des virgules.",

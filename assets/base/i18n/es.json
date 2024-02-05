@@ -697,7 +697,6 @@
   "notification_settings.email.send": "Enviar notificaciones por correo electrónico",
   "notification_settings.mention.reply": "Enviar notificaciones de respuesta para",
   "notification_settings.mentions": "Menciones",
-  "notification_settings.mentions..keywordsDescription": "Otras palabras que lanzan una mención",
   "notification_settings.mentions.channelWide": "Menciones en todo el canal",
   "notification_settings.mentions.keywords": "Palabras reservadas",
   "notification_settings.mentions.keywordsLabel": "Las palabras reservadas no distinguen entre mayúsculas y minúsculas. Separa las palabras reservadas con comas.",
