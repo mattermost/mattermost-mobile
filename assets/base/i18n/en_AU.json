@@ -96,6 +96,7 @@
   "camera_type.video.option": "Record Video",
   "center_panel.archived.closeChannel": "Close Channel",
   "channel_add_members.add_members.button": "Add Members",
+  "channel_bookmark_add.link": "Link",
   "channel_files.empty.paragraph": "Files posted in this channel will show here.",
   "channel_files.empty.title": "No files yet",
   "channel_files.noFiles.paragraph": "This channel doesn't contain any files with the applied filters",
