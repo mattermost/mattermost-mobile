@@ -31,13 +31,11 @@ type Props = {
     customEmojis: CustomEmojiModel[];
     customEmojisEnabled: boolean;
     onEmojiPress: (emoji: string) => void;
-    imageUrl?: string;
-    file?: ExtractedFileInfo;
     recentEmojis: string[];
     testID?: string;
 }
 
-const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress, recentEmojis, testID = ''}: Props) => {
+const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, testID = ''}: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const [searchTerm, setSearchTerm] = useState<string|undefined>();
@@ -70,8 +68,6 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
             <EmojiSections
                 customEmojis={customEmojis}
                 customEmojisEnabled={customEmojisEnabled}
-                imageUrl={imageUrl}
-                file={file}
                 onEmojiPress={onEmojiPress}
                 recentEmojis={recentEmojis}
             />

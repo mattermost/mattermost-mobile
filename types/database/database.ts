@@ -226,10 +226,6 @@ export type HandleChannelArgs = PrepareOnly & {
   channels?: Channel[];
 };
 
-export type HandleChannelBookmarkArgs = PrepareOnly & {
-  bookmarks?: ChannelBookmarkWithFileInfo[];
-};
-
 export type HandleCategoryArgs = PrepareOnly & {
   categories?: Category[];
 };

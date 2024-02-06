@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {DeviceEventEmitter, Image, Keyboard, NativeModules, Platform} from 'react-native';
+import {DeviceEventEmitter, Keyboard, NativeModules, Platform} from 'react-native';
 import {Navigation, type Options, type OptionsLayout} from 'react-native-navigation';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
@@ -175,10 +175,4 @@ export const workletNoopTrue = () => {
     'worklet';
 
     return true;
-};
-
-export const getImageSize = (uri: string) => {
-    return new Promise<{width: number; height: number}>((resolve, reject) => {
-        Image.getSize(uri, (width, height) => resolve({width, height}), reject);
-    });
 };

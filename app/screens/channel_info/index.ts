@@ -9,10 +9,8 @@ import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannel} from '@queries/servers/channel';
-import {observeCanAddBookmarks} from '@queries/servers/channel_bookmark';
 import {observeCanManageChannelMembers, observeCanManageChannelSettings} from '@queries/servers/role';
 import {
-    observeConfigBooleanValue,
     observeConfigValue,
     observeCurrentChannelId,
     observeCurrentTeamId,
@@ -61,8 +59,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         switchMap(([uId, chId]) => observeUserIsChannelAdmin(database, uId, chId)),
         distinctUntilChanged(),
     );
-    const serverVersion = observeConfigValue(database, 'Version');
-    const callsGAServer = serverVersion.pipe(
+    const callsGAServer = observeConfigValue(database, 'Version').pipe(
         switchMap((v) => of$(isMinimumServerVersion(v || '', 7, 6))),
     );
     const dmOrGM = type.pipe(switchMap((t) => of$(isTypeDMorGM(t))));
@@ -120,27 +117,17 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         distinctUntilChanged(),
     );
 
-    const isConvertGMFeatureAvailable = serverVersion.pipe(
+    const isConvertGMFeatureAvailable = observeConfigValue(database, 'Version').pipe(
         switchMap((version) => of$(isMinimumServerVersion(version || '', 9, 1))),
-    );
-
-    const isBookmarksEnabled = observeConfigBooleanValue(database, 'FeatureFlagChannelBookmarks');
-
-    const canAddBookmarks = channelId.pipe(
-        switchMap((cId) => {
-            return observeCanAddBookmarks(database, cId);
-        }),
     );
 
     return {
         type,
         canEnableDisableCalls,
-        canAddBookmarks,
-        canManageMembers,
-        canManageSettings,
-        isBookmarksEnabled,
         isCallsEnabledInChannel,
+        canManageMembers,
         isCRTEnabled: observeIsCRTEnabled(database),
+        canManageSettings,
         isGuestUser,
         isConvertGMFeatureAvailable,
     };

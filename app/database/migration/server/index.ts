@@ -4,37 +4,13 @@
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
-import {addColumns, createTable, schemaMigrations} from '@nozbe/watermelondb/Schema/migrations';
+import {addColumns, schemaMigrations} from '@nozbe/watermelondb/Schema/migrations';
 
 import {MM_TABLES} from '@constants/database';
 
-const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, POST} = MM_TABLES.SERVER;
+const {CHANNEL_INFO, DRAFT, POST} = MM_TABLES.SERVER;
 
 export default schemaMigrations({migrations: [
-    {
-        toVersion: 4,
-        steps: [
-            createTable({
-                name: CHANNEL_BOOKMARK,
-                columns: [
-                    {name: 'create_at', type: 'number'},
-                    {name: 'update_at', type: 'number'},
-                    {name: 'delete_at', type: 'number'},
-                    {name: 'channel_id', type: 'string', isIndexed: true},
-                    {name: 'owner_id', type: 'string'},
-                    {name: 'file_id', type: 'string', isOptional: true},
-                    {name: 'display_name', type: 'string'},
-                    {name: 'sort_order', type: 'number'},
-                    {name: 'link_url', type: 'string', isOptional: true},
-                    {name: 'image_url', type: 'string', isOptional: true},
-                    {name: 'emoji', type: 'string', isOptional: true},
-                    {name: 'type', type: 'string'},
-                    {name: 'original_id', type: 'string', isOptional: true},
-                    {name: 'parent_id', type: 'string', isOptional: true},
-                ],
-            }),
-        ],
-    },
     {
         toVersion: 3,
         steps: [

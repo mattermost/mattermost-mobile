@@ -13,7 +13,6 @@ import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
-import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import EphemeralStore from '@store/ephemeral_store';
 import {makeStyleSheetFromTheme, hexToHue, changeOpacity} from '@utils/theme';
@@ -116,7 +115,6 @@ const MoreMessages = ({
 }: Props) => {
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
-    const isTablet = useIsTablet();
     const pressed = useRef(false);
     const resetting = useRef(false);
     const initialScroll = useRef(false);
@@ -128,7 +126,7 @@ const MoreMessages = ({
     const callsAdjustment = useCallsAdjustment(serverUrl, channelId);
 
     // The final top:
-    const adjustedTop = (isTablet ? 0 : insets.top) + callsAdjustment;
+    const adjustedTop = insets.top + callsAdjustment;
 
     const BARS_FACTOR = Math.abs((1) / (HIDDEN_TOP - SHOWN_TOP));
 

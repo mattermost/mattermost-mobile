@@ -8,11 +8,9 @@ import BackgroundTimer from 'react-native-background-timer';
 import {BehaviorSubject} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 
-import {setAppInactiveSince} from '@actions/app/global';
 import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchStatusByIds} from '@actions/remote/user';
-import {handleClose, handleFirstConnect, handleReconnect} from '@actions/websocket';
-import {handleWebSocketEvent} from '@actions/websocket/event';
+import {handleClose, handleEvent, handleFirstConnect, handleReconnect} from '@actions/websocket';
 import WebSocketClient from '@client/websocket';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -55,9 +53,6 @@ class WebsocketManager {
         );
 
         AppState.addEventListener('change', this.onAppStateChange);
-        AppState.addEventListener('blur', () => {
-            setAppInactiveSince(Date.now());
-        });
         NetInfo.addEventListener(this.onNetStateChange);
     };
 
@@ -82,7 +77,7 @@ class WebsocketManager {
         const client = new WebSocketClient(serverUrl, bearerToken, storedLastDisconnect);
 
         client.setFirstConnectCallback(() => this.onFirstConnect(serverUrl));
-        client.setEventCallback((evt: WebSocketMessage) => handleWebSocketEvent(serverUrl, evt));
+        client.setEventCallback((evt: any) => handleEvent(serverUrl, evt));
 
         //client.setMissedEventsCallback(() => {}) Nothing to do on missedEvents callback
         client.setReconnectCallback(() => this.onReconnect(serverUrl));
@@ -235,7 +230,6 @@ class WebsocketManager {
 
         this.cancelAllConnections();
         if (!isActive && !this.isBackgroundTimerRunning) {
-            setAppInactiveSince(Date.now());
             this.isBackgroundTimerRunning = true;
             this.cancelAllConnections();
             this.backgroundIntervalId = BackgroundTimer.setInterval(() => {

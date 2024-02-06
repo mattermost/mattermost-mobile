@@ -6,15 +6,16 @@ import {Q} from '@nozbe/watermelondb';
 import {ActionType} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {buildDraftKey} from '@database/operator/server_data_operator/comparators';
+import {shouldUpdateFileRecord} from '@database/operator/server_data_operator/comparators/files';
 import {
     transformDraftRecord,
+    transformFileRecord,
     transformPostInThreadRecord,
     transformPostRecord,
     transformPostsInChannelRecord,
 } from '@database/operator/server_data_operator/transformers/post';
 import {getRawRecordPairs, getUniqueRawsBy, getValidRecordsForUpdate} from '@database/operator/utils/general';
 import {createPostsChain, getPostListEdges} from '@database/operator/utils/post';
-import FileModel from '@typings/database/models/servers/file';
 import {logWarning} from '@utils/log';
 
 import type ServerDataOperatorBase from '.';
@@ -22,6 +23,7 @@ import type Database from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
 import type {HandleDraftArgs, HandleFilesArgs, HandlePostsArgs, RecordPair} from '@typings/database/database';
 import type DraftModel from '@typings/database/models/servers/draft';
+import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
@@ -29,6 +31,7 @@ import type ReactionModel from '@typings/database/models/servers/reaction';
 
 const {
     DRAFT,
+    FILE,
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
@@ -286,6 +289,47 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         }
 
         return batch;
+    };
+
+    /**
+     * handleFiles: Handler responsible for the Create/Update operations occurring on the File table from the 'Server' schema
+     * @param {HandleFilesArgs} handleFiles
+     * @param {RawFile[]} handleFiles.files
+     * @param {boolean} handleFiles.prepareRecordsOnly
+     * @returns {Promise<FileModel[]>}
+     */
+    handleFiles = async ({files, prepareRecordsOnly}: HandleFilesArgs): Promise<FileModel[]> => {
+        if (!files?.length) {
+            logWarning(
+                'An empty or undefined "files" array has been passed to the handleFiles method',
+            );
+            return [];
+        }
+
+        const processedFiles = (await this.processRecords({
+            createOrUpdateRawValues: files,
+            tableName: FILE,
+            fieldName: 'id',
+            deleteRawValues: [],
+            shouldUpdate: shouldUpdateFileRecord,
+        }));
+
+        const postFiles = await this.prepareRecords({
+            createRaws: processedFiles.createRaws,
+            updateRaws: processedFiles.updateRaws,
+            transformer: transformFileRecord,
+            tableName: FILE,
+        });
+
+        if (prepareRecordsOnly) {
+            return postFiles;
+        }
+
+        if (postFiles?.length) {
+            await this.batchRecords(postFiles, 'handleFiles');
+        }
+
+        return postFiles;
     };
 
     /**

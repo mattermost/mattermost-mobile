@@ -11,7 +11,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type FileInfoProps = {
-    disabled?: boolean;
     file: FileInfo;
     showDate: boolean;
     channelName?: string ;
@@ -59,22 +58,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const FileInfo = ({disabled, file, channelName, showDate, onPress}: FileInfoProps) => {
+const FileInfo = ({file, channelName, showDate, onPress}: FileInfoProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-
     return (
         <View style={style.attachmentContainer}>
-            <TouchableOpacity
-                disabled={disabled}
-                onPress={onPress}
-            >
+            <TouchableOpacity onPress={onPress}>
                 <Text
                     numberOfLines={1}
                     ellipsizeMode='tail'
                     style={style.fileName}
                 >
-                    {decodeURIComponent(file.name.trim())}
+                    {file.name.trim()}
                 </Text>
                 <View style={style.fileDownloadContainer}>
                     {channelName &&

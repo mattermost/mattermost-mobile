@@ -59,7 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         maxWidth: 315,
     },
     readOnly: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
+        backgroundColor: changeOpacity(theme.centerChannelBg, 0.16),
     },
     smallLabel: {
         fontSize: 10,

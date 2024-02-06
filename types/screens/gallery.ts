@@ -60,10 +60,8 @@ export type OnGestureEvent<T extends GestureHandlerGestureEvent> = (
   event: T,
 ) => void;
 
-export type GalleryFileType = 'image' | 'video' | 'file' | 'avatar';
-
 export type GalleryItemType = {
-    type: GalleryFileType;
+    type: 'image' | 'video' | 'file' | 'avatar';
     id: string;
     width: number;
     height: number;

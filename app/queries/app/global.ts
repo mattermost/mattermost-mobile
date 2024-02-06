@@ -100,12 +100,3 @@ export const observeTutorialWatched = (tutorial: string) => {
         switchMap((v) => of$(Boolean(v))),
     );
 };
-
-export const getAppInactiveSince = async () => {
-    try {
-        const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.APP_INACTIVE_SINCE)?.fetch();
-        return (parseInt(records?.[0]?.value || 0, 10) || 0);
-    } catch {
-        return 0;
-    }
-};
