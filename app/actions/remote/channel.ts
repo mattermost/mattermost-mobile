@@ -31,7 +31,6 @@ import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
-import {fetchChannelBookmarks} from './channel_bookmark';
 import {fetchGroupsForChannelIfConstrained} from './groups';
 import {fetchPostsForChannel} from './post';
 import {openChannelIfNeeded, savePreference} from './preference';
@@ -99,7 +98,6 @@ export async function fetchChannelMembersByIds(serverUrl: string, channelId: str
         return {error};
     }
 }
-
 export async function updateChannelMemberSchemeRoles(serverUrl: string, channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean, fetchOnly = false) {
     try {
         const client = NetworkManager.getClient(serverUrl);
@@ -1040,7 +1038,6 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, true);
 
     fetchPostsForChannel(serverUrl, channelId);
-    fetchChannelBookmarks(serverUrl, channelId);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
     openChannelIfNeeded(serverUrl, channelId);
     markChannelAsRead(serverUrl, channelId);

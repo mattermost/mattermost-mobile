@@ -23,17 +23,16 @@ export const downloadProfileImage = (serverUrl: string, userId: string, lastPict
 
 export const uploadFile = (
     serverUrl: string,
-    file: FileInfo | ExtractedFileInfo,
+    file: FileInfo,
     channelId: string,
     onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void = () => {/*Do Nothing*/},
     onComplete: (response: ClientResponse) => void = () => {/*Do Nothing*/},
     onError: (response: ClientResponseError) => void = () => {/*Do Nothing*/},
     skipBytes = 0,
-    isBookmark = false,
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return {cancel: client.uploadAttachment(file, channelId, onProgress, onComplete, onError, skipBytes, isBookmark)};
+        return {cancel: client.uploadPostAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
     } catch (error) {
         logDebug('error on uploadFile', getFullErrorMessage(error));
         return {error};

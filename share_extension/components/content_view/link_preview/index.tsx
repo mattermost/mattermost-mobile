@@ -6,7 +6,7 @@ import {ActivityIndicator, type StyleProp, Text, View, type ViewStyle} from 'rea
 import FastImage from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
-import {fetchOpenGraph, type OpenGraph} from '@utils/opengraph';
+import fetchOpenGraph, {type OpenGraph} from '@share/open_graph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

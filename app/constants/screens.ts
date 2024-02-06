@@ -72,8 +72,6 @@ export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
-export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
-export const GENERIC_OVERLAY = 'GenericOverlay';
 
 export default {
     ABOUT,
@@ -84,7 +82,6 @@ export default {
     CALL,
     CHANNEL,
     CHANNEL_ADD_MEMBERS,
-    CHANNEL_BOOKMARK,
     CHANNEL_FILES,
     CHANNEL_INFO,
     CHANNEL_NOTIFICATION_PREFERENCES,
@@ -148,7 +145,6 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
-    GENERIC_OVERLAY,
 } as const;
 
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
@@ -172,7 +168,6 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
     PERMALINK,
     REVIEW_APP,
     SNACK_BAR,
-    GENERIC_OVERLAY,
 ]);
 
 export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([

@@ -20,7 +20,6 @@ import {observeTeammateNameDisplay} from './user';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Clause} from '@nozbe/watermelondb/QueryDescription';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -28,29 +27,6 @@ import type MyChannelSettingsModel from '@typings/database/models/servers/my_cha
 import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CHANNEL_INFO, USER, TEAM}} = MM_TABLES;
-
-type ChannelMembershipsExtended = Pick<ChannelMembership, 'user_id' | 'channel_id' | 'scheme_admin'>;
-
-function prepareChannels(
-    operator: ServerDataOperator,
-    channels?: Channel[],
-    channelInfos?: ChannelInfo[],
-    channelMemberships?: ChannelMembershipsExtended[],
-    memberships?: ChannelMembership[],
-    isCRTEnabled?: boolean,
-): Array<Promise<Model[]>> {
-    try {
-        const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
-        const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
-        const membershipRecords = operator.handleChannelMembership({channelMemberships, prepareRecordsOnly: true});
-        const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true, isCRTEnabled});
-        const myChannelSettingsRecords = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
-
-        return [channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords];
-    } catch {
-        return [];
-    }
-}
 
 export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean): Array<Promise<Model[]>> {
     const channelInfos: ChannelInfo[] = [];
@@ -78,7 +54,17 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
         };
     });
 
-    return prepareChannels(operator, channels, channelInfos, memberships, memberships, isCRTEnabled);
+    try {
+        const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
+        const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
+        const membershipRecords = operator.handleChannelMembership({channelMemberships: memberships, prepareRecordsOnly: true});
+        const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true, isCRTEnabled});
+        const myChannelSettingsRecords = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
+
+        return [channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords];
+    } catch {
+        return [];
+    }
 }
 
 export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean) => {
@@ -131,7 +117,17 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
         });
     }
 
-    return prepareChannels(operator, channels, channelInfos, channelMembers, memberships, isCRTEnabled);
+    try {
+        const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
+        const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
+        const membershipRecords = operator.handleChannelMembership({channelMemberships: channelMembers, prepareRecordsOnly: true});
+        const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true, isCRTEnabled});
+        const myChannelSettingsRecords = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
+
+        return [channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords];
+    } catch {
+        return [];
+    }
 };
 
 export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model[]> => {
@@ -173,27 +169,6 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
         }
     }
 
-    const bookmarks = await channel.bookmarks?.fetch();
-    if (bookmarks?.length) {
-        for await (const bookmark of bookmarks) {
-            const prepareBookmarks = await prepareDeleteBookmarks(bookmark);
-            preparedModels.push(...prepareBookmarks);
-        }
-    }
-
-    return preparedModels;
-};
-
-export const prepareDeleteBookmarks = async (bookmark: ChannelBookmarkModel) => {
-    const preparedModels: Model[] = [bookmark.prepareDestroyPermanently()];
-    try {
-        if (bookmark.fileId) {
-            const file = await bookmark.file.fetch();
-            preparedModels.push(file.prepareDestroyPermanently());
-        }
-    } catch {
-        // Record not found, do nothing
-    }
     return preparedModels;
 };
 

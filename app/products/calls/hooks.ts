@@ -106,16 +106,14 @@ const micPermission = Platform.select({
 
 export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
     const appState = useAppState();
-    const [hasPermission, setHasPermission] = useState(micPermissionsGranted);
 
     useEffect(() => {
         const asyncFn = async () => {
             if (appState === 'active') {
-                const result = (await Permissions.check(micPermission)) === Permissions.RESULTS.GRANTED;
-                setHasPermission(result);
-                if (result) {
+                const hasPermission = (await Permissions.check(micPermission)) === Permissions.RESULTS.GRANTED;
+                if (hasPermission) {
                     initializeVoiceTrack();
-                    setMicPermissionsGranted(result);
+                    setMicPermissionsGranted(hasPermission);
                 }
             }
         };
@@ -123,8 +121,6 @@ export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
             asyncFn();
         }
     }, [appState]);
-
-    return hasPermission;
 };
 
 export const useCallsAdjustment = (serverUrl: string, channelId: string): number => {
@@ -134,7 +130,6 @@ export const useCallsAdjustment = (serverUrl: string, channelId: string): number
     const globalCallsState = useGlobalCallsState();
     const currentCall = useCurrentCall();
     const [numServers, setNumServers] = useState(1);
-    const micPermissionsGranted = usePermissionsChecker(globalCallsState.micPermissionsGranted);
     const dismissed = Boolean(callsState.calls[channelId]?.dismissed[callsState.myUserId]);
     const inCurrentCall = currentCall?.id === channelId;
     const joinCallBannerVisible = Boolean(channelsWithCalls[channelId]) && !dismissed && !inCurrentCall;
@@ -149,7 +144,7 @@ export const useCallsAdjustment = (serverUrl: string, channelId: string): number
 
     // Do we have calls banners?
     const currentCallBarVisible = Boolean(currentCall);
-    const micPermissionsError = !micPermissionsGranted && (currentCall && !currentCall.micPermissionsErrorDismissed);
+    const micPermissionsError = !globalCallsState.micPermissionsGranted && (currentCall && !currentCall.micPermissionsErrorDismissed);
     const callQualityAlert = Boolean(currentCall?.callQualityAlert);
     const incomingCallsShowing = incomingCalls.filter((ic) => ic.channelID !== channelId);
     const notificationBarHeight = CALL_NOTIFICATION_BAR_HEIGHT + (numServers > 1 ? 8 : 0);
