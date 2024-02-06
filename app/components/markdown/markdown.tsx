@@ -73,6 +73,7 @@ type MarkdownProps = {
     theme: Theme;
     value?: string;
     onLinkLongPress?: (url?: string) => void;
+    isUnsafeLinksPost?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -135,7 +136,7 @@ const Markdown = ({
     enableInlineLatex, enableLatex, maxNodes,
     imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutHeight, layoutWidth,
     location, mentionKeys, highlightKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
-    textStyles = {}, theme, value = '', baseParagraphStyle, onLinkLongPress,
+    textStyles = {}, theme, value = '', baseParagraphStyle, onLinkLongPress, isUnsafeLinksPost,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -352,7 +353,7 @@ const Markdown = ({
     };
 
     const renderImage = ({linkDestination, context, src, size}: MarkdownImageRenderer) => {
-        if (!imagesMetadata) {
+        if (!imagesMetadata || isUnsafeLinksPost) {
             return null;
         }
 
@@ -403,6 +404,9 @@ const Markdown = ({
     };
 
     const renderLink = ({children, href}: {children: ReactElement; href: string}) => {
+        if (isUnsafeLinksPost) {
+            return renderText({context: [], literal: href});
+        }
         return (
             <MarkdownLink
                 href={href}
