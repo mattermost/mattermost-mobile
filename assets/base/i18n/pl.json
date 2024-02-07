@@ -784,6 +784,7 @@
   "notification_settings.email.send": "Wysyłanie powiadomień e-mail",
   "notification_settings.mention.reply": "Wyślij powiadomienia o odpowiedzi do",
   "notification_settings.mentions": "Wzmianki",
+  "notification_settings.mentions..keywordsDescription": "Inne słowa, które wywołują wzmiankę",
   "notification_settings.mentions.channelWide": "Wzmianki na kanale",
   "notification_settings.mentions.keywords": "Wprowadź inne słowa kluczowe",
   "notification_settings.mentions.keywordsLabel": "W słowach kluczowych nie jest rozróżniana wielkość liter. Słowa kluczowe należy oddzielać przecinkami.",
