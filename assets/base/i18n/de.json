@@ -784,6 +784,7 @@
   "notification_settings.email.send": "E-Mail-Benachrichtigungen senden",
   "notification_settings.mention.reply": "Sende Antwort-Benachrichtigungen für",
   "notification_settings.mentions": "Erwähnungen",
+  "notification_settings.mentions..keywordsDescription": "Andere Wörter, die eine Erwähnung auslösen",
   "notification_settings.mentions.channelWide": "Kanalweite Erwähnungen",
   "notification_settings.mentions.keywords": "Andere Schlüsselwörter eingeben",
   "notification_settings.mentions.keywordsLabel": "Bei den Schlüsselwörtern wird nicht zwischen Groß- und Kleinschreibung unterschieden. Trenne die Schlüsselwörter mit Kommas.",
