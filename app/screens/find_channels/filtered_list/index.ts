@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
@@ -12,7 +11,7 @@ import {observeConfigValue, observeCurrentTeamId} from '@queries/servers/system'
 import {queryJoinedTeams} from '@queries/servers/team';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
-import {retrieveChannels} from '@screens/find_channels/utils';
+import {removeChannelsFromArchivedTeams, retrieveChannels} from '@screens/find_channels/utils';
 
 import FilteredList, {MAX_RESULTS} from './filtered_list';
 
@@ -37,11 +36,15 @@ const enhanced = withObservables(['term'], ({database, term}: EnhanceProps) => {
         switchMap((matchStart) => {
             return retrieveChannels(database, matchStart.flat(), true);
         }),
+        combineLatestWith(teamIds),
+        switchMap(([myChannels, tmIds]) => of$(removeChannelsFromArchivedTeams(myChannels, tmIds))),
     );
 
     const channelsMatch = joinedChannelsMatch.pipe(
         combineLatestWith(directChannelsMatch),
         switchMap((matched) => retrieveChannels(database, matched.flat(), true)),
+        combineLatestWith(teamIds),
+        switchMap(([myChannels, tmIds]) => of$(removeChannelsFromArchivedTeams(myChannels, tmIds))),
     );
 
     const archivedChannels = observeArchiveChannelsByTerm(database, term, MAX_RESULTS).pipe(

@@ -17,7 +17,7 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useModalPosition} from '@hooks/device';
+import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {dismissModal} from '@screens/navigation';
@@ -126,12 +126,12 @@ export default function ChannelAddMembers({
     const {formatMessage} = intl;
 
     const mainView = useRef<View>(null);
-    const modalPosition = useModalPosition(mainView);
+    const [containerHeight, setContainerHeight] = useState(0);
+    const keyboardOverlap = useKeyboardOverlap(mainView, containerHeight);
 
     const [term, setTerm] = useState('');
     const [addingMembers, setAddingMembers] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
-    const [containerHeight, setContainerHeight] = useState(0);
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -201,7 +201,7 @@ export default function ChannelAddMembers({
 
         const result = await fetchProfilesNotInChannel(serverUrl, channel.teamId, channel.id, channel.isGroupConstrained, page, General.PROFILE_CHUNK_SIZE);
         if (result.users?.length) {
-            return result.users;
+            return result.users.filter((u) => !u.delete_at);
         }
 
         return [];
@@ -213,7 +213,7 @@ export default function ChannelAddMembers({
         }
 
         const lowerCasedTerm = searchTerm.toLowerCase();
-        const results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: channel.teamId, not_in_channel_id: channel.id, allow_inactive: true});
+        const results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: channel.teamId, not_in_channel_id: channel.id, allow_inactive: false});
 
         if (results.data) {
             return results.data;
@@ -281,8 +281,7 @@ export default function ChannelAddMembers({
                 createFilter={createUserFilter}
             />
             <SelectedUsers
-                containerHeight={containerHeight}
-                modalPosition={modalPosition}
+                keyboardOverlap={keyboardOverlap}
                 selectedIds={selectedIds}
                 onRemove={handleRemoveProfile}
                 teammateNameDisplay={teammateNameDisplay}

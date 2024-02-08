@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {type LayoutChangeEvent, Platform, ScrollView, useWindowDimensions, View} from 'react-native';
+import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -10,7 +10,7 @@ import Button from '@components/button';
 import {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from '@components/selected_chip';
 import Toast from '@components/toast';
 import {useTheme} from '@context/theme';
-import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
+import {useKeyboardHeightWithDuration} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SelectedUser from './selected_user';
@@ -28,14 +28,9 @@ type Props = {
     buttonText: string;
 
     /**
-     * the height of the parent container
+     * the overlap of the keyboard with this list
      */
-    containerHeight?: number;
-
-    /**
-     * the Y position of the first view in the parent container
-     */
-    modalPosition?: number;
+    keyboardOverlap?: number;
 
     /**
      * A handler function that will select or deselect a user when clicked on.
@@ -145,8 +140,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 export default function SelectedUsers({
     buttonIcon,
     buttonText,
-    containerHeight = 0,
-    modalPosition = 0,
+    keyboardOverlap = 0,
     onPress,
     onRemove,
     selectedIds,
@@ -160,15 +154,12 @@ export default function SelectedUsers({
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
-    const isTablet = useIsTablet();
     const keyboard = useKeyboardHeightWithDuration();
     const insets = useSafeAreaInsets();
-    const dimensions = useWindowDimensions();
 
     const usersChipsHeight = useSharedValue(0);
     const [isVisible, setIsVisible] = useState(false);
     const numberSelectedIds = Object.keys(selectedIds).length;
-    const bottomSpace = (dimensions.height - containerHeight - modalPosition);
 
     const users = useMemo(() => {
         const u = [];
@@ -196,34 +187,6 @@ export default function SelectedUsers({
             0
     ), [isVisible]);
 
-    const marginBottom = useMemo(() => {
-        let margin = keyboard.height && Platform.OS === 'ios' ? keyboard.height - insets.bottom : 0;
-        if (isTablet) {
-            margin = keyboard.height ? Math.max((keyboard.height - bottomSpace - insets.bottom), 0) : 0;
-        }
-        return margin;
-    }, [keyboard, isTablet, insets.bottom, bottomSpace]);
-
-    const paddingBottom = useMemo(() => {
-        if (Platform.OS === 'android') {
-            return TABLET_MARGIN_BOTTOM + insets.bottom;
-        }
-
-        if (!isVisible) {
-            return 0;
-        }
-
-        if (isTablet) {
-            return TABLET_MARGIN_BOTTOM + insets.bottom;
-        }
-
-        if (!keyboard.height) {
-            return insets.bottom;
-        }
-
-        return TABLET_MARGIN_BOTTOM + insets.bottom;
-    }, [isTablet, isVisible, insets.bottom, keyboard.height]);
-
     const handlePress = useCallback(() => {
         onPress();
     }, [onPress]);
@@ -242,11 +205,10 @@ export default function SelectedUsers({
     });
 
     const animatedContainerStyle = useAnimatedStyle(() => ({
-        marginBottom: withTiming(marginBottom, {duration: keyboard.duration}),
-        paddingBottom: withTiming(paddingBottom, {duration: keyboard.duration}),
+        marginBottom: withTiming(keyboardOverlap + TABLET_MARGIN_BOTTOM, {duration: keyboard.duration}),
         backgroundColor: isVisible ? theme.centerChannelBg : 'transparent',
         ...androidMaxHeight,
-    }), [marginBottom, paddingBottom, keyboard.duration, isVisible, theme.centerChannelBg]);
+    }), [keyboardOverlap, keyboard.duration, isVisible, theme.centerChannelBg]);
 
     const animatedToastStyle = useAnimatedStyle(() => {
         return {

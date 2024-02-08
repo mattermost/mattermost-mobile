@@ -8,7 +8,7 @@ import BackgroundTimer from 'react-native-background-timer';
 import {BehaviorSubject} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 
-import {setCurrentUserStatusOffline} from '@actions/local/user';
+import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchStatusByIds} from '@actions/remote/user';
 import {handleClose, handleEvent, handleFirstConnect, handleReconnect} from '@actions/websocket';
 import WebSocketClient from '@client/websocket';
@@ -31,7 +31,7 @@ class WebsocketManager {
     private isBackgroundTimerRunning = false;
     private netConnected = false;
     private previousActiveState: boolean;
-    private statusUpdatesIntervalIDs: Record<string, NodeJS.Timer> = {};
+    private statusUpdatesIntervalIDs: Record<string, NodeJS.Timeout> = {};
     private backgroundIntervalId: number | undefined;
     private firstConnectionSynced: Record<string, boolean> = {};
 
@@ -70,6 +70,10 @@ class WebsocketManager {
     };
 
     public createClient = (serverUrl: string, bearerToken: string, storedLastDisconnect = 0) => {
+        if (this.clients[serverUrl]) {
+            this.invalidateClient(serverUrl);
+        }
+
         const client = new WebSocketClient(serverUrl, bearerToken, storedLastDisconnect);
 
         client.setFirstConnectCallback(() => this.onFirstConnect(serverUrl));
@@ -147,7 +151,11 @@ class WebsocketManager {
                 if (error) {
                     client.close(false);
                 }
-                this.firstConnectionSynced[serverUrl] = true;
+
+                // Makes sure a client still exist, and therefore we haven't been logged out
+                if (this.clients[serverUrl]) {
+                    this.firstConnectionSynced[serverUrl] = true;
+                }
             }
         }
     };
@@ -173,7 +181,7 @@ class WebsocketManager {
     private onWebsocketClose = async (serverUrl: string, connectFailCount: number, lastDisconnect: number) => {
         this.getConnectedSubject(serverUrl).next('not_connected');
         if (connectFailCount <= 1) { // First fail
-            await setCurrentUserStatusOffline(serverUrl);
+            await setCurrentUserStatus(serverUrl, General.OFFLINE);
             await handleClose(serverUrl, lastDisconnect);
 
             this.stopPeriodicStatusUpdates(serverUrl);
@@ -200,6 +208,7 @@ class WebsocketManager {
 
         currentId = setInterval(getStatusForUsers, General.STATUS_INTERVAL);
         this.statusUpdatesIntervalIDs[serverUrl] = currentId;
+        getStatusForUsers();
     }
 
     private stopPeriodicStatusUpdates(serverUrl: string) {

@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
-import {combineLatest, distinctUntilChanged, of as of$, switchMap} from 'rxjs';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {of as of$, switchMap} from 'rxjs';
 
-import {observeIsCallsEnabledInChannel} from '@calls/observers';
-import {observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
+import {observeCallStateInChannel, observeIsCallsEnabledInChannel} from '@calls/observers';
+import {Preferences} from '@constants';
 import {withServerUrl} from '@context/server';
-import {observeCurrentChannelId} from '@queries/servers/system';
+import {observeCurrentChannel} from '@queries/servers/channel';
+import {observeHasGMasDMFeature} from '@queries/servers/features';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 
 import Channel from './channel';
 
@@ -20,31 +22,19 @@ type EnhanceProps = WithDatabaseArgs & {
 
 const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
     const channelId = observeCurrentChannelId(database);
-
-    const isCallInCurrentChannel = combineLatest([channelId, observeChannelsWithCalls(serverUrl)]).pipe(
-        switchMap(([id, calls]) => of$(Boolean(calls[id]))),
-        distinctUntilChanged(),
-    );
-    const currentCall = observeCurrentCall();
-    const ccChannelId = currentCall.pipe(
-        switchMap((call) => of$(call?.channelId)),
-        distinctUntilChanged(),
-    );
-    const isInACall = currentCall.pipe(
-        switchMap((call) => of$(Boolean(call?.connected))),
-        distinctUntilChanged(),
-    );
-    const isInCurrentChannelCall = combineLatest([channelId, ccChannelId]).pipe(
-        switchMap(([id, ccId]) => of$(id === ccId)),
-        distinctUntilChanged(),
-    );
+    const dismissedGMasDMNotice = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.SYSTEM_NOTICE, Preferences.NOTICES.GM_AS_DM).observe();
+    const channelType = observeCurrentChannel(database).pipe(switchMap((c) => of$(c?.type)));
+    const currentUserId = observeCurrentUserId(database);
+    const hasGMasDMFeature = observeHasGMasDMFeature(database);
 
     return {
         channelId,
-        isCallInCurrentChannel,
-        isInACall,
-        isInCurrentChannelCall,
+        ...observeCallStateInChannel(serverUrl, database, channelId),
         isCallsEnabledInChannel: observeIsCallsEnabledInChannel(database, serverUrl, channelId),
+        dismissedGMasDMNotice,
+        channelType,
+        currentUserId,
+        hasGMasDMFeature,
     };
 });
 

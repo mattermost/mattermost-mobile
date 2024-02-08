@@ -29,7 +29,7 @@ export const labels = {
         },
         description: {
             id: t('post_priority.picker.label.request_ack.description'),
-            defaultMessage: 'An acknowledgement button appears with your message.',
+            defaultMessage: 'An acknowledgement button will appear with your message',
         },
     },
     persistentNotifications: {
@@ -39,7 +39,7 @@ export const labels = {
         },
         description: {
             id: t('post_priority.picker.label.persistent_notifications.description'),
-            defaultMessage: 'Recipients are notified every five minutes until they acknowledge or reply.',
+            defaultMessage: 'Recipients are notified every {interval, plural, one {minute} other {{interval} minutes}} until they acknowledge or reply.',
         },
     },
 };

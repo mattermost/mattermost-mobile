@@ -3,11 +3,18 @@
 
 /* eslint-disable react/no-multi-comp */
 
+import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 import * as ReactNative from 'react-native';
 import 'react-native-gesture-handler/jestSetup';
 import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
+import {v4 as uuidv4} from 'uuid';
 
 import type {ReadDirItem, StatResult} from 'react-native-fs';
+
+// @ts-expect-error Promise does not exists in global
+global.Promise = jest.requireActual('promise');
+
+setGenerator(uuidv4);
 
 require('isomorphic-fetch');
 
@@ -18,6 +25,8 @@ const WebViewMock = () => {
 jest.mock('react-native-webview', () => ({
     WebView: WebViewMock,
 }));
+
+jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 
 /* eslint-disable no-console */
 jest.mock('@database/manager');
@@ -100,7 +109,7 @@ jest.doMock('react-native', () => {
         SplitView: {
             addListener: jest.fn(),
             removeListeners: jest.fn(),
-            isRunningInSplitView: jest.fn().mockResolvedValue(() => ({isSplitView: false, isTablet: false})),
+            isRunningInSplitView: jest.fn().mockReturnValue(() => ({isSplitView: false, isTablet: false})),
         },
         Notifications: {
             getDeliveredNotifications: jest.fn().mockResolvedValue([]),

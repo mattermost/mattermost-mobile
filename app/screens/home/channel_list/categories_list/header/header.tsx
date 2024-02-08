@@ -206,7 +206,7 @@ const ChannelListHeader = ({
                         >
                             {serverDisplayName}
                         </Text>
-                        {(pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
+                        {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
                             <TouchableWithFeedback
                                 onPress={onPushAlertPress}
                                 testID='channel_list_header.push_alert'

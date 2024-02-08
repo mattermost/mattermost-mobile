@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {type BottomSheetProps, BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {ScrollView} from 'react-native';
@@ -74,7 +74,7 @@ const PostOptions = ({
     const shouldShowBindings = bindings.length > 0 && !isSystemPost;
 
     const snapPoints = useMemo(() => {
-        const items: BottomSheetProps['snapPoints'] = [1];
+        const items: Array<string | number> = [1];
         const optionsCount = [
             canCopyPermalink, canCopyText, canDelete, canEdit,
             canMarkAsUnread, canPin, canReply, !isSystemPost, shouldRenderFollow,

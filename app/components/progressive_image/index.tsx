@@ -2,14 +2,17 @@
 // See LICENSE.txt for license information.
 
 import React, {type ReactNode, useEffect, useState} from 'react';
-import {ImageBackground, type ImageStyle, type StyleProp, StyleSheet, View, type ViewStyle, Image} from 'react-native';
-import FastImage, {type ResizeMode} from 'react-native-fast-image';
+import {ImageBackground, type StyleProp, StyleSheet, View, type ViewStyle, Image} from 'react-native';
+import FastImage, {type ResizeMode, type ImageStyle as FastImageStyle} from 'react-native-fast-image';
 import Animated, {interpolate, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';
+import {emptyFunction} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Thumbnail from './thumbnail';
+
+import type {ImageStyles} from '@typings/global/styles';
 
 const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 
@@ -21,7 +24,7 @@ type Props = ProgressiveImageProps & {
     children?: ReactNode | ReactNode[];
     forwardRef?: React.RefObject<any>;
     id: string;
-    imageStyle?: StyleProp<ImageStyle>;
+    imageStyle?: StyleProp<ImageStyles>;
     isBackgroundImage?: boolean;
     onError: () => void;
     resizeMode?: ResizeMode;
@@ -119,6 +122,8 @@ const ProgressiveImage = ({
         if (showHighResImage && imageUri) {
             image = (
                 <AnimatedFastImage
+
+                    // @ts-expect-error ref not present in type
                     ref={forwardRef}
                     nativeID={`image-${id}`}
                     resizeMode={resizeMode}
@@ -137,12 +142,14 @@ const ProgressiveImage = ({
     } else if (imageUri) {
         image = (
             <AnimatedFastImage
+
+                // @ts-expect-error ref not present in type
                 ref={forwardRef}
                 nativeID={`image-${id}`}
                 resizeMode={resizeMode}
                 onError={onError}
                 source={{uri: imageUri}}
-                style={[StyleSheet.absoluteFill, imageStyle, animatedOpacity]}
+                style={[StyleSheet.absoluteFill, (imageStyle as StyleProp<FastImageStyle>), animatedOpacity]}
                 onLoadEnd={onLoadImageEnd}
                 testID='progressive_image.highResImage'
             />
@@ -153,8 +160,9 @@ const ProgressiveImage = ({
         <Animated.View
             style={[styles.defaultImageContainer, style, containerStyle]}
         >
+            {Boolean(thumbnailUri) &&
             <Thumbnail
-                onError={onError}
+                onError={emptyFunction}
                 opacity={defaultOpacity}
                 source={{uri: thumbnailUri}}
                 style={[
@@ -163,6 +171,7 @@ const ProgressiveImage = ({
                 ]}
                 tintColor={thumbnailUri ? undefined : theme.centerChannelColor}
             />
+            }
             {image}
         </Animated.View>
     );

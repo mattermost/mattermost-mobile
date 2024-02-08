@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap, combineLatestWith} from 'rxjs/operators';
 
@@ -10,13 +9,14 @@ import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannel} from '@queries/servers/channel';
-import {observeCanManageChannelMembers} from '@queries/servers/role';
+import {observeCanManageChannelMembers, observeCanManageChannelSettings} from '@queries/servers/role';
 import {
     observeConfigValue,
     observeCurrentChannelId,
     observeCurrentTeamId,
     observeCurrentUserId,
 } from '@queries/servers/system';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
 import {isTypeDMorGM} from '@utils/channel';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -105,11 +105,31 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         switchMap(([u, cId]) => (u ? observeCanManageChannelMembers(database, cId, u) : of$(false))),
         distinctUntilChanged(),
     );
+
+    const canManageSettings = currentUser.pipe(
+        combineLatestWith(channelId),
+        switchMap(([u, cId]) => (u ? observeCanManageChannelSettings(database, cId, u) : of$(false))),
+        distinctUntilChanged(),
+    );
+
+    const isGuestUser = currentUser.pipe(
+        switchMap((u) => (u ? of$(u.isGuest) : of$(false))),
+        distinctUntilChanged(),
+    );
+
+    const isConvertGMFeatureAvailable = observeConfigValue(database, 'Version').pipe(
+        switchMap((version) => of$(isMinimumServerVersion(version || '', 9, 1))),
+    );
+
     return {
         type,
         canEnableDisableCalls,
         isCallsEnabledInChannel,
         canManageMembers,
+        isCRTEnabled: observeIsCRTEnabled(database),
+        canManageSettings,
+        isGuestUser,
+        isConvertGMFeatureAvailable,
     };
 });
 

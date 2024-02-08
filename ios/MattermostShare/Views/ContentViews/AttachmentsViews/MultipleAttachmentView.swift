@@ -65,10 +65,16 @@ struct MultipleAttachmentView: View {
       }
       
       if (attachments.count > 1) {
-        Text("\(attachments.count) attachments")
-          .foregroundColor(Color.theme.centerChannelColor.opacity(0.64))
-          .font(Font.custom("OpenSans", size: 12))
-          .padding(.leading, 20)
+        Text(
+          NSLocalizedString("share_extension.multiple_label",
+            value: "{count, number} attachments",
+            comment: ""
+          )
+          .replacingOccurrences(of: "{count, number}", with: "\(attachments.count)")
+        )
+        .foregroundColor(Color.theme.centerChannelColor.opacity(0.64))
+        .font(Font.custom("OpenSans", size: 12))
+        .padding(.leading, 20)
       }
     }
   }

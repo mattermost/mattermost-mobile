@@ -14,11 +14,11 @@ before_all do
   ENV['SPACESHIP_SKIP_2FA_UPGRADE'] = '1'
 
   is_build_pr = ENV['BUILD_PR'] == 'true'
-  if is_build_pr && ENV['CIRCLECI'] == 'true'
-    ENV['BRANCH_TO_BUILD'] = ENV['CIRCLE_BRANCH']
+  if is_build_pr && ENV['CI'] == 'true'
+    ENV['BRANCH_TO_BUILD'] = ENV['GITHUB_REF_NAME']
   end
 
-  if ENV['CIRCLECI'] != 'true'
+  if ENV['CI'] != 'true'
     # Raises an error is git is not clean
     if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
       ensure_git_status_clean
@@ -46,9 +46,9 @@ before_all do
 end
 
 after_all do |lane|
-  if ENV['CIRCLECI'] != 'true'
+  if ENV['CI'] != 'true'
     if ENV['RESET_GIT_BRANCH'] == 'true'
-      branch = ENV['BRANCH_TO_BUILD'] || 'master'
+      branch = ENV['BRANCH_TO_BUILD'] || 'main'
       package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
       beta_dir = '../android/app/src/main/java/com/mattermost/rnbeta'
       release_dir = "../android/app/src/main/java/#{package_id.gsub '.', '/'}"
@@ -68,7 +68,7 @@ after_all do |lane|
         sh "git branch -D #{local_branch}"
         UI.success("Deleted working branch \"#{local_branch}\"")
         if lane.to_s == 'build_pr'
-          sh 'git checkout master'
+          sh 'git checkout main'
           ## Remove the branch for the PR
           sh "git branch -D #{branch}"
           UI.success("Deleted PR branch \"#{branch}\"")
@@ -273,7 +273,7 @@ lane :upload_file_to_s3 do |options|
           puts "[#{Thread.current["file_number"]}/#{total_files}] #{filename} uploading..."
           s3_file = s3_bucket.object("#{s3_folder}/#{filename}")
           s3_file.upload_file("#{file}")
-          links.push(s3_file.public_url)
+          links.push("https://#{s3_bucket_name}/#{s3_folder}/#{filename}")
         end
       }
     end
@@ -320,7 +320,7 @@ end
 
 desc 'Create GitHub release'
 lane :github do
-  tag = ENV['CIRCLE_TAG'] || ENV['TAG']
+  tag = ENV['GITHUB_REF_NAME'] || ENV['TAG']
 
   if tag
     version = android_get_version_name(gradle_file: './android/app/build.gradle')
@@ -350,8 +350,8 @@ end
 
 platform :ios do
   before_all do
-    if ENV['CIRCLECI'] == 'true'
-      setup_circle_ci
+    if ENV['CI'] == 'true'
+      setup_ci
     end
   end
 
@@ -415,12 +415,18 @@ platform :ios do
   end
 
   lane :update_identifiers do
-    # Set the name for the app
+    # Set the name for the app and share extension
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     update_info_plist(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
         display_name: app_name
+    )
+
+    update_info_plist(
+      xcodeproj: './ios/Mattermost.xcodeproj',
+      plist_path: 'MattermostShare/Info.plist',
+      display_name: app_name
     )
 
     # Set the notification service extension bundle identifier
@@ -563,20 +569,27 @@ platform :ios do
       json = JSON.parse(localization_file)
 
       plist_strings = ''
+      localized_strings = ''
       json.each do |key, value|
-        if key.match?('mobile.ios.plist')
-          unless value.nil? || value.empty?
+        unless value.nil? || value.empty?
+          if key.match?('mobile.ios.plist')
             plist_strings.concat("#{key.split('.').last} = \"#{value}\";\n")
+          else
+            value.gsub!('\\', '\\\\\\\\') # How to replace backslash with double backslash https://stackoverflow.com/a/6209532
+            value.gsub!('"', '\"')
+            localized_strings.concat("\"#{key}\" = \"#{value}\";\n")
           end
         end
       end
 
       plist_strings.gsub!('{applicationName}', "#{app_name}")
+      localized_strings.gsub!('{applicationName}', "#{app_name}")
 
       language = item.split('.').first
       project_localization_path = "../ios/Mattermost/i18n/#{language}.lproj"
       FileUtils.mkdir_p project_localization_path
       File.write("#{project_localization_path}/InfoPlist.strings", plist_strings)
+      File.write("#{project_localization_path}/Localizable.strings", localized_strings)
     end
   end
 

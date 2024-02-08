@@ -74,14 +74,20 @@ const PublicOrPrivateChannel = ({channel, creator, roles, theme}: Props) => {
     }, []);
 
     const canManagePeople = useMemo(() => {
+        if (channel.deleteAt !== 0) {
+            return false;
+        }
         const permission = channel.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS : Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS;
         return hasPermission(roles, permission);
-    }, [channel.type, roles]);
+    }, [channel.type, roles, channel.deleteAt]);
 
     const canSetHeader = useMemo(() => {
+        if (channel.deleteAt !== 0) {
+            return false;
+        }
         const permission = channel.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES : Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES;
         return hasPermission(roles, permission);
-    }, [channel.type, roles]);
+    }, [channel.type, roles, channel.deleteAt]);
 
     const createdBy = useMemo(() => {
         const id = channel.type === General.OPEN_CHANNEL ? t('intro.public_channel') : t('intro.private_channel');

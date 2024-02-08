@@ -10,7 +10,7 @@ import {
     TouchableOpacity,
     type LayoutChangeEvent,
 } from 'react-native';
-import Share from 'react-native-share';
+import Share, {type ShareOptions} from 'react-native-share';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -20,8 +20,6 @@ import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import type {ShareOptions} from 'react-native-share/lib/typescript/types';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {

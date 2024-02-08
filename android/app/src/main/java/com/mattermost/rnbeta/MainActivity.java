@@ -18,7 +18,7 @@ import java.util.Objects;
 
 public class MainActivity extends NavigationActivity {
     private boolean HWKeyboardConnected = false;
-    private final FoldableObserver foldableObserver = new FoldableObserver(this);
+    private final FoldableObserver foldableObserver = FoldableObserver.Companion.getInstance(this);
 
     @Override
     protected String getMainComponentName() {
@@ -36,10 +36,7 @@ public class MainActivity extends NavigationActivity {
                 this,
                 Objects.requireNonNull(getMainComponentName()),
                 // If you opted-in for the New Architecture, we enable the Fabric Renderer.
-                DefaultNewArchitectureEntryPoint.getFabricEnabled(), // fabricEnabled
-                // If you opted-in for the New Architecture, we enable Concurrent React (i.e. React 18).
-                DefaultNewArchitectureEntryPoint.getConcurrentReactEnabled() // concurrentRootEnabled
-        );
+                DefaultNewArchitectureEntryPoint.getFabricEnabled());
     }
 
     @Override

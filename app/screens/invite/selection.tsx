@@ -13,7 +13,6 @@ import {
     ScrollView,
 } from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import SelectedChip from '@components/selected_chip';
 import SelectedUser from '@components/selected_users/selected_user';
@@ -22,7 +21,7 @@ import UserItem from '@components/user_item';
 import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useIsTablet, useKeyboardHeight} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import SelectionSearchBar from './selection_search_bar';
@@ -32,7 +31,6 @@ import TextItem, {TextItemType} from './text_item';
 import type {SearchResult} from './invite';
 
 const AUTOCOMPLETE_ADJUST = 5;
-const KEYBOARD_HEIGHT_ADJUST = 3;
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
@@ -112,7 +110,7 @@ type SelectionProps = {
     term: string;
     searchResults: SearchResult[];
     selectedIds: {[id: string]: SearchResult};
-    modalPosition: number;
+    keyboardOverlap: number;
     wrapperHeight: number;
     loading: boolean;
     testID: string;
@@ -132,7 +130,7 @@ export default function Selection({
     term,
     searchResults,
     selectedIds,
-    modalPosition,
+    keyboardOverlap,
     wrapperHeight,
     loading,
     testID,
@@ -144,9 +142,7 @@ export default function Selection({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
-    const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
-    const keyboardHeight = useKeyboardHeight();
 
     const [teamBarHeight, setTeamBarHeight] = useState(0);
     const [searchBarHeight, setSearchBarHeight] = useState(0);
@@ -163,26 +159,10 @@ export default function Selection({
         onRemoveItem(id);
     };
 
-    const bottomSpace = dimensions.height - wrapperHeight - modalPosition;
     const otherElementsSize = teamBarHeight + searchBarHeight;
-    const insetsAdjust = (keyboardHeight + KEYBOARD_HEIGHT_ADJUST) || insets.bottom;
-
-    const keyboardOverlap = Platform.select({
-        ios: isTablet ? (
-            Math.max(0, keyboardHeight - bottomSpace)
-        ) : (
-            insetsAdjust
-        ),
-        default: 0,
-    });
-    const keyboardAdjust = Platform.select({
-        ios: isTablet ? keyboardOverlap : insetsAdjust,
-        default: 0,
-    });
-
     const workingSpace = wrapperHeight - keyboardOverlap;
     const spaceOnTop = otherElementsSize - AUTOCOMPLETE_ADJUST;
-    const spaceOnBottom = workingSpace - (otherElementsSize + keyboardAdjust);
+    const spaceOnBottom = workingSpace - otherElementsSize;
     const autocompletePosition = spaceOnBottom > spaceOnTop ? (
         otherElementsSize
     ) : (

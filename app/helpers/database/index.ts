@@ -5,7 +5,6 @@ import xRegExp from 'xregexp';
 
 import {General} from '@constants';
 
-import type Model from '@nozbe/watermelondb/Model';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
@@ -25,11 +24,6 @@ type NotifyProps = {
     Record<string, ChannelModel>,
     NotifyProps,
 ]
-
-export const extractRecordsForTable = <T>(records: Model[], tableName: string): T[] => {
-    // @ts-expect-error constructor.table not exposed in type definition
-    return records.filter((r) => r.constructor.table === tableName) as T[];
-};
 
 export function extractChannelDisplayName(raw: Pick<Channel, 'type' | 'display_name' | 'fake'>, record?: ChannelModel) {
     let displayName = '';

@@ -80,7 +80,7 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
                 value={attachment.pretext}
             />
             <View style={[style.container, style.border, borderStyle]}>
-                {Boolean(attachment.author_icon && attachment.author_name) &&
+                {Boolean(attachment.author_icon || attachment.author_name) &&
                 <AttachmentAuthor
                     icon={attachment.author_icon}
                     link={attachment.author_link}

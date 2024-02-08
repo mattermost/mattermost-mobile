@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
-import {observeChannelMembers} from '@queries/servers/channel';
+import {observeChannelMembers, observeNotifyPropsByChannels} from '@queries/servers/channel';
+import {observeHasGMasDMFeature} from '@queries/servers/features';
 import {observeCurrentUserId} from '@queries/servers/system';
-import {observeUser} from '@queries/servers/user';
+import {observeCurrentUser, observeUser} from '@queries/servers/user';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import DirectChannel from './direct_channel';
@@ -23,6 +23,13 @@ const observeIsBot = (user: UserModel | undefined) => of$(Boolean(user?.isBot));
 const enhanced = withObservables([], ({channel, database}: {channel: ChannelModel} & WithDatabaseArgs) => {
     const currentUserId = observeCurrentUserId(database);
     const members = observeChannelMembers(database, channel.id);
+    const hasGMasDMFeature = observeHasGMasDMFeature(database);
+    const channelNotifyProps = observeNotifyPropsByChannels(database, [channel]).pipe(
+        switchMap((v) => of$(v[channel.id])),
+    );
+    const userNotifyProps = observeCurrentUser(database).pipe(
+        switchMap((v) => of$(v?.notifyProps)),
+    );
     let isBot = of$(false);
 
     if (channel.type === General.DM_CHANNEL) {
@@ -40,6 +47,9 @@ const enhanced = withObservables([], ({channel, database}: {channel: ChannelMode
         currentUserId,
         isBot,
         members,
+        hasGMasDMFeature,
+        channelNotifyProps,
+        userNotifyProps,
     };
 });
 

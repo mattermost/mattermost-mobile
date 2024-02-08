@@ -10,6 +10,7 @@ import {NotificationLevel, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {goToScreen} from '@screens/navigation';
+import {isTypeDMorGM} from '@utils/channel';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 
@@ -20,6 +21,8 @@ type Props = {
     displayName: string;
     notifyLevel: NotificationLevel;
     userNotifyLevel: NotificationLevel;
+    channelType: ChannelType;
+    hasGMasDMFeature: boolean;
 }
 
 const notificationLevel = (notifyLevel: NotificationLevel) => {
@@ -50,7 +53,14 @@ const notificationLevel = (notifyLevel: NotificationLevel) => {
     return {id, defaultMessage};
 };
 
-const NotificationPreference = ({channelId, displayName, notifyLevel, userNotifyLevel}: Props) => {
+const NotificationPreference = ({
+    channelId,
+    displayName,
+    notifyLevel,
+    userNotifyLevel,
+    channelType,
+    hasGMasDMFeature,
+}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const title = formatMessage({id: 'channel_info.mobile_notifications', defaultMessage: 'Mobile Notifications'});
@@ -74,13 +84,19 @@ const NotificationPreference = ({channelId, displayName, notifyLevel, userNotify
     });
 
     const notificationLevelToText = () => {
-        if (notifyLevel === NotificationLevel.DEFAULT) {
-            const userLevel = notificationLevel(userNotifyLevel);
-            return formatMessage(userLevel);
+        let notifyLevelToUse = notifyLevel;
+        if (notifyLevelToUse === NotificationLevel.DEFAULT) {
+            notifyLevelToUse = userNotifyLevel;
         }
 
-        const channelLevel = notificationLevel(notifyLevel);
-        return formatMessage(channelLevel);
+        if (hasGMasDMFeature) {
+            if (notifyLevel === NotificationLevel.DEFAULT && notifyLevelToUse === NotificationLevel.MENTION && isTypeDMorGM(channelType)) {
+                notifyLevelToUse = NotificationLevel.ALL;
+            }
+        }
+
+        const messageDescriptor = notificationLevel(notifyLevelToUse);
+        return formatMessage(messageDescriptor);
     };
 
     return (

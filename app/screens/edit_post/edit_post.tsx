@@ -3,8 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View, StyleSheet} from 'react-native';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
@@ -13,13 +12,13 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
+import {useKeyboardOverlap} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useInputPropagation} from '@hooks/input';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity} from '@utils/theme';
 
 import EditPostInput, {type EditPostInputRef} from './edit_post_input';
 
@@ -28,21 +27,18 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 const AUTOCOMPLETE_SEPARATION = 8;
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        body: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-        },
-        container: {
-            flex: 1,
-        },
-        loader: {
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-    };
+const styles = StyleSheet.create({
+    body: {
+        flex: 1,
+    },
+    container: {
+        flex: 1,
+    },
+    loader: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 });
 
 const RIGHT_BUTTON = buildNavigationButton('edit-post', 'edit_post.save.button');
@@ -66,27 +62,14 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
     const mainView = useRef<View>(null);
-    const modalPosition = useModalPosition(mainView);
 
     const postInputRef = useRef<EditPostInputRef>(null);
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const styles = getStyleSheet(theme);
-    const keyboardHeight = useKeyboardHeight();
-    const insets = useSafeAreaInsets();
-    const dimensions = useWindowDimensions();
-    const isTablet = useIsTablet();
 
     useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [{
-                color: theme.sidebarHeaderTextColor,
-                text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
-                ...RIGHT_BUTTON,
-                enabled: false,
-            }],
-        });
+        toggleSaveButton(false);
     }, []);
 
     useEffect(() => {
@@ -120,6 +103,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             rightButtons: [{
                 ...RIGHT_BUTTON,
                 color: theme.sidebarHeaderTextColor,
+                disabledColor: changeOpacity(theme.sidebarHeaderTextColor, 0.32),
                 text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
                 enabled,
             }],
@@ -128,13 +112,15 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
 
     const onChangeTextCommon = useCallback((message: string) => {
         const tooLong = message.trim().length > maxPostSize;
+        setErrorLine(undefined);
+        setErrorExtra(undefined);
         if (tooLong) {
             const line = intl.formatMessage({id: 'mobile.message_length.message_split_left', defaultMessage: 'Message exceeds the character limit'});
             const extra = `${message.trim().length} / ${maxPostSize}`;
             setErrorLine(line);
             setErrorExtra(extra);
         }
-        toggleSaveButton(editingMessage !== message);
+        toggleSaveButton(editingMessage !== message && !tooLong);
     }, [intl, maxPostSize, editingMessage, toggleSaveButton]);
 
     const onAutocompleteChangeText = useCallback((message: string) => {
@@ -211,12 +197,11 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
     useAndroidHardwareBackHandler(componentId, onClose);
 
-    const bottomSpace = (dimensions.height - containerHeight - modalPosition);
-    const autocompletePosition = Platform.select({
-        ios: isTablet ? Math.max(0, keyboardHeight - bottomSpace) : keyboardHeight || insets.bottom,
-        default: 0,
-    }) + AUTOCOMPLETE_SEPARATION;
+    const overlap = useKeyboardOverlap(mainView, containerHeight);
+    const autocompletePosition = overlap + AUTOCOMPLETE_SEPARATION;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
+
+    const inputHeight = containerHeight - overlap;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -246,6 +231,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                         />
                     }
                     <EditPostInput
+                        inputHeight={inputHeight}
                         hasError={Boolean(errorLine)}
                         message={postMessage}
                         onChangeText={onInputChangeText}

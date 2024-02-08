@@ -1,17 +1,21 @@
 package com.mattermost.helpers
 
 import android.content.Context
+import android.database.Cursor
 import android.net.Uri
+import com.facebook.react.bridge.WritableMap
 
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 
 import java.lang.Exception
 
 import org.json.JSONArray
 import org.json.JSONObject
 
+typealias QueryArgs = Array<Any?>
+
 class DatabaseHelper {
-    var defaultDatabase: Database? = null
+    var defaultDatabase: WMDatabase? = null
 
     val onlyServerUrl: String?
         get() {
@@ -39,7 +43,7 @@ class DatabaseHelper {
     private fun setDefaultDatabase(context: Context) {
         val databaseName = "app.db"
         val databasePath = Uri.fromFile(context.filesDir).toString() + "/" + databaseName
-        defaultDatabase = Database(databasePath, context)
+        defaultDatabase = WMDatabase.getInstance(databasePath, context)
     }
 
     internal fun JSONObject.toMap(): Map<String, Any?> = keys().asSequence().associateWith { it ->
@@ -71,5 +75,17 @@ class DatabaseHelper {
                 return field
             }
             private set
+    }
+}
+
+fun WritableMap.mapCursor(cursor: Cursor) {
+    for (i in 0 until cursor.columnCount) {
+        when (cursor.getType(i)) {
+            Cursor.FIELD_TYPE_NULL -> putNull(cursor.getColumnName(i))
+            Cursor.FIELD_TYPE_INTEGER -> putDouble(cursor.getColumnName(i), cursor.getDouble(i))
+            Cursor.FIELD_TYPE_FLOAT -> putDouble(cursor.getColumnName(i), cursor.getDouble(i))
+            Cursor.FIELD_TYPE_STRING -> putString(cursor.getColumnName(i), cursor.getString(i))
+            else -> putString(cursor.getColumnName(i), "")
+        }
     }
 }

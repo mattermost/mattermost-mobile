@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Modal, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {Modal, useWindowDimensions} from 'react-native';
 
 import HighlightItem from './item';
 
@@ -11,11 +11,10 @@ type Props = {
     itemBounds: TutorialItemBounds;
     itemBorderRadius?: number;
     onDismiss: () => void;
-    onLayout: () => void;
     onShow?: () => void;
 }
 
-const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, onLayout, onShow}: Props) => {
+const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, onShow}: Props) => {
     const {width, height} = useWindowDimensions();
 
     const handleShowTutorial = useCallback(() => {
@@ -26,19 +25,13 @@ const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, o
 
     return (
         <Modal
-            visible={true}
+            visible={itemBounds.endX > 0}
             transparent={true}
             animationType='fade'
             onDismiss={onDismiss}
             onRequestClose={onDismiss}
             testID='tutorial_highlight'
         >
-            <View
-                style={StyleSheet.absoluteFill}
-                pointerEvents='box-none'
-                onLayout={onLayout}
-            />
-            {itemBounds.endX > 0 &&
             <HighlightItem
                 borderRadius={itemBorderRadius}
                 itemBounds={itemBounds}
@@ -47,7 +40,6 @@ const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, o
                 width={width}
                 onLayout={handleShowTutorial}
             />
-            }
             {children}
         </Modal>
     );

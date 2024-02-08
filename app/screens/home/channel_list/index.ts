@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
+import {observeIncomingCalls} from '@calls/state';
 import {queryAllMyChannelsForTeam} from '@queries/servers/channel';
 import {observeCurrentTeamId, observeCurrentUserId, observeLicense} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
@@ -23,6 +23,11 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     );
 
     const teamsCount = queryMyTeams(database).observeCount(false);
+
+    const showIncomingCalls = observeIncomingCalls().pipe(
+        switchMap((ics) => of$(ics.incomingCalls.length > 0)),
+        distinctUntilChanged(),
+    );
 
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
@@ -46,6 +51,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             switchMap((u) => of$(Boolean(u))),
             distinctUntilChanged(),
         ),
+        showIncomingCalls,
     };
 });
 

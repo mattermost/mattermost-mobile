@@ -5,8 +5,6 @@ project(':reactnativenotifications').projectDir = new File(rootProject.projectDi
 apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
 include ':react-native-video'
 project(':react-native-video').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-video/android-exoplayer')
-include ':watermelondb'
-project(':watermelondb').projectDir = new File(rootProject.projectDir, '../node_modules/@nozbe/watermelondb/native/android')
 include ':watermelondb-jsi'
 project(':watermelondb-jsi').projectDir = new File(rootProject.projectDir, '../node_modules/@nozbe/watermelondb/native/android-jsi')
-includeBuild('../node_modules/react-native-gradle-plugin')
+includeBuild('../node_modules/@react-native/gradle-plugin')

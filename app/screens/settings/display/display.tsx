@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 
 import SettingContainer from '@components/settings/container';
@@ -58,10 +58,9 @@ type DisplayProps = {
     isCRTEnabled: boolean;
     isCRTSwitchEnabled: boolean;
     isThemeSwitchingEnabled: boolean;
-    isTimezoneEnabled: boolean;
 }
 
-const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled, isTimezoneEnabled}: DisplayProps) => {
+const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled}: DisplayProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser?.timezone]);
@@ -90,9 +89,11 @@ const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled,
         gotoSettingsScreen(screen, title);
     });
 
-    useAndroidHardwareBackHandler(componentId, () => {
+    const close = useCallback(() => {
         popTopScreen(componentId);
-    });
+    }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <SettingContainer testID='display_settings'>
@@ -110,14 +111,12 @@ const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled,
                 info={intl.formatMessage(hasMilitaryTimeFormat ? TIME_FORMAT[1] : TIME_FORMAT[0])}
                 testID='display_settings.clock_display.option'
             />
-            {isTimezoneEnabled && (
-                <SettingItem
-                    optionName='timezone'
-                    onPress={goToTimezoneSettings}
-                    info={intl.formatMessage(timezone.useAutomaticTimezone ? TIMEZONE_FORMAT[0] : TIMEZONE_FORMAT[1])}
-                    testID='display_settings.timezone.option'
-                />
-            )}
+            <SettingItem
+                optionName='timezone'
+                onPress={goToTimezoneSettings}
+                info={intl.formatMessage(timezone.useAutomaticTimezone ? TIMEZONE_FORMAT[0] : TIMEZONE_FORMAT[1])}
+                testID='display_settings.timezone.option'
+            />
             {isCRTSwitchEnabled && (
                 <SettingItem
                     optionName='crt'

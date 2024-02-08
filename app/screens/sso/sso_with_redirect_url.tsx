@@ -51,7 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 100, 'Regular'),
         },
         infoTitle: {
-            color: theme.mentionColor,
+            color: theme.centerChannelColor,
             marginBottom: 4,
             ...typography('Heading', 700),
         },

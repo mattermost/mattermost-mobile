@@ -13,6 +13,10 @@ export type UserMentionKey = {
     caseSensitive?: boolean;
 };
 
+export type HighlightWithoutNotificationKey = {
+    key: string;
+};
+
 export type MarkdownBlockStyles = {
     adjacentParagraph: ViewStyle;
     horizontalRule: ViewStyle;

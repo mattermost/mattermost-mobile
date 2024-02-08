@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
+import {Dimensions, StyleSheet} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ServerIcon from '@components/server_icon';
@@ -19,7 +19,6 @@ import {sortServersByDisplayName} from '@utils/server';
 
 import ServerList, {AddServerButton} from './servers_list';
 
-import type {BottomSheetProps} from '@gorhom/bottom-sheet';
 import type ServersModel from '@typings/database/models/app/servers';
 import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
 
@@ -27,7 +26,8 @@ export type ServersRef = {
     openServers: () => void;
 }
 
-export const SERVER_ITEM_HEIGHT = 72;
+export const SERVER_ITEM_HEIGHT = 75;
+export const PUSH_ALERT_TEXT_HEIGHT = 42;
 const subscriptions: Map<string, UnreadSubscription> = new Map();
 
 const styles = StyleSheet.create({
@@ -116,12 +116,18 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
                     <ServerList servers={registeredServers.current!}/>
                 );
             };
+            const maxScreenHeight = Math.ceil(0.6 * Dimensions.get('window').height);
+            const maxSnapPoint = Math.min(
+                maxScreenHeight,
+                bottomSheetSnapPoint(registeredServers.current.length, SERVER_ITEM_HEIGHT, bottom) + TITLE_HEIGHT + BUTTON_HEIGHT +
+                    (registeredServers.current.filter((s: ServersModel) => s.lastActiveAt).length * PUSH_ALERT_TEXT_HEIGHT),
+            );
 
-            const snapPoints: BottomSheetProps['snapPoints'] = [
+            const snapPoints: Array<string | number> = [
                 1,
-                bottomSheetSnapPoint(Math.min(2.5, registeredServers.current.length), 72, bottom) + TITLE_HEIGHT + BUTTON_HEIGHT,
+                maxSnapPoint,
             ];
-            if (registeredServers.current.length > 1) {
+            if (maxSnapPoint === maxScreenHeight) {
                 snapPoints.push('80%');
             }
 
@@ -160,6 +166,9 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             onPress={onPress}
             style={styles.icon}
             testID={'channel_list.servers.server_icon'}
+            badgeBorderColor={theme.sidebarBg}
+            badgeBackgroundColor={theme.mentionBg}
+            badgeColor={theme.mentionColor}
         />
     );
 });

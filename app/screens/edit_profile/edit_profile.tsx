@@ -62,6 +62,7 @@ const EditProfile = ({
     });
     const [canSave, setCanSave] = useState(false);
     const [error, setError] = useState<unknown>();
+    const [usernameError, setUsernameError] = useState<unknown>();
     const [updating, setUpdating] = useState(false);
 
     const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
@@ -149,13 +150,12 @@ const EditProfile = ({
             if (hasUpdateUserInfo.current) {
                 const {error: reqError} = await updateMe(serverUrl, newUserInfo);
                 if (reqError) {
-                    resetScreen(reqError);
+                    resetScreenForProfileError(reqError);
                     return;
                 }
             }
 
             close();
-            return;
         } catch (e) {
             resetScreen(e);
         }
@@ -181,6 +181,13 @@ const EditProfile = ({
         hasUpdateUserInfo.current = currentValue !== name;
         enableSaveButton(didChange);
     }, [userInfo, currentUser, enableSaveButton]);
+
+    const resetScreenForProfileError = useCallback((resetError: unknown) => {
+        setUsernameError(resetError);
+        Keyboard.dismiss();
+        setUpdating(false);
+        enableSaveButton(true);
+    }, [enableSaveButton]);
 
     const resetScreen = useCallback((resetError: unknown) => {
         setError(resetError);
@@ -221,6 +228,7 @@ const EditProfile = ({
                 lockedLastName={lockedLastName}
                 lockedNickname={lockedNickname}
                 lockedPosition={lockedPosition}
+                error={usernameError}
                 onUpdateField={onUpdateField}
                 userInfo={userInfo}
                 submitUser={submitUser}

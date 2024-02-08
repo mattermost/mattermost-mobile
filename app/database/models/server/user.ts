@@ -16,7 +16,7 @@ import type ReactionModel from '@typings/database/models/servers/reaction';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 import type ThreadParticipantsModel from '@typings/database/models/servers/thread_participant';
 import type UserModelInterface from '@typings/database/models/servers/user';
-import type {UserMentionKey} from '@typings/global/markdown';
+import type {UserMentionKey, HighlightWithoutNotificationKey} from '@typings/global/markdown';
 
 const {
     CHANNEL,
@@ -193,5 +193,25 @@ export default class UserModel extends Model implements UserModelInterface {
             m.key !== '@channel' &&
             m.key !== '@here'
         ));
+    }
+
+    get highlightKeys() {
+        if (!this.notifyProps) {
+            return [];
+        }
+
+        const highlightWithoutNotificationKeys: HighlightWithoutNotificationKey[] = [];
+
+        if (this.notifyProps?.highlight_keys?.length) {
+            this.notifyProps.highlight_keys.
+                split(',').
+                forEach((key) => {
+                    if (key.trim().length > 0) {
+                        highlightWithoutNotificationKeys.push({key: key.trim()});
+                    }
+                });
+        }
+
+        return highlightWithoutNotificationKeys;
     }
 }

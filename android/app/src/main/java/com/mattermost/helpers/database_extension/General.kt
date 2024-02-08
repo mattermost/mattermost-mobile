@@ -5,13 +5,13 @@ import android.text.TextUtils
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableMap
 import com.mattermost.helpers.DatabaseHelper
-import com.nozbe.watermelondb.Database
-import com.nozbe.watermelondb.QueryArgs
-import com.nozbe.watermelondb.mapCursor
+import com.mattermost.helpers.QueryArgs
+import com.mattermost.helpers.mapCursor
+import com.nozbe.watermelondb.WMDatabase
 import java.util.*
 import kotlin.Exception
 
-internal fun DatabaseHelper.saveToDatabase(db: Database, data: ReadableMap, teamId: String?, channelId: String?, receivingThreads: Boolean) {
+internal fun DatabaseHelper.saveToDatabase(db: WMDatabase, data: ReadableMap, teamId: String?, channelId: String?, receivingThreads: Boolean) {
     db.transaction {
         val posts = data.getMap("posts")
         data.getMap("team")?.let { insertTeam(db, it) }
@@ -50,14 +50,14 @@ fun DatabaseHelper.getServerUrlForIdentifier(identifier: String): String? {
     return null
 }
 
-fun DatabaseHelper.getDatabaseForServer(context: Context?, serverUrl: String): Database? {
+fun DatabaseHelper.getDatabaseForServer(context: Context?, serverUrl: String): WMDatabase? {
     try {
         val query = "SELECT db_path FROM Servers WHERE url=?"
         defaultDatabase!!.rawQuery(query, arrayOf(serverUrl)).use { cursor ->
             if (cursor.count == 1) {
                 cursor.moveToFirst()
                 val databasePath = cursor.getString(0)
-                return Database(databasePath, context!!)
+                return WMDatabase.getInstance(databasePath, context!!)
             }
         }
     } catch (e: Exception) {
@@ -67,7 +67,7 @@ fun DatabaseHelper.getDatabaseForServer(context: Context?, serverUrl: String): D
     return null
 }
 
-fun find(db: Database, tableName: String, id: String?): ReadableMap? {
+fun find(db: WMDatabase, tableName: String, id: String?): ReadableMap? {
     try {
         db.rawQuery(
                 "SELECT * FROM $tableName WHERE id == ? LIMIT 1",
@@ -87,7 +87,7 @@ fun find(db: Database, tableName: String, id: String?): ReadableMap? {
     }
 }
 
-fun findByColumns(db: Database, tableName: String, columnNames: Array<String>, values: QueryArgs): ReadableMap? {
+fun findByColumns(db: WMDatabase, tableName: String, columnNames: Array<String>, values: QueryArgs): ReadableMap? {
     try {
         val whereString = columnNames.joinToString(" AND ") { "$it = ?" }
         db.rawQuery(
@@ -108,7 +108,7 @@ fun findByColumns(db: Database, tableName: String, columnNames: Array<String>, v
     }
 }
 
-fun queryIds(db: Database, tableName: String, ids: Array<String>): List<String> {
+fun queryIds(db: WMDatabase, tableName: String, ids: Array<String>): List<String> {
     val list: MutableList<String> = ArrayList()
     val args = TextUtils.join(",", Arrays.stream(ids).map { "?" }.toArray())
     try {
@@ -129,7 +129,7 @@ fun queryIds(db: Database, tableName: String, ids: Array<String>): List<String> 
     return list
 }
 
-fun queryByColumn(db: Database, tableName: String, columnName: String, values: Array<Any?>): List<String> {
+fun queryByColumn(db: WMDatabase, tableName: String, columnName: String, values: Array<Any?>): List<String> {
     val list: MutableList<String> = ArrayList()
     val args = TextUtils.join(",", Arrays.stream(values).map { "?" }.toArray())
     try {
@@ -149,7 +149,7 @@ fun queryByColumn(db: Database, tableName: String, columnName: String, values: A
     return list
 }
 
-fun countByColumn(db: Database, tableName: String, columnName: String, value: Any?): Int {
+fun countByColumn(db: WMDatabase, tableName: String, columnName: String, value: Any?): Int {
     try {
         db.rawQuery(
                 "SELECT COUNT(*) FROM $tableName WHERE $columnName == ? LIMIT 1",

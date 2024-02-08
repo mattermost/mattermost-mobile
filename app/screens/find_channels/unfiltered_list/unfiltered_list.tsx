@@ -17,7 +17,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
     close: () => Promise<void>;
-    keyboardHeight: number;
+    keyboardOverlap: number;
     recentChannels: ChannelModel[];
     showTeamName: boolean;
     testID?: string;
@@ -46,11 +46,11 @@ const buildSections = (recentChannels: ChannelModel[]) => {
     return sections;
 };
 
-const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, testID}: Props) => {
+const UnfilteredList = ({close, keyboardOverlap, recentChannels, showTeamName, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [sections, setSections] = useState(buildSections(recentChannels));
-    const sectionListStyle = useMemo(() => ({paddingBottom: keyboardHeight}), [keyboardHeight]);
+    const sectionListStyle = useMemo(() => ({paddingBottom: keyboardOverlap}), [keyboardOverlap]);
 
     const onPress = useCallback(async (c: Channel | ChannelModel) => {
         await close();

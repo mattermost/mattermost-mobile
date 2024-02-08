@@ -17,6 +17,7 @@ type ChannelNotifyProps = {
     mark_unread: 'all' | 'mention';
     push: NotificationLevel;
     ignore_channel_mentions: 'default' | 'off' | 'on';
+    channel_auto_follow_threads: 'on' | 'off';
     push_threads: 'all' | 'mention';
 };
 type Channel = {
@@ -43,6 +44,13 @@ type Channel = {
     fake?: boolean;
     group_constrained: boolean|null;
     shared: boolean;
+};
+type ChannelPatch = {
+    name?: string;
+    display_name?: string;
+    header?: string;
+    purpose?: string;
+    group_constrained?: boolean|null;
 };
 type ChannelWithTeamData = Channel & {
     team_display_name: string;

@@ -7,10 +7,12 @@ import {useSharedValue} from 'react-native-reanimated';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
 import SettingsContainer from '@components/settings/container';
+import {NotificationLevel} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
 import useBackNavigation from '@hooks/navigate_back';
+import {isTypeDMorGM} from '@utils/channel';
 
 import {popTopScreen} from '../navigation';
 
@@ -28,16 +30,29 @@ type Props = {
     defaultThreadReplies: 'all' | 'mention';
     isCRTEnabled: boolean;
     isMuted: boolean;
-    notifyLevel?: NotificationLevel;
+    notifyLevel: NotificationLevel;
     notifyThreadReplies?: 'all' | 'mention';
+    channelType: ChannelType;
+    hasGMasDMFeature: boolean;
 }
 
-const ChannelNotificationPreferences = ({channelId, componentId, defaultLevel, defaultThreadReplies, isCRTEnabled, isMuted, notifyLevel, notifyThreadReplies}: Props) => {
+const ChannelNotificationPreferences = ({
+    channelId,
+    componentId,
+    defaultLevel,
+    defaultThreadReplies,
+    isCRTEnabled,
+    isMuted,
+    notifyLevel,
+    notifyThreadReplies,
+    channelType,
+    hasGMasDMFeature,
+}: Props) => {
     const serverUrl = useServerUrl();
     const defaultNotificationReplies = defaultThreadReplies === 'all';
-    const diffNotificationLevel = notifyLevel !== 'default' && notifyLevel !== defaultLevel;
+    const diffNotificationLevel = notifyLevel !== NotificationLevel.DEFAULT && notifyLevel !== defaultLevel;
     const notifyTitleTop = useSharedValue((isMuted ? MUTED_BANNER_HEIGHT : 0) + BLOCK_TITLE_HEIGHT);
-    const [notifyAbout, setNotifyAbout] = useState<NotificationLevel>((notifyLevel === undefined || notifyLevel === 'default') ? defaultLevel : notifyLevel);
+    const [notifyAbout, setNotifyAbout] = useState<NotificationLevel>(notifyLevel === NotificationLevel.DEFAULT ? defaultLevel : notifyLevel);
     const [threadReplies, setThreadReplies] = useState<boolean>((notifyThreadReplies || defaultThreadReplies) === 'all');
     const [resetDefaultVisible, setResetDefaultVisible] = useState(diffNotificationLevel || defaultNotificationReplies !== threadReplies);
 
@@ -64,8 +79,13 @@ const ChannelNotificationPreferences = ({channelId, componentId, defaultLevel, d
     const save = useCallback(() => {
         const pushThreads = threadReplies ? 'all' : 'mention';
 
-        if (notifyLevel !== notifyAbout || (isCRTEnabled && pushThreads !== notifyThreadReplies)) {
-            const props: Partial<ChannelNotifyProps> = {push: notifyAbout};
+        let notifyAboutToUse = notifyAbout;
+        if (notifyAbout === defaultLevel) {
+            notifyAboutToUse = NotificationLevel.DEFAULT;
+        }
+
+        if (notifyLevel !== notifyAboutToUse || (isCRTEnabled && pushThreads !== notifyThreadReplies)) {
+            const props: Partial<ChannelNotifyProps> = {push: notifyAboutToUse};
             if (isCRTEnabled) {
                 props.push_threads = pushThreads;
             }
@@ -73,11 +93,15 @@ const ChannelNotificationPreferences = ({channelId, componentId, defaultLevel, d
             updateChannelNotifyProps(serverUrl, channelId, props);
         }
         popTopScreen(componentId);
-    }, [channelId, componentId, isCRTEnabled, notifyAbout, notifyLevel, notifyThreadReplies, serverUrl, threadReplies]);
+    }, [defaultLevel, channelId, componentId, isCRTEnabled, notifyAbout, notifyLevel, notifyThreadReplies, serverUrl, threadReplies]);
 
     useBackNavigation(save);
     useAndroidHardwareBackHandler(componentId, save);
 
+    const showThreadReplies = isCRTEnabled && (
+        !hasGMasDMFeature ||
+        !isTypeDMorGM(channelType)
+    );
     return (
         <SettingsContainer testID='push_notification_settings'>
             {isMuted && <MutedBanner channelId={channelId}/>}
@@ -94,7 +118,7 @@ const ChannelNotificationPreferences = ({channelId, componentId, defaultLevel, d
                 notifyTitleTop={notifyTitleTop}
                 onPress={onNotificationLevel}
             />
-            {isCRTEnabled &&
+            {showThreadReplies &&
             <ThreadReplies
                 isSelected={threadReplies}
                 onPress={onSetThreadReplies}

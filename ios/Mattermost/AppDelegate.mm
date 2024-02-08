@@ -4,7 +4,6 @@
 
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTLinkingManager.h>
-#import <React/RCTAppSetupUtils.h>
 #import <RNKeychain/RNKeychainManager.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UserNotifications/UserNotifications.h>
@@ -51,7 +50,6 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   [[GekidouWrapper default] setPreference:@"true" forKey:@"ApplicationIsRunning"];
 
   [RNNotifications startMonitorNotifications];
-  RCTAppSetupPrepareApp(application, true);
 
   self.moduleName = @"Mattermost";
   // You can add your custom initial props in the dictionary below.
@@ -215,17 +213,6 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
 - (void)sendFindChannels:(UIKeyCommand *)sender {
   NSString *selected = sender.input;
   [hwKeyEvent sendHWKeyEvent:@"find-channels"];
-}
-
-/// This method controls whether the `concurrentRoot`feature of React18 is turned on or off.
-///
-/// @see: https://reactjs.org/blog/2022/03/29/react-v18.html
-/// @note: This requires to be rendering on Fabric (i.e. on the New Architecture).
-/// @return: `true` if the `concurrentRoot` feture is enabled. Otherwise, it returns `false`.
-- (BOOL)concurrentRootEnabled
-{
-  // Switch this bool to turn on and off the concurrent root
-  return false;
 }
 
 - (NSDictionary *)prepareInitialProps

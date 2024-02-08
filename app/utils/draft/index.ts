@@ -76,9 +76,9 @@ export const textContainsAtHere = (text: string) => {
     return (/(?:\B|\b_+)@(here)(?!(\.|-|_)*[^\W_])/i).test(textWithoutCode);
 };
 
-export function buildChannelWideMentionMessage(intl: IntlShape, membersCount: number, isTimezoneEnabled: boolean, channelTimezoneCount: number, atHere: boolean) {
+export function buildChannelWideMentionMessage(intl: IntlShape, membersCount: number, channelTimezoneCount: number, atHere: boolean) {
     let notifyAllMessage = '';
-    if (isTimezoneEnabled && channelTimezoneCount) {
+    if (channelTimezoneCount) {
         const msgID = atHere ? t('mobile.post_textbox.entire_channel_here.message.with_timezones') : t('mobile.post_textbox.entire_channel.message.with_timezones');
         const atHereMsg = 'By using @here you are about to send notifications up to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?';
         const atAllOrChannelMsg = 'By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?';

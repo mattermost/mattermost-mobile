@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, Observable} from 'rxjs';
 import {switchMap, combineLatestWith, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
 import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
-import {observeArchivedDirectChannels, observeNotifyPropsByChannels} from '@queries/servers/channel';
+import {observeNotifyPropsByChannels} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeCurrentUserId, observeLastUnreadChannelId} from '@queries/servers/system';
+import {observeDeactivatedUsers} from '@queries/servers/user';
 import {type ChannelWithMyChannel, filterArchivedChannels, filterAutoclosedDMs, filterManuallyClosedDms, getUnreadIds, sortChannels} from '@utils/categories';
 
 import CategoryBody from './category_body';
@@ -106,15 +106,15 @@ const enhanced = withObservables([], ({category, currentUserId, database, isTabl
         distinctUntilChanged(),
     );
 
-    const deactivated = (category.type === DMS_CATEGORY) ? observeArchivedDirectChannels(database, currentUserId) : of$(undefined);
+    const deactivated = (category.type === DMS_CATEGORY) ? observeDeactivatedUsers(database) : of$(undefined);
     const sortedChannels = channelsWithMyChannel.pipe(
         combineLatestWith(categorySorting, currentChannelId, lastUnreadId, notifyPropsPerChannel, manuallyClosedPrefs, autoclosePrefs, deactivated, limit),
-        switchMap(([cwms, sorting, channelId, unreadId, notifyProps, manuallyClosedDms, autoclose, deactivatedDMS, maxDms]) => {
+        switchMap(([cwms, sorting, channelId, unreadId, notifyProps, manuallyClosedDms, autoclose, deactivatedUsers, maxDms]) => {
             let channelsW = cwms;
 
             channelsW = filterArchivedChannels(channelsW, channelId);
             channelsW = filterManuallyClosedDms(channelsW, notifyProps, manuallyClosedDms, currentUserId, unreadId);
-            channelsW = filterAutoclosedDMs(category.type, maxDms, channelId, channelsW, autoclose, notifyProps, deactivatedDMS, unreadId);
+            channelsW = filterAutoclosedDMs(category.type, maxDms, currentUserId, channelId, channelsW, autoclose, notifyProps, deactivatedUsers, unreadId);
 
             return of$(sortChannels(sorting, channelsW, notifyProps, locale));
         }),

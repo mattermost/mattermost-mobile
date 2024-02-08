@@ -22,7 +22,7 @@ const useAndroidHardwareBackHandler = (componentId: AvailableScreens | undefined
         return () => {
             backHandler.remove();
         };
-    }, [componentId]);
+    }, [componentId, callback]);
 };
 
 export default useAndroidHardwareBackHandler;

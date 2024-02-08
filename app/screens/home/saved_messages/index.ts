@@ -2,15 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsById} from '@queries/servers/post';
 import {querySavedPostsPreferences} from '@queries/servers/preference';
-import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
 import {getTimezone} from '@utils/user';
@@ -43,7 +41,6 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
         ),
-        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
     };
 });
 

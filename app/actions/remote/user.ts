@@ -14,11 +14,11 @@ import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
 import {queryGroupsByNames} from '@queries/servers/group';
-import {getConfig, getCurrentUserId, setCurrentUserId} from '@queries/servers/system';
+import {getCurrentUserId, setCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser, prepareUsers, queryAllUsers, queryUsersById, queryUsersByIdsOrUsernames, queryUsersByUsername} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
-import {getDeviceTimezone, isTimezoneEnabled} from '@utils/timezone';
+import {getDeviceTimezone} from '@utils/timezone';
 import {getUserTimezoneProps, removeUserFromList} from '@utils/user';
 
 import {fetchGroupsByNames} from './groups';
@@ -48,12 +48,25 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const [user, userStatus] = await Promise.all<[Promise<UserProfile>, Promise<UserStatus>]>([
-            client.getMe(),
-            client.getStatus('me'),
-        ]);
+        const resultSettled = await Promise.allSettled([client.getMe(), client.getStatus('me')]);
+        let user: UserProfile|undefined;
+        let userStatus: UserStatus|undefined;
+        for (const result of resultSettled) {
+            if (result.status === 'fulfilled') {
+                const {value} = result;
+                if ('email' in value) {
+                    user = value;
+                } else {
+                    userStatus = value;
+                }
+            }
+        }
 
-        user.status = userStatus.status;
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        user.status = userStatus?.status;
 
         if (!fetchOnly) {
             await operator.handleUsers({users: [user], prepareRecordsOnly: false});
@@ -281,14 +294,19 @@ const debouncedFetchUserOrGroupsByMentionNames = debounce(
     },
 );
 
+const notFoundMentions: {[serverUrl: string]: Set<string>} = {};
 const fetchUserOrGroupsByMentionNames = async (serverUrl: string, mentions: string[]) => {
     try {
+        if (!notFoundMentions[serverUrl]) {
+            notFoundMentions[serverUrl] = new Set();
+        }
+
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         // Get any missing users
         const usersInDb = await queryUsersByIdsOrUsernames(database, [], mentions).fetch();
         const usersMap = new Set(usersInDb.map((u) => u.username));
-        const usernamesToFetch = mentions.filter((m) => !usersMap.has(m));
+        const usernamesToFetch = mentions.filter((m) => !usersMap.has(m) && !notFoundMentions[serverUrl].has(m));
 
         let fetchedUsers;
         if (usernamesToFetch.length) {
@@ -304,7 +322,15 @@ const fetchUserOrGroupsByMentionNames = async (serverUrl: string, mentions: stri
         const groupsToFetch = groupsToCheck.filter((g) => !groupsMap.has(g));
 
         if (groupsToFetch.length) {
-            await fetchGroupsByNames(serverUrl, groupsToFetch, false);
+            const results = await fetchGroupsByNames(serverUrl, groupsToFetch, false);
+            if (!('error' in results)) {
+                const retrievedSet = new Set(results.map((r) => r.name));
+                for (const g of groupsToFetch) {
+                    if (!retrievedSet.has(g)) {
+                        notFoundMentions[serverUrl].add(g);
+                    }
+                }
+            }
         }
         return {};
     } catch (error) {
@@ -331,12 +357,19 @@ export async function fetchStatusByIds(serverUrl: string, userIds: string[], fet
                 return result;
             }, {});
 
+            const usersToBatch = [];
             for (const user of users) {
-                const status = userStatuses[user.id];
-                user.prepareStatus(status?.status || General.OFFLINE);
+                const receivedStatus = userStatuses[user.id];
+                const statusToSet = receivedStatus?.status || General.OFFLINE;
+                if (statusToSet !== user.status) {
+                    user.prepareStatus(statusToSet);
+                    usersToBatch.push(user);
+                }
             }
 
-            await operator.batchRecords(users, 'fetchStatusByIds');
+            if (usersToBatch.length) {
+                await operator.batchRecords(usersToBatch, 'fetchStatusByIds');
+            }
         }
 
         return {statuses};
@@ -346,6 +379,48 @@ export async function fetchStatusByIds(serverUrl: string, userIds: string[], fet
         return {error};
     }
 }
+
+let usersByIdBatch: {
+    serverUrl: string;
+    userIds: Set<string>;
+    timeout?: NodeJS.Timeout;
+} | undefined;
+const TIME_TO_BATCH = 500;
+
+const processBatch = () => {
+    if (!usersByIdBatch) {
+        return;
+    }
+
+    if (usersByIdBatch.timeout) {
+        clearTimeout(usersByIdBatch.timeout);
+    }
+    if (usersByIdBatch.userIds.size) {
+        fetchUsersByIds(usersByIdBatch.serverUrl, Array.from(usersByIdBatch.userIds));
+    }
+
+    usersByIdBatch = undefined;
+};
+
+export const fetchUserByIdBatched = async (serverUrl: string, userId: string) => {
+    if (serverUrl !== usersByIdBatch?.serverUrl) {
+        processBatch();
+    }
+
+    if (!usersByIdBatch) {
+        usersByIdBatch = {
+            serverUrl,
+            userIds: new Set(),
+        };
+    }
+
+    if (usersByIdBatch.timeout) {
+        clearTimeout(usersByIdBatch.timeout);
+    }
+
+    usersByIdBatch.userIds.add(userId);
+    usersByIdBatch.timeout = setTimeout(processBatch, TIME_TO_BATCH);
+};
 
 export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetchOnly = false) => {
     if (!userIds.length) {
@@ -730,10 +805,9 @@ export const autoUpdateTimezone = async (serverUrl: string) => {
         return;
     }
 
-    const config = await getConfig(database);
     const currentUser = await getCurrentUser(database);
 
-    if (!currentUser || !config || !isTimezoneEnabled(config)) {
+    if (!currentUser) {
         return;
     }
 

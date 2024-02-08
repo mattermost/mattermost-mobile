@@ -94,6 +94,12 @@ type PostResponse = {
     prev_post_id?: string;
 };
 
+type SearchMatches = {[key: $ID<Post>]: string[]};
+
+type SearchPostResponse = PostResponse & {
+    matches?: SearchMatches;
+}
+
 type ProcessedPosts = {
     order: string[];
     posts: Post[];
@@ -129,6 +135,10 @@ type MessageAttachmentField = {
 type PostSearchParams = {
     terms: string;
     is_or_search: boolean;
+    include_deleted_channels?: boolean;
+    time_zone_offset?: number;
+    page?: number;
+    per_page?: number;
 };
 
 type FetchPaginatedThreadOptions = {

@@ -8,6 +8,7 @@ import {addPostAcknowledgement, markPostAsDeleted, removePostAcknowledgement} fr
 import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
 import {fetchChannelStats, fetchMyChannel} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
+import {openChannelIfNeeded} from '@actions/remote/preference';
 import {fetchThread} from '@actions/remote/thread';
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import {ActionType, Events, Screens} from '@constants';
@@ -129,7 +130,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             } else if ((post.channel_id === currentChannelId)) {
                 const isChannelScreenMounted = NavigationStore.getScreensInStack().includes(Screens.CHANNEL);
 
-                const isTabletDevice = await isTablet();
+                const isTabletDevice = isTablet();
                 if (isChannelScreenMounted || isTabletDevice) {
                     markAsViewed = false;
                 }
@@ -157,6 +158,8 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 models.push(unreadAt);
             }
         }
+
+        openChannelIfNeeded(serverUrl, post.channel_id);
     }
 
     let actionType: string = ActionType.POSTS.RECEIVED_NEW;

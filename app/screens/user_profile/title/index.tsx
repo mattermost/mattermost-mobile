@@ -34,6 +34,7 @@ type Props = {
     user: UserModel;
     userIconOverride?: string;
     usernameOverride?: string;
+    hideGuestTags: boolean;
 }
 
 export const HEADER_TEXT_HEIGHT = 30;
@@ -70,7 +71,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const UserProfileTitle = ({
     enablePostIconOverride, enablePostUsernameOverride, headerText,
     imageSize, isChannelAdmin, isSystemAdmin, isTeamAdmin,
-    teammateDisplayName, user, userIconOverride, usernameOverride,
+    teammateDisplayName, user, userIconOverride, usernameOverride, hideGuestTags,
 }: Props) => {
     const galleryIdentifier = `${user.id}-avatarPreview`;
     const intl = useIntl();
@@ -155,7 +156,7 @@ const UserProfileTitle = ({
                     <UserProfileTag
                         isBot={user.isBot || Boolean(userIconOverride || usernameOverride)}
                         isChannelAdmin={isChannelAdmin}
-                        isGuest={user.isGuest}
+                        showGuestTag={user.isGuest && !hideGuestTags}
                         isSystemAdmin={isSystemAdmin}
                         isTeamAdmin={isTeamAdmin}
                     />

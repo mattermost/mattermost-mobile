@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     InteractionManager,
@@ -93,6 +93,7 @@ function UserListRow({
     const viewRef = useRef<View>(null);
     const style = getStyleFromTheme(theme);
     const {formatMessage} = useIntl();
+    const tutorialShown = useRef(false);
 
     const startTutorial = () => {
         viewRef.current?.measureInWindow((x, y, w, h) => {
@@ -112,18 +113,6 @@ function UserListRow({
         setShowTutorial(false);
         storeProfileLongPressTutorial();
     }, []);
-
-    useEffect(() => {
-        if (highlight && !tutorialWatched) {
-            if (isTablet) {
-                setShowTutorial(true);
-                return;
-            }
-            InteractionManager.runAfterInteractions(() => {
-                setShowTutorial(true);
-            });
-        }
-    }, [highlight, tutorialWatched, isTablet]);
 
     const handlePress = useCallback((u: UserModel | UserProfile) => {
         onPress?.(u);
@@ -155,8 +144,23 @@ function UserListRow({
     }, [isChannelAdmin, showManageMode, theme]);
 
     const onLayout = useCallback(() => {
-        startTutorial();
-    }, []);
+        if (highlight && !tutorialWatched) {
+            if (isTablet) {
+                setShowTutorial(true);
+                return;
+            }
+            InteractionManager.runAfterInteractions(() => {
+                setShowTutorial(true);
+            });
+        }
+    }, [showTutorial]);
+
+    useLayoutEffect(() => {
+        if (showTutorial && !tutorialShown.current) {
+            tutorialShown.current = true;
+            startTutorial();
+        }
+    });
 
     const icon = useMemo(() => {
         if (!selectable && !selected) {
@@ -190,17 +194,19 @@ function UserListRow({
                 viewRef={viewRef}
                 padding={20}
                 includeMargin={includeMargin}
+                onLayout={onLayout}
             />
             {showTutorial &&
             <TutorialHighlight
                 itemBounds={itemBounds}
                 onDismiss={handleDismissTutorial}
-                onLayout={onLayout}
             >
+                {Boolean(itemBounds.endX) &&
                 <TutorialLongPress
                     message={formatMessage({id: 'user.tutorial.long_press', defaultMessage: "Long-press on an item to view a user's profile"})}
                     style={isTablet ? style.tutorialTablet : style.tutorial}
                 />
+                }
             </TutorialHighlight>
             }
         </>

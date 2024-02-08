@@ -1,0 +1,36 @@
+diff --git a/node_modules/react-native-button/Button.js b/node_modules/react-native-button/Button.js
+index 05fa1e6..dc9c781 100644
+--- a/node_modules/react-native-button/Button.js
++++ b/node_modules/react-native-button/Button.js
+@@ -74,19 +74,19 @@ export default class Button extends Component {
+       }
+ 
+       return (
+-        <View style={containerStyle}>
+-          <TouchableNativeFeedback
+-            {...touchableProps}
+-            style={{flex: 1}}
+-            testID={this.props.testID}
+-            accessibilityLabel={this.props.accessibilityLabel}
+-            accessibilityRole="button"
+-            background={background}>
+-            <View style={{padding: padding}}>
+-              {this._renderGroupedChildren()}
++        <TouchableNativeFeedback
++          {...touchableProps}
++          style={{flex: 1}}
++          testID={this.props.testID}
++          accessibilityLabel={this.props.accessibilityLabel}
++          accessibilityRole="button"
++          background={background}>
++            <View style={containerStyle}>
++              <View style={{padding: padding}}>
++                {this._renderGroupedChildren()}
++              </View>
+             </View>
+-          </TouchableNativeFeedback>
+-        </View>
++        </TouchableNativeFeedback>
+       );
+     }
+   }

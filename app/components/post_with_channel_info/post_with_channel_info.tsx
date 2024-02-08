@@ -9,6 +9,7 @@ import Post from '@components/post_list/post';
 import ChannelInfo from './channel_info';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {SearchPattern} from '@typings/global/markdown';
 
 type Props = {
     appsEnabled: boolean;
@@ -17,6 +18,7 @@ type Props = {
     post: PostModel;
     location: string;
     testID?: string;
+    searchPatterns?: SearchPattern[];
     skipSavedPostsHighlight?: boolean;
     isSaved?: boolean;
 }
@@ -32,7 +34,7 @@ const styles = StyleSheet.create({
     },
 });
 
-function PostWithChannelInfo({appsEnabled, customEmojiNames, isCRTEnabled, post, location, testID, skipSavedPostsHighlight = false, isSaved}: Props) {
+function PostWithChannelInfo({appsEnabled, customEmojiNames, isCRTEnabled, post, location, testID, searchPatterns, skipSavedPostsHighlight = false, isSaved}: Props) {
     return (
         <View style={styles.container}>
             <ChannelInfo
@@ -47,6 +49,7 @@ function PostWithChannelInfo({appsEnabled, customEmojiNames, isCRTEnabled, post,
                     post={post}
                     location={location}
                     highlightPinnedOrSaved={!skipSavedPostsHighlight}
+                    searchPatterns={searchPatterns}
                     skipPinnedHeader={true}
                     skipSavedHeader={skipSavedPostsHighlight}
                     shouldRenderReplyButton={false}

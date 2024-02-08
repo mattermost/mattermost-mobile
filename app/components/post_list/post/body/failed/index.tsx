@@ -44,7 +44,7 @@ const Failed = ({post, theme}: FailedProps) => {
                     style={styles.bottomSheet}
                 >
                     <SlideUpPanelItem
-                        icon='send-outline'
+                        leftIcon='send-outline'
                         onPress={() => {
                             dismissBottomSheet();
                             retryFailedPost(serverUrl, post);
@@ -54,7 +54,7 @@ const Failed = ({post, theme}: FailedProps) => {
                     />
                     <SlideUpPanelItem
                         destructive={true}
-                        icon='close-circle-outline'
+                        leftIcon='close-circle-outline'
                         onPress={() => {
                             dismissBottomSheet();
                             removePost(serverUrl, post);

@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {observeChannel} from '@queries/servers/channel';
-import {observeCurrentUserId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {getUserIdFromChannelName} from '@utils/user';
 
@@ -36,6 +35,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     return {
         currentUserId,
         user,
+        hideGuestTags: observeConfigBooleanValue(database, 'HideGuestTags'),
     };
 });
 

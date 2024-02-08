@@ -6,6 +6,7 @@ import {createIntl, type IntlShape} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
+import {NOTIFICATION_TYPE} from '@constants/push_notification';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import PushNotifications from '@init/push_notifications';
 import {popToRoot} from '@screens/navigation';
@@ -24,7 +25,7 @@ export const convertToNotificationData = (notification: Notification, tapped = t
             channel_name: payload.channel_name,
             identifier: payload.identifier || notification.identifier,
             from_webhook: payload.from_webhook,
-            message: ((payload.type === 'message') ? payload.message || notification.body : payload.body),
+            message: ((payload.type === NOTIFICATION_TYPE.MESSAGE) ? payload.message || notification.body : payload.body),
             override_icon_url: payload.override_icon_url,
             override_username: payload.override_username,
             post_id: payload.post_id,
@@ -35,6 +36,7 @@ export const convertToNotificationData = (notification: Notification, tapped = t
             server_url: payload.server_url,
             team_id: payload.team_id,
             type: payload.type,
+            sub_type: payload.sub_type,
             use_user_icon: payload.use_user_icon,
             version: payload.version,
             isCRTEnabled: typeof payload.is_crt_enabled === 'string' ? payload.is_crt_enabled === 'true' : Boolean(payload.is_crt_enabled),
@@ -72,7 +74,7 @@ export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel' | 'C
         case 'Connection':
             message = intl.formatMessage({
                 id: 'notification.no_connection',
-                defaultMessage: 'The server is unreachable and we were not able to retrieve the notification channel / team.',
+                defaultMessage: 'The server is unreachable and it was not possible to retrieve the specific message information for the notification.',
             });
             break;
     }
@@ -90,12 +92,27 @@ export const emitNotificationError = (type: 'Team' | 'Channel' | 'Post' | 'Conne
 
 export const scheduleExpiredNotification = (serverUrl: string, session: Session, serverName: string, locale = DEFAULT_LOCALE) => {
     const expiresAt = session?.expires_at || 0;
-    const expiresInDays = Math.ceil(Math.abs(moment.duration(moment().diff(moment(expiresAt))).asDays()));
+    const expiresInHours = Math.ceil(Math.abs(moment.duration(moment().diff(moment(expiresAt))).asHours()));
+    const expiresInDays = Math.floor(expiresInHours / 24); // Calculate expiresInDays
+    const remainingHours = expiresInHours % 24; // Calculate remaining hours
     const intl = createIntl({locale, messages: getTranslations(locale)});
-    const body = intl.formatMessage({
-        id: 'mobile.session_expired',
-        defaultMessage: 'Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.',
-    }, {siteName: serverName, daysCount: expiresInDays});
+    let body = '';
+    if (expiresInDays === 0) {
+        body = intl.formatMessage({
+            id: 'mobile.session_expired_hrs',
+            defaultMessage: 'Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {hoursCount, number} {hoursCount, plural, one {hour} other {hours}}.',
+        }, {siteName: serverName, hoursCount: remainingHours});
+    } else if (expiresInHours === 0) {
+        body = intl.formatMessage({
+            id: 'mobile.session_expired_days',
+            defaultMessage: 'Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.',
+        }, {siteName: serverName, daysCount: expiresInDays});
+    } else {
+        body = intl.formatMessage({
+            id: 'mobile.session_expired_days_hrs',
+            defaultMessage: 'Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}} and {hoursCount, number} {hoursCount, plural, one {hour} other {hours}}.',
+        }, {siteName: serverName, daysCount: expiresInDays, hoursCount: remainingHours});
+    }
     const title = intl.formatMessage({id: 'mobile.session_expired.title', defaultMessage: 'Session Expired'});
 
     if (expiresAt) {

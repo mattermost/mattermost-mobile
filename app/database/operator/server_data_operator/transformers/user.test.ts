@@ -57,6 +57,7 @@ describe('*** USER Prepare Records Test ***', () => {
                         email: 'true',
                         first_name: 'true',
                         mention_keys: '',
+                        highlight_keys: '',
                         mark_unread: 'mention',
                         push: 'mention',
                         channel: 'true',

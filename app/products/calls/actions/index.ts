@@ -15,6 +15,7 @@ export {
     handleCallsSlashCommand,
     startCallRecording,
     stopCallRecording,
+    dismissIncomingCall,
 } from './calls';
 
 export {hasMicrophonePermission} from './permissions';

@@ -8,12 +8,11 @@ import com.mattermost.helpers.database_extension.findChannel
 import com.mattermost.helpers.database_extension.getCurrentUserLocale
 import com.mattermost.helpers.database_extension.getTeammateDisplayNameSetting
 import com.mattermost.helpers.database_extension.queryCurrentUserId
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 import java.text.Collator
 import java.util.Locale
-import kotlin.math.max
 
-suspend fun PushNotificationDataRunnable.Companion.fetchMyChannel(db: Database, serverUrl: String, channelId: String, isCRTEnabled: Boolean): Triple<ReadableMap?, ReadableMap?, ReadableArray?> {
+suspend fun PushNotificationDataRunnable.Companion.fetchMyChannel(db: WMDatabase, serverUrl: String, channelId: String, isCRTEnabled: Boolean): Triple<ReadableMap?, ReadableMap?, ReadableArray?> {
     val channel = fetch(serverUrl, "/api/v4/channels/$channelId")
     var channelData = channel?.getMap("data")
     val myChannelData = channelData?.let { fetchMyChannelData(serverUrl, channelId, isCRTEnabled, it) }
@@ -109,7 +108,7 @@ private suspend fun PushNotificationDataRunnable.Companion.fetchMyChannelData(se
     return null
 }
 
-private suspend fun PushNotificationDataRunnable.Companion.fetchProfileInChannel(db: Database, serverUrl: String, channelId: String): ReadableArray? {
+private suspend fun PushNotificationDataRunnable.Companion.fetchProfileInChannel(db: WMDatabase, serverUrl: String, channelId: String): ReadableArray? {
     return try {
         val currentUserId = queryCurrentUserId(db)
         val profilesInChannel = fetch(serverUrl, "/api/v4/users?in_channel=${channelId}&page=0&per_page=8&sort=")

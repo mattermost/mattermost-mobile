@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {View} from 'react-native';
 
@@ -34,7 +33,7 @@ const Account = ({currentUser, isFocused, theme}: Props) => {
         <View style={isFocused ? style.selected : undefined}>
             <ProfilePicture
                 author={currentUser}
-                showStatus={false}
+                showStatus={true}
                 size={28}
             />
         </View>

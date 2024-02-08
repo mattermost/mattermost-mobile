@@ -36,7 +36,8 @@ const NOTIFY_OPTIONS_THREAD: Record<string, NotifPrefOptions> = {
 const NotifyAbout = ({isSelected, notifyLevel, onPress}: Props) => {
     const {formatMessage} = useIntl();
 
-    if ([NotificationLevel.NONE, NotificationLevel.ALL].includes(notifyLevel)) {
+    const hiddenStates: NotificationLevel[] = [NotificationLevel.NONE, NotificationLevel.ALL];
+    if (hiddenStates.includes(notifyLevel)) {
         return null;
     }
 

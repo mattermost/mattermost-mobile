@@ -495,11 +495,14 @@ export const hasWriteStoragePermission = async (intl: IntlShape) => {
                     },
                     {applicationName},
                 );
-                const text = intl.formatMessage({
-                    id: 'mobile.write_storage_permission_denied_description',
-                    defaultMessage:
-                        'Save files to your device. Open Settings to grant {applicationName} write access to files on this device.',
-                });
+                const text = intl.formatMessage(
+                    {
+                        id: 'mobile.write_storage_permission_denied_description',
+                        defaultMessage:
+                            'Save files to your device. Open Settings to grant {applicationName} write access to files on this device.',
+                    },
+                    {applicationName},
+                );
 
                 Alert.alert(title, text, [
                     {

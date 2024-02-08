@@ -234,9 +234,8 @@ export const observeSavedPostsByIds = (database: Database, postIds: string[]) =>
 };
 
 export const getIsPostPriorityEnabled = async (database: Database) => {
-    const featureFlag = await getConfigValue(database, 'FeatureFlagPostPriority');
     const cfg = await getConfigValue(database, 'PostPriority');
-    return featureFlag === 'true' && cfg === 'true';
+    return cfg === 'true';
 };
 
 export const getIsPostAcknowledgementsEnabled = async (database: Database) => {
@@ -245,13 +244,7 @@ export const getIsPostAcknowledgementsEnabled = async (database: Database) => {
 };
 
 export const observeIsPostPriorityEnabled = (database: Database) => {
-    const featureFlag = observeConfigBooleanValue(database, 'FeatureFlagPostPriority');
-    const cfg = observeConfigBooleanValue(database, 'PostPriority');
-    return featureFlag.pipe(
-        combineLatestWith(cfg),
-        switchMap(([ff, c]) => of$(ff && c)),
-        distinctUntilChanged(),
-    );
+    return observeConfigBooleanValue(database, 'PostPriority');
 };
 
 export const observeIsPostAcknowledgementsEnabled = (database: Database) => {

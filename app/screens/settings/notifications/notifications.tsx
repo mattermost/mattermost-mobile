@@ -90,9 +90,11 @@ const Notifications = ({
         gotoSettingsScreen(screen, title);
     }, []);
 
-    useAndroidHardwareBackHandler(componentId, () => {
+    const close = useCallback(() => {
         popTopScreen(componentId);
-    });
+    }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <SettingContainer testID='notification_settings'>

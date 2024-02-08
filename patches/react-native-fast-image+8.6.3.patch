@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-fast-image/RNFastImage.podspec b/node_modules/react-native-fast-image/RNFastImage.podspec
-index db0fada..9a2457c 100644
+index db0fada..8469b1a 100644
 --- a/node_modules/react-native-fast-image/RNFastImage.podspec
 +++ b/node_modules/react-native-fast-image/RNFastImage.podspec
 @@ -16,6 +16,6 @@ Pod::Spec.new do |s|
@@ -7,8 +7,9 @@ index db0fada..9a2457c 100644
  
    s.dependency 'React-Core'
 -  s.dependency 'SDWebImage', '~> 5.11.1'
-+  s.dependency 'SDWebImage', '~> 5.12.3'
-   s.dependency 'SDWebImageWebPCoder', '~> 0.8.4'
+-  s.dependency 'SDWebImageWebPCoder', '~> 0.8.4'
++  s.dependency 'SDWebImage', '~> 5.18.2'
++  s.dependency 'SDWebImageWebPCoder', '~> 0.13.0'
  end
 diff --git a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageCookieJar.java b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageCookieJar.java
 new file mode 100644
@@ -74,7 +75,7 @@ index 811292a..79291fa 100644
                  .build();
          OkHttpUrlLoader.Factory factory = new OkHttpUrlLoader.Factory(client);
 diff --git a/node_modules/react-native-fast-image/dist/index.d.ts b/node_modules/react-native-fast-image/dist/index.d.ts
-index 5abb7c9..db5a1d3 100644
+index 5abb7c9..b210637 100644
 --- a/node_modules/react-native-fast-image/dist/index.d.ts
 +++ b/node_modules/react-native-fast-image/dist/index.d.ts
 @@ -43,13 +43,13 @@ export interface ImageStyle extends FlexStyle, TransformsStyle, ShadowStyleIOS {

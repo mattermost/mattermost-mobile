@@ -9,6 +9,13 @@ class NavigationStore {
     private visibleTab = 'Home';
     private tosOpen = false;
 
+    reset = () => {
+        this.screensInStack = [];
+        this.modalsInStack = [];
+        this.visibleTab = 'Home';
+        this.tosOpen = false;
+    };
+
     addModalToStack = (modalId: AvailableScreens) => {
         this.removeModalFromStack(modalId);
         this.addScreenToStack(modalId);

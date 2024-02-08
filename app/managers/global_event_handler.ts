@@ -2,11 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter, NativeModules} from 'react-native';
-import RNLocalize from 'react-native-localize';
 import semver from 'semver';
 
 import {switchToChannelById} from '@actions/remote/channel';
-import {autoUpdateTimezone} from '@actions/remote/user';
 import LocalConfig from '@assets/config.json';
 import {Device, Events, Sso} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
@@ -14,13 +12,13 @@ import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import * as analytics from '@managers/analytics';
-import {getAllServers, getActiveServerUrl} from '@queries/app/servers';
+import {getActiveServerUrl} from '@queries/app/servers';
 import {queryTeamDefaultChannel} from '@queries/servers/channel';
 import {getCommonSystemValues} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
 import {setScreensOrientation} from '@screens/navigation';
-import {handleDeepLink} from '@utils/deep_link';
-import {logError} from '@utils/log';
+import {alertInvalidDeepLink, handleDeepLink} from '@utils/deep_link';
+import {getIntlShape} from '@utils/general';
 
 type LinkingCallbackArg = {url: string};
 
@@ -33,19 +31,6 @@ class GlobalEventHandler {
     constructor() {
         DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         DeviceEventEmitter.addListener(Events.CONFIG_CHANGED, this.onServerConfigChanged);
-        RNLocalize.addEventListener('change', async () => {
-            try {
-                const servers = await getAllServers();
-                for (const server of servers) {
-                    if (server.url && server.lastActiveAt > 0) {
-                        autoUpdateTimezone(server.url);
-                    }
-                }
-            } catch (e) {
-                logError('Localize change', e);
-            }
-        });
-
         splitViewEmitter.addListener('SplitViewChanged', this.onSplitViewChanged);
         Linking.addEventListener('url', this.onDeepLink);
     }
@@ -66,13 +51,16 @@ class GlobalEventHandler {
         }
     };
 
-    onDeepLink = (event: LinkingCallbackArg) => {
+    onDeepLink = async (event: LinkingCallbackArg) => {
         if (event.url?.startsWith(Sso.REDIRECT_URL_SCHEME) || event.url?.startsWith(Sso.REDIRECT_URL_SCHEME_DEV)) {
             return;
         }
 
         if (event.url) {
-            handleDeepLink(event.url);
+            const {error} = await handleDeepLink(event.url);
+            if (error) {
+                alertInvalidDeepLink(getIntlShape(DEFAULT_LOCALE));
+            }
         }
     };
 

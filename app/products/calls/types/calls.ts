@@ -24,8 +24,33 @@ export const DefaultCallsState: CallsState = {
     enabled: {},
 };
 
+export enum ChannelType {
+    DM,
+    GM
+}
+
+export type IncomingCallNotification = {
+    serverUrl: string;
+    myUserId: string;
+    callID: string;
+    channelID: string;
+    callerID: string;
+    callerModel?: UserModel;
+    startAt: number;
+    type: ChannelType;
+}
+
+export type IncomingCalls = {
+    incomingCalls: IncomingCallNotification[];
+}
+
+export const DefaultIncomingCalls: IncomingCalls = {
+    incomingCalls: [],
+};
+
 export type Call = {
-    participants: Dictionary<CallParticipant>;
+    id: string;
+    sessions: Dictionary<CallSession>;
     channelId: string;
     startTime: number;
     screenOn: string;
@@ -33,16 +58,19 @@ export type Call = {
     ownerId: string;
     recState?: CallRecordingState;
     hostId: string;
+    dismissed: Dictionary<boolean>;
 }
 
 export const DefaultCall: Call = {
-    participants: {},
+    id: '',
+    sessions: {},
     channelId: '',
     startTime: 0,
     screenOn: '',
     threadId: '',
     ownerId: '',
     hostId: '',
+    dismissed: {},
 };
 
 export enum AudioDevice {
@@ -57,6 +85,7 @@ export type CurrentCall = Call & {
     connected: boolean;
     serverUrl: string;
     myUserId: string;
+    mySessionId: string;
     screenShareURL: string;
     speakerphoneOn: boolean;
     audioDeviceInfo: AudioDeviceInfo;
@@ -72,6 +101,7 @@ export const DefaultCurrentCall: CurrentCall = {
     connected: false,
     serverUrl: '',
     myUserId: '',
+    mySessionId: '',
     screenShareURL: '',
     speakerphoneOn: false,
     audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
@@ -82,8 +112,9 @@ export const DefaultCurrentCall: CurrentCall = {
     callQualityAlertDismissed: 0,
 };
 
-export type CallParticipant = {
-    id: string;
+export type CallSession = {
+    sessionId: string;
+    userId: string;
     muted: boolean;
     raisedHand: number;
     userModel?: UserModel;
@@ -93,7 +124,7 @@ export type CallParticipant = {
 export type ChannelsWithCalls = Dictionary<boolean>;
 
 export type CallsConnection = {
-    disconnect: () => void;
+    disconnect: (err?: Error) => void;
     mute: () => void;
     unmute: () => void;
     waitForPeerConnection: () => Promise<void>;
@@ -106,11 +137,13 @@ export type CallsConnection = {
 export type CallsConfigState = CallsConfig & {
     AllowEnableCalls: boolean;
     pluginEnabled: boolean;
+    version: CallsVersion;
     last_retrieved_at: number;
 }
 
 export const DefaultCallsConfig: CallsConfigState = {
     pluginEnabled: false,
+    version: {},
     ICEServers: [], // deprecated
     ICEServersConfigs: [],
     AllowEnableCalls: false,
@@ -123,6 +156,8 @@ export const DefaultCallsConfig: CallsConfigState = {
     MaxRecordingDuration: 60,
     AllowScreenSharing: true,
     EnableSimulcast: false,
+    EnableRinging: false,
+    EnableTranscriptions: false,
 };
 
 export type ApiResp = {
@@ -152,4 +187,21 @@ export type AudioDeviceInfoRaw = {
 export type AudioDeviceInfo = {
     availableAudioDeviceList: AudioDevice[];
     selectedAudioDevice: AudioDevice;
+};
+
+export type CallsVersion = {
+    version?: string;
+    build?: string;
+};
+
+export type SubtitleTrack = {
+    title?: string | undefined;
+    language?: string | undefined;
+    type: 'application/x-subrip' | 'application/ttml+xml' | 'text/vtt';
+    uri: string;
+};
+
+export type SelectedSubtitleTrack = {
+    type: 'system' | 'disabled' | 'title' | 'language' | 'index';
+    value?: string | number | undefined;
 };

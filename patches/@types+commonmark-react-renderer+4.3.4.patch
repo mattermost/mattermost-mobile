@@ -1,0 +1,22 @@
+diff --git a/node_modules/@types/commonmark-react-renderer/index.d.ts b/node_modules/@types/commonmark-react-renderer/index.d.ts
+index 9ee5664..7ada0a0 100755
+--- a/node_modules/@types/commonmark-react-renderer/index.d.ts
++++ b/node_modules/@types/commonmark-react-renderer/index.d.ts
+@@ -88,6 +88,9 @@ declare namespace ReactRenderer {
+         transformLinkUri?: ((uri: string) => string) | null | undefined;
+         transformImageUri?: ((uri: string) => string) | null | undefined;
+         linkTarget?: string | undefined;
++        renderParagraphsInLists?: boolean;
++        maxNodes?: number;
++        getExtraPropsForNode?: (node: any) => Record<string, any>;
+     }
+ 
+     interface Renderer {
+@@ -113,6 +116,7 @@ interface ReactRenderer {
+     uriTransformer: (uri: string) => string;
+     types: string[];
+     renderers: ReactRenderer.Renderers;
++    forwardChildren: (props: any) => any;
+ }
+ 
+ declare const ReactRenderer: ReactRenderer;

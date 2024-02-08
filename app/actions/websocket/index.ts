@@ -4,9 +4,14 @@
 import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
-import {handleEntryAfterLoadNavigation, registerDeviceToken} from '@actions/remote/entry/common';
-import {deferredAppEntryActions, entry} from '@actions/remote/entry/gql_common';
+import {
+    deferredAppEntryActions,
+    entry,
+    handleEntryAfterLoadNavigation,
+    registerDeviceToken,
+} from '@actions/remote/entry/common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
+import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
@@ -17,9 +22,9 @@ import {
     handleCallRecordingState,
     handleCallScreenOff,
     handleCallScreenOn,
-    handleCallStarted,
-    handleCallUserConnected,
-    handleCallUserDisconnected,
+    handleCallStarted, handleCallUserConnected, handleCallUserDisconnected,
+    handleCallUserJoined,
+    handleCallUserLeft,
     handleCallUserMuted,
     handleCallUserRaiseHand,
     handleCallUserReacted,
@@ -27,6 +32,7 @@ import {
     handleCallUserUnraiseHand,
     handleCallUserVoiceOff,
     handleCallUserVoiceOn,
+    handleUserDismissedNotification,
 } from '@calls/connection/websocket_event_handlers';
 import {isSupportedServerCalls} from '@calls/utils';
 import {Screens, WebsocketEvents} from '@constants';
@@ -50,26 +56,57 @@ import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 
-import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
-import {handleChannelConvertedEvent, handleChannelCreatedEvent,
+import {
+    handleCategoryCreatedEvent,
+    handleCategoryDeletedEvent,
+    handleCategoryOrderUpdatedEvent,
+    handleCategoryUpdatedEvent,
+} from './category';
+import {
+    handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleChannelDeletedEvent,
     handleChannelMemberUpdatedEvent,
     handleChannelUnarchiveEvent,
     handleChannelUpdatedEvent,
     handleChannelViewedEvent,
+    handleMultipleChannelsViewedEvent,
     handleDirectAddedEvent,
     handleUserAddedToChannelEvent,
-    handleUserRemovedFromChannelEvent} from './channel';
-import {handleGroupMemberAddEvent, handleGroupMemberDeleteEvent, handleGroupReceivedEvent, handleGroupTeamAssociatedEvent, handleGroupTeamDissociateEvent} from './group';
+    handleUserRemovedFromChannelEvent,
+} from './channel';
+import {
+    handleGroupMemberAddEvent,
+    handleGroupMemberDeleteEvent,
+    handleGroupReceivedEvent,
+    handleGroupTeamAssociatedEvent,
+    handleGroupTeamDissociateEvent,
+} from './group';
 import {handleOpenDialogEvent} from './integrations';
-import {handleNewPostEvent, handlePostAcknowledgementAdded, handlePostAcknowledgementRemoved, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
-import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
+import {
+    handleNewPostEvent,
+    handlePostAcknowledgementAdded,
+    handlePostAcknowledgementRemoved,
+    handlePostDeleted,
+    handlePostEdited,
+    handlePostUnread,
+} from './posts';
+import {
+    handlePreferenceChangedEvent,
+    handlePreferencesChangedEvent,
+    handlePreferencesDeletedEvent,
+} from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
-import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent, handleTeamArchived, handleTeamRestored} from './teams';
+import {
+    handleLeaveTeamEvent,
+    handleUserAddedToTeamEvent,
+    handleUpdateTeamEvent,
+    handleTeamArchived,
+    handleTeamRestored,
+} from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
-import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
+import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent} from './users';
 
 export async function handleFirstConnect(serverUrl: string) {
     registerDeviceToken(serverUrl);
@@ -122,16 +159,16 @@ async function doReconnect(serverUrl: string) {
         setTeamLoading(serverUrl, false);
         return entryData.error;
     }
-    const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
+    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, gmConverted} = entryData;
 
-    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId);
+    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
 
     const dt = Date.now();
     if (models?.length) {
         await operator.batchRecords(models, 'doReconnect');
     }
 
-    const tabletDevice = await isTablet();
+    const tabletDevice = isTablet();
     if (tabletDevice && initialChannelId === currentChannelId) {
         await markChannelAsRead(serverUrl, initialChannelId);
         markChannelAsViewed(serverUrl, initialChannelId);
@@ -151,6 +188,8 @@ async function doReconnect(serverUrl: string) {
     }
 
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+
+    openAllUnreadChannels(serverUrl);
 
     dataRetentionCleanup(serverUrl);
 
@@ -251,6 +290,10 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleChannelViewedEvent(serverUrl, msg);
             break;
 
+        case WebsocketEvents.MULTIPLE_CHANNELS_VIEWED:
+            handleMultipleChannelsViewedEvent(serverUrl, msg);
+            break;
+
         case WebsocketEvents.CHANNEL_MEMBER_UPDATED:
             handleChannelMemberUpdatedEvent(serverUrl, msg);
             break;
@@ -277,9 +320,8 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.STATUS_CHANGED:
+            handleStatusChangedEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleStatusChangedEvent(msg));
         case WebsocketEvents.TYPING:
             handleUserTypingEvent(serverUrl, msg);
             break;
@@ -340,11 +382,22 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.CALLS_CHANNEL_DISABLED:
             handleCallChannelDisabled(serverUrl, msg);
             break;
+
+        // DEPRECATED in favour of user_joined (since v0.21.0)
         case WebsocketEvents.CALLS_USER_CONNECTED:
             handleCallUserConnected(serverUrl, msg);
             break;
+
+        // DEPRECATED in favour of user_left (since v0.21.0)
         case WebsocketEvents.CALLS_USER_DISCONNECTED:
             handleCallUserDisconnected(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.CALLS_USER_JOINED:
+            handleCallUserJoined(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_LEFT:
+            handleCallUserLeft(serverUrl, msg);
             break;
         case WebsocketEvents.CALLS_USER_MUTED:
             handleCallUserMuted(serverUrl, msg);
@@ -385,6 +438,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.CALLS_HOST_CHANGED:
             handleCallHostChanged(serverUrl, msg);
             break;
+        case WebsocketEvents.CALLS_USER_DISMISSED_NOTIFICATION:
+            handleUserDismissedNotification(serverUrl, msg);
+            break;
 
         case WebsocketEvents.GROUP_RECEIVED:
             handleGroupReceivedEvent(serverUrl, msg);
@@ -423,7 +479,7 @@ async function fetchPostDataIfNeeded(serverUrl: string) {
         const mountedScreens = NavigationStore.getScreensInStack();
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadScreenMounted = mountedScreens.includes(Screens.THREAD);
-        const tabletDevice = await isTablet();
+        const tabletDevice = isTablet();
 
         if (isCRTEnabled && isThreadScreenMounted) {
             // Fetch new posts in the thread only when CRT is enabled,

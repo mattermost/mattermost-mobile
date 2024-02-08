@@ -14,10 +14,12 @@ import {isValidUrl} from '@utils/url';
 
 type SlideUpPanelProps = {
     destructive?: boolean;
-    icon?: string | Source;
-    rightIcon?: boolean;
-    imageStyles?: StyleProp<ImageStyle>;
-    iconStyles?: StyleProp<TextStyle>;
+    leftIcon?: string | Source;
+    leftImageStyles?: StyleProp<ImageStyle>;
+    leftIconStyles?: StyleProp<TextStyle>;
+    rightIcon?: string | Source;
+    rightImageStyles?: StyleProp<ImageStyle>;
+    rightIconStyles?: StyleProp<TextStyle>;
     onPress: () => void;
     textStyles?: TextStyle;
     testID?: string;
@@ -65,13 +67,55 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text, textStyles, iconStyles, rightIcon = false}: SlideUpPanelProps) => {
+const SlideUpPanelItem = ({
+    destructive = false,
+    leftIcon,
+    leftImageStyles,
+    leftIconStyles,
+    rightIcon,
+    rightImageStyles,
+    rightIconStyles,
+    onPress,
+    testID,
+    text,
+    textStyles,
+}: SlideUpPanelProps) => {
     const theme = useTheme();
+    const style = getStyleSheet(theme);
+
+    const {image: leftImage, iconStyle: leftIconStyle} = useImageAndStyle(leftIcon, leftImageStyles, leftIconStyles, destructive);
+    const {image: rightImage, iconStyle: rightIconStyle} = useImageAndStyle(rightIcon, rightImageStyles, rightIconStyles, destructive);
+
     const handleOnPress = useCallback(preventDoubleTap(onPress, 500), []);
+
+    return (
+        <TouchableHighlight
+            onPress={handleOnPress}
+            style={style.container}
+            testID={testID}
+            underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+        >
+            <View style={style.row}>
+                {Boolean(leftImage) &&
+                    <View style={leftIconStyle}>{leftImage}</View>
+                }
+                <View style={style.textContainer}>
+                    <Text style={[style.text, destructive && style.destructive, textStyles]}>{text}</Text>
+                </View>
+                {Boolean(rightImage) &&
+                    <View style={rightIconStyle}>{rightImage}</View>
+                }
+            </View>
+        </TouchableHighlight>
+    );
+};
+
+const useImageAndStyle = (icon: string | Source | undefined, imageStyles: StyleProp<ImageStyle>, iconStyles: StyleProp<TextStyle>, destructive: boolean) => {
+    const theme = useTheme();
     const style = getStyleSheet(theme);
 
     let image;
-    let iconStyle: StyleProp<ViewStyle> = [style.iconContainer];
+    let iconStyle: Array<StyleProp<ViewStyle>> = [style.iconContainer];
     if (icon) {
         if (typeof icon === 'object') {
             if (icon.uri && isValidUrl(icon.uri)) {
@@ -101,26 +145,7 @@ const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text
         }
     }
 
-    return (
-        <TouchableHighlight
-            onPress={handleOnPress}
-            style={style.container}
-            testID={testID}
-            underlayColor={changeOpacity(theme.buttonBg, 0.08)}
-        >
-            <View style={style.row}>
-                {Boolean(image) && !rightIcon &&
-                    <View style={iconStyle}>{image}</View>
-                }
-                <View style={style.textContainer}>
-                    <Text style={[style.text, destructive && style.destructive, textStyles]}>{text}</Text>
-                </View>
-                {Boolean(image) && rightIcon &&
-                    <View style={iconStyle}>{image}</View>
-                }
-            </View>
-        </TouchableHighlight>
-    );
+    return {image, iconStyle};
 };
 
 export default SlideUpPanelItem;

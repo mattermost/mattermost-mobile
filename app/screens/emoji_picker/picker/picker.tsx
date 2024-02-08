@@ -44,7 +44,7 @@ const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, 
 
     const onChangeSearchTerm = useCallback((text: string) => {
         setSearchTerm(text);
-        searchCustom(text);
+        searchCustom(text.replace(/^:|:$/g, '').trim());
     }, []);
 
     const searchCustom = debounce((text: string) => {
@@ -54,11 +54,12 @@ const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, 
     }, 500);
 
     let EmojiList: React.ReactNode = null;
-    if (searchTerm) {
+    const term = searchTerm?.replace(/^:|:$/g, '').trim();
+    if (term) {
         EmojiList = (
             <EmojiFiltered
                 customEmojis={customEmojis}
-                searchTerm={searchTerm}
+                searchTerm={term}
                 onEmojiPress={onEmojiPress}
             />
         );

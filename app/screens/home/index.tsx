@@ -13,15 +13,19 @@ import {enableFreeze, enableScreens} from 'react-native-screens';
 import {map} from 'rxjs/operators';
 
 import {handleTeamChange} from '@actions/remote/team';
+import {autoUpdateTimezone} from '@actions/remote/user';
 import {observeCurrentTeamId} from '@app/queries/servers/system';
 import {queryJoinedTeams} from '@app/queries/servers/team';
 import ServerVersion from '@components/server_version';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useAppState} from '@hooks/device';
+import {getAllServers} from '@queries/app/servers';
 import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
-import {handleDeepLink} from '@utils/deep_link';
+import {alertInvalidDeepLink, handleDeepLink} from '@utils/deep_link';
+import {logError} from '@utils/log';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
 
@@ -50,6 +54,19 @@ type HomeProps = LaunchProps & {
 
 const Tab = createBottomTabNavigator();
 
+const updateTimezoneIfNeeded = async () => {
+    try {
+        const servers = await getAllServers();
+        for (const server of servers) {
+            if (server.url && server.lastActiveAt > 0) {
+                autoUpdateTimezone(server.url);
+            }
+        }
+    } catch (e) {
+        logError('Localize change', e);
+    }
+};
+
 const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
     const teams = queryJoinedTeams(database).observe().pipe(
         // eslint-disable-next-line max-nested-callbacks
@@ -66,6 +83,7 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
 function HomeScreen(props: HomeProps) {
     const theme = useTheme();
     const intl = useIntl();
+    const appState = useAppState();
     const serverUrl = useServerUrl();
 
     useEffect(() => {
@@ -120,10 +138,25 @@ function HomeScreen(props: HomeProps) {
     }, [intl.locale]);
 
     useEffect(() => {
+        if (appState === 'active') {
+            updateTimezoneIfNeeded();
+        }
+    }, [appState]);
+
+    useEffect(() => {
         if (props.launchType === 'deeplink') {
+            if (props.launchError) {
+                alertInvalidDeepLink(intl);
+                return;
+            }
+
             const deepLink = props.extra as DeepLinkWithData;
             if (deepLink?.url) {
-                handleDeepLink(deepLink.url);
+                handleDeepLink(deepLink.url).then((result) => {
+                    if (result.error) {
+                        alertInvalidDeepLink(intl);
+                    }
+                });
             }
         }
     }, []);

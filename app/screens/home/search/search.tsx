@@ -4,9 +4,9 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, type LayoutChangeEvent, Platform, StyleSheet, type ViewStyle} from 'react-native';
+import {FlatList, type LayoutChangeEvent, Platform, StyleSheet, type ViewStyle, KeyboardAvoidingView} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
-import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {getPosts} from '@actions/local/post';
@@ -69,8 +69,9 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
     const extensionTerms = fileExtensions ? ' ' + fileExtensions : '';
     return {
-        terms: terms + extensionTerms,
-        is_or_search: true,
+        terms: terms.replace(/[\u201C\u201D]/g, '"') + extensionTerms,
+        is_or_search: false,
+        include_deleted_channels: true,
     };
 };
 
@@ -105,6 +106,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
     const [resultsLoading, setResultsLoading] = useState(false);
     const [lastSearchedValue, setLastSearchedValue] = useState('');
     const [posts, setPosts] = useState<PostModel[]>(emptyPosts);
+    const [matches, setMatches] = useState<SearchMatches|undefined>();
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
     const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
 
@@ -192,6 +194,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
         if (postResults.order) {
             const postModels = await getPosts(serverUrl, postResults.order, 'asc');
             setPosts(postModels.length ? postModels : emptyPosts);
+            setMatches(postResults.matches);
         }
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
         handleLoading(false);
@@ -230,7 +233,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
         handleSearch(newTeamId, lastSearchedValue);
     }, [lastSearchedValue, handleSearch]);
 
-    const initialContainerStyle: ViewStyle = useMemo(() => {
+    const initialContainerStyle: AnimatedStyle<ViewStyle> = useMemo(() => {
         return {
             paddingTop: scrollPaddingTop,
             flexGrow: 1,
@@ -360,24 +363,26 @@ const SearchScreen = ({teamId, teams}: Props) => {
                 onLayout={onLayout}
                 testID='search_messages.screen'
             >
-                <Animated.View style={animated}>
-                    <Animated.View style={headerTopStyle}>
-                        <RoundedHeaderContext/>
-                        {lastSearchedValue && !loading &&
+                <KeyboardAvoidingView
+                    style={styles.flex}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                >
+                    <Animated.View style={animated}>
+                        <Animated.View style={headerTopStyle}>
+                            <RoundedHeaderContext/>
+                            {lastSearchedValue && !loading &&
                             <Header
                                 teamId={searchTeamId}
                                 setTeamId={handleResultsTeamChange}
                                 onTabSelect={setSelectedTab}
                                 onFilterChanged={handleFilterChange}
-                                numberMessages={posts.length}
                                 selectedTab={selectedTab}
-                                numberFiles={fileInfos.length}
                                 selectedFilter={filter}
                                 teams={teams}
                             />
-                        }
-                    </Animated.View>
-                    {!showResults &&
+                            }
+                        </Animated.View>
+                        {!showResults &&
                         <AnimatedFlatList
                             onLayout={onFlatLayout}
                             data={dummyData}
@@ -394,19 +399,21 @@ const SearchScreen = ({teamId, teams}: Props) => {
                             ref={scrollRef}
                             renderItem={renderInitialOrLoadingItem}
                         />
-                    }
-                    {showResults && !loading &&
+                        }
+                        {showResults && !loading &&
                         <Results
                             loading={resultsLoading}
                             selectedTab={selectedTab}
-                            searchValue={lastSearchedValue}
+                            searchValue={lastSearchedValue.replace(/[\u201C\u201D]/g, '"')}
                             posts={posts}
+                            matches={matches}
                             fileInfos={fileInfos}
                             scrollPaddingTop={lockValue.value}
                             fileChannelIds={fileChannelIds}
                         />
-                    }
-                </Animated.View>
+                        }
+                    </Animated.View>
+                </KeyboardAvoidingView>
             </SafeAreaView>
             {searchIsFocused &&
             <Autocomplete

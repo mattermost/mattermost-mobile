@@ -21,11 +21,12 @@ export interface DeepLinkPermalink extends DeepLink {
 }
 
 export interface DeepLinkGM extends DeepLink {
-    channelId: string;
+    channelName: string;
 }
 
 export interface DeepLinkPlugin extends DeepLink {
     id: string;
+    route?: string;
 }
 
 export type DeepLinkType = typeof DeepLink[keyof typeof DeepLink];

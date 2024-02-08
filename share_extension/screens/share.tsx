@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import withObservables from '@nozbe/with-observables';
+import {withObservables} from '@nozbe/watermelondb/react';
 import {useNavigation} from '@react-navigation/native';
 import React, {useEffect, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {StyleSheet, View} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import {from as from$} from 'rxjs';
 
 import DatabaseManager from '@database/manager';
@@ -17,6 +18,21 @@ import CloseHeaderButton from '@share/components/header/close_header_button';
 import PostButton from '@share/components/header/post_button';
 import {hasChannels} from '@share/queries';
 import {setShareExtensionState, useShareExtensionServerUrl} from '@share/state';
+
+export const errorScreenMessages = defineMessages({
+    label: {
+        id: 'share_extension.error_screen.label',
+        defaultMessage: 'An error ocurred',
+    },
+    description: {
+        id: 'share_extension.error_screen.description',
+        defaultMessage: 'There was an error when attempting to share the content to {applicationName}.',
+    },
+    reason: {
+        id: 'share_extension.error_screen.reason',
+        defaultMessage: 'Reason: {reason}',
+    },
+});
 
 type Props = {
     hasChannelMemberships: boolean;
@@ -52,8 +68,14 @@ const ShareScreen = ({hasChannelMemberships, initialServerUrl, files, linkPrevie
     }, [serverUrl]);
 
     useEffect(() => {
+        const applicationName = DeviceInfo.getApplicationName();
         navigator.setOptions({
-            title: intl.formatMessage({id: 'share_extension.share_screen.title', defaultMessage: 'Share to Mattermost'}),
+            title: intl.formatMessage({
+                id: 'share_extension.share_screen.title',
+                defaultMessage: 'Share to {applicationName}',
+            },
+            {applicationName},
+            ),
         });
     }, [intl.locale]);
 

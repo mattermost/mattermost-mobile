@@ -51,9 +51,9 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
 
-    const close = () => {
+    const close = useCallback(() => {
         dismissModal({componentId});
-    };
+    }, [componentId]);
 
     useEffect(() => {
         setButtonDisabled(Boolean(!displayName || displayName === server.displayName));

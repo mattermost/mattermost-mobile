@@ -25,7 +25,7 @@ type Props = {
     currentUserId?: string;
     currentUsername?: string;
     location: string;
-    post: Post;
+    post: Post | null;
     showJoinLeave: boolean;
     testID?: string;
     theme: Theme;
@@ -65,22 +65,10 @@ const CombinedUserActivity = ({
     const intl = useIntl();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
-    const itemTestID = `${testID}.${post.id}`;
     const textStyles = getMarkdownTextStyles(theme);
-    const {allUserIds, allUsernames, messageData} = post.props.user_activity;
     const styles = getStyleSheet(theme);
     const content = [];
     const removedUserIds: string[] = [];
-
-    const loadUserProfiles = () => {
-        if (allUserIds.length) {
-            fetchMissingProfilesByIds(serverUrl, allUserIds);
-        }
-
-        if (allUsernames.length) {
-            fetchMissingProfilesByUsernames(serverUrl, allUsernames);
-        }
-    };
 
     const getUsernames = (userIds: string[]) => {
         const someone = intl.formatMessage({id: 'channel_loader.someone', defaultMessage: 'Someone'});
@@ -120,6 +108,9 @@ const CombinedUserActivity = ({
     }, [post, canDelete, isTablet, intl, location]);
 
     const renderMessage = (postType: string, userIds: string[], actorId: string) => {
+        if (!post) {
+            return null;
+        }
         let actor = '';
         if (usernamesById[actorId]) {
             actor = `@${usernamesById[actorId]}`;
@@ -177,9 +168,26 @@ const CombinedUserActivity = ({
     };
 
     useEffect(() => {
-        loadUserProfiles();
-    }, [allUserIds, allUsernames]);
+        if (!post) {
+            return;
+        }
 
+        const {allUserIds, allUsernames} = post.props.user_activity;
+        if (allUserIds.length) {
+            fetchMissingProfilesByIds(serverUrl, allUserIds);
+        }
+
+        if (allUsernames.length) {
+            fetchMissingProfilesByUsernames(serverUrl, allUsernames);
+        }
+    }, [post?.props.user_activity.allUserIds, post?.props.user_activity.allUsernames]);
+
+    if (!post) {
+        return null;
+    }
+
+    const itemTestID = `${testID}.${post.id}`;
+    const {messageData} = post.props.user_activity;
     for (const message of messageData) {
         const {postType, actorId} = message;
         const userIds = new Set<string>(message.userIds);

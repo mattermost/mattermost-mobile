@@ -25,3 +25,12 @@ export const retrieveChannels = (database: Database, myChannels: MyChannelModel[
 
     return of$([]);
 };
+
+export const removeChannelsFromArchivedTeams = (recentChannels: ChannelModel[], teamIds: Set<string>) => {
+    return recentChannels.filter((channel) => {
+        if (!channel.teamId) {
+            return true;
+        }
+        return teamIds.has(channel.teamId);
+    });
+};

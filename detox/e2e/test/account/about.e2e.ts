@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup} from '@support/server_api';
+import {Setup, System} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -24,9 +24,12 @@ import {expect} from 'detox';
 
 describe('Account - Settings - About', () => {
     const serverOneDisplayName = 'Server 1';
+    let isLicensed: boolean;
     let testUser: any;
 
     beforeAll(async () => {
+        const {license} = await System.apiGetClientLicense(siteOneUrl);
+        isLicensed = license.IsLicensed === 'true';
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
@@ -65,7 +68,13 @@ describe('Account - Settings - About', () => {
         await expect(AboutScreen.databaseValue).toBeVisible();
         await expect(AboutScreen.databaseSchemaVersionTitle).toHaveText('Database Schema Version:');
         await expect(AboutScreen.databaseSchemaVersionValue).toBeVisible();
-        await expect(AboutScreen.licensee).toBeVisible();
+        await expect(AboutScreen.copyInfoButton).toBeVisible();
+        await expect(AboutScreen.copyInfoButton).toHaveText('Copy info');
+        if (isLicensed) {
+            await expect(AboutScreen.licensee).toBeVisible();
+        } else {
+            await expect(AboutScreen.licensee).not.toBeVisible();
+        }
         await expect(AboutScreen.learnMoreText).toHaveText('Learn more about Enterprise Edition at ');
         await expect(AboutScreen.learnMoreUrl).toBeVisible();
         await expect(AboutScreen.copyright).toHaveText(`Copyright 2015-${new Date().getFullYear()} Mattermost, Inc. All rights reserved`);

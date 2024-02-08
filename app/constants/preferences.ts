@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export const CATEGORIES_TO_KEEP: Record<string, string> = {
+export const CATEGORIES_TO_KEEP = {
     ADVANCED_SETTINGS: 'advanced_settings',
     CHANNEL_APPROXIMATE_VIEW_TIME: 'channel_approximate_view_time',
     CHANNEL_OPEN_TIME: 'channel_open_time',
@@ -14,15 +14,21 @@ export const CATEGORIES_TO_KEEP: Record<string, string> = {
     SIDEBAR_SETTINGS: 'sidebar_settings',
     TEAMS_ORDER: 'teams_order',
     THEME: 'theme',
+    SYSTEM_NOTICE: 'system_notice',
 };
 
-const CATEGORIES: Record<string, string> = {
+const CATEGORIES = {
     ...CATEGORIES_TO_KEEP,
     FAVORITE_CHANNEL: 'favorite_channel',
 };
 
+const NOTICES = {
+    GM_AS_DM: 'GMasDM',
+};
+
 const Preferences = {
     CATEGORIES,
+    NOTICES,
     COLLAPSED_REPLY_THREADS: 'collapsed_reply_threads',
     COLLAPSED_REPLY_THREADS_OFF: 'off',
     COLLAPSED_REPLY_THREADS_ON: 'on',

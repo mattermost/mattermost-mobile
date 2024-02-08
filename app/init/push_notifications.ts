@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, DeviceEventEmitter, Platform} from 'react-native';
+import {AppState, DeviceEventEmitter, Platform, type EmitterSubscription} from 'react-native';
 import {
     Notification,
     NotificationAction,
@@ -16,8 +16,9 @@ import {requestNotifications} from 'react-native-permissions';
 
 import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
+import {updateThread} from '@actions/local/thread';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
-import {markThreadAsRead} from '@actions/remote/thread';
+import {isCallsStartedMessage} from '@calls/utils';
 import {Device, Events, Navigation, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
@@ -35,12 +36,16 @@ import {convertToNotificationData} from '@utils/notification';
 
 class PushNotifications {
     configured = false;
+    subscriptions?: EmitterSubscription[];
 
     init(register: boolean) {
-        Notifications.events().registerNotificationOpened(this.onNotificationOpened);
-        Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered);
-        Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
-        Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
+        this.subscriptions?.forEach((v) => v.remove());
+        this.subscriptions = [
+            Notifications.events().registerNotificationOpened(this.onNotificationOpened),
+            Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered),
+            Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground),
+            Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground),
+        ];
 
         if (register) {
             this.registerIfNeeded();
@@ -90,7 +95,12 @@ class PushNotifications {
                 if (isCRTEnabled && payload.root_id) {
                     const thread = await getThreadById(database, payload.root_id);
                     if (thread?.isFollowing) {
-                        markThreadAsRead(serverUrl, payload.team_id, payload.post_id);
+                        const data: Partial<ThreadWithViewedAt> = {
+                            unread_mentions: 0,
+                            unread_replies: 0,
+                            last_viewed_at: Date.now(),
+                        };
+                        updateThread(serverUrl, payload.root_id, data);
                     }
                 } else {
                     markChannelAsViewed(serverUrl, payload.channel_id);
@@ -102,9 +112,14 @@ class PushNotifications {
     handleInAppNotification = async (serverUrl: string, notification: NotificationWithData) => {
         const {payload} = notification;
 
+        // Do not show overlay if this is a call-started message (the call_notification will alert the user)
+        if (isCallsStartedMessage(payload)) {
+            return;
+        }
+
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (database) {
-            const isTabletDevice = await isTablet();
+            const isTabletDevice = isTablet();
             const displayName = await getServerDisplayName(serverUrl);
             const channelId = await getCurrentChannelId(database);
             const isCRTEnabled = await getIsCRTEnabled(database);

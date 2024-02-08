@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -33,7 +32,6 @@ const enhance = withObservables(['channelId'], ({channelId, database}: Props) =>
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
         ),
         isCRTEnabled: observeIsCRTEnabled(database),
-        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
         posts,
     };
 });

@@ -59,10 +59,10 @@ export class WebSocketClient extends EventEmitter {
             this.emit('error', err);
         };
 
-        this.ws.onclose = () => {
-            this.ws = null;
+        this.ws.onclose = (event: WebSocketCloseEvent) => {
+            this.emit('close', event);
             if (!this.closed) {
-                this.close();
+                this.reconnect();
             }
         };
 
@@ -143,40 +143,39 @@ export class WebSocketClient extends EventEmitter {
     }
 
     close() {
-        if (this.ws) {
-            this.closed = true;
-            this.ws.close();
-            this.ws = null;
-            this.seqNo = 1;
-            this.serverSeqNo = 0;
-            this.connID = '';
-            this.originalConnID = '';
-        } else {
-            this.emit('close');
+        this.closed = true;
+        this.ws?.close();
+        this.ws = null;
+        this.seqNo = 1;
+        this.serverSeqNo = 0;
+        this.connID = '';
+        this.originalConnID = '';
+    }
 
-            const now = Date.now();
-            if (this.lastDisconnect === 0) {
-                this.lastDisconnect = now;
-            }
-
-            if ((now - this.lastDisconnect) >= wsReconnectionTimeout) {
-                this.closed = true;
-                this.emit('error', wsReconnectionTimeoutErr);
-                return;
-            }
-
-            setTimeout(() => {
-                if (!this.ws && !this.closed) {
-                    this.init(true);
-                }
-            }, this.reconnectRetryTime);
-
-            this.reconnectRetryTime += wsReconnectTimeIncrement;
+    reconnect() {
+        const now = Date.now();
+        if (this.lastDisconnect === 0) {
+            this.lastDisconnect = now;
         }
+
+        if ((now - this.lastDisconnect) >= wsReconnectionTimeout) {
+            this.closed = true;
+            this.emit('error', wsReconnectionTimeoutErr);
+            return;
+        }
+
+        setTimeout(() => {
+            if (!this.closed) {
+                logDebug(`calls: attempting ws reconnection to ${this.serverUrl + this.wsPath}`);
+                this.init(true);
+            }
+        }, this.reconnectRetryTime);
+
+        this.reconnectRetryTime += wsReconnectTimeIncrement;
     }
 
     state() {
-        if (!this.ws) {
+        if (this.closed || !this.ws) {
             return WebSocket.CLOSED;
         }
         return this.ws.readyState;

@@ -78,8 +78,8 @@ const UserStatus = ({currentUser}: Props) => {
                         </View>
                     )}
                     <SlideUpPanelItem
-                        icon='check-circle'
-                        iconStyles={{color: theme.onlineIndicator}}
+                        leftIcon='check-circle'
+                        leftIconStyles={{color: theme.onlineIndicator}}
                         onPress={() => setUserStatus(ONLINE)}
                         testID='user_status.online.option'
                         text={intl.formatMessage({
@@ -89,8 +89,8 @@ const UserStatus = ({currentUser}: Props) => {
                         textStyles={styles.label}
                     />
                     <SlideUpPanelItem
-                        icon='clock'
-                        iconStyles={{color: theme.awayIndicator}}
+                        leftIcon='clock'
+                        leftIconStyles={{color: theme.awayIndicator}}
                         onPress={() => setUserStatus(AWAY)}
                         testID='user_status.away.option'
                         text={intl.formatMessage({
@@ -100,8 +100,8 @@ const UserStatus = ({currentUser}: Props) => {
                         textStyles={styles.label}
                     />
                     <SlideUpPanelItem
-                        icon='minus-circle'
-                        iconStyles={{color: theme.dndIndicator}}
+                        leftIcon='minus-circle'
+                        leftIconStyles={{color: theme.dndIndicator}}
                         onPress={() => setUserStatus(DND)}
                         testID='user_status.dnd.option'
                         text={intl.formatMessage({
@@ -111,8 +111,8 @@ const UserStatus = ({currentUser}: Props) => {
                         textStyles={styles.label}
                     />
                     <SlideUpPanelItem
-                        icon='circle-outline'
-                        iconStyles={{color: changeOpacity('#B8B8B8', 0.64)}}
+                        leftIcon='circle-outline'
+                        leftIconStyles={{color: changeOpacity('#B8B8B8', 0.64)}}
                         onPress={() => setUserStatus(OFFLINE)}
                         testID='user_status.offline.option'
                         text={intl.formatMessage({

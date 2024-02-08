@@ -35,6 +35,7 @@ type Props = {
     postPriority: PostPriority;
     updatePostPriority: (data: PostPriority) => void;
     closeButtonId: string;
+    persistentNotificationInterval: number;
 };
 
 const TITLE_HEIGHT = 30; // typography 600 line height
@@ -83,6 +84,7 @@ const PostPriorityPicker = ({
     componentId,
     isPostAcknowledgementEnabled,
     isPersistenNotificationsEnabled,
+    persistentNotificationInterval,
     postPriority,
     updatePostPriority,
     closeButtonId,
@@ -201,7 +203,12 @@ const PostPriorityPicker = ({
                                 <PickerOption
                                     action={handleUpdatePersistentNotifications}
                                     label={intl.formatMessage(labels.persistentNotifications.label)}
-                                    description={intl.formatMessage(labels.persistentNotifications.description)}
+                                    description={intl.formatMessage(
+                                        labels.persistentNotifications.description,
+                                        {
+                                            interval: persistentNotificationInterval,
+                                        },
+                                    )}
                                     icon='bell-ring-outline'
                                     type='toggle'
                                     selected={data.persistent_notifications}

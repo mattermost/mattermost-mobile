@@ -13,6 +13,8 @@ import {
     highlightTextNode,
     mentionKeysToPatterns,
     pullOutImages,
+    highlightWithoutNotification,
+    highlightKeysToPatterns,
 } from '@components/markdown/transform';
 import {logError} from '@utils/log';
 
@@ -2131,10 +2133,6 @@ describe('Components.Markdown.transform', () => {
                     }, {
                         type: 'at_mention',
                         _mentionName: 'user',
-                        children: [{
-                            type: 'text',
-                            literal: '@user',
-                        }],
                     }],
                 }],
             },
@@ -2154,10 +2152,6 @@ describe('Components.Markdown.transform', () => {
                         children: [{
                             type: 'at_mention',
                             _mentionName: 'words',
-                            children: [{
-                                type: 'text',
-                                literal: '@words',
-                            }],
                         }],
                     }],
                 }],
@@ -2178,10 +2172,6 @@ describe('Components.Markdown.transform', () => {
                         children: [{
                             type: 'at_mention',
                             _mentionName: 'words',
-                            children: [{
-                                type: 'text',
-                                literal: '@words',
-                            }],
                         }],
                     }],
                 }],
@@ -2579,10 +2569,6 @@ describe('Components.Markdown.transform', () => {
                         children: [{
                             type: 'at_mention',
                             _mentionName: 'channel.',
-                            children: [{
-                                type: 'text',
-                                literal: '@channel.',
-                            }],
                         }],
                     }],
                 }],
@@ -2601,10 +2587,6 @@ describe('Components.Markdown.transform', () => {
                     }, {
                         type: 'at_mention',
                         _mentionName: 'Gvn.',
-                        children: [{
-                            type: 'text',
-                            literal: '@Gvn.',
-                        }],
                     }],
                 }],
             },
@@ -2622,7 +2604,7 @@ describe('Components.Markdown.transform', () => {
         }
     });
 
-    describe('getFirstMention', () => {
+    describe('getFirstMention with mentionKeysToPatterns', () => {
         const tests = [{
             name: 'no mention keys',
             input: 'apple banana orange',
@@ -2818,6 +2800,461 @@ describe('Components.Markdown.transform', () => {
 
                 assert.ok(verifyAst(actual));
                 assert.deepStrictEqual(actual, expected);
+            });
+        }
+    });
+
+    describe('highlightWithoutNotification', () => {
+        const tests = [{
+            name: 'no highlights',
+            input: 'Cant put down an anti gravity book',
+            highlightKeys: [],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Cant put down an anti gravity book',
+                    }],
+                }],
+            },
+        }, {
+            name: 'key bigger than input',
+            input: 'incredible',
+            highlightKeys: [{key: 'incredible and industructable'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'incredible',
+                    }],
+                }],
+            },
+        }, {
+            name: 'key part of the word',
+            input: 'Sesquipedalian',
+            highlightKeys: [{key: 'quipedalian'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Sesquipedalian',
+                    }],
+                }],
+            },
+        }, {
+            name: 'word part of key',
+            input: 'floccinauc',
+            highlightKeys: [{key: 'floccinaucinihilipilification'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'floccinauc',
+                    }],
+                }],
+            },
+        }, {
+            name: 'a word highlight',
+            input: 'Cant put down an anti gravity book',
+            highlightKeys: [{key: 'anti'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'text',
+                            literal: 'Cant put down an ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'anti',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' gravity book',
+                        },
+                    ],
+                }],
+            },
+        }, {
+            name: 'a sentence highlight',
+            input: 'Cant put down an anti gravity book',
+            highlightKeys: [{key: 'anti gravity'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'text',
+                            literal: 'Cant put down an ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'anti gravity',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' book',
+                        },
+                    ],
+                }],
+            },
+        }, {
+            name: 'insensitive keywords',
+            input: 'Cant put down an anti gravity book',
+            highlightKeys: [{key: 'dOwN'}, {key: 'Anti'}, {key: 'BOOK'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'text',
+                            literal: 'Cant put ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'down',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' an ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'anti',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' gravity ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'book',
+                            }],
+                        },
+                    ],
+                }],
+            },
+        }, {
+            name: 'insensitive keywords',
+            input: 'Cant put down an anti gravity book',
+            highlightKeys: [{key: 'dOwN'}, {key: 'Anti'}, {key: 'BOOK'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'text',
+                            literal: 'Cant put ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'down',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' an ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'anti',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' gravity ',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'book',
+                            }],
+                        },
+                    ],
+                }],
+            },
+        }, {
+            name: 'words with characters surrounding them',
+            input: 'peace& ^peace -peace-',
+            highlightKeys: [{key: 'PEACE'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'peace',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: '& ^',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'peace',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' -',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'peace',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: '-',
+                        },
+                    ],
+                }],
+            },
+        }, {
+            name: 'input in code block',
+            input: '```\nTurning it off and\non\n```',
+            highlightKeys: [{key: 'words'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'code_block',
+                    literal: 'Turning it off and\non\n',
+                }],
+            },
+        }, {
+            name: 'key in bold',
+            input: 'Actions speak **louder** than words',
+            highlightKeys: [{key: 'louder'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Actions speak ',
+                    }, {
+                        type: 'strong',
+                        children: [{
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'louder',
+                            }],
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' than words',
+                    }],
+                }],
+            },
+        }, {
+            name: 'key in italic',
+            input: 'Actions speak *louder* than words',
+            highlightKeys: [{key: 'louder'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Actions speak ',
+                    }, {
+                        type: 'emph',
+                        children: [{
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'louder',
+                            }],
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' than words',
+                    }],
+                }],
+            },
+        }, {
+            name: 'key in heading',
+            input: '### Actions speak louder than words',
+            highlightKeys: [{key: 'Actions'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'heading',
+                    level: 3,
+                    children: [
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: 'Actions',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: ' speak louder than words',
+                        }],
+                }],
+            },
+        }, {
+            name: 'Do not mention partial keys',
+            input: 'Adding more memory wont help @bob',
+            highlightKeys: [{key: 'bob'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Adding more memory wont help ',
+                    }, {
+                        type: 'at_mention',
+                        _mentionName: 'bob',
+                    }],
+                }],
+            },
+        }, {
+            name: 'CJK word highlight',
+            input: '我确实喜欢我的同事。',
+            highlightKeys: [{key: '喜欢'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [
+                        {
+                            type: 'text',
+                            literal: '我确实',
+                        },
+                        {
+                            type: 'highlight_without_notification',
+                            children: [{
+                                type: 'text',
+                                literal: '喜欢',
+                            }],
+                        },
+                        {
+                            type: 'text',
+                            literal: '我的同事。',
+                        },
+                    ],
+                }],
+            },
+        }];
+
+        for (const test of tests) {
+            it(test.name, () => {
+                const input = combineTextNodes(parser.parse(test.input));
+                const expected = makeAst(test.expected);
+                const actual = highlightWithoutNotification(input, test.highlightKeys);
+
+                assert.ok(verifyAst(actual));
+                assert.deepStrictEqual(stripUnusedFields(actual), stripUnusedFields(expected));
+            });
+        }
+    });
+
+    describe('getFirstMatch with highlightKeysToPatterns', () => {
+        const tests = [{
+            name: 'text with space before',
+            input: ' lol',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        },
+        {
+            name: 'text with space afterwards and before',
+            input: ' Lol ',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        },
+        {
+            name: 'text with a non word character before (?)',
+            input: '?Lol',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        },
+        {
+            name: 'text with a non word character before (.)',
+            input: '?Lol',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        },
+        {
+            name: 'text with a non word character before (_)',
+            input: '?Lol',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        },
+        {
+            name: 'text with non word character after (.)',
+            input: 'Lol.',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 0, length: 3},
+        },
+        {
+            name: 'text with non word character after (?)',
+            input: 'Lol?',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 0, length: 3},
+        },
+        {
+            name: 'text with non word character after (_)',
+            input: 'Lol_',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 0, length: 3},
+        },
+        {
+            name: 'text with non word character before and after',
+            input: '?Lol?',
+            patterns: highlightKeysToPatterns([{key: 'lol'}]),
+            expected: {index: 1, length: 3},
+        }];
+
+        for (const test of tests) {
+            it(test.name, () => {
+                const actual = getFirstMatch(test.input, test.patterns);
+
+                assert.deepStrictEqual(actual, test.expected);
             });
         }
     });

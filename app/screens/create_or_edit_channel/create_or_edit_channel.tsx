@@ -202,16 +202,16 @@ const CreateOrEditChannel = ({
             return;
         }
 
-        const patchChannel = {
-            id: channel.id,
-            type: channel.type,
-            display_name: isDirect(channel) ? channel.displayName : displayName,
-            purpose,
+        const patchChannel: ChannelPatch = {
             header,
-        } as Channel;
+            ...!isDirect(channel) && {
+                display_name: displayName,
+                purpose,
+            },
+        };
 
         setCanSave(false);
-        const patchedChannel = await handlePatchChannel(serverUrl, patchChannel);
+        const patchedChannel = await handlePatchChannel(serverUrl, channel.id, patchChannel);
         if (patchedChannel.error) {
             dispatch({
                 type: RequestActions.FAILURE,

@@ -13,13 +13,13 @@ import {useTheme} from '@context/theme';
 import {nonBreakingString} from '@utils/strings';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {displayUsername, getUserCustomStatus, isBot, isCustomStatusExpired, isGuest, isShared} from '@utils/user';
+import {displayUsername, getUserCustomStatus, isBot, isCustomStatusExpired, isDeactivated, isGuest, isShared} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
-type AtMentionItemProps = {
+type Props = {
     FooterComponent?: ReactNode;
-    user: UserProfile | UserModel;
+    user?: UserProfile | UserModel;
     containerStyle?: StyleProp<ViewStyle>;
     currentUserId: string;
     includeMargin?: boolean;
@@ -32,9 +32,11 @@ type AtMentionItemProps = {
     rightDecorator?: React.ReactNode;
     onUserPress?: (user: UserProfile | UserModel) => void;
     onUserLongPress?: (user: UserProfile | UserModel) => void;
+    onLayout?: () => void;
     disabled?: boolean;
     viewRef?: React.LegacyRef<View>;
     padding?: number;
+    hideGuestTags: boolean;
 }
 
 const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
@@ -101,13 +103,15 @@ const UserItem = ({
     locale,
     teammateNameDisplay,
     rightDecorator,
+    onLayout,
     onUserPress,
     onUserLongPress,
     disabled = false,
     viewRef,
     padding,
     includeMargin,
-}: AtMentionItemProps) => {
+    hideGuestTags,
+}: Props) => {
     const theme = useTheme();
     const style = getThemedStyles(theme);
     const intl = useIntl();
@@ -115,12 +119,11 @@ const UserItem = ({
     const bot = user ? isBot(user) : false;
     const guest = user ? isGuest(user.roles) : false;
     const shared = user ? isShared(user) : false;
+    const deactivated = user ? isDeactivated(user) : false;
 
     const isCurrentUser = currentUserId === user?.id;
     const customStatus = getUserCustomStatus(user);
     const customStatusExpired = isCustomStatusExpired(user);
-
-    const deleteAt = 'deleteAt' in user ? user.deleteAt : user.delete_at;
 
     let displayName = displayUsername(user, locale, teammateNameDisplay);
     const showTeammateDisplay = displayName !== user?.username;
@@ -142,11 +145,15 @@ const UserItem = ({
     }, [disabled, padding, includeMargin]);
 
     const onPress = useCallback(() => {
-        onUserPress?.(user);
+        if (user) {
+            onUserPress?.(user);
+        }
     }, [user, onUserPress]);
 
     const onLongPress = useCallback(() => {
-        onUserLongPress?.(user);
+        if (user) {
+            onUserLongPress?.(user);
+        }
     }, [user, onUserLongPress]);
 
     return (
@@ -154,6 +161,7 @@ const UserItem = ({
             onPress={onPress}
             onLongPress={onLongPress}
             disabled={!(onUserPress || onUserLongPress)}
+            onLayout={onLayout}
         >
             <View
                 ref={viewRef}
@@ -175,15 +183,15 @@ const UserItem = ({
                             testID={`${userItemTestId}.display_name`}
                         >
                             {nonBreakingString(displayName)}
-                            {Boolean(showTeammateDisplay) && (
+                            {Boolean(showTeammateDisplay) && Boolean(user?.username) && (
                                 <Text
                                     style={style.rowUsername}
                                     testID={`${userItemTestId}.username`}
                                 >
-                                    {nonBreakingString(` @${user!.username}`)}
+                                    {nonBreakingString(` @${user?.username}`)}
                                 </Text>
                             )}
-                            {Boolean(deleteAt) && (
+                            {deactivated && (
                                 <Text
                                     style={style.rowUsername}
                                     testID={`${userItemTestId}.deactivated`}
@@ -198,7 +206,7 @@ const UserItem = ({
                                 style={nonThemedStyles.tag}
                             />
                         )}
-                        {showBadges && guest && (
+                        {showBadges && guest && !hideGuestTags && (
                             <GuestTag
                                 testID={`${userItemTestId}.guest.tag`}
                                 style={nonThemedStyles.tag}

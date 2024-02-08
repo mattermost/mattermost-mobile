@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
@@ -29,7 +28,6 @@ const withHeaderProps = withObservables(
             observeWithColumns(['value']);
         const author = observePostAuthor(database, post);
         const enablePostUsernameOverride = observeConfigBooleanValue(database, 'EnablePostUsernameOverride');
-        const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
         const isMilitaryTime = preferences.pipe(map((prefs) => getDisplayNamePreferenceAsBool(prefs, 'use_military_time')));
         const teammateNameDisplay = observeTeammateNameDisplay(database);
         const commentCount = queryPostReplies(database, post.rootId || post.id).observeCount();
@@ -48,9 +46,9 @@ const withHeaderProps = withObservables(
             enablePostUsernameOverride,
             isCustomStatusEnabled,
             isMilitaryTime,
-            isTimezoneEnabled,
             rootPostAuthor,
             teammateNameDisplay,
+            hideGuestTags: observeConfigBooleanValue(database, 'HideGuestTags'),
         };
     });
 

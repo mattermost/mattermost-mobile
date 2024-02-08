@@ -7,26 +7,30 @@ import {
     type APIClientErrorEventHandler,
     getOrCreateAPIClient,
     RetryTypes,
+    type APIClientConfiguration,
 } from '@mattermost/react-native-network-client';
-import {DeviceEventEmitter} from 'react-native';
+import {Alert, DeviceEventEmitter} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import urlParse from 'url-parse';
 
 import LocalConfig from '@assets/config.json';
 import {Client} from '@client/rest';
 import * as ClientConstants from '@client/rest/constants';
 import ClientError from '@client/rest/error';
 import {CERTIFICATE_ERRORS} from '@constants/network';
+import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import ManagedApp from '@init/managed_app';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 import {getCSRFFromCookie} from '@utils/security';
 
 const CLIENT_CERTIFICATE_IMPORT_ERROR_CODES = [-103, -104, -105, -108];
 const CLIENT_CERTIFICATE_MISSING_ERROR_CODE = -200;
+const SERVER_CERTIFICATE_INVALID = -299;
 
 class NetworkManager {
     private clients: Record<string, Client> = {};
 
-    private DEFAULT_CONFIG = {
+    private DEFAULT_CONFIG: APIClientConfiguration = {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             ...LocalConfig.CustomRequestHeaders,
@@ -34,8 +38,6 @@ class NetworkManager {
         sessionConfiguration: {
             allowsCellularAccess: true,
             waitsForConnectivity: false,
-            timeoutIntervalForRequest: 30000,
-            timeoutIntervalForResource: 30000,
             httpMaximumConnectionsPerHost: 10,
             cancelRequestsOnUnauthorized: true,
         },
@@ -107,8 +109,8 @@ class NetworkManager {
             ...this.DEFAULT_CONFIG,
             sessionConfiguration: {
                 ...this.DEFAULT_CONFIG.sessionConfiguration,
-                timeoutIntervalForRequest: managedConfig?.timeout ? parseInt(managedConfig.timeout, 10) : this.DEFAULT_CONFIG.sessionConfiguration.timeoutIntervalForRequest,
-                timeoutIntervalForResource: managedConfig?.timeoutVPN ? parseInt(managedConfig.timeoutVPN, 10) : this.DEFAULT_CONFIG.sessionConfiguration.timeoutIntervalForResource,
+                timeoutIntervalForRequest: managedConfig?.timeout ? parseInt(managedConfig.timeout, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForRequest,
+                timeoutIntervalForResource: managedConfig?.timeoutVPN ? parseInt(managedConfig.timeoutVPN, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForResource,
                 waitsForConnectivity: managedConfig?.useVPN === 'true',
             },
             headers,
@@ -122,6 +124,17 @@ class NetworkManager {
             DeviceEventEmitter.emit(CERTIFICATE_ERRORS.CLIENT_CERTIFICATE_IMPORT_ERROR, event.serverUrl);
         } else if (CLIENT_CERTIFICATE_MISSING_ERROR_CODE === event.errorCode) {
             DeviceEventEmitter.emit(CERTIFICATE_ERRORS.CLIENT_CERTIFICATE_MISSING, event.serverUrl);
+        } else if (SERVER_CERTIFICATE_INVALID === event.errorCode) {
+            logDebug('Invalid SSL certificate:', event.errorDescription);
+            const parsed = urlParse(event.serverUrl);
+            Alert.alert(
+                getLocalizedMessage(DEFAULT_LOCALE, t('server.invalid.certificate.title'), 'Invalid SSL certificate'),
+                getLocalizedMessage(
+                    DEFAULT_LOCALE,
+                    t('server.invalid.certificate.description'),
+                    'The certificate for this server is invalid.\nYou might be connecting to a server that is pretending to be “{hostname}” which could put your confidential information at risk.',
+                ).replace('{hostname}', parsed.hostname),
+            );
         }
     };
 }

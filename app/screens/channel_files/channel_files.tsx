@@ -13,17 +13,21 @@ import Search from '@components/search';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {popTopScreen} from '@screens/navigation';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import Header from './header';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const TEST_ID = 'channel_files';
 
 type Props = {
     channel: ChannelModel;
+    componentId: AvailableScreens;
     canDownloadFiles: boolean;
     publicLinkEnabled: boolean;
 }
@@ -69,6 +73,7 @@ const emptyFileResults: FileInfo[] = [];
 
 function ChannelFiles({
     channel,
+    componentId,
     canDownloadFiles,
     publicLinkEnabled,
 }: Props) {
@@ -82,6 +87,12 @@ function ChannelFiles({
     const lastSearchRequest = useRef<number>();
 
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
+
+    const close = useCallback(() => {
+        popTopScreen(componentId);
+    }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     const handleSearch = useCallback(async (searchTerm: string, ftr: FileFilter) => {
         const t = Date.now();

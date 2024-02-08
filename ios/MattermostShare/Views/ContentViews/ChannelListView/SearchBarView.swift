@@ -16,8 +16,10 @@ struct SearchBarView: View {
     HStack {
       TextField("", text: $shareViewModel.search)
         .placeholder(when: shareViewModel.search.isEmpty) {
-          Text("Find channels...")
-            .foregroundColor(Color.theme.centerChannelColor.opacity(0.64))
+          Text(
+            NSLocalizedString("channel_list.find_channels", value: "Find channels...", comment: "")
+          )
+          .foregroundColor(Color.theme.centerChannelColor.opacity(0.64))
         }
         .padding(.leading, 40)
         .padding(.trailing, 30)
@@ -59,9 +61,11 @@ struct SearchBarView: View {
       
       if isEditing {
         Button(action: dismissKeyboard) {
-          Text("Cancel")
-            .foregroundColor(Color.theme.centerChannelColor)
-            .font(Font.custom("OpenSans", size: 14))
+          Text(
+            NSLocalizedString("mobile.post.cancel", value: "Cancel", comment: "")
+          )
+          .foregroundColor(Color.theme.centerChannelColor)
+          .font(Font.custom("OpenSans", size: 14))
         }
         .transition(.move(edge: .trailing))
         .animation(.linear(duration: 0.15))

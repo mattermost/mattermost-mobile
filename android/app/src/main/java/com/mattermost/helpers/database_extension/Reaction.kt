@@ -1,10 +1,10 @@
 package com.mattermost.helpers.database_extension
 
 import com.mattermost.helpers.RandomId
-import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.WMDatabase
 import org.json.JSONArray
 
-internal fun insertReactions(db: Database, reactions: JSONArray) {
+internal fun insertReactions(db: WMDatabase, reactions: JSONArray) {
     for (i in 0 until reactions.length()) {
         try {
             val reaction = reactions.getJSONObject(i)

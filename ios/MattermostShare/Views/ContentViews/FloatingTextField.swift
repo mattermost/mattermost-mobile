@@ -53,9 +53,7 @@ struct FloatingTextField: View {
   }
   
   func formatLength(_ value: Int64) -> String {
-    let formatter = NumberFormatter()
-    formatter.numberStyle = .decimal
-    formatter.maximumFractionDigits = 0
+    let formatter = NumberFormatter.noFractionDigitsDecimalFormatter
     let number = NSNumber(value: value)
     return formatter.string(from: number)!
   }
@@ -64,7 +62,12 @@ struct FloatingTextField: View {
     VStack (alignment: .leading) {
       if (error) {
         ErrorLabelView(
-          error: "Message must be less than \(formatLength(shareViewModel.server!.maxMessageLength)) characters"
+          error: NSLocalizedString("mobile.message_length.message",
+            value: "Your current message is too long. Current character count: {count}/{max}",
+            comment: ""
+          )
+          .replacingOccurrences(of: "{count}", with: formatLength(Int64(text.count)))
+          .replacingOccurrences(of: "{max}", with: formatLength(shareViewModel.server!.maxMessageLength))
         )
       }
       ZStack(alignment: .topLeading) {

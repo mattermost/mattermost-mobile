@@ -29,11 +29,11 @@ import MarkdownTable from './markdown_table';
 import MarkdownTableCell, {type MarkdownTableCellProps} from './markdown_table_cell';
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow, {type MarkdownTableRowProps} from './markdown_table_row';
-import {addListItemIndices, combineTextNodes, highlightMentions, highlightSearchPatterns, parseTaskLists, pullOutImages} from './transform';
+import {addListItemIndices, combineTextNodes, highlightMentions, highlightWithoutNotification, highlightSearchPatterns, parseTaskLists, pullOutImages} from './transform';
 
 import type {
     MarkdownAtMentionRenderer, MarkdownBaseRenderer, MarkdownBlockStyles, MarkdownChannelMentionRenderer,
-    MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownLatexRenderer, MarkdownTextStyles, SearchPattern, UserMentionKey,
+    MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownLatexRenderer, MarkdownTextStyles, SearchPattern, UserMentionKey, HighlightWithoutNotificationKey,
 } from '@typings/global/markdown';
 
 type MarkdownProps = {
@@ -55,6 +55,7 @@ type MarkdownProps = {
     disableTables?: boolean;
     enableLatex: boolean;
     enableInlineLatex: boolean;
+    highlightKeys?: HighlightWithoutNotificationKey[];
     imagesMetadata?: Record<string, PostImage | undefined>;
     isEdited?: boolean;
     isReplyPost?: boolean;
@@ -62,6 +63,7 @@ type MarkdownProps = {
     layoutHeight?: number;
     layoutWidth?: number;
     location: string;
+    maxNodes: number;
     mentionKeys?: UserMentionKey[];
     minimumHashtagLength?: number;
     onPostPress?: (event: GestureResponderEvent) => void;
@@ -69,7 +71,8 @@ type MarkdownProps = {
     searchPatterns?: SearchPattern[];
     textStyles?: MarkdownTextStyles;
     theme: Theme;
-    value?: string | number;
+    value?: string;
+    onLinkLongPress?: (url?: string) => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -93,6 +96,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         editedIndicatorText: {
             color: editedColor,
             opacity: editedOpacity,
+        },
+        maxNodesWarning: {
+            color: theme.errorTextColor,
         },
         atMentionOpacity: {
             opacity: 1,
@@ -126,10 +132,10 @@ const Markdown = ({
     autolinkedUrlSchemes, baseTextStyle, blockStyles, channelId, channelMentions,
     disableAtChannelMentionHighlight, disableAtMentions, disableBlockQuote, disableChannelLink,
     disableCodeBlock, disableGallery, disableHashtags, disableHeading, disableTables,
-    enableInlineLatex, enableLatex,
+    enableInlineLatex, enableLatex, maxNodes,
     imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutHeight, layoutWidth,
-    location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
-    textStyles = {}, theme, value = '', baseParagraphStyle,
+    location, mentionKeys, highlightKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
+    textStyles = {}, theme, value = '', baseParagraphStyle, onLinkLongPress,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -398,7 +404,10 @@ const Markdown = ({
 
     const renderLink = ({children, href}: {children: ReactElement; href: string}) => {
         return (
-            <MarkdownLink href={href}>
+            <MarkdownLink
+                href={href}
+                onLinkLongPress={onLinkLongPress}
+            >
                 {children}
             </MarkdownLink>
         );
@@ -520,6 +529,19 @@ const Markdown = ({
         );
     };
 
+    const renderMaxNodesWarning = () => {
+        const styles = [baseTextStyle, style.maxNodesWarning];
+
+        return (
+            <FormattedText
+                id='markdown.max_nodes.error'
+                defaultMessage='This message is too long to by shown fully on a mobile device. Please view it on desktop or contact an admin to increase this limit.'
+                style={styles}
+                testID='max_nodes_warning'
+            />
+        );
+    };
+
     const createRenderer = () => {
         const renderers: any = {
             text: renderText,
@@ -534,7 +556,7 @@ const Markdown = ({
             channelLink: renderChannelLink,
             emoji: renderEmoji,
             hashtag: renderHashtag,
-            latexinline: renderLatexInline,
+            latexInline: renderLatexInline,
 
             paragraph: renderParagraph,
             heading: renderHeading,
@@ -557,14 +579,17 @@ const Markdown = ({
 
             mention_highlight: Renderer.forwardChildren,
             search_highlight: Renderer.forwardChildren,
+            highlight_without_notification: Renderer.forwardChildren,
             checkbox: renderCheckbox,
 
             editedIndicator: renderEditedIndicator,
+            maxNodesWarning: renderMaxNodesWarning,
         };
 
         return new Renderer({
             renderers,
             renderParagraphsInLists: true,
+            maxNodes,
             getExtraPropsForNode,
             allowedTypes: Object.keys(renderers),
         });
@@ -581,10 +606,12 @@ const Markdown = ({
     if (mentionKeys) {
         ast = highlightMentions(ast, mentionKeys);
     }
+    if (highlightKeys) {
+        ast = highlightWithoutNotification(ast, highlightKeys);
+    }
     if (searchPatterns) {
         ast = highlightSearchPatterns(ast, searchPatterns);
     }
-
     if (isEdited) {
         const editIndicatorNode = new Node('edited_indicator');
         if (ast.lastChild && ['heading', 'paragraph'].includes(ast.lastChild.type)) {

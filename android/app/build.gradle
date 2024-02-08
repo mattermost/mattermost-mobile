@@ -13,8 +13,8 @@ apply plugin: 'kotlin-android'
     // root = file("../")
     //   The folder where the react-native NPM package is. Default is ../node_modules/react-native
     // reactNativeDir = file("../node_modules/react-native")
-    //   The folder where the react-native Codegen package is. Default is ../node_modules/react-native-codegen
-    // codegenDir = file("../node_modules/react-native-codegen")
+    //   The folder where the react-native Codegen package is. Default is ../node_modules/@react-native/codegen
+    // codegenDir = file("../node_modules/@react-native/codegen")
     //   The cli.js file which is the React Native CLI entrypoint. Default is ../node_modules/react-native/cli.js
     // cliFile = file("../node_modules/react-native/cli.js")
     /* Variants */
@@ -98,6 +98,7 @@ def reactNativeArchitectures() {
 
 android {
     ndkVersion rootProject.ext.ndkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdkVersion rootProject.ext.compileSdkVersion
     namespace "com.mattermost.rnbeta"
 
@@ -110,8 +111,8 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 471
-        versionName "2.4.0"
+        versionCode 506
+        versionName "2.13.0"
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
@@ -190,8 +191,6 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
         exclude group:'com.squareup.okhttp3', module:'okhttp'
@@ -207,6 +206,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
     implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
+    implementation 'androidx.window:window-core:1.1.0'
     implementation 'androidx.window:window-rxjava3:1.0.0'
     implementation 'androidx.window:window:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -216,7 +216,6 @@ dependencies {
 
     androidTestImplementation('com.wix:detox:+')
     implementation project(':reactnativenotifications')
-    implementation project(':watermelondb')
     implementation project(':watermelondb-jsi')
 }
 
@@ -224,25 +223,22 @@ configurations.all {
     resolutionStrategy {
         eachDependency { DependencyResolveDetails details ->
             if (details.requested.name == 'play-services-base') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '18.1.0'
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '18.2.0'
             }
             if (details.requested.name == 'play-services-tasks') {
                 details.useTarget group: details.requested.group, name: details.requested.name, version: '18.0.2'
             }
-            if (details.requested.name == 'play-services-stats') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '17.0.3'
-            }
             if (details.requested.name == 'play-services-basement') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '18.1.0'
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '18.2.0'
             }
             if (details.requested.name == 'okhttp') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.10.0'
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.12.0'
             }
             if (details.requested.name == 'okhttp-tls') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.10.0'
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.12.0'
             }
             if (details.requested.name == 'okhttp-urlconnection') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.10.0'
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.12.0'
             }
         }
     }

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {Platform, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -113,12 +113,12 @@ const SSO = ({
         resetToHome({extra, launchError: hasError, launchType, serverUrl});
     };
 
-    const dismiss = () => {
+    const dismiss = useCallback(() => {
         if (serverUrl) {
             NetworkManager.invalidateClient(serverUrl);
         }
         dismissModal({componentId});
-    };
+    }, [componentId, serverUrl]);
 
     const transform = useAnimatedStyle(() => {
         const duration = Platform.OS === 'android' ? 250 : 350;
@@ -146,14 +146,16 @@ const SSO = ({
     }, []);
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
-    useAndroidHardwareBackHandler(componentId, () => {
+
+    const onBackPressed = useCallback(() => {
         if (closeButtonId) {
             dismiss();
             return;
         }
 
         popTopScreen(componentId);
-    });
+    }, [closeButtonId, dismiss, componentId]);
+    useAndroidHardwareBackHandler(componentId, onBackPressed);
 
     const props = {
         doSSOLogin,

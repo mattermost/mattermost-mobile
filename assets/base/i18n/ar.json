@@ -1,4 +1,9 @@
 {
-    "about.enterpriseEditione1": "إصدار المؤسسة",
-    "about.date": "تاريخ الاصداره:"
+  "about.date": "تاريخ الاصدار:",
+  "about.enterpriseEditione1": "النسخة المؤسسية",
+  "about.teamEditiont0": "النسخة المحددة للفريق",
+  "about.teamEditiont1": "النسخة المؤسسية",
+  "account.logout": "تسجيل الخروج",
+  "account.logout_from": "تسجيل الخروج من {serverName}",
+  "account.settings": "الاعدادات"
 }

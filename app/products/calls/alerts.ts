@@ -3,14 +3,16 @@
 
 import {Alert} from 'react-native';
 
-import {hasMicrophonePermission, joinCall, unmuteMyself} from '@calls/actions';
-import {leaveCallPopCallScreen} from '@calls/actions/calls';
+import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
+import {dismissIncomingCall} from '@calls/actions/calls';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
+import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
 import {
     getCallsConfig,
     getCallsState,
     getChannelsWithCalls,
     getCurrentCall,
+    removeIncomingCall,
     setMicPermissionsGranted,
 } from '@calls/state';
 import {errorAlert} from '@calls/utils';
@@ -18,6 +20,7 @@ import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getCurrentUser} from '@queries/servers/user';
 import {isDMorGM} from '@utils/channel';
+import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 import {isSystemAdmin} from '@utils/user';
 
@@ -73,6 +76,7 @@ export const leaveAndJoinWithAlert = async (
     joinServerUrl: string,
     joinChannelId: string,
     title?: string,
+    rootId?: string,
 ) => {
     let leaveChannelName = '';
     let joinChannelName = '';
@@ -133,13 +137,13 @@ export const leaveAndJoinWithAlert = async (
                         id: 'mobile.leave_and_join_confirmation',
                         defaultMessage: 'Leave & Join',
                     }),
-                    onPress: () => doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title),
+                    onPress: () => doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId),
                     style: 'cancel',
                 },
             ],
         );
     } else {
-        doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title);
+        doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId);
     }
 };
 
@@ -150,6 +154,7 @@ const doJoinCall = async (
     newCall: boolean,
     intl: IntlShape,
     title?: string,
+    rootId?: string,
 ) => {
     const {formatMessage} = intl;
 
@@ -198,7 +203,14 @@ const doJoinCall = async (
     const hasPermission = await hasMicrophonePermission();
     setMicPermissionsGranted(hasPermission);
 
-    const res = await joinCall(serverUrl, channelId, user.id, hasPermission, title);
+    if (!newCall && joinChannelIsDMorGM) {
+        // we're joining an existing call, so dismiss any notifications (for all clients, too)
+        const callId = getCallsState(serverUrl).calls[channelId].id;
+        dismissIncomingCall(serverUrl, channelId);
+        removeIncomingCall(serverUrl, callId, channelId);
+    }
+
+    const res = await joinCall(serverUrl, channelId, user.id, hasPermission, intl, title, rootId);
     if (res.error) {
         const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);
@@ -233,7 +245,7 @@ export const needsRecordingAlert = () => {
     recordingAlertLock = false;
 };
 
-export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
+export const recordingAlert = (isHost: boolean, transcriptionsEnabled: boolean, intl: IntlShape) => {
     if (recordingAlertLock) {
         return;
     }
@@ -241,22 +253,46 @@ export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
 
     const {formatMessage} = intl;
 
-    const participantTitle = formatMessage({
-        id: 'mobile.calls_participant_rec_title',
-        defaultMessage: 'Recording is in progress',
-    });
     const hostTitle = formatMessage({
         id: 'mobile.calls_host_rec_title',
         defaultMessage: 'You are recording',
+    });
+    const hostMessage = formatMessage({
+        id: 'mobile.calls_host_rec',
+        defaultMessage: 'Consider letting everyone know that this meeting is being recorded.',
+    });
+
+    const participantTitle = formatMessage({
+        id: 'mobile.calls_participant_rec_title',
+        defaultMessage: 'Recording is in progress',
     });
     const participantMessage = formatMessage({
         id: 'mobile.calls_participant_rec',
         defaultMessage: 'The host has started recording this meeting. By staying in the meeting you give consent to being recorded.',
     });
-    const hostMessage = formatMessage({
-        id: 'mobile.calls_host_rec',
-        defaultMessage: 'You are recording this meeting. Consider letting everyone know that this meeting is being recorded.',
+
+    const hostTranscriptionTitle = formatMessage({
+        id: 'mobile.calls_host_transcription_title',
+        defaultMessage: 'Recording and transcription has started',
     });
+    const hostTranscriptionMessage = formatMessage({
+        id: 'mobile.calls_host_transcription',
+        defaultMessage: 'Consider letting everyone know that this meeting is being recorded and transcribed.',
+    });
+
+    const participantTranscriptionTitle = formatMessage({
+        id: 'mobile.calls_participant_transcription_title',
+        defaultMessage: 'Recording and transcription is in progress',
+    });
+    const participantTranscriptionMessage = formatMessage({
+        id: 'mobile.calls_participant_transcription',
+        defaultMessage: 'The host has started recording and transcription for this meeting. By staying in the meeting, you give consent to being recorded and transcribed.',
+    });
+
+    const hTitle = transcriptionsEnabled ? hostTranscriptionTitle : hostTitle;
+    const hMessage = transcriptionsEnabled ? hostTranscriptionMessage : hostMessage;
+    const pTitle = transcriptionsEnabled ? participantTranscriptionTitle : participantTitle;
+    const pMessage = transcriptionsEnabled ? participantTranscriptionMessage : participantMessage;
 
     const participantButtons = [
         {
@@ -265,7 +301,7 @@ export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
                 defaultMessage: 'Leave',
             }),
             onPress: async () => {
-                await leaveCallPopCallScreen();
+                await leaveCall();
             },
             style: 'destructive',
         },
@@ -285,8 +321,8 @@ export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
     }];
 
     Alert.alert(
-        isHost ? hostTitle : participantTitle,
-        isHost ? hostMessage : participantMessage,
+        isHost ? hTitle : pTitle,
+        isHost ? hMessage : pMessage,
         isHost ? hostButton : participantButtons,
     );
 };
@@ -349,4 +385,36 @@ export const recordingErrorAlert = (intl: IntlShape) => {
             }),
         }],
     );
+};
+
+export const showErrorAlertOnClose = (err: Error, intl: IntlShape) => {
+    switch (err) {
+        case userLeftChannelErr:
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.calls_user_left_channel_error_title',
+                    defaultMessage: 'You left the channel',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.calls_user_left_channel_error_message',
+                    defaultMessage: 'You have left the channel, and have been disconnected from the call.',
+                }),
+            );
+            break;
+        case userRemovedFromChannelErr:
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.calls_user_removed_from_channel_error_title',
+                    defaultMessage: 'You were removed from channel',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.calls_user_removed_from_channel_error_message',
+                    defaultMessage: 'You have been removed from the channel, and have been disconnected from the call.',
+                }),
+            );
+            break;
+        default:
+            // Fallback with generic error
+            errorAlert(getFullErrorMessage(err, intl), intl);
+    }
 };

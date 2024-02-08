@@ -14,7 +14,7 @@ public struct Post: Codable {
     let message: String
     let messageSource: String
     let type: String
-    let props: String
+    let props: [String: Any]
     let pendingPostId: String
     let metadata: String
     var prevPostId: String
@@ -74,9 +74,9 @@ public struct Post: Codable {
         }
         
         if let propsData = try? values.decode([String:Any].self, forKey: .props) {
-            props = Database.default.json(from: propsData) ?? "{}"
+            props = propsData
         } else {
-            props = "{}"
+            props = [:]
         }
     }
     

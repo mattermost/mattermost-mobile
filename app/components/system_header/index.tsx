@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {View} from 'react-native';
 import {map} from 'rxjs/operators';
@@ -11,7 +10,6 @@ import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -23,7 +21,6 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     createAt: number | string | Date;
     isMilitaryTime: boolean;
-    isTimezoneEnabled: boolean;
     theme: Theme;
     user?: UserModel;
 }
@@ -53,9 +50,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SystemHeader = ({isMilitaryTime, isTimezoneEnabled, createAt, theme, user}: Props) => {
+const SystemHeader = ({isMilitaryTime, createAt, theme, user}: Props) => {
     const styles = getStyleSheet(theme);
-    const userTimezone = isTimezoneEnabled ? getUserTimezone(user) : '';
+    const userTimezone = getUserTimezone(user);
 
     return (
         <View style={styles.header}>
@@ -81,7 +78,6 @@ const SystemHeader = ({isMilitaryTime, isTimezoneEnabled, createAt, theme, user}
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const preferences = queryDisplayNamePreferences(database, 'use_military_time').
         observeWithColumns(['value']);
-    const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
     const isMilitaryTime = preferences.pipe(
         map((prefs) => getDisplayNamePreferenceAsBool(prefs, 'use_military_time')),
     );
@@ -89,7 +85,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         isMilitaryTime,
-        isTimezoneEnabled,
         user,
     };
 });

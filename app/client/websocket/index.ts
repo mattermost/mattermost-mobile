@@ -136,6 +136,14 @@ export default class WebSocketClient {
 
             // Check again if the client is the same, to avoid race conditions
             if (this.conn === client) {
+                // In case turning on/off Wi-fi on Samsung devices
+                // the websocket will call onClose then onError then initialize again with readyState CLOSED, we need to open it again
+                if (this.conn.readyState === WebSocketReadyState.CLOSED) {
+                    if (this.connectionTimeout) {
+                        clearTimeout(this.connectionTimeout);
+                    }
+                    this.conn.open();
+                }
                 return;
             }
             this.conn = client;

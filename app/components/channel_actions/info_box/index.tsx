@@ -45,7 +45,7 @@ const InfoBox = ({channelId, containerStyle, showAsLabel = false, testID}: Props
     if (showAsLabel) {
         return (
             <SlideUpPanelItem
-                icon='information-outline'
+                leftIcon='information-outline'
                 onPress={onViewInfo}
                 testID={testID}
                 text={intl.formatMessage({id: 'channel_header.info', defaultMessage: 'View info'})}

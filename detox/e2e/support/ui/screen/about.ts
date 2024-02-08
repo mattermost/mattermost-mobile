@@ -22,6 +22,7 @@ class AboutScreen {
         databaseValue: 'about.database.value',
         databaseSchemaVersionTitle: 'about.database_schema_version.title',
         databaseSchemaVersionValue: 'about.database_schema_version.value',
+        copInfoButton: 'about.copy_info',
         licensee: 'about.licensee',
         learnMoreText: 'about.learn_more.text',
         learnMoreUrl: 'about.learn_more.url',
@@ -51,6 +52,7 @@ class AboutScreen {
     serverVersionValue = element(by.id(this.testID.serverVersionValue));
     databaseTitle = element(by.id(this.testID.databaseTitle));
     databaseValue = element(by.id(this.testID.databaseValue));
+    copyInfoButton = element(by.id(this.testID.copInfoButton));
     databaseSchemaVersionTitle = element(by.id(this.testID.databaseSchemaVersionTitle));
     databaseSchemaVersionValue = element(by.id(this.testID.databaseSchemaVersionValue));
     licensee = element(by.id(this.testID.licensee));

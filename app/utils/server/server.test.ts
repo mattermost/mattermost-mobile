@@ -3,7 +3,7 @@
 
 import {Alert} from 'react-native';
 
-import {getIntlShape} from '@test/intl-test-helper';
+import {getIntlShape} from '@utils/general';
 
 import {unsupportedServer} from '.';
 

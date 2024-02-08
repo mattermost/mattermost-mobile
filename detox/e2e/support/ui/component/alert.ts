@@ -19,6 +19,7 @@ class Alert {
         return isAndroid() ? element(by.text(title)) : element(by.label(title)).atIndex(0);
     };
     deletePostTitle = isAndroid() ? element(by.text('Delete Post')) : element(by.label('Delete Post')).atIndex(0);
+    invalidSslCertTitle = isAndroid() ? element(by.text('Invalid SSL certificate')) : element(by.label('Invalid SSL certificate')).atIndex(0);
     leaveChannelTitle = isAndroid() ? element(by.text('Leave channel')) : element(by.label('Leave channel')).atIndex(0);
     logoutTitle = (serverDisplayName: string) => {
         const title = `Are you sure you want to log out of ${serverDisplayName}?`;
@@ -27,6 +28,7 @@ class Alert {
     };
     markAllAsReadTitle = isAndroid() ? element(by.text('Are you sure you want to mark all threads as read?')) : element(by.label('Are you sure you want to mark all threads as read?')).atIndex(0);
     messageLengthTitle = isAndroid() ? element(by.text('Message Length')) : element(by.label('Message Length')).atIndex(0);
+    notificationsCannotBeReceivedTitle = isAndroid() ? element(by.text('Notifications cannot be received from this server')) : element(by.label('Notifications cannot be received from this server')).atIndex(0);
     removeServerTitle = (serverDisplayName: string) => {
         const title = `Are you sure you want to remove ${serverDisplayName}?`;
 
@@ -47,6 +49,7 @@ class Alert {
     noButton = isAndroid() ? element(by.text('NO')) : element(by.label('No')).atIndex(0);
     noButton2 = isAndroid() ? element(by.text('NO')) : element(by.label('No')).atIndex(1);
     okButton = isAndroid() ? element(by.text('OK')) : element(by.label('OK')).atIndex(1);
+    okayButton = isAndroid() ? element(by.text('Okay')) : element(by.label('Okay')).atIndex(1);
     removeButton = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(0);
     removeButton1 = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(1);
     removeButton2 = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(2);

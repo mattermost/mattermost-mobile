@@ -79,7 +79,8 @@ export default function JoinTeam({
         page.current = resp.page;
         hasMore.current = resp.hasMore;
         if (resp.teams.length && mounted.current) {
-            setOtherTeams((cur) => [...cur, ...resp.teams]);
+            const teams = resp.teams.filter((t) => t.delete_at === 0);
+            setOtherTeams((cur) => [...cur, ...teams]);
         }
         setLoading(false);
     }, [joinedIds, serverUrl]);

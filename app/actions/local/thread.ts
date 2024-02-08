@@ -43,7 +43,7 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
             await operator.batchRecords(models, 'switchToGlobalThreads');
         }
 
-        const isTabletDevice = await isTablet();
+        const isTabletDevice = isTablet();
         if (isTabletDevice) {
             DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
         } else {
@@ -75,7 +75,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
         }
 
         const currentTeamId = await getCurrentTeamId(database);
-        const isTabletDevice = await isTablet();
+        const isTabletDevice = isTablet();
         const teamId = channel.teamId || currentTeamId;
         const currentThreadId = EphemeralStore.getCurrentThreadId();
 
@@ -94,14 +94,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             }
         }
 
-        if (currentTeamId === teamId) {
-            const models = await prepareCommonSystemValues(operator, {
-                currentChannelId: channel.id,
-            });
-            if (models.length) {
-                await operator.batchRecords(models, 'switchToThread');
-            }
-        } else {
+        if (currentTeamId !== teamId) {
             const modelPromises: Array<Promise<Model[]>> = [];
             modelPromises.push(addTeamToTeamHistory(operator, teamId, true));
             const commonValues: PrepareCommonSystemValuesArgs = {

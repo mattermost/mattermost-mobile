@@ -41,8 +41,8 @@ struct ContentView: View {
       VStack (spacing: 0) {
         if shareViewModel.allServers.count > 1 {
           OptionView(
-            navigationTitle: "Select server",
-            label: "Server",
+            navigationTitle: NSLocalizedString("share_extension.servers_screen.title", value: "Select server", comment: ""),
+            label: NSLocalizedString("share_extension.server_label", value: "Server", comment: ""),
             value: shareViewModel.server!.displayName
           ) {
             ServerListView()
@@ -51,8 +51,8 @@ struct ContentView: View {
         }
         if hasChannels {
           OptionView(
-            navigationTitle: "Select channel",
-            label: "Channel",
+            navigationTitle: NSLocalizedString("share_extension.channels_screen.title", value: "Select channel", comment: ""),
+            label: NSLocalizedString("share_extension.channel_label", value: "Channel", comment: ""),
             value: "\(shareViewModel.channel!.displayName) \(shareViewModel.channel!.formattedTeamName)"
           ) {
             ChannelListView()
@@ -66,10 +66,16 @@ struct ContentView: View {
         .padding(.bottom, 10)
       
       if hasChannels {
-        FloatingTextField(placeholderText: "Enter a message (optional)", text: $message)
+        FloatingTextField(
+          placeholderText: NSLocalizedString("share_extension.message", value: "Enter a message (optional)", comment: ""),
+          text: $message
+        )
       } else {
         ErrorLabelView(
-          error: "You are not a member of a team on the selected server. Select another server or open Mattermost to join a team."
+          error: NSLocalizedString("share_extension.channel_error",
+            value: "You are not a member of a team on the selected server. Select another server or open Mattermost to join a team.",
+            comment: ""
+          )
         )
       }
       

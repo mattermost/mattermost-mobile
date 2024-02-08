@@ -7,3 +7,4 @@ export * from './calls_config';
 export * from './current_call';
 export * from './channels_with_calls';
 export * from './global_calls_state';
+export * from './incoming_calls';

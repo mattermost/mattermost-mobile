@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import compose from 'lodash/fp/compose';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
@@ -32,7 +31,6 @@ const enhance = withObservables(['fileChannelIds'], ({database, fileChannelIds}:
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
         ),
-        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
         fileChannels,
         canDownloadFiles: observeCanDownloadFiles(database),
         publicLinkEnabled: observeConfigBooleanValue(database, 'EnablePublicLink'),

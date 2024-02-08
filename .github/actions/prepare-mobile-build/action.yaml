@@ -1,0 +1,20 @@
+name: prepare-mobile-build
+description: Action to prepare environment for mobile build
+
+runs:
+  using: composite
+  steps:
+    - uses: ruby/setup-ruby@9669f3ee51dc3f4eda8447ab696b3ab19a90d14b # v1.144.0
+      with:
+        ruby-version: "2.7.7"
+
+    - name: ci/setup-fastlane-dependencies
+      shell: bash
+      run: |
+        echo "::group::setup-fastlane-dependencies"
+        bundle install
+        echo "::endgroup::"
+      working-directory: ./fastlane
+
+    - name: ci/prepare-node-deps
+      uses: ./.github/actions/prepare-node-deps

@@ -42,11 +42,6 @@ export default function DropdownSlideup({
     const style = getStyleFromTheme(theme);
     const isTablet = useIsTablet();
 
-    const commonProps = {
-        rightIcon: true,
-        iconStyles: style.checkIcon,
-    };
-
     const handlePublicPress = useCallback(() => {
         dismissBottomSheet();
         onPress(PUBLIC);
@@ -73,16 +68,16 @@ export default function DropdownSlideup({
                 onPress={handlePublicPress}
                 testID='browse_channels.dropdown_slideup_item.public_channels'
                 text={intl.formatMessage({id: 'browse_channels.publicChannels', defaultMessage: 'Public Channels'})}
-                icon={selected === PUBLIC ? 'check' : undefined}
-                {...commonProps}
+                rightIcon={selected === PUBLIC ? 'check' : undefined}
+                rightIconStyles={style.checkIcon}
             />
             {canShowArchivedChannels && (
                 <SlideUpPanelItem
                     onPress={handleArchivedPress}
                     testID='browse_channels.dropdown_slideup_item.archived_channels'
                     text={intl.formatMessage({id: 'browse_channels.archivedChannels', defaultMessage: 'Archived Channels'})}
-                    icon={selected === ARCHIVED ? 'check' : undefined}
-                    {...commonProps}
+                    rightIcon={selected === ARCHIVED ? 'check' : undefined}
+                    rightIconStyles={style.checkIcon}
                 />
             )}
             {sharedChannelsEnabled && (
@@ -90,8 +85,8 @@ export default function DropdownSlideup({
                     onPress={handleSharedPress}
                     testID='browse_channels.dropdown_slideup_item.shared_channels'
                     text={intl.formatMessage({id: 'browse_channels.sharedChannels', defaultMessage: 'Shared Channels'})}
-                    icon={selected === SHARED ? 'check' : undefined}
-                    {...commonProps}
+                    rightIcon={selected === SHARED ? 'check' : undefined}
+                    rightIconStyles={style.checkIcon}
                 />
             )}
         </BottomSheetContent>

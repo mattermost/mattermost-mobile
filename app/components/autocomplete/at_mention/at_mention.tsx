@@ -42,7 +42,7 @@ const getMatchTermForAtMention = (() => {
     return (value: string, isSearch: boolean) => {
         if (value !== lastValue || isSearch !== lastIsSearch) {
             const regex = isSearch ? AT_MENTION_SEARCH_REGEX : AT_MENTION_REGEX;
-            let term = value;
+            let term = value.toLowerCase();
             if (term.startsWith('from: @') || term.startsWith('from:@')) {
                 term = term.replace('@', '');
             }

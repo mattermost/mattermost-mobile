@@ -66,13 +66,13 @@ const CameraType = ({onPress}: Props) => {
             />
             }
             <SlideUpPanelItem
-                icon='camera-outline'
+                leftIcon='camera-outline'
                 onPress={onPhoto}
                 testID='camera_type.photo'
                 text={intl.formatMessage({id: 'camera_type.photo.option', defaultMessage: 'Capture Photo'})}
             />
             <SlideUpPanelItem
-                icon='video-outline'
+                leftIcon='video-outline'
                 onPress={onVideo}
                 testID='camera_type.video'
                 text={intl.formatMessage({id: 'camera_type.video.option', defaultMessage: 'Record Video'})}

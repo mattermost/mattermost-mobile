@@ -12,10 +12,9 @@ import {
     type NativeSyntheticEvent,
     type NativeScrollEvent,
     Platform,
-    useWindowDimensions,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import ErrorText from '@components/error_text';
@@ -26,7 +25,7 @@ import OptionItem from '@components/option_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
+import {useKeyboardHeight, useKeyboardOverlap} from '@hooks/device';
 import {useInputPropagation} from '@hooks/input';
 import {t} from '@i18n';
 import {
@@ -108,7 +107,6 @@ export default function ChannelInfoForm({
 }: Props) {
     const intl = useIntl();
     const {formatMessage} = intl;
-    const insets = useSafeAreaInsets();
 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -122,10 +120,8 @@ export default function ChannelInfoForm({
     const updateScrollTimeout = useRef<NodeJS.Timeout>();
 
     const mainView = useRef<View>(null);
-    const modalPosition = useModalPosition(mainView);
-
-    const dimensions = useWindowDimensions();
-    const isTablet = useIsTablet();
+    const [wrapperHeight, setWrapperHeight] = useState(0);
+    const keyboardOverlap = useKeyboardOverlap(mainView, wrapperHeight);
 
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
@@ -133,7 +129,6 @@ export default function ChannelInfoForm({
     const [keyboardVisible, setKeyBoardVisible] = useState(false);
     const [scrollPosition, setScrollPosition] = useState(0);
 
-    const [wrapperHeight, setWrapperHeight] = useState(0);
     const [errorHeight, setErrorHeight] = useState(0);
     const [displayNameFieldHeight, setDisplayNameFieldHeight] = useState(0);
     const [makePrivateHeight, setMakePrivateHeight] = useState(0);
@@ -228,29 +223,17 @@ export default function ChannelInfoForm({
         setWrapperHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const bottomSpace = (dimensions.height - wrapperHeight - modalPosition);
     const otherElementsSize = LIST_PADDING + errorHeight +
         (showSelector ? makePrivateHeight + MAKE_PRIVATE_MARGIN_BOTTOM : 0) +
         (displayHeaderOnly ? 0 : purposeFieldHeight + FIELD_MARGIN_BOTTOM + displayNameFieldHeight + FIELD_MARGIN_BOTTOM);
 
-    const keyboardOverlap = Platform.select({
-        ios: isTablet ?
-            Math.max(0, keyboardHeight - bottomSpace) :
-            keyboardHeight || insets.bottom,
-        default: 0});
     const workingSpace = wrapperHeight - keyboardOverlap;
     const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
     const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
-    const insetsAdjust = keyboardHeight || insets.bottom;
-    const keyboardAdjust = Platform.select({
-        ios: isTablet ?
-            keyboardOverlap :
-            insetsAdjust,
-        default: 0,
-    });
+
     const autocompletePosition = spaceOnBottom > spaceOnTop ?
         (otherElementsSize + headerFieldHeight) - scrollPosition :
-        (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardAdjust) - otherElementsSize;
+        (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardOverlap) - otherElementsSize;
     const autocompleteAvailableSpace = spaceOnBottom > spaceOnTop ? spaceOnBottom : spaceOnTop;
     const growDown = spaceOnBottom > spaceOnTop;
 

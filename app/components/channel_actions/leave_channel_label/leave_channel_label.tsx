@@ -174,7 +174,7 @@ const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type
     return (
         <SlideUpPanelItem
             destructive={true}
-            icon={icon}
+            leftIcon={icon}
             onPress={onLeave}
             text={leaveText}
             testID={testID}

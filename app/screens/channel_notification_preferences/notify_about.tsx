@@ -40,7 +40,7 @@ const NOTIFY_OPTIONS: Record<string, NotifPrefOptions> = {
         value: NotificationLevel.ALL,
     },
     [NotificationLevel.MENTION]: {
-        defaultMessage: 'Mentions, direct messages only',
+        defaultMessage: 'Mentions only',
         id: t('channel_notification_preferences.notification.mention'),
         testID: 'channel_notification_preferences.notification.mention',
         value: NotificationLevel.MENTION,
@@ -53,13 +53,24 @@ const NOTIFY_OPTIONS: Record<string, NotifPrefOptions> = {
     },
 };
 
-const NotifyAbout = ({defaultLevel, isMuted, notifyLevel, notifyTitleTop, onPress}: Props) => {
+const NotifyAbout = ({
+    defaultLevel,
+    isMuted,
+    notifyLevel,
+    notifyTitleTop,
+    onPress,
+}: Props) => {
     const {formatMessage} = useIntl();
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         const {y} = e.nativeEvent.layout;
 
         notifyTitleTop.value = y > 0 ? y + 10 : BLOCK_TITLE_HEIGHT;
     }, []);
+
+    let notifyLevelToUse = notifyLevel;
+    if (notifyLevel === NotificationLevel.DEFAULT) {
+        notifyLevelToUse = defaultLevel;
+    }
 
     return (
         <SettingBlock
@@ -77,7 +88,7 @@ const NotifyAbout = ({defaultLevel, isMuted, notifyLevel, notifyTitleTop, onPres
                         <SettingOption
                             action={onPress}
                             label={label}
-                            selected={notifyLevel === key}
+                            selected={notifyLevelToUse === key}
                             testID={testID}
                             type='select'
                             value={value}

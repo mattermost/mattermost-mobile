@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -55,7 +54,6 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     );
 
     const enableConfirmNotificationsToChannel = observeConfigBooleanValue(database, 'EnableConfirmNotificationsToChannel');
-    const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
     const maxMessageLength = observeConfigIntValue(database, 'MaxPostSize', MAX_MESSAGE_LENGTH_FALLBACK);
     const persistentNotificationInterval = observeConfigIntValue(database, 'PersistentNotificationInterval');
     const persistentNotificationMaxRecipients = observeConfigIntValue(database, 'PersistentNotificationMaxRecipients');
@@ -82,7 +80,6 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         channelType,
         currentUserId,
         enableConfirmNotificationsToChannel,
-        isTimezoneEnabled,
         maxMessageLength,
         membersCount,
         userIsOutOfOffice,

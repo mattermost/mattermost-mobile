@@ -22,21 +22,40 @@ struct ErrorSharingView: View {
                 NotificationCenter.default.post(name: Notification.Name("submit"), object: nil, userInfo: nil)
               }
           } else {
-              Text("An error ocurred")
-                  .font(Font.custom("Metropolis-SemiBold", size: 20))
-                  .foregroundColor(Color.theme.centerChannelColor)
-              Text("There was an error when attempting to share the content to Mattermost.")
-                  .font(Font.custom("OpenSans", size: 16))
+              Text(
+                NSLocalizedString("share_extension.error_screen.label", value: "An error ocurred", comment: "")
+              )
+              .font(Font.custom("Metropolis-SemiBold", size: 20))
+              .foregroundColor(Color.theme.centerChannelColor)
+              Text(
+                NSLocalizedString("share_extension.error_screen.description",
+                  value: "There was an error when attempting to share the content to {applicationName}.",
+                  comment: ""
+                )
+                .replacingOccurrences(
+                  of: "{applicationName}",
+                  with: Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? "Mattermost Beta"
+                )
+              )
+              .font(Font.custom("OpenSans", size: 16))
                   .foregroundColor(Color.theme.centerChannelColor.opacity(0.72))
-              Text("Reason: \(error)")
-                  .font(Font.custom("OpenSans", size: 12))
-                  .foregroundColor(Color.theme.centerChannelColor.opacity(0.60))
+              Text(
+                NSLocalizedString("share_extension.error_screen.reason",
+                  value: "Reason: {reason}",
+                  comment: ""
+                )
+                .replacingOccurrences(of: "{reason}", with: error)
+              )
+              .font(Font.custom("OpenSans", size: 12))
+              .foregroundColor(Color.theme.centerChannelColor.opacity(0.60))
               Button {
                   retrying = true
               } label: {
-                  Text("Try again")
-                      .font(Font.custom("OpenSans", size: 16))
-                      .foregroundColor(Color.theme.buttonColor)
+                  Text(
+                    NSLocalizedString("mobile.post.failed_retry", value: "Try again", comment: "")
+                  )
+                  .font(Font.custom("OpenSans", size: 16))
+                  .foregroundColor(Color.theme.buttonColor)
               }
               .buttonStyle(.borderedProminent)
               .tint(Color.theme.buttonBg)

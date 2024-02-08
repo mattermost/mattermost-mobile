@@ -4,7 +4,7 @@
 import React from 'react';
 import {DeviceEventEmitter, Keyboard, NativeModules, Platform} from 'react-native';
 import {Navigation, type Options, type OptionsLayout} from 'react-native-navigation';
-import {measure} from 'react-native-reanimated';
+import {measure, type AnimatedRef} from 'react-native-reanimated';
 
 import {Events, Screens} from '@constants';
 import {allOrientations, showOverlay} from '@screens/navigation';
@@ -28,7 +28,7 @@ export const clampVelocity = (velocity: number, minVelocity: number, maxVelocity
     return Math.max(Math.min(velocity, -minVelocity), -maxVelocity);
 };
 
-export const fileToGalleryItem = (file: FileInfo, authorId?: string, lastPictureUpdate = 0): GalleryItemType => {
+export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?: Record<string, any>, lastPictureUpdate = 0): GalleryItemType => {
     let type: GalleryItemType['type'] = 'file';
     if (isVideo(file)) {
         type = 'video';
@@ -50,6 +50,7 @@ export const fileToGalleryItem = (file: FileInfo, authorId?: string, lastPicture
         type,
         uri: file.localPath || file.uri || '',
         width: file.width,
+        postProps: postProps || file.postProps,
     };
 };
 
@@ -100,7 +101,7 @@ export const getShouldRender = (index: number, activeIndex: number, diffValue = 
     return true;
 };
 
-export function measureItem(ref: React.RefObject<any>, sharedValues: GalleryManagerSharedValues) {
+export function measureItem(ref: AnimatedRef<any>, sharedValues: GalleryManagerSharedValues) {
     'worklet';
 
     try {

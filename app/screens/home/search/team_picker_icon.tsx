@@ -19,7 +19,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import BottomSheetTeamList from './bottom_sheet_team_list';
 
-import type {BottomSheetProps} from '@gorhom/bottom-sheet';
 import type TeamModel from '@typings/database/models/servers/team';
 
 const MENU_DOWN_ICON_SIZE = 24;
@@ -28,7 +27,7 @@ const NO_TEAMS_HEIGHT = 392;
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         teamContainer: {
-            paddingLeft: 12,
+            paddingLeft: 8,
             flexDirection: 'row',
             alignItems: 'center',
         },
@@ -76,7 +75,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
             );
         };
 
-        const snapPoints: BottomSheetProps['snapPoints'] = [
+        const snapPoints: Array<string | number> = [
             1,
             teams.length ? (bottomSheetSnapPoint(Math.min(3, teams.length), ITEM_HEIGHT, bottom) + TITLE_HEIGHT) : NO_TEAMS_HEIGHT,
         ];

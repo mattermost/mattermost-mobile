@@ -19,17 +19,16 @@ import EphemeralStore from '@store/ephemeral_store';
 import Intro from './intro';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AnimatedStyle} from 'react-native-reanimated';
 
 type Props = {
     channelId: string;
-    contentContainerStyle?: StyleProp<ViewStyle>;
+    contentContainerStyle?: StyleProp<AnimatedStyle<ViewStyle>>;
     isCRTEnabled: boolean;
     lastViewedAt: number;
     nativeID: string;
     posts: PostModel[];
     shouldShowJoinLeaveMessages: boolean;
-    currentCallBarVisible: boolean;
-    joinCallBannerVisible: boolean;
 }
 
 const edges: Edge[] = ['bottom'];
@@ -41,7 +40,6 @@ const styles = StyleSheet.create({
 const ChannelPostList = ({
     channelId, contentContainerStyle, isCRTEnabled,
     lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
-    currentCallBarVisible, joinCallBannerVisible,
 }: Props) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
@@ -109,8 +107,6 @@ const ChannelPostList = ({
             shouldShowJoinLeaveMessages={shouldShowJoinLeaveMessages}
             showMoreMessages={true}
             testID='channel.post_list'
-            currentCallBarVisible={currentCallBarVisible}
-            joinCallBannerVisible={joinCallBannerVisible}
         />
     );
 

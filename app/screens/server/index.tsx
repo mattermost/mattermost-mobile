@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {Alert, BackHandler, Platform, useWindowDimensions, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {ReduceMotion, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {doPing} from '@actions/remote/general';
@@ -17,6 +17,7 @@ import AppVersion from '@components/app_version';
 import {Screens, Launch} from '@constants';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
+import {getServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
 import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
@@ -244,7 +245,8 @@ const Server = ({
         }
 
         const server = await getServerByDisplayName(displayName);
-        if (server && server.lastActiveAt > 0) {
+        const credentials = await getServerCredentials(serverUrl);
+        if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
             setDisplayNameError(formatMessage({
                 id: 'mobile.server_name.exists',
@@ -289,6 +291,10 @@ const Server = ({
         };
 
         const serverUrl = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp);
+        if (!serverUrl) {
+            cancelPing();
+            return;
+        }
         const result = await doPing(serverUrl, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined);
 
         if (canceled) {
@@ -326,9 +332,10 @@ const Server = ({
         }
 
         const server = await getServerByIdentifier(data.config.DiagnosticId);
+        const credentials = await getServerCredentials(serverUrl);
         setConnecting(false);
 
-        if (server && server.lastActiveAt > 0) {
+        if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
             setUrlError(formatMessage({
                 id: 'mobile.server_identifier.exists',
@@ -343,7 +350,7 @@ const Server = ({
     const transform = useAnimatedStyle(() => {
         const duration = Platform.OS === 'android' ? 250 : 350;
         return {
-            transform: [{translateX: withTiming(translateX.value, {duration})}],
+            transform: [{translateX: withTiming(translateX.value, {duration, reduceMotion: ReduceMotion.Never})}],
         };
     }, []);
 

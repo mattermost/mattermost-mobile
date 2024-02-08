@@ -10,7 +10,7 @@ import {t} from '@i18n';
 type HeaderTagProps = {
     isAutomation?: boolean;
     isAutoResponder?: boolean;
-    isGuest?: boolean;
+    showGuestTag?: boolean;
 }
 
 const style = StyleSheet.create({
@@ -22,7 +22,7 @@ const style = StyleSheet.create({
 });
 
 const HeaderTag = ({
-    isAutomation, isAutoResponder, isGuest,
+    isAutomation, isAutoResponder, showGuestTag,
 }: HeaderTagProps) => {
     if (isAutomation) {
         return (
@@ -31,7 +31,7 @@ const HeaderTag = ({
                 testID='post_header.bot.tag'
             />
         );
-    } else if (isGuest) {
+    } else if (showGuestTag) {
         return (
             <GuestTag
                 style={style.tag}

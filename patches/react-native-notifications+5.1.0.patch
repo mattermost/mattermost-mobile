@@ -1,0 +1,558 @@
+diff --git a/node_modules/react-native-notifications/lib/android/app/build.gradle b/node_modules/react-native-notifications/lib/android/app/build.gradle
+index 30bb01c..bba788d 100644
+--- a/node_modules/react-native-notifications/lib/android/app/build.gradle
++++ b/node_modules/react-native-notifications/lib/android/app/build.gradle
+@@ -96,9 +96,9 @@ android {
+ 
+     testOptions {
+         unitTests.all { t ->
+-            reports {
+-                html.required.set true
+-            }
++            // reports {
++            //     html.required.set true
++            // }
+             testLogging {
+                 events "PASSED", "SKIPPED", "FAILED", "standardOut", "standardError"
+             }
+diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/AndroidManifest.xml b/node_modules/react-native-notifications/lib/android/app/src/main/AndroidManifest.xml
+index 24cd226..4bfacba 100644
+--- a/node_modules/react-native-notifications/lib/android/app/src/main/AndroidManifest.xml
++++ b/node_modules/react-native-notifications/lib/android/app/src/main/AndroidManifest.xml
+@@ -3,6 +3,7 @@
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     package="com.wix.reactnativenotifications">
+ 
++    <uses-permission android:name="android.permission.WAKE_LOCK" />
+     <application>
+ 
+         <!--
+@@ -23,6 +24,9 @@
+             android:name=".fcm.FcmInstanceIdRefreshHandlerService"
+             android:exported="false"
+             android:permission="android.permission.BIND_JOB_SERVICE" />
++        <receiver android:name=".core.notification.PushNotificationPublisher"
++            android:enabled="true"
++            android:exported="false" />
+     </application>
+ 
+ </manifest>
+diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
+index 90969b2..3420045 100644
+--- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
++++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
+@@ -63,7 +63,7 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
+     @Override
+     public void onNewIntent(Intent intent) {
+         if (NotificationIntentAdapter.canHandleIntent(intent)) {
+-            Bundle notificationData = intent.getExtras();
++            Bundle notificationData = NotificationIntentAdapter.extractPendingNotificationDataFromIntent(intent);
+             final IPushNotification notification = PushNotification.get(getReactApplicationContext().getApplicationContext(), notificationData);
+             if (notification != null) {
+                 notification.onOpened();
+@@ -102,7 +102,12 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
+         if(BuildConfig.DEBUG) Log.d(LOGTAG, "Native method invocation: postLocalNotification");
+         final Bundle notificationProps = Arguments.toBundle(notificationPropsMap);
+         final IPushNotification pushNotification = PushNotification.get(getReactApplicationContext().getApplicationContext(), notificationProps);
+-        pushNotification.onPostRequest(notificationId);
++        double date = notificationProps.getDouble("fireDate", 0);
++        if (date == 0) {
++            pushNotification.onPostRequest(notificationId);
++        } else {
++            pushNotification.onScheduleRequest(notificationId);
++        }
+     }
+ 
+     @ReactMethod
+diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java
+index 5b7f15f..9381794 100644
+--- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java
++++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java
+@@ -15,6 +15,7 @@ import com.wix.reactnativenotifications.core.AppLifecycleFacade;
+ import com.wix.reactnativenotifications.core.AppLifecycleFacadeHolder;
+ import com.wix.reactnativenotifications.core.InitialNotificationHolder;
+ import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
++import com.wix.reactnativenotifications.core.ReactAppLifecycleFacade;
+ import com.wix.reactnativenotifications.core.notification.IPushNotification;
+ import com.wix.reactnativenotifications.core.notification.PushNotification;
+ import com.wix.reactnativenotifications.core.notificationdrawer.IPushNotificationsDrawer;
+@@ -66,7 +67,11 @@ public class RNNotificationsPackage implements ReactPackage, AppLifecycleFacade.
+ 
+     @Override
+     public void onActivityStarted(Activity activity) {
+-        if (InitialNotificationHolder.getInstance().get() == null) {
++        boolean isInitialized = false;
++        if (AppLifecycleFacadeHolder.get() instanceof ReactAppLifecycleFacade) {
++            isInitialized = AppLifecycleFacadeHolder.get().isReactInitialized();
++        }
++        if (!isInitialized && InitialNotificationHolder.getInstance().get() == null) {
+             callOnOpenedIfNeed(activity);
+         }
+     }
+diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/NotificationIntentAdapter.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/NotificationIntentAdapter.java
+index 1e7e871..36b96b6 100644
+--- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/NotificationIntentAdapter.java
++++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/NotificationIntentAdapter.java
+@@ -14,17 +14,11 @@ public class NotificationIntentAdapter {
+ 
+     @SuppressLint("UnspecifiedImmutableFlag")
+     public static PendingIntent createPendingNotificationIntent(Context appContext, PushNotificationProps notification) {
+-        if (canHandleTrampolineActivity(appContext)) {
+-            Intent intent = new Intent(appContext, ProxyService.class);
+-            intent.putExtra(PUSH_NOTIFICATION_EXTRA_NAME, notification.asBundle());
+-            return PendingIntent.getService(appContext, (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_ONE_SHOT);
+-        } else {
+-            Intent mainActivityIntent = appContext.getPackageManager().getLaunchIntentForPackage(appContext.getPackageName());
+-            mainActivityIntent.putExtra(PUSH_NOTIFICATION_EXTRA_NAME, notification.asBundle());
+-            TaskStackBuilder taskStackBuilder = TaskStackBuilder.create(appContext);
+-            taskStackBuilder.addNextIntentWithParentStack(mainActivityIntent);
+-            return taskStackBuilder.getPendingIntent((int) System.currentTimeMillis(), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+-        }
++        Intent mainActivityIntent = appContext.getPackageManager().getLaunchIntentForPackage(appContext.getPackageName());
++        mainActivityIntent.putExtra(PUSH_NOTIFICATION_EXTRA_NAME, notification.asBundle());
++        TaskStackBuilder taskStackBuilder = TaskStackBuilder.create(appContext);
++        taskStackBuilder.addNextIntentWithParentStack(mainActivityIntent);
++        return taskStackBuilder.getPendingIntent((int) System.currentTimeMillis(), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+     }
+ 
+     public static boolean canHandleTrampolineActivity(Context appContext) {
+diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java
+new file mode 100644
+index 0000000..3b8818e
+--- /dev/null
++++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java
+@@ -0,0 +1,91 @@
++package com.wix.reactnativenotifications.core.helpers;
++
++import android.app.AlarmManager;
++import android.os.Build;
++import android.os.Bundle;
++import android.content.Context;
++import android.content.Intent;
++import android.app.PendingIntent;
++import android.content.SharedPreferences;
++import android.util.Log;
++
++import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
++import com.wix.reactnativenotifications.core.notification.PushNotificationPublisher;
++
++import static com.wix.reactnativenotifications.Defs.LOGTAG;
++
++public class ScheduleNotificationHelper {
++    public static ScheduleNotificationHelper sInstance;
++    public static final String PREFERENCES_KEY = "rn_push_notification";
++    static final String NOTIFICATION_ID = "notificationId";
++
++    private final SharedPreferences scheduledNotificationsPersistence;
++    protected final Context mContext;
++
++    private ScheduleNotificationHelper(Context context) {
++        this.mContext = context;
++        this.scheduledNotificationsPersistence = context.getSharedPreferences(ScheduleNotificationHelper.PREFERENCES_KEY, Context.MODE_PRIVATE);
++    }
++
++    public static ScheduleNotificationHelper getInstance(Context context) {
++        if (sInstance == null) {
++            sInstance = new ScheduleNotificationHelper(context);
++        }
++        return sInstance;
++    }
++
++    public PendingIntent createPendingNotificationIntent(Integer notificationId, Bundle bundle) {
++        Intent notificationIntent = new Intent(mContext, PushNotificationPublisher.class);
++        notificationIntent.putExtra(ScheduleNotificationHelper.NOTIFICATION_ID, notificationId);
++        notificationIntent.putExtras(bundle);
++        return PendingIntent.getBroadcast(mContext, notificationId, notificationIntent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
++    }
++
++    public void schedulePendingNotificationIntent(PendingIntent intent, long fireDate) {
++        AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
++
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
++            alarmManager.set(AlarmManager.RTC_WAKEUP, fireDate, intent);
++        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
++            alarmManager.setExact(AlarmManager.RTC_WAKEUP, fireDate, intent);
++        } else {
++            alarmManager.set(AlarmManager.RTC_WAKEUP, fireDate, intent);
++        }
++    }
++
++    public void cancelScheduledNotificationIntent(PendingIntent intent) {
++        AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
++        alarmManager.cancel(intent);
++    }
++
++    public boolean savePreferences(String notificationId, PushNotificationProps notificationProps) {
++        SharedPreferences.Editor editor = scheduledNotificationsPersistence.edit();
++        editor.putString(notificationId, notificationProps.toString());
++        commit(editor);
++
++        return scheduledNotificationsPersistence.contains(notificationId);
++    }
++
++    public void removePreference(String notificationId) {
++        if (scheduledNotificationsPersistence.contains(notificationId)) {
++            // remove it from local storage
++            SharedPreferences.Editor editor = scheduledNotificationsPersistence.edit();
++            editor.remove(notificationId);
++            commit(editor);
++        } else {
++            Log.w(LOGTAG, "Unable to find notification " + notificationId);
++        }
++    }
++
++    public java.util.Set<String> getPreferencesKeys() {
++        return scheduledNotificationsPersistence.getAll().keySet();
++    }
++
++    private static void commit(SharedPreferences.Editor editor) {
++        if (Build.VERSION.SDK_INT < 9) {
++            editor.commit();
++        } else {
++            editor.apply();
++        }
++    }
++}
+\ No newline at end of file
+diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/IPushNotification.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/IPushNotification.java
+index 0d70024..b9e6c88 100644
+--- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/IPushNotification.java
++++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/IPushNotification.java
+@@ -26,5 +26,21 @@ public interface IPushNotification {
+      */
+     int onPostRequest(Integer notificationId);
+ 
++    /**
++     * Handle a request to schedule this notification.
++     * 
++     * @param notificationId The specific ID to associated with the notification.
++     */
++    void onScheduleRequest(Integer notificationId);
++
++    /**
++     * Handle a request to post this scheduled notification.
++     *
++     * @param notificationId The specific ID to associated with the notification.
++     * @return The ID assigned to the notification.
++     */
++    int onPostScheduledRequest(Integer notificationId);
++
++
+     PushNotificationProps asProps();
+ }
+diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
+index ac04274..350b070 100644
+--- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
++++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
+@@ -10,6 +10,9 @@ import android.os.Build;
+ import android.os.Bundle;
+ import android.util.Log;
+ 
++import androidx.core.app.NotificationCompat;
++import androidx.core.app.NotificationManagerCompat;
++
+ import com.facebook.react.bridge.ReactContext;
+ import com.wix.reactnativenotifications.core.AppLaunchHelper;
+ import com.wix.reactnativenotifications.core.AppLifecycleFacade;
+@@ -18,6 +21,7 @@ import com.wix.reactnativenotifications.core.AppLifecycleFacadeHolder;
+ import com.wix.reactnativenotifications.core.InitialNotificationHolder;
+ import com.wix.reactnativenotifications.core.JsIOHelper;
+ import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
++import com.wix.reactnativenotifications.core.helpers.ScheduleNotificationHelper;
+ 
+ import static com.wix.reactnativenotifications.Defs.NOTIFICATION_OPENED_EVENT_NAME;
+ import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
+@@ -30,7 +34,7 @@ public class PushNotification implements IPushNotification {
+     final protected AppLifecycleFacade mAppLifecycleFacade;
+     final protected AppLaunchHelper mAppLaunchHelper;
+     final protected JsIOHelper mJsIOHelper;
+-    final protected PushNotificationProps mNotificationProps;
++    protected PushNotificationProps mNotificationProps;
+     final protected AppVisibilityListener mAppVisibilityListener = new AppVisibilityListener() {
+         @Override
+         public void onAppVisible() {
+@@ -63,7 +67,7 @@ public class PushNotification implements IPushNotification {
+     }
+ 
+     @Override
+-    public void onReceived() throws InvalidNotificationException {
++    public void onReceived() {
+         if (!mAppLifecycleFacade.isAppVisible()) {
+             postNotification(null);
+             notifyReceivedBackgroundToJS();
+@@ -87,6 +91,42 @@ public class PushNotification implements IPushNotification {
+         return mNotificationProps.copy();
+     }
+ 
++    @Override
++    public void onScheduleRequest(Integer notificationId) {
++        Bundle bundle = mNotificationProps.asBundle();
++
++        if (bundle.getString("body") == null) {
++            Log.e(LOGTAG, "No message specified for the scheduled notification");
++            return;
++        }
++
++        double date = bundle.getDouble("fireDate", 0);
++        if (date == 0) {
++            Log.e(LOGTAG, "No date specified for the scheduled notification");
++            return;
++        }
++
++        ScheduleNotificationHelper helper = ScheduleNotificationHelper.getInstance(mContext);
++        String notificationIdStr = Integer.toString(notificationId);
++        boolean isSaved = helper.savePreferences(notificationIdStr, mNotificationProps);
++        if (!isSaved) {
++            Log.e(LOGTAG, "Failed to save preference for notificationId " + notificationIdStr);
++        }
++
++        PendingIntent pendingIntent = helper.createPendingNotificationIntent(notificationId, bundle);
++        long fireDate = (long) date;
++        helper.schedulePendingNotificationIntent(pendingIntent, fireDate);
++    }
++
++    @Override
++    public int onPostScheduledRequest(Integer notificationId) {
++        ScheduleNotificationHelper helper = ScheduleNotificationHelper.getInstance(mContext);
++        helper.removePreference(String.valueOf(notificationId));
++
++        return postNotification(notificationId);
++    }
++
++
+     protected int postNotification(Integer notificationId) {
+         if (mNotificationProps.isDataOnlyPushNotification()) {
+             return -1;
+@@ -145,18 +185,18 @@ public class PushNotification implements IPushNotification {
+         return getNotificationBuilder(intent).build();
+     }
+ 
+-    protected Notification.Builder getNotificationBuilder(PendingIntent intent) {
+-        final Notification.Builder notification = new Notification.Builder(mContext)
++    protected NotificationCompat.Builder getNotificationBuilder(PendingIntent intent) {
++        final NotificationCompat.Builder notification = new NotificationCompat.Builder(mContext, DEFAULT_CHANNEL_ID)
+                 .setContentTitle(mNotificationProps.getTitle())
+                 .setContentText(mNotificationProps.getBody())
+                 .setContentIntent(intent)
+-                .setDefaults(Notification.DEFAULT_ALL)
++                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                 .setAutoCancel(true);
+ 
+         setUpIcon(notification);
+ 
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+-            final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
++            final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
+             String channelId = mNotificationProps.getChannelId();
+             NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
+             notification.setChannelId(channel != null ? channelId : DEFAULT_CHANNEL_ID);
+@@ -165,7 +205,7 @@ public class PushNotification implements IPushNotification {
+         return notification;
+     }
+ 
+-    private void setUpIcon(Notification.Builder notification) {
++    private void setUpIcon(NotificationCompat.Builder notification) {
+         int iconResId = getAppResourceId("notification_icon", "drawable");
+         if (iconResId != 0) {
+             notification.setSmallIcon(iconResId);
+@@ -176,7 +216,7 @@ public class PushNotification implements IPushNotification {
+         setUpIconColor(notification);
+     }
+ 
+-    private void setUpIconColor(Notification.Builder notification) {
++    private void setUpIconColor(NotificationCompat.Builder notification) {
+         int colorResID = getAppResourceId("colorAccent", "color");
+         if (colorResID != 0) {
+             int color = mContext.getResources().getColor(colorResID);
+@@ -191,7 +231,7 @@ public class PushNotification implements IPushNotification {
+     }
+ 
+     protected void postNotification(int id, Notification notification) {
+-        final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
++        final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
+         notificationManager.notify(id, notification);
+     }
+ 
+diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotificationPublisher.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotificationPublisher.java
+new file mode 100644
+index 0000000..5b64593
+--- /dev/null
++++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotificationPublisher.java
+@@ -0,0 +1,27 @@
++package com.wix.reactnativenotifications.core.notification;
++
++import android.app.Application;
++import android.content.BroadcastReceiver;
++import android.content.Context;
++import android.content.Intent;
++import android.util.Log;
++
++import static com.wix.reactnativenotifications.Defs.LOGTAG;
++
++public class PushNotificationPublisher extends BroadcastReceiver {
++    final static String NOTIFICATION_ID = "notificationId";
++
++    @Override
++    public void onReceive(Context context, Intent intent) {
++        Log.d(LOGTAG, "Received scheduled notification intent");
++        int notificationId = intent.getIntExtra(NOTIFICATION_ID, 0);
++        long currentTime = System.currentTimeMillis();
++
++        Application applicationContext = (Application) context.getApplicationContext();
++        final IPushNotification pushNotification = PushNotification.get(applicationContext, intent.getExtras());
++
++        Log.i(LOGTAG, "PushNotificationPublisher: Prepare To Publish: " + notificationId + ", Now Time: " + currentTime);
++
++        pushNotification.onPostScheduledRequest(notificationId);
++    }
++}
+\ No newline at end of file
+diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
+index a14089f..5238c75 100644
+--- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
++++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
+@@ -2,9 +2,15 @@ package com.wix.reactnativenotifications.core.notificationdrawer;
+ 
+ import android.app.Activity;
+ import android.app.NotificationManager;
++import android.app.PendingIntent;
+ import android.content.Context;
++import android.os.Bundle;
++import android.util.Log;
+ 
+ import com.wix.reactnativenotifications.core.AppLaunchHelper;
++import com.wix.reactnativenotifications.core.helpers.ScheduleNotificationHelper;
++
++import static com.wix.reactnativenotifications.Defs.LOGTAG;
+ 
+ public class PushNotificationsDrawer implements IPushNotificationsDrawer {
+ 
+@@ -49,17 +55,50 @@ public class PushNotificationsDrawer implements IPushNotificationsDrawer {
+     public void onNotificationClearRequest(int id) {
+         final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+         notificationManager.cancel(id);
++        cancelScheduledNotification(String.valueOf(id));
+     }
+ 
+     @Override
+     public void onNotificationClearRequest(String tag, int id) {
+         final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+         notificationManager.cancel(tag, id);
++        cancelScheduledNotification(String.valueOf(id));
+     }
+ 
+     @Override
+     public void onAllNotificationsClearRequest() {
+         final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+         notificationManager.cancelAll();
++        cancelAllScheduledNotifications();
++    }
++
++    protected void cancelAllScheduledNotifications() {
++        Log.i(LOGTAG, "Cancelling all scheduled notifications");
++        ScheduleNotificationHelper helper = ScheduleNotificationHelper.getInstance(mContext);
++
++        for (String notificationId : helper.getPreferencesKeys()) {
++            cancelScheduledNotification(notificationId);
++        }
++    }
++
++    protected void cancelScheduledNotification(String notificationId) {
++        Log.i(LOGTAG, "Cancelling scheduled notification: " + notificationId);
++
++        ScheduleNotificationHelper helper = ScheduleNotificationHelper.getInstance(mContext);
++        if (!helper.getPreferencesKeys().contains(notificationId)) {
++            return;
++        }
++
++        // Remove it from the alarm manger schedule
++        Bundle bundle = new Bundle();
++        bundle.putString("id", notificationId);
++        PendingIntent pendingIntent = helper.createPendingNotificationIntent(Integer.parseInt(notificationId), bundle);
++        helper.cancelScheduledNotificationIntent(pendingIntent);
++
++        helper.removePreference(notificationId);
++
++        // Remove it from the notification center
++        final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
++        notificationManager.cancel(Integer.parseInt(notificationId));
+     }
+ }
+diff --git a/node_modules/react-native-notifications/lib/dist/DTO/Notification.d.ts b/node_modules/react-native-notifications/lib/dist/DTO/Notification.d.ts
+index 7b2b3b1..3a2f872 100644
+--- a/node_modules/react-native-notifications/lib/dist/DTO/Notification.d.ts
++++ b/node_modules/react-native-notifications/lib/dist/DTO/Notification.d.ts
+@@ -1,4 +1,5 @@
+ export declare class Notification {
++    fireDate?: number | string;
+     identifier: string;
+     payload: any;
+     constructor(payload: object);
+diff --git a/node_modules/react-native-notifications/lib/dist/DTO/Notification.js b/node_modules/react-native-notifications/lib/dist/DTO/Notification.js
+index 54874f4..a6c55ce 100644
+--- a/node_modules/react-native-notifications/lib/dist/DTO/Notification.js
++++ b/node_modules/react-native-notifications/lib/dist/DTO/Notification.js
+@@ -7,6 +7,7 @@ class Notification {
+     constructor(payload) {
+         this.payload = payload;
+         this.identifier = this.payload.identifier;
++        this.fireDate = undefined;
+     }
+     get title() {
+         return this.payload.title;
+diff --git a/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m b/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
+index afd5c73..6036dda 100644
+--- a/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
++++ b/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
+@@ -87,7 +87,7 @@
+         for (UNNotification *notification in notifications) {
+             [formattedNotifications addObject:[RCTConvert UNNotificationPayload:notification]];
+         }
+-        callback(@[formattedNotifications]);
++        callback(formattedNotifications);
+     }];
+ }
+ 
+diff --git a/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m b/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
+index 5c8dd0b..1c7e575 100644
+--- a/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
++++ b/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
+@@ -6,11 +6,13 @@
+ 
+ @implementation RNNotificationEventHandler {
+     RNNotificationsStore* _store;
++    NSDate* wakeTime;
+ }
+ 
+ - (instancetype)initWithStore:(RNNotificationsStore *)store {
+     self = [super init];
+     _store = store;
++    wakeTime = [[NSDate alloc] init];
+     return self;
+ }
+ 
+@@ -31,6 +33,15 @@
+ - (void)didReceiveNotificationResponse:(UNNotificationResponse *)response completionHandler:(void (^)(void))completionHandler {
+     [_store setActionCompletionHandler:completionHandler withCompletionKey:response.notification.request.identifier];
+     [RNEventEmitter sendEvent:RNNotificationOpened body:[RNNotificationParser parseNotificationResponse:response]];
++    dispatch_async(dispatch_get_main_queue(), ^{
++        NSDate* now = [[NSDate alloc] init];
++        double interval = [now timeIntervalSinceDate:self->wakeTime];
++        BOOL background = [[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground;
++        NSDictionary* userInfo = response.notification.request.content.userInfo;
++        if (interval < 1.0 && !background) {
++            [self->_store setInitialNotification:userInfo];
++        }
++    });
+ }
+ 
+ - (void)didReceiveBackgroundNotification:(NSDictionary *)userInfo withCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+@@ -38,7 +49,7 @@
+         NSString *uuid = [[NSUUID UUID] UUIDString];
+         __block BOOL completionHandlerCalled = NO;
+         dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+-        [_store setBackgroundActionCompletionHandler:^(UIBackgroundFetchResult result) {
++        [self->_store setBackgroundActionCompletionHandler:^(UIBackgroundFetchResult result) {
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 completionHandler(result);
+             });

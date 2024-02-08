@@ -95,7 +95,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
                 return;
             }
 
-            if (ctx.dragging || autoScroll.value || snapping.value) {
+            if (ctx?.dragging || autoScroll.value || snapping.value) {
                 scrollValue.value = e.contentOffset.y;
             } else {
                 // here we want to ensure that the scroll position
@@ -105,25 +105,29 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
             }
         },
         onEndDrag: (e, ctx) => {
-            if (ctx.start !== undefined) {
+            if (ctx?.start !== undefined) {
                 const dir = e.contentOffset.y < ctx.start ? 'down' : 'up';
                 const offset = Math.abs(e.contentOffset.y);
                 snapIfNeeded(dir, offset);
             }
         },
         onMomentumBegin: (e, ctx) => {
-            ctx.momentum = e.contentOffset.y < (ctx.start || 0) ? 'down' : 'up';
+            if (ctx) {
+                ctx.momentum = e.contentOffset.y < (ctx.start || 0) ? 'down' : 'up';
+            }
         },
         onMomentumEnd: (e, ctx) => {
-            ctx.start = undefined;
-            ctx.dragging = false;
-            if (ctx.momentum === 'down') {
-                const offset = Math.abs(e.contentOffset.y);
+            if (ctx) {
+                ctx.start = undefined;
+                ctx.dragging = false;
+                if (ctx.momentum === 'down') {
+                    const offset = Math.abs(e.contentOffset.y);
 
-                if (onSnap && offset < largeHeight) {
-                    runOnJS(onSnap)(0);
+                    if (onSnap && offset < largeHeight) {
+                        runOnJS(onSnap)(0);
+                    }
+                    ctx.momentum = undefined;
                 }
-                ctx.momentum = undefined;
             }
         },
     }, [insets, defaultHeight, largeHeight, animatedRef]);

@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {injectIntl, type IntlShape} from 'react-intl';
 import {BackHandler, type NativeEventSubscription, SafeAreaView, View} from 'react-native';
@@ -68,7 +67,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 class ClearAfterModal extends NavigationComponent<Props, State> {
     private backListener: NativeEventSubscription | undefined;
     constructor(props: Props) {
-        super(props);
+        super({...props, componentName: 'ClearAfterModal'});
 
         const options: Options = {
             topBar: {

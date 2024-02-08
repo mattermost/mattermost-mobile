@@ -6,8 +6,8 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -18,6 +18,7 @@ import useDidUpdate from '@hooks/did_update';
 import {useKeyboardTrackingPaused} from '@hooks/keyboard_tracking';
 import {popTopScreen, setButtons} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 
 import ThreadPostList from './thread_post_list';
 
@@ -28,9 +29,9 @@ import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view'
 type ThreadProps = {
     componentId: AvailableScreens;
     isCRTEnabled: boolean;
-    isCallInCurrentChannel: boolean;
+    showJoinCallBanner: boolean;
     isInACall: boolean;
-    isInCurrentChannelCall: boolean;
+    showIncomingCalls: boolean;
     rootId: string;
     rootPost?: PostModel;
 };
@@ -47,16 +48,16 @@ const Thread = ({
     isCRTEnabled,
     rootId,
     rootPost,
-    isCallInCurrentChannel,
+    showJoinCallBanner,
     isInACall,
-    isInCurrentChannelCall,
+    showIncomingCalls,
 }: ThreadProps) => {
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
 
-    const close = () => {
+    const close = useCallback(() => {
         popTopScreen(componentId);
-    };
+    }, [componentId]);
 
     useKeyboardTrackingPaused(postDraftRef, rootId, trackKeyboardForScreens);
     useAndroidHardwareBackHandler(componentId, close);
@@ -80,7 +81,17 @@ const Thread = ({
     }, [componentId, rootId, isCRTEnabled]);
 
     useEffect(() => {
+        // when opened from notification, first screen in stack is HOME
+        // if last screen was global thread or thread opened from notification, store the last viewed thread id
+        const isFromGlobalOrNotification = NavigationStore.getScreensInStack()[1] === Screens.GLOBAL_THREADS || NavigationStore.getScreensInStack()[1] === Screens.HOME;
+        if (isCRTEnabled && isFromGlobalOrNotification) {
+            storeLastViewedThreadIdAndServer(rootId);
+        }
+
         return () => {
+            if (isCRTEnabled) {
+                removeLastViewedThreadIdAndServer();
+            }
             if (rootId === EphemeralStore.getCurrentThreadId()) {
                 EphemeralStore.setCurrentThreadId('');
             }
@@ -98,8 +109,7 @@ const Thread = ({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
-    const renderCallsComponents = showJoinCallBanner || isInACall;
+    const showFloatingCallContainer = showJoinCallBanner || isInACall || showIncomingCalls;
 
     return (
         <FreezeScreen>
@@ -111,7 +121,6 @@ const Thread = ({
                 onLayout={onLayout}
             >
                 <RoundedHeaderContext/>
-                {showJoinCallBanner && <RoundedHeaderCalls threadScreen={true}/>}
                 {Boolean(rootPost) &&
                 <>
                     <View style={styles.flex}>
@@ -132,10 +141,11 @@ const Thread = ({
                     />
                 </>
                 }
-                {renderCallsComponents &&
+                {showFloatingCallContainer &&
                     <FloatingCallContainer
                         channelId={rootPost!.channelId}
                         showJoinCallBanner={showJoinCallBanner}
+                        showIncomingCalls={showIncomingCalls}
                         isInACall={isInACall}
                         threadScreen={true}
                     />
