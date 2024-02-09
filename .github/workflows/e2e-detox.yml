@@ -38,6 +38,9 @@ jobs:
       - name: Build iOS app
         run: npm run build:ios-sim
 
+      - name: List devices
+        run: applesimutils --list
+
       - name: Start Server
         run: npm run start &
 

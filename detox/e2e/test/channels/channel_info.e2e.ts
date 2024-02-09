@@ -12,7 +12,6 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
-import {Alert} from '@support/ui/component';
 import {
     ChannelScreen,
     ChannelListScreen,
@@ -21,7 +20,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Channel Info', () => {
@@ -35,11 +34,6 @@ describe('Channels - Channel Info', () => {
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        if (isIos()) {
-            // # Tap alert okay button
-            await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
-            await Alert.okayButton.tap();
-        }
         await LoginScreen.login(user);
     });
 
