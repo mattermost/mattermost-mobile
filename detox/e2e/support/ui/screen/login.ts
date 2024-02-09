@@ -60,8 +60,8 @@ class LoginScreen {
 
     login = async (user: any = {}) => {
         await this.toBeVisible();
-        await this.usernameInput.replaceText(user.username);
-        await this.passwordInput.replaceText(user.password);
+        await this.usernameInput.replaceText(user.newUser.email);
+        await this.passwordInput.replaceText(user.newUser.password);
         await this.signinButton.tap();
         await wait(timeouts.ONE_SEC);
     };

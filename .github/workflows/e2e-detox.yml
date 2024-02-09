@@ -41,5 +41,8 @@ jobs:
       - name: Start Server
         run: npm run start &
 
+      - name: Install Detox Dependencies
+        run: cd detox && npm install
+
       - name: Run Detox Tests
         run: npm run e2e:ios
