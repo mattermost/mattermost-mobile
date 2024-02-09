@@ -16,8 +16,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: ci/prepare-ios-build
-        uses: ./.github/actions/prepare-ios-build
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7.6
 
       - name: Install Dependencies
         run: |
@@ -37,9 +44,6 @@ jobs:
   
       - name: Build iOS app
         run: npm run build:ios-sim
-
-      - name: List devices
-        run: applesimutils --list
 
       - name: Start Server
         run: npm run start &
