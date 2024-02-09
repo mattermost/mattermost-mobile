@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: macos-latest
+    runs-on: macos-latest-xlarge
 
     steps:
       - name: Checkout Repository
