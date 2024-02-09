@@ -1,0 +1,48 @@
+name: Detox E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: ci/prepare-ios-build
+        uses: ./.github/actions/prepare-ios-build
+
+      - name: Install Dependencies
+        run: |
+          npm -g install react-native-cli
+          brew install watchman
+          brew install gnupg
+          brew tap wix/brew
+          brew install applesimutils
+          npm run ios-gems-m1
+          npm run pod-install-m1
+          npm install
+
+      - name: Configure Xcode Preferences
+        run: |
+          # Set Xcode's build location
+          mkdir -p ~/Library/Developer/Xcode/DerivedData
+          defaults write com.apple.dt.Xcode IDECustomDerivedDataLocation -string YES
+          defaults write com.apple.dt.Xcode CustomDerivedDataLocation -string "build"
+          defaults write com.apple.dt.Xcode CustomDerivedDataLocationType -string 3
+  
+      - name: Build iOS app
+        run: npm run build:ios-sim
+
+      - name: Start Server
+        run: npm run start &
+
+      - name: Run Detox Tests
+        run: npm run e2e:ios

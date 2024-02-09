@@ -8,11 +8,11 @@
   "apps": {
     "ios.debug": {
       "type": "ios.app",
-      "binaryPath": "../ios/Build/Products/Debug-iphonesimulator/Mattermost.app"
+      "binaryPath": "../ios/DerivedData/Mattermost/Build/Products/Debug-iphonesimulator/Mattermost.app"
     },
     "ios.release": {
       "type": "ios.app",
-      "binaryPath": "../ios/Build/Products/Release-iphonesimulator/Mattermost.app",
+      "binaryPath": "../ios/DerivedData/Build/Products/Release-iphonesimulator/Mattermost.app",
       "build": "cd .. && npm run build:ios-sim && cd detox"
     },
     "android.debug": {
@@ -30,7 +30,7 @@
     "ios.simulator": {
       "type": "ios.simulator",
       "device": {
-        "type": "iPhone 14"
+        "type": "iPhone 15"
       }
     },
     "android.emulator": {
