@@ -20,7 +20,7 @@ jobs:
       - name: Cancel Previous Workflow
         uses: ./.github/actions/cancel-previous-run
   
-      - name: Brew install
+      - name: Brew install applesimutils
         run: |
           brew tap wix/brew
           brew install applesimutils
