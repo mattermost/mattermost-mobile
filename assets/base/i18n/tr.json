@@ -759,7 +759,6 @@
   "notification_settings.email.send": "E-posta bildirimleri gönderilsin",
   "notification_settings.mention.reply": "Şunlar için yanıt bildirimleri gönderilsin",
   "notification_settings.mentions": "Anmalar",
-  "notification_settings.mentions..keywordsDescription": "Bir anmayı tetikleyecek diğer sözcükler",
   "notification_settings.mentions.channelWide": "Tüm kanal anmaları",
   "notification_settings.mentions.keywords": "Anahtar sözcükler",
   "notification_settings.mentions.keywordsLabel": "Anahtar sözcükler büyük/küçük harfe duyarlı değildir. Birden fazla anahtar sözcüğü virgül ile ayırarak yazabilirsiniz.",

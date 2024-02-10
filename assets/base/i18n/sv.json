@@ -784,7 +784,6 @@
   "notification_settings.email.send": "Skicka mejlnotifieringar",
   "notification_settings.mention.reply": "Skicka svarsmeddelanden för",
   "notification_settings.mentions": "Omnämnanden",
-  "notification_settings.mentions..keywordsDescription": "Andra ord som triggar ett omnämnande",
   "notification_settings.mentions.channelWide": "Kanal-omnämnanden",
   "notification_settings.mentions.keywords": "Ange andra nyckelord",
   "notification_settings.mentions.keywordsLabel": "Nyckelord är inte skiftlägeskänsliga. Separera nyckelorden med kommatecken.",

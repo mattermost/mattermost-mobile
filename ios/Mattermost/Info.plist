@@ -37,12 +37,10 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>506</string>
+	<string>507</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSAllowsArbitraryLoads</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
