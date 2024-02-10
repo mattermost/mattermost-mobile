@@ -78,7 +78,7 @@ jobs:
             ${{ runner.os }}-detox-build
 
       - name: Run server
-        run: npm run start
+        run: npm run start &
 
       - name: Detox build
         run: npm run build:ios-sim
