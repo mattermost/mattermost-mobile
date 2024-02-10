@@ -9,31 +9,17 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  e2e-ios:
     runs-on: macos-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: '18'
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7.6
-
-      - name: Install Dependencies
-        run: |
-          npm -g install react-native-cli
-          brew install watchman
-          brew install gnupg
-          brew tap wix/brew
-          brew install applesimutils
-          npm install
+          cache: npm
+          node-version-file: .node-version
 
       - name: Configure Xcode Preferences
         run: |
@@ -43,14 +29,59 @@ jobs:
           defaults write com.apple.dt.Xcode CustomDerivedDataLocation -string "build"
           defaults write com.apple.dt.Xcode CustomDerivedDataLocationType -string 3
   
-      - name: Build iOS app
-        run: npm run build:ios-sim
+      - name: Install npm dependencies
+        run: |
+          npm ci --prefer-offline
+          cd detox && npm install && cd ..
 
-      - name: Start Server
-        run: npm run start &
+      - name: Install macOS dependencies
+        run: |
+          brew tap wix/brew
+          brew install applesimutils
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
 
-      - name: Install Detox Dependencies
-        run: cd detox && npm install
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
 
-      - name: Run Detox Tests
-        run: npm run e2e:ios
+      - name: Cache CocoaPods
+        id: cache-cocoapods
+        uses: actions/cache@v3
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install CocoaPods
+        if: steps.cache-cocoapods.outputs.cache-hit != 'true'
+        run: cd ios && pod install && cd ..
+
+      - name: Detox rebuild framework cache
+        run: npx detox rebuild-framework-cache
+
+      - name: Cache Detox build
+        id: cache-detox-build
+        uses: actions/cache@v3
+        with:
+          path: ios/build
+          key: ${{ runner.os }}-detox-build
+          restore-keys: |
+            ${{ runner.os }}-detox-build
+
+      - name: Detox build
+        run: npx detox build -- --configuration ios.sim.release
+
+      - name: Detox test
+        run: npx detox test -- --configuration ios.sim.release --cleanup --headless --record-logs all
+
+      - name: Upload artifacts
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: detox-artifacts
+          path: artifacts
+  
