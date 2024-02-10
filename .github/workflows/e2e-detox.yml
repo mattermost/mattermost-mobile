@@ -56,13 +56,21 @@ jobs:
       - name: Install CocoaPods
         run: |
           gem install cocoapods -v 1.14.3
-          pod repo update
-          cd ios && pod install && cd ..
+          pod --version
+          # pod repo update
+          # cd ios && pod install && cd ..
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Install iOS dependencies
+        run: |
+          cd ios
+          pod install
+          cd ..
 
       - name: Install project's node dependencies
-        run: |
-          npm ci
-          cd detox && npm install && cd ..
+        run: cd detox && npm install && cd ..
 
       - name: Detox rebuild framework cache
         run: npx detox rebuild-framework-cache
