@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18
+          node-version: 'auto'
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -33,6 +33,7 @@ jobs:
           brew install gnupg
           brew tap wix/brew
           brew install applesimutils
+          npm install
 
       - name: Configure Xcode Preferences
         run: |
