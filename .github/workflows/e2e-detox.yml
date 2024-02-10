@@ -60,7 +60,7 @@ jobs:
         run: |
           gem install cocoapods -v 1.14.3
           npm run ios-gems
-          npm run pod-install
+          # npm run pod-install
 
       - name: Install detox node dependencies
         run: cd detox && npm install && cd ..
