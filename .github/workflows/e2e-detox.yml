@@ -31,13 +31,14 @@ jobs:
   
       - name: Install npm dependencies
         run: |
-          npm ci --prefer-offline
+          npm ci
           cd detox && npm install && cd ..
 
       - name: Install macOS dependencies
         run: |
           brew tap wix/brew
           brew install applesimutils
+          brew install watchman
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -46,6 +47,10 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+          ruby-version: 2.7.6
+
+      - name: Install CocoaPods
+        run: gem install cocoapods -v 1.14.3
 
       - name: Cache CocoaPods
         id: cache-cocoapods
