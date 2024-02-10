@@ -44,9 +44,6 @@ jobs:
           bundler-cache: true
           ruby-version: 2.7.6
 
-      - name: Install CocoaPods
-        run: gem install cocoapods -v 1.14.3
-
       - name: Cache CocoaPods
         id: cache-cocoapods
         uses: actions/cache@v3
@@ -57,10 +54,12 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install CocoaPods
-        if: steps.cache-cocoapods.outputs.cache-hit != 'true'
-        run: cd ios && pod install && cd ..
+        run: |
+          gem install cocoapods -v 1.14.3
+          pod repo update
+          cd ios && pod install && cd ..
 
-      - name: Install npm dependencies
+      - name: Install project's node dependencies
         run: |
           npm ci
           cd detox && npm install && cd ..
