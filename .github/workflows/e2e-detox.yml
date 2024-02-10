@@ -28,11 +28,6 @@ jobs:
           defaults write com.apple.dt.Xcode IDECustomDerivedDataLocation -string YES
           defaults write com.apple.dt.Xcode CustomDerivedDataLocation -string "build"
           defaults write com.apple.dt.Xcode CustomDerivedDataLocationType -string 3
-  
-      - name: Install npm dependencies
-        run: |
-          npm ci
-          cd detox && npm install && cd ..
 
       - name: Install macOS dependencies
         run: |
@@ -65,6 +60,11 @@ jobs:
         if: steps.cache-cocoapods.outputs.cache-hit != 'true'
         run: cd ios && pod install && cd ..
 
+      - name: Install npm dependencies
+        run: |
+          npm ci
+          cd detox && npm install && cd ..
+
       - name: Detox rebuild framework cache
         run: npx detox rebuild-framework-cache
 
@@ -78,10 +78,10 @@ jobs:
             ${{ runner.os }}-detox-build
 
       - name: Detox build
-        run: npx detox build -- --configuration ios.sim.release
+        run: cd detox && npx detox build -- --configuration ios.sim.release
 
       - name: Detox test
-        run: npx detox test -- --configuration ios.sim.release --cleanup --headless --record-logs all
+        run: cd detox && npx detox test -- --configuration ios.sim.release --cleanup --headless --record-logs all
 
       - name: Upload artifacts
         if: failure()
