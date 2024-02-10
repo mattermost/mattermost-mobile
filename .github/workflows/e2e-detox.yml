@@ -12,8 +12,6 @@ jobs:
   e2e-ios:
     runs-on: macos-latest
     steps:
-      - name: Cancel Previous Workflow
-        uses: ./.github/actions/cancel-previous-run
 
       - name: ci/checkout-repo
         uses: actions/checkout@v4
