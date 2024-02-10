@@ -1,0 +1,29 @@
+name: Cancel Previous Workflow
+
+on:
+  workflow_run:
+    workflows:
+      - Detox E2E Tests
+    types:
+      - requested
+
+jobs:
+  cancel-previous:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Is there a new commit?
+        if: github.event.workflow_run.event != 'push'
+        run: exit 0
+
+      - name: Cancel active workflow on previous commit
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo, run_id } = context.payload.workflow_run;
+            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+            await octokit.actions.cancelWorkflowRun({
+              owner,
+              repo,
+              run_id
+            });
