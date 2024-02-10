@@ -9,11 +9,30 @@ on:
       - main
 
 jobs:
+  trigger_build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.actions.callWithGitHubToken(
+              { owner: context.repo.owner, repo: context.repo.repo },
+              'workflow_dispatch',
+              {
+                workflow: 'build-pr.yml'
+              }
+            )
+
   e2e-ios:
+    needs: trigger_build
     runs-on: macos-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - uses: actions/download-artifact@v2
+        with:
+          name: ios-build-pr-${{ github.run_id }}
+          path: mobile-artifacts
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -21,75 +40,31 @@ jobs:
           cache: npm
           node-version-file: .node-version
 
-      - name: Configure Xcode Preferences
+      - name: Install Detox dependencies
         run: |
-          # Set Xcode's build location
-          mkdir -p ~/Library/Developer/Xcode/DerivedData
-          defaults write com.apple.dt.Xcode IDECustomDerivedDataLocation -string YES
-          defaults write com.apple.dt.Xcode CustomDerivedDataLocation -string "build"
-          defaults write com.apple.dt.Xcode CustomDerivedDataLocationType -string 3
+          gem install detox-instruments detox-android
+          cd ios && pod install
 
-      - name: Install macOS dependencies
+      - name: Download iOS build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ios-build-pr-${{ github.run_id }}
+          path: mobile-artifacts
+
+      - name: Unzip artifact (if necessary)
         run: |
-          brew tap wix/brew
-          brew install applesimutils
-          brew install watchman
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
-          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          if [[ $OSTYPE == 'darwin' ]]; then
+            unzip mobile-artifacts/*.zip
+          else
+            unzip -o mobile-artifacts/*.zip
+          fi
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - name: Run Detox tests (iOS)
+        run: npx detox run-all --test=e2e --configuration ios --platform ios --artifacts-dir mobile-artifacts
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
         with:
-          bundler-cache: true
-          ruby-version: 2.7.6
-
-      - name: Cache CocoaPods
-        id: cache-cocoapods
-        uses: actions/cache@v3
-        with:
-          path: ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
-
-      - name: Install npm dependencies
-        run: npm install --ignore-scripts
-
-      - name: Install iOS dependencies
-        run: |
-          gem install cocoapods -v 1.14.3
-          npm run ios-gems
-          # npm run pod-install
-
-      - name: Install detox node dependencies
-        run: cd detox && npm install && cd ..
-
-      - name: Detox rebuild framework cache
-        run: npx detox rebuild-framework-cache
-
-      - name: Cache Detox build
-        id: cache-detox-build
-        uses: actions/cache@v3
-        with:
-          path: ios/build
-          key: ${{ runner.os }}-detox-build
-          restore-keys: |
-            ${{ runner.os }}-detox-build
-
-      - name: Run server
-        run: npm run start &
-
-      - name: Detox build
-        run: npm run build:ios-sim
-
-      - name: Detox test
-        run: npm run e2e:ios
-
-      - name: Upload artifacts
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: detox-artifacts
-          path: artifacts
+          name: detox-results
+          path: ios/reports
   
