@@ -17,6 +17,11 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: Brew install
+        run: |
+          brew tap wix/brew
+          brew install applesimutils
+
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
 
