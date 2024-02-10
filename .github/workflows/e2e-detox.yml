@@ -59,10 +59,8 @@ jobs:
       - name: Install iOS dependencies
         run: |
           gem install cocoapods -v 1.14.3
-          cd ios
-          pod --version
-          pod install --repo-update
-          cd ..
+          npm run ios-gems
+          npm run pod-install
 
       - name: Install detox node dependencies
         run: cd detox && npm install && cd ..
@@ -80,10 +78,10 @@ jobs:
             ${{ runner.os }}-detox-build
 
       - name: Detox build
-        run: cd detox && npx detox build -- --configuration ios.sim.release
+        run: npm run build:ios-sim
 
       - name: Detox test
-        run: cd detox && npx detox test -- --configuration ios.sim.release --cleanup --headless --record-logs all
+        run: npm run e2e:ios
 
       - name: Upload artifacts
         if: failure()
