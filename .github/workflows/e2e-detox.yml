@@ -56,6 +56,9 @@ jobs:
           name: ios-build-pr-${{ github.run_id }}
           path: mobile-artifacts
 
+      - name: Run react-native
+        run: npm run start &
+
       - name: Unzip artifact (if necessary)
         run: |
           if [[ $OSTYPE == 'darwin' ]]; then
