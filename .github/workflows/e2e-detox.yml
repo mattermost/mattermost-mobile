@@ -9,41 +9,46 @@ on:
       - main
 
 jobs:
-  trigger_build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/github-script@v6
-        with:
-          script: |
-            github.actions.callWithGitHubToken(
-              { owner: context.repo.owner, repo: context.repo.repo },
-              'workflow_dispatch',
-              {
-                workflow: 'build-pr.yml'
-              }
-            )
-
   e2e-ios:
-    needs: trigger_build
     runs-on: macos-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - uses: actions/download-artifact@v2
+      - name: ci/checkout-repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: ci/prepare-ios-build
+        uses: ./.github/actions/prepare-ios-build
+
+      - name: ci/output-ssh-private-key
+        shell: bash
+        run: |
+          SSH_KEY_PATH=~/.ssh/id_ed25519
+          mkdir -p ~/.ssh
+          echo -e '${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}' > ${SSH_KEY_PATH}
+          chmod 0600 ${SSH_KEY_PATH}
+          ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
+
+      - name: ci/build-ios-pr
+        env:
+          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
+          FASTLANE_TEAM_ID: "${{ secrets.MM_MOBILE_FASTLANE_TEAM_ID }}"
+          IOS_API_ISSUER_ID: "${{ secrets.MM_MOBILE_IOS_API_ISSUER_ID }}"
+          IOS_API_KEY: "${{ secrets.MM_MOBILE_IOS_API_KEY }}"
+          IOS_API_KEY_ID: "${{ secrets.MM_MOBILE_IOS_API_KEY_ID }}"
+          MATCH_GIT_URL: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
+          MATCH_PASSWORD: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
+        run: bundle exec fastlane ios build --env ios.pr
+        working-directory: ./fastlane
+
+      - name: ci/upload-ios-pr-build
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: ios-build-pr-${{ github.run_id }}
-          path: mobile-artifacts
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          cache: npm
-          node-version-file: .node-version
-
-      - name: Install Detox dependencies
-        run: |
-          gem install detox-instruments detox-android
-          cd ios && pod install
+          path: "*.ipa"
 
       - name: Download iOS build artifact
         uses: actions/download-artifact@v2
@@ -59,12 +64,8 @@ jobs:
             unzip -o mobile-artifacts/*.zip
           fi
 
-      - name: Run Detox tests (iOS)
-        run: npx detox run-all --test=e2e --configuration ios --platform ios --artifacts-dir mobile-artifacts
+      - name: Install detox dependancies
+        run: cd detox && npm install
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v2
-        with:
-          name: detox-results
-          path: ios/reports
-  
+      - name: Run detox e2e
+        run: npm run e2e:ios
