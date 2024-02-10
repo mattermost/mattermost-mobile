@@ -59,16 +59,10 @@ jobs:
       - name: Run react-native
         run: npm run start &
 
-      - name: Unzip artifact (if necessary)
-        run: |
-          if [[ $OSTYPE == 'darwin' ]]; then
-            unzip mobile-artifacts/*.zip
-          else
-            unzip -o mobile-artifacts/*.zip
-          fi
-
       - name: Install detox dependancies
-        run: cd detox && npm install
+        run: |
+          ls -l mobile-artifacts/
+          cd detox && npm install
 
       - name: Run detox e2e
         run: npm run e2e:ios
