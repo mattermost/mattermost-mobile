@@ -8,7 +8,7 @@
   "apps": {
     "ios.debug": {
       "type": "ios.app",
-      "binaryPath": "../ mobile-artifacts/Mattermost.app"
+      "binaryPath": "../mobile-artifacts/Mattermost.app"
     },
     "ios.release": {
       "type": "ios.app",
