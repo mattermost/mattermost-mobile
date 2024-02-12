@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// import {Alert} from '@support/ui/component';
+import {Alert} from '@support/ui/component';
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
@@ -59,8 +59,8 @@ class ServerScreen {
 
             // if (serverUrl.includes('127.0.0.1')) {
             // # Tap alert okay button
-            // await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
-            // await Alert.okayButton.tap();
+            await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
+            await Alert.okayButton.tap();
 
             // }
         }

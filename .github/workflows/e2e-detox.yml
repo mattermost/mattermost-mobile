@@ -22,43 +22,42 @@ jobs:
         run: |
           brew tap wix/brew
           brew install applesimutils
-          applesimutils --list | grep -i "iPhone 15"
 
-      # - name: ci/prepare-ios-build
-      #   uses: ./.github/actions/prepare-ios-build
+      - name: ci/prepare-ios-build
+        uses: ./.github/actions/prepare-ios-build
 
-      # - name: ci/build-ios-simulator
-      #   env:
-      #     TAG: "${{ github.ref_name }}"
-      #     AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
-      #     AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-      #     MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
-      #     GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-      #   run: bundle exec fastlane ios simulator --env ios.simulator
-      #   working-directory: ./fastlane
+      - name: ci/build-ios-simulator
+        env:
+          TAG: "${{ github.ref_name }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
 
-      # - name: ci/upload-ios-pr-simulator
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ios-build-simulator-${{ github.run_id }}
-      #     path: Mattermost-simulator-x86_64.app.zip
+      - name: ci/upload-ios-pr-simulator
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-x86_64.app.zip
 
-      # - name: Download iOS build artifact
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: ios-build-simulator-${{ github.run_id }}
-      #     path: mobile-artifacts
+      - name: Download iOS build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: mobile-artifacts
 
-      # - name: Unzip artifact
-      #   run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+      - name: Unzip artifact
+        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
 
-      # - name: Run react-native
-      #   run: npm run start &
+      - name: Run react-native
+        run: npm run start &
 
-      # - name: Install detox dependancies
-      #   run: |
-      #     ls -l mobile-artifacts/
-      #     cd detox && npm install
+      - name: Install detox dependancies
+        run: |
+          ls -l mobile-artifacts/
+          cd detox && npm install
 
-      # - name: Run detox e2e
-      #   run: npm run e2e:ios
+      - name: Run detox e2e
+        run: npm run e2e:ios
