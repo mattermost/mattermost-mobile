@@ -30,7 +30,8 @@
     "ios.simulator": {
       "type": "ios.simulator",
       "device": {
-        "type": "iPhone 15"
+        "platformVersion": "16.2",
+        "type": "iPhone 14 Pro Max"
       }
     },
     "android.emulator": {
