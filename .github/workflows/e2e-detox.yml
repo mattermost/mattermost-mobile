@@ -20,6 +20,7 @@ jobs:
 
       - name: Brew install
         run: |
+          brew update-reset
           brew tap wix/brew
           brew install applesimutils
 
@@ -54,7 +55,7 @@ jobs:
       - name: Run react-native
         run: npm run start &
 
-      - name: Install detox dependancies
+      - name: Install detox dependencies
         run: |
           ls -l mobile-artifacts/
           cd detox && npm install
