@@ -10,7 +10,7 @@ on:
 
 jobs:
   e2e-ios:
-    runs-on: macos-13
+    runs-on: macos-lates
     steps:
 
       - name: ci/checkout-repo
@@ -23,9 +23,6 @@ jobs:
           HOMEBREW_NO_AUTO_UPDATE: "1"
         shell: bash
         run: |
-          rm '/usr/local/bin/2to3'
-          brew link --overwrite python@3.11
-          brew update-reset
           brew tap wix/brew
           brew install applesimutils
 
