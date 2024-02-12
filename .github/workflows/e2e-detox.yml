@@ -20,6 +20,8 @@ jobs:
 
       - name: Brew install
         run: |
+          rm '/usr/local/bin/2to3'
+          brew link --overwrite python@3.11
           brew update-reset
           brew tap wix/brew
           brew install applesimutils
