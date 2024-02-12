@@ -22,6 +22,7 @@ jobs:
         run: |
           brew tap wix/brew
           brew install applesimutils
+          xcrun simctl create "iPhone 15" com.apple.CoreSimulator.SimDeviceType.iPhone-15 -r iOS-15.0
 
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
