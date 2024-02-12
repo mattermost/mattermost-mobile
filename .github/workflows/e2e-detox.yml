@@ -19,9 +19,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Brew install
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: "1"
-        shell: bash
         run: |
           brew tap wix/brew
           brew install applesimutils
