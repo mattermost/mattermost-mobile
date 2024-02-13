@@ -18,13 +18,43 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Brew install
+      - name: ci/install-os-deps
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        shell: bash
         run: |
+          echo "::group::install-os-deps"
           brew tap wix/brew
           brew install applesimutils
+          brew install watchman
+          echo "::endgroup::"
 
-      - name: ci/prepare-ios-build
-        uses: ./.github/actions/prepare-ios-build
+      # Install Ruby 2.7.7 on self-hosted macOS-13-arm64 runners
+      - name: Install Ruby 2.7.7 (self-hosted)
+        if: ${{ runner.os == 'macOS' && runner.osVersion == '13' }}
+        run: |
+          brew install rbenv
+          rbenv install 2.7.7
+          rbenv global 2.7.7
+          echo "::add-path::$(rbenv root)/shims"
+
+      # Use ruby/setup-ruby for supported macOS images
+      - name: Install Ruby 2.7.7 (supported images)
+        if: ${{ runner.os == 'macOS' && runner.osVersion != '13' }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7.7
+
+      - name: ci/setup-fastlane-dependencies
+        shell: bash
+        run: |
+          echo "::group::setup-fastlane-dependencies"
+          bundle install
+          echo "::endgroup::"
+          working-directory: ./fastlane
+    
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
 
       - name: ci/build-ios-simulator
         env:
