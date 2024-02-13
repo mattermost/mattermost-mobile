@@ -4,35 +4,20 @@ description: Action to prepare environment for mobile build
 runs:
   using: composite
   steps:
-    - name: Install Ruby using ruby-build
-      shell: bash
+    - name: Install Ruby 2.7.7 (self-hosted)
+      if: ${{ runner.os == 'macOS' && runner.osVersion == '13' }}
       run: |
-        # Install rbenv and ruby-build if not already installed
-        if [ ! -d "$HOME/.rbenv" ]; then
-          git clone https://github.com/rbenv/rbenv.git $HOME/.rbenv
-          echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> $HOME/.bash_profile
-          echo 'eval "$(rbenv init -)"' >> $HOME/.bash_profile
-          source $HOME/.bash_profile
-        fi
-
-        if [ ! -d "$HOME/.rbenv/plugins/ruby-build" ]; then
-          git clone https://github.com/rbenv/ruby-build.git $HOME/.rbenv/plugins/ruby-build
-        fi
-
-        # Install Ruby 2.7.7
+        brew install rbenv
         rbenv install 2.7.7
+        rbenv global 2.7.7
+        echo "::add-path::$(rbenv root)/shims"
 
-        # Create the directory structure if it doesn't exist
-        mkdir -p $RUNNER_TOOL_CACHE/Ruby/2.7.7/
-
-        # Mark Ruby installation as complete
-        touch $RUNNER_TOOL_CACHE/Ruby/2.7.7/arm64.complete
-      env:
-        RUNNER_TOOL_CACHE: $RUNNER_TOOL_CACHE
-
-    - uses: ruby/setup-ruby@9669f3ee51dc3f4eda8447ab696b3ab19a90d14b # v1.144.0
+    # Use ruby/setup-ruby for supported macOS images
+    - name: Install Ruby 2.7.7 (supported images)
+      if: ${{ runner.os == 'macOS' && runner.osVersion != '13' }}
+      uses: ruby/setup-ruby@v1
       with:
-        ruby-version: "2.7.7"
+        ruby-version: 2.7.7
 
     - name: ci/setup-fastlane-dependencies
       shell: bash
