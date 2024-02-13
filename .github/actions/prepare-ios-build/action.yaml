@@ -11,6 +11,7 @@ runs:
       run: |
         echo "::group::install-os-deps"
         brew install watchman
+        brew install rbenv
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
