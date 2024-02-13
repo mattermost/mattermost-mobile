@@ -61,16 +61,18 @@ class LoginScreen {
     login = async (user: any = {}) => {
         await this.toBeVisible();
         await this.usernameInput.typeText(user.newUser.email);
-        await this.passwordInput.typeText(`${user.newUser.password}`);
-        await this.signinButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await this.passwordInput.typeText(`${user.newUser.password}\n`);
+
+        // await this.signinButton.tap();
+        await wait(timeouts.FOUR_SEC);
     };
 
     loginAsAdmin = async (user: any = {}) => {
         await this.toBeVisible();
         await this.usernameInput.typeText(user.username);
-        await this.passwordInput.typeText(`${user.password}`);
-        await this.signinButton.tap();
+        await this.passwordInput.typeText(`${user.password}\n`);
+
+        // await this.signinButton.tap();
         await wait(timeouts.ONE_SEC);
     };
 }
