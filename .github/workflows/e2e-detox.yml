@@ -10,7 +10,7 @@ on:
 
 jobs:
   e2e-ios:
-    runs-on: macos-13-xlarge
+    runs-on: macos-12-large
     steps:
 
       - name: ci/checkout-repo
@@ -18,10 +18,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: ci/install-os-deps
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: "1"
-        shell: bash
+      - name: Brew install
         run: |
           brew tap wix/brew
           brew install applesimutils
