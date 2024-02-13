@@ -27,6 +27,7 @@ runs:
       uses: ./.github/actions/prepare-mobile-build
 
     - name: ci/install-pods-dependencies
+      shell: bash
       run: |
         echo "::group::install-pods-dependencies"        
         npm run ios-gems
