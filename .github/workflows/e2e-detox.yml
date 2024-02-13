@@ -10,7 +10,7 @@ on:
 
 jobs:
   e2e-ios:
-    runs-on: macos-12-large
+    runs-on: macos-13-xlarge
     steps:
 
       - name: ci/checkout-repo
