@@ -5,7 +5,7 @@ runs:
   using: composite
   steps:
     - name: Install Ruby using ruby-build
-    shell: bash
+      shell: bash
       run: |
         # Install rbenv and ruby-build if not already installed
         if [ ! -d "$HOME/.rbenv" ]; then
