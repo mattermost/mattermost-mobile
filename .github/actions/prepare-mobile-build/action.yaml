@@ -30,4 +30,4 @@ runs:
       working-directory: ./fastlane
 
     - name: ci/prepare-node-deps
-      uses: ./.github/actions/prepare-node-deps
+      run: ./.github/actions/prepare-node-deps
