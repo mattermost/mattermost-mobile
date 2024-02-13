@@ -5,7 +5,7 @@ runs:
   using: composite
   steps:
     - name: Install Ruby using ruby-build
-      shell: bash
+    shell: bash
       run: |
         # Install rbenv and ruby-build if not already installed
         if [ ! -d "$HOME/.rbenv" ]; then
@@ -21,6 +21,9 @@ runs:
 
         # Install Ruby 2.7.7
         rbenv install 2.7.7
+
+        # Create the directory structure if it doesn't exist
+        mkdir -p $RUNNER_TOOL_CACHE/Ruby/2.7.7/
 
         # Mark Ruby installation as complete
         touch $RUNNER_TOOL_CACHE/Ruby/2.7.7/arm64.complete
