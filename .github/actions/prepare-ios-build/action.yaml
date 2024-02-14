@@ -16,6 +16,11 @@ runs:
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
 
+    - name: Download Hermes engine
+      run: |
+        curl -o hermes.tar.gz -L https://github.com/facebook/react-native/releases/download/v0.70.6/hermes-runtime-darwin-v0.70.6.tar.gz
+        export HERMES_ENGINE_TARBALL_PATH="$PWD/hermes.tar.gz"
+
     - name: ci/install-pods-dependencies
       shell: bash
       run: |
