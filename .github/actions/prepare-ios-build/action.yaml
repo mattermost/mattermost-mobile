@@ -31,7 +31,7 @@ runs:
       run: |
         echo "::group::install-pods-dependencies"
         ruby --version
-        chmod +rw ${{ env.HERMES_ENGINE_TARBALL_PATH }}
+        chmod 644 $HERMES_ENGINE_TARBALL_PATH
         npm run ios-gems
         cd ios/
         $HERMES_ENGINE_TARBALL_PATH pod-install
