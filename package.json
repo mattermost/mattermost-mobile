@@ -199,6 +199,7 @@
     "ios-gems-m1": "cd ios && arch -arm64 bundle install",
     "lint": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
     "mmjstool": "mmjstool",
+    "pod-clean-cache": "cd ios && pod cache clean --all",
     "pod-install": "cd ios && pod install",
     "pod-install-m1": "cd ios && arch -x86_64 pod install",
     "postinstall": "patch-package && ./scripts/postinstall.sh",
