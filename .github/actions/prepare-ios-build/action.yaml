@@ -16,29 +16,14 @@ runs:
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
 
-    - name: Download Hermes engine
-      shell: bash
-      run: |
-        echo "::group::download-hermes"
-        # curl -o hermes.tar.gz -L https://github.com/facebook/react-native/releases/download/v0.70.6/hermes-runtime-darwin-v0.70.6.tar.gz
-        curl -o hermes.tar.gz -L https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.72.3/react-native-artifacts-0.72.3-hermes-ios-debug.tar.gz
-        ls -l hermes.tar.gz
-        chmod 644 hermes.tar.gz
-        echo "HERMES_ENGINE_TARBALL_PATH=$(pwd)/hermes.tar.gz" >> $GITHUB_ENV
-        echo "::endgroup::"
-
     - name: ci/install-pods-dependencies
       shell: bash
       run: |
         echo "::group::install-pods-dependencies"
-        ruby --version
         npm run ios-gems
-        cd ios/
-        $HERMES_ENGINE_TARBALL_PATH pod-install
+        npm run pod-install
         echo "::endgroup::"
-      env:
-        HERMES_ENGINE_TARBALL_PATH: ${{ env.HERMES_ENGINE_TARBALL_PATH }}
-
+ 
     - name: ci/select-xcode-version
       shell: bash
       run: |
