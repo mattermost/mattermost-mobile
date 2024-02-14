@@ -24,7 +24,7 @@ runs:
         cd ios && pod cache clean --all && cd ..
         gem install cocoapods -v '1.15.0'
         npm run ios-gems
-        npm run pod-install-m1
+        npm run pod-install
         echo "::endgroup::"
 
     - name: ci/select-xcode-version
