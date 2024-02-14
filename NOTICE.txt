@@ -90,19 +90,6 @@ A spec-compliant polyfill for Intl.PluralRules fully tested by the official ECMA
 
 ---
 
-## @formatjs/intl-relativetimeformat
-
-This product contains '@formatjs/intl-relativetimeformat' by FormatJS.
-
-A spec-compliant polyfill for Intl.RelativeTimeFormat fully tested by the official ECMAScript Conformance test suite
-
-* HOMEPAGE:
-  * https://github.com/formatjs/formatjs#readme
-
-* LICENSE: MIT
-
----
-
 ## @gorhom/bottom-sheet
 
 This product contains '@gorhom/bottom-sheet' by Mo Gorhom.
@@ -3043,19 +3030,6 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
----
-
-## shallow-equals
-
-This product contains 'shallow-equals' by Hugh Kennedy.
-
-Determine if an array or object is equivalent with another, *not* recursively
-
-* HOMEPAGE:
-  * https://github.com/hughsk/shallow-equals
-
-* LICENSE: MIT
 
 ---
 
