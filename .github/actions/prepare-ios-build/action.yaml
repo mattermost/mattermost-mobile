@@ -23,6 +23,7 @@ runs:
         # curl -o hermes.tar.gz -L https://github.com/facebook/react-native/releases/download/v0.70.6/hermes-runtime-darwin-v0.70.6.tar.gz
         curl -o hermes.tar.gz -L https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.72.3/react-native-artifacts-0.72.3-hermes-ios-debug.tar.gz
         ls -l hermes.tar.gz
+        chmod 644 hermes.tar.gz
         echo "HERMES_ENGINE_TARBALL_PATH=$(pwd)/hermes.tar.gz" >> $GITHUB_ENV
         echo "::endgroup::"
 
@@ -31,7 +32,6 @@ runs:
       run: |
         echo "::group::install-pods-dependencies"
         ruby --version
-        chmod 644 $HERMES_ENGINE_TARBALL_PATH
         npm run ios-gems
         cd ios/
         $HERMES_ENGINE_TARBALL_PATH pod-install
