@@ -17,6 +17,7 @@ runs:
       uses: ./.github/actions/prepare-mobile-build
 
     - name: Download Hermes engine
+      shell: bash
       run: |
         echo "::group::download-hermes"
         curl -o hermes.tar.gz -L https://github.com/facebook/react-native/releases/download/v0.70.6/hermes-runtime-darwin-v0.70.6.tar.gz
