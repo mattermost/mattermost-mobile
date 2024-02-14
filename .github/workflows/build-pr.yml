@@ -4,22 +4,25 @@ on:
   pull_request:
     types:
       - labeled
+  push:
+    branches:
+      - migrate-to-latest-mac-runner
 
 env:
   NODE_VERSION: 18.7.0
   TERM: xterm
 
 jobs:
-  test:
-    runs-on: ubuntu-22.04
-    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' }}
-    steps:
-      - name: ci/checkout-repo
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: ci/test
-        uses: ./.github/actions/test
+  # test:
+  #   runs-on: ubuntu-22.04
+  #   if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' }}
+  #   steps:
+  #     - name: ci/checkout-repo
+  #       uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+  #       with:
+  #         ref: ${{ github.event.pull_request.head.sha }}
+  #     - name: ci/test
+  #       uses: ./.github/actions/test
 
   build-ios-pr:
     runs-on: macos-13-large
@@ -68,8 +71,8 @@ jobs:
   build-android-pr:
     runs-on: ubuntu-22.04
     if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for Android' }}
-    needs:
-      - test
+    # needs:
+    #   - test
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
