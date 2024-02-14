@@ -26,8 +26,8 @@ runs:
         gem install bundler:2.3.26
         rm -rf ios/Pods
         rm -rf ios/Podfile.lock
-        npm run ios-gems
-        npm run pod-install
+        npm run ios-gems-m1
+        npm run pod-install-m1
         echo "::endgroup::"
 
     - name: ci/select-xcode-version
