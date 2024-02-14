@@ -23,6 +23,9 @@ runs:
         ruby --version
         cd ios && pod cache clean --all && cd ..
         gem install cocoapods -v '1.15.0'
+        gem install bundler:2.3.26
+        rm -rf ios/Pods
+        rm -rf ios/Podfile.lock
         npm run ios-gems
         npm run pod-install
         echo "::endgroup::"
