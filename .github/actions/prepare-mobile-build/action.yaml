@@ -9,7 +9,7 @@ runs:
       run: |
         brew update
         brew install rbenv ruby-build
-        rbenv install 2.7.6 #$(cat .ruby-version)
+        rbenv install $(cat .ruby-version)
         # We cannot leverage 'rbenv init' as variables are reset at each step
         # https://github.com/rbenv/rbenv?tab=readme-ov-file#how-rbenv-hooks-into-your-shell
         echo "$HOME/.rbenv/shims" >> $GITHUB_PATH
