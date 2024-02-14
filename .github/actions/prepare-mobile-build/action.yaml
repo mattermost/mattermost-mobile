@@ -13,7 +13,6 @@ runs:
         # We cannot leverage 'rbenv init' as variables are reset at each step
         # https://github.com/rbenv/rbenv?tab=readme-ov-file#how-rbenv-hooks-into-your-shell
         echo "$HOME/.rbenv/shims" >> $GITHUB_PATH
-        ruby --version
 
     - name: ci/setup-fastlane-dependencies
       shell: bash
