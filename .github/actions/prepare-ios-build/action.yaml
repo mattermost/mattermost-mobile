@@ -20,8 +20,9 @@ runs:
       shell: bash
       run: |
         echo "::group::download-hermes"
-        curl -o hermes.tar.gz -L https://github.com/facebook/react-native/releases/download/v0.70.6/hermes-runtime-darwin-v0.70.6.tar.gz
-        export HERMES_ENGINE_TARBALL_PATH="$PWD/hermes.tar.gz"
+        curl -o hermes.tar.gz -L https://github.com/facebook/hermes/releases/download/v0.70.6/hermes-v0.70.6-darwin-x86_64.tar.gz
+        ls -l hermes.tar.gz
+        echo "HERMES_ENGINE_TARBALL_PATH=$(pwd)/hermes.tar.gz" >> $GITHUB_ENV
         echo "::endgroup::"
 
     - name: ci/install-pods-dependencies
@@ -29,10 +30,12 @@ runs:
       run: |
         echo "::group::install-pods-dependencies"
         ruby --version
-        echo $HERMES_ENGINE_TARBALL_PATH
+        echo ${{ env.HERMES_ENGINE_TARBALL_PATH }}
         npm run ios-gems
         npm run pod-install --verbose
         echo "::endgroup::"
+      env:
+        HERMES_ENGINE_TARBALL_PATH: ${{ env.HERMES_ENGINE_TARBALL_PATH }}
 
     - name: ci/select-xcode-version
       shell: bash
