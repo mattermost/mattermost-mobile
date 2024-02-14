@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
-import deepEqual from 'deep-equal';
+import isEqual from 'lodash/isEqual';
 import JailMonkey from 'jail-monkey';
 import {Alert, type AlertButton, AppState, type AppStateStatus, Platform} from 'react-native';
 
@@ -25,7 +25,7 @@ class ManagedApp {
 
     constructor() {
         Emm.addListener((cfg: ManagedConfig) => {
-            if (!deepEqual(cfg, this.cacheConfig)) {
+            if (!isEqual(cfg, this.cacheConfig)) {
                 this.processConfig(cfg);
                 this.cacheConfig = cfg;
             }

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import deepEqual from 'deep-equal';
-import merge from 'deepmerge';
+import isEqual from 'lodash/isEqual';
+import merge from 'lodash/merge';
 import {StatusBar, StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
@@ -277,7 +277,7 @@ export function setThemeDefaults(theme: ExtendedTheme): Theme {
 
 export const updateThemeIfNeeded = (theme: Theme, force = false) => {
     const storedTheme = EphemeralStore.theme;
-    if (!deepEqual(theme, storedTheme) || force) {
+    if (!isEqual(theme, storedTheme) || force) {
         EphemeralStore.theme = theme;
         requestAnimationFrame(() => {
             setNavigationStackStyles(theme);

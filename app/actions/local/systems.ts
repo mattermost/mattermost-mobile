@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
-import deepEqual from 'deep-equal';
+import isEqual from 'lodash/isEqual';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -27,7 +27,7 @@ export async function storeConfigAndLicense(serverUrl: string, config: ClientCon
             const currentLicense = await getLicense(database);
             const systems: IdValue[] = [];
 
-            if (!deepEqual(license, currentLicense)) {
+            if (!isEqual(license, currentLicense)) {
                 systems.push({
                     id: SYSTEM_IDENTIFIERS.LICENSE,
                     value: JSON.stringify(license),

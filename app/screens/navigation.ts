@@ -3,7 +3,7 @@
 
 /* eslint-disable max-lines */
 
-import merge from 'deepmerge';
+import merge from 'lodash/merge';
 import {Appearance, DeviceEventEmitter, StatusBar, Platform, Alert, type EmitterSubscription} from 'react-native';
 import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
