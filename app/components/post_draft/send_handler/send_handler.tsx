@@ -31,6 +31,7 @@ type Props = {
     testID?: string;
     channelId: string;
     channelType?: ChannelType;
+    channelName?: string;
     rootId: string;
     canShowPostPriority?: boolean;
     setIsFocused: (isFocused: boolean) => void;
@@ -70,6 +71,7 @@ export default function SendHandler({
     testID,
     channelId,
     channelType,
+    channelName,
     currentUserId,
     enableConfirmNotificationsToChannel,
     files,
@@ -272,6 +274,7 @@ export default function SendHandler({
             testID={testID}
             channelId={channelId}
             channelType={channelType}
+            channelName={channelName}
             currentUserId={currentUserId}
             rootId={rootId}
             canShowPostPriority={canShowPostPriority}
