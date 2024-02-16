@@ -19,9 +19,9 @@
 	<key>CFBundlePackageType</key>
 	<string>XPC!</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.13.0</string>
+	<string>2.14.0</string>
 	<key>CFBundleVersion</key>
-	<string>508</string>
+	<string>509</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-Bold.ttf</string>
