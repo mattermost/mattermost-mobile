@@ -784,6 +784,7 @@
   "notification_settings.email.send": "发送邮件通知",
   "notification_settings.mention.reply": "发送回复通知",
   "notification_settings.mentions": "提及",
+  "notification_settings.mentions..keywordsDescription": "触发提及的其他词语",
   "notification_settings.mentions.channelWide": "频道范围的提及",
   "notification_settings.mentions.keywords": "输入其他关键词",
   "notification_settings.mentions.keywordsLabel": "关键词大小写不区分。用逗号分隔关键词。",
