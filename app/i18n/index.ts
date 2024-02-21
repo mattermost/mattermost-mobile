@@ -169,7 +169,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-datetimeformat/locale-data/vi');
                 require('@formatjs/intl-listformat/locale-data/vi');
 
-                translations = require('@assets/i18n/uk.json');
+                translations = require('@assets/i18n/vi.json');
                 break;
             case 'zh-CN':
                 loadChinesePolyfills();

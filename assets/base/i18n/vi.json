@@ -757,7 +757,6 @@
   "notification_settings.email.send": "Gửi thông báo qua email",
   "notification_settings.mention.reply": "Gửi thông báo trả lời cho",
   "notification_settings.mentions": "Được nhắc đến",
-  "notification_settings.mentions..keywordsDescription": "Các từ khác kích hoạt một đề cập",
   "notification_settings.mentions.channelWide": "Lượt đề cập trên toàn kênh",
   "notification_settings.mentions.keywords": "Từ khoá",
   "notification_settings.mentions.keywordsLabel": "Từ khóa không phân biệt chữ hoa chữ thường. Tách các từ khóa bằng dấu phẩy.",

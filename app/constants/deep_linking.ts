@@ -7,7 +7,6 @@ const DeepLinkType = {
     GroupMessage: 'gm',
     Invalid: 'invalid',
     Permalink: 'permalink',
-    Plugin: 'plugin',
     Redirect: '_redirect',
 } as const;
 

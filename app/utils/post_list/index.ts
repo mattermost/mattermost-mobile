@@ -171,18 +171,18 @@ function isJoinLeavePostForUsername(post: PostModel, currentUsername: string): b
 
 export function selectOrderedPostsWithPrevAndNext(
     posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUserId: string, currentUsername: string, showJoinLeave: boolean,
-    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>(),
+    currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>(),
 ): PostList {
     return selectOrderedPosts(
         posts, lastViewedAt, indicateNewMessages,
         currentUserId, currentUsername, showJoinLeave,
-        timezoneEnabled, currentTimezone, isThreadScreen, savedPostIds, true,
+        currentTimezone, isThreadScreen, savedPostIds, true,
     );
 }
 
 export function selectOrderedPosts(
     posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUserId: string, currentUsername: string, showJoinLeave: boolean,
-    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>(), includePrevNext = false) {
+    currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>(), includePrevNext = false) {
     if (posts.length === 0) {
         return [];
     }
@@ -216,14 +216,12 @@ export function selectOrderedPosts(
 
         // Push on a date header if the last post was on a different day than the current one
         const postDate = new Date(post.currentPost.createAt);
-        if (timezoneEnabled) {
-            const currentOffset = toMilliseconds({minutes: postDate.getTimezoneOffset()});
-            if (currentTimezone) {
-                const zone = moment.tz.zone(currentTimezone);
-                if (zone) {
-                    const timezoneOffset = toMilliseconds({minutes: zone.utcOffset(post.currentPost.createAt)});
-                    postDate.setTime(post.currentPost.createAt + (currentOffset - timezoneOffset));
-                }
+        const currentOffset = toMilliseconds({minutes: postDate.getTimezoneOffset()});
+        if (currentTimezone) {
+            const zone = moment.tz.zone(currentTimezone);
+            if (zone) {
+                const timezoneOffset = toMilliseconds({minutes: zone.utcOffset(post.currentPost.createAt)});
+                postDate.setTime(post.currentPost.createAt + (currentOffset - timezoneOffset));
             }
         }
 
@@ -363,8 +361,8 @@ export function getPostIdsForCombinedUserActivityPost(item: string) {
 
 export function preparePostList(
     posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUserId: string, currentUsername: string, showJoinLeave: boolean,
-    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>()) {
-    const orderedPosts = selectOrderedPostsWithPrevAndNext(posts, lastViewedAt, indicateNewMessages, currentUserId, currentUsername, showJoinLeave, timezoneEnabled, currentTimezone, isThreadScreen, savedPostIds);
+    currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>()) {
+    const orderedPosts = selectOrderedPostsWithPrevAndNext(posts, lastViewedAt, indicateNewMessages, currentUserId, currentUsername, showJoinLeave, currentTimezone, isThreadScreen, savedPostIds);
     return combineUserActivityPosts(orderedPosts);
 }
 

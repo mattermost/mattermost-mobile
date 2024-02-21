@@ -731,7 +731,6 @@
   "notification_settings.email.send": "Надсилати сповіщення на електронну пошту",
   "notification_settings.mention.reply": "Надсилайте сповіщення про відповідь для",
   "notification_settings.mentions": "Згадки",
-  "notification_settings.mentions..keywordsDescription": "Інші слова, які викликають згадку",
   "notification_settings.mentions.channelWide": "Загальноканальні згадки",
   "notification_settings.mentions.keywords": "Ключові слова",
   "notification_settings.mentions.keywordsLabel": "Ключові слова не чутливі до регістру. Відокремлюйте ключові слова комами.",

@@ -32,7 +32,6 @@ type Props = {
     appsEnabled: boolean;
     customEmojiNames: string[];
     currentTimezone: string;
-    isTimezoneEnabled: boolean;
     posts: PostModel[];
     matches?: SearchMatches;
     paddingTop: StyleProp<ViewStyle>;
@@ -43,7 +42,6 @@ const PostResults = ({
     appsEnabled,
     currentTimezone,
     customEmojiNames,
-    isTimezoneEnabled,
     posts,
     matches,
     paddingTop,
@@ -51,7 +49,7 @@ const PostResults = ({
 }: Props) => {
     const theme = useTheme();
     const styles = getStyles(theme);
-    const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
+    const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [posts]);
     const containerStyle = useMemo(() => ([paddingTop, {flexGrow: 1}]), [paddingTop]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
@@ -61,7 +59,7 @@ const PostResults = ({
                     <DateSeparator
                         key={item.value}
                         date={getDateForDateLine(item.value)}
-                        timezone={isTimezoneEnabled ? currentTimezone : null}
+                        timezone={currentTimezone}
                     />
                 );
             case 'post': {

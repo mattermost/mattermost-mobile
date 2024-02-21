@@ -6,6 +6,7 @@ import {Alert} from 'react-native';
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
 import {dismissIncomingCall} from '@calls/actions/calls';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
+import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
 import {
     getCallsConfig,
     getCallsState,
@@ -19,6 +20,7 @@ import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getCurrentUser} from '@queries/servers/user';
 import {isDMorGM} from '@utils/channel';
+import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 import {isSystemAdmin} from '@utils/user';
 
@@ -208,7 +210,7 @@ const doJoinCall = async (
         removeIncomingCall(serverUrl, callId, channelId);
     }
 
-    const res = await joinCall(serverUrl, channelId, user.id, hasPermission, title, rootId);
+    const res = await joinCall(serverUrl, channelId, user.id, hasPermission, intl, title, rootId);
     if (res.error) {
         const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);
@@ -383,4 +385,36 @@ export const recordingErrorAlert = (intl: IntlShape) => {
             }),
         }],
     );
+};
+
+export const showErrorAlertOnClose = (err: Error, intl: IntlShape) => {
+    switch (err) {
+        case userLeftChannelErr:
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.calls_user_left_channel_error_title',
+                    defaultMessage: 'You left the channel',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.calls_user_left_channel_error_message',
+                    defaultMessage: 'You have left the channel, and have been disconnected from the call.',
+                }),
+            );
+            break;
+        case userRemovedFromChannelErr:
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.calls_user_removed_from_channel_error_title',
+                    defaultMessage: 'You were removed from channel',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.calls_user_removed_from_channel_error_message',
+                    defaultMessage: 'You have been removed from the channel, and have been disconnected from the call.',
+                }),
+            );
+            break;
+        default:
+            // Fallback with generic error
+            errorAlert(getFullErrorMessage(err, intl), intl);
+    }
 };
