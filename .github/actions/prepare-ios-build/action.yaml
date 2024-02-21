@@ -23,10 +23,3 @@ runs:
         npm run ios-gems
         npm run pod-install
         echo "::endgroup::"
-
-    #- name: ci/select-xcode-version
-    #  shell: bash
-    #  run: |
-    #    echo "::group::select-xcode-version"
-    #    sudo xcode-select --switch /Applications/Xcode_15.2.app
-    #    echo "::endgroup::"
