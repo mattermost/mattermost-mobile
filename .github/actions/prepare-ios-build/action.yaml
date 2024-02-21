@@ -24,9 +24,9 @@ runs:
         npm run pod-install
         echo "::endgroup::"
 
-    - name: ci/select-xcode-version
-      shell: bash
-      run: |
-        echo "::group::install-pods-dependencies"
-        sudo xcode-select --switch /Applications/Xcode_15.2.app
-        echo "::endgroup::"
+    #- name: ci/select-xcode-version
+    #  shell: bash
+    #  run: |
+    #    echo "::group::select-xcode-version"
+    #    sudo xcode-select --switch /Applications/Xcode_15.2.app
+    #    echo "::endgroup::"
