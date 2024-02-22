@@ -4,9 +4,9 @@ PODS:
   - BVLinearGradient (2.8.3):
     - React-Core
   - CocoaAsyncSocket (7.6.5)
-  - CocoaLumberjack (3.8.2):
-    - CocoaLumberjack/Core (= 3.8.2)
-  - CocoaLumberjack/Core (3.8.2)
+  - CocoaLumberjack (3.8.4):
+    - CocoaLumberjack/Core (= 3.8.4)
+  - CocoaLumberjack/Core (3.8.4)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.72.7)
   - FBReactNativeSpec (0.72.7):
@@ -644,9 +644,9 @@ PODS:
   - RNVectorIcons (10.0.2):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
-  - SDWebImage (5.18.5):
-    - SDWebImage/Core (= 5.18.5)
-  - SDWebImage/Core (5.18.5)
+  - SDWebImage (5.18.11):
+    - SDWebImage/Core (= 5.18.11)
+  - SDWebImage/Core (5.18.11)
   - SDWebImageWebPCoder (0.13.0):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
@@ -985,7 +985,7 @@ SPEC CHECKSUMS:
   boost: 57d2868c099736d80fcd648bf211b4431e51a558
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
-  CocoaLumberjack: f8d89a516e7710fdb2e9b8f1560b16ec6040eef0
+  CocoaLumberjack: df59726690390bb8aaaa585938564ba1c8dbbb44
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
   FBLazyVector: 5fbbff1d7734827299274638deb8ba3024f6c597
   FBReactNativeSpec: 638095fe8a01506634d77b260ef8a322019ac671
@@ -1078,7 +1078,7 @@ SPEC CHECKSUMS:
   RNShare: bed7c4fbe615f3d977f22feb0902af9a790c1660
   RNSVG: 255767813dac22db1ec2062c8b7e7b856d4e5ae6
   RNVectorIcons: 23b6e11af4aaf104d169b1b0afa7e5cf96c676ce
-  SDWebImage: 7ac2b7ddc5e8484c79aa90fc4e30b149d6a2c88f
+  SDWebImage: a3ba0b8faac7228c3c8eadd1a55c9c9fe5e16457
   SDWebImageWebPCoder: af09429398d99d524cae2fe00f6f0f6e491ed102
   Sentry: 6f5742b4c47c17c9adcf265f6f328cf4a0ed1923
   SentryPrivate: b2f7996f37781080f04a946eb4e377ff63c64195
