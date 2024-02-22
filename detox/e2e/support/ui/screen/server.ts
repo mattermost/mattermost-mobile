@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// import {Alert} from '@support/ui/component';
+import {Alert} from '@support/ui/component';
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
@@ -56,13 +56,16 @@ class ServerScreen {
         }
         if (isIos()) {
             await this.tapConnectButton();
-
-            // if (serverUrl.includes('127.0.0.1')) {
-            // # Tap alert okay button
-            // await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
-            // await Alert.okayButton.tap();
-
-            // }
+            if (serverUrl.includes('127.0.0.1') || !process.env.CI) {
+                try {
+                    // # Tap alert okay button
+                    await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
+                    await Alert.okayButton.tap();
+                } catch (error) {
+                    /* eslint-disable no-console */
+                    console.log('Alert button did not appear!');
+                }
+            }
         }
         await waitFor(this.usernameInput).toExist().withTimeout(timeouts.ONE_SEC);
     };
