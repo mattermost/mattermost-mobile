@@ -27,7 +27,6 @@ import {
     TEAM_NAME_PATH_PATTERN,
     IDENTIFIER_PATH_PATTERN,
     ID_PATH_PATTERN,
-    PLUGIN_ID_PATH_PATTERN,
 } from '@utils/url/path';
 
 import {removeProtocol} from '../url';
@@ -109,12 +108,6 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
                 showPermalink(existingServerUrl, deepLinkData.teamName, deepLinkData.postId);
                 break;
             }
-            case DeepLink.Plugin: {
-                // https://mattermost.atlassian.net/browse/MM-49846
-                // const deepLinkData = parsed.data as DeepLinkPlugin;
-                // showModal('PluginInternal', deepLinkData.id, {link: location});
-                break;
-            }
         }
         return {error: false};
     } catch (error) {
@@ -167,12 +160,6 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
         if (permalinkMatch) {
             const {params: {serverUrl, teamName, postId}} = permalinkMatch;
             return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl, teamName, postId}};
-        }
-
-        const pluginMatch = match<{serverUrl: string; id: string; route?: string}>(`:serverUrl(.*)/plugins/:id(${PLUGIN_ID_PATH_PATTERN})/:route(.*)?`)(url);
-        if (pluginMatch) {
-            const {params: {serverUrl, id, route}} = pluginMatch;
-            return {type: DeepLink.Plugin, url: deepLinkUrl, data: {serverUrl, teamName: '', id, route}};
         }
     } catch (err) {
         // do nothing just return invalid deeplink

@@ -1,0 +1,14 @@
+diff --git a/node_modules/react-native-math-view/src/common.tsx b/node_modules/react-native-math-view/src/common.tsx
+index a599184..4e4830a 100644
+--- a/node_modules/react-native-math-view/src/common.tsx
++++ b/node_modules/react-native-math-view/src/common.tsx
+@@ -61,8 +61,7 @@ export const getPreserveAspectRatio = (alignment: string, scale: string) => `${a
+ export const styles = StyleSheet.create({
+     container: {
+         //flexDirection: 'row',
+-        display: 'flex',
+-        minHeight: 35
++        display: 'flex'
+     },
+     contain: {
+         maxWidth: '100%',

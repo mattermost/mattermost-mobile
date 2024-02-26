@@ -54,7 +54,6 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     );
 
     const enableConfirmNotificationsToChannel = observeConfigBooleanValue(database, 'EnableConfirmNotificationsToChannel');
-    const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
     const maxMessageLength = observeConfigIntValue(database, 'MaxPostSize', MAX_MESSAGE_LENGTH_FALLBACK);
     const persistentNotificationInterval = observeConfigIntValue(database, 'PersistentNotificationInterval');
     const persistentNotificationMaxRecipients = observeConfigIntValue(database, 'PersistentNotificationMaxRecipients');
@@ -83,7 +82,6 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         channelName,
         currentUserId,
         enableConfirmNotificationsToChannel,
-        isTimezoneEnabled,
         maxMessageLength,
         membersCount,
         userIsOutOfOffice,

@@ -73,6 +73,7 @@ type MarkdownProps = {
     theme: Theme;
     value?: string;
     onLinkLongPress?: (url?: string) => void;
+    isUnsafeLinksPost?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -135,7 +136,7 @@ const Markdown = ({
     enableInlineLatex, enableLatex, maxNodes,
     imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutHeight, layoutWidth,
     location, mentionKeys, highlightKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
-    textStyles = {}, theme, value = '', baseParagraphStyle, onLinkLongPress,
+    textStyles = {}, theme, value = '', baseParagraphStyle, onLinkLongPress, isUnsafeLinksPost,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -187,7 +188,7 @@ const Markdown = ({
     };
 
     const renderChannelLink = ({context, channelName}: MarkdownChannelMentionRenderer) => {
-        if (disableChannelLink) {
+        if (disableChannelLink || isUnsafeLinksPost) {
             return renderText({context, literal: `~${channelName}`});
         }
 
@@ -222,7 +223,7 @@ const Markdown = ({
         // These sometimes include a trailing newline
         const content = props.literal.replace(/\n$/, '');
 
-        if (enableLatex && props.language === 'latex') {
+        if (enableLatex && !isUnsafeLinksPost && props.language === 'latex') {
             return (
                 <MarkdownLatexCodeBlock
                     content={content}
@@ -286,7 +287,7 @@ const Markdown = ({
     };
 
     const renderHashtag = ({context, hashtag}: {context: string[]; hashtag: string}) => {
-        if (disableHashtags) {
+        if (disableHashtags || isUnsafeLinksPost) {
             return renderText({context, literal: `#${hashtag}`});
         }
 
@@ -352,7 +353,7 @@ const Markdown = ({
     };
 
     const renderImage = ({linkDestination, context, src, size}: MarkdownImageRenderer) => {
-        if (!imagesMetadata) {
+        if (!imagesMetadata || isUnsafeLinksPost) {
             return null;
         }
 
@@ -387,7 +388,7 @@ const Markdown = ({
     };
 
     const renderLatexInline = ({context, latexCode}: MarkdownLatexRenderer) => {
-        if (!enableInlineLatex) {
+        if (!enableInlineLatex || isUnsafeLinksPost) {
             return renderText({context, literal: `$${latexCode}$`});
         }
 
@@ -403,6 +404,9 @@ const Markdown = ({
     };
 
     const renderLink = ({children, href}: {children: ReactElement; href: string}) => {
+        if (isUnsafeLinksPost) {
+            return renderText({context: [], literal: href});
+        }
         return (
             <MarkdownLink
                 href={href}

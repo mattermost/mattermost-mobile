@@ -758,7 +758,6 @@
   "notification_settings.email.send": "이메일 알림 보내기",
   "notification_settings.mention.reply": "댓글에 대한 알림 설정",
   "notification_settings.mentions": "멘션",
-  "notification_settings.mentions..keywordsDescription": "멘션 알림 키워드",
   "notification_settings.mentions.channelWide": "채널 전체 멘션",
   "notification_settings.mentions.keywords": "키워드",
   "notification_settings.mentions.keywordsLabel": "키워드는 대소문자를 구분하지 않습니다. 쉼표로 키워드를 구분합니다.",

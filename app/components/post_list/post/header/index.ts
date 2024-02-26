@@ -28,7 +28,6 @@ const withHeaderProps = withObservables(
             observeWithColumns(['value']);
         const author = observePostAuthor(database, post);
         const enablePostUsernameOverride = observeConfigBooleanValue(database, 'EnablePostUsernameOverride');
-        const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
         const isMilitaryTime = preferences.pipe(map((prefs) => getDisplayNamePreferenceAsBool(prefs, 'use_military_time')));
         const teammateNameDisplay = observeTeammateNameDisplay(database);
         const commentCount = queryPostReplies(database, post.rootId || post.id).observeCount();
@@ -47,7 +46,6 @@ const withHeaderProps = withObservables(
             enablePostUsernameOverride,
             isCustomStatusEnabled,
             isMilitaryTime,
-            isTimezoneEnabled,
             rootPostAuthor,
             teammateNameDisplay,
             hideGuestTags: observeConfigBooleanValue(database, 'HideGuestTags'),

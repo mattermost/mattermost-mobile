@@ -14,11 +14,11 @@ import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
 import {queryGroupsByNames} from '@queries/servers/group';
-import {getConfig, getCurrentUserId, setCurrentUserId} from '@queries/servers/system';
+import {getCurrentUserId, setCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser, prepareUsers, queryAllUsers, queryUsersById, queryUsersByIdsOrUsernames, queryUsersByUsername} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
-import {getDeviceTimezone, isTimezoneEnabled} from '@utils/timezone';
+import {getDeviceTimezone} from '@utils/timezone';
 import {getUserTimezoneProps, removeUserFromList} from '@utils/user';
 
 import {fetchGroupsByNames} from './groups';
@@ -805,10 +805,9 @@ export const autoUpdateTimezone = async (serverUrl: string) => {
         return;
     }
 
-    const config = await getConfig(database);
     const currentUser = await getCurrentUser(database);
 
-    if (!currentUser || !config || !isTimezoneEnabled(config)) {
+    if (!currentUser) {
         return;
     }
 

@@ -716,7 +716,6 @@
   "notification_settings.email.send": "Inviare notifiche via e-mail",
   "notification_settings.mention.reply": "Inviare notifiche di risposta per",
   "notification_settings.mentions": "Menzioni",
-  "notification_settings.mentions..keywordsDescription": "Altre parole che attivano una menzione",
   "notification_settings.mentions.channelWide": "Menzioni a livello di canale",
   "notification_settings.mentions.keywords": "Parole chiave",
   "notification_settings.mentions.keywordsLabel": "Le parole chiave non fanno distinzione tra maiuscole e minuscole. Separare le parole chiave con le virgole.",

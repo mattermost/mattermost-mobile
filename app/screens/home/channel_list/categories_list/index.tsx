@@ -46,7 +46,7 @@ const CategoriesList = ({hasChannels, iconPad, isCRTEnabled, moreThanOneTeam}: C
         if (isTablet) {
             tabletWidth.value = getTabletWidth(moreThanOneTeam);
         }
-    }, [isTablet && moreThanOneTeam]);
+    }, [isTablet, moreThanOneTeam]);
 
     const tabletStyle = useAnimatedStyle(() => {
         if (!isTablet) {
