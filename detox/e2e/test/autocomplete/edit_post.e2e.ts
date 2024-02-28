@@ -67,7 +67,7 @@ describe('Autocomplete - Edit Post', () => {
         await expect(Autocomplete.sectionAtMentionList).not.toBeVisible();
 
         // # Type in "@" to activate at-mention autocomplete
-        await EditPostScreen.messageInput.typeText('@');
+        await EditPostScreen.messageInput.typeText(' @');
 
         // * Verify at-mention list is displayed
         await expect(Autocomplete.sectionAtMentionList).toBeVisible();
