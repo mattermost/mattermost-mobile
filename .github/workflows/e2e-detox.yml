@@ -14,9 +14,7 @@ jobs:
     steps:
 
       - name: ci/checkout-repo
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
       - name: Brew install
         run: |
@@ -37,7 +35,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-ios-pr-simulator
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip

@@ -10,6 +10,7 @@ runs:
       shell: bash
       run: |
         echo "::group::install-os-deps"
+        rm '/usr/local/bin/2to3'
         brew install watchman
         echo "::endgroup::"
 
