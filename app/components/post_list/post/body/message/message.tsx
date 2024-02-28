@@ -100,6 +100,7 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
                             highlightKeys={isHighlightWithoutNotificationLicensed ? (currentUser?.highlightKeys ?? EMPTY_HIGHLIGHT_KEYS) : EMPTY_HIGHLIGHT_KEYS}
                             searchPatterns={searchPatterns}
                             theme={theme}
+                            isUnsafeLinksPost={post.props.unsafe_links && post.props.unsafe_links !== ''}
                         />
                     </View>
                 </ScrollView>
