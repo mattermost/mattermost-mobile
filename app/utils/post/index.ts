@@ -133,6 +133,20 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
             interval: persistentNotificationInterval,
             username: user?.username,
         });
+        buttons = [{
+            text: intl.formatMessage({
+                id: 'persistent_notifications.confirm.cancel',
+                defaultMessage: 'Cancel',
+            }),
+            style: 'cancel',
+        },
+        {
+            text: intl.formatMessage({
+                id: 'persistent_notifications.confirm.send',
+                defaultMessage: 'Send',
+            }),
+            onPress: sendMessage,
+        }];
     } else if (hasSpecialMentions(value)) {
         description = intl.formatMessage({
             id: 'persistent_notifications.error.special_mentions',

@@ -55,7 +55,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
 
     const enableConfirmNotificationsToChannel = observeConfigBooleanValue(database, 'EnableConfirmNotificationsToChannel');
     const maxMessageLength = observeConfigIntValue(database, 'MaxPostSize', MAX_MESSAGE_LENGTH_FALLBACK);
-    const persistentNotificationInterval = observeConfigIntValue(database, 'PersistentNotificationInterval');
+    const persistentNotificationInterval = observeConfigIntValue(database, 'PersistentNotificationIntervalMinutes');
     const persistentNotificationMaxRecipients = observeConfigIntValue(database, 'PersistentNotificationMaxRecipients');
 
     const useChannelMentions = combineLatest([channel, currentUser]).pipe(
