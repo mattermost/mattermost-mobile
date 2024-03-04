@@ -113,7 +113,6 @@
   "channel_info.archive_failed": "Ett fel inträffade när kanalen {displayName} skulle arkiveras",
   "channel_info.archive_title": "Arkivera {term}",
   "channel_info.channel_auto_follow_threads": "Följ alla trådar i den här kanalen",
-  "channel_info.channel_auto_follow_threads_failed": "Ett fel uppstod när alla trådar i kanalen {displayName} skulle följas",
   "channel_info.channel_files": "Filer",
   "channel_info.close": "Stäng",
   "channel_info.close_dm": "Stäng direktmeddelande",
