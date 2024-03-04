@@ -7,9 +7,11 @@ import {getUsersCountFromMentions} from '@actions/local/post';
 import {General, Post} from '@constants';
 import {SPECIAL_MENTIONS_REGEX} from '@constants/autocomplete';
 import {POST_TIME_TO_FAIL} from '@constants/post';
+import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE} from '@i18n';
+import {getUserById} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
-import {displayUsername} from '@utils/user';
+import {displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -104,7 +106,7 @@ export function hasSpecialMentions(message: string): boolean {
     return result;
 }
 
-export async function persistentNotificationsConfirmation(serverUrl: string, value: string, mentionsList: string[], intl: IntlShape, sendMessage: () => void, persistentNotificationMaxRecipients: number, persistentNotificationInterval: number, channelType?: ChannelType) {
+export async function persistentNotificationsConfirmation(serverUrl: string, value: string, mentionsList: string[], intl: IntlShape, sendMessage: () => void, persistentNotificationMaxRecipients: number, persistentNotificationInterval: number, currentUserId: string, channelName?: string, channelType?: ChannelType) {
     let title = '';
     let description = '';
     let buttons: AlertButton[] = [{
@@ -115,7 +117,37 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
         style: 'cancel',
     }];
 
-    if (hasSpecialMentions(value)) {
+    if (channelType === General.DM_CHANNEL) {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const teammateId = getUserIdFromChannelName(currentUserId, channelName!);
+        const user = await getUserById(database, teammateId);
+
+        title = intl.formatMessage({
+            id: 'persistent_notifications.confirm.title',
+            defaultMessage: 'Send persistent notifications',
+        });
+        description = intl.formatMessage({
+            id: 'persistent_notifications.dm_channel.description',
+            defaultMessage: '@{username} will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
+        }, {
+            interval: persistentNotificationInterval,
+            username: user?.username,
+        });
+        buttons = [{
+            text: intl.formatMessage({
+                id: 'persistent_notifications.confirm.cancel',
+                defaultMessage: 'Cancel',
+            }),
+            style: 'cancel',
+        },
+        {
+            text: intl.formatMessage({
+                id: 'persistent_notifications.confirm.send',
+                defaultMessage: 'Send',
+            }),
+            onPress: sendMessage,
+        }];
+    } else if (hasSpecialMentions(value)) {
         description = intl.formatMessage({
             id: 'persistent_notifications.error.special_mentions',
             defaultMessage: 'Cannot use @channel, @all or @here to mention recipients of persistent notifications.',
@@ -124,7 +156,16 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
         // removes the @ from the mention
         const formattedMentionsList = mentionsList.map((mention) => mention.slice(1));
         const usersCount = await getUsersCountFromMentions(serverUrl, formattedMentionsList);
-        if (usersCount > persistentNotificationMaxRecipients) {
+        if (usersCount === 0) {
+            title = intl.formatMessage({
+                id: 'persistent_notifications.error.no_mentions.title',
+                defaultMessage: 'Recipients must be @mentioned',
+            });
+            description = intl.formatMessage({
+                id: 'persistent_notifications.error.no_mentions.description',
+                defaultMessage: 'There are no recipients mentioned in your message. You’ll need add mentions to be able to send persistent notifications.',
+            });
+        } else if (usersCount > persistentNotificationMaxRecipients) {
             title = intl.formatMessage({
                 id: 'persistent_notifications.error.max_recipients.title',
                 defaultMessage: 'Too many recipients',
@@ -136,15 +177,6 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
                 max: persistentNotificationMaxRecipients,
                 count: mentionsList.length,
             });
-        } else if (usersCount === 0 && channelType !== General.DM_CHANNEL) {
-            title = intl.formatMessage({
-                id: 'persistent_notifications.error.no_mentions.title',
-                defaultMessage: 'Recipients must be @mentioned',
-            });
-            description = intl.formatMessage({
-                id: 'persistent_notifications.error.no_mentions.description',
-                defaultMessage: 'There are no recipients mentioned in your message. You’ll need add mentions to be able to send persistent notifications.',
-            });
         } else {
             title = intl.formatMessage({
                 id: 'persistent_notifications.confirm.title',
@@ -152,7 +184,7 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
             });
             description = intl.formatMessage({
                 id: 'persistent_notifications.confirm.description',
-                defaultMessage: '@mentioned recipients will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
+                defaultMessage: 'Mentioned recipients will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
             }, {
                 interval: persistentNotificationInterval,
             });
