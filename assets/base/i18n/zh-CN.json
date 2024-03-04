@@ -113,7 +113,6 @@
   "channel_info.archive_failed": "在试图归档频道{displayName}时发生错误",
   "channel_info.archive_title": "归档{term}",
   "channel_info.channel_auto_follow_threads": "关注此频道中的所有话题",
-  "channel_info.channel_auto_follow_threads_failed": "在尝试关注频道{displayName}中的所有话题时遇到问题",
   "channel_info.channel_files": "文件",
   "channel_info.close": "关闭",
   "channel_info.close_dm": "关闭对话",

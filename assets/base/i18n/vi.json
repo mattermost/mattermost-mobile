@@ -113,7 +113,6 @@
   "channel_info.archive_failed": "Đã xảy ra lỗi khi lưu trữ kênh {displayName}",
   "channel_info.archive_title": "Lưu trữ {term}",
   "channel_info.channel_auto_follow_threads": "Theo dõi tất cả các chủ đề trong kênh này",
-  "channel_info.channel_auto_follow_threads_failed": "Đã xảy ra lỗi khi cố gắng tự động theo dõi tất cả các chủ đề trong kênh {displayName}",
   "channel_info.channel_files": "Tệp",
   "channel_info.close": "Đóng",
   "channel_info.close_dm": "Đóng tin nhắn trực tiếp",
