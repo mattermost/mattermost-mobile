@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import {clearTimeout} from '@testing-library/react-native/build/helpers/timers';
+import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import {changeOpacity} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
@@ -25,13 +27,17 @@ const styles = StyleSheet.create({
         flexDirection: 'column-reverse',
     },
     caption: {
-        flexDirection: 'row',
         paddingTop: 1,
         paddingRight: 8,
         paddingBottom: 3,
         paddingLeft: 8,
         borderRadius: 4,
         backgroundColor: changeOpacity('#000', 0.64),
+    },
+    captionNotice: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 8,
     },
     text: {
         color: '#FFF',
@@ -44,7 +50,7 @@ const styles = StyleSheet.create({
     },
 });
 
-interface Props {
+type Props = {
     captionsDict: Dictionary<LiveCaptionMobile>;
     sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
@@ -52,7 +58,39 @@ interface Props {
 
 const Captions = ({captionsDict, sessionsDict, teammateNameDisplay}: Props) => {
     const intl = useIntl();
+    const [showCCNotice, setShowCCNotice] = useState(true);
+
+    useEffect(() => {
+        const timeoutID = setTimeout(() => {
+            setShowCCNotice(false);
+        }, 2000);
+        return () => clearTimeout(timeoutID);
+    }, []);
+
     const captionsArr = Object.values(captionsDict).reverse();
+
+    if (showCCNotice && captionsArr.length > 0) {
+        setShowCCNotice(false);
+    }
+    if (showCCNotice) {
+        return (
+            <View style={styles.spacingContainer}>
+                <View style={styles.captionContainer}>
+                    <View style={[styles.caption, styles.captionNotice]}>
+                        <CompassIcon
+                            name='closed-caption-outline'
+                            color={'#FFF'}
+                            size={18}
+                            style={{alignSelf: 'center'}}
+                        />
+                        <Text style={styles.text}>
+                            {'Live captions turned on'}
+                        </Text>
+                    </View>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.spacingContainer}>
