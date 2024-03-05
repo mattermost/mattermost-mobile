@@ -1,7 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {CallRecordingState, CallsConfig, EmojiData, UserReactionData} from '@mattermost/calls/lib/types';
+import type {
+    CallRecordingState,
+    CallsConfig,
+    EmojiData,
+    UserReactionData,
+} from '@mattermost/calls/lib/types';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type GlobalCallsState = {
@@ -94,6 +99,7 @@ export type CurrentCall = Call & {
     reactionStream: ReactionStreamEmoji[];
     callQualityAlert: boolean;
     callQualityAlertDismissed: number;
+    captions: Dictionary<LiveCaptionMobile>;
 }
 
 export const DefaultCurrentCall: CurrentCall = {
@@ -110,6 +116,7 @@ export const DefaultCurrentCall: CurrentCall = {
     reactionStream: [],
     callQualityAlert: false,
     callQualityAlertDismissed: 0,
+    captions: {},
 };
 
 export type CallSession = {
@@ -158,6 +165,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableSimulcast: false,
     EnableRinging: false,
     EnableTranscriptions: false,
+    EnableLiveCaptions: false,
 };
 
 export type ApiResp = {
@@ -205,3 +213,10 @@ export type SelectedSubtitleTrack = {
     type: 'system' | 'disabled' | 'title' | 'language' | 'index';
     value?: string | number | undefined;
 };
+
+export type LiveCaptionMobile = {
+    captionId: string;
+    sessionId: string;
+    userId: string;
+    text: string;
+}

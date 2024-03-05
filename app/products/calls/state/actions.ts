@@ -30,6 +30,7 @@ import {
     DefaultCall,
     DefaultCurrentCall,
     type IncomingCallNotification,
+    type LiveCaptionMobile,
     type ReactionStreamEmoji,
 } from '@calls/types/calls';
 import {Calls, General, Screens} from '@constants';
@@ -38,9 +39,10 @@ import {getChannelById} from '@queries/servers/channel';
 import {getThreadById} from '@queries/servers/thread';
 import {getUserById} from '@queries/servers/user';
 import {isDMorGM} from '@utils/channel';
+import {generateId} from '@utils/general';
 import {logDebug} from '@utils/log';
 
-import type {CallRecordingState, UserReactionData} from '@mattermost/calls/lib/types';
+import type {CallRecordingState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
 
 export const setCalls = async (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
@@ -781,6 +783,58 @@ export const setCallQualityAlertDismissed = () => {
         ...currentCall,
         callQualityAlert: false,
         callQualityAlertDismissed: Date.now(),
+    };
+    setCurrentCall(nextCurrentCall);
+};
+
+export const receivedCaption = (serverUrl: string, captionData: LiveCaptionData) => {
+    const channelId = captionData.channel_id;
+
+    // Ignore if we're not in that channel's call.
+    const currentCall = getCurrentCall();
+    if (currentCall?.channelId !== channelId) {
+        return;
+    }
+
+    // Add or replace that user's caption.
+    const captionId = generateId();
+    const nextCaptions = {...currentCall.captions};
+    const newCaption: LiveCaptionMobile = {
+        captionId,
+        sessionId: captionData.session_id,
+        userId: captionData.user_id,
+        text: captionData.text,
+    };
+    nextCaptions[captionData.session_id] = newCaption;
+
+    const nextCurrentCall: CurrentCall = {
+        ...currentCall,
+        captions: nextCaptions,
+    };
+    setCurrentCall(nextCurrentCall);
+
+    setTimeout(() => {
+        receivedCaptionTimeout(serverUrl, channelId, newCaption);
+    }, Calls.CAPTION_TIMEOUT);
+};
+
+const receivedCaptionTimeout = (serverUrl: string, channelId: string, caption: LiveCaptionMobile) => {
+    const currentCall = getCurrentCall();
+    if (currentCall?.channelId !== channelId) {
+        return;
+    }
+
+    // Remove the caption only if it hasn't been replaced by a newer one
+    if (currentCall.captions[caption.sessionId]?.captionId !== caption.captionId) {
+        return;
+    }
+
+    const nextCaptions = {...currentCall.captions};
+    delete nextCaptions[caption.sessionId];
+
+    const nextCurrentCall: CurrentCall = {
+        ...currentCall,
+        captions: nextCaptions,
     };
     setCurrentCall(nextCurrentCall);
 };

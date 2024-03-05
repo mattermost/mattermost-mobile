@@ -15,6 +15,7 @@ import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
+    handleCallCaption,
     handleCallChannelDisabled,
     handleCallChannelEnabled,
     handleCallEnded,
@@ -440,6 +441,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.CALLS_USER_DISMISSED_NOTIFICATION:
             handleUserDismissedNotification(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_CAPTION:
+            handleCallCaption(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:

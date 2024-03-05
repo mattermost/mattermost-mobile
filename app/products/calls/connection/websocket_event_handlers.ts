@@ -6,7 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {
     callEnded,
-    callStarted, getCallsConfig,
+    callStarted, getCallsConfig, receivedCaption,
     removeIncomingCall,
     setCallScreenOff,
     setCallScreenOn,
@@ -30,6 +30,7 @@ import type {
     CallRecordingStateData,
     CallStartData,
     EmptyData,
+    LiveCaptionData,
     UserConnectedData,
     UserDisconnectedData,
     UserDismissedNotification,
@@ -176,4 +177,8 @@ export const handleUserDismissedNotification = async (serverUrl: string, msg: We
     }
 
     removeIncomingCall(serverUrl, msg.data.callID);
+};
+
+export const handleCallCaption = (serverUrl: string, msg: WebSocketMessage<LiveCaptionData>) => {
+    receivedCaption(serverUrl, msg.data);
 };

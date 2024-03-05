@@ -10,6 +10,7 @@ import {
     newCurrentCall,
     processIncomingCalls,
     processMeanOpinionScore,
+    receivedCaption,
     removeIncomingCall,
     setAudioDeviceInfo,
     setCallQualityAlertDismissed,
@@ -62,7 +63,7 @@ import {
 import {License} from '@constants';
 import DatabaseManager from '@database/manager';
 
-import type {CallRecordingState} from '@mattermost/calls/lib/types';
+import type {CallRecordingState, LiveCaptionData} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
 
@@ -1406,5 +1407,82 @@ describe('useCallsState', () => {
         });
         assert.deepEqual(result.current[1], currentCallStateImIn);
         assert.deepEqual(result.current[2], expectedIncomingCalls);
+    });
+
+    it('captions', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+        };
+        const caption1user1Data: LiveCaptionData = {
+            session_id: 'session1',
+            user_id: 'user-1',
+            channel_id: 'channel-1',
+            text: 'caption 1',
+        };
+        const caption2user1Data: LiveCaptionData = {
+            session_id: 'session1',
+            user_id: 'user-1',
+            channel_id: 'channel-1',
+            text: 'caption 2',
+        };
+        const caption3user1Data: LiveCaptionData = {
+            session_id: 'session1',
+            user_id: 'user-1',
+            channel_id: 'channel-1',
+            text: 'caption 3',
+        };
+        const caption1user2Data: LiveCaptionData = {
+            session_id: 'session2',
+            user_id: 'user-2',
+            channel_id: 'channel-1',
+            text: 'caption 1 user 2',
+        };
+        const caption2user2Data: LiveCaptionData = {
+            session_id: 'session2',
+            user_id: 'user-2',
+            channel_id: 'channel-1',
+            text: 'caption 2 user 2',
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => {
+            setCallsState('server1', initialCallsState);
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+
+        // test sending the first 2 captions for user 1, 1 caption for user 2
+        act(() => {
+            receivedCaption('server1', caption1user1Data);
+            receivedCaption('server1', caption2user1Data);
+            receivedCaption('server1', caption1user2Data);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        let currentCall = result.current[1] as CurrentCall;
+        assert.equal(currentCall.captions.session1.text, 'caption 2');
+        assert.equal(currentCall.captions.session2.text, 'caption 1 user 2');
+
+        // test sending the next captions for users 1 and 2
+        act(() => {
+            receivedCaption('server1', caption3user1Data);
+            receivedCaption('server1', caption2user2Data);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        currentCall = result.current[1] as CurrentCall;
+        assert.equal(currentCall.captions.session1.text, 'caption 3');
+        assert.equal(currentCall.captions.session2.text, 'caption 2 user 2');
     });
 });
