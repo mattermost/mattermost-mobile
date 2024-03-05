@@ -847,6 +847,7 @@
   "persistent_notifications.confirm.description": "Die @mentioned Empfänger werden {interval, plural, one {jede Minute} other {alle {interval} Minuten}} benachrichtigt, bis sie die Nachricht bestätigt oder darauf geantwortet haben.",
   "persistent_notifications.confirm.send": "Senden",
   "persistent_notifications.confirm.title": "Dauerhafte Benachrichtigungen senden",
+  "persistent_notifications.dm_channel.description": "{username} werden alle {interval, plural, one {minute} other {{interval} Minuten }}benachrichtigt, bis sie die Nachricht bestätigt oder beantwortet haben.",
   "persistent_notifications.error.max_recipients.description": "Du kannst dauerhafte Benachrichtigungen an maximal {max} Empfänger senden. In deiner Nachricht sind {count} Empfänger angegeben. Du musst die genannten Empfänger ändern, bevor du senden kannst.",
   "persistent_notifications.error.max_recipients.title": "Zu viele Empfänger",
   "persistent_notifications.error.no_mentions.description": "Es sind keine Empfänger in deiner Nachricht erwähnt. Du musst Erwähnungen hinzufügen, um dauerhafte Benachrichtigungen senden zu können.",
