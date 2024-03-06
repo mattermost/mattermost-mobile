@@ -8,13 +8,7 @@ runs:
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        wget https://github.com/facebook/watchman/archive/v2024.01.22.00.tar.gz
-        tar xvf v2024.01.22.00.tar.gz
-        cd watchman-2024.01.22.00
-        ./autogen.sh
-        ./configure
-        make
-        sudo make install
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
