@@ -10,7 +10,7 @@ runs:
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        brew install watchman --revision=2024.01.22.00@7fa892d
+        brew install --HEAD facebook/fb/watchman@2024.01.22.00_1
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
