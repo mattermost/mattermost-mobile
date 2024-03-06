@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import {changeOpacity} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
@@ -83,9 +84,11 @@ const Captions = ({captionsDict, sessionsDict, teammateNameDisplay}: Props) => {
                             size={18}
                             style={{alignSelf: 'center'}}
                         />
-                        <Text style={styles.text}>
-                            {'Live captions turned on'}
-                        </Text>
+                        <FormattedText
+                            id={'mobile.calls_captions_turned_on'}
+                            defaultMessage={'Live captions turned on'}
+                            style={styles.text}
+                        />
                     </View>
                 </View>
             </View>
