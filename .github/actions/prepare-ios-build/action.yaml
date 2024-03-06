@@ -10,7 +10,33 @@ runs:
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        brew install watchman
+        VERSION="v2024.01.22.00"
+
+        # Download the source code
+        curl -LO https://github.com/facebook/watchman/archive/${VERSION}.tar.gz
+
+        # Extract the archive
+        tar -xf ${VERSION}.tar.gz
+
+        # Move to the extracted directory
+        cd watchman-${VERSION}
+
+        # Install dependencies using Homebrew (assuming you have Homebrew installed)
+        brew install openssl boost
+
+        # Configure and build Watchman
+        ./autogen.sh
+        ./configure
+        make
+
+        # Install Watchman (requires root privileges)
+        make install
+
+        # Remove the downloaded archive and extracted directory (optional)
+        rm -rf ../${VERSION}.tar.gz watchman-${VERSION}
+
+        echo "Watchman version ${VERSION} has been installed."
+
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
