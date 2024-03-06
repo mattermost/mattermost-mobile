@@ -8,9 +8,10 @@ runs:
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        curl -Lo /usr/local/bin/watchman https://github.com/facebook/watchman/releases/download/2024.01.22.00_1/watchman-macos-2024.01.22.00_1.zip
-        unzip -o /usr/local/bin/watchman
-        chmod +x /usr/local/bin/watchman
+        curl -Lo watchman.zip https://github.com/facebook/watchman/releases/download/2024.01.22.00_1/watchman-macos-2024.01.22.00_1.zip
+        unzip -o watchman.zip
+        chmod +x watchman
+        mv watchman /usr/local/bin/
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
