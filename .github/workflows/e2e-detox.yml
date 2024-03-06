@@ -60,3 +60,9 @@ jobs:
           cd detox && npm install
       - name: Run detox e2e
         run: npm run e2e:ios
+
+      - name: Upload iOS Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.run_id }}-IOS-report
+          path: detox/artifacts/ios-report.html
