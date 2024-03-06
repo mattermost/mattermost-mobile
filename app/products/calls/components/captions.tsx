@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {clearTimeout} from '@testing-library/react-native/build/helpers/timers';
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
@@ -20,11 +19,12 @@ const styles = StyleSheet.create({
     },
     captionContainer: {
         display: 'flex',
-        height: 120,
-        bottom: -72, // 120-48, to place the bottoms at the same place
+        height: 400,
+        bottom: -352, // 48-400, to place the bottoms at the same place
         gap: 8,
         alignItems: 'center',
         flexDirection: 'column-reverse',
+        overflow: 'hidden',
     },
     caption: {
         paddingTop: 1,
