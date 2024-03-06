@@ -113,7 +113,6 @@
   "channel_info.archive_failed": "チャンネル {displayName} をアーカイブする際にエラーが発生しました",
   "channel_info.archive_title": "{term} をアーカイブする",
   "channel_info.channel_auto_follow_threads": "このチャンネルのすべてのスレッドをフォローする",
-  "channel_info.channel_auto_follow_threads_failed": "このチャンネル {displayName} のすべてのスレッドを自動フォローする際にエラーが発生しました",
   "channel_info.channel_files": "ファイル",
   "channel_info.close": "閉じる",
   "channel_info.close_dm": "ダイレクトメッセージを閉じる",

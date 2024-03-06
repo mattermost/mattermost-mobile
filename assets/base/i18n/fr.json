@@ -113,7 +113,6 @@
   "channel_info.archive_failed": "Une erreur s'est produite lors de la tentative d'archiver le canal {displayName}",
   "channel_info.archive_title": "Archiver {term}",
   "channel_info.channel_auto_follow_threads": "Suivre tous les fils de ce canal",
-  "channel_info.channel_auto_follow_threads_failed": "Une erreur s'est produite lors de la tentative de suivi de tous les fils de ce canal {displayName}",
   "channel_info.channel_files": "Fichiers",
   "channel_info.close": "Fermer",
   "channel_info.close_dm": "Fermer le message direct",
