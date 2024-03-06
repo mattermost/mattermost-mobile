@@ -20,6 +20,8 @@ jobs:
         uses: ./.github/actions/prepare-ios-build
 
       - name: Brew install
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
         run: |
           brew tap wix/brew
           brew install applesimutils

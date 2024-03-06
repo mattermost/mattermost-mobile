@@ -5,12 +5,12 @@ runs:
   using: composite
   steps:
     - name: ci/install-os-deps
-      env:
-        HOMEBREW_NO_AUTO_UPDATE: 1
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        brew install --HEAD facebook/fb/watchman@2024.01.22.00_1
+        curl -Lo /usr/local/bin/watchman https://github.com/facebook/watchman/releases/download/2024.01.22.00_1/watchman-macos-2024.01.22.00_1.zip
+        unzip -o /usr/local/bin/watchman
+        chmod +x /usr/local/bin/watchman
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
