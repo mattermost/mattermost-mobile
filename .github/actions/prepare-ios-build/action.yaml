@@ -6,11 +6,11 @@ runs:
   steps:
     - name: ci/install-os-deps
       env:
-        HOMEBREW_NO_AUTO_UPDATE: "1"
+        HOMEBREW_NO_AUTO_UPDATE: 1
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        brew install watchman
+        brew install watchman --revision=2024.01.22.00@7fa892d
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
