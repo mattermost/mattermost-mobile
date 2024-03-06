@@ -57,7 +57,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 type Props = {
     onPress: () => void;
     isNewMessage: boolean;
-    isReply: boolean;
     showScrollToEndBtn: boolean;
     location: string;
 };
@@ -65,7 +64,6 @@ type Props = {
 const ScrollToEndView = ({
     onPress,
     isNewMessage,
-    isReply,
     showScrollToEndBtn,
     location,
 }: Props) => {
@@ -88,7 +86,7 @@ const ScrollToEndView = ({
     const shouldAdjustBottom = (Platform.OS === 'ios') && isTablet && (location === Screens.THREAD) && !keyboardHeight;
     const bottomAdjustment = shouldAdjustBottom ? insets.bottom : 0;
 
-    const message = isReply ?
+    const message = location === Screens.THREAD ?
         intl.formatMessage({id: 'postList.scrollToBottom.newReplies', defaultMessage: 'New replies'}) :
         intl.formatMessage({id: 'postList.scrollToBottom.newMessages', defaultMessage: 'New messages'});
 

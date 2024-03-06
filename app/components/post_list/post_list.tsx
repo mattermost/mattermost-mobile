@@ -3,7 +3,7 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, type ViewToken} from 'react-native';
+import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
 import Animated, {type AnimatedStyle} from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -110,7 +110,6 @@ const PostList = ({
     const scrolledToHighlighted = useRef(false);
     const [refreshing, setRefreshing] = useState(false);
     const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
-    const [isNewMessage, setIsNewMessage] = useState(false);
     const [lastPostId, setLastPostId] = useState<string>(posts[0].id);
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -122,7 +121,7 @@ const PostList = ({
         return orderedPosts.findIndex((i) => i.type === 'start-of-new-messages');
     }, [orderedPosts]);
 
-    const isReply = useMemo(() => {
+    const isNewMessage = useMemo(() => {
         return posts[0].id !== lastPostId;
     }, [posts[0].id, lastPostId]);
 
@@ -216,14 +215,7 @@ const PostList = ({
     }, []);
 
     const registerViewableItemsListener = useCallback((listener: ViewableItemsChangedListenerEvent) => {
-        onViewableItemsChangedListener.current = function viewableItemListener(viewableItems: ViewToken[]) {
-            if (viewableItems?.[0]?.index && initialIndex !== -1 && viewableItems[0].index > initialIndex) {
-                setIsNewMessage(true);
-            } else {
-                setIsNewMessage(false);
-            }
-            listener(viewableItems);
-        };
+        onViewableItemsChangedListener.current = listener;
         const removeListener = () => {
             onViewableItemsChangedListener.current = undefined;
         };
@@ -308,13 +300,9 @@ const PostList = ({
         });
     }, []);
 
-    const onScrollToBottomPress = useCallback(() => {
-        if (isNewMessage) {
-            scrollToIndex(initialIndex);
-        } else {
-            listRef.current?.scrollToOffset({offset: 0, animated: true});
-        }
-    }, [isNewMessage, initialIndex, scrollToIndex]);
+    const onScrollToEnd = useCallback(() => {
+        listRef.current?.scrollToOffset({offset: 0, animated: true});
+    }, []);
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -368,9 +356,8 @@ const PostList = ({
             />
             {location !== Screens.PERMALINK &&
             <ScrollToEndView
-                onPress={onScrollToBottomPress}
+                onPress={onScrollToEnd}
                 isNewMessage={isNewMessage}
-                isReply={isReply}
                 showScrollToEndBtn={showScrollToEndBtn}
                 location={location}
             />
