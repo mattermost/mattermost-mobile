@@ -19,7 +19,7 @@ runs:
         tar -xf ${VERSION}.tar.gz
 
         # Move to the extracted directory
-        cd watchman-${VERSION}
+        cd watchman-${VERSION:1}
 
         # Install dependencies using Homebrew (assuming you have Homebrew installed)
         brew install openssl boost
@@ -33,7 +33,7 @@ runs:
         make install
 
         # Remove the downloaded archive and extracted directory (optional)
-        rm -rf ../${VERSION}.tar.gz watchman-${VERSION}
+        rm -rf ../${VERSION}.tar.gz watchman-${VERSION:1}
 
         echo "Watchman version ${VERSION} has been installed."
 
