@@ -37,7 +37,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-ios-pr-simulator
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        uses: actions/upload-artifact@v4
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
