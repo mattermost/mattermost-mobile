@@ -221,7 +221,7 @@ const PostList = ({
         };
 
         return removeListener;
-    }, [initialIndex]);
+    }, []);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
         switch (item.type) {
