@@ -89,7 +89,7 @@ jobs:
         run: cd detox && npm install
 
       - name: Run Detox E2E Tests
-        run: npm run e2e:ios-test -- "${{ matrix.specs }}"
+        run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
 
       - name: Upload iOS Test Report
         if: always()
