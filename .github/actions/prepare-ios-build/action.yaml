@@ -12,7 +12,7 @@ runs:
         echo "::group::install-os-deps"
         echo "### Running brew update"
         brew update
-        brew uninstall $(brew list)
+        brew link --overwrite python@3.12
         #echo "### Checking out specific homebrew/core tap version"
         #git -C $(brew --repository)/Library/Taps/homebrew/homebrew-core/ checkout c0c26c4e33875733cb694a075ba3e408400ee398
         echo "### Installing watchman"
