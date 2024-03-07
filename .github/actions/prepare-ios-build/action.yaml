@@ -10,7 +10,7 @@ runs:
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        brew install watchman
+        brew install watchman@2024.01.15.00
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
