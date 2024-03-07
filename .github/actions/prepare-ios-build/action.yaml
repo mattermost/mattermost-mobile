@@ -5,23 +5,14 @@ runs:
   using: composite
   steps:
     - name: ci/install-os-deps
-      env:
-        HOMEBREW_NO_AUTO_UPDATE: "1"
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        #echo "### Running brew update"
-        #brew update
-        #brew link --overwrite python@3.12
-        #echo "### Checking out specific homebrew/core tap version"
-        #git -C $(brew --repository)/Library/Taps/homebrew/homebrew-core/ checkout c0c26c4e33875733cb694a075ba3e408400ee398
-        #echo "### Installing watchman"
-        #brew install $(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/w/watchman.rb
         set -x
-        ls -la /usr/local/bin/2to3
-        sudo chown -v -R $(id -u) /usr/local
-        ls -la /usr/local/bin/2to3
-        brew install --overwrite watchman
+        sudo dseditgroup -o edit -a $(id -n -u) -t user wheel
+        brew install --overwrite watchman || true
+        which watchman
+        exit 1
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
