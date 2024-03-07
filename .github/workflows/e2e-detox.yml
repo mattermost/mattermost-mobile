@@ -96,4 +96,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ios-results-${{ matrix.runId }}
-          path: detox/artifacts/ios-report.html
+          path: detox/artifacts/jest-stare/
