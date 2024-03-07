@@ -8,7 +8,8 @@ runs:
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        brew install facebook/fb/watchman
+        brew install --overwrite python@3.12
+        brew install watchman
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
