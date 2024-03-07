@@ -10,7 +10,10 @@ runs:
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        brew install watchman@2024.01.15.00
+        brew update
+        HOMEBREW_PREFIX=$(brew config | grep HOMEBREW_PREFIX | awk '{ print $2; }')
+        git -c "${HOMEBREW_PREFIX}/Homebrew/Library/Taps/homebrew/homebrew-core/" checkout c0c26c4e33875733cb694a075ba3e408400ee398
+        brew install watchman
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
