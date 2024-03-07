@@ -10,10 +10,12 @@ runs:
       shell: bash
       run: |
         echo "::group::install-os-deps"
+        echo "### Running brew update"
         brew update
-        HOMEBREW_PREFIX=$(brew config | grep HOMEBREW_PREFIX | awk '{ print $2; }')
-        git -c "${HOMEBREW_PREFIX}/Homebrew/Library/Taps/homebrew/homebrew-core/" checkout c0c26c4e33875733cb694a075ba3e408400ee398
-        brew install watchman
+        echo "### Checking out specific homebrew/core tap version"
+        git -C $(brew --repository)/Library/Taps/homebrew/homebrew-core/ checkout c0c26c4e33875733cb694a075ba3e408400ee398
+        echo "### Installing watchman"
+        brew install $(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/w/watchman.rb
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
