@@ -113,7 +113,6 @@
   "channel_info.archive_failed": "Hiba történt a {displayName} csatorna archiválása közben",
   "channel_info.archive_title": "{term} archiválása",
   "channel_info.channel_auto_follow_threads": "Kövesse az összes üzenetszálat ezen a csatornán",
-  "channel_info.channel_auto_follow_threads_failed": "Hiba lépett fel, amikor megpróbálta automatikusan követni az összes üzenetszálat a {displayName} csatornában",
   "channel_info.channel_files": "Fájlok",
   "channel_info.close": "Bezárás",
   "channel_info.close_dm": "Közvetlen üzenet bezárása",

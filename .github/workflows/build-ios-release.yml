@@ -22,7 +22,7 @@ jobs:
         uses: ./.github/actions/test
 
   build-and-deploy-ios-release:
-    runs-on: macos-12
+    runs-on: macos-14-large
     if: ${{ !contains(github.ref_name, 'release-sim') }}
     needs:
       - test
@@ -71,7 +71,7 @@ jobs:
           path: "*.ipa"
 
   build-ios-simulator:
-    runs-on: macos-12
+    runs-on: macos-14-large
     if: ${{ !contains(github.ref_name , 'release-ios') }}
     needs:
       - test

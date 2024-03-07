@@ -14,7 +14,6 @@ import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 import Footer from './footer';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type {GalleryItemType} from '@typings/screens/gallery';
 
 type FooterProps = WithDatabaseArgs & {
@@ -48,8 +47,8 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
     const enablePostUsernameOverride = observeConfigBooleanValue(database, 'EnablePostUsernameOverride');
     const enablePostIconOverride = observeConfigBooleanValue(database, 'EnablePostIconOverride');
     const enablePublicLink = observeConfigBooleanValue(database, 'EnablePublicLink');
-    const channelName = channel.pipe(switchMap((c: ChannelModel) => of$(c.displayName)));
-    const isDirectChannel = channel.pipe(switchMap((c: ChannelModel) => of$(c.type === General.DM_CHANNEL)));
+    const channelName = channel.pipe(switchMap((c) => of$(c?.displayName || '')));
+    const isDirectChannel = channel.pipe(switchMap((c) => of$(c?.type === General.DM_CHANNEL)));
 
     return {
         author,
