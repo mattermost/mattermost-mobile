@@ -50,7 +50,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
@@ -74,7 +74,7 @@ jobs:
           brew install applesimutils
 
       - name: Download iOS Simulator Build
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: mobile-artifacts
@@ -93,7 +93,7 @@ jobs:
 
       - name: Upload iOS Test Report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ios-results-${{ matrix.runId }}
-          path: detox/artifacts/jest-stare/
+          path: detox/artifacts/
