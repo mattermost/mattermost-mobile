@@ -17,6 +17,7 @@ runs:
         #git -C $(brew --repository)/Library/Taps/homebrew/homebrew-core/ checkout c0c26c4e33875733cb694a075ba3e408400ee398
         #echo "### Installing watchman"
         #brew install $(brew --repository)/Library/Taps/homebrew/homebrew-core/Formula/w/watchman.rb
+        sudo chown -R $(id -u) /usr/local
         brew install --overwrite watchman
         echo "::endgroup::"
 
