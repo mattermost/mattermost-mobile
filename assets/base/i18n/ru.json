@@ -847,6 +847,7 @@
   "persistent_notifications.confirm.description": "Указанные получатели будут получать уведомления каждые {interval, plural, one {минуту} few {{interval} минуты} other {{interval} минут}}, пока они не подтвердят или не ответят на сообщение.",
   "persistent_notifications.confirm.send": "Отправить",
   "persistent_notifications.confirm.title": "Отправка постоянных уведомлений",
+  "persistent_notifications.dm_channel.description": "{username} будет получать уведомления {interval, plural, one {каждую минуту} few {каждые {interval} минуты} other {каждые {interval} минут}}, пока не подтвердит сообщение или не ответит на него.",
   "persistent_notifications.error.max_recipients.description": "Вы можете отправлять постоянные уведомления максимум {max} получателям. В вашем сообщении упомянуты {count} получателей. Вам нужно изменить упомянутых получателей перед отправкой.",
   "persistent_notifications.error.max_recipients.title": "Слишком много получателей",
   "persistent_notifications.error.no_mentions.description": "В вашем сообщении не упомянуты получатели. Вам нужно добавить упоминания, чтобы иметь возможность отправлять постоянные уведомления.",
