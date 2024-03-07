@@ -10,7 +10,8 @@ runs:
         echo "::group::install-os-deps"
         set -x
         sudo dseditgroup -o edit -a $(id -n -u) -t user wheel
-        brew install --overwrite watchman || true
+        brew install --overwrite python@3.12 || true
+        brew install watchman
         which watchman
         exit 1
         echo "::endgroup::"
