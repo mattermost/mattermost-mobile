@@ -5,15 +5,13 @@ runs:
   using: composite
   steps:
     - name: ci/install-os-deps
+      env:
+        HOMEBREW_NO_AUTO_UPDATE: "1"
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        set -x
-        sudo dseditgroup -o edit -a $(id -n -u) -t user wheel
-        brew install --overwrite python@3.12 || true
+        brew install python@3.12
         brew install watchman
-        which watchman
-        exit 1
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
