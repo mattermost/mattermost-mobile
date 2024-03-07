@@ -10,7 +10,6 @@ runs:
       shell: bash
       run: |
         echo "::group::install-os-deps"
-        sudo dseditgroup -o edit -a $(id -n -u) -t user wheel
         brew install --overwrite python@3.12
         brew install watchman
         echo "::endgroup::"
