@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useMemo, useRef} from 'react';
+import React, {useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, Pressable, Text, useWindowDimensions, View, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -102,9 +102,7 @@ const ScrollToEndView = ({
         [showScrollToEndBtn, isNewMessage, keyboardOverlap, bottomAdjustment],
     );
 
-    const scrollButtonStyles = useMemo(() => [
-        isNewMessage ? styles.scrollToEndBadge : styles.scrollToEndButton,
-    ], [isNewMessage, keyboardHeight]);
+    const scrollButtonStyles = isNewMessage ? styles.scrollToEndBadge : styles.scrollToEndButton;
 
     return (
         <View ref={guidingViewRef}>
