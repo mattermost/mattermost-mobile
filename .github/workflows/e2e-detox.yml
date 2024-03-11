@@ -103,8 +103,8 @@ jobs:
   download-e2e-results:
     runs-on: ubuntu-22.04
     needs:
-      - e2e-ios
       - generate-specs
+      - e2e-ios
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -114,6 +114,7 @@ jobs:
         with:
           name: ios-results-${{ needs.e2e-ios.outputs.matrix.runId }}
           path: detox/artifacts/
+        continue-on-error: true
 
       - name: Save report Detox Dependencies
         run: cd detox && npm run e2e:save-report
