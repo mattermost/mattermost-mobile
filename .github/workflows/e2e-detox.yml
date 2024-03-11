@@ -43,7 +43,6 @@ jobs:
           TAG: "${{ github.ref_name }}"
           AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-          # MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane ios simulator --env ios.simulator || true
         working-directory: ./fastlane
@@ -99,9 +98,74 @@ jobs:
           name: ios-results-${{ matrix.runId }}
           path: detox/artifacts/
 
+  build-android-apk:
+    runs-on: macos-14-large
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ci/prepare-android-build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+          STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+          STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+          MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+
+      - name: Install Detox dependencies
+        run: cd detox && npm ci
+
+      - name: Build android apk
+        run: |
+          cd detox
+          npm run e2e:android-build
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-apk-${{ github.run_id }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+  e2e-android:
+    env:
+      IOS: false
+    runs-on: macos-14-large
+    name: test-detox-e2e-${{ matrix.runId }}
+    needs:
+      - generate-specs
+      - build-android-apk
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+  
+      - name: Download Android APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-build-apk-${{ github.run_id }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Start React Native Metro Server
+        run: npm run start &
+
+      - name: Install Detox Dependencies
+        run: cd detox && npm ci
+
+      - name: Run Detox E2E Tests
+        run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
+
+      - name: Upload iOS Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-results-${{ matrix.runId }}
+          path: detox/artifacts
 
   download-e2e-results:
     runs-on: ubuntu-22.04
+    if: always() 
     needs:
       - generate-specs
       - e2e-ios
@@ -114,7 +178,6 @@ jobs:
         with:
           name: ios-results-${{ needs.e2e-ios.outputs.matrix.runId }}
           path: detox/artifacts/
-        continue-on-error: true
 
       - name: Save report Detox Dependencies
         run: cd detox && npm run e2e:save-report

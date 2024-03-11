@@ -31,9 +31,9 @@
  *      - TYPE=[type], e.g. "MASTER", "PR", "RELEASE", "GEKIDOU"
  */
 
+const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const fs = require('fs');
 
 const fse = require('fs-extra');
 const {mergeFiles} = require('junit-report-merger');
@@ -114,19 +114,20 @@ const saveReport = async () => {
     const jestStareOutputDir = path.join(__dirname, `${ARTIFACTS_DIR}/jest-stare`);
     const jestStareCombinedFilePath = `${jestStareOutputDir}/${platform}-combined.json`;
     if (!fs.existsSync(jestStareOutputDir)) {
-        fs.mkdirSync(jestStareOutputDir, { recursive: true });
+        fs.mkdirSync(jestStareOutputDir, {recursive: true});
     }
+
     // 'ios-results-*' is the path in CI where the parallel detox jobs save artifacts
     await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/ios-results*/jest-stare/${platform}-data*.json`]);
     generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath);
 
     if (process.env.CI) {
         // Delete folders starting with "iOS-results-" only in CI environment
-        const entries = fs.readdirSync(ARTIFACTS_DIR, { withFileTypes: true });
+        const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
         for (const entry of entries) {
-          if (entry.isDirectory() && entry.name.startsWith('ios-results-')) {
-            fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), { recursive: true });
-          }
+            if (entry.isDirectory() && entry.name.startsWith('ios-results-')) {
+                fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
+            }
         }
     }
     const result = await saveArtifacts();
