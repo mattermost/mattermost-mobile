@@ -42,9 +42,9 @@ jobs:
       - name: Build iOS Simulator
         env:
           TAG: "${{ github.ref_name }}"
-          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
+          # AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          # AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          # MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane ios simulator --env ios.simulator
         working-directory: ./fastlane
@@ -56,6 +56,8 @@ jobs:
           path: Mattermost-simulator-x86_64.app.zip
 
   e2e-ios:
+    env:
+      IOS: true
     runs-on: macos-14-large
     name: test-detox-e2e-${{ matrix.runId }}
     needs:
@@ -86,7 +88,7 @@ jobs:
         run: npm run start &
 
       - name: Install Detox Dependencies
-        run: cd detox && npm install
+        run: cd detox && npm ci
 
       - name: Run Detox E2E Tests
         run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
@@ -97,3 +99,22 @@ jobs:
         with:
           name: ios-results-${{ matrix.runId }}
           path: detox/artifacts/
+
+
+  download-e2e-results:
+    runs-on: ubuntu-22.04
+    needs:
+      - e2e-ios
+      - generate-specs
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download iOS E2E Test Results
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-results-${{ needs.e2e-ios.outputs.matrix.runId }}
+          path: detox/artifacts/
+
+      - name: Save report Detox Dependencies
+        run: cd detox && npm run e2e:save-report

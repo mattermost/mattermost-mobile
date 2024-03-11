@@ -53,6 +53,7 @@
     "check": "npm run lint && npm run tsc",
     "clean-detox": "detox clean",
     "lint": "eslint --ignore-pattern node_modules --quiet .",
+    "e2e:save-report": "node save_report.js",
     "start:webhook": "node webhook_server.js",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit"
   }
