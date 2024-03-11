@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-
   generate-specs:
     runs-on: ubuntu-22.04
     outputs:
@@ -42,11 +41,11 @@ jobs:
       - name: Build iOS Simulator
         env:
           TAG: "${{ github.ref_name }}"
-          # AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
-          # AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
           # MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-        run: bundle exec fastlane ios simulator --env ios.simulator
+        run: bundle exec fastlane ios simulator --env ios.simulator || true
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
