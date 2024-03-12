@@ -141,4 +141,7 @@ jobs:
         continue-on-error: true
 
       - name: Save report Detox Dependencies
-        run: cd detox && npm run e2e:save-report
+        run: |
+          cd detox 
+          npm i
+          npm run e2e:save-report
