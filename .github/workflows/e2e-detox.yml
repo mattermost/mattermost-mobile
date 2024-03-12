@@ -162,12 +162,6 @@ jobs:
           name: android-build-apk-${{ github.run_id }}
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Check APK
-        run: |
-          ls -l android/app/build/
-          ls -l outputs/apk/
-          ls -l debug/app-debug.apk
-
       - name: Start React Native Metro Server
         run: npm run start &
 
