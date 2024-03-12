@@ -122,7 +122,6 @@ jobs:
           name: ios-results-${{ matrix.runId }}
           path: detox/artifacts/
 
-
   download-e2e-results:
     runs-on: ubuntu-22.04
     if: always()
@@ -133,15 +132,21 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Get Uploaded Artifact Names
+        run: |
+          artifact_names=$(gh run list-artifacts --repo ${{ github.repository }} --run-id ${{ github.run_id }} --json artifactName --jq '[.[].artifactName]')
+          echo "ARTIFACT_NAMES=$artifact_names" >> $GITHUB_ENV
+          echo $ARTIFACT_NAMES
+
       - name: Download iOS E2E Test Results
         uses: actions/download-artifact@v4
         with:
-          name: ios-results-${{ needs.e2e-ios.outputs.matrix.runId }}
+          name: ${{ env.ARTIFACT_NAMES }}
           path: detox/artifacts/
         continue-on-error: true
 
       - name: Save report Detox Dependencies
         run: |
-          cd detox 
+          cd detox
           npm i
           npm run e2e:save-report
