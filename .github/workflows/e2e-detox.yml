@@ -12,6 +12,27 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
+env:
+  DEVICE_NAME: "iPhone 15 Pro"
+  DEVICE_OS_VERSION: "iOS 17.2"
+  BRANCH: ${{ github.head_ref || github.ref_name }} 
+  BUILD_ID: ${{ github.run_id }}
+  COMMIT_HASH: ${{ github.sha }}
+  AWS_REGION: 'us-east-1'
+  DETOX_AWS_S3_BUCKET: 'mattermost-detox-report'
+  DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+  DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+  HEADLESS: 'false'
+  TYPE: 'PR'
+  PULL_REQUEST: 'https://github.com/mattermost/mattermost-mobile/pull/7822'
+  ZEPHYR_ENABLE: false
+  JIRA_PROJECT_KEY: 'MM'
+  ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+  ZEPHYR_FOLDER_ID: '3233873'
+  TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+  WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+  FAILURE_MESSAGE: "Something has failed"
+  
 jobs:
   generate-specs:
     runs-on: ubuntu-22.04
@@ -43,7 +64,6 @@ jobs:
           TAG: "${{ github.ref_name }}"
           AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-          # MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane ios simulator --env ios.simulator || true
         working-directory: ./fastlane
@@ -68,6 +88,9 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Set Build ID
+        run: echo "BUILD_ID=${{ github.run_id }}-${{ env.BUILD_SUFFIX }}" >> $GITHUB_ENV
 
       - name: Install Homebrew Dependencies
         run: |
