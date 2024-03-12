@@ -6,7 +6,7 @@ on:
       - main
   pull_request:
     branches:
-      - main
+      - add_e2e_CI
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
