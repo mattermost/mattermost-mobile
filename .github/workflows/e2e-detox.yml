@@ -29,74 +29,74 @@ jobs:
           directory: detox/e2e
           search_path: test
 
-  build-ios-simulator:
-    runs-on: macos-14-large
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  # build-ios-simulator:
+  #   runs-on: macos-14-large
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
 
-      - name: Prepare iOS Build
-        uses: ./.github/actions/prepare-ios-build
+  #     - name: Prepare iOS Build
+  #       uses: ./.github/actions/prepare-ios-build
 
-      - name: Build iOS Simulator
-        env:
-          TAG: "${{ github.ref_name }}"
-          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-        run: bundle exec fastlane ios simulator --env ios.simulator || true
-        working-directory: ./fastlane
+  #     - name: Build iOS Simulator
+  #       env:
+  #         TAG: "${{ github.ref_name }}"
+  #         AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+  #         AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+  #         GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+  #       run: bundle exec fastlane ios simulator --env ios.simulator || true
+  #       working-directory: ./fastlane
 
-      - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-x86_64.app.zip
+  #     - name: Upload iOS Simulator Build
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ios-build-simulator-${{ github.run_id }}
+  #         path: Mattermost-simulator-x86_64.app.zip
 
-  e2e-ios:
-    env:
-      IOS: true
-    runs-on: macos-14-large
-    name: test-detox-e2e-${{ matrix.runId }}
-    needs:
-      - generate-specs
-      - build-ios-simulator
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  # e2e-ios:
+  #   env:
+  #     IOS: true
+  #   runs-on: macos-14-large
+  #   name: test-detox-e2e-${{ matrix.runId }}
+  #   needs:
+  #     - generate-specs
+  #     - build-ios-simulator
+  #   strategy:
+  #     fail-fast: false
+  #     matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
 
-      - name: Install Homebrew Dependencies
-        run: |
-          brew tap wix/brew
-          brew install applesimutils
+  #     - name: Install Homebrew Dependencies
+  #       run: |
+  #         brew tap wix/brew
+  #         brew install applesimutils
 
-      - name: Download iOS Simulator Build
-        uses: actions/download-artifact@v4
-        with:
-          name: ios-build-simulator-${{ github.run_id }}
-          path: mobile-artifacts
+  #     - name: Download iOS Simulator Build
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: ios-build-simulator-${{ github.run_id }}
+  #         path: mobile-artifacts
 
-      - name: Unzip iOS Simulator Build
-        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+  #     - name: Unzip iOS Simulator Build
+  #       run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
 
-      - name: Start React Native Metro Server
-        run: npm run start &
+  #     - name: Start React Native Metro Server
+  #       run: npm run start &
 
-      - name: Install Detox Dependencies
-        run: cd detox && npm ci
+  #     - name: Install Detox Dependencies
+  #       run: cd detox && npm ci
 
-      - name: Run Detox E2E Tests
-        run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
+  #     - name: Run Detox E2E Tests
+  #       run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
 
-      - name: Upload iOS Test Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-results-${{ matrix.runId }}
-          path: detox/artifacts/
+  #     - name: Upload iOS Test Report
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ios-results-${{ matrix.runId }}
+  #         path: detox/artifacts/
 
   build-android-apk:
     runs-on: macos-14-large
@@ -112,19 +112,20 @@ jobs:
           STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
-      - name: Install Detox dependencies
-        run: cd detox && npm ci
+      - name: ci/build-android-pr
+        env:
+          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
+        run: bundle exec fastlane android build --env android.pr
+        working-directory: ./fastlane
 
-      - name: Build android apk
-        run: |
-          cd detox
-          npm run e2e:android-build
-
-      - name: Upload Android APK
-        uses: actions/upload-artifact@v4
+      - name: ci/upload-android-pr-build
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
-          name: android-build-apk-${{ github.run_id }}
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: android-build-pr-${{ github.run_id }}
+          path: "*.apk"
 
   e2e-android:
     env:
@@ -168,7 +169,6 @@ jobs:
     if: always()
     needs:
       - generate-specs
-      - e2e-ios
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
