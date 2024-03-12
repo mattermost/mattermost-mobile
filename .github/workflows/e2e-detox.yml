@@ -165,7 +165,7 @@ jobs:
 
   download-e2e-results:
     runs-on: ubuntu-22.04
-    if: always() 
+    if: always()
     needs:
       - generate-specs
       - e2e-ios
