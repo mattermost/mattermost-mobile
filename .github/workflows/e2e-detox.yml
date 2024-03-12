@@ -104,7 +104,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Free up space
+      - name: Free up space on the runner
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
@@ -149,7 +149,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Free up space
+      - name: Free up space on the runner
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
@@ -162,6 +162,12 @@ jobs:
           name: android-build-apk-${{ github.run_id }}
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
+      - name: Check APK
+        run: |
+          ls -l android/app/build/
+          ls -l outputs/apk/
+          ls -l debug/app-debug.apk
+
       - name: Start React Native Metro Server
         run: npm run start &
 
@@ -169,7 +175,7 @@ jobs:
         run: cd detox && npm ci
 
       - name: Run Detox E2E Tests
-        run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
+        run: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
       - name: Upload iOS Test Report
         if: always()
