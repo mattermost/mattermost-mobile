@@ -129,6 +129,7 @@ jobs:
   e2e-android:
     env:
       IOS: false
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
     runs-on: ubuntu-22.04
     name: test-detox-e2e-${{ matrix.runId }}
     needs:
