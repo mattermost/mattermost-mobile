@@ -99,7 +99,7 @@ jobs:
   #         path: detox/artifacts/
 
   build-android-apk:
-    runs-on: macos-14-large
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -130,7 +130,7 @@ jobs:
   e2e-android:
     env:
       IOS: false
-    runs-on: macos-14-large
+    runs-on: ubuntu-22.04
     name: test-detox-e2e-${{ matrix.runId }}
     needs:
       - generate-specs
@@ -141,7 +141,7 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-  
+
       - name: Download Android APK
         uses: actions/download-artifact@v4
         with:
@@ -178,6 +178,43 @@ jobs:
         with:
           name: ios-results-${{ needs.e2e-ios.outputs.matrix.runId }}
           path: detox/artifacts/
+        continue-on-error: true
+
+      - name: Download Android E2E Test Results
+        uses: actions/download-artifact@v4
+        with:
+          name: android-results-${{ needs.e2e-android.outputs.matrix.runId }}
+          path: detox/artifacts/
+        continue-on-error: true
+
+      - name: Check for downloaded artifacts
+        id: check-artifacts
+        run: |
+          ios_artifacts_found=false
+          android_artifacts_found=false
+  
+          if compgen -G "detox/artifacts/ios-results-*" > /dev/null; then
+            ios_artifacts_found=true
+          fi
+  
+          if compgen -G "detox/artifacts/android-results-*" > /dev/null; then
+            android_artifacts_found=true
+          fi
+
+          echo "::set-output name=ios_artifacts_found::$ios_artifacts_found"
+          echo "::set-output name=android_artifacts_found::$android_artifacts_found"
 
       - name: Save report Detox Dependencies
-        run: cd detox && npm run e2e:save-report
+        if: steps.check-artifacts.outputs.ios_artifacts_found == 'true' || steps.check-artifacts.outputs.android_artifacts_found == 'true'
+        run: |
+          ios_artifacts_found=${{ steps.check-artifacts.outputs.ios_artifacts_found }}
+          android_artifacts_found=${{ steps.check-artifacts.outputs.android_artifacts_found }}
+
+          if [ "$ios_artifacts_found" == "true" ]; then
+            echo "iOS artifacts found, running with IOS=true"
+            IOS=true npm run e2e:save-report
+
+          if [ "$android_artifacts_found" == "true" ]; then
+            echo "Android artifacts found, running with IOS=false"
+            IOS=false npm run e2e:save-report
+        working-directory: detox
