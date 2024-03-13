@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback, useEffect, useRef} from 'react';
+import {useCallback, useEffect} from 'react';
 import {Platform} from 'react-native';
 import {
     Easing, runOnJS, useAnimatedRef, useAnimatedStyle, useEvent,
@@ -13,18 +13,6 @@ import {useGallery} from '@context/gallery';
 
 import type {Context, GestureHandlers, OnGestureEvent} from '@typings/screens/gallery';
 import type {GestureHandlerGestureEvent} from 'react-native-gesture-handler';
-
-function useRemoteContext<T extends object>(initialValue: T) {
-    const initRef = useRef<{ context: T } | null>(null);
-    if (initRef.current === null) {
-        initRef.current = {
-            context: initialValue ?? {},
-        };
-    }
-    const {context} = initRef.current;
-
-    return context;
-}
 
 function diff(context: any, name: string, value: any) {
     'worklet';
@@ -49,9 +37,10 @@ function diff(context: any, name: string, value: any) {
 }
 
 export function useCreateAnimatedGestureHandler<T extends GestureHandlerGestureEvent, TContext extends Context>(handlers: GestureHandlers<T['nativeEvent'], TContext>) {
-    const context = useRemoteContext<any>({
+    const sharedContext = useSharedValue<any>({
         __initialized: false,
     });
+
     const isAndroid = Platform.OS === 'android';
 
     const handler = (event: T['nativeEvent']) => {
@@ -63,6 +52,7 @@ export function useCreateAnimatedGestureHandler<T extends GestureHandlerGestureE
         const ACTIVE = 4;
         const END = 5;
 
+        const context = sharedContext.value;
         if (handlers.onInit && !context.__initialized) {
             context.__initialized = true;
             handlers.onInit(event, context);
