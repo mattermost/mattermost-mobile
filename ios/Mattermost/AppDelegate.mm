@@ -226,7 +226,7 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
-  return [self getBundleUrl];
+  return [self getBundleURL];
 }
 
 - (NSURL *)getBundleURL

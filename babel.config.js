@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 module.exports = {
     presets: [
+        ['@babel/preset-env', {targets: {node: 'current'}}],
         'module:@react-native/babel-preset',
         '@babel/preset-typescript',
-        ['@babel/preset-env', {targets: {node: 'current'}}],
     ],
     plugins: [
         '@babel/plugin-transform-runtime',
