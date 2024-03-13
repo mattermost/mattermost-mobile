@@ -28,11 +28,6 @@ exports[`AttachmentFooter it matches snapshot when both footer and footer_icon a
     <FastImageView
       defaultSource={null}
       resizeMode="cover"
-      source={
-        {
-          "uri": "https://images.com/image.png",
-        }
-      }
       style={
         {
           "bottom": 0,
