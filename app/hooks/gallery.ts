@@ -4,7 +4,7 @@
 import {useCallback, useEffect, useRef} from 'react';
 import {Platform} from 'react-native';
 import {
-    Easing, makeRemote, runOnJS, useAnimatedRef, useAnimatedStyle, useEvent,
+    Easing, runOnJS, useAnimatedRef, useAnimatedStyle, useEvent,
     useSharedValue,
     withTiming, type WithTimingConfig,
 } from 'react-native-reanimated';
@@ -18,7 +18,7 @@ function useRemoteContext<T extends object>(initialValue: T) {
     const initRef = useRef<{ context: T } | null>(null);
     if (initRef.current === null) {
         initRef.current = {
-            context: makeRemote(initialValue ?? {}),
+            context: initialValue ?? {},
         };
     }
     const {context} = initRef.current;
@@ -158,7 +158,7 @@ export function useAnimatedGestureHandler<T extends GestureHandlerGestureEvent, 
         [],
     );
 
-    return useEvent<(event: T['nativeEvent']) => void, OnGestureEvent<T>>(
+    return useEvent<any, TContext>(
         handler, ['onGestureHandlerStateChange', 'onGestureHandlerEvent'], false,
     );
 }

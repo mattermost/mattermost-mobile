@@ -226,6 +226,11 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
+  return [self getBundleUrl];
+}
+
+- (NSURL *)getBundleURL
+{
   #if DEBUG
     return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
   #else

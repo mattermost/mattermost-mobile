@@ -1,0 +1,34 @@
+diff --git a/node_modules/react-native-navigation/lib/android/app/build.gradle b/node_modules/react-native-navigation/lib/android/app/build.gradle
+index 9d5a0fd..50d7b54 100644
+--- a/node_modules/react-native-navigation/lib/android/app/build.gradle
++++ b/node_modules/react-native-navigation/lib/android/app/build.gradle
+@@ -62,11 +62,11 @@ android {
+         }
+     }
+     compileOptions {
+-        sourceCompatibility JavaVersion.VERSION_1_8
+-        targetCompatibility JavaVersion.VERSION_1_8
++        sourceCompatibility JavaVersion.VERSION_17
++        targetCompatibility JavaVersion.VERSION_17
+     }
+     kotlinOptions {
+-        jvmTarget = JavaVersion.VERSION_1_8
++        jvmTarget = JavaVersion.VERSION_17
+     }
+ 
+     flavorDimensions "RNN.reactNativeVersion"
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/stack/topbar/button/ButtonPresenter.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/stack/topbar/button/ButtonPresenter.kt
+index 93b3b8e..dbe0774 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/stack/topbar/button/ButtonPresenter.kt
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/stack/topbar/button/ButtonPresenter.kt
+@@ -194,8 +194,8 @@ open class ButtonPresenter(private val context: Context, private val button: But
+ 
+                 class WixAccessibilityDelegateCompat: AccessibilityDelegateCompat(){
+                     override fun onInitializeAccessibilityNodeInfo(
+-                        host: View?,
+-                        info: AccessibilityNodeInfoCompat?
++                        host: View,
++                        info: AccessibilityNodeInfoCompat
+                     ) {
+                         super.onInitializeAccessibilityNodeInfo(host, info)
+ 

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 module.exports = {
     presets: [
-        'module:metro-react-native-babel-preset',
+        'module:@react-native/babel-preset',
         '@babel/preset-typescript',
         ['@babel/preset-env', {targets: {node: 'current'}}],
     ],
