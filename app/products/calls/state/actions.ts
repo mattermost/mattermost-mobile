@@ -42,7 +42,7 @@ import {isDMorGM} from '@utils/channel';
 import {generateId} from '@utils/general';
 import {logDebug} from '@utils/log';
 
-import type {CallRecordingState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
+import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
 
 export const setCalls = async (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
@@ -680,7 +680,7 @@ const userReactionTimeout = (serverUrl: string, channelId: string, reaction: Use
     setCurrentCall(nextCurrentCall);
 };
 
-export const setRecordingState = (serverUrl: string, channelId: string, recState: CallRecordingState) => {
+export const setRecordingState = (serverUrl: string, channelId: string, recState: CallJobState) => {
     const callsState = getCallsState(serverUrl);
     if (!callsState.calls[channelId]) {
         return;
@@ -704,6 +704,29 @@ export const setRecordingState = (serverUrl: string, channelId: string, recState
     const nextCurrentCall = {
         ...currentCall,
         recState,
+    };
+    setCurrentCall(nextCurrentCall);
+};
+
+export const setCaptioningState = (serverUrl: string, channelId: string, capState: CallJobState) => {
+    const callsState = getCallsState(serverUrl);
+    if (!callsState.calls[channelId]) {
+        return;
+    }
+
+    const nextCall = {...callsState.calls[channelId], capState};
+    const nextCalls = {...callsState.calls, [channelId]: nextCall};
+    setCallsState(serverUrl, {...callsState, calls: nextCalls});
+
+    // Was it the current call? If so, update that too.
+    const currentCall = getCurrentCall();
+    if (!currentCall || currentCall.channelId !== channelId) {
+        return;
+    }
+
+    const nextCurrentCall = {
+        ...currentCall,
+        capState,
     };
     setCurrentCall(nextCurrentCall);
 };

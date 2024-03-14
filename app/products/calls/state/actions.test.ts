@@ -61,9 +61,10 @@ import {
     type GlobalCallsState,
 } from '@calls/types/calls';
 import {License} from '@constants';
+import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 
-import type {CallRecordingState, LiveCaptionData} from '@mattermost/calls/lib/types';
+import type {CallJobState, LiveCaptionData} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
 
@@ -1203,7 +1204,8 @@ describe('useCallsState', () => {
             myUserId: 'myUserId',
             ...call1,
         };
-        const recState: CallRecordingState = {
+        const recState: CallJobState = {
+            type: Calls.JOB_TYPE_RECORDING,
             init_at: 123,
             start_at: 231,
             end_at: 345,

@@ -330,7 +330,7 @@ const CallScreen = ({
     const {width, height} = useWindowDimensions();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
-    const {EnableRecordings, EnableTranscriptions, EnableLiveCaptions} = useCallsConfig(serverUrl);
+    const {EnableRecordings, EnableTranscriptions} = useCallsConfig(serverUrl);
     usePermissionsChecker(micPermissionsGranted);
     const incomingCalls = useIncomingCalls();
 
@@ -484,7 +484,7 @@ const CallScreen = ({
     const waitingForRecording = Boolean(currentCall?.recState?.init_at && !currentCall.recState.start_at && !currentCall.recState.end_at && isHost);
     const showStartRecording = isHost && EnableRecordings && !(waitingForRecording || recording);
     const showStopRecording = isHost && EnableRecordings && (waitingForRecording || recording);
-    const ccAvailable = Boolean(EnableRecordings && EnableTranscriptions && EnableLiveCaptions && recording);
+    const ccAvailable = Boolean((currentCall?.capState?.start_at || 0) > (currentCall?.capState?.end_at || 0));
 
     const showOtherActions = useCallback(async () => {
         const renderContent = () => {

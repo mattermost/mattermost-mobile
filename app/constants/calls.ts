@@ -31,6 +31,11 @@ export enum MessageBarType {
     CallQuality,
 }
 
+// The JobTypes from calls plugin's server/public/job.go
+const JOB_TYPE_RECORDING = 'recording';
+const JOB_TYPE_TRANSCRIBING = 'transcribing';
+const JOB_TYPE_CAPTIONING = 'captioning';
+
 export default {
     RefreshConfigMillis,
     RequiredServer,
@@ -41,4 +46,7 @@ export default {
     MessageBarType,
     CALL_QUALITY_RESET_MS,
     CAPTION_TIMEOUT,
+    JOB_TYPE_RECORDING,
+    JOB_TYPE_TRANSCRIBING,
+    JOB_TYPE_CAPTIONING,
 };

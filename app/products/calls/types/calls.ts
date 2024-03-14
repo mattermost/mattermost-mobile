@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {
-    CallRecordingState,
+    CallJobState,
     CallsConfig,
     EmojiData,
     UserReactionData,
@@ -61,7 +61,8 @@ export type Call = {
     screenOn: string;
     threadId: string;
     ownerId: string;
-    recState?: CallRecordingState;
+    recState?: CallJobState;
+    capState?: CallJobState;
     hostId: string;
     dismissed: Dictionary<boolean>;
 }
