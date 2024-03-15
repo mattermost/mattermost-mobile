@@ -221,3 +221,17 @@ export type LiveCaptionMobile = {
     userId: string;
     text: string;
 }
+
+// DEPRECATED in favour of CallJobState since v2.16
+export type CallRecordingState = {
+    init_at: number;
+    start_at: number;
+    end_at: number;
+    err?: string;
+    error_at?: number;
+}
+
+export type CallRecordingStateData = {
+    recState: CallRecordingState;
+    callID: string;
+}

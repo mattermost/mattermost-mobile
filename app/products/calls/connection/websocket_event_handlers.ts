@@ -29,8 +29,10 @@ import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 
+import type {CallRecordingStateData} from '@calls/types/calls';
 import type {
     CallHostChangedData,
+    CallJobState,
     CallJobStateData,
     CallStartData,
     EmptyData,
@@ -158,6 +160,15 @@ export const handleCallUserReacted = (serverUrl: string, msg: WebSocketMessage<U
     }
 
     userReacted(serverUrl, msg.broadcast.channel_id, msg.data);
+};
+
+// DEPRECATED in favour of handleCallJobState since v2.16
+export const handleCallRecordingState = (serverUrl: string, msg: WebSocketMessage<CallRecordingStateData>) => {
+    const jobState: CallJobState = {
+        type: Calls.JOB_TYPE_RECORDING,
+        ...msg.data.recState,
+    };
+    setRecordingState(serverUrl, msg.broadcast.channel_id, jobState);
 };
 
 export const handleCallJobState = (serverUrl: string, msg: WebSocketMessage<CallJobStateData>) => {
