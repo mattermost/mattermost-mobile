@@ -162,7 +162,7 @@ export const handleCallUserReacted = (serverUrl: string, msg: WebSocketMessage<U
     userReacted(serverUrl, msg.broadcast.channel_id, msg.data);
 };
 
-// DEPRECATED in favour of handleCallJobState since v2.16
+// DEPRECATED in favour of handleCallJobState (since v2.15.0)
 export const handleCallRecordingState = (serverUrl: string, msg: WebSocketMessage<CallRecordingStateData>) => {
     const jobState: CallJobState = {
         type: Calls.JOB_TYPE_RECORDING,

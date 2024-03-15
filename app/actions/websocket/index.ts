@@ -435,7 +435,7 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleCallUserReacted(serverUrl, msg);
             break;
 
-        // DEPRECATED in favour of CALLS_JOB_STATE (since v2.16.0)
+        // DEPRECATED in favour of CALLS_JOB_STATE (since v2.15.0)
         case WebsocketEvents.CALLS_RECORDING_STATE:
             handleCallRecordingState(serverUrl, msg);
             break;
