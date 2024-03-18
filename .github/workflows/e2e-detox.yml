@@ -135,6 +135,10 @@ jobs:
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
   
+      - name: Create artifacts directory
+        run: |
+          mkdir -p detox/artifacts/
+
       - name: Get Uploaded Artifact Names
         id: artifact_names
         run: |
@@ -146,6 +150,7 @@ jobs:
           
           names=$(echo $artifacts | jq -r '.artifacts[] | select(.name | startswith("ios-results-")) | .name' | tr '\n' ',' | sed 's/,$//')
           echo "ARTIFACT_NAMES=$names" >> $GITHUB_ENV
+          echo $ARTIFACT_NAMES
 
       - name: Download iOS E2E Test Results
         run: |
@@ -161,8 +166,13 @@ jobs:
             if [ -n "$artifact_id" ]; then
               output_dir="detox/artifacts/ios-results-$index"
               mkdir -p "$output_dir"
+              echo "Downloading artifact '$name' to '$output_dir'"
               curl -L "$artifact_id" | tar -xz --strip-components=1 -C "$output_dir"
+              artifact_size=$(du -sh "$output_dir" | cut -f1)
+              echo "Artifact '$name' downloaded to '$output_dir' (size: $artifact_size)"
               index=$((index+1))
+            else
+              echo "No artifact found with name '$name'"
             fi
           done
 
