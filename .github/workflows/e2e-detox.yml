@@ -131,7 +131,10 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
+  
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+  
       - name: Get Uploaded Artifact Names
         id: artifact_names
         run: |
@@ -160,7 +163,7 @@ jobs:
               rm "detox/artifacts/$name.zip"
             fi
           done
-
+  
         # uses: actions/download-artifact@v4
         # with:
         #   name: ${{ env.ARTIFACT_NAMES }}
@@ -170,5 +173,7 @@ jobs:
       - name: Save report Detox Dependencies
         run: |
           cd detox
-          npm i
-          IOS=true npm run e2e:save-report
+          npm ci
+          npm run e2e:save-report
+        env:
+          IOS: true 
