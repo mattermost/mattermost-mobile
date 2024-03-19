@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>jest-stare!</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="css/diff2html.min.css" rel="stylesheet" type="text/css">
+    <link href="css/jest-stare.css" rel="stylesheet" type="text/css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/holder.js"></script>
+    <script src="js/diff2html.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/view.js"></script>
+</head>
+
+<body>
+    <header>
+        <!-- Fixed navbar -->
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a class="navbar-brand" id="navbar-title" href="#">jest-stare</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home
+                            <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="coverage-link" class="nav-link disabled" href="#">Coverage</a>
+                    </li>
+                    <li class="nav-item">
+                        <div class="onoff-switch mr-sm-2 ml-sm-2">
+                            <input type="checkbox" name="off-switch" class="off-switch-checkbox" id="lab-passoff-switch" checked>
+                            <label class="onoff-switch-label" for="lab-passoff-switch">
+                                <span class="pass off-switch-inner"></span>
+                                <span class="off-switch-switch"></span>
+                            </label>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="onoff-switch mr-sm-2 ml-sm-2">
+                            <input type="checkbox" name="off-switch" class="off-switch-checkbox" id="lab-failoff-switch" checked>
+                            <label class="onoff-switch-label" for="lab-failoff-switch">
+                                <span class="fail off-switch-inner"></span>
+                                <span class="off-switch-switch"></span>
+                            </label>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="onoff-switch mr-sm-2 ml-sm-2">
+                            <input type="checkbox" name="off-switch" class="off-switch-checkbox" id="lab-pendingoff-switch" checked>
+                            <label class="onoff-switch-label" for="lab-pendingoff-switch">
+                                <span class="pending off-switch-inner"></span>
+                                <span class="off-switch-switch"></span>
+                            </label>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="onoff-switch mr-sm-2 ml-sm-2">
+                            <input type="checkbox" name="off-switch" class="off-switch-checkbox" id="lab-todooff-switch" checked>
+                            <label class="onoff-switch-label" for="lab-todooff-switch">
+                                <span class="todo off-switch-inner"></span>
+                                <span class="off-switch-switch"></span>
+                            </label>
+                        </div>
+                    </li>
+                </ul>
+                <!-- <form class="form-inline mt-2 mt-md-0">
+                    <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" disabled>
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" disabled>Search</button>
+                </form> -->
+            </div>
+        </nav>
+    </header>
+
+    <!-- Begin page content -->
+    <main role="main" class="container">
+
+        <h1 class="mt-5"></h1>
+
+        <!-- Three columns of text below the carousel -->
+        <div class="row">
+            <div class="col-lg-4">
+                <canvas id="test-suites-canvas" width="100" height="100"></canvas>
+                <h2>Test Suites</h2>
+                <div class="list-group">
+                    <p id="test-suites-results" class="list-group-item list-group-item-action">3 passed, 9 total</p>
+                </div>
+            </div>
+            <!-- /.col-lg-4 -->
+            <div class="col-lg-4">
+                <canvas id="tests-canvas" width="100" height="100"></canvas>
+                <h2>Tests</h2>
+                <div class="list-group">
+                    <p id="tests-results" class="list-group-item list-group-item-action">21 passed, 36 total</p>
+                </div>
+            </div>
+            <!-- /.col-lg-4 -->
+            <div class="col-lg-4" id="snapshots-group">
+                <canvas id="snapshots-canvas" width="100" height="100"></canvas>
+                <h2>Snapshots</h2>
+                <div class="list-group">
+                    <p id="snapshots-results" class="list-group-item list-group-item-action">0 passed, 0 total</p>
+                </div>
+            </div>
+            <!-- /.col-lg-4 -->
+        </div>
+
+        <div id="loading-info" class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0"
+                aria-valuemax="100" style="width: 100%"></div>
+        </div>
+
+        <div class="d-none" id="test-summary"></div>
+        <div class="d-none" id="test-config">{
+  &quot;reportHeadline&quot;: &quot;Mobile App E2E with Detox and Jest&quot;,
+  &quot;resultDir&quot;: &quot;.&#x2F;artifacts&#x2F;jest-stare&#x2F;&quot;,
+  &quot;resultJson&quot;: &quot;ios-data.json&quot;,
+  &quot;resultHtml&quot;: &quot;ios-main.html&quot;,
+  &quot;additionalResultsProcessors&quot;: []
+}</div>
+        <div id="accordion">
+            <div class="d-none" id="test-results">{
+  &quot;numFailedTestSuites&quot;: 6,
+  &quot;numFailedTests&quot;: 15,
+  &quot;numPassedTestSuites&quot;: 3,
+  &quot;numPassedTests&quot;: 21,
+  &quot;numPendingTestSuites&quot;: 0,
+  &quot;numPendingTests&quot;: 0,
+  &quot;numRuntimeErrorTestSuites&quot;: 5,
+  &quot;numTodoTests&quot;: 0,
+  &quot;numTotalTestSuites&quot;: 9,
+  &quot;numTotalTests&quot;: 36,
+  &quot;openHandles&quot;: [],
+  &quot;snapshot&quot;: {
+    &quot;added&quot;: 0,
+    &quot;didUpdate&quot;: false,
+    &quot;failure&quot;: false,
+    &quot;filesAdded&quot;: 0,
+    &quot;filesRemoved&quot;: 0,
+    &quot;filesRemovedList&quot;: [],
+    &quot;filesUnmatched&quot;: 0,
+    &quot;filesUpdated&quot;: 0,
+    &quot;matched&quot;: 0,
+    &quot;total&quot;: 0,
+    &quot;unchecked&quot;: 0,
+    &quot;uncheckedKeysByFile&quot;: [],
+    &quot;unmatched&quot;: 0,
+    &quot;updated&quot;: 0
+  },
+  &quot;startTime&quot;: 1710859520739,
+  &quot;success&quot;: false,
+  &quot;testResults&quot;: [
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 0,
+      &quot;numPassingTests&quot;: 3,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710859861778,
+        &quot;runtime&quot;: 340960,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710859520818
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;channel_info.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel Info&quot;
+          ],
+          &quot;duration&quot;: 24463,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel Info MM-T4928_1 - should match elements on channel info screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4928_1 - should match elements on channel info screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel Info&quot;
+          ],
+          &quot;duration&quot;: 10380,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel Info MM-T4928_2 - should be able to view channel info by tapping intro channel info action&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4928_2 - should be able to view channel info by tapping intro channel info action&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel Info&quot;
+          ],
+          &quot;duration&quot;: 13773,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel Info MM-T4928_3 - should be able to view channel info from channel quick actions&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4928_3 - should be able to view channel info from channel quick actions&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: null
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 2,
+      &quot;numPassingTests&quot;: 7,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860011398,
+        &quot;runtime&quot;: 149464,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710859861934
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;channel_list.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel List&quot;
+          ],
+          &quot;duration&quot;: 1746,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: Failed expectation: TOHAVETEXT(text &#x3D;&#x3D; “Channel 20b6bc”) WITH MATCHER(id &#x3D;&#x3D; “channel_list.category.channels.channel_item.channel-20b6bc.display_name”)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;channel_list.e2e.ts:72:103)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Channel List MM-T4728_1 - should match elements on channel list screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4728_1 - should match elements on channel list screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel List&quot;
+          ],
+          &quot;duration&quot;: 18416,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel List MM-T4728_2 - should be able to switch between channels&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4728_2 - should be able to switch between channels&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel List&quot;
+          ],
+          &quot;duration&quot;: 9487,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: Failed expectation: NOT TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “channel_list.category.channels.channel_item.channel-20b6bc.display_name”)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;channel_list.e2e.ts:122:107)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Channel List MM-T4728_3 - should be able to collapse and expand categories&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4728_3 - should be able to collapse and expand categories&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel List&quot;
+          ],
+          &quot;duration&quot;: 6830,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel List MM-T4728_4 - should be able to go to browse channels screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4728_4 - should be able to go to browse channels screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel List&quot;
+          ],
+          &quot;duration&quot;: 14930,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel List MM-T4728_5 - should be able to go to create direct message screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4728_5 - should be able to go to create direct message screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel List&quot;
+          ],
+          &quot;duration&quot;: 7577,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel List MM-T4728_6 - should be able to go to create channel screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4728_6 - should be able to go to create channel screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel List&quot;
+          ],
+          &quot;duration&quot;: 3693,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel List MM-T4728_7 - should be able to go to global threads screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4728_7 - should be able to go to global threads screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel List&quot;
+          ],
+          &quot;duration&quot;: 6494,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel List MM-T4728_8 - should be able to go to find channels screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4728_8 - should be able to go to find channels screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel List&quot;
+          ],
+          &quot;duration&quot;: 10823,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel List MM-T4728_9 - should be able to switch between teams&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4728_9 - should be able to switch between teams&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: &quot;  ● Channels - Channel List › MM-T4728_1 - should match elements on channel list screen\n\n    Test Failed: Failed expectation: TOHAVETEXT(text &#x3D;&#x3D; “Channel 20b6bc”) WITH MATCHER(id &#x3D;&#x3D; “channel_list.category.channels.channel_item.channel-20b6bc.display_name”)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      70 |         await expect(ChannelListScreen.threadsButton).toBeVisible();\n      71 |         await expect(ChannelListScreen.getCategoryHeaderDisplayName(channelsCategory)).toHaveText(&#39;CHANNELS&#39;);\n    &gt; 72 |         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toHaveText(testChannel.display_name);\n         |                                                                                                       ^\n      73 |         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).toHaveText(&#39;Off-Topic&#39;);\n      74 |         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName)).toHaveText(&#39;Town Square&#39;);\n      75 |         await expect(ChannelListScreen.getCategoryHeaderDisplayName(directMessagesCategory)).toHaveText(&#39;DIRECT MESSAGES&#39;);\n\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;channel_list.e2e.ts:72:103)\n\n  ● Channels - Channel List › MM-T4728_3 - should be able to collapse and expand categories\n\n    Test Failed: Failed expectation: NOT TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “channel_list.category.channels.channel_item.channel-20b6bc.display_name”)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      120 |         await wait(timeouts.ONE_SEC);\n      121 |         await expect(ChannelListScreen.getCategoryCollapsed(channelsCategory)).toBeVisible();\n    &gt; 122 |         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).not.toBeVisible();\n          |                                                                                                           ^\n      123 |         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).not.toBeVisible();\n      124 |         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName)).not.toBeVisible();\n      125 |\n\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;channel_list.e2e.ts:122:107)\n&quot;
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 0,
+      &quot;numPassingTests&quot;: 2,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860112341,
+        &quot;runtime&quot;: 100905,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860011436
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;channel_post_list.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel Post List&quot;
+          ],
+          &quot;duration&quot;: 8748,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel Post List MM-T4773_1 - should match elements on channel screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4773_1 - should match elements on channel screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Channel Post List&quot;
+          ],
+          &quot;duration&quot;: 27791,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Channel Post List MM-T4773_2 - should be able to add a message to post list and delete a message from post list&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4773_2 - should be able to add a message to post list and delete a message from post list&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: null
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 2,
+      &quot;numPassingTests&quot;: 0,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860325232,
+        &quot;runtime&quot;: 212826,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860112406
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;convert_to_private_channel.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Convert to Private Channel&quot;
+          ],
+          &quot;duration&quot;: 120006,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;message&quot;: &quot;thrown: \&quot;Exceeded timeout of 120000 ms for a hook.\nAdd a timeout value to this test to increase the timeout, if this is a long-running test. See https:&#x2F;&#x2F;jestjs.io&#x2F;docs&#x2F;api#testname-fn-timeout.\&quot;&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Error: thrown: \&quot;Exceeded timeout of 120000 ms for a hook.\nAdd a timeout value to this test to increase the timeout, if this is a long-running test. See https:&#x2F;&#x2F;jestjs.io&#x2F;docs&#x2F;api#testname-fn-timeout.\&quot;\n    at &#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;convert_to_private_channel.e2e.ts:32:5\n    at _dispatchDescribe (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;index.js:91:26)\n    at describe (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;index.js:55:5)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;convert_to_private_channel.e2e.ts:23:1)\n    at Runtime._execModule (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runtime&#x2F;build&#x2F;index.js:1439:24)\n    at Runtime._loadModule (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runtime&#x2F;build&#x2F;index.js:1022:12)\n    at Runtime.requireModule (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runtime&#x2F;build&#x2F;index.js:882:12)\n    at jestAdapter (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapter.js:77:13)\n    at runTestInternal (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:367:16)\n    at runTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:444:34)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Convert to Private Channel MM-T4972_1 - should be able to convert public channel to private and confirm&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4972_1 - should be able to convert public channel to private and confirm&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Convert to Private Channel&quot;
+          ],
+          &quot;duration&quot;: 41171,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n- view point: {1, 1}\n- visible bounds: {{inf, inf}, {0, 0}}\n- view bounds: {{0, 0}, {353, 48}}\n---\nError: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fa0263ed9c0&gt;” is not visible: View is clipped by one or more of its superviews&#39; bounds and does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fa0263ed9c0&gt;” is not visible: View is clipped by one or more of its superviews&#39; bounds and does not pass visibility percent threshold (100)}\n    at ChannelInfoScreen.convertToPrivateChannel (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;channel_info.ts:143:41)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;convert_to_private_channel.e2e.ts:67:9)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Convert to Private Channel MM-T4972_2 - should be able to convert public channel to private and cancel&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4972_2 - should be able to convert public channel to private and cancel&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: &quot;  ● Channels - Convert to Private Channel › MM-T4972_1 - should be able to convert public channel to private and confirm\n\n    thrown: \&quot;Exceeded timeout of 120000 ms for a hook.\n    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https:&#x2F;&#x2F;jestjs.io&#x2F;docs&#x2F;api#testname-fn-timeout.\&quot;\n\n      30 |     });\n      31 |\n    &gt; 32 |     beforeEach(async () &#x3D;&gt; {\n         |     ^\n      33 |         &#x2F;&#x2F; * Verify on channel list screen\n      34 |         await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(timeouts.TWO_MIN);\n      35 |     });\n\n      at test&#x2F;channels&#x2F;convert_to_private_channel.e2e.ts:32:5\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;convert_to_private_channel.e2e.ts:23:1)\n\n  ● Channels - Convert to Private Channel › MM-T4972_2 - should be able to convert public channel to private and cancel\n\n    Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n    - view point: {1, 1}\n    - visible bounds: {{inf, inf}, {0, 0}}\n    - view bounds: {{0, 0}, {353, 48}}\n    ---\n    Error: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fa0263ed9c0&gt;” is not visible: View is clipped by one or more of its superviews&#39; bounds and does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fa0263ed9c0&gt;” is not visible: View is clipped by one or more of its superviews&#39; bounds and does not pass visibility percent threshold (100)}\n\n      141 |     convertToPrivateChannel &#x3D; async (channelDisplayName: string, {confirm &#x3D; true} &#x3D; {}) &#x3D;&gt; {\n      142 |         await waitFor(this.convertPrivateOption).toExist().withTimeout(timeouts.TWO_SEC);\n    &gt; 143 |         await this.convertPrivateOption.tap({x: 1, y: 1});\n          |                                         ^\n      144 |         const {\n      145 |             channelNowPrivateTitle,\n      146 |             convertToPrivateChannelTitle,\n\n      at ChannelInfoScreen.convertToPrivateChannel (support&#x2F;ui&#x2F;screen&#x2F;channel_info.ts:143:41)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;convert_to_private_channel.e2e.ts:67:9)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      82 |     open &#x3D; async () &#x3D;&gt; {\n      83 |         &#x2F;&#x2F; # Open account screen\n    &gt; 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support&#x2F;ui&#x2F;screen&#x2F;account.ts:84:60)\n      at HomeScreen.logout (support&#x2F;ui&#x2F;screen&#x2F;home.ts:40:29)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;convert_to_private_channel.e2e.ts:39:26)\n&quot;,
+      &quot;testExecError&quot;: {
+        &quot;message&quot;: &quot;&quot;,
+        &quot;stack&quot;: &quot;Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at AccountScreen.open (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;account.ts:84:60)\n    at HomeScreen.logout (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;home.ts:40:29)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;convert_to_private_channel.e2e.ts:39:26)\n    at Promise.then.completed (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:231:10)\n    at _callCircusHook (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:281:40)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:154:7)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:121:9)\n    at run (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:71:3)\n    at runAndTransformResultsToJestFormat (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapterInit.js:122:21)\n    at jestAdapter (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapter.js:79:19)\n    at runTestInternal (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:367:16)\n    at runTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:444:34)&quot;
+      }
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 0,
+      &quot;numPassingTests&quot;: 3,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860456522,
+        &quot;runtime&quot;: 131266,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860325256
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;create_channel_and_edit_channel_header.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Create Channel and Edit Channel Header&quot;
+          ],
+          &quot;duration&quot;: 7493,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Create Channel and Edit Channel Header MM-T4731_1 - should match elements on create channel screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4731_1 - should match elements on create channel screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Create Channel and Edit Channel Header&quot;
+          ],
+          &quot;duration&quot;: 30845,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Create Channel and Edit Channel Header MM-T4731_2 - should be able to create a public channel and edit the channel header&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4731_2 - should be able to create a public channel and edit the channel header&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Create Channel and Edit Channel Header&quot;
+          ],
+          &quot;duration&quot;: 34719,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Create Channel and Edit Channel Header MM-T4731_3 - should be able to create a private channel and edit the channel header&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4731_3 - should be able to create a private channel and edit the channel header&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: null
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 3,
+      &quot;numPassingTests&quot;: 1,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860541818,
+        &quot;runtime&quot;: 85246,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860456572
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;create_direct_message.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Create Direct Message&quot;
+          ],
+          &quot;duration&quot;: 13787,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Create Direct Message MM-T4730_1 - should match elements on create direct message screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4730_1 - should match elements on create direct message screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Create Direct Message&quot;
+          ],
+          &quot;duration&quot;: 8878,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “create_direct_message.user_list.user_item.euiab18tkfykjpw1rm16qws6xc.display_name”)”\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;create_direct_message.e2e.ts:84:84)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Create Direct Message MM-T4730_2 - should be able to create a direct message&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4730_2 - should be able to create a direct message&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Create Direct Message&quot;
+          ],
+          &quot;duration&quot;: 2033,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n- view point: {14, 14.000000000000028}\n- visible bounds: {{0, 0}, {28, 28}}\n- view bounds: {{277, 7}, {28, 28}}\n---\nError: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)}\n    at CreateDirectMessageScreen.open (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;create_direct_message.ts:70:50)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;create_direct_message.e2e.ts:125:41)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Create Direct Message MM-T4730_3 - should be able to create a group message&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4730_3 - should be able to create a group message&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Create Direct Message&quot;
+          ],
+          &quot;duration&quot;: 288,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n- view point: {14, 14.000000000000028}\n- visible bounds: {{0, 0}, {28, 28}}\n- view bounds: {{277, 7}, {28, 28}}\n---\nError: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)}\n    at CreateDirectMessageScreen.open (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;create_direct_message.ts:70:50)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;create_direct_message.e2e.ts:160:41)\n    at Promise.then.completed (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:231:10)\n    at _callCircusTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:316:40)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)\n    at _runTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:252:3)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:126:9)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:121:9)\n    at run (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:71:3)\n    at runAndTransformResultsToJestFormat (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapterInit.js:122:21)\n    at jestAdapter (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapter.js:79:19)\n    at runTestInternal (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:367:16)\n    at runTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:444:34)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Create Direct Message MM-T4730_4 - should display empty search state for create direct message&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4730_4 - should display empty search state for create direct message&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: &quot;  ● Channels - Create Direct Message › MM-T4730_2 - should be able to create a direct message\n\n    Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “create_direct_message.user_list.user_item.euiab18tkfykjpw1rm16qws6xc.display_name”)”\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      82 |\n      83 |         &#x2F;&#x2F; * Verify search returns the new user item\n    &gt; 84 |         await expect(CreateDirectMessageScreen.getUserItemDisplayName(newUser.id)).toBeVisible();\n         |                                                                                    ^\n      85 |\n      86 |         &#x2F;&#x2F; # Tap on the new user item\n      87 |         await CreateDirectMessageScreen.getUserItem(newUser.id).tap();\n\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;create_direct_message.e2e.ts:84:84)\n\n  ● Channels - Create Direct Message › MM-T4730_3 - should be able to create a group message\n\n    Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n    - view point: {14, 14.000000000000028}\n    - visible bounds: {{0, 0}, {28, 28}}\n    - view bounds: {{277, 7}, {28, 28}}\n    ---\n    Error: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)}\n\n      68 |     open &#x3D; async () &#x3D;&gt; {\n      69 |         &#x2F;&#x2F; # Open create direct message screen\n    &gt; 70 |         await ChannelListScreen.headerPlusButton.tap();\n         |                                                  ^\n      71 |         await wait(timeouts.ONE_SEC);\n      72 |         await ChannelListScreen.openDirectMessageItem.tap();\n      73 |\n\n      at CreateDirectMessageScreen.open (support&#x2F;ui&#x2F;screen&#x2F;create_direct_message.ts:70:50)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;create_direct_message.e2e.ts:125:41)\n\n  ● Channels - Create Direct Message › MM-T4730_4 - should display empty search state for create direct message\n\n    Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n    - view point: {14, 14.000000000000028}\n    - visible bounds: {{0, 0}, {28, 28}}\n    - view bounds: {{277, 7}, {28, 28}}\n    ---\n    Error: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)}\n\n      68 |     open &#x3D; async () &#x3D;&gt; {\n      69 |         &#x2F;&#x2F; # Open create direct message screen\n    &gt; 70 |         await ChannelListScreen.headerPlusButton.tap();\n         |                                                  ^\n      71 |         await wait(timeouts.ONE_SEC);\n      72 |         await ChannelListScreen.openDirectMessageItem.tap();\n      73 |\n\n      at CreateDirectMessageScreen.open (support&#x2F;ui&#x2F;screen&#x2F;create_direct_message.ts:70:50)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;create_direct_message.e2e.ts:160:41)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      82 |     open &#x3D; async () &#x3D;&gt; {\n      83 |         &#x2F;&#x2F; # Open account screen\n    &gt; 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support&#x2F;ui&#x2F;screen&#x2F;account.ts:84:60)\n      at HomeScreen.logout (support&#x2F;ui&#x2F;screen&#x2F;home.ts:40:29)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;create_direct_message.e2e.ts:53:26)\n&quot;,
+      &quot;testExecError&quot;: {
+        &quot;message&quot;: &quot;&quot;,
+        &quot;stack&quot;: &quot;Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at AccountScreen.open (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;account.ts:84:60)\n    at HomeScreen.logout (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;home.ts:40:29)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;create_direct_message.e2e.ts:53:26)\n    at Promise.then.completed (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:231:10)\n    at _callCircusHook (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:281:40)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:154:7)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:121:9)\n    at run (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:71:3)\n    at runAndTransformResultsToJestFormat (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapterInit.js:122:21)\n    at jestAdapter (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapter.js:79:19)\n    at runTestInternal (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:367:16)\n    at runTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:444:34)&quot;
+      }
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 2,
+      &quot;numPassingTests&quot;: 2,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860660370,
+        &quot;runtime&quot;: 118526,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860541844
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;edit_channel.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Edit Channel&quot;
+          ],
+          &quot;duration&quot;: 11486,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Edit Channel MM-T4906_1 - should match elements on edit channel screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4906_1 - should match elements on edit channel screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Edit Channel&quot;
+          ],
+          &quot;duration&quot;: 20404,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Edit Channel MM-T4906_2 - should be able to edit public channel&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4906_2 - should be able to edit public channel&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Edit Channel&quot;
+          ],
+          &quot;duration&quot;: 17580,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “create_direct_message.user_list.user_item.zj7no4aogbn8mg663fd8zityoa”)”\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;edit_channel.e2e.ts:127:72)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Edit Channel MM-T4906_3 - should be able edit direct message channel&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4906_3 - should be able edit direct message channel&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Edit Channel&quot;
+          ],
+          &quot;duration&quot;: 11259,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: Timed out while waiting for expectation: TOEXIST WITH MATCHER(id &#x3D;&#x3D; “channel.screen”) TIMEOUT(10s)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at ChannelScreen.toBeVisible (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;channel.ts:114:53)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;edit_channel.e2e.ts:61:9)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Edit Channel MM-T4906_4 - should be able edit group message channel&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4906_4 - should be able edit group message channel&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: &quot;  ● Channels - Edit Channel › MM-T4906_3 - should be able edit direct message channel\n\n    Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “create_direct_message.user_list.user_item.zj7no4aogbn8mg663fd8zityoa”)”\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      125 |         await CreateDirectMessageScreen.closeTutorial();\n      126 |         await CreateDirectMessageScreen.searchInput.replaceText(testOtherUser1.username);\n    &gt; 127 |         await CreateDirectMessageScreen.getUserItem(testOtherUser1.id).tap();\n          |                                                                        ^\n      128 |         await CreateDirectMessageScreen.startButton.tap();\n      129 |\n      130 |         &#x2F;&#x2F; * Verify on direct message channel screen\n\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;edit_channel.e2e.ts:127:72)\n\n  ● Channels - Edit Channel › MM-T4906_4 - should be able edit group message channel\n\n    Test Failed: Timed out while waiting for expectation: TOEXIST WITH MATCHER(id &#x3D;&#x3D; “channel.screen”) TIMEOUT(10s)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      112 |     toBeVisible &#x3D; async () &#x3D;&gt; {\n      113 |         await wait(timeouts.ONE_SEC);\n    &gt; 114 |         await waitFor(this.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);\n          |                                                     ^\n      115 |\n      116 |         return this.channelScreen;\n      117 |     };\n\n      at ChannelScreen.toBeVisible (support&#x2F;ui&#x2F;screen&#x2F;channel.ts:114:53)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;edit_channel.e2e.ts:61:9)\n\n\n  ● Test suite failed to run\n\n    Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “navigation.header.back”)”\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      126 |     back &#x3D; async () &#x3D;&gt; {\n      127 |         await wait(timeouts.ONE_SEC);\n    &gt; 128 |         await this.backButton.tap();\n          |                               ^\n      129 |         await expect(this.channelScreen).not.toBeVisible();\n      130 |     };\n      131 |\n\n      at ChannelScreen.back (support&#x2F;ui&#x2F;screen&#x2F;channel.ts:128:31)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;edit_channel.e2e.ts:66:9)\n&quot;,
+      &quot;testExecError&quot;: {
+        &quot;message&quot;: &quot;&quot;,
+        &quot;stack&quot;: &quot;Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “navigation.header.back”)”\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at ChannelScreen.back (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;channel.ts:128:31)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;edit_channel.e2e.ts:66:9)&quot;
+      }
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 1,
+      &quot;numPassingTests&quot;: 2,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860788346,
+        &quot;runtime&quot;: 127947,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860660399
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;favorite_and_unfavorite_channel.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Favorite and Unfavorite Channel&quot;
+          ],
+          &quot;duration&quot;: 30581,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Favorite and Unfavorite Channel MM-T4929_1 - should be able to favorite&#x2F;unfavorite a channel from channel quick actions&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4929_1 - should be able to favorite&#x2F;unfavorite a channel from channel quick actions&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Favorite and Unfavorite Channel&quot;
+          ],
+          &quot;duration&quot;: 22084,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Favorite and Unfavorite Channel MM-T4929_2 - should be able to favorite&#x2F;unfavorite a channel from channel info screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4929_2 - should be able to favorite&#x2F;unfavorite a channel from channel info screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Favorite and Unfavorite Channel&quot;
+          ],
+          &quot;duration&quot;: 20143,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “create_direct_message.user_list.user_item.3npaoef4ztyy7num1djq57tama”)”\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;favorite_and_unfavorite_channel.e2e.ts:130:65)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Favorite and Unfavorite Channel MM-T4929_3 - should be able to favorite&#x2F;unfavorite a direct message channel from channel intro&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4929_3 - should be able to favorite&#x2F;unfavorite a direct message channel from channel intro&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: &quot;  ● Channels - Favorite and Unfavorite Channel › MM-T4929_3 - should be able to favorite&#x2F;unfavorite a direct message channel from channel intro\n\n    Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “create_direct_message.user_list.user_item.3npaoef4ztyy7num1djq57tama”)”\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      128 |         await CreateDirectMessageScreen.closeTutorial();\n      129 |         await CreateDirectMessageScreen.searchInput.replaceText(newUser.username);\n    &gt; 130 |         await CreateDirectMessageScreen.getUserItem(newUser.id).tap();\n          |                                                                 ^\n      131 |         await CreateDirectMessageScreen.startButton.tap();\n      132 |         await ChannelScreen.postMessage(&#39;test&#39;);\n      133 |         await device.reloadReactNative();\n\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;favorite_and_unfavorite_channel.e2e.ts:130:65)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      82 |     open &#x3D; async () &#x3D;&gt; {\n      83 |         &#x2F;&#x2F; # Open account screen\n    &gt; 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support&#x2F;ui&#x2F;screen&#x2F;account.ts:84:60)\n      at HomeScreen.logout (support&#x2F;ui&#x2F;screen&#x2F;home.ts:40:29)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;favorite_and_unfavorite_channel.e2e.ts:59:26)\n&quot;,
+      &quot;testExecError&quot;: {
+        &quot;message&quot;: &quot;&quot;,
+        &quot;stack&quot;: &quot;Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at AccountScreen.open (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;account.ts:84:60)\n    at HomeScreen.logout (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;home.ts:40:29)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;favorite_and_unfavorite_channel.e2e.ts:59:26)\n    at Promise.then.completed (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:231:10)\n    at _callCircusHook (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:281:40)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:154:7)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:121:9)\n    at run (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:71:3)\n    at runAndTransformResultsToJestFormat (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapterInit.js:122:21)\n    at jestAdapter (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapter.js:79:19)\n    at runTestInternal (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:367:16)\n    at runTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:444:34)&quot;
+      }
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 5,
+      &quot;numPassingTests&quot;: 1,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860859044,
+        &quot;runtime&quot;: 70582,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860788462
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;find_channels.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Find Channels&quot;
+          ],
+          &quot;duration&quot;: 4799,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Channels - Find Channels MM-T4907_1 - should match elements on find channels screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4907_1 - should match elements on find channels screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Find Channels&quot;
+          ],
+          &quot;duration&quot;: 5027,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: Failed expectation: TOHAVETEXT(text &#x3D;&#x3D; “Channel ad7018”) WITH MATCHER(id &#x3D;&#x3D; “find_channels.filtered_list.channel_item.channel-ad7018.display_name”)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;find_channels.e2e.ts:78:94)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Find Channels MM-T4907_2 - should be able to find and navigate to a public channel&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4907_2 - should be able to find and navigate to a public channel&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Find Channels&quot;
+          ],
+          &quot;duration&quot;: 241,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n- view point: {153.5, 20}\n- visible bounds: {{0, 0}, {307, 40}}\n- view bounds: {{66, 20}, {307, 40}}\n---\nError: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}\n    at FindChannelsScreen.open (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;find_channels.ts:61:60)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;find_channels.e2e.ts:95:34)\n    at Promise.then.completed (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:231:10)\n    at _callCircusTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:316:40)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)\n    at _runTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:252:3)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:126:9)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:121:9)\n    at run (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:71:3)\n    at runAndTransformResultsToJestFormat (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapterInit.js:122:21)\n    at jestAdapter (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapter.js:79:19)\n    at runTestInternal (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:367:16)\n    at runTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:444:34)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Find Channels MM-T4907_3 - should display empty search state for find channels&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4907_3 - should display empty search state for find channels&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Find Channels&quot;
+          ],
+          &quot;duration&quot;: 2130,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n- view point: {153.5, 20}\n- visible bounds: {{0, 0}, {307, 40}}\n- view bounds: {{66, 20}, {307, 40}}\n---\nError: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}\n    at FindChannelsScreen.open (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;find_channels.ts:61:60)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;find_channels.e2e.ts:115:34)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Find Channels MM-T4907_4 - should be able to find direct and group message channels&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4907_4 - should be able to find direct and group message channels&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Find Channels&quot;
+          ],
+          &quot;duration&quot;: 1215,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n- view point: {153.5, 20}\n- visible bounds: {{0, 0}, {307, 40}}\n- view bounds: {{66, 20}, {307, 40}}\n---\nError: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}\n    at FindChannelsScreen.open (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;find_channels.ts:61:60)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;find_channels.e2e.ts:138:34)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Find Channels MM-T4907_5 - should be able to find an archived channel&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4907_5 - should be able to find an archived channel&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Channels - Find Channels&quot;
+          ],
+          &quot;duration&quot;: 1330,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n- view point: {153.5, 20}\n- visible bounds: {{0, 0}, {307, 40}}\n- view bounds: {{66, 20}, {307, 40}}\n---\nError: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}\n    at FindChannelsScreen.open (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;find_channels.ts:61:60)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;find_channels.e2e.ts:154:34)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Channels - Find Channels MM-T4907_6 - should be able to find a joined private channel and not find an unjoined private channel&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4907_6 - should be able to find a joined private channel and not find an unjoined private channel&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: &quot;  ● Channels - Find Channels › MM-T4907_2 - should be able to find and navigate to a public channel\n\n    Test Failed: Failed expectation: TOHAVETEXT(text &#x3D;&#x3D; “Channel ad7018”) WITH MATCHER(id &#x3D;&#x3D; “find_channels.filtered_list.channel_item.channel-ad7018.display_name”)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      76 |         &#x2F;&#x2F; * Verify search returns the target public channel item\n      77 |         await wait(timeouts.ONE_SEC);\n    &gt; 78 |         await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(testChannel.name)).toHaveText(testChannel.display_name);\n         |                                                                                              ^\n      79 |\n      80 |         &#x2F;&#x2F; # Tap on the target public channel item\n      81 |         await FindChannelsScreen.getFilteredChannelItem(testChannel.name).tap();\n\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;find_channels.e2e.ts:78:94)\n\n  ● Channels - Find Channels › MM-T4907_3 - should display empty search state for find channels\n\n    Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n    - view point: {153.5, 20}\n    - visible bounds: {{0, 0}, {307, 40}}\n    - view bounds: {{66, 20}, {307, 40}}\n    ---\n    Error: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}\n\n      59 |     open &#x3D; async () &#x3D;&gt; {\n      60 |         &#x2F;&#x2F; # Open find channels screen\n    &gt; 61 |         await ChannelListScreen.subheaderSearchFieldButton.tap();\n         |                                                            ^\n      62 |\n      63 |         return this.toBeVisible();\n      64 |     };\n\n      at FindChannelsScreen.open (support&#x2F;ui&#x2F;screen&#x2F;find_channels.ts:61:60)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;find_channels.e2e.ts:95:34)\n\n  ● Channels - Find Channels › MM-T4907_4 - should be able to find direct and group message channels\n\n    Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n    - view point: {153.5, 20}\n    - visible bounds: {{0, 0}, {307, 40}}\n    - view bounds: {{66, 20}, {307, 40}}\n    ---\n    Error: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}\n\n      59 |     open &#x3D; async () &#x3D;&gt; {\n      60 |         &#x2F;&#x2F; # Open find channels screen\n    &gt; 61 |         await ChannelListScreen.subheaderSearchFieldButton.tap();\n         |                                                            ^\n      62 |\n      63 |         return this.toBeVisible();\n      64 |     };\n\n      at FindChannelsScreen.open (support&#x2F;ui&#x2F;screen&#x2F;find_channels.ts:61:60)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;find_channels.e2e.ts:115:34)\n\n  ● Channels - Find Channels › MM-T4907_5 - should be able to find an archived channel\n\n    Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n    - view point: {153.5, 20}\n    - visible bounds: {{0, 0}, {307, 40}}\n    - view bounds: {{66, 20}, {307, 40}}\n    ---\n    Error: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}\n\n      59 |     open &#x3D; async () &#x3D;&gt; {\n      60 |         &#x2F;&#x2F; # Open find channels screen\n    &gt; 61 |         await ChannelListScreen.subheaderSearchFieldButton.tap();\n         |                                                            ^\n      62 |\n      63 |         return this.toBeVisible();\n      64 |     };\n\n      at FindChannelsScreen.open (support&#x2F;ui&#x2F;screen&#x2F;find_channels.ts:61:60)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;find_channels.e2e.ts:138:34)\n\n  ● Channels - Find Channels › MM-T4907_6 - should be able to find a joined private channel and not find an unjoined private channel\n\n    Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n    - view point: {153.5, 20}\n    - visible bounds: {{0, 0}, {307, 40}}\n    - view bounds: {{66, 20}, {307, 40}}\n    ---\n    Error: Error Domain&#x3D;DetoxErrorDomain Code&#x3D;0 \&quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)\&quot; UserInfo&#x3D;{NSLocalizedDescription&#x3D;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}\n\n      59 |     open &#x3D; async () &#x3D;&gt; {\n      60 |         &#x2F;&#x2F; # Open find channels screen\n    &gt; 61 |         await ChannelListScreen.subheaderSearchFieldButton.tap();\n         |                                                            ^\n      62 |\n      63 |         return this.toBeVisible();\n      64 |     };\n\n      at FindChannelsScreen.open (support&#x2F;ui&#x2F;screen&#x2F;find_channels.ts:61:60)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;find_channels.e2e.ts:154:34)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      82 |     open &#x3D; async () &#x3D;&gt; {\n      83 |         &#x2F;&#x2F; # Open account screen\n    &gt; 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support&#x2F;ui&#x2F;screen&#x2F;account.ts:84:60)\n      at HomeScreen.logout (support&#x2F;ui&#x2F;screen&#x2F;home.ts:40:29)\n      at Object.&lt;anonymous&gt; (test&#x2F;channels&#x2F;find_channels.e2e.ts:55:26)\n&quot;,
+      &quot;testExecError&quot;: {
+        &quot;message&quot;: &quot;&quot;,
+        &quot;stack&quot;: &quot;Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at AccountScreen.open (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;account.ts:84:60)\n    at HomeScreen.logout (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;home.ts:40:29)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;channels&#x2F;find_channels.e2e.ts:55:26)\n    at Promise.then.completed (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:231:10)\n    at _callCircusHook (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:281:40)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:154:7)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:121:9)\n    at run (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:71:3)\n    at runAndTransformResultsToJestFormat (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapterInit.js:122:21)\n    at jestAdapter (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapter.js:79:19)\n    at runTestInternal (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:367:16)\n    at runTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:444:34)&quot;
+      }
+    }
+  ],
+  &quot;wasInterrupted&quot;: false
+}</div>
+        </div>
+        <div class="d-none" id="test-global-config">{
+  &quot;bail&quot;: 0,
+  &quot;changedFilesWithAncestor&quot;: false,
+  &quot;ci&quot;: true,
+  &quot;collectCoverage&quot;: false,
+  &quot;collectCoverageFrom&quot;: [],
+  &quot;coverageDirectory&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;coverage&quot;,
+  &quot;coverageProvider&quot;: &quot;babel&quot;,
+  &quot;coverageReporters&quot;: [
+    &quot;json&quot;,
+    &quot;text&quot;,
+    &quot;lcov&quot;,
+    &quot;clover&quot;
+  ],
+  &quot;detectLeaks&quot;: false,
+  &quot;detectOpenHandles&quot;: false,
+  &quot;errorOnDeprecated&quot;: false,
+  &quot;expand&quot;: false,
+  &quot;findRelatedTests&quot;: false,
+  &quot;forceExit&quot;: false,
+  &quot;globalSetup&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;detox&#x2F;runners&#x2F;jest&#x2F;globalSetup.js&quot;,
+  &quot;globalTeardown&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;detox&#x2F;runners&#x2F;jest&#x2F;globalTeardown.js&quot;,
+  &quot;json&quot;: false,
+  &quot;lastCommit&quot;: false,
+  &quot;listTests&quot;: false,
+  &quot;logHeapUsage&quot;: false,
+  &quot;maxConcurrency&quot;: 5,
+  &quot;maxWorkers&quot;: 1,
+  &quot;noStackTrace&quot;: false,
+  &quot;nonFlagArgs&quot;: [
+    &quot;test&#x2F;channels&#x2F;channel_info.e2e.ts&quot;,
+    &quot;test&#x2F;channels&#x2F;channel_list.e2e.ts&quot;,
+    &quot;test&#x2F;channels&#x2F;channel_post_list.e2e.ts&quot;,
+    &quot;test&#x2F;channels&#x2F;convert_to_private_channel.e2e.ts&quot;,
+    &quot;test&#x2F;channels&#x2F;create_channel_and_edit_channel_header.e2e.ts&quot;,
+    &quot;test&#x2F;channels&#x2F;create_direct_message.e2e.ts&quot;,
+    &quot;test&#x2F;channels&#x2F;edit_channel.e2e.ts&quot;,
+    &quot;test&#x2F;channels&#x2F;favorite_and_unfavorite_channel.e2e.ts&quot;,
+    &quot;test&#x2F;channels&#x2F;find_channels.e2e.ts&quot;
+  ],
+  &quot;notify&quot;: false,
+  &quot;notifyMode&quot;: &quot;failure-change&quot;,
+  &quot;onlyChanged&quot;: false,
+  &quot;onlyFailures&quot;: false,
+  &quot;openHandlesTimeout&quot;: 1000,
+  &quot;passWithNoTests&quot;: false,
+  &quot;projects&quot;: [],
+  &quot;reporters&quot;: [
+    [
+      &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;detox&#x2F;runners&#x2F;jest&#x2F;reporter.js&quot;,
+      {}
+    ],
+    [
+      &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-junit&#x2F;index.js&quot;,
+      {
+        &quot;suiteName&quot;: &quot;Mobile App E2E with Detox and Jest&quot;,
+        &quot;outputDirectory&quot;: &quot;.&#x2F;artifacts&quot;,
+        &quot;outputName&quot;: &quot;ios-junit.xml&quot;,
+        &quot;uniqueOutputName&quot;: false
+      }
+    ],
+    [
+      &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-html-reporters&#x2F;index.js&quot;,
+      {
+        &quot;pageTitle&quot;: &quot;Mobile App E2E with Detox and Jest&quot;,
+        &quot;publicPath&quot;: &quot;.&#x2F;artifacts&quot;,
+        &quot;filename&quot;: &quot;ios-report.html&quot;,
+        &quot;expand&quot;: false
+      }
+    ],
+    [
+      &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-stare&#x2F;lib&#x2F;index.js&quot;,
+      {
+        &quot;reportHeadline&quot;: &quot;Mobile App E2E with Detox and Jest&quot;,
+        &quot;resultDir&quot;: &quot;.&#x2F;artifacts&#x2F;jest-stare&#x2F;&quot;,
+        &quot;resultJson&quot;: &quot;ios-data.json&quot;,
+        &quot;resultHtml&quot;: &quot;ios-main.html&quot;,
+        &quot;additionalResultsProcessors&quot;: []
+      }
+    ]
+  ],
+  &quot;rootDir&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&quot;,
+  &quot;runTestsByPath&quot;: false,
+  &quot;seed&quot;: 2089150399,
+  &quot;skipFilter&quot;: false,
+  &quot;snapshotFormat&quot;: {
+    &quot;escapeString&quot;: false,
+    &quot;printBasicPrototype&quot;: false
+  },
+  &quot;testFailureExitCode&quot;: 1,
+  &quot;testPathPattern&quot;: &quot;test&#x2F;channels&#x2F;channel_info.e2e.ts|test&#x2F;channels&#x2F;channel_list.e2e.ts|test&#x2F;channels&#x2F;channel_post_list.e2e.ts|test&#x2F;channels&#x2F;convert_to_private_channel.e2e.ts|test&#x2F;channels&#x2F;create_channel_and_edit_channel_header.e2e.ts|test&#x2F;channels&#x2F;create_direct_message.e2e.ts|test&#x2F;channels&#x2F;edit_channel.e2e.ts|test&#x2F;channels&#x2F;favorite_and_unfavorite_channel.e2e.ts|test&#x2F;channels&#x2F;find_channels.e2e.ts&quot;,
+  &quot;testSequencer&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;custom_sequencer.js&quot;,
+  &quot;testTimeout&quot;: 120000,
+  &quot;updateSnapshot&quot;: &quot;none&quot;,
+  &quot;useStderr&quot;: false,
+  &quot;verbose&quot;: true,
+  &quot;watch&quot;: false,
+  &quot;watchAll&quot;: false,
+  &quot;watchman&quot;: true,
+  &quot;workerThreads&quot;: false
+}</div>
+
+    </main>
+    <hr>
+    <footer class="footer">
+        <div class="container">
+            <span class="text-muted">jest-stare 2022</span>
+        </div>
+    </footer>
+</body>
+
+</html>
+

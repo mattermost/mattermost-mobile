@@ -12,7 +12,7 @@ env.d.ts
 *.ipa
 
 */**/compass-icons.ttf
-
+MNEW/**
 # OSX
 #
 .DS_Store
@@ -98,7 +98,6 @@ coverage
 # E2E testing
 mattermost-license.txt
 *.mattermost-license
-detox/artifacts
 detox/detox_pixel_*
 
 # Bundle artifact

@@ -1,0 +1,707 @@
+{
+  "numFailedTestSuites": 7,
+  "numFailedTests": 16,
+  "numPassedTestSuites": 2,
+  "numPassedTests": 4,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 1,
+  "numRuntimeErrorTestSuites": 7,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 9,
+  "numTotalTests": 21,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1710859527046,
+  "success": false,
+  "testResults": [
+    {
+      "leaks": false,
+      "numFailingTests": 3,
+      "numPassingTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710859855834,
+        "runtime": 328702,
+        "slow": true,
+        "start": 1710859527132
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/leave_channel.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Channels - Leave Channel"
+          ],
+          "duration": 18586,
+          "failureDetails": [
+            {
+              "name": "DetoxRuntimeError"
+            }
+          ],
+          "failureMessages": [
+            "Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n- view point: {1, 1}\n- visible bounds: {{inf, inf}, {0, 0}}\n- view bounds: {{0, 0}, {353, 48}}\n---\nError: Error Domain=DetoxErrorDomain Code=0 \"View “<RCTView: 0x7fc4ddf696b0>” is not visible: View is clipped by one or more of its superviews' bounds and does not pass visibility percent threshold (100)\" UserInfo={NSLocalizedDescription=View “<RCTView: 0x7fc4ddf696b0>” is not visible: View is clipped by one or more of its superviews' bounds and does not pass visibility percent threshold (100)}\n    at ChannelInfoScreen.leaveChannel (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/channel_info.ts:172:39)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/leave_channel.e2e.ts:62:9)"
+          ],
+          "fullName": "Channels - Leave Channel MM-T4931_1 - should be able to leave a channel from channel info screen and confirm",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4931_1 - should be able to leave a channel from channel info screen and confirm"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Leave Channel"
+          ],
+          "duration": 10249,
+          "failureDetails": [
+            {
+              "name": "DetoxRuntimeError"
+            }
+          ],
+          "failureMessages": [
+            "Test Failed: Timed out while waiting for expectation: TOEXIST WITH MATCHER(id == “channel_list.screen”) TIMEOUT(10s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at ChannelListScreen.toBeVisible (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/channel_list.ts:75:57)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/leave_channel.e2e.ts:47:33)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at _runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:246:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:126:9)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+          ],
+          "fullName": "Channels - Leave Channel MM-T4931_2 - should be able to leave a channel from channel info screen and cancel",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4931_2 - should be able to leave a channel from channel info screen and cancel"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Leave Channel"
+          ],
+          "duration": 10165,
+          "failureDetails": [
+            {
+              "name": "DetoxRuntimeError"
+            }
+          ],
+          "failureMessages": [
+            "Test Failed: Timed out while waiting for expectation: TOEXIST WITH MATCHER(id == “channel_list.screen”) TIMEOUT(10s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at ChannelListScreen.toBeVisible (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/channel_list.ts:75:57)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/leave_channel.e2e.ts:47:33)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at _runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:246:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:126:9)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+          ],
+          "fullName": "Channels - Leave Channel MM-T4931_3 - should be able to leave a channel from channel quick actions",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4931_3 - should be able to leave a channel from channel quick actions"
+        }
+      ],
+      "failureMessage": "  ● Channels - Leave Channel › MM-T4931_1 - should be able to leave a channel from channel info screen and confirm\n\n    Test Failed: View is not hittable at its visible point. Error: View is not visible around point.\n    - view point: {1, 1}\n    - visible bounds: {{inf, inf}, {0, 0}}\n    - view bounds: {{0, 0}, {353, 48}}\n    ---\n    Error: Error Domain=DetoxErrorDomain Code=0 \"View “<RCTView: 0x7fc4ddf696b0>” is not visible: View is clipped by one or more of its superviews' bounds and does not pass visibility percent threshold (100)\" UserInfo={NSLocalizedDescription=View “<RCTView: 0x7fc4ddf696b0>” is not visible: View is clipped by one or more of its superviews' bounds and does not pass visibility percent threshold (100)}\n\n      170 |             await this.scrollView.scrollTo('bottom');\n      171 |         }\n    > 172 |         await this.leaveChannelOption.tap({x: 1, y: 1});\n          |                                       ^\n      173 |         const {\n      174 |             leaveChannelTitle,\n      175 |             cancelButton,\n\n      at ChannelInfoScreen.leaveChannel (support/ui/screen/channel_info.ts:172:39)\n      at Object.<anonymous> (test/channels/leave_channel.e2e.ts:62:9)\n\n  ● Channels - Leave Channel › MM-T4931_2 - should be able to leave a channel from channel info screen and cancel\n\n    Test Failed: Timed out while waiting for expectation: TOEXIST WITH MATCHER(id == “channel_list.screen”) TIMEOUT(10s)\n\n    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n\n      73 |\n      74 |     toBeVisible = async () => {\n    > 75 |         await waitFor(this.channelListScreen).toExist().withTimeout(timeouts.TEN_SEC);\n         |                                                         ^\n      76 |\n      77 |         return this.channelListScreen;\n      78 |     };\n\n      at ChannelListScreen.toBeVisible (support/ui/screen/channel_list.ts:75:57)\n      at Object.<anonymous> (test/channels/leave_channel.e2e.ts:47:33)\n\n  ● Channels - Leave Channel › MM-T4931_3 - should be able to leave a channel from channel quick actions\n\n    Test Failed: Timed out while waiting for expectation: TOEXIST WITH MATCHER(id == “channel_list.screen”) TIMEOUT(10s)\n\n    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n\n      73 |\n      74 |     toBeVisible = async () => {\n    > 75 |         await waitFor(this.channelListScreen).toExist().withTimeout(timeouts.TEN_SEC);\n         |                                                         ^\n      76 |\n      77 |         return this.channelListScreen;\n      78 |     };\n\n      at ChannelListScreen.toBeVisible (support/ui/screen/channel_list.ts:75:57)\n      at Object.<anonymous> (test/channels/leave_channel.e2e.ts:47:33)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n\n      82 |     open = async () => {\n      83 |         // # Open account screen\n    > 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support/ui/screen/account.ts:84:60)\n      at HomeScreen.logout (support/ui/screen/home.ts:40:29)\n      at Object.<anonymous> (test/channels/leave_channel.e2e.ts:52:26)\n",
+      "testExecError": {
+        "message": "",
+        "stack": "Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/leave_channel.e2e.ts:52:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 2,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710859983215,
+        "runtime": 127240,
+        "slow": true,
+        "start": 1710859855975
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/mute_and_unmute_channel.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Channels - Mute and Unmute Channel"
+          ],
+          "duration": 27905,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Channels - Mute and Unmute Channel MM-T4930_1 - should be able to mute/unmute a channel from channel quick actions",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4930_1 - should be able to mute/unmute a channel from channel quick actions"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Mute and Unmute Channel"
+          ],
+          "duration": 24292,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Channels - Mute and Unmute Channel MM-T4930_2 - should be able to mute/unmute a channel from channel info screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4930_2 - should be able to mute/unmute a channel from channel info screen"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 2,
+      "numPassingTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860033214,
+        "runtime": 49934,
+        "slow": true,
+        "start": 1710859983280
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/unarchive_channel.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Channels - Unarchive Channel"
+          ],
+          "duration": 2,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'email')\n    at LoginScreen.login (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/login.ts:63:56)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/unarchive_channel.e2e.ts:30:9)"
+          ],
+          "fullName": "Channels - Unarchive Channel MM-T4944_1 - should be able to unarchive a public channel and confirm",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4944_1 - should be able to unarchive a public channel and confirm"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Unarchive Channel"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'email')\n    at LoginScreen.login (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/login.ts:63:56)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/unarchive_channel.e2e.ts:30:9)"
+          ],
+          "fullName": "Channels - Unarchive Channel MM-T4944_2 - should be able to unarchive a private channel and confirm",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4944_2 - should be able to unarchive a private channel and confirm"
+        }
+      ],
+      "failureMessage": "  ● Channels - Unarchive Channel › MM-T4944_1 - should be able to unarchive a public channel and confirm\n\n    TypeError: Cannot read properties of undefined (reading 'email')\n\n      61 |     login = async (user: any = {}) => {\n      62 |         await this.toBeVisible();\n    > 63 |         await this.usernameInput.typeText(user.newUser.email);\n         |                                                        ^\n      64 |         await this.passwordInput.typeText(`${user.newUser.password}\\n`);\n      65 |\n      66 |         // await this.signinButton.tap();\n\n      at LoginScreen.login (support/ui/screen/login.ts:63:56)\n      at Object.<anonymous> (test/channels/unarchive_channel.e2e.ts:30:9)\n\n  ● Channels - Unarchive Channel › MM-T4944_2 - should be able to unarchive a private channel and confirm\n\n    TypeError: Cannot read properties of undefined (reading 'email')\n\n      61 |     login = async (user: any = {}) => {\n      62 |         await this.toBeVisible();\n    > 63 |         await this.usernameInput.typeText(user.newUser.email);\n         |                                                        ^\n      64 |         await this.passwordInput.typeText(`${user.newUser.password}\\n`);\n      65 |\n      66 |         // await this.signinButton.tap();\n\n      at LoginScreen.login (support/ui/screen/login.ts:63:56)\n      at Object.<anonymous> (test/channels/unarchive_channel.e2e.ts:30:9)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n\n      82 |     open = async () => {\n      83 |         // # Open account screen\n    > 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support/ui/screen/account.ts:84:60)\n      at HomeScreen.logout (support/ui/screen/home.ts:40:29)\n      at Object.<anonymous> (test/channels/unarchive_channel.e2e.ts:40:26)\n",
+      "testExecError": {
+        "message": "",
+        "stack": "Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/unarchive_channel.e2e.ts:40:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 2,
+      "numPendingTests": 1,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860144649,
+        "runtime": 111368,
+        "slow": true,
+        "start": 1710860033281
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/at_mention.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - At-Mention"
+          ],
+          "duration": 21966,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - At-Mention MM-T4874_1 - should post at-mention as lowercase",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4874_1 - should post at-mention as lowercase"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - At-Mention"
+          ],
+          "duration": null,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - At-Mention MM-T4874_2 - should display confirmation dialog when posting @all, @channel, and @here -- UNSTABLE",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "pending",
+          "title": "MM-T4874_2 - should display confirmation dialog when posting @all, @channel, and @here -- UNSTABLE"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - At-Mention"
+          ],
+          "duration": 22426,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - At-Mention MM-T4874_3 - should be able to open user profile by tapping on at-mention",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4874_3 - should be able to open user profile by tapping on at-mention"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 2,
+      "numPassingTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860187557,
+        "runtime": 42827,
+        "slow": true,
+        "start": 1710860144730
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/channel_link.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - Channel Link"
+          ],
+          "duration": 2,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/channel_link.e2e.ts:37:39)"
+          ],
+          "fullName": "Messaging - Channel Link MM-T4877_1 - should be able to open joined channel by tapping on channel link from main channel",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4877_1 - should be able to open joined channel by tapping on channel link from main channel"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Channel Link"
+          ],
+          "duration": 2,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/channel_link.e2e.ts:37:39)"
+          ],
+          "fullName": "Messaging - Channel Link MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread"
+        }
+      ],
+      "failureMessage": "  ● Messaging - Channel Link › MM-T4877_1 - should be able to open joined channel by tapping on channel link from main channel\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/messaging/channel_link.e2e.ts:37:39)\n\n  ● Messaging - Channel Link › MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/messaging/channel_link.e2e.ts:37:39)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n\n      82 |     open = async () => {\n      83 |         // # Open account screen\n    > 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support/ui/screen/account.ts:84:60)\n      at HomeScreen.logout (support/ui/screen/home.ts:40:29)\n      at Object.<anonymous> (test/messaging/channel_link.e2e.ts:54:26)\n",
+      "testExecError": {
+        "message": "",
+        "stack": "Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/channel_link.e2e.ts:54:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 2,
+      "numPassingTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860196447,
+        "runtime": 8861,
+        "slow": true,
+        "start": 1710860187586
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/channel_mention.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - Channel Mention"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/channel_mention.e2e.ts:37:39)"
+          ],
+          "fullName": "Messaging - Channel Mention MM-T4875_1 - should post channel mention as channel display name",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4875_1 - should post channel mention as channel display name"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Channel Mention"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/channel_mention.e2e.ts:37:39)"
+          ],
+          "fullName": "Messaging - Channel Mention MM-T4875_2 - should be able to open joined channel by tapping on channel mention",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4875_2 - should be able to open joined channel by tapping on channel mention"
+        }
+      ],
+      "failureMessage": "  ● Messaging - Channel Mention › MM-T4875_1 - should post channel mention as channel display name\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Messaging - Channel Mention › MM-T4875_1 - should post channel mention as channel display name\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/messaging/channel_mention.e2e.ts:37:39)\n\n  ● Messaging - Channel Mention › MM-T4875_2 - should be able to open joined channel by tapping on channel mention\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Messaging - Channel Mention › MM-T4875_2 - should be able to open joined channel by tapping on channel mention\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/messaging/channel_mention.e2e.ts:37:39)\n\n\n  ● Test suite failed to run\n\n    Detox can't seem to connect to the test app(s)!\n\n    HINT: \n\n    Have you forgotten to call 'device.launchApp()' in the beginning of your test?\n    Refer to our troubleshooting guide, for full details: https://wix.github.io/Detox/docs/troubleshooting/running-tests#tests-execution-hangs\n\n    ---\n    The following package could not be delivered:\n\n    {\n      type: 'invoke',\n      params: [Object],\n      messageId: 1\n    }\n\n      82 |     open = async () => {\n      83 |         // # Open account screen\n    > 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support/ui/screen/account.ts:84:60)\n      at HomeScreen.logout (support/ui/screen/home.ts:40:29)\n      at Object.<anonymous> (test/messaging/channel_mention.e2e.ts:54:26)\n",
+      "testExecError": {
+        "message": "",
+        "stack": "Detox can't seem to connect to the test app(s)!\n\nHINT: \n\nHave you forgotten to call 'device.launchApp()' in the beginning of your test?\nRefer to our troubleshooting guide, for full details: https://wix.github.io/Detox/docs/troubleshooting/running-tests#tests-execution-hangs\n\n---\nThe following package could not be delivered:\n\n{\n  type: 'invoke',\n  params: [Object],\n  messageId: 1\n}\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/channel_mention.e2e.ts:54:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 4,
+      "numPassingTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860234112,
+        "runtime": 37639,
+        "slow": true,
+        "start": 1710860196473
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/emojis_and_reactions.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - Emojis and Reactions"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/emojis_and_reactions.e2e.ts:38:33)"
+          ],
+          "fullName": "Messaging - Emojis and Reactions MM-T4862_1 - should be able to view recent reactions and add new reaction via post options",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4862_1 - should be able to view recent reactions and add new reaction via post options"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Emojis and Reactions"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/emojis_and_reactions.e2e.ts:38:33)"
+          ],
+          "fullName": "Messaging - Emojis and Reactions MM-T4862_2 - should be able to long press on a reaction to view the list of users who reacted",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4862_2 - should be able to long press on a reaction to view the list of users who reacted"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Emojis and Reactions"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/emojis_and_reactions.e2e.ts:38:33)"
+          ],
+          "fullName": "Messaging - Emojis and Reactions MM-T4862_3 - should be able to include emojis in a message and be able to find them in emoji bar and recently used section",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4862_3 - should be able to include emojis in a message and be able to find them in emoji bar and recently used section"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Emojis and Reactions"
+          ],
+          "duration": 0,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/emojis_and_reactions.e2e.ts:38:33)"
+          ],
+          "fullName": "Messaging - Emojis and Reactions MM-T4862_4 - should display empty search state for emoji picker",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4862_4 - should display empty search state for emoji picker"
+        }
+      ],
+      "failureMessage": "  ● Messaging - Emojis and Reactions › MM-T4862_1 - should be able to view recent reactions and add new reaction via post options\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/messaging/emojis_and_reactions.e2e.ts:38:33)\n\n  ● Messaging - Emojis and Reactions › MM-T4862_2 - should be able to long press on a reaction to view the list of users who reacted\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/messaging/emojis_and_reactions.e2e.ts:38:33)\n\n  ● Messaging - Emojis and Reactions › MM-T4862_3 - should be able to include emojis in a message and be able to find them in emoji bar and recently used section\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/messaging/emojis_and_reactions.e2e.ts:38:33)\n\n  ● Messaging - Emojis and Reactions › MM-T4862_4 - should display empty search state for emoji picker\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/messaging/emojis_and_reactions.e2e.ts:38:33)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n\n      82 |     open = async () => {\n      83 |         // # Open account screen\n    > 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support/ui/screen/account.ts:84:60)\n      at HomeScreen.logout (support/ui/screen/home.ts:40:29)\n      at Object.<anonymous> (test/messaging/emojis_and_reactions.e2e.ts:54:26)\n",
+      "testExecError": {
+        "message": "",
+        "stack": "Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/emojis_and_reactions.e2e.ts:54:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 2,
+      "numPassingTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860241605,
+        "runtime": 7459,
+        "slow": true,
+        "start": 1710860234146
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/follow_and_unfollow_messsage.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - Follow and Unfollow Message"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/follow_and_unfollow_messsage.e2e.ts:35:33)"
+          ],
+          "fullName": "Messaging - Follow and Unfollow Message MM-T4863_1 - should be able to follow/unfollow a message via post options",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4863_1 - should be able to follow/unfollow a message via post options"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Follow and Unfollow Message"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/follow_and_unfollow_messsage.e2e.ts:35:33)"
+          ],
+          "fullName": "Messaging - Follow and Unfollow Message MM-T4863_2 - should be able to unfollow a message via post footer",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4863_2 - should be able to unfollow a message via post footer"
+        }
+      ],
+      "failureMessage": "  ● Messaging - Follow and Unfollow Message › MM-T4863_1 - should be able to follow/unfollow a message via post options\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Messaging - Follow and Unfollow Message › MM-T4863_1 - should be able to follow/unfollow a message via post options\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/messaging/follow_and_unfollow_messsage.e2e.ts:35:33)\n\n  ● Messaging - Follow and Unfollow Message › MM-T4863_2 - should be able to unfollow a message via post footer\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Messaging - Follow and Unfollow Message › MM-T4863_2 - should be able to unfollow a message via post footer\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/messaging/follow_and_unfollow_messsage.e2e.ts:35:33)\n\n\n  ● Test suite failed to run\n\n    Detox can't seem to connect to the test app(s)!\n\n    HINT: \n\n    Have you forgotten to call 'device.launchApp()' in the beginning of your test?\n    Refer to our troubleshooting guide, for full details: https://wix.github.io/Detox/docs/troubleshooting/running-tests#tests-execution-hangs\n\n    ---\n    The following package could not be delivered:\n\n    {\n      type: 'invoke',\n      params: [Object],\n      messageId: 1\n    }\n\n      82 |     open = async () => {\n      83 |         // # Open account screen\n    > 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support/ui/screen/account.ts:84:60)\n      at HomeScreen.logout (support/ui/screen/home.ts:40:29)\n      at Object.<anonymous> (test/messaging/follow_and_unfollow_messsage.e2e.ts:50:26)\n",
+      "testExecError": {
+        "message": "",
+        "stack": "Detox can't seem to connect to the test app(s)!\n\nHINT: \n\nHave you forgotten to call 'device.launchApp()' in the beginning of your test?\nRefer to our troubleshooting guide, for full details: https://wix.github.io/Detox/docs/troubleshooting/running-tests#tests-execution-hangs\n\n---\nThe following package could not be delivered:\n\n{\n  type: 'invoke',\n  params: [Object],\n  messageId: 1\n}\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/follow_and_unfollow_messsage.e2e.ts:50:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 1,
+      "numPassingTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860274678,
+        "runtime": 33053,
+        "slow": true,
+        "start": 1710860241625
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/markdown_block_quote.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - Markdown Block Quote"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/markdown_block_quote.e2e.ts:33:33)"
+          ],
+          "fullName": "Messaging - Markdown Block Quote MM-T4898_1 - should be able to display markdown block quote",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4898_1 - should be able to display markdown block quote"
+        }
+      ],
+      "failureMessage": "  ● Messaging - Markdown Block Quote › MM-T4898_1 - should be able to display markdown block quote\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/messaging/markdown_block_quote.e2e.ts:33:33)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n\n      82 |     open = async () => {\n      83 |         // # Open account screen\n    > 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support/ui/screen/account.ts:84:60)\n      at HomeScreen.logout (support/ui/screen/home.ts:40:29)\n      at Object.<anonymous> (test/messaging/markdown_block_quote.e2e.ts:48:26)\n",
+      "testExecError": {
+        "message": "",
+        "stack": "Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/markdown_block_quote.e2e.ts:48:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    }
+  ],
+  "wasInterrupted": false
+}

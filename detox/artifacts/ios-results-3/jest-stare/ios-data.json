@@ -1,0 +1,1032 @@
+{
+  "numFailedTestSuites": 4,
+  "numFailedTests": 20,
+  "numPassedTestSuites": 5,
+  "numPassedTests": 22,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 0,
+  "numRuntimeErrorTestSuites": 4,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 9,
+  "numTotalTests": 42,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1710859527096,
+  "success": false,
+  "testResults": [
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 4,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710859831322,
+        "runtime": 304144,
+        "slow": true,
+        "start": 1710859527178
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/create_channel.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Autocomplete - Create Channel"
+          ],
+          "duration": 7086,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Create Channel MM-T4904_1 - should render at-mention autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4904_1 - should render at-mention autocomplete in header input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Create Channel"
+          ],
+          "duration": 2642,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Create Channel MM-T4904_2 - should render channel mention autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4904_2 - should render channel mention autocomplete in header input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Create Channel"
+          ],
+          "duration": 1651,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Create Channel MM-T4904_3 - should render emoji suggestion autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4904_3 - should render emoji suggestion autocomplete in header input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Create Channel"
+          ],
+          "duration": 654,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Create Channel MM-T4904_4 - should not render slash suggestion autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4904_4 - should not render slash suggestion autocomplete in header input"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 4,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710859921793,
+        "runtime": 90400,
+        "slow": true,
+        "start": 1710859831393
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/edit_channel.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Channel"
+          ],
+          "duration": 2920,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Channel MM-T4885_1 - should render at-mention autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4885_1 - should render at-mention autocomplete in header input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Channel"
+          ],
+          "duration": 1669,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Channel MM-T4885_2 - should render channel mention autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4885_2 - should render channel mention autocomplete in header input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Channel"
+          ],
+          "duration": 1593,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Channel MM-T4885_3 - should render emoji suggestion autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4885_3 - should render emoji suggestion autocomplete in header input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Channel"
+          ],
+          "duration": 562,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Channel MM-T4885_4 - should not render slash suggestion autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4885_4 - should not render slash suggestion autocomplete in header input"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 4,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860005950,
+        "runtime": 84121,
+        "slow": true,
+        "start": 1710859921829
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/edit_channel_header.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Channel Header"
+          ],
+          "duration": 3844,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Channel Header MM-T4884_1 - should render at-mention autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4884_1 - should render at-mention autocomplete in header input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Channel Header"
+          ],
+          "duration": 1465,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Channel Header MM-T4884_2 - should render channel mention autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4884_2 - should render channel mention autocomplete in header input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Channel Header"
+          ],
+          "duration": 1538,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Channel Header MM-T4884_3 - should render emoji suggestion autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4884_3 - should render emoji suggestion autocomplete in header input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Channel Header"
+          ],
+          "duration": 543,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Channel Header MM-T4884_4 - should not render slash suggestion autocomplete in header input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4884_4 - should not render slash suggestion autocomplete in header input"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 4,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860102440,
+        "runtime": 96458,
+        "slow": true,
+        "start": 1710860005982
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/edit_post.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Post"
+          ],
+          "duration": 1271,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Post MM-T4883_1 - should render at-mention autocomplete in message input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4883_1 - should render at-mention autocomplete in message input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Post"
+          ],
+          "duration": 1223,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Post MM-T4883_2 - should render channel mention autocomplete in message input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4883_2 - should render channel mention autocomplete in message input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Post"
+          ],
+          "duration": 1760,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Post MM-T4883_3 - should render emoji suggestion autocomplete in message input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4883_3 - should render emoji suggestion autocomplete in message input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Edit Post"
+          ],
+          "duration": 1153,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Edit Post MM-T4883_4 - should not render slash suggestion autocomplete in message input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4883_4 - should not render slash suggestion autocomplete in message input"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 6,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860201196,
+        "runtime": 98717,
+        "slow": true,
+        "start": 1710860102479
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/emoji_suggestion.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Autocomplete - Emoji Suggestion"
+          ],
+          "duration": 6296,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Emoji Suggestion MM-T4880_1 - should suggest emoji based on emoji name",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4880_1 - should suggest emoji based on emoji name"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Emoji Suggestion"
+          ],
+          "duration": 5463,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Emoji Suggestion MM-T4880_2 - should suggest emoji based on uppercase emoji name",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4880_2 - should suggest emoji based on uppercase emoji name"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Emoji Suggestion"
+          ],
+          "duration": 4916,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Emoji Suggestion MM-T4880_3 - should suggest emoji based on partial emoji name",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4880_3 - should suggest emoji based on partial emoji name"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Emoji Suggestion"
+          ],
+          "duration": 6765,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Emoji Suggestion MM-T4880_4 - should stop suggesting emoji after emoji name with trailing space",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4880_4 - should stop suggesting emoji after emoji name with trailing space"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Emoji Suggestion"
+          ],
+          "duration": 5280,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Emoji Suggestion MM-T4880_5 - should stop suggesting emoji when keyword is not associated with any emoji",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4880_5 - should stop suggesting emoji when keyword is not associated with any emoji"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Emoji Suggestion"
+          ],
+          "duration": 6954,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Autocomplete - Emoji Suggestion MM-T4880_6 - should be able to select emoji suggestion multiple times",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4880_6 - should be able to select emoji suggestion multiple times"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 6,
+      "numPassingTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860210952,
+        "runtime": 9721,
+        "slow": true,
+        "start": 1710860201231
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/slash_suggestion.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Autocomplete - Slash Suggestion"
+          ],
+          "duration": 2,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/slash_suggestion.e2e.ts:33:33)"
+          ],
+          "fullName": "Autocomplete - Slash Suggestion MM-T4881_1 - should suggest slash command based on slash command name",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4881_1 - should suggest slash command based on slash command name"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Slash Suggestion"
+          ],
+          "duration": 0,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/slash_suggestion.e2e.ts:33:33)"
+          ],
+          "fullName": "Autocomplete - Slash Suggestion MM-T4881_2 - should suggest slash command based on partial slash command name",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4881_2 - should suggest slash command based on partial slash command name"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Slash Suggestion"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/slash_suggestion.e2e.ts:33:33)"
+          ],
+          "fullName": "Autocomplete - Slash Suggestion MM-T4881_3 - should stop suggesting slash command after uppercase slash command name",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4881_3 - should stop suggesting slash command after uppercase slash command name"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Slash Suggestion"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/slash_suggestion.e2e.ts:33:33)"
+          ],
+          "fullName": "Autocomplete - Slash Suggestion MM-T4881_4 - should stop suggesting slash command after slash command name with trailing space",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4881_4 - should stop suggesting slash command after slash command name with trailing space"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Slash Suggestion"
+          ],
+          "duration": 0,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/slash_suggestion.e2e.ts:33:33)"
+          ],
+          "fullName": "Autocomplete - Slash Suggestion MM-T4881_5 - should stop suggesting slash command when keyword is not associated with any slash command",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4881_5 - should stop suggesting slash command when keyword is not associated with any slash command"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Slash Suggestion"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/slash_suggestion.e2e.ts:33:33)"
+          ],
+          "fullName": "Autocomplete - Slash Suggestion MM-T4881_6 - should not be able to select slash suggestion multiple times",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4881_6 - should not be able to select slash suggestion multiple times"
+        }
+      ],
+      "failureMessage": "  ● Autocomplete - Slash Suggestion › MM-T4881_1 - should suggest slash command based on slash command name\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Autocomplete - Slash Suggestion › MM-T4881_1 - should suggest slash command based on slash command name\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/autocomplete/slash_suggestion.e2e.ts:33:33)\n\n  ● Autocomplete - Slash Suggestion › MM-T4881_2 - should suggest slash command based on partial slash command name\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Autocomplete - Slash Suggestion › MM-T4881_2 - should suggest slash command based on partial slash command name\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/autocomplete/slash_suggestion.e2e.ts:33:33)\n\n  ● Autocomplete - Slash Suggestion › MM-T4881_3 - should stop suggesting slash command after uppercase slash command name\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Autocomplete - Slash Suggestion › MM-T4881_3 - should stop suggesting slash command after uppercase slash command name\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/autocomplete/slash_suggestion.e2e.ts:33:33)\n\n  ● Autocomplete - Slash Suggestion › MM-T4881_4 - should stop suggesting slash command after slash command name with trailing space\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Autocomplete - Slash Suggestion › MM-T4881_4 - should stop suggesting slash command after slash command name with trailing space\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/autocomplete/slash_suggestion.e2e.ts:33:33)\n\n  ● Autocomplete - Slash Suggestion › MM-T4881_5 - should stop suggesting slash command when keyword is not associated with any slash command\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Autocomplete - Slash Suggestion › MM-T4881_5 - should stop suggesting slash command when keyword is not associated with any slash command\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/autocomplete/slash_suggestion.e2e.ts:33:33)\n\n  ● Autocomplete - Slash Suggestion › MM-T4881_6 - should not be able to select slash suggestion multiple times\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Autocomplete - Slash Suggestion › MM-T4881_6 - should not be able to select slash suggestion multiple times\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/autocomplete/slash_suggestion.e2e.ts:33:33)\n\n\n  ● Test suite failed to run\n\n    Detox can't seem to connect to the test app(s)!\n\n    HINT: \n\n    Have you forgotten to call 'device.launchApp()' in the beginning of your test?\n    Refer to our troubleshooting guide, for full details: https://wix.github.io/Detox/docs/troubleshooting/running-tests#tests-execution-hangs\n\n    ---\n    The following package could not be delivered:\n\n    {\n      type: 'invoke',\n      params: [Object],\n      messageId: 1\n    }\n\n      126 |     back = async () => {\n      127 |         await wait(timeouts.ONE_SEC);\n    > 128 |         await this.backButton.tap();\n          |                               ^\n      129 |         await expect(this.channelScreen).not.toBeVisible();\n      130 |     };\n      131 |\n\n      at ChannelScreen.back (support/ui/screen/channel.ts:128:31)\n      at Object.<anonymous> (test/autocomplete/slash_suggestion.e2e.ts:58:9)\n",
+      "testExecError": {
+        "message": "",
+        "stack": "Detox can't seem to connect to the test app(s)!\n\nHINT: \n\nHave you forgotten to call 'device.launchApp()' in the beginning of your test?\nRefer to our troubleshooting guide, for full details: https://wix.github.io/Detox/docs/troubleshooting/running-tests#tests-execution-hangs\n\n---\nThe following package could not be delivered:\n\n{\n  type: 'invoke',\n  params: [Object],\n  messageId: 1\n}\n    at ChannelScreen.back (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/channel.ts:128:31)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/slash_suggestion.e2e.ts:58:9)"
+      }
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 4,
+      "numPassingTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860218739,
+        "runtime": 7761,
+        "slow": true,
+        "start": 1710860210978
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/thread_post_draft.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Autocomplete - Thread Post Draft"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/thread_post_draft.e2e.ts:32:33)"
+          ],
+          "fullName": "Autocomplete - Thread Post Draft MM-T4905_1 - should render at-mention autocomplete in post input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4905_1 - should render at-mention autocomplete in post input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Thread Post Draft"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/thread_post_draft.e2e.ts:32:33)"
+          ],
+          "fullName": "Autocomplete - Thread Post Draft MM-T4905_2 - should render channel mention autocomplete in post input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4905_2 - should render channel mention autocomplete in post input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Thread Post Draft"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/thread_post_draft.e2e.ts:32:33)"
+          ],
+          "fullName": "Autocomplete - Thread Post Draft MM-T4905_3 - should render emoji suggestion autocomplete in post input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4905_3 - should render emoji suggestion autocomplete in post input"
+        },
+        {
+          "ancestorTitles": [
+            "Autocomplete - Thread Post Draft"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {},
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'status')\n    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)",
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/thread_post_draft.e2e.ts:32:33)"
+          ],
+          "fullName": "Autocomplete - Thread Post Draft MM-T4905_4 - should render slash suggestion autocomplete in post input",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4905_4 - should render slash suggestion autocomplete in post input"
+        }
+      ],
+      "failureMessage": "  ● Autocomplete - Thread Post Draft › MM-T4905_1 - should render at-mention autocomplete in post input\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Autocomplete - Thread Post Draft › MM-T4905_1 - should render at-mention autocomplete in post input\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/autocomplete/thread_post_draft.e2e.ts:32:33)\n\n  ● Autocomplete - Thread Post Draft › MM-T4905_2 - should render channel mention autocomplete in post input\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Autocomplete - Thread Post Draft › MM-T4905_2 - should render channel mention autocomplete in post input\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/autocomplete/thread_post_draft.e2e.ts:32:33)\n\n  ● Autocomplete - Thread Post Draft › MM-T4905_3 - should render emoji suggestion autocomplete in post input\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Autocomplete - Thread Post Draft › MM-T4905_3 - should render emoji suggestion autocomplete in post input\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/autocomplete/thread_post_draft.e2e.ts:32:33)\n\n  ● Autocomplete - Thread Post Draft › MM-T4905_4 - should render slash suggestion autocomplete in post input\n\n    TypeError: Cannot read properties of undefined (reading 'status')\n\n      29 | export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {\n      30 |     const {data} = await apiPingServerStatus(baseUrl);\n    > 31 |     jestExpect(data.status).toEqual('OK');\n         |                     ^\n      32 |     jestExpect(data.database_status).toEqual('OK');\n      33 |     jestExpect(data.filestore_status).toEqual('OK');\n      34 | };\n\n      at Object.apiCheckSystemHealth (support/server_api/system.ts:31:21)\n      at Object.<anonymous> (test/setup.ts:9:5)\n\n  ● Autocomplete - Thread Post Draft › MM-T4905_4 - should render slash suggestion autocomplete in post input\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/autocomplete/thread_post_draft.e2e.ts:32:33)\n\n\n  ● Test suite failed to run\n\n    Detox can't seem to connect to the test app(s)!\n\n    HINT: \n\n    Have you forgotten to call 'device.launchApp()' in the beginning of your test?\n    Refer to our troubleshooting guide, for full details: https://wix.github.io/Detox/docs/troubleshooting/running-tests#tests-execution-hangs\n\n    ---\n    The following package could not be delivered:\n\n    {\n      type: 'invoke',\n      params: [Object],\n      messageId: 1\n    }\n\n      92 |\n      93 |     back = async () => {\n    > 94 |         await this.backButton.tap();\n         |                               ^\n      95 |         await expect(this.threadScreen).not.toBeVisible();\n      96 |     };\n      97 |\n\n      at ThreadScreen.back (support/ui/screen/thread.ts:94:31)\n      at Object.<anonymous> (test/autocomplete/thread_post_draft.e2e.ts:58:28)\n",
+      "testExecError": {
+        "message": "",
+        "stack": "Detox can't seem to connect to the test app(s)!\n\nHINT: \n\nHave you forgotten to call 'device.launchApp()' in the beginning of your test?\nRefer to our troubleshooting guide, for full details: https://wix.github.io/Detox/docs/troubleshooting/running-tests#tests-execution-hangs\n\n---\nThe following package could not be delivered:\n\n{\n  type: 'invoke',\n  params: [Object],\n  messageId: 1\n}\n    at ThreadScreen.back (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/thread.ts:94:31)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/autocomplete/thread_post_draft.e2e.ts:58:28)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 3,
+      "numPassingTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860252538,
+        "runtime": 33770,
+        "slow": true,
+        "start": 1710860218768
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/archive_channel.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Channels - Archive Channel"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/archive_channel.e2e.ts:38:30)"
+          ],
+          "fullName": "Channels - Archive Channel MM-T4932_1 - should be able to archive a public channel and confirm",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4932_1 - should be able to archive a public channel and confirm"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Archive Channel"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/archive_channel.e2e.ts:38:30)"
+          ],
+          "fullName": "Channels - Archive Channel MM-T4932_2 - should be able to archive a public channel and cancel",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4932_2 - should be able to archive a public channel and cancel"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Archive Channel"
+          ],
+          "duration": 0,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/archive_channel.e2e.ts:38:30)"
+          ],
+          "fullName": "Channels - Archive Channel MM-T4932_3 - should be able to archive a private channel and confirm",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4932_3 - should be able to archive a private channel and confirm"
+        }
+      ],
+      "failureMessage": "  ● Channels - Archive Channel › MM-T4932_1 - should be able to archive a public channel and confirm\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/channels/archive_channel.e2e.ts:38:30)\n\n  ● Channels - Archive Channel › MM-T4932_2 - should be able to archive a public channel and cancel\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/channels/archive_channel.e2e.ts:38:30)\n\n  ● Channels - Archive Channel › MM-T4932_3 - should be able to archive a private channel and confirm\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/channels/archive_channel.e2e.ts:38:30)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n\n      82 |     open = async () => {\n      83 |         // # Open account screen\n    > 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support/ui/screen/account.ts:84:60)\n      at HomeScreen.logout (support/ui/screen/home.ts:40:29)\n      at Object.<anonymous> (test/channels/archive_channel.e2e.ts:54:26)\n",
+      "testExecError": {
+        "message": "",
+        "stack": "Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/archive_channel.e2e.ts:54:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 7,
+      "numPassingTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860287807,
+        "runtime": 35243,
+        "slow": true,
+        "start": 1710860252564
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/browse_channels.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Channels - Browse Channels"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/browse_channels.e2e.ts:39:30)"
+          ],
+          "fullName": "Channels - Browse Channels MM-T4729_1 - should match elements on browse channels screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4729_1 - should match elements on browse channels screen"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Browse Channels"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/browse_channels.e2e.ts:39:30)"
+          ],
+          "fullName": "Channels - Browse Channels MM-T4729_2 - should be able to browse and join an unjoined public channel",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4729_2 - should be able to browse and join an unjoined public channel"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Browse Channels"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/browse_channels.e2e.ts:39:30)"
+          ],
+          "fullName": "Channels - Browse Channels MM-T4729_3 - should display empty search state for browse channels",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4729_3 - should display empty search state for browse channels"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Browse Channels"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/browse_channels.e2e.ts:39:30)"
+          ],
+          "fullName": "Channels - Browse Channels MM-T4729_4 - should not be able to browse direct and group message channels",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4729_4 - should not be able to browse direct and group message channels"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Browse Channels"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/browse_channels.e2e.ts:39:30)"
+          ],
+          "fullName": "Channels - Browse Channels MM-T4729_5 - should be able to browse an archived channel",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4729_5 - should be able to browse an archived channel"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Browse Channels"
+          ],
+          "duration": 0,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/browse_channels.e2e.ts:39:30)"
+          ],
+          "fullName": "Channels - Browse Channels MM-T4729_6 - should not be able to browse a joined public channel",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4729_6 - should not be able to browse a joined public channel"
+        },
+        {
+          "ancestorTitles": [
+            "Channels - Browse Channels"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'id')\n    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/browse_channels.e2e.ts:39:30)"
+          ],
+          "fullName": "Channels - Browse Channels MM-T4729_7 - should not be able to browse joined and unjoined private channel",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "MM-T4729_7 - should not be able to browse joined and unjoined private channel"
+        }
+      ],
+      "failureMessage": "  ● Channels - Browse Channels › MM-T4729_1 - should match elements on browse channels screen\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/channels/browse_channels.e2e.ts:39:30)\n\n  ● Channels - Browse Channels › MM-T4729_2 - should be able to browse and join an unjoined public channel\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/channels/browse_channels.e2e.ts:39:30)\n\n  ● Channels - Browse Channels › MM-T4729_3 - should display empty search state for browse channels\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/channels/browse_channels.e2e.ts:39:30)\n\n  ● Channels - Browse Channels › MM-T4729_4 - should not be able to browse direct and group message channels\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/channels/browse_channels.e2e.ts:39:30)\n\n  ● Channels - Browse Channels › MM-T4729_5 - should be able to browse an archived channel\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/channels/browse_channels.e2e.ts:39:30)\n\n  ● Channels - Browse Channels › MM-T4729_6 - should not be able to browse a joined public channel\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/channels/browse_channels.e2e.ts:39:30)\n\n  ● Channels - Browse Channels › MM-T4729_7 - should not be able to browse joined and unjoined private channel\n\n    TypeError: Cannot read properties of undefined (reading 'id')\n\n      18 | }: any = {}): Promise<any> => {\n      19 |     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);\n    > 20 |     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} = await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support/server_api/setup.ts:20:96)\n      at Object.<anonymous> (test/channels/browse_channels.e2e.ts:39:30)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n\n      82 |     open = async () => {\n      83 |         // # Open account screen\n    > 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support/ui/screen/account.ts:84:60)\n      at HomeScreen.logout (support/ui/screen/home.ts:40:29)\n      at Object.<anonymous> (test/channels/browse_channels.e2e.ts:55:26)\n",
+      "testExecError": {
+        "message": "",
+        "stack": "Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.<anonymous> (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/browse_channels.e2e.ts:55:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    }
+  ],
+  "wasInterrupted": false
+}

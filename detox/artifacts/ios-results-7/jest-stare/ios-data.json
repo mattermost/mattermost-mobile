@@ -1,0 +1,751 @@
+{
+  "numFailedTestSuites": 0,
+  "numFailedTests": 0,
+  "numPassedTestSuites": 9,
+  "numPassedTests": 31,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 0,
+  "numRuntimeErrorTestSuites": 0,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 9,
+  "numTotalTests": 31,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1710859519534,
+  "success": false,
+  "testResults": [
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 3,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710859868200,
+        "runtime": 348586,
+        "slow": true,
+        "start": 1710859519614
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_edit.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - Message Edit"
+          ],
+          "duration": 32077,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Message Edit MM-T4783_1 - should be able to edit a post message and save",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4783_1 - should be able to edit a post message and save"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Message Edit"
+          ],
+          "duration": 29250,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Message Edit MM-T4783_2 - should be able to edit a post message and cancel",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4783_2 - should be able to edit a post message and cancel"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Message Edit"
+          ],
+          "duration": 38935,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Message Edit MM-T4783_3 - should be able to edit a post message from reply thread",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4783_3 - should be able to edit a post message from reply thread"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 2,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710859960330,
+        "runtime": 92011,
+        "slow": true,
+        "start": 1710859868319
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_post.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - Message Post"
+          ],
+          "duration": 12027,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Message Post MM-T4782_1 - should be able to post a message when send button is tapped",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4782_1 - should be able to post a message when send button is tapped"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Message Post"
+          ],
+          "duration": 19694,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Message Post MM-T4782_2 - should be able to post a long message",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4782_2 - should be able to post a long message"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 3,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860097876,
+        "runtime": 137521,
+        "slow": true,
+        "start": 1710859960355
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_reply.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - Message Reply"
+          ],
+          "duration": 27029,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Message Reply MM-T4785_1 - should be able to reply to a post via post options reply option",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4785_1 - should be able to reply to a post via post options reply option"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Message Reply"
+          ],
+          "duration": 16529,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Message Reply MM-T4785_2 - should be able to open reply thread by tapping on the post",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4785_2 - should be able to open reply thread by tapping on the post"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Message Reply"
+          ],
+          "duration": 25340,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Message Reply MM-T4785_3 - should not have reply option available on reply thread post options -- KNOWN ISSUE: MM-50206",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4785_3 - should not have reply option available on reply thread post options -- KNOWN ISSUE: MM-50206"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 4,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860229114,
+        "runtime": 131214,
+        "slow": true,
+        "start": 1710860097900
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/permalink.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - Permalink"
+          ],
+          "duration": 19042,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Permalink MM-T4876_1 - should be able to jump to target public channel post by tapping on permalink with team name",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4876_1 - should be able to jump to target public channel post by tapping on permalink with team name"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Permalink"
+          ],
+          "duration": 18802,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Permalink MM-T4876_2 - should be able to jump to target public channel post by tapping on permalink with _redirect",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4876_2 - should be able to jump to target public channel post by tapping on permalink with _redirect"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Permalink"
+          ],
+          "duration": 19256,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Permalink MM-T4876_3 - should be able to jump to target DM post by tapping on permalink with team name",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4876_3 - should be able to jump to target DM post by tapping on permalink with team name"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Permalink"
+          ],
+          "duration": 19103,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Permalink MM-T4876_4 - should be able to jump to target DM post by tapping on permalink with _redirect",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4876_4 - should be able to jump to target DM post by tapping on permalink with _redirect"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 2,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860344362,
+        "runtime": 115226,
+        "slow": true,
+        "start": 1710860229136
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/pin_and_unpin_message.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - Pin and Unpin Message"
+          ],
+          "duration": 28950,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Pin and Unpin Message MM-T4865_1 - should be able to pin/unpin a message via post options on channel screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4865_1 - should be able to pin/unpin a message via post options on channel screen"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Pin and Unpin Message"
+          ],
+          "duration": 30096,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Pin and Unpin Message MM-T4865_2 - should be able to pin/unpin a message via post options on thread screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4865_2 - should be able to pin/unpin a message via post options on thread screen"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 2,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860458233,
+        "runtime": 113847,
+        "slow": true,
+        "start": 1710860344386
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/save_and_unsave_message.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Messaging - Save and Unsave Message"
+          ],
+          "duration": 28554,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Save and Unsave Message MM-T4864_1 - should be able to save/unsave a message via post options on channel screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4864_1 - should be able to save/unsave a message via post options on channel screen"
+        },
+        {
+          "ancestorTitles": [
+            "Messaging - Save and Unsave Message"
+          ],
+          "duration": 30803,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Messaging - Save and Unsave Message MM-T4864_2 - should be able to save/unsave a message via post options on thread screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4864_2 - should be able to save/unsave a message via post options on thread screen"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 5,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860729648,
+        "runtime": 271395,
+        "slow": true,
+        "start": 1710860458253
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/search/pinned_messages.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Search - Pinned Messages"
+          ],
+          "duration": 11482,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Pinned Messages MM-T4918_1 - should match elements on pinned messages screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4918_1 - should match elements on pinned messages screen"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Pinned Messages"
+          ],
+          "duration": 29957,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Pinned Messages MM-T4918_2 - should be able to display a pinned message in pinned messages screen and navigate to message channel",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4918_2 - should be able to display a pinned message in pinned messages screen and navigate to message channel"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Pinned Messages"
+          ],
+          "duration": 69196,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Pinned Messages MM-T4918_3 - should be able to edit, reply to, and delete a pinned message from pinned messages screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4918_3 - should be able to edit, reply to, and delete a pinned message from pinned messages screen"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Pinned Messages"
+          ],
+          "duration": 38361,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Pinned Messages MM-T4918_4 - should be able to unpin a message from pinned messages screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4918_4 - should be able to unpin a message from pinned messages screen"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Pinned Messages"
+          ],
+          "duration": 67397,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Pinned Messages MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 5,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710860935617,
+        "runtime": 205922,
+        "slow": true,
+        "start": 1710860729695
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/search/recent_mentions.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Search - Recent Mentions"
+          ],
+          "duration": 1803,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Recent Mentions MM-T4909_1 - should match elements on recent mentions screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4909_1 - should match elements on recent mentions screen"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Recent Mentions"
+          ],
+          "duration": 20951,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Recent Mentions MM-T4909_2 - should be able to display a recent mention in recent mentions screen and navigate to message channel",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4909_2 - should be able to display a recent mention in recent mentions screen and navigate to message channel"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Recent Mentions"
+          ],
+          "duration": 46652,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Recent Mentions MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Recent Mentions"
+          ],
+          "duration": 28778,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Recent Mentions MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Recent Mentions"
+          ],
+          "duration": 51665,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Recent Mentions MM-T4909_5 - should be able to pin/unpin a recent mention from recent mentions screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4909_5 - should be able to pin/unpin a recent mention from recent mentions screen"
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "leaks": false,
+      "numFailingTests": 0,
+      "numPassingTests": 5,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "openHandles": [],
+      "perfStats": {
+        "end": 1710861163213,
+        "runtime": 227571,
+        "slow": true,
+        "start": 1710860935642
+      },
+      "skipped": false,
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "uncheckedKeys": [],
+        "unmatched": 0,
+        "updated": 0
+      },
+      "testFilePath": "/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/search/saved_messages.e2e.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [
+            "Search - Saved Messages"
+          ],
+          "duration": 1955,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Saved Messages MM-T4910_1 - should match elements on saved messages screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 3,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4910_1 - should match elements on saved messages screen"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Saved Messages"
+          ],
+          "duration": 29148,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Saved Messages MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Saved Messages"
+          ],
+          "duration": 53387,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Saved Messages MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Saved Messages"
+          ],
+          "duration": 26811,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Saved Messages MM-T4910_4 - should be able to unsave a message from saved messages screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4910_4 - should be able to unsave a message from saved messages screen"
+        },
+        {
+          "ancestorTitles": [
+            "Search - Saved Messages"
+          ],
+          "duration": 59509,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "Search - Saved Messages MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen",
+          "invocations": 1,
+          "location": null,
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen"
+        }
+      ],
+      "failureMessage": null
+    }
+  ],
+  "wasInterrupted": false
+}

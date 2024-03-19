@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mobile App E2E with Detox and Jest" tests="36" failures="15" errors="0" time="1338.358">
+  <testsuite name="Channels - Channel Info" errors="0" failures="0" skipped="0" timestamp="2024-03-19T14:45:20" time="340.96" tests="3">
+    <testcase classname="Channels - Channel Info MM-T4928_1 - should match elements on channel info screen" name="Channels - Channel Info MM-T4928_1 - should match elements on channel info screen" time="24.463">
+    </testcase>
+    <testcase classname="Channels - Channel Info MM-T4928_2 - should be able to view channel info by tapping intro channel info action" name="Channels - Channel Info MM-T4928_2 - should be able to view channel info by tapping intro channel info action" time="10.38">
+    </testcase>
+    <testcase classname="Channels - Channel Info MM-T4928_3 - should be able to view channel info from channel quick actions" name="Channels - Channel Info MM-T4928_3 - should be able to view channel info from channel quick actions" time="13.773">
+    </testcase>
+  </testsuite>
+  <testsuite name="Channels - Channel List" errors="0" failures="2" skipped="0" timestamp="2024-03-19T14:51:01" time="149.464" tests="9">
+    <testcase classname="Channels - Channel List MM-T4728_1 - should match elements on channel list screen" name="Channels - Channel List MM-T4728_1 - should match elements on channel list screen" time="1.746">
+      <failure>Test Failed: Failed expectation: TOHAVETEXT(text == “Channel 20b6bc”) WITH MATCHER(id == “channel_list.category.channels.channel_item.channel-20b6bc.display_name”)
+
+HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/channel_list.e2e.ts:72:103)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="Channels - Channel List MM-T4728_2 - should be able to switch between channels" name="Channels - Channel List MM-T4728_2 - should be able to switch between channels" time="18.416">
+    </testcase>
+    <testcase classname="Channels - Channel List MM-T4728_3 - should be able to collapse and expand categories" name="Channels - Channel List MM-T4728_3 - should be able to collapse and expand categories" time="9.487">
+      <failure>Test Failed: Failed expectation: NOT TOBEVISIBLE WITH MATCHER(id == “channel_list.category.channels.channel_item.channel-20b6bc.display_name”)
+
+HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/channel_list.e2e.ts:122:107)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="Channels - Channel List MM-T4728_4 - should be able to go to browse channels screen" name="Channels - Channel List MM-T4728_4 - should be able to go to browse channels screen" time="6.83">
+    </testcase>
+    <testcase classname="Channels - Channel List MM-T4728_5 - should be able to go to create direct message screen" name="Channels - Channel List MM-T4728_5 - should be able to go to create direct message screen" time="14.93">
+    </testcase>
+    <testcase classname="Channels - Channel List MM-T4728_6 - should be able to go to create channel screen" name="Channels - Channel List MM-T4728_6 - should be able to go to create channel screen" time="7.577">
+    </testcase>
+    <testcase classname="Channels - Channel List MM-T4728_7 - should be able to go to global threads screen" name="Channels - Channel List MM-T4728_7 - should be able to go to global threads screen" time="3.693">
+    </testcase>
+    <testcase classname="Channels - Channel List MM-T4728_8 - should be able to go to find channels screen" name="Channels - Channel List MM-T4728_8 - should be able to go to find channels screen" time="6.494">
+    </testcase>
+    <testcase classname="Channels - Channel List MM-T4728_9 - should be able to switch between teams" name="Channels - Channel List MM-T4728_9 - should be able to switch between teams" time="10.823">
+    </testcase>
+  </testsuite>
+  <testsuite name="Channels - Channel Post List" errors="0" failures="0" skipped="0" timestamp="2024-03-19T14:53:31" time="100.905" tests="2">
+    <testcase classname="Channels - Channel Post List MM-T4773_1 - should match elements on channel screen" name="Channels - Channel Post List MM-T4773_1 - should match elements on channel screen" time="8.748">
+    </testcase>
+    <testcase classname="Channels - Channel Post List MM-T4773_2 - should be able to add a message to post list and delete a message from post list" name="Channels - Channel Post List MM-T4773_2 - should be able to add a message to post list and delete a message from post list" time="27.791">
+    </testcase>
+  </testsuite>
+  <testsuite name="Channels - Convert to Private Channel" errors="0" failures="2" skipped="0" timestamp="2024-03-19T14:55:12" time="212.826" tests="2">
+    <testcase classname="Channels - Convert to Private Channel MM-T4972_1 - should be able to convert public channel to private and confirm" name="Channels - Convert to Private Channel MM-T4972_1 - should be able to convert public channel to private and confirm" time="120.006">
+      <failure>Error: thrown: &quot;Exceeded timeout of 120000 ms for a hook.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at /Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/convert_to_private_channel.e2e.ts:32:5
+    at _dispatchDescribe (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/index.js:91:26)
+    at describe (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/index.js:55:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/convert_to_private_channel.e2e.ts:23:1)
+    at Runtime._execModule (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runtime/build/index.js:1439:24)
+    at Runtime._loadModule (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runtime/build/index.js:1022:12)
+    at Runtime.requireModule (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runtime/build/index.js:882:12)
+    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:77:13)
+    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Channels - Convert to Private Channel MM-T4972_2 - should be able to convert public channel to private and cancel" name="Channels - Convert to Private Channel MM-T4972_2 - should be able to convert public channel to private and cancel" time="41.171">
+      <failure>Test Failed: View is not hittable at its visible point. Error: View is not visible around point.
+- view point: {1, 1}
+- visible bounds: {{inf, inf}, {0, 0}}
+- view bounds: {{0, 0}, {353, 48}}
+---
+Error: Error Domain=DetoxErrorDomain Code=0 &quot;View “&lt;RCTView: 0x7fa0263ed9c0&gt;” is not visible: View is clipped by one or more of its superviews&apos; bounds and does not pass visibility percent threshold (100)&quot; UserInfo={NSLocalizedDescription=View “&lt;RCTView: 0x7fa0263ed9c0&gt;” is not visible: View is clipped by one or more of its superviews&apos; bounds and does not pass visibility percent threshold (100)}
+    at ChannelInfoScreen.convertToPrivateChannel (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/channel_info.ts:143:41)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/convert_to_private_channel.e2e.ts:67:9)</failure>
+    </testcase>
+    <testcase classname=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." name=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." time="0">
+      <failure>{&quot;message&quot;:&quot;&quot;,&quot;stack&quot;:&quot;Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/convert_to_private_channel.e2e.ts:39:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)&quot;}</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Channels - Create Channel and Edit Channel Header" errors="0" failures="0" skipped="0" timestamp="2024-03-19T14:58:45" time="131.266" tests="3">
+    <testcase classname="Channels - Create Channel and Edit Channel Header MM-T4731_1 - should match elements on create channel screen" name="Channels - Create Channel and Edit Channel Header MM-T4731_1 - should match elements on create channel screen" time="7.493">
+    </testcase>
+    <testcase classname="Channels - Create Channel and Edit Channel Header MM-T4731_2 - should be able to create a public channel and edit the channel header" name="Channels - Create Channel and Edit Channel Header MM-T4731_2 - should be able to create a public channel and edit the channel header" time="30.845">
+    </testcase>
+    <testcase classname="Channels - Create Channel and Edit Channel Header MM-T4731_3 - should be able to create a private channel and edit the channel header" name="Channels - Create Channel and Edit Channel Header MM-T4731_3 - should be able to create a private channel and edit the channel header" time="34.719">
+    </testcase>
+  </testsuite>
+  <testsuite name="Channels - Create Direct Message" errors="0" failures="3" skipped="0" timestamp="2024-03-19T15:00:56" time="85.246" tests="4">
+    <testcase classname="Channels - Create Direct Message MM-T4730_1 - should match elements on create direct message screen" name="Channels - Create Direct Message MM-T4730_1 - should match elements on create direct message screen" time="13.787">
+    </testcase>
+    <testcase classname="Channels - Create Direct Message MM-T4730_2 - should be able to create a direct message" name="Channels - Create Direct Message MM-T4730_2 - should be able to create a direct message" time="8.878">
+      <failure>Test Failed: No elements found for “MATCHER(id == “create_direct_message.user_list.user_item.euiab18tkfykjpw1rm16qws6xc.display_name”)”
+
+HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/create_direct_message.e2e.ts:84:84)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="Channels - Create Direct Message MM-T4730_3 - should be able to create a group message" name="Channels - Create Direct Message MM-T4730_3 - should be able to create a group message" time="2.033">
+      <failure>Test Failed: View is not hittable at its visible point. Error: View is not visible around point.
+- view point: {14, 14.000000000000028}
+- visible bounds: {{0, 0}, {28, 28}}
+- view bounds: {{277, 7}, {28, 28}}
+---
+Error: Error Domain=DetoxErrorDomain Code=0 &quot;View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)&quot; UserInfo={NSLocalizedDescription=View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)}
+    at CreateDirectMessageScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/create_direct_message.ts:70:50)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/create_direct_message.e2e.ts:125:41)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="Channels - Create Direct Message MM-T4730_4 - should display empty search state for create direct message" name="Channels - Create Direct Message MM-T4730_4 - should display empty search state for create direct message" time="0.288">
+      <failure>Test Failed: View is not hittable at its visible point. Error: View is not visible around point.
+- view point: {14, 14.000000000000028}
+- visible bounds: {{0, 0}, {28, 28}}
+- view bounds: {{277, 7}, {28, 28}}
+---
+Error: Error Domain=DetoxErrorDomain Code=0 &quot;View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)&quot; UserInfo={NSLocalizedDescription=View “&lt;RCTView: 0x7fe540f21380&gt;” is not visible: View does not pass visibility percent threshold (100)}
+    at CreateDirectMessageScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/create_direct_message.ts:70:50)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/create_direct_message.e2e.ts:160:41)
+    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)
+    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." name=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." time="0">
+      <failure>{&quot;message&quot;:&quot;&quot;,&quot;stack&quot;:&quot;Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/create_direct_message.e2e.ts:53:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)&quot;}</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Channels - Edit Channel" errors="0" failures="2" skipped="0" timestamp="2024-03-19T15:02:21" time="118.526" tests="4">
+    <testcase classname="Channels - Edit Channel MM-T4906_1 - should match elements on edit channel screen" name="Channels - Edit Channel MM-T4906_1 - should match elements on edit channel screen" time="11.486">
+    </testcase>
+    <testcase classname="Channels - Edit Channel MM-T4906_2 - should be able to edit public channel" name="Channels - Edit Channel MM-T4906_2 - should be able to edit public channel" time="20.404">
+    </testcase>
+    <testcase classname="Channels - Edit Channel MM-T4906_3 - should be able edit direct message channel" name="Channels - Edit Channel MM-T4906_3 - should be able edit direct message channel" time="17.58">
+      <failure>Test Failed: No elements found for “MATCHER(id == “create_direct_message.user_list.user_item.zj7no4aogbn8mg663fd8zityoa”)”
+
+HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/edit_channel.e2e.ts:127:72)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="Channels - Edit Channel MM-T4906_4 - should be able edit group message channel" name="Channels - Edit Channel MM-T4906_4 - should be able edit group message channel" time="11.259">
+      <failure>Test Failed: Timed out while waiting for expectation: TOEXIST WITH MATCHER(id == “channel.screen”) TIMEOUT(10s)
+
+HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+    at ChannelScreen.toBeVisible (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/channel.ts:114:53)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/edit_channel.e2e.ts:61:9)</failure>
+    </testcase>
+    <testcase classname=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." name=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." time="0">
+      <failure>{&quot;message&quot;:&quot;&quot;,&quot;stack&quot;:&quot;Test Failed: No elements found for “MATCHER(id == “navigation.header.back”)”\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at ChannelScreen.back (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/channel.ts:128:31)\n    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/edit_channel.e2e.ts:66:9)&quot;}</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Channels - Favorite and Unfavorite Channel" errors="0" failures="1" skipped="0" timestamp="2024-03-19T15:04:20" time="127.947" tests="3">
+    <testcase classname="Channels - Favorite and Unfavorite Channel MM-T4929_1 - should be able to favorite/unfavorite a channel from channel quick actions" name="Channels - Favorite and Unfavorite Channel MM-T4929_1 - should be able to favorite/unfavorite a channel from channel quick actions" time="30.581">
+    </testcase>
+    <testcase classname="Channels - Favorite and Unfavorite Channel MM-T4929_2 - should be able to favorite/unfavorite a channel from channel info screen" name="Channels - Favorite and Unfavorite Channel MM-T4929_2 - should be able to favorite/unfavorite a channel from channel info screen" time="22.084">
+    </testcase>
+    <testcase classname="Channels - Favorite and Unfavorite Channel MM-T4929_3 - should be able to favorite/unfavorite a direct message channel from channel intro" name="Channels - Favorite and Unfavorite Channel MM-T4929_3 - should be able to favorite/unfavorite a direct message channel from channel intro" time="20.143">
+      <failure>Test Failed: No elements found for “MATCHER(id == “create_direct_message.user_list.user_item.3npaoef4ztyy7num1djq57tama”)”
+
+HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/favorite_and_unfavorite_channel.e2e.ts:130:65)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." name=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." time="0">
+      <failure>{&quot;message&quot;:&quot;&quot;,&quot;stack&quot;:&quot;Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/favorite_and_unfavorite_channel.e2e.ts:59:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)&quot;}</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Channels - Find Channels" errors="0" failures="5" skipped="0" timestamp="2024-03-19T15:06:28" time="70.582" tests="6">
+    <testcase classname="Channels - Find Channels MM-T4907_1 - should match elements on find channels screen" name="Channels - Find Channels MM-T4907_1 - should match elements on find channels screen" time="4.799">
+    </testcase>
+    <testcase classname="Channels - Find Channels MM-T4907_2 - should be able to find and navigate to a public channel" name="Channels - Find Channels MM-T4907_2 - should be able to find and navigate to a public channel" time="5.027">
+      <failure>Test Failed: Failed expectation: TOHAVETEXT(text == “Channel ad7018”) WITH MATCHER(id == “find_channels.filtered_list.channel_item.channel-ad7018.display_name”)
+
+HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/find_channels.e2e.ts:78:94)</failure>
+    </testcase>
+    <testcase classname="Channels - Find Channels MM-T4907_3 - should display empty search state for find channels" name="Channels - Find Channels MM-T4907_3 - should display empty search state for find channels" time="0.241">
+      <failure>Test Failed: View is not hittable at its visible point. Error: View is not visible around point.
+- view point: {153.5, 20}
+- visible bounds: {{0, 0}, {307, 40}}
+- view bounds: {{66, 20}, {307, 40}}
+---
+Error: Error Domain=DetoxErrorDomain Code=0 &quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)&quot; UserInfo={NSLocalizedDescription=View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}
+    at FindChannelsScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/find_channels.ts:61:60)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/find_channels.e2e.ts:95:34)
+    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)
+    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Channels - Find Channels MM-T4907_4 - should be able to find direct and group message channels" name="Channels - Find Channels MM-T4907_4 - should be able to find direct and group message channels" time="2.13">
+      <failure>Test Failed: View is not hittable at its visible point. Error: View is not visible around point.
+- view point: {153.5, 20}
+- visible bounds: {{0, 0}, {307, 40}}
+- view bounds: {{66, 20}, {307, 40}}
+---
+Error: Error Domain=DetoxErrorDomain Code=0 &quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)&quot; UserInfo={NSLocalizedDescription=View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}
+    at FindChannelsScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/find_channels.ts:61:60)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/find_channels.e2e.ts:115:34)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="Channels - Find Channels MM-T4907_5 - should be able to find an archived channel" name="Channels - Find Channels MM-T4907_5 - should be able to find an archived channel" time="1.215">
+      <failure>Test Failed: View is not hittable at its visible point. Error: View is not visible around point.
+- view point: {153.5, 20}
+- visible bounds: {{0, 0}, {307, 40}}
+- view bounds: {{66, 20}, {307, 40}}
+---
+Error: Error Domain=DetoxErrorDomain Code=0 &quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)&quot; UserInfo={NSLocalizedDescription=View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}
+    at FindChannelsScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/find_channels.ts:61:60)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/find_channels.e2e.ts:138:34)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="Channels - Find Channels MM-T4907_6 - should be able to find a joined private channel and not find an unjoined private channel" name="Channels - Find Channels MM-T4907_6 - should be able to find a joined private channel and not find an unjoined private channel" time="1.33">
+      <failure>Test Failed: View is not hittable at its visible point. Error: View is not visible around point.
+- view point: {153.5, 20}
+- visible bounds: {{0, 0}, {307, 40}}
+- view bounds: {{66, 20}, {307, 40}}
+---
+Error: Error Domain=DetoxErrorDomain Code=0 &quot;View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)&quot; UserInfo={NSLocalizedDescription=View “&lt;RCTView: 0x7fdcf1474c50&gt;” is not visible: View does not pass visibility percent threshold (100)}
+    at FindChannelsScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/find_channels.ts:61:60)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/find_channels.e2e.ts:154:34)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." name=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." time="0">
+      <failure>{&quot;message&quot;:&quot;&quot;,&quot;stack&quot;:&quot;Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/channels/find_channels.e2e.ts:55:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)&quot;}</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

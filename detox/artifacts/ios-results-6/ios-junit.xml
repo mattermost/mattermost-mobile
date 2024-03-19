@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mobile App E2E with Detox and Jest" tests="22" failures="13" errors="0" time="704.149">
+  <testsuite name="Messaging - Markdown Code" errors="0" failures="0" skipped="0" timestamp="2024-03-19T14:45:19" time="325.369" tests="2">
+    <testcase classname="Messaging - Markdown Code MM-T4895_1 - should be able to display markdown code block" name="Messaging - Markdown Code MM-T4895_1 - should be able to display markdown code block" time="23.713">
+    </testcase>
+    <testcase classname="Messaging - Markdown Code MM-T4895_2- should be able to display markdown html" name="Messaging - Markdown Code MM-T4895_2- should be able to display markdown html" time="13.181">
+    </testcase>
+  </testsuite>
+  <testsuite name="Messaging - Markdown Heading" errors="0" failures="0" skipped="0" timestamp="2024-03-19T14:50:44" time="77.514" tests="1">
+    <testcase classname="Messaging - Markdown Heading MM-T4893_1 - should be able to display markdown heading" name="Messaging - Markdown Heading MM-T4893_1 - should be able to display markdown heading" time="12.966">
+    </testcase>
+  </testsuite>
+  <testsuite name="Messaging - Markdown Image" errors="0" failures="0" skipped="0" timestamp="2024-03-19T14:52:02" time="83.032" tests="2">
+    <testcase classname="Messaging - Markdown Image MM-T4896_1 - should be able to display markdown image" name="Messaging - Markdown Image MM-T4896_1 - should be able to display markdown image" time="12.931">
+    </testcase>
+    <testcase classname="Messaging - Markdown Image MM-T4896_2 - should be able to display markdown image with link" name="Messaging - Markdown Image MM-T4896_2 - should be able to display markdown image with link" time="11.907">
+    </testcase>
+  </testsuite>
+  <testsuite name="Messaging - Markdown Latex" errors="0" failures="0" skipped="0" timestamp="2024-03-19T14:53:25" time="86.575" tests="2">
+    <testcase classname="Messaging - Markdown Latex MM-T4900_1 - should be able to display markdown latex code block" name="Messaging - Markdown Latex MM-T4900_1 - should be able to display markdown latex code block" time="13.297">
+    </testcase>
+    <testcase classname="Messaging - Markdown Latex MM-T4900_2 - should be able to display markdown inline latex" name="Messaging - Markdown Latex MM-T4900_2 - should be able to display markdown inline latex" time="12.109">
+    </testcase>
+  </testsuite>
+  <testsuite name="Messaging - Markdown List" errors="0" failures="0" skipped="1" timestamp="2024-03-19T14:54:51" time="74.964" tests="2">
+    <testcase classname="Messaging - Markdown List MM-T4894_1 - should be able to display markdown bullet list -- UNSTABLE" name="Messaging - Markdown List MM-T4894_1 - should be able to display markdown bullet list -- UNSTABLE" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="Messaging - Markdown List MM-T4894_2 - should be able to display markdown ordered list" name="Messaging - Markdown List MM-T4894_2 - should be able to display markdown ordered list" time="12.997">
+    </testcase>
+  </testsuite>
+  <testsuite name="Messaging - Markdown Separator" errors="0" failures="1" skipped="0" timestamp="2024-03-19T14:56:06" time="8.022" tests="1">
+    <testcase classname="Messaging - Markdown Separator MM-T4897_1 - should be able to display markdown separator" name="Messaging - Markdown Separator MM-T4897_1 - should be able to display markdown separator" time="0.001">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;status&apos;)
+    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)</failure>
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/markdown_separator.e2e.ts:33:33)</failure>
+    </testcase>
+    <testcase classname=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." name=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." time="0">
+      <failure>{&quot;message&quot;:&quot;&quot;,&quot;stack&quot;:&quot;Detox can&apos;t seem to connect to the test app(s)!\n\nHINT: \n\nHave you forgotten to call &apos;device.launchApp()&apos; in the beginning of your test?\nRefer to our troubleshooting guide, for full details: https://wix.github.io/Detox/docs/troubleshooting/running-tests#tests-execution-hangs\n\n---\nThe following package could not be delivered:\n\n{\n  type: &apos;invoke&apos;,\n  params: [Object],\n  messageId: 1\n}\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/markdown_separator.e2e.ts:48:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)&quot;}</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Messaging - Markdown Table" errors="0" failures="5" skipped="0" timestamp="2024-03-19T14:56:14" time="33.964" tests="5">
+    <testcase classname="Messaging - Markdown Table MM-T4899_1 - should be able to display markdown table" name="Messaging - Markdown Table MM-T4899_1 - should be able to display markdown table" time="0.001">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/markdown_table.e2e.ts:34:33)</failure>
+    </testcase>
+    <testcase classname="Messaging - Markdown Table MM-T4899_2 - should be able to display markdown table with long text wrapped properly" name="Messaging - Markdown Table MM-T4899_2 - should be able to display markdown table with long text wrapped properly" time="0.001">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/markdown_table.e2e.ts:34:33)</failure>
+    </testcase>
+    <testcase classname="Messaging - Markdown Table MM-T4899_3 - should be able to open markdown table in full view and allow horizontal scroll" name="Messaging - Markdown Table MM-T4899_3 - should be able to open markdown table in full view and allow horizontal scroll" time="0.001">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/markdown_table.e2e.ts:34:33)</failure>
+    </testcase>
+    <testcase classname="Messaging - Markdown Table MM-T4899_4 - should be able to open markdown table in full view and allow vertical scroll" name="Messaging - Markdown Table MM-T4899_4 - should be able to open markdown table in full view and allow vertical scroll" time="0.001">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/markdown_table.e2e.ts:34:33)</failure>
+    </testcase>
+    <testcase classname="Messaging - Markdown Table MM-T4899_5 - should be able to open markdown table in full view and allow both horizontal and vertical scrolls" name="Messaging - Markdown Table MM-T4899_5 - should be able to open markdown table in full view and allow both horizontal and vertical scrolls" time="0.001">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/markdown_table.e2e.ts:34:33)</failure>
+    </testcase>
+    <testcase classname=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." name=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." time="0">
+      <failure>{&quot;message&quot;:&quot;&quot;,&quot;stack&quot;:&quot;Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/markdown_table.e2e.ts:49:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)&quot;}</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Messaging - Message Delete" errors="0" failures="3" skipped="0" timestamp="2024-03-19T14:56:48" time="7.167" tests="3">
+    <testcase classname="Messaging - Message Delete MM-T4784_1 - should be able to delete a post message and confirm" name="Messaging - Message Delete MM-T4784_1 - should be able to delete a post message and confirm" time="0">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;status&apos;)
+    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)</failure>
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_delete.e2e.ts:36:33)</failure>
+    </testcase>
+    <testcase classname="Messaging - Message Delete MM-T4784_2 - should be able to delete a post message and cancel" name="Messaging - Message Delete MM-T4784_2 - should be able to delete a post message and cancel" time="0">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;status&apos;)
+    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)</failure>
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_delete.e2e.ts:36:33)</failure>
+    </testcase>
+    <testcase classname="Messaging - Message Delete MM-T4784_3 - should be able to delete a post message from reply thread" name="Messaging - Message Delete MM-T4784_3 - should be able to delete a post message from reply thread" time="0">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;status&apos;)
+    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)</failure>
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_delete.e2e.ts:36:33)</failure>
+    </testcase>
+    <testcase classname=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." name=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." time="0">
+      <failure>{&quot;message&quot;:&quot;&quot;,&quot;stack&quot;:&quot;Detox can&apos;t seem to connect to the test app(s)!\n\nHINT: \n\nHave you forgotten to call &apos;device.launchApp()&apos; in the beginning of your test?\nRefer to our troubleshooting guide, for full details: https://wix.github.io/Detox/docs/troubleshooting/running-tests#tests-execution-hangs\n\n---\nThe following package could not be delivered:\n\n{\n  type: &apos;invoke&apos;,\n  params: [Object],\n  messageId: 1\n}\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_delete.e2e.ts:51:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)&quot;}</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Messaging - Message Draft" errors="0" failures="4" skipped="0" timestamp="2024-03-19T14:56:56" time="7.034" tests="4">
+    <testcase classname="Messaging - Message Draft MM-T4781_1 - should be able to create a message draft" name="Messaging - Message Draft MM-T4781_1 - should be able to create a message draft" time="0.001">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;status&apos;)
+    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)</failure>
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_draft.e2e.ts:37:33)</failure>
+    </testcase>
+    <testcase classname="Messaging - Message Draft MM-T4781_2 - should save message draft when app is closed then re-opened" name="Messaging - Message Draft MM-T4781_2 - should save message draft when app is closed then re-opened" time="0.001">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;status&apos;)
+    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)</failure>
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_draft.e2e.ts:37:33)</failure>
+    </testcase>
+    <testcase classname="Messaging - Message Draft MM-T4781_3 - should show character count warning when message exceeds character limit" name="Messaging - Message Draft MM-T4781_3 - should show character count warning when message exceeds character limit" time="0.001">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;status&apos;)
+    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)</failure>
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_draft.e2e.ts:37:33)</failure>
+    </testcase>
+    <testcase classname="Messaging - Message Draft MM-T4781_4 - should be able to create a message draft from reply thread -- KNOWN ISSUE: MM-50298" name="Messaging - Message Draft MM-T4781_4 - should be able to create a message draft from reply thread -- KNOWN ISSUE: MM-50298" time="0.001">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;status&apos;)
+    at Object.apiCheckSystemHealth (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/system.ts:31:21)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/setup.ts:9:5)</failure>
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;id&apos;)
+    at Object.apiInit (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/server_api/setup.ts:20:96)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_draft.e2e.ts:37:33)</failure>
+    </testcase>
+    <testcase classname=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." name=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." time="0">
+      <failure>{&quot;message&quot;:&quot;&quot;,&quot;stack&quot;:&quot;Detox can&apos;t seem to connect to the test app(s)!\n\nHINT: \n\nHave you forgotten to call &apos;device.launchApp()&apos; in the beginning of your test?\nRefer to our troubleshooting guide, for full details: https://wix.github.io/Detox/docs/troubleshooting/running-tests#tests-execution-hangs\n\n---\nThe following package could not be delivered:\n\n{\n  type: &apos;invoke&apos;,\n  params: [Object],\n  messageId: 1\n}\n    at AccountScreen.open (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/account.ts:84:60)\n    at HomeScreen.logout (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/home.ts:40:29)\n    at Object.&lt;anonymous&gt; (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/messaging/message_draft.e2e.ts:52:26)\n    at Promise.then.completed (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusHook (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:281:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:154:7)\n    at _runTestsForDescribeBlock (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:121:9)\n    at run (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-runner/build/runTest.js:444:34)&quot;}</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

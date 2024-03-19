@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>jest-stare!</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="css/diff2html.min.css" rel="stylesheet" type="text/css">
+    <link href="css/jest-stare.css" rel="stylesheet" type="text/css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/holder.js"></script>
+    <script src="js/diff2html.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/view.js"></script>
+</head>
+
+<body>
+    <header>
+        <!-- Fixed navbar -->
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a class="navbar-brand" id="navbar-title" href="#">jest-stare</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home
+                            <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="coverage-link" class="nav-link disabled" href="#">Coverage</a>
+                    </li>
+                    <li class="nav-item">
+                        <div class="onoff-switch mr-sm-2 ml-sm-2">
+                            <input type="checkbox" name="off-switch" class="off-switch-checkbox" id="lab-passoff-switch" checked>
+                            <label class="onoff-switch-label" for="lab-passoff-switch">
+                                <span class="pass off-switch-inner"></span>
+                                <span class="off-switch-switch"></span>
+                            </label>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="onoff-switch mr-sm-2 ml-sm-2">
+                            <input type="checkbox" name="off-switch" class="off-switch-checkbox" id="lab-failoff-switch" checked>
+                            <label class="onoff-switch-label" for="lab-failoff-switch">
+                                <span class="fail off-switch-inner"></span>
+                                <span class="off-switch-switch"></span>
+                            </label>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="onoff-switch mr-sm-2 ml-sm-2">
+                            <input type="checkbox" name="off-switch" class="off-switch-checkbox" id="lab-pendingoff-switch" checked>
+                            <label class="onoff-switch-label" for="lab-pendingoff-switch">
+                                <span class="pending off-switch-inner"></span>
+                                <span class="off-switch-switch"></span>
+                            </label>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="onoff-switch mr-sm-2 ml-sm-2">
+                            <input type="checkbox" name="off-switch" class="off-switch-checkbox" id="lab-todooff-switch" checked>
+                            <label class="onoff-switch-label" for="lab-todooff-switch">
+                                <span class="todo off-switch-inner"></span>
+                                <span class="off-switch-switch"></span>
+                            </label>
+                        </div>
+                    </li>
+                </ul>
+                <!-- <form class="form-inline mt-2 mt-md-0">
+                    <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" disabled>
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" disabled>Search</button>
+                </form> -->
+            </div>
+        </nav>
+    </header>
+
+    <!-- Begin page content -->
+    <main role="main" class="container">
+
+        <h1 class="mt-5"></h1>
+
+        <!-- Three columns of text below the carousel -->
+        <div class="row">
+            <div class="col-lg-4">
+                <canvas id="test-suites-canvas" width="100" height="100"></canvas>
+                <h2>Test Suites</h2>
+                <div class="list-group">
+                    <p id="test-suites-results" class="list-group-item list-group-item-action">7 passed, 9 total</p>
+                </div>
+            </div>
+            <!-- /.col-lg-4 -->
+            <div class="col-lg-4">
+                <canvas id="tests-canvas" width="100" height="100"></canvas>
+                <h2>Tests</h2>
+                <div class="list-group">
+                    <p id="tests-results" class="list-group-item list-group-item-action">21 passed, 29 total</p>
+                </div>
+            </div>
+            <!-- /.col-lg-4 -->
+            <div class="col-lg-4" id="snapshots-group">
+                <canvas id="snapshots-canvas" width="100" height="100"></canvas>
+                <h2>Snapshots</h2>
+                <div class="list-group">
+                    <p id="snapshots-results" class="list-group-item list-group-item-action">0 passed, 0 total</p>
+                </div>
+            </div>
+            <!-- /.col-lg-4 -->
+        </div>
+
+        <div id="loading-info" class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0"
+                aria-valuemax="100" style="width: 100%"></div>
+        </div>
+
+        <div class="d-none" id="test-summary"></div>
+        <div class="d-none" id="test-config">{
+  &quot;reportHeadline&quot;: &quot;Mobile App E2E with Detox and Jest&quot;,
+  &quot;resultDir&quot;: &quot;.&#x2F;artifacts&#x2F;jest-stare&#x2F;&quot;,
+  &quot;resultJson&quot;: &quot;ios-data.json&quot;,
+  &quot;resultHtml&quot;: &quot;ios-main.html&quot;,
+  &quot;additionalResultsProcessors&quot;: []
+}</div>
+        <div id="accordion">
+            <div class="d-none" id="test-results">{
+  &quot;numFailedTestSuites&quot;: 2,
+  &quot;numFailedTests&quot;: 6,
+  &quot;numPassedTestSuites&quot;: 7,
+  &quot;numPassedTests&quot;: 21,
+  &quot;numPendingTestSuites&quot;: 0,
+  &quot;numPendingTests&quot;: 2,
+  &quot;numRuntimeErrorTestSuites&quot;: 1,
+  &quot;numTodoTests&quot;: 0,
+  &quot;numTotalTestSuites&quot;: 9,
+  &quot;numTotalTests&quot;: 29,
+  &quot;openHandles&quot;: [],
+  &quot;snapshot&quot;: {
+    &quot;added&quot;: 0,
+    &quot;didUpdate&quot;: false,
+    &quot;failure&quot;: false,
+    &quot;filesAdded&quot;: 0,
+    &quot;filesRemoved&quot;: 0,
+    &quot;filesRemovedList&quot;: [],
+    &quot;filesUnmatched&quot;: 0,
+    &quot;filesUpdated&quot;: 0,
+    &quot;matched&quot;: 0,
+    &quot;total&quot;: 0,
+    &quot;unchecked&quot;: 0,
+    &quot;uncheckedKeysByFile&quot;: [],
+    &quot;unmatched&quot;: 0,
+    &quot;updated&quot;: 0
+  },
+  &quot;startTime&quot;: 1710859520920,
+  &quot;success&quot;: false,
+  &quot;testResults&quot;: [
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 1,
+      &quot;numPassingTests&quot;: 1,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710859829773,
+        &quot;runtime&quot;: 308742,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710859521031
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;smoke_test&#x2F;server_login.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Smoke Test - Server Login&quot;
+          ],
+          &quot;duration&quot;: 29660,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Smoke Test - Server Login MM-T4675_1 - should be able to connect to a server, log in, and show channel list screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4675_1 - should be able to connect to a server, log in, and show channel list screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Smoke Test - Server Login&quot;
+          ],
+          &quot;duration&quot;: 7764,
+          &quot;failureDetails&quot;: [
+            {}
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;TypeError: Cannot read properties of undefined (reading &#39;id&#39;)\n    at Object.apiInit (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;server_api&#x2F;setup.ts:20:96)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;smoke_test&#x2F;server_login.e2e.ts:70:24)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Smoke Test - Server Login MM-T4675_2 - should be able to add a new server and log-in-to&#x2F;log-out-from the new server&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T4675_2 - should be able to add a new server and log-in-to&#x2F;log-out-from the new server&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: &quot;  ● Smoke Test - Server Login › MM-T4675_2 - should be able to add a new server and log-in-to&#x2F;log-out-from the new server\n\n    TypeError: Cannot read properties of undefined (reading &#39;id&#39;)\n\n      18 | }: any &#x3D; {}): Promise&lt;any&gt; &#x3D;&gt; {\n      19 |     const {team} &#x3D; await Team.apiCreateTeam(baseUrl, teamOptions);\n    &gt; 20 |     const {channel} &#x3D; await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});\n         |                                                                                                ^\n      21 |     const {user} &#x3D; await User.apiCreateUser(baseUrl, userOptions);\n      22 |\n      23 |     await Team.apiAddUserToTeam(baseUrl, user.id, team.id);\n\n      at Object.apiInit (support&#x2F;server_api&#x2F;setup.ts:20:96)\n      at Object.&lt;anonymous&gt; (test&#x2F;smoke_test&#x2F;server_login.e2e.ts:70:24)\n\n\n  ● Test suite failed to run\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “tab_bar.account.tab”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      82 |     open &#x3D; async () &#x3D;&gt; {\n      83 |         &#x2F;&#x2F; # Open account screen\n    &gt; 84 |         await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                            ^\n      85 |         await HomeScreen.accountTab.tap();\n      86 |\n      87 |         return this.toBeVisible();\n\n      at AccountScreen.open (support&#x2F;ui&#x2F;screen&#x2F;account.ts:84:60)\n      at HomeScreen.logout (support&#x2F;ui&#x2F;screen&#x2F;home.ts:40:29)\n      at Object.&lt;anonymous&gt; (test&#x2F;smoke_test&#x2F;server_login.e2e.ts:37:26)\n&quot;,
+      &quot;testExecError&quot;: {
+        &quot;message&quot;: &quot;&quot;,
+        &quot;stack&quot;: &quot;Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “tab_bar.account.tab”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at AccountScreen.open (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;account.ts:84:60)\n    at HomeScreen.logout (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;support&#x2F;ui&#x2F;screen&#x2F;home.ts:40:29)\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;smoke_test&#x2F;server_login.e2e.ts:37:26)\n    at Promise.then.completed (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:298:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;utils.js:231:10)\n    at _callCircusHook (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:281:40)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:154:7)\n    at _runTestsForDescribeBlock (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:121:9)\n    at run (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;run.js:71:3)\n    at runAndTransformResultsToJestFormat (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapterInit.js:122:21)\n    at jestAdapter (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-circus&#x2F;build&#x2F;legacy-code-todo-rewrite&#x2F;jestAdapter.js:79:19)\n    at runTestInternal (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:367:16)\n    at runTest (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-runner&#x2F;build&#x2F;runTest.js:444:34)&quot;
+      }
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 0,
+      &quot;numPassingTests&quot;: 2,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860064457,
+        &quot;runtime&quot;: 234405,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710859830052
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;smoke_test&#x2F;threads.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Smoke Test - Threads&quot;
+          ],
+          &quot;duration&quot;: 81748,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Smoke Test - Threads MM-T4811_1 - should be able to create a thread, follow&#x2F;unfollow a thread, mark a thread as read&#x2F;unread, and reply to thread&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4811_1 - should be able to create a thread, follow&#x2F;unfollow a thread, mark a thread as read&#x2F;unread, and reply to thread&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Smoke Test - Threads&quot;
+          ],
+          &quot;duration&quot;: 71920,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Smoke Test - Threads MM-T4811_2 - should be able to save&#x2F;unsave a thread and open a thread in channel&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4811_2 - should be able to save&#x2F;unsave a thread and open a thread in channel&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: null
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 5,
+      &quot;numPassingTests&quot;: 2,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860253219,
+        &quot;runtime&quot;: 188724,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860064495
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;teams&#x2F;invite_people.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Teams - Invite&quot;
+          ],
+          &quot;duration&quot;: 16665,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “invite.screen.selection”) TIMEOUT(2s)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;teams&#x2F;invite_people.e2e.ts:82:61)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Teams - Invite MM-T5360 - should open the invite screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T5360 - should open the invite screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Teams - Invite&quot;
+          ],
+          &quot;duration&quot;: 15821,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: Failed expectation: TOEXIST WITH MATCHER(label &#x3D;&#x3D; “Join the Team e1f41b team”) AT INDEX(0)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;teams&#x2F;invite_people.e2e.ts:102:34)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Teams - Invite MM-T5221 - should be able to share a URL invite to the team&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T5221 - should be able to share a URL invite to the team&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Teams - Invite&quot;
+          ],
+          &quot;duration&quot;: 13428,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Teams - Invite MM-T5361 - should show no results item in search list&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T5361 - should show no results item in search list&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Teams - Invite&quot;
+          ],
+          &quot;duration&quot;: 18844,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Teams - Invite MM-T5362 - should be able to send email invite&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T5362 - should be able to send email invite&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Teams - Invite&quot;
+          ],
+          &quot;duration&quot;: 14272,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “invite.search_list_user_item.1nxos463ct8otnwtxdsxnxf6ny.username”)”\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;teams&#x2F;invite_people.e2e.ts:156:70)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Teams - Invite MM-T5363 - should be able to send user invite&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T5363 - should be able to send user invite&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Teams - Invite&quot;
+          ],
+          &quot;duration&quot;: 21795,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: Failed expectation: NOT TOEXIST WITH MATCHER(id &#x3D;&#x3D; “invite.summary_report.sent”)\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;teams&#x2F;invite_people.e2e.ts:196:57)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Teams - Invite MM-T5364 - should not be able to send user invite to user already in team&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T5364 - should not be able to send user invite to user already in team&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Teams - Invite&quot;
+          ],
+          &quot;duration&quot;: 23943,
+          &quot;failureDetails&quot;: [
+            {
+              &quot;name&quot;: &quot;DetoxRuntimeError&quot;
+            }
+          ],
+          &quot;failureMessages&quot;: [
+            &quot;Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “invite.summary_report.user_item.bgf9fd1ytby1x83y758t74kcyr.username”)”\n\nHINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n    at Object.&lt;anonymous&gt; (&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;teams&#x2F;invite_people.e2e.ts:238:72)\n    at processTicksAndRejections (node:internal&#x2F;process&#x2F;task_queues:95:5)&quot;
+          ],
+          &quot;fullName&quot;: &quot;Teams - Invite MM-T5365 - should handle both sent and not sent invites&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;failed&quot;,
+          &quot;title&quot;: &quot;MM-T5365 - should handle both sent and not sent invites&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: &quot;  ● Teams - Invite › MM-T5360 - should open the invite screen\n\n    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id &#x3D;&#x3D; “invite.screen.selection”) TIMEOUT(2s)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      80 |\n      81 |         &#x2F;&#x2F; * Verify default Selection\n    &gt; 82 |         await waitFor(Invite.screenSelection).toBeVisible().withTimeout(timeouts.TWO_SEC);\n         |                                                             ^\n      83 |\n      84 |         &#x2F;&#x2F; * Verify Server data\n      85 |         await expect(Invite.serverDisplayName).toHaveText(serverOneDisplayName);\n\n      at Object.&lt;anonymous&gt; (test&#x2F;teams&#x2F;invite_people.e2e.ts:82:61)\n\n  ● Teams - Invite › MM-T5221 - should be able to share a URL invite to the team\n\n    Test Failed: Failed expectation: TOEXIST WITH MATCHER(label &#x3D;&#x3D; “Join the Team e1f41b team”) AT INDEX(0)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      100 |\n      101 |             &#x2F;&#x2F; * Verify share dialog is open\n    &gt; 102 |             await expect(dialog).toExist();\n          |                                  ^\n      103 |\n      104 |             &#x2F;&#x2F; # Close share dialog\n      105 |             await dialog.swipe(&#39;down&#39;);\n\n      at Object.&lt;anonymous&gt; (test&#x2F;teams&#x2F;invite_people.e2e.ts:102:34)\n\n  ● Teams - Invite › MM-T5363 - should be able to send user invite\n\n    Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “invite.search_list_user_item.1nxos463ct8otnwtxdsxnxf6ny.username”)”\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      154 |         &#x2F;&#x2F; * Validate user item in search list\n      155 |         await waitFor(Invite.getSearchListUserItem(testUser1.id)).toBeVisible().withTimeout(timeouts.TWO_SEC);\n    &gt; 156 |         await expect(Invite.getSearchListUserItemText(testUser1.id)).toHaveText(username);\n          |                                                                      ^\n      157 |\n      158 |         &#x2F;&#x2F; # Select user item\n      159 |         await Invite.getSearchListUserItem(testUser1.id).tap();\n\n      at Object.&lt;anonymous&gt; (test&#x2F;teams&#x2F;invite_people.e2e.ts:156:70)\n\n  ● Teams - Invite › MM-T5364 - should not be able to send user invite to user already in team\n\n    Test Failed: Failed expectation: NOT TOEXIST WITH MATCHER(id &#x3D;&#x3D; “invite.summary_report.sent”)\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      194 |         &#x2F;&#x2F; * Validate summary report not sent\n      195 |         await expect(Invite.screenSummary).toBeVisible();\n    &gt; 196 |         await expect(Invite.getSummaryReportSent()).not.toExist();\n          |                                                         ^\n      197 |         await expect(Invite.getSummaryReportNotSent()).toBeVisible();\n      198 |         await expect(Invite.getSummaryReportUserItem(testUser1.id)).toBeVisible();\n      199 |         await expect(Invite.getSummaryReportUserItemText(testUser1.id)).toHaveText(username);\n\n      at Object.&lt;anonymous&gt; (test&#x2F;teams&#x2F;invite_people.e2e.ts:196:57)\n\n  ● Teams - Invite › MM-T5365 - should handle both sent and not sent invites\n\n    Test Failed: No elements found for “MATCHER(id &#x3D;&#x3D; “invite.summary_report.user_item.bgf9fd1ytby1x83y758t74kcyr.username”)”\n\n    HINT: To print view hierarchy on failed actions&#x2F;matches, use log-level verbose or higher.\n\n      236 |         await expect(Invite.getSummaryReportNotSent()).toBeVisible();\n      237 |         await expect(Invite.getSummaryReportUserItem(testUser.id)).toBeVisible();\n    &gt; 238 |         await expect(Invite.getSummaryReportUserItemText(testUser.id)).toBeVisible();\n          |                                                                        ^\n      239 |\n      240 |         &#x2F;&#x2F; * Validate summary report sent\n      241 |         waitFor(Invite.getSummaryReportSent()).toBeVisible();\n\n      at Object.&lt;anonymous&gt; (test&#x2F;teams&#x2F;invite_people.e2e.ts:238:72)\n&quot;
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 0,
+      &quot;numPassingTests&quot;: 4,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860465739,
+        &quot;runtime&quot;: 212495,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860253244
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;threads&#x2F;follow_and_unfollow_thread.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Follow and Unfollow Thread&quot;
+          ],
+          &quot;duration&quot;: 28416,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Follow and Unfollow Thread MM-T4806_1 - should be able to follow&#x2F;unfollow a thread via thread navigation&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4806_1 - should be able to follow&#x2F;unfollow a thread via thread navigation&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Follow and Unfollow Thread&quot;
+          ],
+          &quot;duration&quot;: 28741,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Follow and Unfollow Thread MM-T4806_2 - should be able to follow&#x2F;unfollow a thread via post footer&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4806_2 - should be able to follow&#x2F;unfollow a thread via post footer&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Follow and Unfollow Thread&quot;
+          ],
+          &quot;duration&quot;: 52138,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Follow and Unfollow Thread MM-T4806_3 - should be able to follow&#x2F;unfollow a thread via post options&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4806_3 - should be able to follow&#x2F;unfollow a thread via post options&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Follow and Unfollow Thread&quot;
+          ],
+          &quot;duration&quot;: 44641,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Follow and Unfollow Thread MM-T4806_4 - should be able to unfollow a thread via thread options&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4806_4 - should be able to unfollow a thread via thread options&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: null
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 0,
+      &quot;numPassingTests&quot;: 3,
+      &quot;numPendingTests&quot;: 2,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860584705,
+        &quot;runtime&quot;: 118891,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860465814
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;threads&#x2F;global_threads.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Global Threads&quot;
+          ],
+          &quot;duration&quot;: 3225,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Global Threads MM-T4805_1 - should match elements on global threads screen&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4805_1 - should match elements on global threads screen&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Global Threads&quot;
+          ],
+          &quot;duration&quot;: null,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Global Threads MM-T4805_2 - should be able to go to a thread a user started and followed -- UNSTABLE&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;title&quot;: &quot;MM-T4805_2 - should be able to go to a thread a user started and followed -- UNSTABLE&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Global Threads&quot;
+          ],
+          &quot;duration&quot;: 30799,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Global Threads MM-T4805_3 - should not display a thread a user started but not followed&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4805_3 - should not display a thread a user started but not followed&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Global Threads&quot;
+          ],
+          &quot;duration&quot;: null,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Global Threads MM-T4805_4 - should be able to go to a thread a user replied to and followed -- UNSTABLE&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;pending&quot;,
+          &quot;title&quot;: &quot;MM-T4805_4 - should be able to go to a thread a user replied to and followed -- UNSTABLE&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Global Threads&quot;
+          ],
+          &quot;duration&quot;: 25597,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Global Threads MM-T4805_5 - should not display a thread a user replied to but not followed&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4805_5 - should not display a thread a user replied to but not followed&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: null
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 0,
+      &quot;numPassingTests&quot;: 3,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860723497,
+        &quot;runtime&quot;: 138768,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860584729
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;threads&#x2F;mark_thread_as_read_and_unread.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Mark Thread as Read and Unread&quot;
+          ],
+          &quot;duration&quot;: 24916,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Mark Thread as Read and Unread MM-T4807_1 - should be able to mark a thread as read by opening thread&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4807_1 - should be able to mark a thread as read by opening thread&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Mark Thread as Read and Unread&quot;
+          ],
+          &quot;duration&quot;: 35522,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Mark Thread as Read and Unread MM-T4807_2 - should be able to mark a thread as read&#x2F;unread via thread options&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4807_2 - should be able to mark a thread as read&#x2F;unread via thread options&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Mark Thread as Read and Unread&quot;
+          ],
+          &quot;duration&quot;: 24013,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Mark Thread as Read and Unread MM-T4807_3 - should be able to mark all threads as read&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4807_3 - should be able to mark all threads as read&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: null
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 0,
+      &quot;numPassingTests&quot;: 2,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710860870506,
+        &quot;runtime&quot;: 146977,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860723529
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;threads&#x2F;open_thread_in_channel.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Open Thread in Channel&quot;
+          ],
+          &quot;duration&quot;: 42974,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Open Thread in Channel MM-T4810_1 - should be able to open a thread in channel via thread options&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4810_1 - should be able to open a thread in channel via thread options&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Open Thread in Channel&quot;
+          ],
+          &quot;duration&quot;: 46310,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Open Thread in Channel MM-T4810_2 - should be able to open a thread in channel by permalink&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4810_2 - should be able to open a thread in channel by permalink&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: null
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 0,
+      &quot;numPassingTests&quot;: 2,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710861003870,
+        &quot;runtime&quot;: 133339,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710860870531
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;threads&#x2F;reply_to_thread.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Reply to Thread&quot;
+          ],
+          &quot;duration&quot;: 40872,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Reply to Thread MM-T4809_1 - should be able to reply to a thread via thread options&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4809_1 - should be able to reply to a thread via thread options&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Reply to Thread&quot;
+          ],
+          &quot;duration&quot;: 36948,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Reply to Thread MM-T4809_2 - should be able to reply to a thread by opening thread&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4809_2 - should be able to reply to a thread by opening thread&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: null
+    },
+    {
+      &quot;leaks&quot;: false,
+      &quot;numFailingTests&quot;: 0,
+      &quot;numPassingTests&quot;: 2,
+      &quot;numPendingTests&quot;: 0,
+      &quot;numTodoTests&quot;: 0,
+      &quot;openHandles&quot;: [],
+      &quot;perfStats&quot;: {
+        &quot;end&quot;: 1710861143590,
+        &quot;runtime&quot;: 139695,
+        &quot;slow&quot;: true,
+        &quot;start&quot;: 1710861003895
+      },
+      &quot;skipped&quot;: false,
+      &quot;snapshot&quot;: {
+        &quot;added&quot;: 0,
+        &quot;fileDeleted&quot;: false,
+        &quot;matched&quot;: 0,
+        &quot;unchecked&quot;: 0,
+        &quot;uncheckedKeys&quot;: [],
+        &quot;unmatched&quot;: 0,
+        &quot;updated&quot;: 0
+      },
+      &quot;testFilePath&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;test&#x2F;threads&#x2F;save_and_unsave_thread.e2e.ts&quot;,
+      &quot;testResults&quot;: [
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Save and Unsave Thread&quot;
+          ],
+          &quot;duration&quot;: 47985,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Save and Unsave Thread MM-T4808_1 - should be able to save&#x2F;unsave a thread via thread options&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 3,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4808_1 - should be able to save&#x2F;unsave a thread via thread options&quot;
+        },
+        {
+          &quot;ancestorTitles&quot;: [
+            &quot;Threads - Save and Unsave Thread&quot;
+          ],
+          &quot;duration&quot;: 35364,
+          &quot;failureDetails&quot;: [],
+          &quot;failureMessages&quot;: [],
+          &quot;fullName&quot;: &quot;Threads - Save and Unsave Thread MM-T4808_2 - should be able to save&#x2F;unsave a thread via thread overview&quot;,
+          &quot;invocations&quot;: 1,
+          &quot;location&quot;: null,
+          &quot;numPassingAsserts&quot;: 0,
+          &quot;retryReasons&quot;: [],
+          &quot;status&quot;: &quot;passed&quot;,
+          &quot;title&quot;: &quot;MM-T4808_2 - should be able to save&#x2F;unsave a thread via thread overview&quot;
+        }
+      ],
+      &quot;failureMessage&quot;: null
+    }
+  ],
+  &quot;wasInterrupted&quot;: false
+}</div>
+        </div>
+        <div class="d-none" id="test-global-config">{
+  &quot;bail&quot;: 0,
+  &quot;changedFilesWithAncestor&quot;: false,
+  &quot;ci&quot;: true,
+  &quot;collectCoverage&quot;: false,
+  &quot;collectCoverageFrom&quot;: [],
+  &quot;coverageDirectory&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;coverage&quot;,
+  &quot;coverageProvider&quot;: &quot;babel&quot;,
+  &quot;coverageReporters&quot;: [
+    &quot;json&quot;,
+    &quot;text&quot;,
+    &quot;lcov&quot;,
+    &quot;clover&quot;
+  ],
+  &quot;detectLeaks&quot;: false,
+  &quot;detectOpenHandles&quot;: false,
+  &quot;errorOnDeprecated&quot;: false,
+  &quot;expand&quot;: false,
+  &quot;findRelatedTests&quot;: false,
+  &quot;forceExit&quot;: false,
+  &quot;globalSetup&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;detox&#x2F;runners&#x2F;jest&#x2F;globalSetup.js&quot;,
+  &quot;globalTeardown&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;detox&#x2F;runners&#x2F;jest&#x2F;globalTeardown.js&quot;,
+  &quot;json&quot;: false,
+  &quot;lastCommit&quot;: false,
+  &quot;listTests&quot;: false,
+  &quot;logHeapUsage&quot;: false,
+  &quot;maxConcurrency&quot;: 5,
+  &quot;maxWorkers&quot;: 1,
+  &quot;noStackTrace&quot;: false,
+  &quot;nonFlagArgs&quot;: [
+    &quot;test&#x2F;smoke_test&#x2F;server_login.e2e.ts&quot;,
+    &quot;test&#x2F;smoke_test&#x2F;threads.e2e.ts&quot;,
+    &quot;test&#x2F;teams&#x2F;invite_people.e2e.ts&quot;,
+    &quot;test&#x2F;threads&#x2F;follow_and_unfollow_thread.e2e.ts&quot;,
+    &quot;test&#x2F;threads&#x2F;global_threads.e2e.ts&quot;,
+    &quot;test&#x2F;threads&#x2F;mark_thread_as_read_and_unread.e2e.ts&quot;,
+    &quot;test&#x2F;threads&#x2F;open_thread_in_channel.e2e.ts&quot;,
+    &quot;test&#x2F;threads&#x2F;reply_to_thread.e2e.ts&quot;,
+    &quot;test&#x2F;threads&#x2F;save_and_unsave_thread.e2e.ts&quot;
+  ],
+  &quot;notify&quot;: false,
+  &quot;notifyMode&quot;: &quot;failure-change&quot;,
+  &quot;onlyChanged&quot;: false,
+  &quot;onlyFailures&quot;: false,
+  &quot;openHandlesTimeout&quot;: 1000,
+  &quot;passWithNoTests&quot;: false,
+  &quot;projects&quot;: [],
+  &quot;reporters&quot;: [
+    [
+      &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;detox&#x2F;runners&#x2F;jest&#x2F;reporter.js&quot;,
+      {}
+    ],
+    [
+      &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-junit&#x2F;index.js&quot;,
+      {
+        &quot;suiteName&quot;: &quot;Mobile App E2E with Detox and Jest&quot;,
+        &quot;outputDirectory&quot;: &quot;.&#x2F;artifacts&quot;,
+        &quot;outputName&quot;: &quot;ios-junit.xml&quot;,
+        &quot;uniqueOutputName&quot;: false
+      }
+    ],
+    [
+      &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-html-reporters&#x2F;index.js&quot;,
+      {
+        &quot;pageTitle&quot;: &quot;Mobile App E2E with Detox and Jest&quot;,
+        &quot;publicPath&quot;: &quot;.&#x2F;artifacts&quot;,
+        &quot;filename&quot;: &quot;ios-report.html&quot;,
+        &quot;expand&quot;: false
+      }
+    ],
+    [
+      &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;node_modules&#x2F;jest-stare&#x2F;lib&#x2F;index.js&quot;,
+      {
+        &quot;reportHeadline&quot;: &quot;Mobile App E2E with Detox and Jest&quot;,
+        &quot;resultDir&quot;: &quot;.&#x2F;artifacts&#x2F;jest-stare&#x2F;&quot;,
+        &quot;resultJson&quot;: &quot;ios-data.json&quot;,
+        &quot;resultHtml&quot;: &quot;ios-main.html&quot;,
+        &quot;additionalResultsProcessors&quot;: []
+      }
+    ]
+  ],
+  &quot;rootDir&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&quot;,
+  &quot;runTestsByPath&quot;: false,
+  &quot;seed&quot;: 425531571,
+  &quot;skipFilter&quot;: false,
+  &quot;snapshotFormat&quot;: {
+    &quot;escapeString&quot;: false,
+    &quot;printBasicPrototype&quot;: false
+  },
+  &quot;testFailureExitCode&quot;: 1,
+  &quot;testPathPattern&quot;: &quot;test&#x2F;smoke_test&#x2F;server_login.e2e.ts|test&#x2F;smoke_test&#x2F;threads.e2e.ts|test&#x2F;teams&#x2F;invite_people.e2e.ts|test&#x2F;threads&#x2F;follow_and_unfollow_thread.e2e.ts|test&#x2F;threads&#x2F;global_threads.e2e.ts|test&#x2F;threads&#x2F;mark_thread_as_read_and_unread.e2e.ts|test&#x2F;threads&#x2F;open_thread_in_channel.e2e.ts|test&#x2F;threads&#x2F;reply_to_thread.e2e.ts|test&#x2F;threads&#x2F;save_and_unsave_thread.e2e.ts&quot;,
+  &quot;testSequencer&quot;: &quot;&#x2F;Users&#x2F;runner&#x2F;work&#x2F;mattermost-mobile&#x2F;mattermost-mobile&#x2F;detox&#x2F;e2e&#x2F;custom_sequencer.js&quot;,
+  &quot;testTimeout&quot;: 120000,
+  &quot;updateSnapshot&quot;: &quot;none&quot;,
+  &quot;useStderr&quot;: false,
+  &quot;verbose&quot;: true,
+  &quot;watch&quot;: false,
+  &quot;watchAll&quot;: false,
+  &quot;watchman&quot;: true,
+  &quot;workerThreads&quot;: false
+}</div>
+
+    </main>
+    <hr>
+    <footer class="footer">
+        <div class="container">
+            <span class="text-muted">jest-stare 2022</span>
+        </div>
+    </footer>
+</body>
+
+</html>
+
