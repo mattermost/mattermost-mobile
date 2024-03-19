@@ -148,7 +148,11 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts)
           names=$(echo $artifacts | jq -r '.artifacts[] | select(.name | startswith("ios-results-")) | .name')
-          echo "ARTIFACT_NAMES=$(echo "$names" | jq -R -c 'split("\n") | map(select(length > 0))')" >> $GITHUB_ENV
+          artifact_names=()
+          while read -r line; do
+            artifact_names+=("$line")
+          done <<< "$names"
+          echo "ARTIFACT_NAMES=${artifact_names[@]}" >> $GITHUB_ENV
 
       - name: Download iOS E2E Test Results
         run: |
