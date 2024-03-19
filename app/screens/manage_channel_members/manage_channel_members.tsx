@@ -20,7 +20,7 @@ import {openAsBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
-import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
+import {displayUsername, filterDeactivatedProfiles, filterProfilesMatchingTerm} from '@utils/user';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -243,7 +243,7 @@ export default function ManageChannelMembers({
                 hasMoreProfiles.current = true;
             }
             if (users.length) {
-                setProfiles(users);
+                setProfiles(filterDeactivatedProfiles(users));
                 setChannelMembers(members);
             }
             setLoading(false);
