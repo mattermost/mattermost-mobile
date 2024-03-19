@@ -184,7 +184,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         await operator.handleMyChannel({
             channels,
             myChannels,
-            prepareRecordsOnly: false,
+            prepareRecordsOnly: true,
         });
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
@@ -192,7 +192,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             fieldName: 'id',
             createOrUpdateRawValues: myChannels,
             tableName: 'MyChannel',
-            prepareRecordsOnly: false,
+            prepareRecordsOnly: true,
             buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelRecord,
         }, 'handleMyChannel');
@@ -253,7 +253,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(updated[0].lastFetchedAt).toBe(123456789);
+        expect(updated[0]).toHaveProperty('lastFetchedAt', 123456789);
     });
 
     it('=> HandleChannelMembership: should write to the CHANNEL_MEMBERSHIP table', async () => {

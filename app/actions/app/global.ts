@@ -85,3 +85,7 @@ export const storePushDisabledInServerAcknowledged = async (serverUrl: string) =
 export const removePushDisabledInServerAcknowledged = async (serverUrl: string) => {
     return storeGlobal(`${GLOBAL_IDENTIFIERS.PUSH_DISABLED_ACK}${serverUrl}`, null, false);
 };
+
+export const setAppInactiveSince = async (time: number) => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.APP_INACTIVE_SINCE, time, false);
+};

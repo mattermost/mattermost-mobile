@@ -383,4 +383,8 @@ export default class WebSocketClient {
     public isConnected(): boolean {
         return this.conn?.readyState === WebSocketReadyState.OPEN; //|| (!this.stop && this.connectFailCount <= 2);
     }
+
+    public getConnectionId(): string {
+        return this.connectionId;
+    }
 }

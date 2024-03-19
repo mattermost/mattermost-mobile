@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type CategoryChannelModel from './category_channel';
+import type ChannelBookmarkModel from './channel_bookmark';
 import type ChannelInfoModel from './channel_info';
 import type ChannelMembershipModel from './channel_membership';
 import type DraftModel from './draft';
@@ -58,6 +59,9 @@ declare class ChannelModel extends Model {
 
     /** drafts : All drafts for this channel */
     drafts: Query<DraftModel>;
+
+    /** bookmarks : All bookmaks for this channel */
+    bookmarks: Query<ChannelBookmarkModel>;
 
     /** posts : All posts made in the channel */
     posts: Query<PostModel>;

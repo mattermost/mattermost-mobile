@@ -34,3 +34,12 @@ export const updateLocalFilePath = async (serverUrl: string, fileId: string, loc
     }
 };
 
+export const getLocalFileInfo = async (serverUrl: string, fileId: string) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const file = await getFileById(database, fileId);
+        return {file};
+    } catch (error) {
+        return {error};
+    }
+};
