@@ -8,9 +8,10 @@ import Animated from 'react-native-reanimated';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {useGalleryItem} from '@hooks/gallery';
-import {isDocument, isImage, isVideo} from '@utils/file';
+import {isAudio, isDocument, isImage, isVideo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import AudioFile from './audio_file';
 import DocumentFile from './document_file';
 import FileIcon from './file_icon';
 import FileInfo from './file_info';
@@ -216,6 +217,16 @@ const File = ({
                 }
             </View>
         );
+    } else if (isAudio(file)) {
+        const renderAudioFile = (
+            <TouchableWithoutFeedback onPress={onGestureEvent}>
+                <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
+                    <AudioFile/>
+                </Animated.View>
+            </TouchableWithoutFeedback>
+        );
+
+        fileComponent = asCard ? renderCardWithImage(renderAudioFile) : renderAudioFile;
     } else {
         const touchableWithPreview = (
             <TouchableWithFeedback
