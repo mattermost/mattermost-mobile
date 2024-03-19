@@ -139,45 +139,55 @@ jobs:
         run: |
           mkdir -p detox/artifacts/
 
-      - name: Get Uploaded Artifact Names
-        id: artifact_names
-        run: |
-          artifacts=$(curl -X GET \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts)
-          names=$(echo $artifacts | jq -r '.artifacts[] | select(.name | startswith("ios-results-")) | .name')
-          artifact_names=()
-          while read -r line; do
-            artifact_names+=("$line")
-          done <<< "$names"
-          echo "ARTIFACT_NAMES=${artifact_names[@]}" >> $GITHUB_ENV
+      # - name: Get Uploaded Artifact Names
+      #   id: artifact_names
+      #   run: |
+      #     artifacts=$(curl -X GET \
+      #       -H "Accept: application/vnd.github+json" \
+      #       -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      #       -H "X-GitHub-Api-Version: 2022-11-28" \
+      #       https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts)
+      #     names=$(echo $artifacts | jq -r '.artifacts[] | select(.name | startswith("ios-results-")) | .name')
+      #     artifact_names=()
+      #     while read -r line; do
+      #       artifact_names+=("$line")
+      #       echo "Artifact metadata for $line:"
+      #       echo $artifacts | jq -r '.artifacts[] | select(.name == "'$line'") | .'
+      #     done <<< "$names"
+      #     echo "ARTIFACT_NAMES=${artifact_names[@]}" >> $GITHUB_ENV
 
-      - name: Download iOS E2E Test Results
-        run: |
-          artifact_names=(${{ env.ARTIFACT_NAMES }})
-          index=1
-          for name in "${artifact_names[@]}"; do
-            artifact_id=$(curl -X GET \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts \
-              | jq -r ".artifacts[] | select(.name == \"$name\") | .archive_download_url")
-            if [ -n "$artifact_id" ]; then
-              output_dir="detox/artifacts/ios-results-$index"
-              mkdir -p "$output_dir"
-              echo "Downloading artifact '$name' to '$output_dir'"
-              curl -L "$artifact_id" | tar -xz --strip-components=1 -C "$output_dir"
-              artifact_size=$(du -sh "$output_dir" | cut -f1)
-              echo "Artifact '$name' downloaded to '$output_dir' (size: $artifact_size)"
-              index=$((index+1))
-            else
-              echo "No artifact found with name '$name'"
-            fi
-          done
+      # - name: Download iOS E2E Test Results
+      #   run: |
+      #     artifact_names=(${{ env.ARTIFACT_NAMES }})
+      #     index=1
+      #     for name in "${artifact_names[@]}"; do
+      #       artifact_id=$(curl -X GET \
+      #         -H "Accept: application/vnd.github+json" \
+      #         -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      #         -H "X-GitHub-Api-Version: 2022-11-28" \
+      #         https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts \
+      #         | jq -r ".artifacts[] | select(.name == \"$name\") | .archive_download_url")
+      #       if [ -n "$artifact_id" ]; then
+      #         output_dir="detox/artifacts/ios-results-$index"
+      #         mkdir -p "$output_dir"
+      #         echo "Downloading artifact '$name' to '$output_dir'"
+      #         curl -L "$artifact_id" | tar -xz --strip-components=1 -C "$output_dir"
+      #         artifact_size=$(du -sh "$output_dir" | cut -f1)
+      #         echo "Artifact '$name' downloaded to '$output_dir' (size: $artifact_size)"
+      #         index=$((index+1))
+      #       else
+      #         echo "No artifact found with name '$name'"
+      #       fi
+      #     done
 
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: detox/artifacts/
+          pattern: ios-results-*
+
+      - run: ls -R my-artifact
+      
       - name: Print artifacts folder contents
         run: |
           echo "Contents of detox/artifacts/"
