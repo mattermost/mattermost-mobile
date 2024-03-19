@@ -121,15 +121,15 @@ const saveReport = async () => {
     await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/ios-results*/jest-stare/${platform}-data*.json`]);
     generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath);
 
-    // if (process.env.CI) {
-    //     // Delete folders starting with "iOS-results-" only in CI environment
-    //     const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
-    //     for (const entry of entries) {
-    //         if (entry.isDirectory() && entry.name.startsWith('ios-results-')) {
-    //             fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
-    //         }
-    //     }
-    // }
+    if (process.env.CI) {
+        // Delete folders starting with "iOS-results-" only in CI environment
+        const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
+        for (const entry of entries) {
+            if (entry.isDirectory() && entry.name.startsWith('ios-results-')) {
+                fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
+            }
+        }
+    }
     const result = await saveArtifacts();
     if (result && result.success) {
         console.log('Successfully uploaded artifacts to S3:', result.reportLink);
