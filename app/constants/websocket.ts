@@ -81,9 +81,14 @@ const WebsocketEvents = {
     CALLS_USER_RAISE_HAND: `custom_${Calls.PluginId}_user_raise_hand`,
     CALLS_USER_UNRAISE_HAND: `custom_${Calls.PluginId}_user_unraise_hand`,
     CALLS_USER_REACTED: `custom_${Calls.PluginId}_user_reacted`,
+
+    // DEPRECATED in favour of CALLS_JOB_STATE (since v2.15.0)
     CALLS_RECORDING_STATE: `custom_${Calls.PluginId}_call_recording_state`,
+    CALLS_JOB_STATE: `custom_${Calls.PluginId}_call_job_state`,
     CALLS_HOST_CHANGED: `custom_${Calls.PluginId}_call_host_changed`,
     CALLS_USER_DISMISSED_NOTIFICATION: `custom_${Calls.PluginId}_user_dismissed_notification`,
+    CALLS_CAPTION: `custom_${Calls.PluginId}_caption`,
+
     GROUP_RECEIVED: 'received_group',
     GROUP_MEMBER_ADD: 'group_member_add',
     GROUP_MEMBER_DELETE: 'group_member_delete',
