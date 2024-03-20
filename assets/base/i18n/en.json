@@ -113,6 +113,7 @@
   "channel_info.archive_failed": "An error occurred trying to archive the channel {displayName}",
   "channel_info.archive_title": "Archive {term}",
   "channel_info.channel_auto_follow_threads": "Follow all threads in this channel",
+  "channel_info.channel_auto_follow_threads_failed": "An error occurred trying to auto follow all threads in channel {displayName}",
   "channel_info.channel_files": "Files",
   "channel_info.close": "Close",
   "channel_info.close_dm": "Close direct message",
