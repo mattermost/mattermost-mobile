@@ -217,9 +217,9 @@ export default function ManageChannelMembers({
     const data = useMemo(() => {
         const isSearch = Boolean(searchedTerm);
         if (isSearch) {
-            return filterProfilesMatchingTerm(searchResults.length ? searchResults : sortedProfiles, searchedTerm);
+            return filterDeactivatedProfiles(filterProfilesMatchingTerm(searchResults.length ? searchResults : sortedProfiles, searchedTerm));
         }
-        return profiles;
+        return filterDeactivatedProfiles(profiles);
     }, [searchResults, profiles, searchedTerm, sortedProfiles]);
 
     useEffect(() => {
@@ -243,7 +243,7 @@ export default function ManageChannelMembers({
                 hasMoreProfiles.current = true;
             }
             if (users.length) {
-                setProfiles(filterDeactivatedProfiles(users));
+                setProfiles(users);
                 setChannelMembers(members);
             }
             setLoading(false);
