@@ -1,7 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {CallRecordingState, CallsConfig, EmojiData, UserReactionData} from '@mattermost/calls/lib/types';
+import type {
+    CallJobState,
+    CallsConfig,
+    EmojiData,
+    UserReactionData,
+} from '@mattermost/calls/lib/types';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type GlobalCallsState = {
@@ -56,7 +61,8 @@ export type Call = {
     screenOn: string;
     threadId: string;
     ownerId: string;
-    recState?: CallRecordingState;
+    recState?: CallJobState;
+    capState?: CallJobState;
     hostId: string;
     dismissed: Dictionary<boolean>;
 }
@@ -94,6 +100,7 @@ export type CurrentCall = Call & {
     reactionStream: ReactionStreamEmoji[];
     callQualityAlert: boolean;
     callQualityAlertDismissed: number;
+    captions: Dictionary<LiveCaptionMobile>;
 }
 
 export const DefaultCurrentCall: CurrentCall = {
@@ -110,6 +117,7 @@ export const DefaultCurrentCall: CurrentCall = {
     reactionStream: [],
     callQualityAlert: false,
     callQualityAlertDismissed: 0,
+    captions: {},
 };
 
 export type CallSession = {
@@ -158,6 +166,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableSimulcast: false,
     EnableRinging: false,
     EnableTranscriptions: false,
+    EnableLiveCaptions: false,
 };
 
 export type ApiResp = {
@@ -205,3 +214,24 @@ export type SelectedSubtitleTrack = {
     type: 'system' | 'disabled' | 'title' | 'language' | 'index';
     value?: string | number | undefined;
 };
+
+export type LiveCaptionMobile = {
+    captionId: string;
+    sessionId: string;
+    userId: string;
+    text: string;
+}
+
+// DEPRECATED in favour of CallJobState since v2.16
+export type CallRecordingState = {
+    init_at: number;
+    start_at: number;
+    end_at: number;
+    err?: string;
+    error_at?: number;
+}
+
+export type CallRecordingStateData = {
+    recState: CallRecordingState;
+    callID: string;
+}
