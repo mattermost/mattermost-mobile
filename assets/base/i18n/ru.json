@@ -783,7 +783,6 @@
   "notification_settings.email.send": "Отправлять уведомления по электронной почте",
   "notification_settings.mention.reply": "Отправлять уведомления об ответе",
   "notification_settings.mentions": "Упоминания",
-  "notification_settings.mentions..keywordsDescription": "Специальные слова, генерирующие уведомления",
   "notification_settings.mentions.channelWide": "Общесистемные упоминания",
   "notification_settings.mentions.keywords": "Введите другие ключевые слова",
   "notification_settings.mentions.keywordsLabel": "Ключевые слова не чувствительны к регистру. Разделяйте ключевые слова запятыми.",
