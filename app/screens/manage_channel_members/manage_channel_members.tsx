@@ -90,6 +90,7 @@ export default function ManageChannelMembers({
     const hasMoreProfiles = useRef(false);
     const [channelMembers, setChannelMembers] = useState<ChannelMembership[]>(EMPTY_MEMBERS);
     const [searchResults, setSearchResults] = useState<UserProfile[]>(EMPTY);
+    const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
     const [term, setTerm] = useState('');
     const [searchedTerm, setSearchedTerm] = useState('');
@@ -97,6 +98,9 @@ export default function ManageChannelMembers({
     const clearSearch = useCallback(() => {
         setTerm('');
         setSearchResults(EMPTY);
+        if (searchTimeoutId.current) {
+            clearTimeout(searchTimeoutId.current);
+        }
     }, []);
 
     const close = useCallback(() => {
@@ -104,6 +108,16 @@ export default function ManageChannelMembers({
     }, [componentId]);
 
     useAndroidHardwareBackHandler(componentId, close);
+
+    const addProfiles = (values: UserProfile[]) => {
+        const newProfiles = [...profiles, ...values];
+        setProfiles(newProfiles);
+    };
+
+    const addMembers = (values: ChannelMembership[]) => {
+        const newMembers = [...channelMembers, ...values];
+        setChannelMembers(newMembers);
+    };
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
         if (profile.id === currentUserId && isManageMode) {
@@ -231,9 +245,15 @@ export default function ManageChannelMembers({
 
     useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
 
-    useEffect(() => {
-        mounted.current = true;
-        const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT};
+    const handleReachedBottom = useCallback(() => {
+        if (hasMoreProfiles.current && !loading && !searchedTerm) {
+            setLoading(true);
+            setPage((p) => p + 1);
+        }
+    }, [loading, searchedTerm]);
+
+    const getFetchChannelMembers = useCallback(() => {
+        const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT, page};
         fetchChannelMemberships(serverUrl, channelId, options, true).then(({users, members}) => {
             if (!mounted.current) {
                 return;
@@ -242,16 +262,25 @@ export default function ManageChannelMembers({
             if (users.length >= PER_PAGE_DEFAULT) {
                 hasMoreProfiles.current = true;
             }
-            if (users.length) {
-                setProfiles(users);
-                setChannelMembers(members);
+            if (users.length < PER_PAGE_DEFAULT) {
+                hasMoreProfiles.current = false;
             }
+            if (users.length) {
+                addProfiles(users);
+                addMembers(members);
+            }
+
             setLoading(false);
         });
+    }, [page, addProfiles, addMembers]);
+
+    useEffect(() => {
+        mounted.current = true;
+        getFetchChannelMembers();
         return () => {
             mounted.current = false;
         };
-    }, []);
+    }, [page]);
 
     useEffect(() => {
         if (canManageAndRemoveMembers) {
@@ -301,6 +330,7 @@ export default function ManageChannelMembers({
                 testID='manage_members.user_list'
                 tutorialWatched={tutorialWatched}
                 includeUserMargin={true}
+                fetchMore={handleReachedBottom}
             />
         </SafeAreaView>
     );
