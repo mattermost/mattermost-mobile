@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import {act, renderHook} from '@testing-library/react-hooks';
+import {act, renderHook} from '@testing-library/react-native';
 import {createIntl} from 'react-intl';
 import InCallManager from 'react-native-incall-manager';
 

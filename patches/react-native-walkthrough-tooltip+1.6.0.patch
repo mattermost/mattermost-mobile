@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-walkthrough-tooltip/src/tooltip.js b/node_modules/react-native-walkthrough-tooltip/src/tooltip.js
-index db612fd..0262d6d 100644
+index 3098692..a966dfb 100644
 --- a/node_modules/react-native-walkthrough-tooltip/src/tooltip.js
 +++ b/node_modules/react-native-walkthrough-tooltip/src/tooltip.js
-@@ -212,7 +212,7 @@ class Tooltip extends Component {
+@@ -216,7 +216,7 @@ class Tooltip extends Component {
      this.setState(
        {
          windowDims: dims.window,
@@ -11,7 +11,7 @@ index db612fd..0262d6d 100644
          adjustedContentSize: new Size(0, 0),
          anchorPoint: new Point(0, 0),
          tooltipOrigin: new Point(0, 0),
-@@ -268,9 +268,9 @@ class Tooltip extends Component {
+@@ -272,9 +272,9 @@ class Tooltip extends Component {
            this.childWrapper.current &&
            typeof this.childWrapper.current.measure === 'function'
          ) {
