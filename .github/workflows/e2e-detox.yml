@@ -34,100 +34,100 @@ env:
   FAILURE_MESSAGE: "Something has failed"
   
 jobs:
-  # generate-specs:
-  #   runs-on: ubuntu-22.04
-  #   outputs:
-  #     specs: ${{ steps.generate-specs.outputs.specs }}
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
+  generate-specs:
+    runs-on: ubuntu-22.04
+    outputs:
+      specs: ${{ steps.generate-specs.outputs.specs }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-  #     - name: Generate Test Specs
-  #       id: generate-specs
-  #       uses: ./.github/actions/generate-specs
-  #       with:
-  #         parallelism: 10
-  #         directory: detox/e2e
-  #         search_path: test
+      - name: Generate Test Specs
+        id: generate-specs
+        uses: ./.github/actions/generate-specs
+        with:
+          parallelism: 10
+          directory: detox/e2e
+          search_path: test
 
-  # build-ios-simulator:
-  #   runs-on: macos-14-large
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
+  build-ios-simulator:
+    runs-on: macos-14-large
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-  #     - name: Prepare iOS Build
-  #       uses: ./.github/actions/prepare-ios-build
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
 
-  #     - name: Build iOS Simulator
-  #       env:
-  #         TAG: "${{ github.ref_name }}"
-  #         AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
-  #         AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-  #         GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-  #       run: bundle exec fastlane ios simulator --env ios.simulator || true
-  #       working-directory: ./fastlane
+      - name: Build iOS Simulator
+        env:
+          TAG: "${{ github.ref_name }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios simulator --env ios.simulator || true
+        working-directory: ./fastlane
 
-  #     - name: Upload iOS Simulator Build
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: ios-build-simulator-${{ github.run_id }}
-  #         path: Mattermost-simulator-x86_64.app.zip
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-x86_64.app.zip
 
-  # e2e-ios:
-  #   env:
-  #     IOS: true
-  #   runs-on: macos-14-large
-  #   name: test-detox-e2e-${{ matrix.runId }}
-  #   needs:
-  #     - generate-specs
-  #     - build-ios-simulator
-  #   strategy:
-  #     fail-fast: false
-  #     matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
+  e2e-ios:
+    env:
+      IOS: true
+    runs-on: macos-14-large
+    name: test-detox-e2e-${{ matrix.runId }}
+    needs:
+      - generate-specs
+      - build-ios-simulator
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-  #     - name: Set Build ID
-  #       run: echo "BUILD_ID=${{ github.run_id }}-${{ env.BUILD_SUFFIX }}" >> $GITHUB_ENV
+      - name: Set Build ID
+        run: echo "BUILD_ID=${{ github.run_id }}-${{ env.BUILD_SUFFIX }}" >> $GITHUB_ENV
 
-  #     - name: Install Homebrew Dependencies
-  #       run: |
-  #         brew tap wix/brew
-  #         brew install applesimutils
+      - name: Install Homebrew Dependencies
+        run: |
+          brew tap wix/brew
+          brew install applesimutils
 
-  #     - name: Download iOS Simulator Build
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: ios-build-simulator-${{ github.run_id }}
-  #         path: mobile-artifacts
+      - name: Download iOS Simulator Build
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: mobile-artifacts
 
-  #     - name: Unzip iOS Simulator Build
-  #       run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+      - name: Unzip iOS Simulator Build
+        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
 
-  #     - name: Start React Native Metro Server
-  #       run: npm run start &
+      - name: Start React Native Metro Server
+        run: npm run start &
 
-  #     - name: Install Detox Dependencies
-  #       run: cd detox && npm ci
+      - name: Install Detox Dependencies
+        run: cd detox && npm ci
 
-  #     - name: Run Detox E2E Tests
-  #       run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
+      - name: Run Detox E2E Tests
+        run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
 
-  #     - name: Upload iOS Test Report
-  #       if: always()
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: ios-results-${{ matrix.runId }}
-  #         path: detox/artifacts/
+      - name: Upload iOS Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-results-${{ matrix.runId }}
+          path: detox/artifacts/
 
   download-e2e-results:
     runs-on: ubuntu-22.04
     if: always()
-    # needs:
-    #   - generate-specs
-    #   - e2e-ios
+    needs:
+      - generate-specs
+      - e2e-ios
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -139,17 +139,17 @@ jobs:
         run: |
           mkdir -p detox/artifacts/
 
-      # - name: Download All Artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     path: detox/artifacts/
-      #     pattern: ios-results-*
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: detox/artifacts/
+          pattern: ios-results-*
       
-      # - name: Print artifacts folder contents
-      #   run: |
-      #     echo "Contents of detox/artifacts/"
-      #     ls -lR detox/artifacts/
-      #   continue-on-error: true
+      - name: Print artifacts folder contents
+        run: |
+          echo "Contents of detox/artifacts/"
+          ls -lR detox/artifacts/
+        continue-on-error: true
 
       - name: Save report Detox Dependencies
         run: |
