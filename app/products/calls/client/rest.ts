@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {ApiResp, CallsVersion} from '@calls/types/calls';
-import type {CallChannelState, CallRecordingState, CallsConfig} from '@mattermost/calls/lib/types';
+import type {CallChannelState, CallJobState, CallsConfig} from '@mattermost/calls/lib/types';
 import type {RTCIceServer} from 'react-native-webrtc';
 
 export interface ClientCallsMix {
@@ -14,8 +14,8 @@ export interface ClientCallsMix {
     enableChannelCalls: (channelId: string, enable: boolean) => Promise<CallChannelState>;
     endCall: (channelId: string) => Promise<ApiResp>;
     genTURNCredentials: () => Promise<RTCIceServer[]>;
-    startCallRecording: (callId: string) => Promise<ApiResp | CallRecordingState>;
-    stopCallRecording: (callId: string) => Promise<ApiResp | CallRecordingState>;
+    startCallRecording: (callId: string) => Promise<ApiResp | CallJobState>;
+    stopCallRecording: (callId: string) => Promise<ApiResp | CallJobState>;
     dismissCall: (channelId: string) => Promise<ApiResp>;
 }
 

@@ -10,6 +10,7 @@ runs:
       shell: bash
       run: |
         echo "::group::install-os-deps"
+        brew install --overwrite python@3.12
         brew install watchman
         echo "::endgroup::"
 

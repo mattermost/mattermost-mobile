@@ -15,10 +15,12 @@ import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
+    handleCallCaption,
     handleCallChannelDisabled,
     handleCallChannelEnabled,
     handleCallEnded,
     handleCallHostChanged,
+    handleCallJobState,
     handleCallRecordingState,
     handleCallScreenOff,
     handleCallScreenOn,
@@ -432,14 +434,22 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.CALLS_USER_REACTED:
             handleCallUserReacted(serverUrl, msg);
             break;
+
+        // DEPRECATED in favour of CALLS_JOB_STATE (since v2.15.0)
         case WebsocketEvents.CALLS_RECORDING_STATE:
             handleCallRecordingState(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_JOB_STATE:
+            handleCallJobState(serverUrl, msg);
             break;
         case WebsocketEvents.CALLS_HOST_CHANGED:
             handleCallHostChanged(serverUrl, msg);
             break;
         case WebsocketEvents.CALLS_USER_DISMISSED_NOTIFICATION:
             handleUserDismissedNotification(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_CAPTION:
+            handleCallCaption(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:

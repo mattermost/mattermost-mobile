@@ -6,10 +6,13 @@ import {DeviceEventEmitter} from 'react-native';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {
     callEnded,
-    callStarted, getCallsConfig,
+    callStarted,
+    getCallsConfig,
+    receivedCaption,
     removeIncomingCall,
     setCallScreenOff,
     setCallScreenOn,
+    setCaptioningState,
     setChannelEnabled,
     setHost,
     setRaisedHand,
@@ -22,14 +25,18 @@ import {
 } from '@calls/state';
 import {isMultiSessionSupported} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
+import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 
+import type {CallRecordingStateData} from '@calls/types/calls';
 import type {
     CallHostChangedData,
-    CallRecordingStateData,
+    CallJobState,
+    CallJobStateData,
     CallStartData,
     EmptyData,
+    LiveCaptionData,
     UserConnectedData,
     UserDisconnectedData,
     UserDismissedNotification,
@@ -155,8 +162,24 @@ export const handleCallUserReacted = (serverUrl: string, msg: WebSocketMessage<U
     userReacted(serverUrl, msg.broadcast.channel_id, msg.data);
 };
 
+// DEPRECATED in favour of handleCallJobState (since v2.15.0)
 export const handleCallRecordingState = (serverUrl: string, msg: WebSocketMessage<CallRecordingStateData>) => {
-    setRecordingState(serverUrl, msg.broadcast.channel_id, msg.data.recState);
+    const jobState: CallJobState = {
+        type: Calls.JOB_TYPE_RECORDING,
+        ...msg.data.recState,
+    };
+    setRecordingState(serverUrl, msg.broadcast.channel_id, jobState);
+};
+
+export const handleCallJobState = (serverUrl: string, msg: WebSocketMessage<CallJobStateData>) => {
+    switch (msg.data.jobState.type) {
+        case Calls.JOB_TYPE_RECORDING:
+            setRecordingState(serverUrl, msg.broadcast.channel_id, msg.data.jobState);
+            break;
+        case Calls.JOB_TYPE_CAPTIONING:
+            setCaptioningState(serverUrl, msg.broadcast.channel_id, msg.data.jobState);
+            break;
+    }
 };
 
 export const handleCallHostChanged = (serverUrl: string, msg: WebSocketMessage<CallHostChangedData>) => {
@@ -176,4 +199,8 @@ export const handleUserDismissedNotification = async (serverUrl: string, msg: We
     }
 
     removeIncomingCall(serverUrl, msg.data.callID);
+};
+
+export const handleCallCaption = (serverUrl: string, msg: WebSocketMessage<LiveCaptionData>) => {
+    receivedCaption(serverUrl, msg.data);
 };
