@@ -216,10 +216,8 @@ export default function ManageChannelMembers({
 
     const data = useMemo(() => {
         const isSearch = Boolean(searchedTerm);
-        if (isSearch) {
-            return filterDeactivatedProfiles(filterProfilesMatchingTerm(searchResults.length ? searchResults : sortedProfiles, searchedTerm));
-        }
-        return filterDeactivatedProfiles(profiles);
+        const newProfiles = isSearch ? filterProfilesMatchingTerm(searchResults.length ? searchResults : sortedProfiles, searchedTerm) : profiles;
+        return filterDeactivatedProfiles(newProfiles);
     }, [searchResults, profiles, searchedTerm, sortedProfiles]);
 
     useEffect(() => {
