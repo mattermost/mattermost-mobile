@@ -18,7 +18,6 @@ import GalleryViewer from './viewer';
 import type {ImageRendererProps} from './image_renderer';
 import type {GalleryItemType} from '@typings/screens/gallery';
 
-// @ts-expect-error FastImage does work with Animated.createAnimatedComponent
 const AnimatedImage = Animated.createAnimatedComponent(FastImage);
 
 interface GalleryProps {

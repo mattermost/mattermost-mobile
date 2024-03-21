@@ -85,9 +85,9 @@ const SearchScreen = ({teamId, teams}: Props) => {
     const insets = useSafeAreaInsets();
     const keyboardHeight = useKeyboardHeight();
 
-    const stateIndex = nav.getState().index;
+    const stateIndex = nav.getState()?.index;
     const serverUrl = useServerUrl();
-    const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
+    const searchTerm: string = stateIndex === undefined ? '' : (nav.getState()?.routes[stateIndex]?.params as any)?.searchTerm || '';
 
     const clearRef = useRef<boolean>(false);
     const cancelRef = useRef<boolean>(false);
@@ -276,7 +276,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
         return {
             opacity: withTiming(0, {duration: 150}),
             flex: 1,
-            transform: [{translateX: withTiming(stateIndex < searchScreenIndex ? 25 : -25, {duration: 150})}],
+            transform: [{translateX: withTiming((stateIndex || 0) < searchScreenIndex ? 25 : -25, {duration: 150})}],
         };
     }, [isFocused, stateIndex]);
 

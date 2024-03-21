@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java b/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
-index fe95fdf..1fd5d23 100644
+index fe95fdf..c95448a 100644
 --- a/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
 +++ b/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
 @@ -3,6 +3,7 @@ package com.brentvatne.exoplayer;
@@ -26,6 +26,24 @@ index fe95fdf..1fd5d23 100644
  
          // Invoking onClick event for exoplayerView
          exoPlayerView.setOnClickListener(new OnClickListener() {
+@@ -327,7 +330,7 @@ class ReactExoplayerView extends FrameLayout implements
+         });
+ 
+         //Handling the playButton click event
+-        ImageButton playButton = playerControlView.findViewById(R.id.exo_play);
++        ImageButton playButton = playerControlView.findViewById(com.google.android.exoplayer2.R.id.exo_play);
+         playButton.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View v) {
+@@ -339,7 +342,7 @@ class ReactExoplayerView extends FrameLayout implements
+         });
+ 
+         //Handling the pauseButton click event
+-        ImageButton pauseButton = playerControlView.findViewById(R.id.exo_pause);
++        ImageButton pauseButton = playerControlView.findViewById(com.google.android.exoplayer2.R.id.exo_pause);
+         pauseButton.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View v) {
 @@ -736,6 +739,7 @@ class ReactExoplayerView extends FrameLayout implements
      @Override
      public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
@@ -47,13 +65,13 @@ index fe95fdf..1fd5d23 100644
              eventEmitter.fullscreenWillPresent();
              decorView.setSystemUiVisibility(uiOptions);
 +            decorView.setBackgroundColor(Color.parseColor("#000000"));
-+            fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_exit);
++            fullscreenButton.setImageResource(com.google.android.exoplayer2.R.drawable.exo_controls_fullscreen_exit);
              eventEmitter.fullscreenDidPresent();
          } else {
              uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
              eventEmitter.fullscreenWillDismiss();
              decorView.setSystemUiVisibility(uiOptions);
-+            fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_enter);
++            fullscreenButton.setImageResource(com.google.android.exoplayer2.R.drawable.exo_controls_fullscreen_enter);
              eventEmitter.fullscreenDidDismiss();
          }
      }
@@ -92,20 +110,20 @@ index becee6a..5d4b2cd 100644
  
  </LinearLayout>
 diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.m b/node_modules/react-native-video/ios/Video/RCTVideo.m
-index a757c08..2e402e2 100644
+index a757c08..da428cd 100644
 --- a/node_modules/react-native-video/ios/Video/RCTVideo.m
 +++ b/node_modules/react-native-video/ios/Video/RCTVideo.m
-@@ -449,6 +449,7 @@ - (void)playerItemPrepareText:(AVAsset *)asset assetOptions:(NSDictionary * __nu
+@@ -449,6 +449,7 @@ static int const RCTVideoUnset = -1;
    _allowsExternalPlayback = NO;
- 
+   
    // sideload text tracks
 +  NSLock *mixCompositionLock = [[NSLock alloc] init]; // mixComposition is not thread-safe; lock in the async blocks below
    AVMutableComposition *mixComposition = [[AVMutableComposition alloc] init];
- 
+   
    AVAssetTrack *videoAsset = [asset tracksWithMediaType:AVMediaTypeVideo].firstObject;
-@@ -466,30 +467,58 @@ - (void)playerItemPrepareText:(AVAsset *)asset assetOptions:(NSDictionary * __nu
+@@ -466,30 +467,58 @@ static int const RCTVideoUnset = -1;
                              error:nil];
- 
+   
    NSMutableArray* validTextTracks = [NSMutableArray array];
 +  NSLock *validTextTracksLock = [[NSLock alloc] init]; // validTextTracks is not thread-safe
 +  dispatch_group_t textTracksDispatchGroup = dispatch_group_create();

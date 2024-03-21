@@ -54,7 +54,6 @@ export interface LightboxSwipeoutRef {
     closeLightbox: () => void;
 }
 
-// @ts-expect-error FastImage does animate
 const AnimatedImage = Animated.createAnimatedComponent(FastImage);
 
 const timingConfig: WithTimingConfig = {

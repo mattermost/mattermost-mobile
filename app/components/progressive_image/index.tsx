@@ -16,7 +16,6 @@ import type {ImageStyles} from '@typings/global/styles';
 
 const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 
-// @ts-expect-error FastImage does work with Animated.createAnimatedComponent
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 

@@ -25,7 +25,6 @@ type Props = {
     url?: string;
 };
 
-// @ts-expect-error FastImage does work with Animated.createAnimatedComponent
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
 const AnimatedImage = Animated.createAnimatedComponent(RNImage);
 

@@ -6,7 +6,6 @@ import {Image, type ColorValue, type StyleProp, type ImageStyle} from 'react-nat
 import FastImage, {type ImageStyle as FastImageStyle, type Source} from 'react-native-fast-image';
 import Animated, {type SharedValue} from 'react-native-reanimated';
 
-// @ts-expect-error FastImage does work with Animated.createAnimatedComponent
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 

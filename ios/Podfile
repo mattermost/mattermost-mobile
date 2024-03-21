@@ -41,14 +41,8 @@ target 'Mattermost' do
 
   config = use_native_modules!
 
-  # Flags change depending on the env values.
-  # flags = get_default_flags()
-
   use_react_native!(
     :path => config[:reactNativePath],
-    # Hermes is now enabled by default. Disable by setting this flag to false.
-    :hermes_enabled => true,
-    :fabric_enabled => false,
     # Enables Flipper.
     #
     # Note that if you have use_frameworks! enabled, Flipper will not work and
@@ -79,8 +73,7 @@ target 'Mattermost' do
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.4'
       end
     end
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
-  
+
     puts 'Patching Alamofire to include X-Uncompressed-Content-Length to measure download progress'
     %x(patch Pods/Alamofire/Source/SessionDelegate.swift < patches/SessionDelegate.patch)
   

@@ -26,11 +26,6 @@ exports[`AttachmentAuthor it matches snapshot when both name and icon are provid
     <FastImageView
       defaultSource={null}
       resizeMode="cover"
-      source={
-        {
-          "uri": "https://images.com/image.png",
-        }
-      }
       style={
         {
           "bottom": 0,
@@ -87,11 +82,6 @@ exports[`AttachmentAuthor it matches snapshot when only icon is provided 1`] = `
     <FastImageView
       defaultSource={null}
       resizeMode="cover"
-      source={
-        {
-          "uri": "https://images.com/image.png",
-        }
-      }
       style={
         {
           "bottom": 0,
