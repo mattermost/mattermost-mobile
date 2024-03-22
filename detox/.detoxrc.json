@@ -8,7 +8,7 @@
   "apps": {
     "ios.debug": {
       "type": "ios.app",
-      "binaryPath": "../mobile-artifacts/Mattermost.app"
+      "binaryPath": "../MNEW/Mattermost.app"
     },
     "ios.release": {
       "type": "ios.app",
@@ -17,8 +17,7 @@
     },
     "android.debug": {
       "type": "android.apk",
-      "binaryPath": "../android/app/build/outputs/apk/debug/app-debug.apk",
-      "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug && cd ../detox"
+      "binaryPath": "../MNEW/android/Mattermost_Beta.apk"
     },
     "android.release": {
       "type": "android.apk",
@@ -36,7 +35,7 @@
     "android.emulator": {
       "type": "android.emulator",
       "device": {
-        "avdName": "detox_pixel_4_xl_api_31"
+        "avdName": "Pixel_6_Pro_API_33"
       }
     }
   },
@@ -57,6 +56,9 @@
       "device": "android.emulator",
       "app": "android.release"
     }
+  },
+  "artifacts": {
+    "pathBuilder": "./e2e/path_builder.js"
   },
   "behavior": {
     "init": {
