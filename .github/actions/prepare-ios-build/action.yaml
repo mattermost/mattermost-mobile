@@ -17,6 +17,14 @@ runs:
         brew install watchman
         echo "::endgroup::"
 
+    - name: Cache Homebrew
+      uses: actions/cache@v3
+      with:
+        path: ~/Library/Caches/Homebrew
+        key: ${{ runner.os }}-homebrew-${{ hashFiles('**/Brewfile') }}
+        restore-keys: |
+          ${{ runner.os }}-homebrew-
+
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
 
@@ -27,3 +35,11 @@ runs:
         npm run ios-gems
         npm run pod-install
         echo "::endgroup::"
+
+    - name: Cache Pods
+      uses: actions/cache@v3
+      with:
+        path: Pods
+        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pods-

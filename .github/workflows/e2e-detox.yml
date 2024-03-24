@@ -51,8 +51,32 @@ jobs:
           directory: detox/e2e
           search_path: test
 
+  cache-ios-build:
+    runs-on: macos-14-large
+    outputs:
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+  
+      - name: Cache iOS Build
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: Mattermost-simulator-x86_64.app.zip
+          key: ${{ runner.os }}-ios-build-${{ hashFiles('iOS/**') }}
+  
+      - name: Upload iOS Simulator Build
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-build-simulator
+          path: Mattermost-simulator-x86_64.app.zip
+
   build-ios-simulator:
     runs-on: macos-14-large
+    needs: cache-ios-build
+    if: ${{ needs.cache-ios-build.outputs.cache-hit != 'true' || (github.event_name == 'pull_request' && contains(github.event.pull_request.head.ref, 'iOS')) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -99,9 +123,9 @@ jobs:
           brew install applesimutils
 
       - name: Download iOS Simulator Build
-        uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
-          name: ios-build-simulator-${{ github.run_id }}
+          name: ios-build-simulator
           path: mobile-artifacts
 
       - name: Unzip iOS Simulator Build
