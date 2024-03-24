@@ -206,6 +206,9 @@ jobs:
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
+  
+      - name: Set Build ID
+        run: echo "BUILD_ID=${{ github.run_id }}-${{ env.BUILD_SUFFIX }}" >> $GITHUB_ENV
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
@@ -232,7 +235,7 @@ jobs:
         run: npm run start &
 
       - name: Install Detox Dependencies
-        run: cd detox && npm ci
+        run: cd detox && npm i
 
       - name: Run Detox E2E Tests
         run: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
