@@ -137,6 +137,9 @@ jobs:
     env:
       IOS: false
       GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
+      ANDROID_EMULATOR_IMAGE: 'system-images;android-33;google_apis;x86_64'
+      ANDROID_EMULATOR_NAME: 'pixel_6_pro_android_33'
+      ANDROID_EMULATOR_DEVICE: 'pixel_6_pro'
     runs-on: ubuntu-22.04
     name: test-detox-e2e-${{ matrix.runId }}
     needs:
@@ -148,6 +151,14 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          android-sdk-tools: 'latest'
+          android-emulator-image: '${{ env.ANDROID_EMULATOR_IMAGE }}'
+          android-emulator-name: '${{ env.ANDROID_EMULATOR_NAME }}'
+          android-emulator-device: '${{ env.ANDROID_EMULATOR_DEVICE }}'  
 
       - name: Free up space on the runner
         run: |
@@ -161,21 +172,21 @@ jobs:
         with:
           name: android-build-apk-${{ github.run_id }}
           path: android/app/build/outputs/apk/debug/app-debug.apk
-
+    
       - name: Start React Native Metro Server
         run: npm run start &
-
+  
       - name: Install Detox Dependencies
         run: cd detox && npm ci
-
+  
       - name: Run Detox E2E Tests
         run: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
-      - name: Upload iOS Test Report
+      - name: Upload Android Test Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ios-results-${{ matrix.runId }}
+          name: android-results-${{ matrix.runId }}
           path: detox/artifacts
 
   download-e2e-results:
