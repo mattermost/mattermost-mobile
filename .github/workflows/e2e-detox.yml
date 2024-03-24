@@ -64,7 +64,8 @@ jobs:
         with:
             name: ios-build-simulator-${{ github.run_id }}
             path: .
-    
+        continue-on-error: true
+
       - name: Cache iOS Build
         id: cache
         uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
