@@ -11,6 +11,7 @@ runs:
       run: |
         echo "::group::install-os-deps"
         brew install --overwrite python@3.12
+        rm '/usr/local/bin/2to3-3.11'
         brew link --overwrite python@3.11
         brew install watchman
         echo "::endgroup::"

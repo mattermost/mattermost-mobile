@@ -60,7 +60,7 @@ class LoginScreen {
 
     login = async (user: any = {}) => {
         await this.toBeVisible();
-        await this.usernameInput.typeText(user.newUser.email);
+        await this.usernameInput.typeText(`${user.newUser.email}\n`);
         await this.passwordInput.typeText(`${user.newUser.password}\n`);
 
         // await this.signinButton.tap();
