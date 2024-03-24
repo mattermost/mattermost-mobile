@@ -192,6 +192,7 @@ jobs:
     env:
       IOS: false
       GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
+      API_LEVEL: 29
     runs-on: ubuntu-22.04
     name: android-detox-e2e-${{ matrix.runId }}
     needs:
@@ -199,9 +200,7 @@ jobs:
       # - build-android-apk
     strategy:
       fail-fast: false
-      matrix:
-        specs: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
-        api-level: [29]
+      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -249,7 +248,7 @@ jobs:
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ matrix.api-level }}
+          api-level: ${{ env.API_LEVEL }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
