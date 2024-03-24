@@ -26,7 +26,7 @@ describe('Channels - Convert to Private Channel', () => {
     beforeAll(async () => {
         // # Log in to server as admin
         await ServerScreen.connectToServer(siteOneUrl, siteOneDisplayName);
-        await LoginScreen.login(getAdminAccount());
+        await LoginScreen.loginAsAdmin(getAdminAccount());
     });
 
     beforeEach(async () => {
