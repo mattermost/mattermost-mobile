@@ -5,6 +5,8 @@ runs:
   using: composite
   steps:
     - name: ci/install-os-deps
+      env:
+        HOMEBREW_NO_AUTO_UPDATE: "1"
       shell: bash
       run: |
         echo "::group::install-os-deps"
