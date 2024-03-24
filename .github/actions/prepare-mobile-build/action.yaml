@@ -16,7 +16,7 @@ runs:
       working-directory: ./fastlane
 
     - name: Cache Ruby gems
-      uses: actions/cache@cd7d8d697e10461458bc61a30d094dc601a8b017 # 4.1.3
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
       with:
         path: vendor/bundle
         key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}

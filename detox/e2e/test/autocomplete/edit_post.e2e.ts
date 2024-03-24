@@ -67,7 +67,7 @@ describe('Autocomplete - Edit Post', () => {
         await expect(Autocomplete.sectionAtMentionList).not.toBeVisible();
 
         // # Type in "@" to activate at-mention autocomplete
-        await EditPostScreen.messageInput.typeText('@');
+        await EditPostScreen.messageInput.typeText(' @');
 
         // * Verify at-mention list is displayed
         await expect(Autocomplete.sectionAtMentionList).toBeVisible();
@@ -89,7 +89,7 @@ describe('Autocomplete - Edit Post', () => {
         await expect(Autocomplete.flatEmojiSuggestionList).not.toBeVisible();
 
         // # Type in ":" followed by 2 characters to activate emoji suggestion autocomplete
-        await EditPostScreen.messageInput.typeText(':sm');
+        await EditPostScreen.messageInput.typeText(':smil');
 
         // * Verify emoji suggestion list is displayed
         await expect(Autocomplete.flatEmojiSuggestionList).toBeVisible();
