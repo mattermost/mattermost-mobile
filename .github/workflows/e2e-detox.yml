@@ -193,6 +193,9 @@ jobs:
       IOS: false
       GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
       API_LEVEL: 29
+      ANDROID_EMULATOR_IMAGE: 'system-images;android-33;google_apis;x86_64'
+      ANDROID_EMULATOR_NAME: 'pixel_6_pro_android_33'
+      ANDROID_EMULATOR_DEVICE: 'pixel_6_pro'
     runs-on: ubuntu-22.04
     name: android-detox-e2e-${{ matrix.runId }}
     needs:
@@ -200,7 +203,7 @@ jobs:
       - build-android-apk
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+      matrix: ${{fromJson(needs.generate-specs.outputs.specs)}}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -266,17 +269,16 @@ jobs:
       - name: Install Detox Dependencies
         run: cd detox && npm i
 
-      - name: run tests
+      - name: Run Detox E2E Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 29
+          api-level: ${{ env.API_LEVEL }}
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
-
-      # - name: Run Detox E2E Tests
-      #   run: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
+          script: |
+            # cd detox
+            # npm run e2e:android-test -- ${{ matrix.specs }}
 
       - name: Upload Android Test Report
         if: always()
