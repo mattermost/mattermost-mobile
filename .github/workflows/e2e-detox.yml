@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - ios_detox_job
   pull_request:
     branches:
       - main
