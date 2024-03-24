@@ -9,8 +9,19 @@ runs:
       run: |
         echo "::group::install-os-deps"
         brew install --overwrite python@3.12
+        rm '/usr/local/bin/2to3-3.11'
+        brew unlink python@3.11 || true
+        brew link --overwrite python@3.11
         brew install watchman
         echo "::endgroup::"
+
+    - name: Cache Homebrew
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      with:
+        path: ~/Library/Caches/Homebrew
+        key: ${{ runner.os }}-homebrew-${{ hashFiles('**/Brewfile') }}
+        restore-keys: |
+          ${{ runner.os }}-homebrew-
 
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
@@ -22,3 +33,11 @@ runs:
         npm run ios-gems
         npm run pod-install
         echo "::endgroup::"
+
+    - name: Cache Pods
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      with:
+        path: Pods
+        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pods-

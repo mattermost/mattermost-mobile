@@ -6,11 +6,33 @@ on:
       - main
   pull_request:
     branches:
-      - add_e2e_CI
+      - ios_detox_job
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
+
+env:
+  DEVICE_NAME: "iPhone 15 Pro"
+  DEVICE_OS_VERSION: "iOS 17.2"
+  BRANCH: ${{ github.head_ref || github.ref_name }} 
+  BUILD_ID: ${{ github.run_id }}
+  COMMIT_HASH: ${{ github.sha }}
+  AWS_REGION: 'us-east-1'
+  DETOX_AWS_S3_BUCKET: 'mattermost-detox-report'
+  DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+  DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+  HEADLESS: 'false'
+  TYPE: 'PR'
+  PULL_REQUEST: 'https://github.com/mattermost/mattermost-mobile/pull/7822'
+  ZEPHYR_ENABLE: false
+  JIRA_PROJECT_KEY: 'MM'
+  ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+  ZEPHYR_FOLDER_ID: '3233873'
+  TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+  WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+  FAILURE_MESSAGE: "Something has failed"
 
 jobs:
   generate-specs:
@@ -19,7 +41,7 @@ jobs:
       specs: ${{ steps.generate-specs.outputs.specs }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Generate Test Specs
         id: generate-specs
@@ -33,7 +55,7 @@ jobs:
   #   runs-on: macos-14-large
   #   steps:
   #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
   #     - name: Prepare iOS Build
   #       uses: ./.github/actions/prepare-ios-build
@@ -48,7 +70,7 @@ jobs:
   #       working-directory: ./fastlane
 
   #     - name: Upload iOS Simulator Build
-  #       uses: actions/upload-artifact@v4
+  #       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
   #       with:
   #         name: ios-build-simulator-${{ github.run_id }}
   #         path: Mattermost-simulator-x86_64.app.zip
@@ -66,15 +88,17 @@ jobs:
   #     matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
   #   steps:
   #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+  #     - name: Set Build ID
+  #       run: echo "BUILD_ID=${{ github.run_id }}-${{ env.BUILD_SUFFIX }}" >> $GITHUB_ENV
 
   #     - name: Install Homebrew Dependencies
   #       run: |
   #         brew tap wix/brew
   #         brew install applesimutils
-
   #     - name: Download iOS Simulator Build
-  #       uses: actions/download-artifact@v4
+  #       uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
   #       with:
   #         name: ios-build-simulator-${{ github.run_id }}
   #         path: mobile-artifacts
@@ -93,7 +117,7 @@ jobs:
 
   #     - name: Upload iOS Test Report
   #       if: always()
-  #       uses: actions/upload-artifact@v4
+  #       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
   #       with:
   #         name: ios-results-${{ matrix.runId }}
   #         path: detox/artifacts/
@@ -102,7 +126,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Free up space on the runner
         run: |
@@ -110,7 +134,6 @@ jobs:
           sudo rm -rf /opt/ghc
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
         env:
@@ -126,9 +149,8 @@ jobs:
         run: |
           cd detox
           npm run e2e:android-build
-
       - name: Upload Android APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: android-build-apk-${{ github.run_id }}
           path: android/app/build/outputs/apk/debug/app-debug.apk
@@ -150,7 +172,7 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
@@ -166,25 +188,24 @@ jobs:
           sudo rm -rf /opt/ghc
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-
       - name: Download Android APK
-        uses: actions/download-artifact@v4
+        uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
           name: android-build-apk-${{ github.run_id }}
           path: android/app/build/outputs/apk/debug/app-debug.apk
-    
+
       - name: Start React Native Metro Server
         run: npm run start &
-  
+
       - name: Install Detox Dependencies
         run: cd detox && npm ci
-  
+
       - name: Run Detox E2E Tests
         run: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
       - name: Upload Android Test Report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: android-results-${{ matrix.runId }}
           path: detox/artifacts
@@ -194,53 +215,28 @@ jobs:
     if: always()
     needs:
       - generate-specs
-      - e2e-android
+      # - e2e-ios
+      - e2e-android 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Download iOS E2E Test Results
-        uses: actions/download-artifact@v4
-        with:
-          name: ios-results-${{ needs.e2e-ios.outputs.matrix.runId }}
-          path: detox/artifacts/
-        continue-on-error: true
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
 
-      - name: Download Android E2E Test Results
-        uses: actions/download-artifact@v4
-        with:
-          name: android-results-${{ needs.e2e-android.outputs.matrix.runId }}
-          path: detox/artifacts/
-        continue-on-error: true
-
-      - name: Check for downloaded artifacts
-        id: check-artifacts
+      - name: Create artifacts directory
         run: |
-          ios_artifacts_found=false
-          android_artifacts_found=false
-  
-          if compgen -G "detox/artifacts/ios-results-*" > /dev/null; then
-            ios_artifacts_found=true
-          fi
-  
-          if compgen -G "detox/artifacts/android-results-*" > /dev/null; then
-            android_artifacts_found=true
-          fi
-
-          echo "ios_artifacts_found=$ios_artifacts_found" >> $GITHUB_OUTPUT
-          echo "android_artifacts_found=$android_artifacts_found" >> $GITHUB_OUTPUT  
+          mkdir -p detox/artifacts/
+      - name: Download All Artifacts
+        uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        with:
+          path: detox/artifacts/
+          pattern: android-results-*
 
       - name: Save report Detox Dependencies
-        if: steps.check-artifacts.outputs.ios_artifacts_found == 'true' || steps.check-artifacts.outputs.android_artifacts_found == 'true'
         run: |
-          ios_artifacts_found=${{ steps.check-artifacts.outputs.ios_artifacts_found }}
-          android_artifacts_found=${{ steps.check-artifacts.outputs.android_artifacts_found }}
-
-          if [ "$ios_artifacts_found" == "true" ]; then
-            echo "iOS artifacts found, running with IOS=true"
-            IOS=true npm run e2e:save-report
-
-          if [ "$android_artifacts_found" == "true" ]; then
-            echo "Android artifacts found, running with IOS=false"
-            IOS=false npm run e2e:save-report
-        working-directory: detox
+          cd detox
+          npm ci
+          npm run e2e:save-report
+        env:
+          IOS: false

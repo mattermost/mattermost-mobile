@@ -125,7 +125,7 @@ const saveReport = async () => {
         // Delete folders starting with "iOS-results-" only in CI environment
         const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
         for (const entry of entries) {
-            if (entry.isDirectory() && entry.name.startsWith('ios-results-')) {
+            if (entry.isDirectory() && (entry.name.startsWith('ios-results-') || entry.name.startsWith('android-results-'))) {
                 fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
             }
         }
