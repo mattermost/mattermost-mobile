@@ -110,7 +110,7 @@ jobs:
         run: npm run start &
 
       - name: Install Detox Dependencies
-        run: cd detox && npm ci
+        run: cd detox && npm i
 
       - name: Run Detox E2E Tests
         run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
