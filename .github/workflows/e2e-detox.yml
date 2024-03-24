@@ -57,11 +57,11 @@ jobs:
       cache-hit: ${{ steps.cache.outputs.cache-hit }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
   
       - name: Cache iOS Build
         id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: Mattermost-simulator-x86_64.app.zip
           key: ${{ runner.os }}-ios-build-${{ hashFiles('iOS/**') }}
