@@ -24,11 +24,17 @@ const PluginId = 'com.mattermost.calls';
 const REACTION_TIMEOUT = 10000;
 const REACTION_LIMIT = 20;
 const CALL_QUALITY_RESET_MS = toMilliseconds({minutes: 1});
+const CAPTION_TIMEOUT = 5000;
 
 export enum MessageBarType {
     Microphone,
     CallQuality,
 }
+
+// The JobTypes from calls plugin's server/public/job.go
+const JOB_TYPE_RECORDING = 'recording';
+const JOB_TYPE_TRANSCRIBING = 'transcribing';
+const JOB_TYPE_CAPTIONING = 'captioning';
 
 export default {
     RefreshConfigMillis,
@@ -39,4 +45,8 @@ export default {
     REACTION_LIMIT,
     MessageBarType,
     CALL_QUALITY_RESET_MS,
+    CAPTION_TIMEOUT,
+    JOB_TYPE_RECORDING,
+    JOB_TYPE_TRANSCRIBING,
+    JOB_TYPE_CAPTIONING,
 };
