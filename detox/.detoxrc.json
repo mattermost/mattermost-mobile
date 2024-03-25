@@ -12,7 +12,7 @@
     },
     "ios.release": {
       "type": "ios.app",
-      "binaryPath": "../ios/Build/Products/Release-iphonesimulator/Mattermost.app",
+      "binaryPath": "../ios/DerivedData/Build/Products/Release-iphonesimulator/Mattermost.app",
       "build": "cd .. && npm run build:ios-sim && cd detox"
     },
     "android.debug": {
@@ -27,39 +27,36 @@
     }
   },
   "devices": {
-    "ios.simulator": {
+    "ios": {
       "type": "ios.simulator",
       "device": {
         "type": "iPhone 15 Pro"
       }
     },
-    "android.emulator": {
+    "android": {
       "type": "android.emulator",
       "device": {
-        "avdName": "detox_pixel_4_xl_api_31"
+        "avdName": "Pixel_6_Pro_API_33"
       }
     }
   },
   "configurations": {
     "ios.sim.debug": {
-      "device": "ios.simulator",
+      "device": "ios",
       "app": "ios.debug"
     },
     "ios.sim.release": {
-      "device": "ios.simulator",
+      "device": "ios",
       "app": "ios.release"
     },
     "android.emu.debug": {
-      "device": "android.emulator",
+      "device": "android",
       "app": "android.debug"
     },
     "android.emu.release": {
-      "device": "android.emulator",
+      "device": "android",
       "app": "android.release"
     }
-  },
-  "artifacts": {
-    "pathBuilder": "./e2e/path_builder.js"
   },
   "behavior": {
     "init": {
