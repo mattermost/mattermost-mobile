@@ -290,9 +290,6 @@ jobs:
       - name: Install required libraries for emulator
         run: sudo apt-get install libpulse0 libpulse-dev
 
-      - name: ci/prepare-android-build
-        uses: ./.github/actions/prepare-android-build
-
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
@@ -341,9 +338,6 @@ jobs:
 
       - name: Install required libraries for emulator
         run: sudo apt-get install libpulse0 libpulse-dev
-
-      - name: ci/prepare-android-build
-        uses: ./.github/actions/prepare-android-build
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
