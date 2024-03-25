@@ -27,34 +27,34 @@
     }
   },
   "devices": {
-    "ios.simulator": {
+    "ios": {
       "type": "ios.simulator",
       "device": {
         "type": "iPhone 15 Pro"
       }
     },
-    "android.emulator": {
+    "android": {
       "type": "android.emulator",
       "device": {
-        "avdName": "pixel_6_pro"
+        "avdName": "Pixel_6_Pro_API_33"
       }
     }
   },
   "configurations": {
     "ios.sim.debug": {
-      "device": "ios.simulator",
+      "device": "ios",
       "app": "ios.debug"
     },
     "ios.sim.release": {
-      "device": "ios.simulator",
+      "device": "ios",
       "app": "ios.release"
     },
     "android.emu.debug": {
-      "device": "android.emulator",
+      "device": "android",
       "app": "android.debug"
     },
     "android.emu.release": {
-      "device": "android.emulator",
+      "device": "android",
       "app": "android.release"
     }
   },
