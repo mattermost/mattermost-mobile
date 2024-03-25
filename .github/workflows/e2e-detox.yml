@@ -122,48 +122,18 @@ jobs:
   #         name: ios-results-${{ matrix.runId }}
   #         path: detox/artifacts/
 
-  # build-android-apk:
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-  #     - name: Free up space on the runner
-  #       run: |
-  #         sudo rm -rf /usr/share/dotnet
-  #         sudo rm -rf /opt/ghc
-  #         sudo rm -rf "/usr/local/share/boost"
-  #         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-
-  #     - name: ci/prepare-android-build
-  #       uses: ./.github/actions/prepare-android-build
-  #       env:
-  #         STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
-  #         STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
-  #         STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
-  #         MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
-
-  #     - name: Install Detox dependencies
-  #       run: cd detox && npm ci
-
-  #     - name: Build android apk
-  #       run: |
-  #         cd detox
-  #         npm run e2e:android-build
-
-  #     - name: Upload Android APK
-  #       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-  #       with:
-  #         name: android-build-apk-${{ github.run_id }}
-  #         path: android/app/build/outputs/apk/debug/app-debug.apk
-
   build-android-apk:
     runs-on: ubuntu-22.04
     steps:
-      - name: ci/checkout-repo
+      - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Free up space on the runner
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
@@ -173,20 +143,50 @@ jobs:
           STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
-      - name: ci/build-android-pr
-        env:
-          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
-          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
-          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
-        run: bundle exec fastlane android build --env android.pr
-        working-directory: ./fastlane
+      - name: Install Detox dependencies
+        run: cd detox && npm ci
 
-      - name: ci/upload-android-pr-build
+      - name: Build android apk
+        run: |
+          cd detox
+          npm run e2e:android-build
+
+      - name: Upload Android APK
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: android-build-apk-${{ github.run_id }}
-          path: "*.apk"
+          path: android/app/build
+
+  # build-android-apk:
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - name: ci/checkout-repo
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #       with:
+  #         ref: ${{ github.event.pull_request.head.sha }}
+
+  #     - name: ci/prepare-android-build
+  #       uses: ./.github/actions/prepare-android-build
+  #       env:
+  #         STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+  #         STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+  #         STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+  #         MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+
+  #     - name: ci/build-android-pr
+  #       env:
+  #         BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
+  #         AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
+  #         AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
+  #         MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
+  #       run: bundle exec fastlane android build --env android.pr
+  #       working-directory: ./fastlane
+
+  #     - name: ci/upload-android-pr-build
+  #       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+  #       with:
+  #         name: android-build-apk-${{ github.run_id }}
+  #         path: "*.apk"
 
   e2e-android:
     env:
@@ -207,6 +207,9 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Install required libraries for emulator
+        run: sudo apt-get install libpulse0 libpulse-dev
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
@@ -251,8 +254,11 @@ jobs:
         uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
           name: android-build-apk-${{ github.run_id }}
-          path: mobile-artifacts
+          path: android/app/build
   
+      - name: List files in android/app/build
+        run: ls -l android/app/build
+
       - name: Start React Native Metro Server
         run: npm run start &
 
@@ -266,20 +272,6 @@ jobs:
           arch: x86_64
           avd-name: pixel_6_pro
           script: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
-
-      # - name: Run Detox E2E Tests
-      #   run: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
-
-      # - name: Run Detox E2E Tests
-      #   uses: reactivecircus/android-emulator-runner@v2
-      #   with:
-      #     api-level: ${{ env.API_LEVEL }}
-      #     force-avd-creation: false
-      #     emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-      #     disable-animations: true
-      #     script: |
-      #       cd detox
-      #       npm run e2e:android-test -- ${{ matrix.specs }}
 
       - name: Upload Android Test Report
         if: always()

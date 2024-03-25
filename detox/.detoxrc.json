@@ -17,7 +17,7 @@
     },
     "android.debug": {
       "type": "android.apk",
-      "binaryPath": "../mobile-artifacts/Mattermost_Beta.apk",
+      "binaryPath": "../android/app/build/outputs/apk/debug/app-debug.apk",
       "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug && cd ../detox"
     },
     "android.release": {
