@@ -252,9 +252,6 @@ jobs:
         with:
           name: android-build-apk-${{ github.run_id }}
           path: mobile-artifacts
-
-      - name: Unzip Android APK
-        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
   
       - name: Start React Native Metro Server
         run: npm run start &
