@@ -218,9 +218,9 @@ jobs:
         uses: android-actions/setup-android@v2
         with:
           android-sdk-tools: 'latest'
-          android-emulator-image: '${{ env.ANDROID_EMULATOR_IMAGE }}'
-          android-emulator-name: '${{ env.ANDROID_EMULATOR_NAME }}'
-          android-emulator-device: '${{ env.ANDROID_EMULATOR_DEVICE }}'  
+          android-emulator-image: ${{ env.ANDROID_EMULATOR_IMAGE }}
+          android-emulator-name: ${{ env.ANDROID_EMULATOR_NAME }}
+          android-emulator-device: ${{ env.ANDROID_EMULATOR_DEVICE }}
 
       - name: Free up space on the runner
         run: |
@@ -235,8 +235,8 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # - name: Gradle cache
-      #   uses: gradle/actions/setup-gradle@v3
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
         
       - name: AVD cache
         uses: actions/cache@v4
@@ -247,22 +247,15 @@ jobs:
             ~/.android/adb*
           key: avd-${{ env.API_LEVEL }}
 
-      # - name: create AVD and generate snapshot for caching
-      #   if: steps.avd-cache.outputs.cache-hit != 'true'
-      #   uses: reactivecircus/android-emulator-runner@v2
-      #   with:
-      #     api-level: ${{ env.API_LEVEL }}
-      #     force-avd-creation: false
-      #     emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-      #     disable-animations: false
-      #     script: echo "Generated AVD snapshot for caching."
-
       - name: Download Android APK
         uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
           name: android-build-apk-${{ github.run_id }}
-          path: android/app/build/outputs/apk/debug/
+          path: mobile-artifacts
 
+      - name: Unzip Android APK
+        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+  
       - name: Start React Native Metro Server
         run: npm run start &
 
