@@ -287,6 +287,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          cache: gradle
+          distribution: temurin
+          java-version: 17
+
       - name: Install required libraries for emulator
         run: sudo apt-get install libpulse0 libpulse-dev
 
@@ -317,7 +324,7 @@ jobs:
       - name: Detox build
         run: |
           cd detox
-          npx detox build --configuration ${{ env.DETOX_CONFIGURATION }} --if-missing
+          npx detox build --configuration ${{ env.DETOX_CONFIGURATION }} --if-missing --clean
 
       - name: Upload Detox build
         uses: actions/upload-artifact@v4
@@ -335,6 +342,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          cache: gradle
+          distribution: temurin
+          java-version: 17
 
       - name: Install required libraries for emulator
         run: sudo apt-get install libpulse0 libpulse-dev
