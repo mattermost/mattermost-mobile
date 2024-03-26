@@ -44,6 +44,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
+      - name: Set Build ID
+        run: |
+          cd detox
+          DEVICE_NAME=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.type")
+          DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.os")
+          echo "BUILD_ID=${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION" >> $GITHUB_ENV
+          echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
+          echo "DEVICE_OS_VERSION=$DEVICE_OS_VERSION" >> $GITHUB_ENV
+
       - name: Generate Test Specs
         id: generate-specs
         uses: ./.github/actions/generate-specs
@@ -51,8 +60,8 @@ jobs:
           parallelism: 10
           directory: detox/e2e
           search_path: test
-          device: iPhone 15 Pro
-          os_version: 17.4
+          device: ${{ env.DEVICE_NAME }}
+          os_version: ${{ env.DEVICE_OS_VERSION }}
 
   # build-ios-simulator:
   #   runs-on: macos-14-large
@@ -95,20 +104,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: ci/prepare-node-deps
-        uses: ./.github/actions/prepare-node-deps
-  
-      - name: Set Build ID
-        run: |
-          cd detox
-          DEVICE_NAME=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.type")
-          DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.os")
-          echo "BUILD_ID=${{ github.run_id }}-${{ matrix.device }}-${{ matrix.osVersion }}" >> $GITHUB_ENV
-          echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
-          echo "DEVICE_OS_VERSION=$DEVICE_OS_VERSION" >> $GITHUB_ENV
+      # - name: ci/prepare-node-deps
+      #   uses: ./.github/actions/prepare-node-deps
 
       - name: Test step
-        run: echo ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+        run: echo '${{ fromJSON(needs.generate-specs.outputs.specs) }}' | jq
   
   #     - name: Install Homebrew Dependencies
   #       run: |
@@ -140,33 +140,36 @@ jobs:
   #         name: ios-results-${{ matrix.runId }}
   #         path: detox/artifacts/
 
-  # download-e2e-results:
-  #   runs-on: ubuntu-22.04
-  #   if: always() && (contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR') || contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR'))
-  #   needs:
-  #     - generate-specs
-  #     - e2e-ios
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  download-e2e-results:
+    runs-on: ubuntu-22.04
+    if: always() && (contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR') || contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR'))
+    needs:
+      - generate-specs
+      - e2e-ios
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
   
-  #     - name: ci/prepare-node-deps
-  #       uses: ./.github/actions/prepare-node-deps
+      - name: Test step
+        run: echo ${{ env.BUILD_ID }}
+
+      # - name: ci/prepare-node-deps
+      #   uses: ./.github/actions/prepare-node-deps
   
-  #     - name: Create artifacts directory
-  #       run: |
-  #         mkdir -p detox/artifacts/
+      # - name: Create artifacts directory
+      #   run: |
+      #     mkdir -p detox/artifacts/
 
-  #     - name: Download All Artifacts
-  #       uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
-  #       with:
-  #         path: detox/artifacts/
-  #         pattern: ios-results-*
+      # - name: Download All Artifacts
+      #   uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+      #   with:
+      #     path: detox/artifacts/
+      #     pattern: ios-results-*
 
-  #     - name: Save report Detox Dependencies
-  #       run: |
-  #         cd detox
-  #         npm ci
-  #         npm run e2e:save-report
-  #       env:
-  #         IOS: true
+      # - name: Save report Detox Dependencies
+      #   run: |
+      #     cd detox
+      #     npm ci
+      #     npm run e2e:save-report
+      #   env:
+      #     IOS: true
