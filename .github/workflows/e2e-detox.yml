@@ -17,7 +17,6 @@ concurrency:
 
 env:
   BRANCH: ${{ github.head_ref || github.ref_name }} 
-  BUILD_ID: ${{ github.run_id }}
   COMMIT_HASH: ${{ github.sha }}
   AWS_REGION: 'us-east-1'
   DETOX_AWS_S3_BUCKET: 'mattermost-detox-report'
@@ -108,8 +107,11 @@ jobs:
       #   uses: ./.github/actions/prepare-node-deps
 
       - name: Test step
-        run: echo '${{ fromJSON(needs.generate-specs.outputs.specs) }}' | jq
-  
+        run: echo "INPUT=${{ fromJSON(needs.generate-specs.outputs.specs) }}" >> $GITHUB_ENV
+
+      - name: Test step
+        run: echo "${{ env.INPUT }}"
+
   #     - name: Install Homebrew Dependencies
   #       run: |
   #         brew tap wix/brew
@@ -173,3 +175,36 @@ jobs:
       #     npm run e2e:save-report
       #   env:
       #     IOS: true
+
+  e2e-remove-label:
+    if: always() && (contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR') || contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR'))
+    needs: [download-e2e-results]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: e2e/remove-label-from-pr
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        continue-on-error: true # Label might have been removed manually
+        with:
+          script: |
+            const iosLabel = 'E2E iOS tests for PR';
+            const androidLabel = 'E2E Android tests for PR';
+            const labels = context.payload.pull_request.labels.map(label => label.name);
+  
+            if (labels.includes(iosLabel)) {
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: iosLabel,
+              });
+            }
+  
+            if (labels.includes(androidLabel)) {
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: androidLabel,
+              });
+            }
+      
