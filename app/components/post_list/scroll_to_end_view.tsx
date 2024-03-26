@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, Pressable, Text, useWindowDimensions, View, type ViewStyle} from 'react-native';
