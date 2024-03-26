@@ -39,7 +39,7 @@ jobs:
     if: (contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR') || contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR'))
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
-      build_id: ${{ steps.build-id.outputs.BUILD_ID }}
+      build_id: ${{ steps.generate-specs.outputs.BUILD_ID }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -50,8 +50,9 @@ jobs:
           cd detox
           DEVICE_NAME=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.type")
           DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.os")
-          BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION" # Construct BUILD_ID
-          echo "BUILD_ID=${BUILD_ID}" >> $GITHUB_ENV # Set BUILD_ID as an environment variable
+          BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
+
+          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
           echo "DEVICE_NAME=${DEVICE_NAME}" >> $GITHUB_ENV
           echo "DEVICE_OS_VERSION=${DEVICE_OS_VERSION}" >> $GITHUB_ENV
 
@@ -113,7 +114,7 @@ jobs:
       - name: Test step
         run: |
           echo "${{ env.BUILD_ID }}"
-          echo "BUILD_ID=$(echo ${{ env.BUILD_ID }} | sed 's/ /_/g')" >> $GITHUB_ENV
+          echo "BUILD_ID=$(echo ${{ env.BUILD_ID }} | sed 's/ /_/g')"
 
   #     - name: Install Homebrew Dependencies
   #       run: |
