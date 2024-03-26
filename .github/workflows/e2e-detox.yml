@@ -94,7 +94,7 @@ jobs:
   e2e-ios:
     env:
       IOS: true
-      BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+      BUILD_ID: ${{ needs.generate-specs.outputs.BUILD_ID }}
     runs-on: macos-14-large
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.device }}-${{ matrix.osVersion }}
     if: contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR')
@@ -148,7 +148,7 @@ jobs:
 
   download-e2e-results:
     env:
-      BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+      BUILD_ID: ${{ needs.generate-specs.outputs.BUILD_ID }}
     runs-on: ubuntu-22.04
     if: always() && (contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR') || contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR'))
     needs:
