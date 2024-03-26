@@ -116,18 +116,6 @@ func main() {
 	device := os.Getenv("DEVICE")
 	osVersion := os.Getenv("OS_VERSION")
 
-	if envDevice, ok := os.LookupEnv("DEVICE"); ok {
-		device = envDevice
-	} else {
-		device = "iPhone 15" // Default device
-	}
-
-	if envOSVersion, ok := os.LookupEnv("OS_VERSION"); ok {
-		osVersion = envOSVersion
-	} else {
-		osVersion = "17.2" // Default iOS version
-	}
-
 	deviceInfo := DeviceInfo{
 		Device:    device,
 		OSVersion: osVersion,

@@ -51,6 +51,7 @@ jobs:
           echo "BUILD_ID=${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION" >> $GITHUB_ENV
           echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
           echo "DEVICE_OS_VERSION=$DEVICE_OS_VERSION" >> $GITHUB_ENV
+          echo $BUILD_ID
 
       - name: Generate Test Specs
         id: generate-specs
@@ -110,7 +111,9 @@ jobs:
         run: echo "INPUT=${{ fromJSON(needs.generate-specs.outputs.specs) }}" >> $GITHUB_ENV
 
       - name: Test step
-        run: echo "${{ env.INPUT }}"
+        run: |
+          echo "${{ env.INPUT }}"
+          echo "${{ env.BUILD_ID }}"
 
   #     - name: Install Homebrew Dependencies
   #       run: |
@@ -178,7 +181,8 @@ jobs:
 
   e2e-remove-label:
     if: always() && (contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR') || contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR'))
-    needs: [download-e2e-results]
+    needs:
+      - download-e2e-results
     runs-on: ubuntu-22.04
     steps:
       - name: e2e/remove-label-from-pr
