@@ -48,10 +48,10 @@ jobs:
           cd detox
           DEVICE_NAME=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.type")
           DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.os")
-          echo "BUILD_ID=${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION" >> $GITHUB_ENV
+          echo "BUILD_ID=${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
           echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
           echo "DEVICE_OS_VERSION=$DEVICE_OS_VERSION" >> $GITHUB_ENV
-          echo $BUILD_ID
+          echo "BUILD_ID=$(echo "$BUILD_ID" | sed 's/ /_/g')" >> $GITHUB_ENV
 
       - name: Generate Test Specs
         id: generate-specs
