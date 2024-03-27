@@ -896,6 +896,8 @@
   "post_priority.picker.title": "Message priority",
   "post.options.title": "Options",
   "post.reactions.title": "Reactions",
+  "postList.scrollToBottom.newMessages": "New messages",
+  "postList.scrollToBottom.newReplies": "New replies",
   "posts_view.newMsg": "New Messages",
   "public_link_copied": "Link copied to clipboard",
   "rate.button.needs_work": "Needs work",
