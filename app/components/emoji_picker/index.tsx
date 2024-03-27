@@ -1,25 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useState, type FC, useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 
+import {addRecentReaction} from '@actions/local/reactions';
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
+import emojiStore from '@store/emoji_picker';
 import {getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import EmojiFiltered from './filtered';
 import PickerHeader from './header';
 import EmojiSections from './sections';
 
-import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-
 export const SCROLLVIEW_NATIVE_ID = 'emojiSelector';
 
 const styles = StyleSheet.create({
-    flex: {
+    container: {
         flex: 1,
     },
     searchBar: {
@@ -28,23 +28,35 @@ const styles = StyleSheet.create({
 });
 
 type Props = {
-    customEmojis: CustomEmojiModel[];
-    customEmojisEnabled: boolean;
-    onEmojiPress: (emoji: string) => void;
-    recentEmojis: string[];
     testID?: string;
+    onEmojiPress?: (emoji: string) => void;
 }
 
-const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, testID = ''}: Props) => {
+const Picker: FC<Props> = ({testID = '', onEmojiPress}) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const [searchTerm, setSearchTerm] = useState<string|undefined>();
+
+    useEffect(() => {
+        return () => {
+            emojiStore.setCurrentCategoryIndex(0);
+        };
+    }, []);
+
+    const handleOnPressEmoji = (emojiName: string) => {
+        if (!onEmojiPress) {
+            return;
+        }
+
+        onEmojiPress(emojiName);
+        addRecentReaction(serverUrl, [emojiName]);
+    };
 
     const onCancelSearch = useCallback(() => setSearchTerm(undefined), []);
 
     const onChangeSearchTerm = useCallback((text: string) => {
         setSearchTerm(text);
-        searchCustom(text.replace(/^:|:$/g, '').trim());
+        searchCustom(text);
     }, []);
 
     const searchCustom = debounce((text: string) => {
@@ -54,29 +66,24 @@ const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, 
     }, 500);
 
     let EmojiList: React.ReactNode = null;
-    const term = searchTerm?.replace(/^:|:$/g, '').trim();
-    if (term) {
+    if (searchTerm) {
         EmojiList = (
             <EmojiFiltered
-                customEmojis={customEmojis}
-                searchTerm={term}
-                onEmojiPress={onEmojiPress}
+                searchTerm={searchTerm}
+                onEmojiPress={handleOnPressEmoji}
             />
         );
     } else {
         EmojiList = (
             <EmojiSections
-                customEmojis={customEmojis}
-                customEmojisEnabled={customEmojisEnabled}
-                onEmojiPress={onEmojiPress}
-                recentEmojis={recentEmojis}
+                onEmojiPress={handleOnPressEmoji}
             />
         );
     }
 
     return (
         <View
-            style={styles.flex}
+            style={styles.container}
             testID={`${testID}.screen`}
         >
             <View style={styles.searchBar}>
@@ -87,6 +94,7 @@ const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, 
                     onChangeText={onChangeSearchTerm}
                     testID={`${testID}.search_bar`}
                     value={searchTerm}
+                    useBottomSheet={true}
                 />
             </View>
             {EmojiList}

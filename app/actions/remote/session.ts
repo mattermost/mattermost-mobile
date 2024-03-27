@@ -19,6 +19,7 @@ import {logWarning, logError, logDebug} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
 import {getCSRFFromCookie} from '@utils/security';
 
+import {getAllCustomEmojis} from './custom_emoji';
 import {loginEntry} from './entry';
 
 import type {LoginArgs} from '@typings/database/database';
@@ -116,6 +117,8 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
         });
         const csrfToken = await getCSRFFromCookie(serverUrl);
         client.setCSRFToken(csrfToken);
+
+        await getAllCustomEmojis(serverUrl);
     } catch (error) {
         logDebug('error on login', getFullErrorMessage(error));
         return {error, failed: true};

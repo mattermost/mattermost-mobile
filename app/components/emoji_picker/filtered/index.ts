@@ -7,12 +7,14 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {queryEmojiPreferences} from '@queries/servers/preference';
+import emojiStore from '@store/emoji_picker';
 
 import EmojiFiltered from './filtered';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
+    data: emojiStore.filteredData,
     skinTone: queryEmojiPreferences(database, Preferences.EMOJI_SKINTONE).
         observeWithColumns(['value']).pipe(
             switchMap((prefs) => of$(prefs?.[0]?.value ?? 'default')),

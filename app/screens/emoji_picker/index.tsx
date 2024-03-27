@@ -4,11 +4,10 @@
 import React, {useCallback} from 'react';
 import {DeviceEventEmitter, StyleSheet} from 'react-native';
 
+import Picker from '@components/emoji_picker';
+import PickerFooter from '@components/emoji_picker/footer';
 import {Events} from '@constants';
 import BottomSheet from '@screens/bottom_sheet';
-
-import Picker from './picker';
-import PickerFooter from './picker/footer';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 

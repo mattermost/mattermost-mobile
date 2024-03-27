@@ -14,6 +14,7 @@ import SkinToneSelector from './skintone_selector';
 
 type Props = SearchProps & {
     skinTone: string;
+    useBottomSheet?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -21,7 +22,7 @@ const styles = StyleSheet.create({
     row: {flexDirection: 'row'},
 });
 
-const PickerHeader = ({skinTone, ...props}: Props) => {
+const PickerHeader = ({skinTone, useBottomSheet, ...props}: Props) => {
     const isTablet = useIsTablet();
     const containerWidth = useSharedValue(0);
     const isSearching = useSharedValue(false);
@@ -47,7 +48,7 @@ const PickerHeader = ({skinTone, ...props}: Props) => {
     }, []);
 
     let search;
-    if (isTablet) {
+    if (isTablet || !useBottomSheet) {
         search = (
             <SearchBar
                 {...props}
