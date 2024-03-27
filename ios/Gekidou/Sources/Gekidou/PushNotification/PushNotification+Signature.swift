@@ -107,7 +107,7 @@ extension PushNotification {
         if (tokenParts.count != 2) {
             os_log(
                 OSLogType.default,
-                "Mattermost Notifications: Signature verification: Wrong stored deviced token format"
+                "Mattermost Notifications: Signature verification: Wrong stored device token format"
             )
             return false
         }
@@ -115,7 +115,7 @@ extension PushNotification {
         if (deviceToken.isEmpty) {
             os_log(
                 OSLogType.default,
-                "Mattermost Notifications: Signature verification: Empty stored deviced token"
+                "Mattermost Notifications: Signature verification: Empty stored device token"
             )
             return false
         }
