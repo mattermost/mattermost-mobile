@@ -32,14 +32,23 @@ import com.mattermost.rnbeta.*;
 import com.nozbe.watermelondb.WMDatabase;
 
 import java.io.IOException;
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.Objects;
 
+import io.jsonwebtoken.IncorrectClaimException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MissingClaimException;
+import io.jsonwebtoken.security.Jwks;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import static com.mattermost.helpers.database_extension.GeneralKt.getDatabaseForServer;
+import static com.mattermost.helpers.database_extension.GeneralKt.getDeviceToken;
+import static com.mattermost.helpers.database_extension.SystemKt.queryConfigServerVersion;
+import static com.mattermost.helpers.database_extension.SystemKt.queryConfigSigningKey;
 import static com.mattermost.helpers.database_extension.UserKt.getLastPictureUpdate;
 
 public class CustomPushNotificationHelper {
@@ -225,6 +234,91 @@ public class CustomPushNotificationHelper {
             mMinImportanceChannel.setShowBadge(true);
             notificationManager.createNotificationChannel(mMinImportanceChannel);
         }
+    }
+
+    public static boolean verifySignature(final Context context, String signature, String serverUrl, String ackId) {
+        if (signature == null) {
+            Log.i("Mattermost Notifications Signature verification", "No signature in the notification");
+            return true;
+        }
+
+        signature = "NO_SIGNATURE";
+        if (serverUrl == null) {
+            Log.i("Mattermost Notifications Signature verification", "No server_url for server_id");
+            return false;
+        }
+
+        DatabaseHelper dbHelper = DatabaseHelper.Companion.getInstance();
+        if (dbHelper == null) {
+            Log.i("Mattermost Notifications Signature verification", "Cannot access the database");
+            return false;
+        }
+
+        WMDatabase db = getDatabaseForServer(dbHelper, context, serverUrl);
+        if (db == null) {
+            Log.i("Mattermost Notifications Signature verification", "Cannot access the server database");
+            return false;
+        }
+
+        if (signature == "NO_SIGNATURE") {
+            String version = queryConfigServerVersion(db);
+            if (version == null) {
+                Log.i("Mattermost Notifications Signature verification", "No server version");
+                return false;
+            }
+
+            // TODO: Verify version
+        }
+
+        String signingKey = queryConfigSigningKey(db);
+        if (signingKey == null) {
+            Log.i("Mattermost Notifications Signature verification", "No signing key");
+            return false;
+        }
+
+        try {
+            String storedDeviceToken = getDeviceToken(dbHelper);
+            if (storedDeviceToken == null) {
+                Log.i("Mattermost Notifications Signature verification", "No device token stored");
+                return false;
+            }
+            String[] tokenParts = storedDeviceToken.split(":", 2);
+            if (tokenParts.length != 2) {
+                Log.i("Mattermost Notifications Signature verification", "Wrong stored device token format");
+                return false;
+            }
+            String deviceToken = tokenParts[1].substring(0, tokenParts[1].length() -1 );
+            if (deviceToken.isEmpty()) {
+                Log.i("Mattermost Notifications Signature verification", "Empty stored device token");
+                return false;
+            }
+
+            PublicKey parsed = (PublicKey) Jwks.parser().build().parse(signingKey);
+            Jwts.parser()
+                    .require("ack_id", ackId)
+                    .require("device_id", deviceToken)
+                    .verifyWith((PublicKey) parsed)
+                    .build()
+                    .parseSignedClaims(signature);
+        } catch (MissingClaimException e) {
+            Log.i("Mattermost Notifications Signature verification", String.format("Missing claim: %s", e.getMessage()));
+            e.printStackTrace();
+            return false;
+        } catch (IncorrectClaimException e) {
+            Log.i("Mattermost Notifications Signature verification", String.format("Incorrect claim: %s", e.getMessage()));
+            e.printStackTrace();
+            return false;
+        } catch (JwtException e) {
+            Log.i("Mattermost Notifications Signature verification", String.format("Cannot verify JWT: %s", e.getMessage()));
+            e.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            Log.i("Mattermost Notifications Signature verification", String.format("Exception while parsing JWT: %s", e.getMessage()));
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
     }
 
     private static Bitmap getCircleBitmap(Bitmap bitmap) {

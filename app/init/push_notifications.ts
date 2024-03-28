@@ -31,7 +31,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isBetaApp} from '@utils/general';
 import {isMainActivity, isTablet} from '@utils/helpers';
-import {logInfo} from '@utils/log';
+import {logDebug, logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 
 class PushNotifications {
@@ -232,6 +232,10 @@ class PushNotifications {
 
     // This triggers when the app was in the background (iOS)
     onNotificationReceivedBackground = async (incoming: Notification, completion: (response: NotificationBackgroundFetchResult) => void) => {
+        if (incoming.payload.verified === 'false') {
+            logDebug('not handling background notification because it was not verified, ackId=', incoming.payload.ackId);
+            return;
+        }
         const notification = convertToNotificationData(incoming, false);
         this.processNotification(notification);
 
@@ -241,6 +245,10 @@ class PushNotifications {
     // This triggers when the app was in the foreground (Android and iOS)
     // Also triggers when the app was in the background (Android)
     onNotificationReceivedForeground = (incoming: Notification, completion: (response: NotificationCompletion) => void) => {
+        if (incoming.payload.verified === 'false') {
+            logDebug('not handling foreground notification because it was not verified, ackId=', incoming.payload.ackId);
+            return;
+        }
         const notification = convertToNotificationData(incoming, false);
         if (AppState.currentState !== 'inactive') {
             notification.foreground = AppState.currentState === 'active' && isMainActivity();

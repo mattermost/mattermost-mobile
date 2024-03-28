@@ -40,6 +40,7 @@ public class Database: NSObject {
     internal var defaultDB: OpaquePointer? = nil
     
     internal var serversTable = Table("Servers")
+    internal var globalTable = Table("Global")
     internal var systemTable = Table("System")
     internal var teamTable = Table("Team")
     internal var myTeamTable = Table("MyTeam")
