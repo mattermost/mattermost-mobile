@@ -5,8 +5,6 @@ import React, {useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
-import {showUnreadChannelsOnly} from '@actions/local/channel';
-import {useServerUrl} from '@app/context/server';
 import {HOME_PADDING} from '@constants/view';
 
 import SearchField from './search_field';
@@ -24,7 +22,6 @@ const style = StyleSheet.create({
 });
 
 const SubHeader = ({unreadsOnTop}: Props) => {
-    const serverUrl = useServerUrl();
     const showFilter = useSharedValue(!unreadsOnTop);
     const animatedStyle = useAnimatedStyle(() => ({
         marginRight: withTiming(showFilter.value ? 8 : 0, {duration: 300}),
@@ -34,9 +31,6 @@ const SubHeader = ({unreadsOnTop}: Props) => {
 
     useEffect(() => {
         showFilter.value = !unreadsOnTop;
-        if (unreadsOnTop) {
-            showUnreadChannelsOnly(serverUrl, false);
-        }
     }, [unreadsOnTop]);
 
     return (

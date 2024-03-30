@@ -53,9 +53,7 @@ type Props = {
 
 const ThreadsButton = ({
     currentChannelId,
-    groupUnreadsSeparately,
     onCenterBg,
-    onlyUnreads,
     onPress,
     unreadsAndMentions,
     shouldHighlighActive = false,
@@ -112,10 +110,6 @@ const ThreadsButton = ({
 
         return [container, icon, text, badge];
     }, [customStyles, isActive, onCenterBg, styles, unreads, isOnHome]);
-
-    if (groupUnreadsSeparately && (onlyUnreads && !isActive && !unreads && !mentions)) {
-        return null;
-    }
 
     return (
         <TouchableOpacity
