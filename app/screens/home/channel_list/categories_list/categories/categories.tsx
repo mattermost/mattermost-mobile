@@ -50,16 +50,18 @@ const Categories = ({
     const switchingTeam = useTeamSwitch();
     const teamId = categories[0]?.teamId;
     const [showAllCategory, setShowAllCategory] = useState(onlyUnreads);
-    const categoriesToShow = useMemo(() => {
-        const orderedCategories = [...categories];
-        orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
 
+    useEffect(() => {
         if (onlyUnreads && unreadsOnTop) {
             setShowAllCategory(false);
         } else {
             setShowAllCategory(onlyUnreads);
         }
+    }, [onlyUnreads, unreadsOnTop, showAllCategory]);
 
+    const categoriesToShow = useMemo(() => {
+        const orderedCategories = [...categories];
+        orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
         if (onlyUnreads && !unreadsOnTop) {
             return ['UNREADS' as const];
         }
