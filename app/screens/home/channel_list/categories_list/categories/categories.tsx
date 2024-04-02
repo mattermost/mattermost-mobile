@@ -49,19 +49,16 @@ const Categories = ({
     const isTablet = useIsTablet();
     const switchingTeam = useTeamSwitch();
     const teamId = categories[0]?.teamId;
-    const [showAllCategory, setShowAllCategory] = useState(onlyUnreads);
-
-    useEffect(() => {
-        if (onlyUnreads && unreadsOnTop) {
-            setShowAllCategory(false);
-        } else {
-            setShowAllCategory(onlyUnreads);
-        }
-    }, [onlyUnreads, unreadsOnTop, showAllCategory]);
+    const showAllCategory = onlyUnreads && !unreadsOnTop;
 
     const categoriesToShow = useMemo(() => {
         const orderedCategories = [...categories];
         orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
+
+        if (onlyUnreads && unreadsOnTop) {
+            return orderedCategories;
+        }
+
         if (onlyUnreads && !unreadsOnTop) {
             return ['UNREADS' as const];
         }
@@ -69,7 +66,7 @@ const Categories = ({
             return ['UNREADS' as const, ...orderedCategories];
         }
         return orderedCategories;
-    }, [categories, onlyUnreads, unreadsOnTop, showAllCategory]);
+    }, [categories, onlyUnreads, unreadsOnTop]);
 
     const [initiaLoad, setInitialLoad] = useState(!categoriesToShow.length);
 
