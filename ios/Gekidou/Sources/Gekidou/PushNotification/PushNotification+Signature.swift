@@ -50,7 +50,15 @@ extension PushNotification {
                 return false
             }
             
-            // Verify server version
+            let versionTarget = "9.7.0"
+            let versionOrder = version.compare(versionTarget, options: .numeric)
+            if (versionOrder == .orderedSame || versionOrder == .orderedDescending) {
+                os_log(
+                    OSLogType.default,
+                    "Mattermost Notifications: Signature verification: Server version should send signature"
+                )
+                return false
+            }
         }
         
         guard let signingKey = Database.default.getConfig(serverUrl, "AsymmetricSigningPublicKey")
