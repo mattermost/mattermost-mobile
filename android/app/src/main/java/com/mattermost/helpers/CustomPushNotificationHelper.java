@@ -19,6 +19,7 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -32,7 +33,9 @@ import com.mattermost.rnbeta.*;
 import com.nozbe.watermelondb.WMDatabase;
 
 import java.io.IOException;
+import java.security.KeyFactory;
 import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 import java.util.Objects;
 
@@ -40,7 +43,6 @@ import io.jsonwebtoken.IncorrectClaimException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MissingClaimException;
-import io.jsonwebtoken.security.Jwks;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -242,7 +244,6 @@ public class CustomPushNotificationHelper {
             return true;
         }
 
-        signature = "NO_SIGNATURE";
         if (serverUrl == null) {
             Log.i("Mattermost Notifications Signature verification", "No server_url for server_id");
             return false;
@@ -267,7 +268,31 @@ public class CustomPushNotificationHelper {
                 return false;
             }
 
-            // TODO: Verify version
+            if (!version.matches("[0-9]+(\\.[0-9]+)*")) {
+                Log.i("Mattermost Notifications Signature verification", "Invalid server version");
+                return false;
+            }
+
+            String[] parts = version.split("\\.");
+            int mayor = parts.length > 0 ? Integer.parseInt(parts[0]) : 0;
+            int minor = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+            int patch = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
+            int mayorTarget = 9;
+            int minorTarget = 7;
+            int patchTarget = 0;
+
+            if (mayor < mayorTarget) {
+                return true;
+            }
+            if (mayor == mayorTarget && minor < minorTarget) {
+                return true;
+            }
+            if (mayor == mayorTarget && minor == minorTarget && patch < patchTarget) {
+                return true;
+            }
+
+            Log.i("Mattermost Notifications Signature verification", "Server version should send signature");
+            return false;
         }
 
         String signingKey = queryConfigSigningKey(db);
@@ -277,6 +302,10 @@ public class CustomPushNotificationHelper {
         }
 
         try {
+            byte[] encoded = Base64.decode(signingKey, 0);
+            KeyFactory kf = KeyFactory.getInstance("EC");
+            PublicKey pubKey = (PublicKey) kf.generatePublic(new X509EncodedKeySpec(encoded));
+
             String storedDeviceToken = getDeviceToken(dbHelper);
             if (storedDeviceToken == null) {
                 Log.i("Mattermost Notifications Signature verification", "No device token stored");
@@ -293,11 +322,10 @@ public class CustomPushNotificationHelper {
                 return false;
             }
 
-            PublicKey parsed = (PublicKey) Jwks.parser().build().parse(signingKey);
             Jwts.parser()
                     .require("ack_id", ackId)
                     .require("device_id", deviceToken)
-                    .verifyWith((PublicKey) parsed)
+                    .verifyWith((PublicKey) pubKey)
                     .build()
                     .parseSignedClaims(signature);
         } catch (MissingClaimException e) {
