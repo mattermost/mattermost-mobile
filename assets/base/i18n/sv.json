@@ -866,6 +866,8 @@
   "plus_menu.open_direct_message.title": "Öppna ett direktmeddelande",
   "post.options.title": "Alternativ",
   "post.reactions.title": "Reaktion",
+  "postList.scrollToBottom.newMessages": "Nya meddelanden",
+  "postList.scrollToBottom.newReplies": "Nya svar",
   "post_body.check_for_out_of_channel_groups_mentions.message": "blev inte notifierade av omnämnandet eftersom de inte finns i kanalen. De är inte heller medlemmar i de grupper som länkats till kanalen.",
   "post_body.check_for_out_of_channel_mentions.link.and": " och ",
   "post_body.check_for_out_of_channel_mentions.link.private": "lägg till dem till denna privata kanal",

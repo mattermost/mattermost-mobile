@@ -866,6 +866,8 @@
   "plus_menu.open_direct_message.title": "Open een direct bericht",
   "post.options.title": "Opties",
   "post.reactions.title": "Reacties",
+  "postList.scrollToBottom.newMessages": "Nieuwe berichten",
+  "postList.scrollToBottom.newReplies": "Nieuwe antwoorden",
   "post_body.check_for_out_of_channel_groups_mentions.message": "werd niet verwittigd door deze vermelding omdat deze niet in het kanaal zijn. Zij kunnen niet aan het kanaal toegevoegd worden omdat ze geen lid zijn van de gekoppelde groepen. Om hem aan het kanaal toe te voegen, moeten ze toegevoegd worden aan de gelinkte groepen.",
   "post_body.check_for_out_of_channel_mentions.link.and": " en ",
   "post_body.check_for_out_of_channel_mentions.link.private": "voeg ze toe aan dit privé-kanaal",

@@ -7,6 +7,7 @@ import urlParse from 'url-parse';
 
 import {Files} from '@constants';
 import {emptyFunction} from '@utils/general';
+import {logDebug} from '@utils/log';
 
 import {latinise} from './latinise';
 
@@ -25,8 +26,10 @@ export function sanitizeUrl(url: string, useHttp = false) {
         preUrl = urlParse('https://' + stripTrailingSlashes(url), true);
     }
 
-    if (!protocol || (preUrl.protocol === 'http:' && !useHttp)) {
+    if (preUrl.protocol === 'http:' && !useHttp) {
         protocol = 'https:';
+    } else if (!protocol) {
+        protocol = useHttp ? 'http:' : 'https:';
     }
 
     return stripTrailingSlashes(
@@ -43,12 +46,11 @@ export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = fal
             url = resp.redirectUrls[resp.redirectUrls.length - 1];
         }
     } catch (error) {
-        if (useHttp) {
-            return undefined;
-        }
+        logDebug('getServerUrlAfterRedirect error', url, error);
+        return {error};
     }
 
-    return sanitizeUrl(url, useHttp);
+    return {url: sanitizeUrl(url, useHttp)};
 }
 
 export function stripTrailingSlashes(url = '') {

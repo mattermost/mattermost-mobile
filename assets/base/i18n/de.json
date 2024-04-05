@@ -866,6 +866,8 @@
   "plus_menu.open_direct_message.title": "Direktnachricht öffnen",
   "post.options.title": "Optionen",
   "post.reactions.title": "Reaktionen",
+  "postList.scrollToBottom.newMessages": "Neue Nachrichten",
+  "postList.scrollToBottom.newReplies": "Neue Antworten",
   "post_body.check_for_out_of_channel_groups_mentions.message": "wurde durch diese Erwähnung nicht benachrichtigt, da sie sich nicht im Kanal befinden. Sie sind auch keine Mitglieder der mit diesem Kanal verknüpften Gruppen.",
   "post_body.check_for_out_of_channel_mentions.link.and": " und ",
   "post_body.check_for_out_of_channel_mentions.link.private": "sie zu diesem privaten Kanal hinzufügen",
