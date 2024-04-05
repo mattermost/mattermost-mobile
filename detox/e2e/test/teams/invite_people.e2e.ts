@@ -235,11 +235,11 @@ describe('Teams - Invite', () => {
         // * Validate summary report not sent
         await expect(Invite.getSummaryReportNotSent()).toBeVisible();
         await expect(Invite.getSummaryReportUserItem(testUser.id)).toBeVisible();
-        await expect(Invite.getSummaryReportUserItemText(testUser.id)).toBeVisible();
+        await expect(Invite.getSummaryReportUserItemText(testUser.id)).toBeVisible(testUser.username1);
 
         // * Validate summary report sent
         waitFor(Invite.getSummaryReportSent()).toBeVisible();
         await expect(Invite.getSummaryReportUserItem(testUser2.id)).toBeVisible();
-        await expect(Invite.getSummaryReportUserItemText(testUser2.id)).toBeVisible();
+        await expect(Invite.getSummaryReportUserItemText(testUser2.id)).toBeVisible(testUser2.username1);
     });
 });

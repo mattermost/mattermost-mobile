@@ -184,7 +184,7 @@ function removeOldGeneratedReports() {
     ].forEach((file) => fse.removeSync(`${ARTIFACTS_DIR}/${file}`));
 }
 
-async function writeJsonToFile(jsonObject, filename, dir) {
+function writeJsonToFile(jsonObject, filename, dir) {
     fse.writeJson(`${dir}/${filename}`, jsonObject).
         then(() => console.log('Successfully written:', filename)).
         catch((err) => console.error(err));
