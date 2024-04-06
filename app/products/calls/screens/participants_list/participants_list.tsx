@@ -126,7 +126,7 @@ export const ParticipantsList = ({sessionsDict, teammateNameDisplay}: Props) => 
                 <View style={styles.header}>
                     <FormattedText
                         style={styles.headerText}
-                        id={'mobile.calls_participants_header'}
+                        id={'mobile.calls_participants'}
                         defaultMessage={'Participants'}
                     />
                     <Pill text={sessions.length}/>

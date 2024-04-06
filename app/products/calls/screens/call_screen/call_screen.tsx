@@ -489,7 +489,7 @@ const CallScreen = ({
 
     const openParticipantsList = useCallback(async () => {
         const screen = Screens.CALL_PARTICIPANTS;
-        const title = intl.formatMessage({id: 'mobile.calls.participants', defaultMessage: 'Participants'});
+        const title = intl.formatMessage({id: 'mobile.calls_participants', defaultMessage: 'Participants'});
         const closeButtonId = 'close-call-participants';
 
         Keyboard.dismiss();
