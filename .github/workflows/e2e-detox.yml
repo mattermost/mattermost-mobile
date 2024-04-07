@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - add_e2e_android
   pull_request:
     branches:
       - ios_detox_job
@@ -138,7 +139,7 @@ jobs:
   #         path: detox/artifacts/
 
   build-android-apk-on-mac:
-    if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
+    # if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
     runs-on: macos-14-large
     steps:
       - name: ci/checkout-repo
@@ -154,19 +155,21 @@ jobs:
           STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
-      - name: Install Java JDK
-        uses: joschi/setup-jdk@v2
+      - name: Install Java
+        uses: actions/setup-java@v2
         with:
-          java-version: 'openjdk8'
-          architecture: 'x64'
-        env:
-          # https://github.com/actions/toolkit/issues/641#issuecomment-728963957
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+          java-version: "11"
+          distribution: "adopt"
+          cache: "gradle"
 
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+  
       - name: Detox build
         run: |
           cd detox
-          npm ci
+          npm install
+          npm install -g detox-cli
           npm run e2e:android-build
 
       # - name: ci/build-android-pr
@@ -182,16 +185,27 @@ jobs:
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: android-build-apk-${{ github.run_id }}
-          path: "android/app/build/outputs/apk/release/app-release.apk"
+          path: "android/app/build/outputs/apk/**/app-*.apk"
 
   build-android-apk-on-linux:
-    if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
+    # if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
     runs-on: ubuntu-22.04
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Liberate disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
 
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
@@ -201,10 +215,21 @@ jobs:
           STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
+      - name: Install Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: "11"
+          distribution: "adopt"
+          cache: "gradle"
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+
       - name: Detox build
         run: |
           cd detox
-          npm ci
+          npm install
+          npm install -g detox-cli
           npm run e2e:android-build
 
       # - name: ci/build-android-pr
@@ -220,7 +245,7 @@ jobs:
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: android-build-apk-${{ github.run_id }}
-          path: "android/app/build/outputs/apk/release/app-release.apk"
+          path: "android/app/build/outputs/apk/**/app-*.apk"
 
   # e2e-android:
   #   if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
@@ -257,13 +282,16 @@ jobs:
   #         android-emulator-name: ${{ env.ANDROID_EMULATOR_NAME }}
   #         android-emulator-device: ${{ env.ANDROID_EMULATOR_DEVICE }}
 
-  #     - name: Free up space on the runner
-  #       run: |
-  #         sudo rm -rf /usr/share/dotnet
-  #         sudo rm -rf /opt/ghc
-  #         sudo rm -rf "/usr/local/share/boost"
-  #         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-
+  # - name: Liberate disk space
+  # uses: jlumbroso/free-disk-space@main
+  # with:
+  #   tool-cache: false
+  #   android: false
+  #   dotnet: true
+  #   haskell: true
+  #   large-packages: false
+  #   docker-images: true
+  #   swap-storage: false
   #     - name: Enable KVM
   #       run: |
   #         echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
