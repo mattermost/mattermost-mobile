@@ -154,11 +154,14 @@ jobs:
           STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
-      - name: Set up JDK
-        uses: actions/setup-java@v2
+      - name: Install Java JDK
+        uses: joschi/setup-jdk@v2
         with:
-          java-version: '11'
-          distribution: 'adopt'
+          java-version: 'openjdk8'
+          architecture: 'x64'
+        env:
+          # https://github.com/actions/toolkit/issues/641#issuecomment-728963957
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
 
       - name: Detox build
         run: |
