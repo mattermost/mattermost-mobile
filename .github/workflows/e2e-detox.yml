@@ -8,16 +8,16 @@ on:
     branches:
       - ios_detox_job
       - main
+    types:
+      - labeled
+      - opened
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 env:
-  DEVICE_NAME: "iPhone 15 Pro"
-  DEVICE_OS_VERSION: "iOS 17.2"
   BRANCH: ${{ github.head_ref || github.ref_name }} 
-  BUILD_ID: ${{ github.run_id }}
   COMMIT_HASH: ${{ github.sha }}
   AWS_REGION: 'us-east-1'
   DETOX_AWS_S3_BUCKET: 'mattermost-detox-report'
@@ -25,7 +25,7 @@ env:
   DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
   HEADLESS: 'false'
   TYPE: 'PR'
-  PULL_REQUEST: 'https://github.com/mattermost/mattermost-mobile/pull/7822'
+  PULL_REQUEST: 'https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}'
   ZEPHYR_ENABLE: false
   JIRA_PROJECT_KEY: 'MM'
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
@@ -37,11 +37,24 @@ env:
 jobs:
   generate-specs:
     runs-on: ubuntu-22.04
+    if: (contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR') || contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR'))
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
+      BUILD_ID: ${{ steps.generate-specs.outputs.BUILD_ID }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set Build ID
+        run: |
+          cd detox
+          DEVICE_NAME=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.type")
+          DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.os")
+          BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
+
+          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
+          echo "DEVICE_NAME=${DEVICE_NAME}" >> $GITHUB_ENV
+          echo "DEVICE_OS_VERSION=${DEVICE_OS_VERSION}" >> $GITHUB_ENV
 
       - name: Generate Test Specs
         id: generate-specs
@@ -50,6 +63,8 @@ jobs:
           parallelism: 10
           directory: detox/e2e
           search_path: test
+          device: ${{ env.DEVICE_NAME }}
+          os_version: ${{ env.DEVICE_OS_VERSION }}
 
   # build-ios-simulator:
   #   runs-on: macos-14-large
@@ -123,6 +138,7 @@ jobs:
   #         path: detox/artifacts/
 
   build-android-apk:
+    if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
     runs-on: ubuntu-22.04
     steps:
       - name: ci/checkout-repo
@@ -160,6 +176,7 @@ jobs:
           path: "android/app/build/outputs/apk/release/app-release.apk"
 
   e2e-android:
+    if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
     env:
       IOS: false
       GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
@@ -184,9 +201,6 @@ jobs:
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
-  
-      - name: Set Build ID
-        run: echo "BUILD_ID=${{ github.run_id }}-${{ env.BUILD_SUFFIX }}" >> $GITHUB_ENV
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
@@ -253,7 +267,7 @@ jobs:
 
   download-e2e-results:
     runs-on: ubuntu-22.04
-    if: always()
+    if: always() && (contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR') || contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR'))
     needs:
       - generate-specs
       # - e2e-ios
@@ -266,8 +280,7 @@ jobs:
         uses: ./.github/actions/prepare-node-deps
 
       - name: Create artifacts directory
-        run: |
-          mkdir -p detox/artifacts/
+        run: mkdir -p detox/artifacts/
 
       - name: Download All Android Artifacts
         uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
@@ -282,3 +295,36 @@ jobs:
           npm run e2e:save-report
         env:
           IOS: false
+
+  e2e-remove-label:
+    if: always() && (contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR') || contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR'))
+    needs:
+      - download-e2e-results
+    runs-on: ubuntu-22.04
+    steps:
+      - name: e2e/remove-label-from-pr
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        continue-on-error: true # Label might have been removed manually
+        with:
+          script: |
+            const iosLabel = 'E2E iOS tests for PR';
+            const androidLabel = 'E2E Android tests for PR';
+            const labels = context.payload.pull_request.labels.map(label => label.name);
+  
+            if (labels.includes(iosLabel)) {
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: iosLabel,
+              });
+            }
+  
+            if (labels.includes(androidLabel)) {
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: androidLabel,
+              });
+            }

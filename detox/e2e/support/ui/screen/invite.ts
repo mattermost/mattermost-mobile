@@ -100,7 +100,7 @@ class InviteScreen {
     };
 
     getSummaryReportUserItemText = (id: string) => {
-        return element(by.id(`${this.testID.summaryReportUserItemPrefix}.${id}.username`));
+        return element(by.id(`${this.testID.summaryReportUserItemPrefix}.${id}.display_name`));
     };
 
     toBeVisible = async () => {

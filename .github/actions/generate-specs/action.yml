@@ -12,6 +12,15 @@ inputs:
   parallelism:
     description: The parallelism for the tests
     required: true
+  device:
+    description: The name of Device used for the tests
+    required: false
+    default: iPhone 15
+  os_version:
+    description: The os of the device used for the tests
+    required: false
+    default: iOS 17.1
+
 outputs:
   specs:
     description: The specs generated for the strategy
@@ -25,8 +34,10 @@ runs:
         PARALLELISM: ${{ inputs.parallelism }}
         SEARCH_PATH: ${{ inputs.search_path }}
         DIRECTORY: ${{ inputs.directory }}
+        DEVICE: ${{ inputs.DEVICE }}
+        OS_VERSION: ${{ inputs.OS_VERSION }}
       run: |
         set -e
-        go run ${{ github.action_path }}/split-tests.go > output.json
+        node ${{ github.action_path }}/split-tests.js > output.json
         echo "specs=$(cat output.json)" >> $GITHUB_OUTPUT
       shell: bash

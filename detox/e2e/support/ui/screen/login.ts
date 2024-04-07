@@ -63,7 +63,6 @@ class LoginScreen {
         await this.usernameInput.typeText(`${user.newUser.email}\n`);
         await this.passwordInput.typeText(`${user.newUser.password}\n`);
 
-        // await this.signinButton.tap();
         await wait(timeouts.FOUR_SEC);
     };
 
@@ -72,7 +71,6 @@ class LoginScreen {
         await this.usernameInput.typeText(user.username);
         await this.passwordInput.typeText(`${user.password}\n`);
 
-        // await this.signinButton.tap();
         await wait(timeouts.ONE_SEC);
     };
 }
