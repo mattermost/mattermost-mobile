@@ -3,37 +3,48 @@
 
 import React from 'react';
 import {
-    StyleSheet,
     View,
+    TouchableOpacity,
     Text,
 } from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
+
+import CompassIcon from '../compass_icon';
+import ProgressBar from '../progress_bar';
+
+const WHITE_ICON = '#FFFFFF';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     audioFileWrapper: {
-        borderRadius: 5,
-        overflow: 'hidden',
-    },
-    boxPlaceholder: {
-        paddingBottom: '100%',
-    },
-    failed: {
-        justifyContent: 'center',
-        alignItems: 'center',
+        position: 'relative',
         borderColor: changeOpacity(theme.centerChannelColor, 0.2),
         borderRadius: 4,
         borderWidth: 1,
-    },
-    playContainer: {
+        padding: 12,
+        overflow: 'hidden',
+        flexDirection: 'row',
+        gap: 16,
         alignItems: 'center',
-        justifyContent: 'center',
-        ...StyleSheet.absoluteFillObject,
     },
-    play: {
-        backgroundColor: changeOpacity('#000', 0.16),
-        borderRadius: 20,
+    playButton: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: theme.buttonBg,
+        borderRadius: 100,
+        width: 42,
+        height: 42,
+    },
+    progressBar: {
+        flex: 1,
+    },
+    timerText: {
+        position: 'absolute',
+        top: 8,
+        right: 16,
+        ...typography('Body', 75, 'SemiBold'),
     },
 }));
 
@@ -43,7 +54,22 @@ const AudioFile = () => {
 
     return (
         <View style={style.audioFileWrapper}>
-            <Text>{'Audio'}</Text>
+            <TouchableOpacity style={style.playButton}>
+                <CompassIcon
+                    name='play'
+                    size={24}
+                    color={WHITE_ICON}
+                />
+            </TouchableOpacity>
+
+            <View style={style.progressBar}>
+                <ProgressBar
+                    progress={1}
+                    color={theme.buttonBg}
+                />
+            </View>
+
+            <Text style={style.timerText}>{'1:30'}</Text>
         </View>
     );
 };
