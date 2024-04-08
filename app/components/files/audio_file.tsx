@@ -64,8 +64,9 @@ const AudioFile = () => {
 
             <View style={style.progressBar}>
                 <ProgressBar
-                    progress={1}
+                    progress={0.5}
                     color={theme.buttonBg}
+                    withCursor={true}
                 />
             </View>
 
