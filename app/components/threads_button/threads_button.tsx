@@ -40,7 +40,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     currentChannelId: string;
     onCenterBg?: boolean;
-    onlyUnreads: boolean;
     onPress?: () => void;
     shouldHighlighActive?: boolean;
     unreadsAndMentions: {

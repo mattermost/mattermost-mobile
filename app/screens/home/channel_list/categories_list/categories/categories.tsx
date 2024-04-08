@@ -52,12 +52,13 @@ const Categories = ({
     const showOnlyUnreadsCategory = onlyUnreads && !unreadsOnTop;
 
     const categoriesToShow = useMemo(() => {
-        const orderedCategories = [...categories];
-        orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
-
         if (showOnlyUnreadsCategory) {
             return ['UNREADS' as const];
         }
+
+        const orderedCategories = [...categories];
+        orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
+
         if (unreadsOnTop) {
             return ['UNREADS' as const, ...orderedCategories];
         }
@@ -92,7 +93,7 @@ const Categories = ({
                 />
             </>
         );
-    }, [teamId, intl.locale, isTablet, onChannelSwitch, onlyUnreads, showOnlyUnreadsCategory]);
+    }, [teamId, intl.locale, isTablet, onChannelSwitch, showOnlyUnreadsCategory]);
 
     useEffect(() => {
         const t = setTimeout(() => {
