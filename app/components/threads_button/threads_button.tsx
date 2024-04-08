@@ -39,7 +39,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     currentChannelId: string;
-    groupUnreadsSeparately: boolean;
     onCenterBg?: boolean;
     onlyUnreads: boolean;
     onPress?: () => void;

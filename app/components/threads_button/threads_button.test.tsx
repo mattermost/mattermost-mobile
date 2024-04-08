@@ -9,7 +9,6 @@ import Threads from './threads_button';
 
 const baseProps = {
     currentChannelId: 'someChannelId',
-    groupUnreadsSeparately: true,
     onlyUnreads: false,
     unreadsAndMentions: {
         unreads: false,
@@ -51,7 +50,6 @@ describe('Thread item in the channel list', () => {
         const {toJSON} = renderWithIntlAndTheme(
             <Threads
                 {...baseProps}
-                groupUnreadsSeparately={false}
                 onlyUnreads={true}
             />,
         );
