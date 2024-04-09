@@ -23,6 +23,7 @@ const style = StyleSheet.create({
 
 const SubHeader = ({unreadsOnTop}: Props) => {
     const showFilter = useSharedValue(!unreadsOnTop);
+
     const animatedStyle = useAnimatedStyle(() => ({
         marginRight: withTiming(showFilter.value ? 8 : 0, {duration: 300}),
         width: withTiming(showFilter.value ? 40 : 0, {duration: 300}),
