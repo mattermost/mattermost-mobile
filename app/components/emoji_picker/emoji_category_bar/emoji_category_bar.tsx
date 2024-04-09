@@ -5,10 +5,14 @@ import React, {useCallback} from 'react';
 import {View} from 'react-native';
 
 import {useTheme} from '@context/theme';
-import {selectEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
+import emojiStore from '@store/emoji_picker';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import {ICONS} from '../constant';
+
 import EmojiCategoryBarIcon from './icon';
+
+import type {EmojiCategoryType} from '@store/emoji_picker/interface';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -24,13 +28,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
+    categories: EmojiCategoryType[];
+    currentIndex: number;
     onSelect?: (index: number | undefined) => void;
 }
 
-const EmojiCategoryBar = ({onSelect}: Props) => {
+const EmojiCategoryBar = ({categories, currentIndex, onSelect}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const {currentIndex, icons} = useEmojiCategoryBar();
 
     const scrollToIndex = useCallback((index: number) => {
         if (onSelect) {
@@ -38,10 +43,10 @@ const EmojiCategoryBar = ({onSelect}: Props) => {
             return;
         }
 
-        selectEmojiCategoryBarSection(index);
+        emojiStore.setCurrentCategoryIndex(index);
     }, []);
 
-    if (!icons) {
+    if (!categories) {
         return null;
     }
 
@@ -50,11 +55,11 @@ const EmojiCategoryBar = ({onSelect}: Props) => {
             style={styles.container}
             testID='emoji_picker.category_bar'
         >
-            {icons.map((icon, index) => (
+            {categories.map((icon, index) => (
                 <EmojiCategoryBarIcon
                     currentIndex={currentIndex}
                     key={icon.key}
-                    icon={icon.icon}
+                    icon={ICONS[icon.key as keyof typeof ICONS]}
                     index={index}
                     scrollToIndex={scrollToIndex}
                     theme={theme}

@@ -6,14 +6,17 @@ import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {CategoryMessage, CategoryTranslations} from '@utils/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type Props = {
-    section: EmojiSection;
-}
+import {SECTION_HEADER_HEIGHT} from '../constant';
 
-export const SECTION_HEADER_HEIGHT = 28;
+import type {EmojiCategoryType} from '@store/emoji_picker/interface';
+
+type Props = {
+    section?: EmojiCategoryType;
+}
 
 const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -34,15 +37,19 @@ const SectionHeader = ({section}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheetFromTheme(theme);
 
+    if (!section?.key) {
+        return null;
+    }
+
     return (
         <View
             style={styles.sectionTitleContainer}
-            key={section.id}
+            key={section.key}
         >
             <FormattedText
                 style={styles.sectionTitle}
-                id={section.id}
-                defaultMessage={section.icon}
+                id={CategoryTranslations.get(section.key)!}
+                defaultMessage={CategoryMessage.get(section.key)}
             />
         </View>
     );

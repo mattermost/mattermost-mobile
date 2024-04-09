@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, useCallback} from 'react';
+import React, {memo} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import Emoji from '@components/emoji';
@@ -41,7 +41,7 @@ const EmojiTouchable = ({name, onEmojiPress}: TouchableEmojiProps) => {
     const theme = useTheme();
     const style = getStyleSheetFromTheme(theme);
 
-    const onPress = useCallback(() => onEmojiPress(name), []);
+    const onPress = () => onEmojiPress(name);
 
     return (
         <TouchableOpacity

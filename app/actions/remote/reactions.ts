@@ -7,6 +7,7 @@ import NetworkManager from '@managers/network_manager';
 import {getRecentPostsInChannel, getRecentPostsInThread} from '@queries/servers/post';
 import {queryReaction} from '@queries/servers/reaction';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
+import emojiStore from '@store/emoji_picker';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -73,6 +74,9 @@ export async function addReaction(serverUrl: string, postId: string, emojiName: 
             }
 
             await operator.batchRecords(models, 'addReaction');
+
+            //rebuild emoji picker afeter adding reaction
+            emojiStore.initialize(database);
 
             return {reaction};
         }

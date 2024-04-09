@@ -17,6 +17,7 @@ import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {resetToHome, resetToSelectServer, resetToTeams, resetToOnboarding} from '@screens/navigation';
+import emojiStore from '@store/emoji_picker';
 import EphemeralStore from '@store/ephemeral_store';
 import {getLaunchPropsFromDeepLink} from '@utils/deep_link';
 import {logInfo} from '@utils/log';
@@ -112,6 +113,9 @@ const launchApp = async (props: LaunchProps) => {
                 EphemeralStore.theme = await getThemeForCurrentTeam(database);
                 const currentUserId = await getCurrentUserId(database);
                 hasCurrentUser = Boolean(currentUserId);
+
+                // initialize emoji picker
+                emojiStore.initialize(database);
             }
 
             let launchType = props.launchType;
