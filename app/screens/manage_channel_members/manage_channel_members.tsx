@@ -88,9 +88,9 @@ export default function ManageChannelMembers({
     const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
     const hasMoreProfiles = useRef(false);
+    const pageRef = useRef(0);
     const [channelMembers, setChannelMembers] = useState<ChannelMembership[]>(EMPTY_MEMBERS);
     const [searchResults, setSearchResults] = useState<UserProfile[]>(EMPTY);
-    const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
     const [term, setTerm] = useState('');
     const [searchedTerm, setSearchedTerm] = useState('');
@@ -108,16 +108,6 @@ export default function ManageChannelMembers({
     }, [componentId]);
 
     useAndroidHardwareBackHandler(componentId, close);
-
-    const addProfiles = (values: UserProfile[]) => {
-        const newProfiles = [...profiles, ...values];
-        setProfiles(newProfiles);
-    };
-
-    const addMembers = (values: ChannelMembership[]) => {
-        const newMembers = [...channelMembers, ...values];
-        setChannelMembers(newMembers);
-    };
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
         if (profile.id === currentUserId && isManageMode) {
@@ -247,40 +237,44 @@ export default function ManageChannelMembers({
 
     const handleReachedBottom = useCallback(() => {
         if (hasMoreProfiles.current && !loading && !searchedTerm) {
+            pageRef.current += 1;
             setLoading(true);
-            setPage((p) => p + 1);
+            getFetchChannelMembers();
         }
     }, [loading, searchedTerm]);
 
     const getFetchChannelMembers = useCallback(() => {
-        const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT, page};
+        const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT, page: pageRef.current};
         fetchChannelMemberships(serverUrl, channelId, options, true).then(({users, members}) => {
             if (!mounted.current) {
                 return;
-            }
-
-            if (users.length >= PER_PAGE_DEFAULT) {
-                hasMoreProfiles.current = true;
             }
             if (users.length < PER_PAGE_DEFAULT) {
                 hasMoreProfiles.current = false;
             }
             if (users.length) {
-                addProfiles(users);
-                addMembers(members);
+                // eslint-disable-next-line max-nested-callbacks
+                setChannelMembers((prev) => [...prev, ...members]);
+                // eslint-disable-next-line max-nested-callbacks
+                setProfiles((prev) => [...prev, ...users]);
             }
 
             setLoading(false);
         });
-    }, [page, addProfiles, addMembers]);
+    }, []);
 
     useEffect(() => {
         mounted.current = true;
+        pageRef.current = 0;
+        hasMoreProfiles.current = true;
+
         getFetchChannelMembers();
         return () => {
+            hasMoreProfiles.current = false;
             mounted.current = false;
+            pageRef.current = 0;
         };
-    }, [page]);
+    }, []);
 
     useEffect(() => {
         if (canManageAndRemoveMembers) {
