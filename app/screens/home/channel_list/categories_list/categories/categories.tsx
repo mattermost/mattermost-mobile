@@ -63,7 +63,7 @@ const Categories = ({
             return ['UNREADS' as const, ...orderedCategories];
         }
         return orderedCategories;
-    }, [categories, onlyUnreads, unreadsOnTop, showOnlyUnreadsCategory]);
+    }, [categories, unreadsOnTop, showOnlyUnreadsCategory]);
 
     const [initiaLoad, setInitialLoad] = useState(!categoriesToShow.length);
 
