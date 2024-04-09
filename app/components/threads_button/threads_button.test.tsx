@@ -23,31 +23,11 @@ describe('Thread item in the channel list', () => {
         expect(toJSON()).toMatchSnapshot();
     });
 
-    test('Threads Component should match snapshot with only unreads filter', () => {
-        const {toJSON} = renderWithIntlAndTheme(
-            <Threads
-                {...baseProps}
-            />,
-        );
-
-        expect(toJSON()).toMatchSnapshot();
-    });
-
     test('Threads Component should match snapshot with onCenterBg', () => {
         const {toJSON} = renderWithIntlAndTheme(
             <Threads
                 {...baseProps}
                 onCenterBg={true}
-            />,
-        );
-
-        expect(toJSON()).toMatchSnapshot();
-    });
-
-    test('Threads Component should match snapshot, groupUnreadsSeparately false, always show', () => {
-        const {toJSON} = renderWithIntlAndTheme(
-            <Threads
-                {...baseProps}
             />,
         );
 
