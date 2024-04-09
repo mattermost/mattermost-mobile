@@ -84,11 +84,11 @@ export default function ManageChannelMembers({
 
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const mounted = useRef(false);
+    const hasMoreProfiles = useRef(true);
+    const pageRef = useRef(0);
 
     const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
-    const hasMoreProfiles = useRef(false);
-    const pageRef = useRef(0);
     const [channelMembers, setChannelMembers] = useState<ChannelMembership[]>(EMPTY_MEMBERS);
     const [searchResults, setSearchResults] = useState<UserProfile[]>(EMPTY);
     const [loading, setLoading] = useState(true);
@@ -235,44 +235,40 @@ export default function ManageChannelMembers({
 
     useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
 
+    const getFetchChannelMembers = useCallback(async () => {
+        const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT, page: pageRef.current};
+        const {users, members} = await fetchChannelMemberships(serverUrl, channelId, options, true);
+
+        if (!mounted.current) {
+            return;
+        }
+
+        if (users.length < PER_PAGE_DEFAULT) {
+            hasMoreProfiles.current = false;
+        }
+
+        if (users.length) {
+            setChannelMembers((prev) => [...prev, ...members]);
+            setProfiles((prev) => [...prev, ...users]);
+        }
+
+        setLoading(false);
+    }, [serverUrl, channelId]);
+
     const handleReachedBottom = useCallback(() => {
         if (hasMoreProfiles.current && !loading && !searchedTerm) {
             pageRef.current += 1;
             setLoading(true);
             getFetchChannelMembers();
         }
-    }, [loading, searchedTerm]);
-
-    const getFetchChannelMembers = useCallback(() => {
-        const options: GetUsersOptions = {sort: 'admin', active: true, per_page: PER_PAGE_DEFAULT, page: pageRef.current};
-        fetchChannelMemberships(serverUrl, channelId, options, true).then(({users, members}) => {
-            if (!mounted.current) {
-                return;
-            }
-            if (users.length < PER_PAGE_DEFAULT) {
-                hasMoreProfiles.current = false;
-            }
-            if (users.length) {
-                // eslint-disable-next-line max-nested-callbacks
-                setChannelMembers((prev) => [...prev, ...members]);
-                // eslint-disable-next-line max-nested-callbacks
-                setProfiles((prev) => [...prev, ...users]);
-            }
-
-            setLoading(false);
-        });
-    }, []);
+    }, [loading, searchedTerm, getFetchChannelMembers]);
 
     useEffect(() => {
         mounted.current = true;
-        pageRef.current = 0;
-        hasMoreProfiles.current = true;
-
         getFetchChannelMembers();
+
         return () => {
-            hasMoreProfiles.current = false;
             mounted.current = false;
-            pageRef.current = 0;
         };
     }, []);
 
