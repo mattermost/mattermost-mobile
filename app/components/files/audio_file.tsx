@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo, useRef, useState} from 'react';
 import {
     View,
     TouchableOpacity,
     Text,
 } from 'react-native';
+import Video from 'react-native-video';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -16,6 +17,10 @@ import CompassIcon from '../compass_icon';
 import ProgressBar from '../progress_bar';
 
 const WHITE_ICON = '#FFFFFF';
+
+type AudioFileProps = {
+    file: FileInfo;
+}
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     audioFileWrapper: {
@@ -48,19 +53,47 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AudioFile = () => {
+const AudioFile = ({file}: AudioFileProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
+    const [hasPaused, setHasPaused] = useState<boolean>(true);
+    const [hasError, setHasError] = useState<boolean>(false);
+    const videoRef = useRef<Video>(null);
+
+    const source = useMemo(() => ({uri: file.uri}), [file.uri]);
+
+    const onPlayPress = () => {
+        setHasPaused(!hasPaused);
+    };
+
+    const onError = () => {
+        setHasError(true);
+    };
+
+    if (hasError) {
+        return <Text>{'Error loading audio'}</Text>;
+    }
 
     return (
         <View style={style.audioFileWrapper}>
-            <TouchableOpacity style={style.playButton}>
+            <TouchableOpacity
+                style={style.playButton}
+                onPress={onPlayPress}
+            >
                 <CompassIcon
-                    name='play'
+                    name={hasPaused ? 'play' : 'pause'}
                     size={24}
                     color={WHITE_ICON}
                 />
             </TouchableOpacity>
+
+            <Video
+                ref={videoRef}
+                source={source}
+                audioOnly={true}
+                paused={hasPaused}
+                onError={onError}
+            />
 
             <View style={style.progressBar}>
                 <ProgressBar
