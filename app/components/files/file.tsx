@@ -219,11 +219,9 @@ const File = ({
         );
     } else if (isAudio(file)) {
         const renderAudioFile = (
-            <TouchableWithoutFeedback onPress={onGestureEvent}>
-                <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
-                    <AudioFile/>
-                </Animated.View>
-            </TouchableWithoutFeedback>
+            <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
+                <AudioFile file={file}/>
+            </Animated.View>
         );
 
         fileComponent = asCard ? renderCardWithImage(renderAudioFile) : renderAudioFile;

@@ -6,7 +6,7 @@ import {useEffect, useMemo, useState} from 'react';
 import {getLocalFileInfo} from '@actions/local/file';
 import {buildFilePreviewUrl, buildFileUrl} from '@actions/remote/file';
 import {useServerUrl} from '@context/server';
-import {isGif, isImage, isVideo} from '@utils/file';
+import {isAudio, isGif, isImage, isVideo} from '@utils/file';
 import {getImageSize} from '@utils/gallery';
 
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
@@ -55,6 +55,7 @@ export const useImageAttachments = (filesInfo: FileInfo[], publicLinkEnabled: bo
         return filesInfo.reduce(({images, nonImages}: {images: FileInfo[]; nonImages: FileInfo[]}, file) => {
             const imageFile = isImage(file);
             const videoFile = isVideo(file);
+            const audioFile = isAudio(file);
             if (imageFile || (videoFile && publicLinkEnabled)) {
                 let uri;
                 if (file.localPath) {
@@ -65,7 +66,7 @@ export const useImageAttachments = (filesInfo: FileInfo[], publicLinkEnabled: bo
                 images.push({...file, uri});
             } else {
                 let uri = file.uri;
-                if (videoFile) {
+                if (videoFile || audioFile) {
                     // fallback if public links are not enabled
                     uri = buildFileUrl(serverUrl, file.id!);
                 }
