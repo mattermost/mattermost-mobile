@@ -7,7 +7,7 @@ import {
     TouchableOpacity,
     Text,
 } from 'react-native';
-import Video from 'react-native-video';
+import Video, {type OnProgressData} from 'react-native-video';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -58,12 +58,26 @@ const AudioFile = ({file}: AudioFileProps) => {
     const style = getStyleSheet(theme);
     const [hasPaused, setHasPaused] = useState<boolean>(true);
     const [hasError, setHasError] = useState<boolean>(false);
+    const [progress, setProgress] = useState<number>(0);
     const videoRef = useRef<Video>(null);
 
     const source = useMemo(() => ({uri: file.uri}), [file.uri]);
 
     const onPlayPress = () => {
         setHasPaused(!hasPaused);
+    };
+
+    const onProgress = (progressData: OnProgressData) => {
+        const {currentTime, playableDuration} = progressData;
+        setProgress(currentTime / playableDuration);
+    };
+
+    const onEnd = () => {
+        setHasPaused(true);
+        setProgress(0);
+        if (videoRef.current) {
+            videoRef.current.seek(0);
+        }
     };
 
     const onError = () => {
@@ -92,12 +106,14 @@ const AudioFile = ({file}: AudioFileProps) => {
                 source={source}
                 audioOnly={true}
                 paused={hasPaused}
+                onProgress={onProgress}
                 onError={onError}
+                onEnd={onEnd}
             />
 
             <View style={style.progressBar}>
                 <ProgressBar
-                    progress={0.5}
+                    progress={progress}
                     color={theme.buttonBg}
                     withCursor={true}
                 />
