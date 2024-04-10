@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {throttle} from 'lodash';
 import React, {useMemo, useRef, useState} from 'react';
 import {
     View,
     TouchableOpacity,
     Text,
 } from 'react-native';
-import Video, {type OnProgressData} from 'react-native-video';
+import Video, {type OnLoadData, type OnProgressData} from 'react-native-video';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -59,6 +60,7 @@ const AudioFile = ({file}: AudioFileProps) => {
     const [hasPaused, setHasPaused] = useState<boolean>(true);
     const [hasError, setHasError] = useState<boolean>(false);
     const [progress, setProgress] = useState<number>(0);
+    const [timeInMinutes, setTimeInMinutes] = useState<string>('0:00');
     const videoRef = useRef<Video>(null);
 
     const source = useMemo(() => ({uri: file.uri}), [file.uri]);
@@ -67,9 +69,20 @@ const AudioFile = ({file}: AudioFileProps) => {
         setHasPaused(!hasPaused);
     };
 
+    const loadTimeInMinutes = throttle((timeInSeconds: number) => {
+        const minutes = Math.floor(timeInSeconds / 60);
+        const seconds = Math.floor(timeInSeconds % 60);
+        setTimeInMinutes(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+    }, 1000);
+
+    const onLoad = (loadData: OnLoadData) => {
+        loadTimeInMinutes(loadData.duration);
+    };
+
     const onProgress = (progressData: OnProgressData) => {
         const {currentTime, playableDuration} = progressData;
         setProgress(currentTime / playableDuration);
+        loadTimeInMinutes(currentTime);
     };
 
     const onEnd = () => {
@@ -106,6 +119,7 @@ const AudioFile = ({file}: AudioFileProps) => {
                 source={source}
                 audioOnly={true}
                 paused={hasPaused}
+                onLoad={onLoad}
                 onProgress={onProgress}
                 onError={onError}
                 onEnd={onEnd}
@@ -119,7 +133,7 @@ const AudioFile = ({file}: AudioFileProps) => {
                 />
             </View>
 
-            <Text style={style.timerText}>{'1:30'}</Text>
+            <Text style={style.timerText}>{timeInMinutes}</Text>
         </View>
     );
 };
