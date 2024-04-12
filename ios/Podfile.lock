@@ -1,5 +1,5 @@
 PODS:
-  - Alamofire (5.8.1)
+  - Alamofire (5.9.1)
   - boost (1.83.0)
   - BVLinearGradient (2.8.3):
     - React-Core
@@ -94,7 +94,7 @@ PODS:
   - libwebp/sharpyuv (1.3.2)
   - libwebp/webp (1.3.2):
     - libwebp/sharpyuv
-  - mattermost-react-native-turbo-log (0.3.1):
+  - mattermost-react-native-turbo-log (0.3.2):
     - CocoaLumberjack (~> 3.8.2)
     - glog
     - RCT-Folly (= 2022.05.16.00)
@@ -978,7 +978,7 @@ PODS:
     - React-debug
   - react-native-background-timer (2.4.1):
     - React-Core
-  - react-native-cameraroll (7.5.0):
+  - react-native-cameraroll (7.5.2):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -988,7 +988,7 @@ PODS:
     - React-Core
   - react-native-document-picker (9.1.1):
     - React-Core
-  - react-native-emm (1.4.0):
+  - react-native-emm (1.4.1):
     - React-Core
   - react-native-hw-keyboard-event (0.0.4):
     - React
@@ -1000,14 +1000,14 @@ PODS:
     - React-Core
   - react-native-netinfo (11.3.1):
     - React-Core
-  - react-native-network-client (1.5.0):
-    - Alamofire (~> 5.8.1)
+  - react-native-network-client (1.5.1):
+    - Alamofire (~> 5.9.1)
     - React-Core
     - Starscream (~> 4.0.4)
     - SwiftyJSON (~> 5.0)
   - react-native-notifications (5.1.0):
     - React-Core
-  - react-native-paste-input (0.7.0):
+  - react-native-paste-input (0.7.1):
     - React-Core
     - Swime (= 3.0.6)
   - react-native-safe-area-context (4.9.0):
@@ -1017,10 +1017,10 @@ PODS:
     - react-native-video/Video (= 5.2.1)
   - react-native-video/Video (5.2.1):
     - React-Core
-  - react-native-webrtc (118.0.3):
+  - react-native-webrtc (118.0.6):
     - JitsiWebRTC (~> 118.0.0)
     - React-Core
-  - react-native-webview (13.8.1):
+  - react-native-webview (13.8.4):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1197,14 +1197,14 @@ PODS:
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
-  - ReactNativeNavigation (7.38.4):
+  - ReactNativeNavigation (7.39.1):
     - HMSegmentedControl
     - React-Core
     - React-CoreModules
     - React-RCTImage
     - React-RCTText
-    - ReactNativeNavigation/Core (= 7.38.4)
-  - ReactNativeNavigation/Core (7.38.4):
+    - ReactNativeNavigation/Core (= 7.39.1)
+  - ReactNativeNavigation/Core (7.39.1):
     - HMSegmentedControl
     - React-Core
     - React-CoreModules
@@ -1212,7 +1212,7 @@ PODS:
     - React-RCTText
   - RNCClipboard (1.13.2):
     - React-Core
-  - RNDateTimePicker (7.6.3):
+  - RNDateTimePicker (7.6.4):
     - React-Core
   - RNDeviceInfo (10.13.1):
     - React-Core
@@ -1224,15 +1224,15 @@ PODS:
     - React-Core
   - RNFS (2.20.0):
     - React-Core
-  - RNGestureHandler (2.15.0):
+  - RNGestureHandler (2.16.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
   - RNKeychain (8.2.0):
     - React-Core
-  - RNLocalize (3.0.6):
+  - RNLocalize (3.1.0):
     - React-Core
-  - RNPermissions (4.1.4):
+  - RNPermissions (4.1.5):
     - React-Core
   - RNReactNativeHapticFeedback (2.2.0):
     - React-Core
@@ -1241,7 +1241,7 @@ PODS:
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
     - ReactCommon/turbomodule/core
-  - RNScreens (3.29.0):
+  - RNScreens (3.30.1):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1250,7 +1250,7 @@ PODS:
     - React-Core
     - React-hermes
     - Sentry/HybridSDK (= 8.21.0)
-  - RNShare (10.0.2):
+  - RNShare (10.1.0):
     - React-Core
   - RNSVG (15.1.0):
     - React-Core
@@ -1258,9 +1258,9 @@ PODS:
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - SDWebImage (5.19.0):
-    - SDWebImage/Core (= 5.19.0)
-  - SDWebImage/Core (5.19.0)
+  - SDWebImage (5.19.1):
+    - SDWebImage/Core (= 5.19.1)
+  - SDWebImage/Core (5.19.1)
   - SDWebImageWebPCoder (0.14.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
@@ -1620,7 +1620,7 @@ CHECKOUT OPTIONS:
     :git: https://github.com/mattermost/Starscream.git
 
 SPEC CHECKSUMS:
-  Alamofire: 3ca42e259043ee0dc5c0cdd76c4bc568b8e42af7
+  Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
@@ -1644,7 +1644,7 @@ SPEC CHECKSUMS:
   JitsiWebRTC: 3a41671ef65a51d7204323814b055a2690b921c7
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
-  mattermost-react-native-turbo-log: d9fb87943034131c0324ed290580f10c19ef9978
+  mattermost-react-native-turbo-log: 8e3a92c8e8ad68282977b679586f5708f2aa5f97
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   RCT-Folly: 7169b2b1c44399c76a47b5deaaba715eeeb476c0
   RCTRequired: ca1d7414aba0b27efcfa2ccd37637edb1ab77d96
@@ -1669,22 +1669,22 @@ SPEC CHECKSUMS:
   React-logger: 3eb80a977f0d9669468ef641a5e1fabbc50a09ec
   React-Mapbuffer: 84ea43c6c6232049135b1550b8c60b2faac19fab
   react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
-  react-native-cameraroll: 4593ffad9e619781aed27dda64739387d55ed402
+  react-native-cameraroll: af8eec1e585d053ff485d98ec837f9a8a11b5745
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
   react-native-create-thumbnail: e022bcdcba8a0b4529a50d3fa1a832ec921be39d
   react-native-document-picker: 3599b238843369026201d2ef466df53f77ae0452
-  react-native-emm: 17ba66e81c93429b2bb288848d706e2e485b02e8
+  react-native-emm: f0159c1a24fe08018b3513116f839f9b0e018e75
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: d3db110a3ded6e48c93aef7e8e51afdde8b16ed0
   react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
   react-native-netinfo: bdb108d340cdb41875c9ced535977cac6d2ff321
-  react-native-network-client: 7ca5125fe613d2085c8ee12723a4ba9bca04f948
+  react-native-network-client: a7e0e465f0de5ea75cef5c557df0d9dc0adbf6a9
   react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
-  react-native-paste-input: 325908063bb38c88d96b43c8304021b1978402b6
+  react-native-paste-input: d2136a8269eb8ad57d81407ee2b8a646f738a694
   react-native-safe-area-context: b97eb6f9e3b7f437806c2ce5983f479f8eb5de4b
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
-  react-native-webrtc: 6fc32f3d556aa60aa2334eeaf6cadcdab2432809
-  react-native-webview: 05fa0e766f1c408e8c293cbcb84b2c199711cfd1
+  react-native-webrtc: 4a9428c3ced472d3b08e1fbc4bfdc082692f2d5d
+  react-native-webview: 9395e82c917d81407deb9b1fe53158dd6c8880ff
   React-nativeconfig: b4d4e9901d4cabb57be63053fd2aa6086eb3c85f
   React-NativeModulesApple: cd26e56d56350e123da0c1e3e4c76cb58a05e1ee
   React-perflogger: 5f49905de275bac07ac7ea7f575a70611fa988f2
@@ -1708,25 +1708,25 @@ SPEC CHECKSUMS:
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   ReactNativeIncallManager: bfc9c67358cd524882a7c4116dcb311ac2293d4b
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
-  ReactNativeNavigation: d16d373ab32670dc3ba96ed30f95773313a60416
+  ReactNativeNavigation: 86a23855d2ccc74ad3e59bff1595c2d4b76ed8cc
   RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
-  RNDateTimePicker: 7b38b71bcd7c4cfa1cb95f2dff9a4f1faed2dced
+  RNDateTimePicker: 08f00a2c341bf96e4b30da15799fbdd4c5fa48a3
   RNDeviceInfo: 4f9c7cfd6b9db1b05eb919620a001cf35b536423
   RNFastImage: 9f74ad6b5cfa9bfc6738ee76cfad9ed79cd8d485
   RNFileViewer: ce7ca3ac370e18554d35d6355cffd7c30437c592
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
-  RNGestureHandler: 67fb54b3e6ca338a8044e85cd6f340265aa41091
+  RNGestureHandler: bc2cdb2dc42facdf34992ae364b8a728e19a3686
   RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
-  RNLocalize: 4222a3756cdbe2dc9a5bdf445765a4d2572107cb
-  RNPermissions: 4de089e5210dc4f0ac03c54f8dad68fa678d7c40
+  RNLocalize: e8694475db034bf601e17bd3dfa8986565e769eb
+  RNPermissions: 80011019862146c08f5bad2a86c27e982f483a99
   RNReactNativeHapticFeedback: ec56a5f81c3941206fd85625fa669ffc7b4545f9
   RNReanimated: 8a4d86eb951a4a99d8e86266dc71d7735c0c30a9
-  RNScreens: 17e2f657f1b09a71ec3c821368a04acbb7ebcb46
+  RNScreens: b6b64d956af3715adbfe84808694ae82d3fec74f
   RNSentry: 5381e9284aec59a546e4a7d40e33ad0839b99c1e
-  RNShare: 859ff710211285676b0bcedd156c12437ea1d564
+  RNShare: b674d9f1cb0dc11116983bebd8712908a226a3ee
   RNSVG: 50cf2c7018e57cf5d3522d98d0a3a4dd6bf9d093
   RNVectorIcons: 73ab573085f65a572d3b6233e68996d4707fd505
-  SDWebImage: 981fd7e860af070920f249fd092420006014c3eb
+  SDWebImage: 40b0b4053e36c660a764958bff99eed16610acbb
   SDWebImageWebPCoder: c94f09adbca681822edad9e532ac752db713eabf
   Sentry: ebc12276bd17613a114ab359074096b6b3725203
   SentryPrivate: d651efb234cf385ec9a1cdd3eff94b5e78a0e0fe
