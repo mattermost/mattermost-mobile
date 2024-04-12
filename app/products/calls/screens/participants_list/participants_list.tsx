@@ -4,7 +4,7 @@
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {type ListRenderItemInfo, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {type ListRenderItemInfo, useWindowDimensions, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -13,9 +13,11 @@ import Pill from '@calls/screens/participants_list/pill';
 import {sortSessions} from '@calls/utils';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {CallSession} from '@calls/types/calls';
@@ -29,7 +31,7 @@ type Props = {
     teammateNameDisplay: string;
 }
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     header: {
         paddingBottom: 12,
         flexDirection: 'row',
@@ -37,16 +39,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerText: {
+        color: theme.centerChannelColor,
         ...typography('Heading', 600, 'SemiBold'),
     },
-});
+}));
 
 export const ParticipantsList = ({sessionsDict, teammateNameDisplay}: Props) => {
     const intl = useIntl();
+    const theme = useTheme();
     const {bottom} = useSafeAreaInsets();
     const {height} = useWindowDimensions();
     const isTablet = useIsTablet();
     const List = useMemo(() => (isTablet ? FlatList : BottomSheetFlatList), [isTablet]);
+    const styles = getStyleSheet(theme);
 
     const sessions = useMemo(() => sortSessions(intl.locale, teammateNameDisplay, sessionsDict), [sessionsDict]);
     const snapPoint1 = bottomSheetSnapPoint(Math.min(sessions.length, MIN_ROWS), ROW_HEIGHT, bottom) + HEADER_HEIGHT;
