@@ -7,7 +7,6 @@ import {useIntl} from 'react-intl';
 import {Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import HostBadge from '@calls/screens/participants_list/host_badge';
 import Pill from '@calls/screens/participants_list/pill';
 import {useCurrentCall} from '@calls/state';
 import {sortSessions} from '@calls/utils';
@@ -15,6 +14,7 @@ import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
+import Tag from '@components/tag';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -85,6 +85,9 @@ const getStyleSheet = ({theme, bottom}: { theme: Theme; bottom: number }) => {
         },
         unmutedIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.56),
+        },
+        hostTag: {
+            paddingVertical: 4,
         },
         raiseHandIcon: {
             color: theme.awayIndicator,
@@ -164,7 +167,13 @@ export const ParticipantsList = ({sessionsDict, teammateNameDisplay}: Props) => 
                                         {intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}
                                     </Text>
                                 }
-                                {sess.userId === currentCall.hostId && <HostBadge/>}
+                                {sess.userId === currentCall.hostId &&
+                                    <Tag
+                                        id={'mobile.calls_host'}
+                                        defaultMessage={'host'}
+                                        style={styles.hostTag}
+                                    />
+                                }
                             </View>
                             <View style={styles.icons}>
                                 {sess.reaction?.emoji !== undefined &&
