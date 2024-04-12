@@ -41,7 +41,9 @@ class Specs {
         if (stats.isDirectory()) {
           walkSync(filePath);
         } else if (fileRegex.test(filePath)) {
-          this.rawFiles.push(path.join(this.searchPath, filePath));
+          const relativeFilePath = filePath.replace(dirPath + '/', '');
+          const fullPath = path.join(this.directory, this.searchPath, relativeFilePath);
+          this.rawFiles.push(fullPath);
         }
       });
     };
