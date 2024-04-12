@@ -81,11 +81,14 @@ class NotificationService: UNNotificationServiceExtension {
   
   private func sendInvalidNotificationIntent() {
     guard let notification = bestAttemptContent else { return }
+    os_log(OSLogType.default, "Mattermost Notifications: creating invalid intent")
+    
+    bestAttemptContent?.body = NSLocalizedString( "native.ios.notifications.not_verified",
+      value: "We could not verify this notification with the server",
+      comment: "")
+    bestAttemptContent?.userInfo.updateValue("false", forKey: "verified")
+    
     if #available(iOSApplicationExtension 15.0, *) {
-      os_log(OSLogType.default, "Mattermost Notifications: creating invalid intent")
-      
-      bestAttemptContent?.body = "We could not verify this notification with the server"
-      bestAttemptContent?.userInfo.updateValue("false", forKey: "verified")
       let intent = INSendMessageIntent(recipients: nil,
                                        outgoingMessageType: .outgoingMessageText,
                                        content: "We could not verify this notification with the server",
