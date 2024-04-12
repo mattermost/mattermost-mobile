@@ -5,20 +5,13 @@ import CookieManager, {type Cookies} from '@react-native-cookies/cookies';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, Text, View} from 'react-native';
-import {WebView} from 'react-native-webview';
+import {WebView, WebViewMessageEvent, WebViewNavigation} from 'react-native-webview';
 import urlParse from 'url-parse';
 
 import Loading from '@components/loading';
 import {Sso} from '@constants';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import type {
-    WebViewErrorEvent,
-    WebViewMessageEvent,
-    WebViewNavigation,
-    WebViewNavigationEvent,
-} from 'react-native-webview/lib/WebViewTypes';
 
 interface SSOWithWebViewProps {
     completeUrlPath: string;
@@ -207,7 +200,7 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
         setMessagingEnabled(isMessagingEnabled);
     };
 
-    const onLoadEnd = (event: WebViewNavigationEvent | WebViewErrorEvent) => {
+    const onLoadEnd = (event: {nativeEvent: {url: string}}) => {
         const url = event.nativeEvent.url;
         const parsed = urlParse(url);
 
