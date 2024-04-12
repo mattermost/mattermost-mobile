@@ -110,7 +110,7 @@ const PostList = ({
     const scrolledToHighlighted = useRef(false);
     const [refreshing, setRefreshing] = useState(false);
     const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
-    const [lastPostId, setLastPostId] = useState<string>(posts[0].id);
+    const [lastPostId, setLastPostId] = useState<string | undefined>(posts[0]?.id);
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const orderedPosts = useMemo(() => {
@@ -122,8 +122,13 @@ const PostList = ({
     }, [orderedPosts]);
 
     const isNewMessage = useMemo(() => {
-        return posts[0].id !== lastPostId;
-    }, [posts[0].id, lastPostId]);
+        if (!lastPostId) {
+            // Avoid flash when the channel loads without posts
+            // e.g. The first time we navigate to a channel
+            return false;
+        }
+        return posts[0]?.id !== lastPostId;
+    }, [posts[0]?.id, lastPostId]);
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -170,10 +175,10 @@ const PostList = ({
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const {y} = event.nativeEvent.contentOffset;
         if (y === 0) {
-            setLastPostId(posts[0].id);
+            setLastPostId(posts[0]?.id);
         }
         setShowScrollToEndBtn(y > CONTENT_OFFSET_THRESHOLD);
-    }, [posts[0].id]);
+    }, [posts[0]?.id]);
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
         const index = Math.min(info.highestMeasuredFrameIndex, info.index);
