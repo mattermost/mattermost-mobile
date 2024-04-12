@@ -1017,7 +1017,7 @@ PODS:
     - react-native-video/Video (= 5.2.1)
   - react-native-video/Video (5.2.1):
     - React-Core
-  - react-native-webrtc (118.0.6):
+  - react-native-webrtc (118.0.3):
     - JitsiWebRTC (~> 118.0.0)
     - React-Core
   - react-native-webview (13.8.4):
@@ -1683,7 +1683,7 @@ SPEC CHECKSUMS:
   react-native-paste-input: d2136a8269eb8ad57d81407ee2b8a646f738a694
   react-native-safe-area-context: b97eb6f9e3b7f437806c2ce5983f479f8eb5de4b
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
-  react-native-webrtc: 4a9428c3ced472d3b08e1fbc4bfdc082692f2d5d
+  react-native-webrtc: 6fc32f3d556aa60aa2334eeaf6cadcdab2432809
   react-native-webview: 9395e82c917d81407deb9b1fe53158dd6c8880ff
   React-nativeconfig: b4d4e9901d4cabb57be63053fd2aa6086eb3c85f
   React-NativeModulesApple: cd26e56d56350e123da0c1e3e4c76cb58a05e1ee
