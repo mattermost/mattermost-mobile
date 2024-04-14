@@ -182,7 +182,7 @@ jobs:
           path: "android/app/build/outputs/apk/**/app-*.apk"
 
   e2e-android:
-    if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
+    # if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
     env:
       IOS: false
       GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
