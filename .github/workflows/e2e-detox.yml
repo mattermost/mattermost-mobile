@@ -156,9 +156,9 @@ jobs:
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
       - name: Install Java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
-          java-version: "11"
+          java-version: "17"
           distribution: "adopt"
           cache: "gradle"
 
@@ -218,8 +218,8 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v2
         with:
-          java-version: "11"
-          distribution: "adopt"
+          java-version: "17"
+          distribution: "temurin"
           cache: "gradle"
 
       - name: Validate Gradle wrapper
