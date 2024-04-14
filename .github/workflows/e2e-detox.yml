@@ -134,6 +134,8 @@ jobs:
   build-android-apk-on-mac:
     # if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
     runs-on: macos-14-large
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -148,6 +150,14 @@ jobs:
           STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Install Java
         uses: actions/setup-java@v4
         with:
@@ -156,7 +166,7 @@ jobs:
           cache: "gradle"
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/wrapper-validation-action@v3
   
       - name: Detox build
         run: |
