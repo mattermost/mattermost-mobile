@@ -50,15 +50,73 @@ extension PushNotification {
                 return false
             }
             
-            let versionTarget = "9.7.0"
-            let versionOrder = version.compare(versionTarget, options: .numeric)
-            if (versionOrder == .orderedSame || versionOrder == .orderedDescending) {
+            let parts = version.components(separatedBy: ".");
+            if (parts.count < 3) {
+                os_log(
+                    OSLogType.default,
+                    "Mattermost Notifications: Signature verification: Invalid server version"
+                )
+                return false
+            }
+            guard let major = Int(parts[0]),
+                  let minor = Int(parts[1]),
+                  let patch = Int(parts[2])
+            else {
+                os_log(
+                    OSLogType.default,
+                    "Mattermost Notifications: Signature verification: Invalid server version"
+                )
+                return false
+            }
+            
+            let versionTargets = [[9,8,0], [9,7,2], [9,6,2], [9,5,4], [8,1,13]]
+            var rejected = false
+            for versionTarget in versionTargets {
+                let majorTarget = versionTarget[0]
+                let minorTarget = versionTarget[1]
+                let patchTarget = versionTarget[2]
+                
+                if (major > majorTarget) {
+                    rejected = true;
+                    break;
+                }
+
+                if (major < majorTarget) {
+                    // Continue to see if it complies with a smaller target
+                    continue;
+                }
+
+                // Same major
+                if (minor > minorTarget) {
+                    rejected = true;
+                    break;
+                }
+
+                if (minor < minorTarget) {
+                    // Continue to see if it complies with a smaller target
+                    continue;
+                }
+
+                // Same major and same minor
+                if (patch >= patchTarget) {
+                    rejected = true;
+                    break;
+                }
+
+                // Patch is lower than target
+                return true;
+            }
+            
+            if (rejected) {
                 os_log(
                     OSLogType.default,
                     "Mattermost Notifications: Signature verification: Server version should send signature"
                 )
-                return false
+                return false;
             }
+            
+            // Version number is below any of the targets, so it should not send the signature
+            return true
         }
         
         guard let signingKey = Database.default.getConfig(serverUrl, "AsymmetricSigningPublicKey")
