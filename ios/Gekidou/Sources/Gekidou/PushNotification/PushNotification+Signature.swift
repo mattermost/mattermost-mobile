@@ -71,13 +71,16 @@ extension PushNotification {
             
             let versionTargets = [[9,8,0], [9,7,2], [9,6,2], [9,5,4], [8,1,13]]
             var rejected = false
-            for versionTarget in versionTargets {
+            for (index, versionTarget) in versionTargets.enumerated() {
+                let first = index == 0;
                 let majorTarget = versionTarget[0]
                 let minorTarget = versionTarget[1]
                 let patchTarget = versionTarget[2]
                 
                 if (major > majorTarget) {
-                    rejected = true;
+                    // Only reject if we are considering the first (highest) version.
+                    // Any version in between should be acceptable.
+                    rejected = first;
                     break;
                 }
 
@@ -88,7 +91,9 @@ extension PushNotification {
 
                 // Same major
                 if (minor > minorTarget) {
-                    rejected = true;
+                    // Only reject if we are considering the first (highest) version.
+                    // Any version in between should be acceptable.
+                    rejected = first;
                     break;
                 }
 

@@ -280,13 +280,17 @@ public class CustomPushNotificationHelper {
 
             int[][] targets = {{9,8,0},{9,7,2},{9,6,2},{9,5,4},{8,1,13}};
             boolean rejected = false;
-            for (int[] targetVersion: targets) {
+            for (int i = 0; i < targets.length; i++) {
+                boolean first = i == 0;
+                int[] targetVersion = targets[i];
                 int majorTarget = targetVersion[0];
                 int minorTarget = targetVersion[1];
                 int patchTarget = targetVersion[2];
 
                 if (major > majorTarget) {
-                    rejected = true;
+                    // Only reject if we are considering the first (highest) version.
+                    // Any version in between should be acceptable.
+                    rejected = first;
                     break;
                 }
 
@@ -297,7 +301,9 @@ public class CustomPushNotificationHelper {
 
                 // Same major
                 if (minor > minorTarget) {
-                    rejected = true;
+                    // Only reject if we are considering the first (highest) version.
+                    // Any version in between should be acceptable.
+                    rejected = first;
                     break;
                 }
 
