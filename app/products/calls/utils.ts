@@ -7,11 +7,19 @@ import {TextTrackType} from 'react-native-video';
 
 import {buildFileUrl} from '@actions/remote/file';
 import {Calls, Post} from '@constants';
+import license from '@constants/license';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
-import type {CallSession, CallsTheme, CallsVersion, SelectedSubtitleTrack, SubtitleTrack} from '@calls/types/calls';
+import type {
+    CallsConfigState,
+    CallSession,
+    CallsTheme,
+    CallsVersion,
+    SelectedSubtitleTrack,
+    SubtitleTrack,
+} from '@calls/types/calls';
 import type {CallsConfig, Caption} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -106,6 +114,14 @@ export function isHostControlsSupported(callsVersion: CallsVersion) {
         Calls.HostControlsCallsVersion.MIN_VERSION,
         Calls.HostControlsCallsVersion.PATCH_VERSION,
     );
+}
+
+export function isHostControlsAllowed(config: CallsConfigState) {
+    return isHostControlsSupported(config.version) &&
+        (config.sku_short_name === license.SKU_SHORT_NAME.E10 ||
+            config.sku_short_name === license.SKU_SHORT_NAME.E20 ||
+            config.sku_short_name === license.SKU_SHORT_NAME.Professional ||
+            config.sku_short_name === license.SKU_SHORT_NAME.Enterprise);
 }
 
 export function isCallsCustomMessage(post: PostModel | Post): boolean {

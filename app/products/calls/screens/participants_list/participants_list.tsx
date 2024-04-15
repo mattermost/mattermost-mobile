@@ -11,7 +11,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Participant} from '@calls/screens/participants_list/participant';
 import Pill from '@calls/screens/participants_list/pill';
 import {getCallsConfig, useCurrentCall} from '@calls/state';
-import {isHostControlsSupported, sortSessions} from '@calls/utils';
+import {isHostControlsAllowed, sortSessions} from '@calls/utils';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -32,6 +32,7 @@ type Props = {
     closeButtonId: string;
     sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
+    isAdmin: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -47,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDisplay}: Props) => {
+export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDisplay, isAdmin}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const currentCall = useCurrentCall();
@@ -64,8 +65,10 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
     if (sessions.length > MIN_ROWS && snapPoint1 < snapPoint2) {
         snapPoints.push(snapPoint2);
     }
-    const isHostControlsAvailable = isHostControlsSupported(getCallsConfig(currentCall?.serverUrl || '').version);
-    const showHostControls = isHostControlsAvailable && currentCall?.hostId === currentCall?.myUserId;
+
+    const hostControlsAllowed = isHostControlsAllowed(getCallsConfig(currentCall?.serverUrl || ''));
+    const isHost = currentCall?.hostId === currentCall?.myUserId;
+    const hostControlsAvailable = hostControlsAllowed && (isHost || isAdmin);
 
     const openHostControl = useCallback(async (session: CallSession) => {
         const screen = Screens.CALL_HOST_CONTROLS;
@@ -85,14 +88,25 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
         openAsBottomSheet({screen, title, theme, closeButtonId: closeUserProfile, props});
     }, [theme, currentCall?.channelId]);
 
+    const onPress = useCallback((session: CallSession) => () => {
+        // Show host controls when allowed and I'm host or admin,
+        // but don't show if this is me and I'm the host already.
+        const isYou = session.userId === currentCall?.myUserId;
+        if (hostControlsAvailable && !(isYou && isHost)) {
+            openHostControl(session);
+        } else {
+            openUserProfile(session);
+        }
+    }, [currentCall?.myUserId, hostControlsAvailable, isHost, openHostControl, openUserProfile]);
+
     const renderItem = useCallback(({item}: ListRenderItemInfo<CallSession>) => (
         <Participant
             key={item.sessionId}
             sess={item}
             teammateNameDisplay={teammateNameDisplay}
-            onPress={() => (showHostControls && item.userId !== currentCall?.myUserId ? openHostControl(item) : openUserProfile(item))}
+            onPress={onPress(item)}
         />
-    ), [teammateNameDisplay, showHostControls, openHostControl, openUserProfile]);
+    ), [teammateNameDisplay, onPress]);
 
     const renderContent = () => {
         return (
