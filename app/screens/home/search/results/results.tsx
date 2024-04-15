@@ -43,7 +43,6 @@ type Props = {
     customEmojiNames: string[];
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
-    isTimezoneEnabled: boolean;
     loading: boolean;
     posts: PostModel[];
     matches?: SearchMatches;
@@ -60,7 +59,6 @@ const Results = ({
     customEmojiNames,
     fileChannels,
     fileInfos,
-    isTimezoneEnabled,
     loading,
     posts,
     matches,
@@ -105,7 +103,6 @@ const Results = ({
                         appsEnabled={appsEnabled}
                         currentTimezone={currentTimezone}
                         customEmojiNames={customEmojiNames}
-                        isTimezoneEnabled={isTimezoneEnabled}
                         posts={posts}
                         matches={matches}
                         paddingTop={paddingTop}

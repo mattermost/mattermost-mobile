@@ -31,7 +31,6 @@ type Props = {
     appsEnabled: boolean;
     customEmojiNames: string[];
     currentTimezone: string | null;
-    isTimezoneEnabled: boolean;
     mentions: PostModel[];
 }
 
@@ -49,7 +48,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentTimezone, isTimezoneEnabled}: Props) => {
+const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentTimezone}: Props) => {
     const theme = useTheme();
     const route = useRoute();
     const isFocused = useIsFocused();
@@ -87,7 +86,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<FlatList<string>>(true, onSnap);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
-    const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
+    const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, currentTimezone, false).reverse(), [mentions]);
 
     const animated = useAnimatedStyle(() => {
         return {
@@ -143,7 +142,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
                     <DateSeparator
                         key={item.value}
                         date={getDateForDateLine(item.value)}
-                        timezone={isTimezoneEnabled ? currentTimezone : null}
+                        timezone={currentTimezone}
                     />
                 );
             case 'post':

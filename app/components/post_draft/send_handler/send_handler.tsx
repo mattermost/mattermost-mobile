@@ -31,6 +31,7 @@ type Props = {
     testID?: string;
     channelId: string;
     channelType?: ChannelType;
+    channelName?: string;
     rootId: string;
     canShowPostPriority?: boolean;
     setIsFocused: (isFocused: boolean) => void;
@@ -39,7 +40,6 @@ type Props = {
     currentUserId: string;
     cursorPosition: number;
     enableConfirmNotificationsToChannel?: boolean;
-    isTimezoneEnabled: boolean;
     maxMessageLength: number;
     membersCount?: number;
     useChannelMentions: boolean;
@@ -70,10 +70,10 @@ export default function SendHandler({
     testID,
     channelId,
     channelType,
+    channelName,
     currentUserId,
     enableConfirmNotificationsToChannel,
     files,
-    isTimezoneEnabled,
     maxMessageLength,
     membersCount = 0,
     cursorPosition,
@@ -156,13 +156,13 @@ export default function SendHandler({
     }, [files, currentUserId, channelId, rootId, value, clearDraft, postPriority]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean) => {
-        const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, Boolean(isTimezoneEnabled), channelTimezoneCount, atHere);
+        const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);
         const cancel = () => {
             setSendingMessage(false);
         };
 
         DraftUtils.alertChannelWideMention(intl, notifyAllMessage, doSubmitMessage, cancel);
-    }, [intl, isTimezoneEnabled, channelTimezoneCount, doSubmitMessage]);
+    }, [intl, channelTimezoneCount, doSubmitMessage]);
 
     const sendCommand = useCallback(async () => {
         if (value.trim().startsWith('/call')) {
@@ -272,6 +272,7 @@ export default function SendHandler({
             testID={testID}
             channelId={channelId}
             channelType={channelType}
+            channelName={channelName}
             currentUserId={currentUserId}
             rootId={rootId}
             canShowPostPriority={canShowPostPriority}

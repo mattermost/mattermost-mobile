@@ -62,13 +62,12 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
 
     const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
     const containerHeight = useAnimatedStyle(() => {
-        const minHeight = defaultHeight;
         const value = -(scrollValue?.value || 0);
         const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + value;
         const height = lockValue?.value ? lockValue.value : calculatedHeight;
         return {
-            height: Math.max(height, minHeight),
-            minHeight,
+            height: Math.max(height, defaultHeight),
+            minHeight: defaultHeight,
             maxHeight: largeHeight + MAX_OVERSCROLL,
         };
     });
@@ -90,26 +89,25 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
     ), [lockValue, headerOffset]);
 
     return (
-        <>
-            <Animated.View style={[styles.container, containerHeight]}>
-                <Header
-                    defaultHeight={defaultHeight}
-                    hasSearch={hasSearch}
-                    isLargeTitle={isLargeTitle}
-                    heightOffset={heightOffset.value}
-                    leftComponent={leftComponent}
-                    onBackPress={onBackPress}
-                    onTitlePress={onTitlePress}
-                    rightButtons={rightButtons}
-                    lockValue={lockValue}
-                    scrollValue={scrollValue}
-                    showBackButton={showBackButton}
-                    subtitle={subtitle}
-                    subtitleCompanion={subtitleCompanion}
-                    theme={theme}
-                    title={title}
-                />
-                {isLargeTitle &&
+        <Animated.View style={[styles.container, containerHeight]}>
+            <Header
+                defaultHeight={defaultHeight}
+                hasSearch={hasSearch}
+                isLargeTitle={isLargeTitle}
+                heightOffset={heightOffset.value}
+                leftComponent={leftComponent}
+                onBackPress={onBackPress}
+                onTitlePress={onTitlePress}
+                rightButtons={rightButtons}
+                lockValue={lockValue}
+                scrollValue={scrollValue}
+                showBackButton={showBackButton}
+                subtitle={subtitle}
+                subtitleCompanion={subtitleCompanion}
+                theme={theme}
+                title={title}
+            />
+            {isLargeTitle &&
                 <NavigationHeaderLargeTitle
                     heightOffset={heightOffset.value}
                     hasSearch={hasSearch}
@@ -118,8 +116,8 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
                     title={title}
                     translateY={translateY}
                 />
-                }
-                {hasSearch &&
+            }
+            {hasSearch &&
                 <NavigationSearch
                     {...searchProps}
                     hideHeader={hideHeader}
@@ -127,9 +125,8 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
                     topStyle={searchTopStyle}
                     ref={ref}
                 />
-                }
-            </Animated.View>
-        </>
+            }
+        </Animated.View>
     );
 });
 

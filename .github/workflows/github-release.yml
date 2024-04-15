@@ -15,7 +15,7 @@ jobs:
         uses: ./.github/actions/test
 
   build-ios-unsigned:
-    runs-on: macos-12
+    runs-on: macos-14-large
     needs:
       - test
     steps:
@@ -82,9 +82,7 @@ jobs:
       - name: ci/checkout-repo
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
-      - uses: ruby/setup-ruby@9669f3ee51dc3f4eda8447ab696b3ab19a90d14b # v1.144.0
-        with:
-          ruby-version: "2.7"
+      - uses: ruby/setup-ruby@22fdc77bf4148f810455b226c90fb81b5cbc00a7 # v1.171.0
 
       - name: release/setup-fastlane-dependencies
         run: bundle install

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 mkdir -p tmp
 cp assets/base/i18n/en.json tmp/en.json

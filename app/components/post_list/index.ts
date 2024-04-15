@@ -22,7 +22,6 @@ const enhancedWithoutPosts = withObservables([], ({database}: WithDatabaseArgs) 
     const currentUser = observeCurrentUser(database);
     return {
         appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
-        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
         currentUserId: currentUser.pipe((switchMap((user) => of$(user?.id)))),
         currentUsername: currentUser.pipe((switchMap((user) => of$(user?.username)))),

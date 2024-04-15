@@ -4,9 +4,8 @@ description: Action to prepare environment for mobile build
 runs:
   using: composite
   steps:
-    - uses: ruby/setup-ruby@9669f3ee51dc3f4eda8447ab696b3ab19a90d14b # v1.144.0
-      with:
-        ruby-version: "2.7.7"
+    # The required ruby version is mentioned in '.ruby-version'
+    - uses: ruby/setup-ruby@22fdc77bf4148f810455b226c90fb81b5cbc00a7 # v 1.171.0
 
     - name: ci/setup-fastlane-dependencies
       shell: bash
