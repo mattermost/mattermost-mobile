@@ -261,7 +261,7 @@ public class CustomPushNotificationHelper {
             return false;
         }
 
-        if (signature == "NO_SIGNATURE") {
+        if (signature.equals("NO_SIGNATURE")) {
             String version = queryConfigServerVersion(db);
             if (version == null) {
                 Log.i("Mattermost Notifications Signature verification", "No server version");
@@ -274,25 +274,55 @@ public class CustomPushNotificationHelper {
             }
 
             String[] parts = version.split("\\.");
-            int mayor = parts.length > 0 ? Integer.parseInt(parts[0]) : 0;
+            int major = parts.length > 0 ? Integer.parseInt(parts[0]) : 0;
             int minor = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
             int patch = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
-            int mayorTarget = 9;
-            int minorTarget = 7;
-            int patchTarget = 0;
 
-            if (mayor < mayorTarget) {
-                return true;
-            }
-            if (mayor == mayorTarget && minor < minorTarget) {
-                return true;
-            }
-            if (mayor == mayorTarget && minor == minorTarget && patch < patchTarget) {
+            int[][] targets = {{9,8,0},{9,7,2},{9,6,2},{9,5,4},{8,1,13}};
+            boolean rejected = false;
+            for (int[] targetVersion: targets) {
+                int majorTarget = targetVersion[0];
+                int minorTarget = targetVersion[1];
+                int patchTarget = targetVersion[2];
+
+                if (major > majorTarget) {
+                    rejected = true;
+                    break;
+                }
+
+                if (major < majorTarget) {
+                    // Continue to see if it complies with a smaller target
+                    continue;
+                }
+
+                // Same major
+                if (minor > minorTarget) {
+                    rejected = true;
+                    break;
+                }
+
+                if (minor < minorTarget) {
+                    // Continue to see if it complies with a smaller target
+                    continue;
+                }
+
+                // Same major and same minor
+                if (patch >= patchTarget) {
+                    rejected = true;
+                    break;
+                }
+
+                // Patch is lower than target
                 return true;
             }
 
-            Log.i("Mattermost Notifications Signature verification", "Server version should send signature");
-            return false;
+            if (rejected) {
+                Log.i("Mattermost Notifications Signature verification", "Server version should send signature");
+                return false;
+            }
+
+            // Version number is below any of the targets, so it should not send the signature
+            return true;
         }
 
         String signingKey = queryConfigSigningKey(db);
