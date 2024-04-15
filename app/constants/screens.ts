@@ -8,6 +8,7 @@ export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CALL = 'Call';
 export const CALL_PARTICIPANTS = 'CallParticipants';
+export const CALL_HOST_CONTROLS = 'CallHostControls';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_MEMBERS = 'ChannelAddMembers';
 export const CHANNEL_FILES = 'ChannelFiles';
@@ -82,6 +83,7 @@ export default {
     BROWSE_CHANNELS,
     CALL,
     CALL_PARTICIPANTS,
+    CALL_HOST_CONTROLS,
     CHANNEL,
     CHANNEL_ADD_MEMBERS,
     CHANNEL_FILES,
@@ -181,6 +183,7 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     REACTIONS,
     USER_PROFILE,
     CALL_PARTICIPANTS,
+    CALL_HOST_CONTROLS,
 ]);
 
 export const NOT_READY = [

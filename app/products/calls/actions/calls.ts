@@ -619,3 +619,14 @@ const handleEndCall = async (serverUrl: string, channelId: string, currentUserId
         ],
     );
 };
+
+export const makeHost = async (serverUrl: string, callId: string, newHostId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return client.makeHost(callId, newHostId);
+    } catch (error) {
+        logDebug('error on makeHost', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
+        return error;
+    }
+};

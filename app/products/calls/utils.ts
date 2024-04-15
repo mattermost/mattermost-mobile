@@ -99,6 +99,15 @@ export function isMultiSessionSupported(callsVersion: CallsVersion) {
     );
 }
 
+export function isHostControlsSupported(callsVersion: CallsVersion) {
+    return isMinimumServerVersion(
+        callsVersion.version,
+        Calls.HostControlsCallsVersion.MAJOR_VERSION,
+        Calls.HostControlsCallsVersion.MIN_VERSION,
+        Calls.HostControlsCallsVersion.PATCH_VERSION,
+    );
+}
+
 export function isCallsCustomMessage(post: PostModel | Post): boolean {
     return Boolean(post.type && post.type === Post.POST_TYPES.CUSTOM_CALLS);
 }

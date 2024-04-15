@@ -22,6 +22,7 @@ const PROFILE_SIZE = 32;
 type Props = {
     sess: CallSession;
     teammateNameDisplay: string;
+    onPress: () => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -75,7 +76,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const Participant = ({sess, teammateNameDisplay}: Props) => {
+export const Participant = ({sess, teammateNameDisplay, onPress}: Props) => {
     const intl = useIntl();
     const currentCall = useCurrentCall();
     const theme = useTheme();
@@ -91,6 +92,7 @@ export const Participant = ({sess, teammateNameDisplay}: Props) => {
             key={sess.sessionId}
             testID='users-list'
             style={styles.rowContainer}
+            onPress={onPress}
         >
             {sess.userModel ? (
                 <ProfilePicture

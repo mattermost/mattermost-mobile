@@ -10,12 +10,14 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Participant} from '@calls/screens/participants_list/participant';
 import Pill from '@calls/screens/participants_list/pill';
-import {sortSessions} from '@calls/utils';
+import {getCallsConfig, useCurrentCall} from '@calls/state';
+import {isHostControlsSupported, sortSessions} from '@calls/utils';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
+import {openAsBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -48,6 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDisplay}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
+    const currentCall = useCurrentCall();
     const {bottom} = useSafeAreaInsets();
     const {height} = useWindowDimensions();
     const isTablet = useIsTablet();
@@ -61,14 +64,35 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
     if (sessions.length > MIN_ROWS && snapPoint1 < snapPoint2) {
         snapPoints.push(snapPoint2);
     }
+    const isHostControlsAvailable = isHostControlsSupported(getCallsConfig(currentCall?.serverUrl || '').version);
+    const showHostControls = isHostControlsAvailable && currentCall?.hostId === currentCall?.myUserId;
+
+    const openHostControl = useCallback(async (session: CallSession) => {
+        const screen = Screens.CALL_HOST_CONTROLS;
+        const title = intl.formatMessage({id: 'mobile.calls_host_controls', defaultMessage: 'Host controls'});
+        const closeHostControls = 'close-host-controls';
+        const props = {closeButtonId: closeHostControls, session};
+
+        openAsBottomSheet({screen, title, theme, closeButtonId: closeHostControls, props});
+    }, [theme]);
+
+    const openUserProfile = useCallback(async (session: CallSession) => {
+        const screen = Screens.USER_PROFILE;
+        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+        const closeUserProfile = 'close-user-profile';
+        const props = {closeButtonId: closeUserProfile, location: '', userId: session.userId};
+
+        openAsBottomSheet({screen, title, theme, closeButtonId: closeUserProfile, props});
+    }, [theme, currentCall?.channelId]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<CallSession>) => (
         <Participant
             key={item.sessionId}
             sess={item}
             teammateNameDisplay={teammateNameDisplay}
+            onPress={() => (showHostControls && item.userId !== currentCall?.myUserId ? openHostControl(item) : openUserProfile(item))}
         />
-    ), [teammateNameDisplay]);
+    ), [teammateNameDisplay, showHostControls, openHostControl, openUserProfile]);
 
     const renderContent = () => {
         return (
