@@ -15,6 +15,7 @@ extension PushNotification {
     public func verifySignature(_ userInfo: [AnyHashable : Any]) -> Bool {
         guard let signature =  userInfo["signature"] as? String
         else {
+            // Backward compatibility with old push proxies
             os_log(
                 OSLogType.default,
                 "Mattermost Notifications: Signature verification: No signature in the notification"

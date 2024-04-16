@@ -240,6 +240,7 @@ public class CustomPushNotificationHelper {
 
     public static boolean verifySignature(final Context context, String signature, String serverUrl, String ackId) {
         if (signature == null) {
+            // Backward compatibility with old push proxies
             Log.i("Mattermost Notifications Signature verification", "No signature in the notification");
             return true;
         }
