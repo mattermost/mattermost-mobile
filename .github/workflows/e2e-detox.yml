@@ -16,15 +16,19 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  AWS_REGION: 'us-east-1'
+  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
   BRANCH: ${{ github.head_ref || github.ref_name }} 
   COMMIT_HASH: ${{ github.sha }}
-  AWS_REGION: 'us-east-1'
   DETOX_AWS_S3_BUCKET: 'mattermost-detox-report'
   DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
   DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
   HEADLESS: 'false'
   TYPE: 'PR'
   PULL_REQUEST: 'https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}'
+  SITE_2_URL: ${{ secrets.MM_MOBILE_E2E_SITE_2_URL }}
+  SITE_3_URL: ${{ secrets.MM_MOBILE_E2E_SITE_3_URL }}
   ZEPHYR_ENABLE: false
   JIRA_PROJECT_KEY: 'MM'
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
