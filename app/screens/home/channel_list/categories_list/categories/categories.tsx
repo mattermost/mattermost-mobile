@@ -49,17 +49,21 @@ const Categories = ({
     const isTablet = useIsTablet();
     const switchingTeam = useTeamSwitch();
     const teamId = categories[0]?.teamId;
+    const showOnlyUnreadsCategory = onlyUnreads && !unreadsOnTop;
+
     const categoriesToShow = useMemo(() => {
-        if (onlyUnreads && !unreadsOnTop) {
+        if (showOnlyUnreadsCategory) {
             return ['UNREADS' as const];
         }
+
         const orderedCategories = [...categories];
         orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
+
         if (unreadsOnTop) {
             return ['UNREADS' as const, ...orderedCategories];
         }
         return orderedCategories;
-    }, [categories, onlyUnreads, unreadsOnTop]);
+    }, [categories, unreadsOnTop, showOnlyUnreadsCategory]);
 
     const [initiaLoad, setInitialLoad] = useState(!categoriesToShow.length);
 
@@ -74,7 +78,7 @@ const Categories = ({
                     currentTeamId={teamId}
                     isTablet={isTablet}
                     onChannelSwitch={onChannelSwitch}
-                    onlyUnreads={onlyUnreads}
+                    onlyUnreads={showOnlyUnreadsCategory}
                 />
             );
         }
@@ -89,7 +93,7 @@ const Categories = ({
                 />
             </>
         );
-    }, [teamId, intl.locale, isTablet, onChannelSwitch, onlyUnreads]);
+    }, [teamId, intl.locale, isTablet, onChannelSwitch, showOnlyUnreadsCategory]);
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -105,17 +109,17 @@ const Categories = ({
 
     return (
         <>
-            {!switchingTeam && !initiaLoad && onlyUnreads &&
+            {!switchingTeam && !initiaLoad && showOnlyUnreadsCategory &&
             <View style={styles.mainList}>
                 <UnreadCategories
                     currentTeamId={teamId}
                     isTablet={isTablet}
                     onChannelSwitch={onChannelSwitch}
-                    onlyUnreads={onlyUnreads}
+                    onlyUnreads={showOnlyUnreadsCategory}
                 />
             </View>
             }
-            {!switchingTeam && !initiaLoad && !onlyUnreads && (
+            {!switchingTeam && !initiaLoad && !showOnlyUnreadsCategory && (
                 <FlatList
                     data={categoriesToShow}
                     ref={listRef}
