@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, Pressable, Text, View} from 'react-native';
+import {Platform, Text, TouchableOpacity, View} from 'react-native';
 
 import {useCurrentCall} from '@calls/state';
 import CompassIcon from '@components/compass_icon';
@@ -44,12 +44,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: PROFILE_SIZE,
     },
     name: {
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 200),
         color: theme.centerChannelColor,
         flex: 1,
     },
     you: {
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 200),
         color: changeOpacity(theme.centerChannelColor, 0.56),
     },
     profileIcon: {
@@ -88,7 +88,7 @@ export const Participant = ({sess, teammateNameDisplay, onPress}: Props) => {
     }
 
     return (
-        <Pressable
+        <TouchableOpacity
             key={sess.sessionId}
             testID='users-list'
             style={styles.rowContainer}
@@ -156,6 +156,6 @@ export const Participant = ({sess, teammateNameDisplay, onPress}: Props) => {
                     style={sess.muted ? styles.muteIcon : styles.unmutedIcon}
                 />
             </View>
-        </Pressable>
+        </TouchableOpacity>
     );
 };

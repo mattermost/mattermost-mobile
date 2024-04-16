@@ -8,16 +8,15 @@ import {type ListRenderItemInfo, useWindowDimensions, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {useHostMenus} from '@calls/hooks';
 import {Participant} from '@calls/screens/participants_list/participant';
 import Pill from '@calls/screens/participants_list/pill';
-import {getCallsConfig, useCurrentCall} from '@calls/state';
-import {isHostControlsAllowed, sortSessions} from '@calls/utils';
+import {sortSessions} from '@calls/utils';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
-import {openAsBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -32,7 +31,6 @@ type Props = {
     closeButtonId: string;
     sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
-    isAdmin: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -48,10 +46,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDisplay, isAdmin}: Props) => {
+export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDisplay}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const currentCall = useCurrentCall();
+    const {onPress} = useHostMenus();
     const {bottom} = useSafeAreaInsets();
     const {height} = useWindowDimensions();
     const isTablet = useIsTablet();
@@ -65,39 +63,6 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
     if (sessions.length > MIN_ROWS && snapPoint1 < snapPoint2) {
         snapPoints.push(snapPoint2);
     }
-
-    const hostControlsAllowed = isHostControlsAllowed(getCallsConfig(currentCall?.serverUrl || ''));
-    const isHost = currentCall?.hostId === currentCall?.myUserId;
-    const hostControlsAvailable = hostControlsAllowed && (isHost || isAdmin);
-
-    const openHostControl = useCallback(async (session: CallSession) => {
-        const screen = Screens.CALL_HOST_CONTROLS;
-        const title = intl.formatMessage({id: 'mobile.calls_host_controls', defaultMessage: 'Host controls'});
-        const closeHostControls = 'close-host-controls';
-        const props = {closeButtonId: closeHostControls, session};
-
-        openAsBottomSheet({screen, title, theme, closeButtonId: closeHostControls, props});
-    }, [theme]);
-
-    const openUserProfile = useCallback(async (session: CallSession) => {
-        const screen = Screens.USER_PROFILE;
-        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const closeUserProfile = 'close-user-profile';
-        const props = {closeButtonId: closeUserProfile, location: '', userId: session.userId};
-
-        openAsBottomSheet({screen, title, theme, closeButtonId: closeUserProfile, props});
-    }, [theme, currentCall?.channelId]);
-
-    const onPress = useCallback((session: CallSession) => () => {
-        // Show host controls when allowed and I'm host or admin,
-        // but don't show if this is me and I'm the host already.
-        const isYou = session.userId === currentCall?.myUserId;
-        if (hostControlsAvailable && !(isYou && isHost)) {
-            openHostControl(session);
-        } else {
-            openUserProfile(session);
-        }
-    }, [currentCall?.myUserId, hostControlsAvailable, isHost, openHostControl, openUserProfile]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<CallSession>) => (
         <Participant

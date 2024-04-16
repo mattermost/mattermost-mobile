@@ -26,7 +26,6 @@ import {leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
 import {startCallRecording, stopCallRecording} from '@calls/actions/calls';
 import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
 import {AudioDeviceButton} from '@calls/components/audio_device_button';
-import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
 import CallNotification from '@calls/components/call_notification';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
@@ -35,7 +34,8 @@ import EmojiList from '@calls/components/emoji_list';
 import MessageBar from '@calls/components/message_bar';
 import ReactionBar from '@calls/components/reaction_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
-import {usePermissionsChecker} from '@calls/hooks';
+import {useHostMenus, usePermissionsChecker} from '@calls/hooks';
+import {ParticipantCard} from '@calls/screens/call_screen/participant_card';
 import {RaisedHandBanner} from '@calls/screens/call_screen/raised_hand_banner';
 import {
     setCallQualityAlertDismissed,
@@ -74,10 +74,10 @@ import {displayUsername} from '@utils/user';
 import type {CallSession, CallsTheme, CurrentCall} from '@calls/types/calls';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const avatarL = 96;
-const avatarM = 72;
-const usernameL = 110;
-const usernameM = 92;
+export const avatarL = 96;
+export const avatarM = 72;
+export const usernameL = 110;
+export const usernameM = 92;
 
 export type Props = {
     componentId: AvailableScreens;
@@ -170,29 +170,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     users: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-    },
-    user: {
-        flexGrow: 1,
-        flexDirection: 'column',
-        alignItems: 'center',
-        margin: 10,
-    },
-    userScreenOn: {
-        marginTop: 5,
-        marginBottom: 0,
-    },
-    profileScreenOn: {
-        marginBottom: 2,
-    },
-    username: {
-        width: usernameL,
-        textAlign: 'center',
-        color: theme.buttonColor,
-        ...typography('Body', 100, 'SemiBold'),
-    },
-    usernameShort: {
-        marginTop: 0,
-        width: usernameM,
+        justifyContent: 'center',
     },
     buttonsContainer: {
         alignItems: 'center',
@@ -256,6 +234,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     otherButtons: {
         flexDirection: 'row',
         alignItems: 'center',
+        paddingHorizontal: 8,
     },
     otherButtonsLandscape: {
         justifyContent: 'center',
@@ -277,10 +256,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     buttonIcon: {
         color: theme.buttonColor,
         backgroundColor: changeOpacity(theme.buttonColor, 0.08),
-        borderRadius: 34,
-        padding: 18,
-        width: 68,
-        height: 68,
+        borderRadius: 30,
+        padding: 14,
+        width: 60,
+        height: 60,
         marginBottom: 8,
         overflow: 'hidden',
     },
@@ -334,6 +313,7 @@ const CallScreen = ({
     const {EnableRecordings, EnableTranscriptions} = useCallsConfig(serverUrl);
     usePermissionsChecker(micPermissionsGranted);
     const incomingCalls = useIncomingCalls();
+    const {hostControlsAvailable, onPress, openUserProfile} = useHostMenus();
 
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
     const [showReactions, setShowReactions] = useState(false);
@@ -342,12 +322,14 @@ const CallScreen = ({
     const style = getStyleSheet(callsTheme);
     const [centerUsers, setCenterUsers] = useState(false);
     const [layout, setLayout] = useState<LayoutRectangle | null>(null);
+    const [contentOverflow, setContentOverflow] = useState(false);
+    const [previousNumSessions, setPreviousNumSessions] = useState(0);
 
     const mySession = currentCall?.sessions[currentCall.mySessionId];
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
     const screenShareOn = Boolean(currentCall?.screenOn);
     const isLandscape = width > height;
-    const smallerAvatar = isLandscape || screenShareOn || showCC;
+    const smallerAvatar = isLandscape || screenShareOn || showCC || contentOverflow;
     const avatarSize = smallerAvatar ? avatarM : avatarL;
     const numSessions = Object.keys(sessionsDict).length;
     const showIncomingCalls = incomingCalls.incomingCalls.length > 0;
@@ -591,6 +573,28 @@ const CallScreen = ({
         setLayout(e.nativeEvent.layout);
     }, []);
 
+    const onContentSizeChange = useCallback((_: number, h: number) => {
+        // If numSessions has changed, perform contentOverflow check. Prevents infinite loop.
+        if (numSessions !== previousNumSessions) {
+            setContentOverflow(h > (layout?.height || 0));
+            setPreviousNumSessions(numSessions);
+        }
+    }, [layout, numSessions, previousNumSessions]);
+
+    const onShortPress = useCallback((session: CallSession) => () => {
+        if (hostControlsAvailable) {
+            onPress(session)();
+        }
+    }, [hostControlsAvailable, onPress]);
+
+    const onLongPress = useCallback((session: CallSession) => () => {
+        if (hostControlsAvailable) {
+            onPress(session)();
+        } else {
+            openUserProfile(session);
+        }
+    }, [hostControlsAvailable, onPress, openUserProfile]);
+
     if (!currentCall || !mySession) {
         return null;
     }
@@ -629,6 +633,7 @@ const CallScreen = ({
                     alwaysBounceVertical={false}
                     horizontal={screenShareOn}
                     onLayout={onLayout}
+                    onContentSizeChange={onContentSizeChange}
                     contentContainerStyle={centerUsers && style.usersScrollViewCentered}
                 >
                     <Pressable
@@ -636,37 +641,16 @@ const CallScreen = ({
                         onPress={toggleControlsInLandscape}
                         style={style.users}
                     >
-                        {sessions.map((sess) => {
-                            return (
-                                <View
-                                    style={[style.user, screenShareOn && style.userScreenOn]}
-                                    key={sess.sessionId}
-                                >
-                                    <View style={[screenShareOn && style.profileScreenOn]}>
-                                        <CallAvatar
-                                            userModel={sess.userModel}
-                                            speaking={currentCall.voiceOn[sess.sessionId]}
-                                            muted={sess.muted}
-                                            sharingScreen={sess.sessionId === currentCall.screenOn}
-                                            raisedHand={Boolean(sess.raisedHand)}
-                                            reaction={sess.reaction?.emoji}
-                                            size={avatarSize}
-                                            serverUrl={currentCall.serverUrl}
-                                        />
-                                    </View>
-                                    <Text
-                                        style={[style.username, smallerAvatar && style.usernameShort]}
-                                        numberOfLines={1}
-                                    >
-                                        {displayUsername(sess.userModel, intl.locale, teammateNameDisplay)}
-                                        {sess.sessionId === mySession.sessionId &&
-                                            ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
-                                        }
-                                    </Text>
-                                    {sess.userId === currentCall.hostId && <CallsBadge type={CallsBadgeType.Host}/>}
-                                </View>
-                            );
-                        })}
+                        {sessions.map((sess) => (
+                            <ParticipantCard
+                                key={sess.sessionId}
+                                session={sess}
+                                smallerAvatar={smallerAvatar}
+                                teammateNameDisplay={teammateNameDisplay}
+                                onPress={onShortPress(sess)}
+                                onLongPress={onLongPress(sess)}
+                            />
+                        ))}
                     </Pressable>
                 </ScrollView>
             </View>

@@ -10,6 +10,7 @@ import Permissions from 'react-native-permissions';
 
 import {initializeVoiceTrack} from '@calls/actions/calls';
 import {
+    getCallsConfig, getCurrentCall,
     setMicPermissionsGranted,
     useCallsState,
     useChannelsWithCalls,
@@ -17,7 +18,8 @@ import {
     useGlobalCallsState,
     useIncomingCalls,
 } from '@calls/state';
-import {errorAlert} from '@calls/utils';
+import {errorAlert, isHostControlsAllowed} from '@calls/utils';
+import {Screens} from '@constants';
 import {
     CALL_ERROR_BAR_HEIGHT,
     CALL_NOTIFICATION_BAR_HEIGHT,
@@ -25,11 +27,17 @@ import {
     JOIN_CALL_BAR_HEIGHT,
 } from '@constants/view';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import {useAppState} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
+import {getCurrentUser} from '@queries/servers/user';
+import {openAsBottomSheet} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
+import {isSystemAdmin} from '@utils/user';
 
+import type {CallSession} from '@calls/types/calls';
 import type {Client} from '@client/rest';
 
 export const useTryCallsFunction = (fn: () => void) => {
@@ -154,4 +162,67 @@ export const useCallsAdjustment = (serverUrl: string, channelId: string): number
         (callQualityAlert ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
         (joinCallBannerVisible ? JOIN_CALL_BAR_HEIGHT + 8 : 0) +
         callsIncomingAdjustment;
+};
+
+export const useHostControlsAvailable = () => {
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    const currentCall = getCurrentCall();
+    const serverUrl = currentCall?.serverUrl || '';
+    const config = getCallsConfig(serverUrl);
+    const allowed = isHostControlsAllowed(config);
+
+    useEffect(() => {
+        const getUser = async () => {
+            const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+            if (!database) {
+                return;
+            }
+            const user = await getCurrentUser(database);
+            setIsAdmin(isSystemAdmin(user?.roles || ''));
+        };
+        getUser();
+    }, [serverUrl]);
+
+    const isHost = currentCall?.hostId === currentCall?.myUserId;
+    return allowed && (isHost || isAdmin);
+};
+
+export const useHostMenus = () => {
+    const intl = useIntl();
+    const theme = useTheme();
+    const currentCall = useCurrentCall();
+    const hostControlsAvailable = useHostControlsAvailable();
+    const isHost = currentCall?.hostId === currentCall?.myUserId;
+
+    const openHostControl = useCallback(async (session: CallSession) => {
+        const screen = Screens.CALL_HOST_CONTROLS;
+        const title = intl.formatMessage({id: 'mobile.calls_host_controls', defaultMessage: 'Host controls'});
+        const closeHostControls = 'close-host-controls';
+        const props = {closeButtonId: closeHostControls, session};
+
+        openAsBottomSheet({screen, title, theme, closeButtonId: closeHostControls, props});
+    }, [theme]);
+
+    const openUserProfile = useCallback(async (session: CallSession) => {
+        const screen = Screens.USER_PROFILE;
+        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+        const closeUserProfile = 'close-user-profile';
+        const props = {closeButtonId: closeUserProfile, location: '', userId: session.userId};
+
+        openAsBottomSheet({screen, title, theme, closeButtonId: closeUserProfile, props});
+    }, [theme, currentCall?.channelId]);
+
+    const onPress = useCallback((session: CallSession) => () => {
+        // Show host controls when allowed and I'm host or admin,
+        // but don't show if this is me and I'm the host already.
+        const isYou = session.userId === currentCall?.myUserId;
+        if (hostControlsAvailable && !(isYou && isHost)) {
+            openHostControl(session);
+        } else {
+            openUserProfile(session);
+        }
+    }, [currentCall?.myUserId, hostControlsAvailable, isHost, openHostControl, openUserProfile]);
+
+    return {hostControlsAvailable, onPress, openUserProfile};
 };
