@@ -3,9 +3,6 @@ name: "generate-specs"
 description: This action used to split Detox integration tests based on the parallelism provided
 
 inputs:
-  directory:
-    description: The directory of the test suite
-    required: true
   search_path:
     description: The path to look for from within the directory
     required: true
@@ -33,7 +30,6 @@ runs:
       env:
         PARALLELISM: ${{ inputs.parallelism }}
         SEARCH_PATH: ${{ inputs.search_path }}
-        DIRECTORY: ${{ inputs.directory }}
         DEVICE: ${{ inputs.DEVICE }}
         OS_VERSION: ${{ inputs.OS_VERSION }}
       run: |
