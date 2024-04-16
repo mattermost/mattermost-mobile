@@ -55,8 +55,7 @@ jobs:
         uses: ./.github/actions/generate-specs
         with:
           parallelism: 10
-          directory: detox/e2e
-          search_path: test
+          search_path: detox/e2e/test
           device: ${{ env.DEVICE_NAME }}
           os_version: ${{ env.DEVICE_OS_VERSION }}
 

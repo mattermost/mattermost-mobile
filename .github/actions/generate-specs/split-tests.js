@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 class DeviceInfo {
   constructor(device, osVersion) {
     this.device = device;
@@ -15,9 +18,8 @@ class SpecGroup {
 }
 
 class Specs {
-  constructor(directory, searchPath, parallelism, deviceInfo) {
+  constructor(searchPath, parallelism, deviceInfo) {
     this.searchPath = searchPath;
-    this.directory = directory;
     this.parallelism = parallelism;
     this.rawFiles = [];
     this.groupedFiles = [];
@@ -25,9 +27,7 @@ class Specs {
   }
 
   findFiles() {
-    const fs = require('fs');
-    const path = require('path');
-    const dirPath = path.join(this.directory, this.searchPath);
+    const dirPath = path.join(this.searchPath);
 
     const fileRegex = /\.e2e\.ts$/;
 
@@ -42,7 +42,7 @@ class Specs {
           walkSync(filePath);
         } else if (fileRegex.test(filePath)) {
           const relativeFilePath = filePath.replace(dirPath + '/', '');
-          const fullPath = path.join(this.directory, this.searchPath, relativeFilePath);
+          const fullPath = path.join(this.searchPath, relativeFilePath);
           this.rawFiles.push(fullPath);
         }
       });
@@ -80,13 +80,12 @@ class Specs {
 
 function main() {
   const searchPath = process.env.SEARCH_PATH;
-  const directory = process.env.DIRECTORY;
   const parallelism = parseInt(process.env.PARALLELISM, 10);
   const device = process.env.DEVICE;
   const osVersion = process.env.OS_VERSION;
 
   const deviceInfo = new DeviceInfo(device, osVersion);
-  const specs = new Specs(directory, searchPath, parallelism, deviceInfo);
+  const specs = new Specs(searchPath, parallelism, deviceInfo);
 
   specs.findFiles();
   specs.generateSplits();
