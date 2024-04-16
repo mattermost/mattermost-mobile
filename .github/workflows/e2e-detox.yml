@@ -312,29 +312,15 @@ jobs:
           docker-images: true
           swap-storage: false
 
-      - name: Download Android Emulator Image
-        run: |
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install $PACKAGE
-          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --force --name Pixel_6_Pro_API_33 --device "pixel_6_pro" --package $PACKAGE --sdcard 256M
-          # adb start-server
-          $ANDROID_HOME/emulator/emulator -list-avds
-          $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list device
-          $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list avd
-        env:
-          PACKAGE: 'system-images;android-29;default;x86_64'
-        
       - name: Change Android Emulator settings
         run: |
-          echo fs.inotify.max_user_watches=524288 | tee -a /etc/sysctl.conf && sysctl -p
-          mkdir -p /root/.android && touch /root/.android/repositories.cfg
-          echo "vm.heapSize=576" >> $AVD_PATH/config.ini
-          echo "hw.ramSize=2048" >> $AVD_PATH/config.ini
-          echo "disk.dataPartition.size=2048m" >> $AVD_PATH/config.ini
-          grep "size" $AVD_PATH/config.ini
+          echo "vm.heapSize=576" >> $HOME/.android/avd/$AVD_NAME.avd/config.ini
+          echo "hw.ramSize=2048" >> $HOME/.android/avd/$AVD_NAME.avd/config.ini
+          echo "disk.dataPartition.size=2048m" >> $HOME/.android/avd/$AVD_NAME.avd/config.ini
+          grep "size" $HOME/.android/avd/$AVD_NAME.avd/config.ini
         env:
           AVD_NAME: Pixel_6_Pro_API_33
-          AVD_PATH: /root/.android/avd/Pixel_6_Pro_API_33.avd
-        
+  
       - name: Android Emulator
         timeout-minutes: 10
         continue-on-error: true
