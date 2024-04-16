@@ -44,6 +44,8 @@ jobs:
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       BUILD_ID: ${{ steps.generate-specs.outputs.BUILD_ID }}
+      DEVICE_NAME: ${{ steps.generate-specs.outputs.DEVICE_NAME }}
+      DEVICE_OS_VERSION: ${{ steps.generate-specs.outputs.DEVICE_OS_VERSION }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
