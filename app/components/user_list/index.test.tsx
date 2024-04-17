@@ -76,7 +76,7 @@ describe('components/channel_list_row', () => {
     it('should show no results', () => {
         const wrapper = renderWithEverything(
             <UserList
-                profiles={[user]}
+                profiles={[]}
                 testID='UserListRow'
                 currentUserId={'1'}
                 handleSelectProfile={() => {
@@ -87,6 +87,7 @@ describe('components/channel_list_row', () => {
                 }}
                 loading={true}
                 selectedIds={{}}
+                term={'some term'}
                 showNoResults={true}
                 tutorialWatched={true}
             />,
