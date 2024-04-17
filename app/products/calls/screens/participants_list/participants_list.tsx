@@ -56,7 +56,7 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
     const List = useMemo(() => (isTablet ? FlatList : BottomSheetFlatList), [isTablet]);
     const styles = getStyleSheet(theme);
 
-    const sessions = useMemo(() => sortSessions(intl.locale, teammateNameDisplay, sessionsDict), [sessionsDict]);
+    const sessions = sortSessions(intl.locale, teammateNameDisplay, sessionsDict);
     const snapPoint1 = bottomSheetSnapPoint(Math.min(sessions.length, MIN_ROWS), ROW_HEIGHT, bottom) + HEADER_HEIGHT;
     const snapPoint2 = height * 0.8;
     const snapPoints = [1, Math.min(snapPoint1, snapPoint2)];
