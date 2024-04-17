@@ -6,11 +6,11 @@ import React from 'react';
 import {View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
+import {buildAbsoluteUrl} from '@actions/remote/file';
+import {buildProfileImageUrlFromUser} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
-import NetworkManager from '@managers/network_manager';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Client} from '@client/rest';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
@@ -37,23 +37,15 @@ const Group = ({theme, users}: Props) => {
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
-    let client: Client | undefined;
-
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch {
-        return null;
-    }
-
     const rows = chunk(users, 5);
     const groups = rows.map((c, k) => {
         const group = c.map((u, i) => {
-            const pictureUrl = client!.getProfilePictureUrl(u.id, u.lastPictureUpdate);
+            const pictureUrl = buildProfileImageUrlFromUser(serverUrl, u);
             return (
                 <FastImage
                     key={pictureUrl + i.toString()}
                     style={[styles.profile, {transform: [{translateX: -(i * 24)}]}]}
-                    source={{uri: `${serverUrl}${pictureUrl}`}}
+                    source={{uri: buildAbsoluteUrl(serverUrl, pictureUrl)}}
                 />
             );
         });

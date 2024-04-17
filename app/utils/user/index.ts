@@ -380,3 +380,12 @@ export const getEmailIntervalTexts = (interval: string) => {
     };
     return intervalTexts[interval];
 };
+
+export const getLastPictureUpdate = (user: UserModel | UserProfile) => {
+    const isBotUser = ('isBot' in user) ? user.isBot : user.is_bot;
+    if (isBotUser) {
+        return ('isBot' in user) ? user.props?.bot_last_icon_update : user.bot_last_icon_update || 0;
+    }
+
+    return ('lastPictureUpdate' in user) ? user.lastPictureUpdate : user.last_picture_update || 0;
+};
