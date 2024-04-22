@@ -156,6 +156,9 @@ const PostList = ({
     }, []);
 
     const onRefresh = useCallback(async () => {
+        if (disablePullToRefresh) {
+            return;
+        }
         setRefreshing(true);
         if (location === Screens.CHANNEL && channelId) {
             await fetchPosts(serverUrl, channelId);
@@ -170,7 +173,7 @@ const PostList = ({
             await fetchPostThread(serverUrl, rootId, options);
         }
         setRefreshing(false);
-    }, [channelId, location, posts, rootId]);
+    }, [channelId, location, posts, rootId, disablePullToRefresh]);
 
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const {y} = event.nativeEvent.contentOffset;
@@ -357,7 +360,7 @@ const PostList = ({
                 testID={`${testID}.flat_list`}
                 inverted={true}
                 refreshing={refreshing}
-                onRefresh={disablePullToRefresh ? undefined : onRefresh}
+                onRefresh={onRefresh}
             />
             {location !== Screens.PERMALINK &&
             <ScrollToEndView
