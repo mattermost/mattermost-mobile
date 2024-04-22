@@ -1,0 +1,11 @@
+NSAppleMusicUsageDescription = "Als u toegang tot uw mediabibliotheek inschakelt, kunt u bestanden uit uw mediabibliotheek aan uw berichten in Mattermost Beta toevoegen.";
+NSBluetoothAlwaysUsageDescription = "Door toegang tot Bluetooth mogelijk te maken, kunnen we inhoud op al jouw apparaten en clients synchroniseren.";
+NSBluetoothPeripheralUsageDescription = "Toegang tot Bluetooth betekent dat we verbinding kunnen maken met audio-randapparatuur voor gesprekken en inhoud kunnen synchroniseren tussen jouw apparaten en clients.";
+NSCameraUsageDescription = "Als je toegang geeft tot je camera, kun je foto's of video's maken en aan berichten toevoegen.";
+NSFaceIDUsageDescription = "Door de toegang tot jouw Face ID in te schakelen, kunnen we onbevoegde gebruikers de toegang tot Mattermost Beta op jouw apparaat beperken.";
+NSLocationAlwaysUsageDescription = "Door toegang tot jouw locatiegegevens mogelijk te maken, kunnen we locatiemetadata toevoegen aan foto's en video's die je deelt in Mattermost Beta.";
+NSLocationWhenInUseUsageDescription = "Door toegang tot jouw locatiegegevens mogelijk te maken, kunnen we locatiemetadata toevoegen aan foto's en video's die je deelt in Mattermost Beta.";
+NSMicrophoneUsageDescription = "Als je de toegang tot de microfoons van jouw apparaat inschakelt, kan je audio opnemen voor gesprekken en video's en deze delen in Mattermost Beta.";
+NSPhotoLibraryAddUsageDescription = "Als je schrijftoegang tot je fotobibliotheek inschakelt, kan je foto's of video's van Mattermost Beta downloaden en bewaren op jouw apparaat.";
+NSPhotoLibraryUsageDescription = "Met toegang tot je fotobibliotheek, kun je foto's of video's selecteren en aan berichten toevoegen.";
+NSSpeechRecognitionUsageDescription = "Als je toestaat dat jouw toestel gebruikersdata doorstuurt naar Apple, kan je spraakberichten sturen naar Mattermost Beta.";

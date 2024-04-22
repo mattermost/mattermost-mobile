@@ -1,0 +1,11 @@
+NSAppleMusicUsageDescription = "Ortam kitaplığınıza erişimi etkinleştirerek, ortam kitaplığınızdaki dosyaları Mattermost Beta adresindeki iletilerinize ekleyebilirsiniz.";
+NSBluetoothAlwaysUsageDescription = "Bluetooth erişimini etkinleştirerek, içeriği aygıtlarınız ve istemcileriniz arasında eşitleyebilirsiniz.";
+NSBluetoothPeripheralUsageDescription = "Bluetooth erişimini etkinleştirerek, aramalar için ses çevre birimlerine bağlanabilir ve içerikleri aygıtlarınız ile istemcileriniz arasında eşitleyebilirsiniz.";
+NSCameraUsageDescription = "Kamera erişimini etkinleştirerek, fotoğraf ya da video çekebilir ve bunları iletilere ekleyebilirsiniz.";
+NSFaceIDUsageDescription = "Face ID erişimini etkinleştirerek, yetkisiz kullanıcıların aygıtınızdaki Mattermost Beta uygulamasına erişmesini engelleyebilirsiniz.";
+NSLocationAlwaysUsageDescription = "Konum verileri erişimini etkinleştirerek, Mattermost Beta üzerinden paylaştığınız görsel ve videolara konum üst verileri ekleyebilirsiniz.";
+NSLocationWhenInUseUsageDescription = "Konum verileri erişimini etkinleştirerek, Mattermost Beta üzerinden paylaştığınız görsel ve videolara konum üst verileri ekleyebilirsiniz.";
+NSMicrophoneUsageDescription = "Aygıtınızda mikrofon erişimini etkinleştirerek, Mattermost Beta üzerinden çağrı ya da videolarda paylaşmak için sesi alabilirsiniz.";
+NSPhotoLibraryAddUsageDescription = "Fotoğraf kitaplığınıza yazma erişimini etkinleştirerek, indirilen fotoğrafları ve videoları Mattermost Beta ile aygıtınıza kaydedebilirsiniz.";
+NSPhotoLibraryUsageDescription = "Fotoğraf kitaplığınıza erişimi etkinleştirerek, fotoğraf ve videoları seçip iletilere ekleyebilirsiniz.";
+NSSpeechRecognitionUsageDescription = "Aygıtınızın kullanıcı verilerini Apple üzerine göndermesine izin vererek, Mattermost Beta ile sesli mesaj gönderebilirsiniz.";

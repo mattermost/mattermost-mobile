@@ -1,0 +1,11 @@
+NSAppleMusicUsageDescription = "Enabling access to your media library means you can attach files from your media library to your messages in Mattermost Beta.";
+NSBluetoothAlwaysUsageDescription = "Enabling access to Bluetooth means your content can be synchronised across your devices and clients.";
+NSBluetoothPeripheralUsageDescription = "Enabling access to Bluetooth means your audio peripherals can be used for calls and your content can be synchronised across your devices and clients.";
+NSCameraUsageDescription = "Allowing access to your camera enables you to take photos or videos and attach them to messages.";
+NSFaceIDUsageDescription = "Enabling access to your Face ID means unauthorised users can be restricted from accessing Mattermost Beta on your device.";
+NSLocationAlwaysUsageDescription = "Enabling access to your location data means location metadata can be added to pictures and videos you share in Mattermost Beta.";
+NSLocationWhenInUseUsageDescription = "Enabling access to your location data means location metadata can be added to pictures and videos you share in Mattermost Beta.";
+NSMicrophoneUsageDescription = "Enabling access to your device's microphone means it can capture audio for calls or videos to share in Mattermost Beta.";
+NSPhotoLibraryAddUsageDescription = "Enabling write access to your photo library means you can save downloaded photos and videos from Mattermost Beta to your device.";
+NSPhotoLibraryUsageDescription = "Allowing access to your photo library enables you to select photos or videos and attach them to messages.";
+NSSpeechRecognitionUsageDescription = "Enabling your device to send user data to Apple means you can send voice messages to Mattermost Beta.";

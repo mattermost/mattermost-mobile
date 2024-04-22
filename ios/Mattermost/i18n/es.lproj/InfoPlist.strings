@@ -1,0 +1,11 @@
+NSAppleMusicUsageDescription = "Habilitar el acceso a tu biblioteca de medios significa que puedes adjuntar archivos desde tu biblioteca de medios a tus mensajes en Mattermost Beta.";
+NSBluetoothAlwaysUsageDescription = "Habilitar el acceso a Bluetooth significa que puedes sincronizar contenido a través de tus dispositivos y clientes.";
+NSBluetoothPeripheralUsageDescription = "Habilitar el acceso a Bluettoth significa que puedes conectarte a periféricos de audio para llamadas, y sincronizar contenido a través de tus dispositivos y clientes.";
+NSCameraUsageDescription = "Permitir el acceso a tu cámara habilita te permite tomar fotos o videos y adjuntarlos a los mensajes.";
+NSFaceIDUsageDescription = "Habilitar el acceso a tu Face ID significa que podemos restringir a usuarios no autorizados de acceder a Mattermost Beta en tu dispositivo.";
+NSLocationAlwaysUsageDescription = "Habilitar el acceso a tus datos de ubicación significa que podemos agregar metadatos a las fotos y videos que compartes en Mattermost Beta.";
+NSLocationWhenInUseUsageDescription = "Habilitar el acceso a tus datos de ubicación significa que podemos agregar metadatos de ubicación a las fotos y videos que compartes en Mattermost Beta.";
+NSMicrophoneUsageDescription = "Habilitar el acceso a los micrófonos de tu dispositivo significa que puedes capturar audio para las llamadas o videos que compartes en Mattermost Beta.";
+NSPhotoLibraryAddUsageDescription = "Habilitar el acceso a escritura a tu biblioteca de fotos significa que puedes guardar fotos y videos descargados desde Mattermost Beta a tu dispositivo.";
+NSPhotoLibraryUsageDescription = "Permitir el acceso a tu biblioteca de fotos te permite seleccionar fotos o videos y adjuntarlos a los mensajes.";
+NSSpeechRecognitionUsageDescription = "Habilitar tu dispositivo para enviar datos de usuario a Apple significa que puedes enviar mensajes de voz a Mattermost Beta.";

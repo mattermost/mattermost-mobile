@@ -1,0 +1,11 @@
+NSAppleMusicUsageDescription = "启用对媒体库的访问意味着您可以将媒体库中的文件附加到Mattermost Beta中的消息中。";
+NSBluetoothAlwaysUsageDescription = "启用蓝牙访问意味着我们可以在您的设备和客户端之间同步内容。";
+NSBluetoothPeripheralUsageDescription = "启用对蓝牙的访问意味着我们可以连接到音频外围设备进行通话，并在您的设备和客户端之间同步内容。";
+NSCameraUsageDescription = "允许访问您的摄像头使您可以拍摄照片或视频并附在消息中。";
+NSFaceIDUsageDescription = "开启你的Face ID访问权限意味着我们可以限制没有被授权的用户访问您设备上的Mattermost Beta。";
+NSLocationAlwaysUsageDescription = "启用对您的位置数据的访问意味着我们可以将位置元数据添加到您在Mattermost Beta中共享的图片和视频中。";
+NSLocationWhenInUseUsageDescription = "启用对您的位置数据的访问意味着我们可以将位置元数据添加到您在Mattermost Beta中共享的图片和视频中。";
+NSMicrophoneUsageDescription = "启用对设备麦克风的访问意味着您可以捕获通话音频或视频以在Mattermost Beta中共享。";
+NSPhotoLibraryAddUsageDescription = "启用对您的照片库的写入权限意味着您可以将从Mattermost Beta下载的照片和视频保存到您的设备。";
+NSPhotoLibraryUsageDescription = "允许访问您的照片库使您可以选择照片或视频附在消息中。";
+NSSpeechRecognitionUsageDescription = "启用您的设备向 Apple 发送用户数据意味着您可以向Mattermost Beta发送语音消息。";

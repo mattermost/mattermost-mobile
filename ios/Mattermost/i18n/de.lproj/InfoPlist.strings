@@ -1,0 +1,11 @@
+NSAppleMusicUsageDescription = "Wenn du den Zugriff auf deine Medienbibliothek aktivierst, kannst du Dateien aus deiner Medienbibliothek an deine Nachrichten in Mattermost Beta anhängen.";
+NSBluetoothAlwaysUsageDescription = "Durch die Aktivierung des Bluetooth-Zugriffs können wir Inhalte zwischen deinem Geräten und Clients synchronisieren.";
+NSBluetoothPeripheralUsageDescription = "Durch die Aktivierung des Zugriffs auf Bluetooth können wir eine Verbindung zu Audio-Peripheriegeräten für Anrufe herstellen und Inhalte zwischen deinen Geräten und Clients synchronisieren.";
+NSCameraUsageDescription = "Wenn du den Zugriff auf deine Kameras erlaubst, kannst du Fotos oder Videos aufnehmen und sie an Nachrichten anhängen.";
+NSFaceIDUsageDescription = "Durch die Aktivierung des Zugriffs auf deine Face ID können wir unbefugten Benutzern den Zugriff auf Mattermost Beta auf deinem Gerät verwehren.";
+NSLocationAlwaysUsageDescription = "Durch die Freigabe des Zugriffs auf deine Standortdaten können wir den Bildern und Videos, die du auf Mattermost Beta teilst, Standort-Metadaten hinzufügen.";
+NSLocationWhenInUseUsageDescription = "Durch die Freigabe des Zugriffs auf deine Standortdaten können wir den Bildern und Videos, die du auf Mattermost Beta teilst, Standort-Metadaten hinzufügen.";
+NSMicrophoneUsageDescription = "Wenn du den Zugriff auf die Mikrofone deines Geräts aktivierst, kannst du Audio für Anrufe oder Videos aufnehmen, die du auf Mattermost Beta teilen möchtest.";
+NSPhotoLibraryAddUsageDescription = "Wenn du den Schreibzugriff auf deine Fotobibliothek aktivierst, kannst du heruntergeladene Fotos und Videos von Mattermost Beta auf deinem Gerät speichern.";
+NSPhotoLibraryUsageDescription = "Wenn du den Zugriff auf deine Fotobibliothek erlaubst, kannst du Fotos und Videos auswählen und an Nachrichten anhängen.";
+NSSpeechRecognitionUsageDescription = "Wenn du dein Gerät aktivierst, um Benutzerdaten an Apple zu senden, kannst du Sprachnachrichten an Mattermost Beta senden.";

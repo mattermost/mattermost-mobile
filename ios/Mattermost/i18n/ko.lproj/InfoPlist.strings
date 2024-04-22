@@ -1,0 +1,11 @@
+NSAppleMusicUsageDescription = "미디어 라이브러리에 액세스할 수 있도록 설정하면 미디어 라이브러리에 있는 파일을 Mattermost Beta의 메시지에 첨부할 수 있습니다.";
+NSBluetoothAlwaysUsageDescription = "Bluetooth에 대한 액세스를 활성화하면 장치와 클라이언트 간에 콘텐츠를 동기화할 수 있습니다.";
+NSBluetoothPeripheralUsageDescription = "Bluetooth 액세스를 활성화하면 통화를 위해 오디오 주변 장치에 연결하고 장치와 클라이언트 간에 콘텐츠를 동기화할 수 있습니다.";
+NSCameraUsageDescription = "디바이스 카메라에 대한 액세스를 활성화하면 사진이나 동영상을 촬영하여 Mattermost Beta에 업로드할 수 있습니다.";
+NSFaceIDUsageDescription = "Face ID에 대한 액세스를 활성화하면 권한이 없는 사용자가 장치에서 Mattermost Beta 에 액세스하는 것을 제한할 수 있습니다.";
+NSLocationAlwaysUsageDescription = "위치 데이터에 대한 액세스를 활성화하면 Mattermost Beta 에서 공유하는 사진 및 동영상에 위치 메타데이터를 추가할 수 있습니다.";
+NSLocationWhenInUseUsageDescription = "위치 데이터에 대한 액세스를 활성화하면 Mattermost Beta 에서 공유하는 사진 및 동영상에 위치 메타데이터를 추가할 수 있습니다.";
+NSMicrophoneUsageDescription = "디바이스의 마이크에 액세스할 수 있도록 설정하면 Mattermost Beta 에서 공유할 통화 또는 동영상에 대한 오디오를 캡처할 수 있습니다.";
+NSPhotoLibraryAddUsageDescription = "사진 보관함에 대한 쓰기 액세스를 활성화하면 Mattermost Beta 에서 다운로드한 사진과 동영상을 내 장치에 저장할 수 있습니다.";
+NSPhotoLibraryUsageDescription = "사진 보관함에 대한 읽기 액세스를 활성화하면 내 장치에서 Mattermost Beta 으로 사진과 동영상을 업로드할 수 있습니다.";
+NSSpeechRecognitionUsageDescription = "기기에서 사용자 데이터를 Apple에 전송하도록 설정하면 Mattermost Beta 으로 음성 메시지를 보낼 수 있습니다.";

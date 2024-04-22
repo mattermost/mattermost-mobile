@@ -1,0 +1,10 @@
+"about.teamEditiont0" = "Team Edition";
+"about.teamEditionSt" = "ទំនាក់ទំនងក្រុមរបស់អ្នកទាំងអស់ស្ថិតនៅក្នុងកន្លែងតែមួយ មានភាពរហ័យក្នុងការស្រាវជ្រាវ និងអាចភ្ជាប់ទំនាក់ទំនងគ្រប់ទីកន្លែង។";
+"about.teamEditionLearn" = "ចូលរួមជាមួយសហគមន៍ Mattermost នៅ ";
+"about.hashee" = "EE Build Hash:";
+"about.hash" = "ស្ថាបនាម៉ាស៊ីន ៖";
+"about.enterpriseEditionSt" = "ទំនាក់ទំនងទំនើបនៅពីក្រោយ Firewall អ្នក។";
+"about.enterpriseEditionLearn" = "រៀនបន្ថែមអំពី Enterprise Edition នៅ";
+"about.date" = "ពេលវេលាស្ថាបនា ៖";
+"apps.error" = "កំហុស: {error}";
+"api.channel.add_member.added" = "{addedUsername} បានបន្ថែមទៅក្នុង channel ដោយ {username}.";

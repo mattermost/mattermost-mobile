@@ -1,0 +1,11 @@
+NSAppleMusicUsageDescription = "Om du tillåter åtkomst till ditt mediebibliotek kan du bifoga filer från ditt mediebibliotek till dina meddelanden på Mattermost Beta.";
+NSBluetoothAlwaysUsageDescription = "Genom att aktivera Bluetooth kan vi synkronisera innehåll mellan dina enheter och klienter.";
+NSBluetoothPeripheralUsageDescription = "Genom att aktivera tillgång till Bluetooth kan vi ansluta till ljudenheter för samtal och synkronisera innehåll mellan dina enheter och klienter.";
+NSCameraUsageDescription = "Med åtkomst till enhetens kamera kan du ta foton eller videor och bifoga dem till meddelanden.";
+NSFaceIDUsageDescription = "Om du tillåter åtkomst till Face ID kan vi begränsa obehöriga användares åtkomst till Mattermost Beta på din enhet.";
+NSLocationAlwaysUsageDescription = "Om du tillåter åtkomst till platsdata kan vi lägga till platsmetadata till bilder och videor som du delar på Mattermost Beta.";
+NSLocationWhenInUseUsageDescription = "Om du tillåter åtkomst till platsdata kan vi lägga till platsmetadata till bilder och videor som du delar på Mattermost Beta.";
+NSMicrophoneUsageDescription = "Genom att tillåta tillgång till enhetens mikrofoner kan du använda ljud för samtal eller videor för att dela dem på Mattermost Beta.";
+NSPhotoLibraryAddUsageDescription = "Om du tillåter skrivåtkomst till ditt fotobibliotek kan du spara nedladdade foton och videor från Mattermost Beta på enheten.";
+NSPhotoLibraryUsageDescription = "Läsåtkomst till ditt fotobibliotek ger möjlighet att välja foton och videor och bifoga dem till meddelanden.";
+NSSpeechRecognitionUsageDescription = "Om du tillåter din enhet att skicka användardata till Apple kan du skicka röstmeddelanden till Mattermost Beta.";

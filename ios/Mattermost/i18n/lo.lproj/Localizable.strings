@@ -1,0 +1,10 @@
+"mobile.server_url.invalid_format" = "ຕ້ອງເລີ່ມຕົ້ນ http:// ຫຼື https:// ";
+"channel_modal.name" = "ຊື່";
+"about.teamEditiont0" = "Team Edition";
+"about.teamEditionSt" = "ການສື່ສານຂອງທີມງານທັງຫມົດຂອງທ່ານຢູ່ໃນສະຖານທີ່ດຽວ, ສາມາດຄົ້ນຫາໄດ້ທັນທີແລະມີຢູ່ທົ່ວທຸກແຫ່ງ.";
+"about.teamEditionLearn" = "ເຂົ້າຮ່ວມຊຸມຊົນ ລະບົບສົນທະນາ Mattermost ";
+"about.hashee" = "EE Build Hash:";
+"about.hash" = "Build Hash:";
+"about.enterpriseEditionSt" = "ການສື່ສານທີ່ທັນສະໄຫມຢູ່ຫລັງ Firewall.";
+"about.enterpriseEditionLearn" = "ຮຽນຮູ້ເພີ່ມເຕີມກ່ຽວກັບ Enterprise Edition";
+"about.date" = "ວັນທີ່ສ້າງ:";

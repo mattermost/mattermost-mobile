@@ -1,0 +1,11 @@
+NSAppleMusicUsageDescription = "Cho phép truy cập vào thư viện phương tiện của bạn có nghĩa là bạn có thể đính kèm tệp từ thư viện phương tiện vào thư của mình trong Mattermost Beta.";
+NSBluetoothAlwaysUsageDescription = "Cho phép truy cập Bluetooth có nghĩa là chúng tôi có thể đồng bộ hóa nội dung trên các thiết bị và ứng dụng khách của bạn.";
+NSBluetoothPeripheralUsageDescription = "Cho phép truy cập Bluetooth có nghĩa là chúng tôi có thể kết nối với thiết bị ngoại vi âm thanh để thực hiện cuộc gọi và đồng bộ hóa nội dung trên các thiết bị và ứng dụng khách của bạn.";
+NSCameraUsageDescription = "Bật quyền truy cập vào máy ảnh của thiết bị nghĩa là bạn có thể chụp ảnh hoặc quay video và tải chúng lên Mattermost Beta.";
+NSFaceIDUsageDescription = "Cho phép truy cập vào Face ID của bạn có nghĩa là chúng tôi có thể hạn chế người dùng trái phép truy cập vào Mattermost Beta trên thiết bị của bạn.";
+NSLocationAlwaysUsageDescription = "Cho phép truy cập vào dữ liệu vị trí của bạn nghĩa là chúng tôi có thể thêm siêu dữ liệu vị trí vào ảnh và video mà bạn chia sẻ trong Mattermost Beta.";
+NSLocationWhenInUseUsageDescription = "Cho phép truy cập vào dữ liệu vị trí của bạn nghĩa là chúng tôi có thể thêm siêu dữ liệu vị trí vào ảnh và video mà bạn chia sẻ trong Mattermost Beta.";
+NSMicrophoneUsageDescription = "Cho phép truy cập vào micrô của thiết bị có nghĩa là bạn có thể ghi lại âm thanh cho cuộc gọi hoặc video để chia sẻ trong Mattermost Beta.";
+NSPhotoLibraryAddUsageDescription = "Bật quyền truy cập ghi vào thư viện ảnh của bạn nghĩa là bạn có thể lưu ảnh và video đã tải xuống từ Mattermost Beta vào thiết bị của mình.";
+NSPhotoLibraryUsageDescription = "Cho phép quyền truy cập đọc vào thư viện ảnh của bạn có nghĩa là bạn có thể tải ảnh và video từ thiết bị của mình lên Mattermost Beta.";
+NSSpeechRecognitionUsageDescription = "Cho phép thiết bị của bạn gửi dữ liệu người dùng tới Apple nghĩa là bạn có thể gửi tin nhắn thoại tới Mattermost Beta.";

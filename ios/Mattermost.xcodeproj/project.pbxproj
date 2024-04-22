@@ -1194,8 +1194,8 @@
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
-				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */,
-				27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */,
+				27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -1947,6 +1947,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 518;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
@@ -1991,6 +1992,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 518;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
@@ -2041,7 +2043,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -2088,7 +2090,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
@@ -2133,7 +2135,7 @@
 				CODE_SIGN_ENTITLEMENTS = MattermostShare/MattermostShare.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 518;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
@@ -2181,7 +2183,7 @@
 				CODE_SIGN_ENTITLEMENTS = MattermostShare/MattermostShare.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 518;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -2373,7 +2375,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+		27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
 			requirement = {
@@ -2381,7 +2383,7 @@
 				version = 8.21.0;
 			};
 		};
-		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */ = {
+		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/satoshi-takano/OpenGraph.git";
 			requirement = {
@@ -2394,12 +2396,12 @@
 /* Begin XCSwiftPackageProductDependency section */
 		27C667A229523ECA00E590D5 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */;
 			productName = Sentry;
 		};
 		27C667A429523F0A00E590D5 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */;
 			productName = Sentry;
 		};
 		49AE370026D4455D00EF4E52 /* Gekidou */ = {
@@ -2416,7 +2418,7 @@
 		};
 		7FD4822B2864D73300A5B18B /* OpenGraph */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */;
+			package = 7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */;
 			productName = OpenGraph;
 		};
 /* End XCSwiftPackageProductDependency section */

@@ -1,0 +1,11 @@
+NSAppleMusicUsageDescription = "Włączenie dostępu do biblioteki multimediów oznacza, że możesz dołączać pliki z biblioteki multimediów do swoich wiadomości w Mattermost Beta.";
+NSBluetoothAlwaysUsageDescription = "Umożliwienie dostępu do Bluetooth oznacza, że możemy synchronizować treści pomiędzy urządzeniami i klientami.";
+NSBluetoothPeripheralUsageDescription = "Umożliwienie dostępu do Bluetooth oznacza, że możemy połączyć się z urządzeniami peryferyjnymi audio w celu prowadzenia rozmów, a także synchronizować zawartość pomiędzy urządzeniami i klientami.";
+NSCameraUsageDescription = "Zezwolenie na dostęp do aparatu umożliwia robienie zdjęć lub filmów i dołączanie ich do wiadomości.";
+NSFaceIDUsageDescription = "Włączenie dostępu do Face ID oznacza, że możemy ograniczyć dostęp nieupoważnionych użytkowników do strony Mattermost Beta na urządzeniu.";
+NSLocationAlwaysUsageDescription = "Umożliwienie dostępu do danych o lokalizacji oznacza, że możemy dodawać metadane dotyczące lokalizacji do zdjęć i filmów udostępnianych w Mattermost Beta.";
+NSLocationWhenInUseUsageDescription = "Umożliwienie dostępu do danych o lokalizacji oznacza, że możemy dodawać metadane dotyczące lokalizacji do zdjęć i filmów udostępnianych w Mattermost Beta.";
+NSMicrophoneUsageDescription = "Umożliwienie dostępu do mikrofonów urządzenia oznacza możliwość rejestrowania dźwięku podczas rozmów lub nagrywania filmów w celu udostępnienia ich w witrynie Mattermost Beta.";
+NSPhotoLibraryAddUsageDescription = "Włączenie dostępu do zapisu w bibliotece zdjęć oznacza możliwość zapisywania pobranych zdjęć i filmów z Mattermost Beta w urządzeniu.";
+NSPhotoLibraryUsageDescription = "Zezwolenie na dostęp do biblioteki zdjęć umożliwia wybieranie zdjęć lub filmów i dołączanie ich do wiadomości.";
+NSSpeechRecognitionUsageDescription = "Zezwolenie urządzeniu na wysyłanie danych użytkownika do Apple oznacza możliwość wysyłania wiadomości głosowych na adres Mattermost Beta.";
