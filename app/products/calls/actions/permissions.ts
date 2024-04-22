@@ -6,7 +6,7 @@ import Permissions from 'react-native-permissions';
 
 export const hasBluetoothPermission = async () => {
     const bluetooth = Platform.select({
-        ios: Permissions.PERMISSIONS.IOS.BLUETOOTH_PERIPHERAL,
+        ios: Permissions.PERMISSIONS.IOS.BLUETOOTH,
         default: Permissions.PERMISSIONS.ANDROID.BLUETOOTH_CONNECT,
     });
 

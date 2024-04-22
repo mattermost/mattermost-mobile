@@ -337,7 +337,7 @@ export const buttonBackgroundStyle = (
         },
     });
 
-    return StyleSheet.create([styles.main, sizes[size], backgroundStyles[emphasis][type][state]]);
+    return [styles.main, sizes[size], backgroundStyles[emphasis][type][state]];
 };
 
 /**
@@ -414,6 +414,5 @@ export const buttonTextStyle = (
         },
     });
 
-    return StyleSheet.create([styles.main, sizes[size], {color}]);
+    return [styles.main, sizes[size], {color}];
 };
-

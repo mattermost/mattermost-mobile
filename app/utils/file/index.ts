@@ -3,8 +3,7 @@
 
 import Model from '@nozbe/watermelondb/Model';
 import mimeDB from 'mime-db';
-import {Alert, Platform} from 'react-native';
-import AndroidOpenSettings from 'react-native-android-open-settings';
+import {Alert, Linking, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FileSystem from 'react-native-fs';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
@@ -516,7 +515,7 @@ export const hasWriteStoragePermission = async (intl: IntlShape) => {
                             id: 'mobile.permission_denied_retry',
                             defaultMessage: 'Settings',
                         }),
-                        onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                        onPress: () => Linking.openSettings(),
                     },
                 ]);
                 return false;

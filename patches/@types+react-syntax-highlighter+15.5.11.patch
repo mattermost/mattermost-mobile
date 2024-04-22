@@ -1,5 +1,5 @@
 diff --git a/node_modules/@types/react-syntax-highlighter/index.d.ts b/node_modules/@types/react-syntax-highlighter/index.d.ts
-index b75a0bf..f5e7179 100644
+index 1893c37..d527a23 100644
 --- a/node_modules/@types/react-syntax-highlighter/index.d.ts
 +++ b/node_modules/@types/react-syntax-highlighter/index.d.ts
 @@ -55,6 +55,10 @@ declare module "react-syntax-highlighter" {

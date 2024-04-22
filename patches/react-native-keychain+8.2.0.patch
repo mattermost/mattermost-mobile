@@ -11,10 +11,10 @@ index 4a1234f..f3e2308 100644
 +-(NSArray<NSString*>*)getAllServersForInternetPasswords;
  @end
 diff --git a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
-index 1e7021c..6990ae4 100644
+index 58d555f..d8c4069 100644
 --- a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
 +++ b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
-@@ -271,6 +271,36 @@ SecAccessControlCreateFlags accessControlValue(NSDictionary *options)
+@@ -275,6 +275,36 @@ SecAccessControlCreateFlags accessControlValue(NSDictionary *options)
    return SecItemDelete((__bridge CFDictionaryRef) query);
  }
  
@@ -51,7 +51,7 @@ index 1e7021c..6990ae4 100644
  -(NSArray<NSString*>*)getAllServicesForSecurityClasses:(NSArray *)secItemClasses
  {
    NSMutableDictionary *query = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-@@ -598,4 +628,14 @@ RCT_EXPORT_METHOD(getAllGenericPasswordServices:(RCTPromiseResolveBlock)resolve
+@@ -607,4 +637,14 @@ RCT_EXPORT_METHOD(getAllGenericPasswordServices:(RCTPromiseResolveBlock)resolve
    }
  }
  
@@ -67,7 +67,7 @@ index 1e7021c..6990ae4 100644
 +
  @end
 diff --git a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
-index 6ca68cb..dacb1ed 100644
+index 9413000..422581a 100644
 --- a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
 +++ b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
 @@ -1,6 +1,7 @@
@@ -129,10 +129,10 @@ index 6ca68cb..dacb1ed 100644
        promise.resolve(true);
      } catch (KeyStoreAccessException e) {
 diff --git a/node_modules/react-native-keychain/index.js b/node_modules/react-native-keychain/index.js
-index 75c0d5c..e6c44d8 100644
+index 083938e..c8728a0 100644
 --- a/node_modules/react-native-keychain/index.js
 +++ b/node_modules/react-native-keychain/index.js
-@@ -352,6 +352,21 @@ export function canImplyAuthentication(options?: Options): Promise<boolean> {
+@@ -351,6 +351,21 @@ export function canImplyAuthentication(options?: Options): Promise<boolean> {
    return RNKeychainManager.canCheckAuthentication(options);
  }
  
@@ -155,7 +155,7 @@ index 75c0d5c..e6c44d8 100644
  
  /**
 diff --git a/node_modules/react-native-keychain/typings/react-native-keychain.d.ts b/node_modules/react-native-keychain/typings/react-native-keychain.d.ts
-index af2eb56..038047b 100644
+index 6846468..bc03596 100644
 --- a/node_modules/react-native-keychain/typings/react-native-keychain.d.ts
 +++ b/node_modules/react-native-keychain/typings/react-native-keychain.d.ts
 @@ -97,6 +97,8 @@ declare module 'react-native-keychain' {
