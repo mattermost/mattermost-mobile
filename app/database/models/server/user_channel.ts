@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, Query, Relation} from '@nozbe/watermelondb';
-import {children, field, immutableRelation, json, lazy} from '@nozbe/watermelondb/decorators';
+import {Relation} from '@nozbe/watermelondb';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type UserChannelInterface from '@typings/database/models/servers/user_channel';
 import type UserModel from '@typings/database/models/servers/user';
+import type UserChannelInterface from '@typings/database/models/servers/user_channel';
 
 const {CHANNEL, USER_CHANNEL, USER} = MM_TABLES.SERVER;
 
@@ -44,10 +44,4 @@ export default class UserChannelModel extends Model implements UserChannelInterf
 
     /** channel: The channel */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
-
-    toApi = async (): Promise<UserChannelModel> => ({
-        latest_read: this.latestRead,
-        user_id: this.userId,
-        channel_id: this.channelId,
-    });
 }
