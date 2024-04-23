@@ -77,13 +77,18 @@ export const observeIsCallLimitRestricted = (database: Database, serverUrl: stri
     ) as Observable<LimitRestrictedInfo>;
 };
 
-export const observeCurrentSessionsDict = () => {
+export const observeCallDatabase = () => {
     const currentCall = observeCurrentCall();
-    const database = currentCall.pipe(
+    return currentCall.pipe(
         switchMap((call) => of$(call ? call.serverUrl : '')),
         distinctUntilChanged(),
         switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
     );
+};
+
+export const observeCurrentSessionsDict = () => {
+    const currentCall = observeCurrentCall();
+    const database = observeCallDatabase();
 
     return combineLatest([database, currentCall]).pipe(
         switchMap(([db, call]) => (db && call ? queryUsersById(db, userIds(Object.values(call.sessions))).observeWithColumns(['nickname', 'username', 'first_name', 'last_name', 'last_picture_update']) : of$([])).pipe(

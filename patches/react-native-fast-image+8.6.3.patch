@@ -8,8 +8,8 @@ index db0fada..8469b1a 100644
    s.dependency 'React-Core'
 -  s.dependency 'SDWebImage', '~> 5.11.1'
 -  s.dependency 'SDWebImageWebPCoder', '~> 0.8.4'
-+  s.dependency 'SDWebImage', '~> 5.18.2'
-+  s.dependency 'SDWebImageWebPCoder', '~> 0.13.0'
++  s.dependency 'SDWebImage', '~> 5.19.0'
++  s.dependency 'SDWebImageWebPCoder', '~> 0.14.5'
  end
 diff --git a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageCookieJar.java b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageCookieJar.java
 new file mode 100644

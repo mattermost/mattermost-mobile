@@ -866,6 +866,8 @@
   "plus_menu.open_direct_message.title": "Otwórz Wiadomość Bezpośrednią",
   "post.options.title": "Opcje",
   "post.reactions.title": "Reakcje",
+  "postList.scrollToBottom.newMessages": "Nowe wiadomości",
+  "postList.scrollToBottom.newReplies": "Nowe odpowiedzi",
   "post_body.check_for_out_of_channel_groups_mentions.message": "nie zostali powiadomieni poprzez tą wzmiankę, ponieważ nie są na kanale. Nie można ich dodać do kanału, ponieważ nie są członkami grup połączonych. Aby dodać je do tego kanału, muszą zostać dodane do połączonych grup.",
   "post_body.check_for_out_of_channel_mentions.link.and": " i ",
   "post_body.check_for_out_of_channel_mentions.link.private": "dodaj je do tego prywatnego kanału",

@@ -60,6 +60,7 @@ import {
     dismissAllModalsAndPopToScreen,
     dismissBottomSheet,
     goToScreen,
+    openAsBottomSheet,
     popTopScreen,
     setScreensOrientation,
 } from '@screens/navigation';
@@ -486,6 +487,15 @@ const CallScreen = ({
     const showStopRecording = isHost && EnableRecordings && (waitingForRecording || recording);
     const ccAvailable = Boolean((currentCall?.capState?.start_at || 0) > (currentCall?.capState?.end_at || 0));
 
+    const openParticipantsList = useCallback(async () => {
+        const screen = Screens.CALL_PARTICIPANTS;
+        const title = intl.formatMessage({id: 'mobile.calls_participants', defaultMessage: 'Participants'});
+        const closeButtonId = 'close-call-participants';
+
+        Keyboard.dismiss();
+        openAsBottomSheet({screen, title, theme, closeButtonId});
+    }, [theme]);
+
     const showOtherActions = useCallback(async () => {
         const renderContent = () => {
             return (
@@ -818,6 +828,21 @@ const CallScreen = ({
                                 <FormattedText
                                     id={'mobile.calls_react'}
                                     defaultMessage={'React'}
+                                    style={style.buttonText}
+                                />
+                            </Pressable>
+                            <Pressable
+                                style={[style.button, isLandscape && style.buttonLandscape]}
+                                onPress={openParticipantsList}
+                            >
+                                <CompassIcon
+                                    name={'account-multiple-outline'}
+                                    size={32}
+                                    style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
+                                />
+                                <FormattedText
+                                    id={'mobile.calls_people'}
+                                    defaultMessage={'People'}
                                     style={style.buttonText}
                                 />
                             </Pressable>

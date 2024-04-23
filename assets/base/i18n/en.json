@@ -499,6 +499,8 @@
   "mobile.calls_participant_rec_title": "Recording is in progress",
   "mobile.calls_participant_transcription": "The host has started recording and transcription for this meeting. By staying in the meeting, you give consent to being recorded and transcribed.",
   "mobile.calls_participant_transcription_title": "Recording and transcription is in progress",
+  "mobile.calls_participants": "Participants",
+  "mobile.calls_people": "People",
   "mobile.calls_phone": "Phone",
   "mobile.calls_quality_warning": "Call quality may be degraded due to unstable network conditions.",
   "mobile.calls_raise_hand": "Raise hand",
