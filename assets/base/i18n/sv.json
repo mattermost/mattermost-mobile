@@ -499,6 +499,8 @@
   "mobile.calls_participant_rec_title": "Inspelning pågår",
   "mobile.calls_participant_transcription": "Mötesvärden har startat inspelning och transkribering av mötet. genom att stanna kvar i mötet ger du ditt samtycket till att bli inspelad och att det du säger blir transkriberat.",
   "mobile.calls_participant_transcription_title": "Inspelning och transkribering pågår",
+  "mobile.calls_participants": "Deltagare",
+  "mobile.calls_people": "Personer",
   "mobile.calls_phone": "Telefon",
   "mobile.calls_quality_warning": "Samtalskvaliteten kan försämras på grund av dåliga nätverksförhållanden.",
   "mobile.calls_raise_hand": "Räck upp handen",
