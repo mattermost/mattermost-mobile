@@ -499,6 +499,8 @@
   "mobile.calls_participant_rec_title": "Aufnahme läuft",
   "mobile.calls_participant_transcription": "Der Gastgeber hat mit der Aufzeichnung und Transkription dieses Treffens begonnen. Wenn du an der Sitzung teilnimmst, erklärst du dich damit einverstanden, dass die Sitzung aufgezeichnet und transkribiert wird.",
   "mobile.calls_participant_transcription_title": "Aufnahme und Transkription sind im Gange",
+  "mobile.calls_participants": "Teilnehmer",
+  "mobile.calls_people": "Personen",
   "mobile.calls_phone": "Telefon",
   "mobile.calls_quality_warning": "Die Gesprächsqualität kann sich aufgrund instabiler Netzbedingungen verschlechtern.",
   "mobile.calls_raise_hand": "Hand heben",
