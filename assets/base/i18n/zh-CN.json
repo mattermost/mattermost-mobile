@@ -499,6 +499,7 @@
   "mobile.calls_participant_rec_title": "录制正在进行中",
   "mobile.calls_participant_transcription": "主持人已开始会议记录。如果您仍在会议中，表明您已知晓正在被记录。",
   "mobile.calls_participant_transcription_title": "正在记录",
+  "mobile.calls_participants": "参与者",
   "mobile.calls_phone": "电话",
   "mobile.calls_quality_warning": "由于网络条件不稳定，通话质量可能会下降。",
   "mobile.calls_raise_hand": "举手",
