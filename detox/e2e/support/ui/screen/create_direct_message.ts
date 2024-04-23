@@ -46,7 +46,7 @@ class CreateDirectMessageScreen {
     };
 
     getUserItem = (userId: string) => {
-        return element(by.id(`${this.testID.userItemPrefix}${userId}`));
+        return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}`));
     };
 
     getUserItemProfilePicture = (userId: string) => {
@@ -54,7 +54,7 @@ class CreateDirectMessageScreen {
     };
 
     getUserItemDisplayName = (userId: string) => {
-        return element(by.id(`${this.testID.userItemPrefix}${userId}.display_name`));
+        return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}.display_name`));
     };
 
     toBeVisible = async () => {

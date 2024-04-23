@@ -27,6 +27,7 @@ env:
   HEADLESS: 'false'
   TYPE: 'PR'
   PULL_REQUEST: 'https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}'
+  SITE_1_URL: ${{ secrets.MM_MOBILE_E2E_SITE_1_URL }}
   SITE_2_URL: ${{ secrets.MM_MOBILE_E2E_SITE_2_URL }}
   SITE_3_URL: ${{ secrets.MM_MOBILE_E2E_SITE_3_URL }}
   ZEPHYR_ENABLE: false

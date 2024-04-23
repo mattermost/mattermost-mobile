@@ -139,6 +139,8 @@ class ChannelInfoScreen {
     };
 
     convertToPrivateChannel = async (channelDisplayName: string, {confirm = true} = {}) => {
+        await this.scrollView.tap({x: 1, y: 1});
+        await this.scrollView.scroll(100, 'down');
         await waitFor(this.convertPrivateOption).toExist().withTimeout(timeouts.TWO_SEC);
         await this.convertPrivateOption.tap({x: 1, y: 1});
         const {
@@ -165,6 +167,8 @@ class ChannelInfoScreen {
     };
 
     leaveChannel = async ({confirm = true} = {}) => {
+        await this.scrollView.tap({x: 1, y: 1});
+        await this.scrollView.scroll(200, 'down');
         await waitFor(this.leaveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
         if (isAndroid()) {
             await this.scrollView.scrollTo('bottom');
