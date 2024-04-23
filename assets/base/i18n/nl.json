@@ -499,6 +499,8 @@
   "mobile.calls_participant_rec_title": "Opname bezig",
   "mobile.calls_participant_transcription": "De host is begonnen met het opnemen en het maken van een transcriptie van deze vergadering. Door aan de vergadering deel te nemen, geef je toestemming voor opname en transcriptie.",
   "mobile.calls_participant_transcription_title": "Opname en transcriptie is bezig",
+  "mobile.calls_participants": "Deelnemers",
+  "mobile.calls_people": "Mensen",
   "mobile.calls_phone": "Telefoon",
   "mobile.calls_quality_warning": "De gesprekskwaliteit kan slechter zijn door onstabiele netwerkomstandigheden.",
   "mobile.calls_raise_hand": "Handje opsteken",
