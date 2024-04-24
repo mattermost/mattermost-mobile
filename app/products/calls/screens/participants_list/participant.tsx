@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, Pressable, Text, View} from 'react-native';
+import {Platform, Text, TouchableOpacity, View} from 'react-native';
 
 import {useCurrentCall} from '@calls/state';
 import CompassIcon from '@components/compass_icon';
@@ -22,6 +22,7 @@ const PROFILE_SIZE = 32;
 type Props = {
     sess: CallSession;
     teammateNameDisplay: string;
+    onPress: () => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -43,12 +44,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: PROFILE_SIZE,
     },
     name: {
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 200),
         color: theme.centerChannelColor,
         flex: 1,
     },
     you: {
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 200),
         color: changeOpacity(theme.centerChannelColor, 0.56),
     },
     profileIcon: {
@@ -75,7 +76,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const Participant = ({sess, teammateNameDisplay}: Props) => {
+export const Participant = ({sess, teammateNameDisplay, onPress}: Props) => {
     const intl = useIntl();
     const currentCall = useCurrentCall();
     const theme = useTheme();
@@ -87,10 +88,11 @@ export const Participant = ({sess, teammateNameDisplay}: Props) => {
     }
 
     return (
-        <Pressable
+        <TouchableOpacity
             key={sess.sessionId}
             testID='users-list'
             style={styles.rowContainer}
+            onPress={onPress}
         >
             {sess.userModel ? (
                 <ProfilePicture
@@ -154,6 +156,6 @@ export const Participant = ({sess, teammateNameDisplay}: Props) => {
                     style={sess.muted ? styles.muteIcon : styles.unmutedIcon}
                 />
             </View>
-        </Pressable>
+        </TouchableOpacity>
     );
 };
