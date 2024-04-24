@@ -499,6 +499,8 @@
   "mobile.calls_participant_rec_title": "Идет запись",
   "mobile.calls_participant_transcription": "Ведущий начал запись и расшифровку этой встречи. Оставаясь на встрече, вы даете согласие на запись и расшифровку.",
   "mobile.calls_participant_transcription_title": "Запись и расшифровка в процессе",
+  "mobile.calls_participants": "Участники",
+  "mobile.calls_people": "Люди",
   "mobile.calls_phone": "Телефон",
   "mobile.calls_quality_warning": "Качество звонков может ухудшиться из-за нестабильной работы сети.",
   "mobile.calls_raise_hand": "Поднять руку",
