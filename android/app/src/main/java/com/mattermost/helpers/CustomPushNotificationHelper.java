@@ -279,7 +279,7 @@ public class CustomPushNotificationHelper {
             int minor = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
             int patch = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
 
-            int[][] targets = {{9,8,0},{9,7,2},{9,6,2},{9,5,4},{8,1,13}};
+            int[][] targets = {{9,8,0},{9,7,3},{9,6,3},{9,5,5},{8,1,14}};
             boolean rejected = false;
             for (int i = 0; i < targets.length; i++) {
                 boolean first = i == 0;

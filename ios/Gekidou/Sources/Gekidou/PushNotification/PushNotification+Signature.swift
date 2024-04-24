@@ -70,7 +70,7 @@ extension PushNotification {
                 return false
             }
             
-            let versionTargets = [[9,8,0], [9,7,2], [9,6,2], [9,5,4], [8,1,13]]
+            let versionTargets = [[9,8,0], [9,7,3], [9,6,3], [9,5,5], [8,1,14]]
             var rejected = false
             for (index, versionTarget) in versionTargets.enumerated() {
                 let first = index == 0;
