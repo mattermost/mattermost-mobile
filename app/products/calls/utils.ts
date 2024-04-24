@@ -7,7 +7,6 @@ import {TextTrackType} from 'react-native-video';
 
 import {buildFileUrl} from '@actions/remote/file';
 import {Calls, Post} from '@constants';
-import license from '@constants/license';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
@@ -107,21 +106,8 @@ export function isMultiSessionSupported(callsVersion: CallsVersion) {
     );
 }
 
-export function isHostControlsSupported(callsVersion: CallsVersion) {
-    return isMinimumServerVersion(
-        callsVersion.version,
-        Calls.HostControlsCallsVersion.MAJOR_VERSION,
-        Calls.HostControlsCallsVersion.MIN_VERSION,
-        Calls.HostControlsCallsVersion.PATCH_VERSION,
-    );
-}
-
 export function isHostControlsAllowed(config: CallsConfigState) {
-    return isHostControlsSupported(config.version) &&
-        (config.sku_short_name === license.SKU_SHORT_NAME.E10 ||
-            config.sku_short_name === license.SKU_SHORT_NAME.E20 ||
-            config.sku_short_name === license.SKU_SHORT_NAME.Professional ||
-            config.sku_short_name === license.SKU_SHORT_NAME.Enterprise);
+    return Boolean(config.HostControlsAllowed);
 }
 
 export function isCallsCustomMessage(post: PostModel | Post): boolean {
