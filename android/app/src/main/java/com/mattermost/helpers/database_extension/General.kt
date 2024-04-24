@@ -56,7 +56,7 @@ fun DatabaseHelper.getDatabaseForServer(context: Context?, serverUrl: String): W
         defaultDatabase!!.rawQuery(query, arrayOf(serverUrl)).use { cursor ->
             if (cursor.count == 1) {
                 cursor.moveToFirst()
-                val databasePath = cursor.getString(0)
+                val databasePath = String.format("file://%s", cursor.getString(0))
                 return WMDatabase.getInstance(databasePath, context!!)
             }
         }
@@ -64,6 +64,22 @@ fun DatabaseHelper.getDatabaseForServer(context: Context?, serverUrl: String): W
         e.printStackTrace()
         // let it fall to return null
     }
+    return null
+}
+
+fun DatabaseHelper.getDeviceToken(): String? {
+    try {
+        val query = "SELECT value FROM Global WHERE id=?"
+        defaultDatabase!!.rawQuery(query, arrayOf("deviceToken")).use { cursor ->
+            if (cursor.count == 1) {
+                cursor.moveToFirst()
+                return cursor.getString(0);
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+
     return null
 }
 

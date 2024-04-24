@@ -768,6 +768,7 @@
   "more_messages.text": "{count} new {count, plural, one {message} other {messages}}",
   "msg_typing.areTyping": "{users} and {last} are typing...",
   "msg_typing.isTyping": "{user} is typing...",
+  "native.ios.notifications.not_verified": "We could not verify this notification with the server",
   "notification_settings.auto_responder": "Automatic Replies",
   "notification_settings.auto_responder.default_message": "Hello, I am out of office and unable to respond to messages.",
   "notification_settings.auto_responder.footer.message": "Set a custom message that is automatically sent in response to direct messages, such as an out of office or vacation reply. Enabling this setting changes your status to Out of Office and disables notifications.",
