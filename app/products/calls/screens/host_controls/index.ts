@@ -6,26 +6,27 @@ import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {observeCallDatabase, observeCurrentSessionsDict} from '@calls/observers';
-import CallScreen from '@calls/screens/call_screen/call_screen';
-import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
+import {HostControls} from '@calls/screens/host_controls/host_controls';
+import {observeCurrentCall} from '@calls/state';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
 const enhanced = withObservables([], () => {
-    const micPermissionsGranted = observeGlobalCallsState().pipe(
-        switchMap((gs) => of$(gs.micPermissionsGranted)),
-        distinctUntilChanged(),
-    );
     const teammateNameDisplay = observeCallDatabase().pipe(
         switchMap((db) => (db ? observeTeammateNameDisplay(db) : of$(''))),
+        distinctUntilChanged(),
+    );
+    const hideGuestTags = observeCallDatabase().pipe(
+        switchMap((db) => (db ? observeConfigBooleanValue(db, 'HideGuestTags') : of$(false))),
         distinctUntilChanged(),
     );
 
     return {
         currentCall: observeCurrentCall(),
         sessionsDict: observeCurrentSessionsDict(),
-        micPermissionsGranted,
         teammateNameDisplay,
+        hideGuestTags,
     };
 });
 
-export default enhanced(CallScreen);
+export default enhanced(HostControls);

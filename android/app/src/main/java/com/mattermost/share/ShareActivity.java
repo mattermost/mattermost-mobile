@@ -15,6 +15,6 @@ public class ShareActivity extends ReactActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         MainApplication app = (MainApplication) this.getApplication();
-        app.sharedExtensionIsOpened = true;
+        app.setSharedExtensionIsOpened(true);
     }
 }

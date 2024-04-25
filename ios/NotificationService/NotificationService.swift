@@ -20,6 +20,10 @@ class NotificationService: UNNotificationServiceExtension {
       PushNotification.default.postNotificationReceipt(bestAttemptContent, completionHandler: {[weak self] notification in
         if let notification = notification {
           self?.bestAttemptContent = notification
+          if (!PushNotification.default.verifySignatureFromNotification(notification)) {
+            self?.sendInvalidNotificationIntent()
+            return
+          }
           if (Gekidou.Preferences.default.object(forKey: "ApplicationIsRunning") as? String != "true") {
             PushNotification.default.fetchAndStoreDataForPushNotification(bestAttemptContent, withContentHandler: {notification in
               os_log(OSLogType.default, "Mattermost Notifications: processed data for db. Will call sendMessageIntent")
@@ -75,6 +79,47 @@ class NotificationService: UNNotificationServiceExtension {
     }
   }
   
+  private func sendInvalidNotificationIntent() {
+    guard let notification = bestAttemptContent else { return }
+    os_log(OSLogType.default, "Mattermost Notifications: creating invalid intent")
+    
+    bestAttemptContent?.body = NSLocalizedString( "native.ios.notifications.not_verified",
+      value: "We could not verify this notification with the server",
+      comment: "")
+    bestAttemptContent?.userInfo.updateValue("false", forKey: "verified")
+    
+    if #available(iOSApplicationExtension 15.0, *) {
+      let intent = INSendMessageIntent(recipients: nil,
+                                       outgoingMessageType: .outgoingMessageText,
+                                       content: "We could not verify this notification with the server",
+                                       speakableGroupName: nil,
+                                       conversationIdentifier: "NOT_VERIFIED",
+                                       serviceName: nil,
+                                       sender: nil,
+                                       attachments: nil)
+      
+      let interaction = INInteraction(intent: intent, response: nil)
+      interaction.direction = .incoming
+      interaction.donate { error in
+        if error != nil {
+          self.contentHandler?(notification)
+          os_log(OSLogType.default, "Mattermost Notifications: sendMessageIntent intent error %{public}@", error! as CVarArg)
+        }
+        
+        do {
+          let updatedContent = try notification.updating(from: intent)
+          os_log(OSLogType.default, "Mattermost Notifications: present updated notification")
+          self.contentHandler?(updatedContent)
+        } catch {
+          os_log(OSLogType.default, "Mattermost Notifications: something failed updating the notification %{public}@", error as CVarArg)
+          self.contentHandler?(notification)
+        }
+      }
+    } else {
+      self.contentHandler?(notification)
+    }
+  }
+
   private func sendMessageIntentCompletion(_ avatarData: Data?) {
     guard let notification = bestAttemptContent else { return }
     if #available(iOSApplicationExtension 15.0, *),

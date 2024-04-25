@@ -19,6 +19,13 @@ const MultiSessionCallsVersion = {
     PATCH_VERSION: 0,
 };
 
+const HostControlsCallsVersion = {
+    FULL_VERSION: '0.27.0',
+    MAJOR_VERSION: 0,
+    MIN_VERSION: 27,
+    PATCH_VERSION: 0,
+};
+
 const PluginId = 'com.mattermost.calls';
 
 const REACTION_TIMEOUT = 10000;
@@ -40,6 +47,7 @@ export default {
     RefreshConfigMillis,
     RequiredServer,
     MultiSessionCallsVersion,
+    HostControlsCallsVersion,
     PluginId,
     REACTION_TIMEOUT,
     REACTION_LIMIT,

@@ -9,6 +9,8 @@ import TestHelper from '@test/test_helper';
 
 import {SystemMessage} from './system_message';
 
+jest.mock('@react-native-clipboard/clipboard', () => ({}));
+
 const baseProps = {
     author: {
         id: 'me',

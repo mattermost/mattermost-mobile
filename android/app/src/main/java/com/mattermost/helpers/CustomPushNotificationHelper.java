@@ -19,6 +19,7 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -32,14 +33,24 @@ import com.mattermost.rnbeta.*;
 import com.nozbe.watermelondb.WMDatabase;
 
 import java.io.IOException;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 import java.util.Objects;
 
+import io.jsonwebtoken.IncorrectClaimException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MissingClaimException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import static com.mattermost.helpers.database_extension.GeneralKt.getDatabaseForServer;
+import static com.mattermost.helpers.database_extension.GeneralKt.getDeviceToken;
+import static com.mattermost.helpers.database_extension.SystemKt.queryConfigServerVersion;
+import static com.mattermost.helpers.database_extension.SystemKt.queryConfigSigningKey;
 import static com.mattermost.helpers.database_extension.UserKt.getLastPictureUpdate;
 
 public class CustomPushNotificationHelper {
@@ -225,6 +236,154 @@ public class CustomPushNotificationHelper {
             mMinImportanceChannel.setShowBadge(true);
             notificationManager.createNotificationChannel(mMinImportanceChannel);
         }
+    }
+
+    public static boolean verifySignature(final Context context, String signature, String serverUrl, String ackId) {
+        if (signature == null) {
+            // Backward compatibility with old push proxies
+            Log.i("Mattermost Notifications Signature verification", "No signature in the notification");
+            return true;
+        }
+
+        if (serverUrl == null) {
+            Log.i("Mattermost Notifications Signature verification", "No server_url for server_id");
+            return false;
+        }
+
+        DatabaseHelper dbHelper = DatabaseHelper.Companion.getInstance();
+        if (dbHelper == null) {
+            Log.i("Mattermost Notifications Signature verification", "Cannot access the database");
+            return false;
+        }
+
+        WMDatabase db = getDatabaseForServer(dbHelper, context, serverUrl);
+        if (db == null) {
+            Log.i("Mattermost Notifications Signature verification", "Cannot access the server database");
+            return false;
+        }
+
+        if (signature.equals("NO_SIGNATURE")) {
+            String version = queryConfigServerVersion(db);
+            if (version == null) {
+                Log.i("Mattermost Notifications Signature verification", "No server version");
+                return false;
+            }
+
+            if (!version.matches("[0-9]+(\\.[0-9]+)*")) {
+                Log.i("Mattermost Notifications Signature verification", "Invalid server version");
+                return false;
+            }
+
+            String[] parts = version.split("\\.");
+            int major = parts.length > 0 ? Integer.parseInt(parts[0]) : 0;
+            int minor = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+            int patch = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
+
+            int[][] targets = {{9,8,0},{9,7,3},{9,6,3},{9,5,5},{8,1,14}};
+            boolean rejected = false;
+            for (int i = 0; i < targets.length; i++) {
+                boolean first = i == 0;
+                int[] targetVersion = targets[i];
+                int majorTarget = targetVersion[0];
+                int minorTarget = targetVersion[1];
+                int patchTarget = targetVersion[2];
+
+                if (major > majorTarget) {
+                    // Only reject if we are considering the first (highest) version.
+                    // Any version in between should be acceptable.
+                    rejected = first;
+                    break;
+                }
+
+                if (major < majorTarget) {
+                    // Continue to see if it complies with a smaller target
+                    continue;
+                }
+
+                // Same major
+                if (minor > minorTarget) {
+                    // Only reject if we are considering the first (highest) version.
+                    // Any version in between should be acceptable.
+                    rejected = first;
+                    break;
+                }
+
+                if (minor < minorTarget) {
+                    // Continue to see if it complies with a smaller target
+                    continue;
+                }
+
+                // Same major and same minor
+                if (patch >= patchTarget) {
+                    rejected = true;
+                    break;
+                }
+
+                // Patch is lower than target
+                return true;
+            }
+
+            if (rejected) {
+                Log.i("Mattermost Notifications Signature verification", "Server version should send signature");
+                return false;
+            }
+
+            // Version number is below any of the targets, so it should not send the signature
+            return true;
+        }
+
+        String signingKey = queryConfigSigningKey(db);
+        if (signingKey == null) {
+            Log.i("Mattermost Notifications Signature verification", "No signing key");
+            return false;
+        }
+
+        try {
+            byte[] encoded = Base64.decode(signingKey, 0);
+            KeyFactory kf = KeyFactory.getInstance("EC");
+            PublicKey pubKey = (PublicKey) kf.generatePublic(new X509EncodedKeySpec(encoded));
+
+            String storedDeviceToken = getDeviceToken(dbHelper);
+            if (storedDeviceToken == null) {
+                Log.i("Mattermost Notifications Signature verification", "No device token stored");
+                return false;
+            }
+            String[] tokenParts = storedDeviceToken.split(":", 2);
+            if (tokenParts.length != 2) {
+                Log.i("Mattermost Notifications Signature verification", "Wrong stored device token format");
+                return false;
+            }
+            String deviceToken = tokenParts[1].substring(0, tokenParts[1].length() -1 );
+            if (deviceToken.isEmpty()) {
+                Log.i("Mattermost Notifications Signature verification", "Empty stored device token");
+                return false;
+            }
+
+            Jwts.parser()
+                    .require("ack_id", ackId)
+                    .require("device_id", deviceToken)
+                    .verifyWith((PublicKey) pubKey)
+                    .build()
+                    .parseSignedClaims(signature);
+        } catch (MissingClaimException e) {
+            Log.i("Mattermost Notifications Signature verification", String.format("Missing claim: %s", e.getMessage()));
+            e.printStackTrace();
+            return false;
+        } catch (IncorrectClaimException e) {
+            Log.i("Mattermost Notifications Signature verification", String.format("Incorrect claim: %s", e.getMessage()));
+            e.printStackTrace();
+            return false;
+        } catch (JwtException e) {
+            Log.i("Mattermost Notifications Signature verification", String.format("Cannot verify JWT: %s", e.getMessage()));
+            e.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            Log.i("Mattermost Notifications Signature verification", String.format("Exception while parsing JWT: %s", e.getMessage()));
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
     }
 
     private static Bitmap getCircleBitmap(Bitmap bitmap) {
