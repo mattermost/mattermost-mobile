@@ -11,7 +11,14 @@ import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
-import type {CallSession, CallsTheme, CallsVersion, SelectedSubtitleTrack, SubtitleTrack} from '@calls/types/calls';
+import type {
+    CallsConfigState,
+    CallSession,
+    CallsTheme,
+    CallsVersion,
+    SelectedSubtitleTrack,
+    SubtitleTrack,
+} from '@calls/types/calls';
 import type {CallsConfig, Caption} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -97,6 +104,10 @@ export function isMultiSessionSupported(callsVersion: CallsVersion) {
         Calls.MultiSessionCallsVersion.MIN_VERSION,
         Calls.MultiSessionCallsVersion.PATCH_VERSION,
     );
+}
+
+export function isHostControlsAllowed(config: CallsConfigState) {
+    return Boolean(config.HostControlsAllowed);
 }
 
 export function isCallsCustomMessage(post: PostModel | Post): boolean {

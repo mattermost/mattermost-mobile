@@ -17,6 +17,7 @@ export interface ClientCallsMix {
     startCallRecording: (callId: string) => Promise<ApiResp | CallJobState>;
     stopCallRecording: (callId: string) => Promise<ApiResp | CallJobState>;
     dismissCall: (channelId: string) => Promise<ApiResp>;
+    makeHost: (callId: string, newHostId: string) => Promise<ApiResp>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -103,6 +104,16 @@ const ClientCalls = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getCallsRoute()}/calls/${channelID}/dismiss-notification`,
             {method: 'post'},
+        );
+    };
+
+    makeHost = async (callId: string, newHostId: string) => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/calls/${callId}/host/make`,
+            {
+                method: 'post',
+                body: {new_host_id: newHostId},
+            },
         );
     };
 };

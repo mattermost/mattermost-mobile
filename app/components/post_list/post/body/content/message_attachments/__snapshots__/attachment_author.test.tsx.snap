@@ -46,7 +46,7 @@ exports[`AttachmentAuthor it matches snapshot when both name and icon are provid
           "fontSize": 11,
         },
         {
-          "color": "rgba(28,88,217,0.5)",
+          "color": "rgba(56,111,229,0.5)",
         },
       ]
     }
@@ -114,7 +114,7 @@ exports[`AttachmentAuthor it matches snapshot when only name is provided 1`] = `
           "fontSize": 11,
         },
         {
-          "color": "rgba(28,88,217,0.5)",
+          "color": "rgba(56,111,229,0.5)",
         },
       ]
     }

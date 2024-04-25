@@ -8,6 +8,7 @@ import {type ListRenderItemInfo, useWindowDimensions, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {useHostMenus} from '@calls/hooks';
 import {Participant} from '@calls/screens/participants_list/participant';
 import Pill from '@calls/screens/participants_list/pill';
 import {sortSessions} from '@calls/utils';
@@ -48,13 +49,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDisplay}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
+    const {onPress} = useHostMenus();
     const {bottom} = useSafeAreaInsets();
     const {height} = useWindowDimensions();
     const isTablet = useIsTablet();
     const List = useMemo(() => (isTablet ? FlatList : BottomSheetFlatList), [isTablet]);
     const styles = getStyleSheet(theme);
 
-    const sessions = useMemo(() => sortSessions(intl.locale, teammateNameDisplay, sessionsDict), [sessionsDict]);
+    const sessions = sortSessions(intl.locale, teammateNameDisplay, sessionsDict);
     const snapPoint1 = bottomSheetSnapPoint(Math.min(sessions.length, MIN_ROWS), ROW_HEIGHT, bottom) + HEADER_HEIGHT;
     const snapPoint2 = height * 0.8;
     const snapPoints = [1, Math.min(snapPoint1, snapPoint2)];
@@ -67,8 +69,9 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
             key={item.sessionId}
             sess={item}
             teammateNameDisplay={teammateNameDisplay}
+            onPress={onPress(item)}
         />
-    ), [teammateNameDisplay]);
+    ), [teammateNameDisplay, onPress]);
 
     const renderContent = () => {
         return (

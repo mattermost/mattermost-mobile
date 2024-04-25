@@ -271,6 +271,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CALL_PARTICIPANTS:
             screen = withServerDatabase(require('@calls/screens/participants_list').default);
             break;
+        case Screens.CALL_HOST_CONTROLS:
+            screen = withServerDatabase(require('@calls/screens/host_controls').default);
+            break;
     }
 
     if (screen) {
