@@ -382,10 +382,9 @@ export const getEmailIntervalTexts = (interval: string) => {
 };
 
 export const getLastPictureUpdate = (user: UserModel | UserProfile) => {
-    const isBotUser = ('isBot' in user) ? user.isBot : user.is_bot;
-    if (isBotUser) {
-        return ('isBot' in user) ? user.props?.bot_last_icon_update : user.bot_last_icon_update || 0;
+    if ('isBot' in user) {
+        return user.isBot ? user.props?.bot_last_icon_update : user.lastPictureUpdate || 0;
     }
 
-    return ('lastPictureUpdate' in user) ? user.lastPictureUpdate : user.last_picture_update || 0;
+    return user.is_bot ? user.bot_last_icon_update : user.last_picture_update || 0;
 };
