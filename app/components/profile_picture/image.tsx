@@ -49,6 +49,15 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
         width: size,
     }), [size]);
 
+    const imgSource = useMemo(() => {
+        if (!author || typeof source === 'string') {
+            return undefined;
+        }
+
+        const pictureUrl = buildProfileImageUrlFromUser(serverUrl, author);
+        return source ?? {uri: buildAbsoluteUrl(serverUrl, pictureUrl)};
+    }, [author, serverUrl, source]);
+
     if (typeof source === 'string') {
         return (
             <CompassIcon
@@ -59,22 +68,21 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
         );
     }
 
-    if (author) {
-        const pictureUrl = buildProfileImageUrlFromUser(serverUrl, author);
-        const imgSource = source ?? {uri: buildAbsoluteUrl(serverUrl, pictureUrl)};
-        if (imgSource.uri?.startsWith('file://')) {
-            return (
-                <AnimatedImage
-                    key={pictureUrl}
-                    ref={forwardRef}
-                    style={fIStyle}
-                    source={{uri: imgSource.uri}}
-                />
-            );
-        }
+    if (imgSource?.uri?.startsWith('file://')) {
+        return (
+            <AnimatedImage
+                key={imgSource.uri}
+                ref={forwardRef}
+                style={fIStyle}
+                source={{uri: imgSource.uri}}
+            />
+        );
+    }
+
+    if (imgSource) {
         return (
             <AnimatedFastImage
-                key={pictureUrl}
+                key={imgSource.uri}
 
                 // @ts-expect-error TS expects old type ref
                 ref={forwardRef}
@@ -83,6 +91,7 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
             />
         );
     }
+
     return (
         <CompassIcon
             name={ACCOUNT_OUTLINE_IMAGE}

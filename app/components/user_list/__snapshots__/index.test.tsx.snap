@@ -65,8 +65,8 @@ exports[`components/channel_list_row should show no results 1`] = `
       >
         <RNSVGSvgView
           align="xMidYMid"
-          bbHeight="149"
-          bbWidth="140"
+          bbHeight={149}
+          bbWidth={140}
           fill="none"
           focusable={false}
           height={149}
@@ -99,8 +99,8 @@ exports[`components/channel_list_row should show no results 1`] = `
             }
           >
             <RNSVGEllipse
-              cx="70"
-              cy="122.5"
+              cx={70}
+              cy={122.5}
               fill={
                 {
                   "payload": 4278190080,
@@ -114,8 +114,8 @@ exports[`components/channel_list_row should show no results 1`] = `
                   "fillOpacity",
                 ]
               }
-              rx="45"
-              ry="3"
+              rx={45}
+              ry={3}
             />
             <RNSVGPath
               d="M37.593 38.008c4.754-4.815 10.754-7.295 17.989-7.428 7.101.133 13.065 2.601 17.892 7.428 4.815 4.827 7.295 10.791 7.428 17.892-.133 7.235-2.601 13.223-7.428 17.99-4.827 4.754-10.791 7.27-17.892 7.512-7.235-.254-13.223-2.758-17.99-7.513-4.754-4.766-7.258-10.766-7.512-18 .254-7.102 2.758-13.066 7.513-17.881z"
@@ -265,6 +265,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             "first_name": "",
             "id": "1",
             "last_name": "",
+            "last_picture_update": 123456,
             "locale": "",
             "nickname": "",
             "notify_props": {
@@ -456,7 +457,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                 resizeMode="cover"
                 source={
                   {
-                    "uri": "",
+                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
                   }
                 }
                 style={
@@ -578,6 +579,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             "first_name": "",
             "id": "1",
             "last_name": "",
+            "last_picture_update": 123456,
             "locale": "",
             "nickname": "",
             "notify_props": {
@@ -769,7 +771,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                 resizeMode="cover"
                 source={
                   {
-                    "uri": "",
+                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
                   }
                 }
                 style={
@@ -891,6 +893,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             "first_name": "",
             "id": "1",
             "last_name": "",
+            "last_picture_update": 123456,
             "locale": "",
             "nickname": "",
             "notify_props": {
@@ -924,6 +927,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             "first_name": "",
             "id": "2",
             "last_name": "",
+            "last_picture_update": 123456,
             "locale": "",
             "nickname": "",
             "notify_props": {
@@ -1115,7 +1119,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                 resizeMode="cover"
                 source={
                   {
-                    "uri": "",
+                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
                   }
                 }
                 style={
@@ -1332,7 +1336,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                 resizeMode="cover"
                 source={
                   {
-                    "uri": "",
+                    "uri": "https://community.mattermost.com/api/v4/users/2/image?_=123456",
                   }
                 }
                 style={
