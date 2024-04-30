@@ -630,3 +630,25 @@ export const makeHost = async (serverUrl: string, callId: string, newHostId: str
         return error;
     }
 };
+
+export const muteSession = async (serverUrl: string, callId: string, sessionId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return client.muteSession(callId, sessionId);
+    } catch (error) {
+        logDebug('error on muteSession', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
+        return error;
+    }
+};
+
+export const stopScreenshare = async (serverUrl: string, callId: string, sessionId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return client.stopScreenshare(callId, sessionId);
+    } catch (error) {
+        logDebug('error on stopScreenshare', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
+        return error;
+    }
+};
