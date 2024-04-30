@@ -80,12 +80,14 @@ const saveReport = async () => {
     const os_version = os.release();
     const node_version = process.version;
     const npm_version = shell.exec('npm --version').stdout.trim();
+    const device_name = DEVICE_NAME;
+    const device_os_version = DEVICE_OS_VERSION;
 
     // Write environment details to file
     const environmentDetails = {
         detox_version,
-        device_name: DEVICE_NAME,
-        device_os_version: DEVICE_OS_VERSION,
+        device_name,
+        device_os_version,
         headless,
         os_name,
         os_version,
