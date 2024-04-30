@@ -17,14 +17,15 @@ concurrency:
 
 env:
   AWS_REGION: 'us-east-1'
-  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
   ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
   BRANCH: ${{ github.head_ref || github.ref_name }} 
   COMMIT_HASH: ${{ github.sha }}
   DETOX_AWS_S3_BUCKET: 'mattermost-detox-report'
   DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
   DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-  HEADLESS: 'false'
+  HEADLESS: 'true'
   TYPE: 'PR'
   PULL_REQUEST: 'https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}'
   SITE_1_URL: ${{ secrets.MM_MOBILE_E2E_SITE_1_URL }}
