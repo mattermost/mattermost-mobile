@@ -19,16 +19,18 @@ concurrency:
 
 env:
   AWS_REGION: 'us-east-1'
-  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
   ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
   BRANCH: ${{ github.head_ref || github.ref_name }} 
   COMMIT_HASH: ${{ github.sha }}
   DETOX_AWS_S3_BUCKET: 'mattermost-detox-report'
   DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
   DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-  HEADLESS: 'false'
+  HEADLESS: 'true'
   TYPE: 'PR'
   PULL_REQUEST: 'https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}'
+  SITE_1_URL: ${{ secrets.MM_MOBILE_E2E_SITE_1_URL }}
   SITE_2_URL: ${{ secrets.MM_MOBILE_E2E_SITE_2_URL }}
   SITE_3_URL: ${{ secrets.MM_MOBILE_E2E_SITE_3_URL }}
   ZEPHYR_ENABLE: false
@@ -46,6 +48,8 @@ jobs:
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       BUILD_ID: ${{ steps.generate-specs.outputs.BUILD_ID }}
+      DEVICE_NAME: ${{ steps.generate-specs.outputs.DEVICE_NAME }}
+      DEVICE_OS_VERSION: ${{ steps.generate-specs.outputs.DEVICE_OS_VERSION }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1

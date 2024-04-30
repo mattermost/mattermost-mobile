@@ -89,7 +89,7 @@ describe('Autocomplete - Edit Post', () => {
         await expect(Autocomplete.flatEmojiSuggestionList).not.toBeVisible();
 
         // # Type in ":" followed by 2 characters to activate emoji suggestion autocomplete
-        await EditPostScreen.messageInput.typeText(':smil');
+        await EditPostScreen.messageInput.typeText(':sm');
 
         // * Verify emoji suggestion list is displayed
         await expect(Autocomplete.flatEmojiSuggestionList).toBeVisible();

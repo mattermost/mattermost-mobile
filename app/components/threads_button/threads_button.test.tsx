@@ -9,8 +9,6 @@ import Threads from './threads_button';
 
 const baseProps = {
     currentChannelId: 'someChannelId',
-    groupUnreadsSeparately: true,
-    onlyUnreads: false,
     unreadsAndMentions: {
         unreads: false,
         mentions: 0,
@@ -25,34 +23,11 @@ describe('Thread item in the channel list', () => {
         expect(toJSON()).toMatchSnapshot();
     });
 
-    test('Threads Component should match snapshot with only unreads filter', () => {
-        const {toJSON} = renderWithIntlAndTheme(
-            <Threads
-                {...baseProps}
-                onlyUnreads={true}
-            />,
-        );
-
-        expect(toJSON()).toMatchSnapshot();
-    });
-
     test('Threads Component should match snapshot with onCenterBg', () => {
         const {toJSON} = renderWithIntlAndTheme(
             <Threads
                 {...baseProps}
                 onCenterBg={true}
-            />,
-        );
-
-        expect(toJSON()).toMatchSnapshot();
-    });
-
-    test('Threads Component should match snapshot, groupUnreadsSeparately false, always show', () => {
-        const {toJSON} = renderWithIntlAndTheme(
-            <Threads
-                {...baseProps}
-                groupUnreadsSeparately={false}
-                onlyUnreads={true}
             />,
         );
 

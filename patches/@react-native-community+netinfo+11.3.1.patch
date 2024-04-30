@@ -20,10 +20,10 @@ index 252d1e7..09328c5 100644
  
              if (network != null) {
 diff --git a/node_modules/@react-native-community/netinfo/src/internal/internetReachability.ts b/node_modules/@react-native-community/netinfo/src/internal/internetReachability.ts
-index 2cd4dee..18ac566 100644
+index 757d784..663abda 100644
 --- a/node_modules/@react-native-community/netinfo/src/internal/internetReachability.ts
 +++ b/node_modules/@react-native-community/netinfo/src/internal/internetReachability.ts
-@@ -116,20 +116,20 @@ export default class InternetReachability {
+@@ -109,10 +109,10 @@ export default class InternetReachability {
            const nextTimeoutInterval = this._isInternetReachable
              ? this._configuration.reachabilityLongTimeout
              : this._configuration.reachabilityShortTimeout;
@@ -38,8 +38,9 @@ index 2cd4dee..18ac566 100644
          },
        )
        .catch(
-         (error: Error | 'timedout' | 'canceled'): void => {
-           if (error !== 'canceled') {
+@@ -125,10 +125,10 @@ export default class InternetReachability {
+             }
+             
              this._setIsInternetReachable(false);
 -            this._currentTimeoutHandle = setTimeout(
 -              this._checkInternetReachability,
