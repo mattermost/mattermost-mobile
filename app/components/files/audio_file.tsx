@@ -17,8 +17,6 @@ import {typography} from '@utils/typography';
 import CompassIcon from '../compass_icon';
 import ProgressBar from '../progress_bar';
 
-const WHITE_ICON = '#FFFFFF';
-
 type AudioFileProps = {
     file: FileInfo;
 }
@@ -32,24 +30,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         padding: 12,
         overflow: 'hidden',
         flexDirection: 'row',
-        gap: 16,
+        gap: 12,
         alignItems: 'center',
     },
     playButton: {
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: theme.buttonBg,
+        backgroundColor: changeOpacity(theme.buttonBg, 0.12),
         borderRadius: 100,
-        width: 42,
-        height: 42,
+        width: 40,
+        height: 40,
+    },
+    playIcon: {
+        color: theme.buttonBg,
     },
     progressBar: {
         flex: 1,
     },
     timerText: {
-        position: 'absolute',
-        top: 8,
-        right: 16,
+        color: theme.centerChannelColor,
         ...typography('Body', 75, 'SemiBold'),
     },
 }));
@@ -110,7 +109,7 @@ const AudioFile = ({file}: AudioFileProps) => {
                 <CompassIcon
                     name={hasPaused ? 'play' : 'pause'}
                     size={24}
-                    color={WHITE_ICON}
+                    style={style.playIcon}
                 />
             </TouchableOpacity>
 
@@ -134,6 +133,11 @@ const AudioFile = ({file}: AudioFileProps) => {
             </View>
 
             <Text style={style.timerText}>{timeInMinutes}</Text>
+
+            <CompassIcon
+                name='download-outline'
+                size={24}
+            />
         </View>
     );
 };
