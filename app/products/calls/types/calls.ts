@@ -242,3 +242,8 @@ export type HostControlsMsgData = {
     channel_id: string;
     session_id: string;
 }
+
+export type HostControlsLowerHandMsgData = HostControlsMsgData & {
+    call_id: string;
+    host_id: string;
+}

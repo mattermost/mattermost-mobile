@@ -17,9 +17,10 @@ export interface ClientCallsMix {
     startCallRecording: (callId: string) => Promise<ApiResp | CallJobState>;
     stopCallRecording: (callId: string) => Promise<ApiResp | CallJobState>;
     dismissCall: (channelId: string) => Promise<ApiResp>;
-    makeHost: (callId: string, newHostId: string) => Promise<ApiResp>;
-    muteSession: (callId: string, sessionId: string) => Promise<ApiResp>;
-    stopScreenshare: (callId: string, sessionId: string) => Promise<ApiResp>;
+    hostMake: (callId: string, newHostId: string) => Promise<ApiResp>;
+    hostMute: (callId: string, sessionId: string) => Promise<ApiResp>;
+    hostScreenOff: (callId: string, sessionId: string) => Promise<ApiResp>;
+    hostLowerHand: (callId: string, sessionId: string) => Promise<ApiResp>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -109,7 +110,7 @@ const ClientCalls = (superclass: any) => class extends superclass {
         );
     };
 
-    makeHost = async (callId: string, newHostId: string) => {
+    hostMake = async (callId: string, newHostId: string) => {
         return this.doFetch(
             `${this.getCallsRoute()}/calls/${callId}/host/make`,
             {
@@ -119,7 +120,7 @@ const ClientCalls = (superclass: any) => class extends superclass {
         );
     };
 
-    muteSession = async (callId: string, sessionId: string) => {
+    hostMute = async (callId: string, sessionId: string) => {
         return this.doFetch(
             `${this.getCallsRoute()}/calls/${callId}/host/mute`,
             {
@@ -129,9 +130,19 @@ const ClientCalls = (superclass: any) => class extends superclass {
         );
     };
 
-    stopScreenshare = async (callId: string, sessionId: string) => {
+    hostScreenOff = async (callId: string, sessionId: string) => {
         return this.doFetch(
             `${this.getCallsRoute()}/calls/${callId}/host/screen-off`,
+            {
+                method: 'post',
+                body: {session_id: sessionId},
+            },
+        );
+    };
+
+    hostLowerHand = async (callId: string, sessionId: string) => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/calls/${callId}/host/lower-hand`,
             {
                 method: 'post',
                 body: {session_id: sessionId},

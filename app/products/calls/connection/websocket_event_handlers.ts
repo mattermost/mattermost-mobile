@@ -4,7 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
-import {muteMyself} from '@calls/actions';
+import {muteMyself, unraiseHand} from '@calls/actions';
 import {
     callEnded,
     callStarted,
@@ -31,7 +31,7 @@ import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 
-import type {CallRecordingStateData, HostControlsMsgData} from '@calls/types/calls';
+import type {CallRecordingStateData, HostControlsLowerHandMsgData, HostControlsMsgData} from '@calls/types/calls';
 import type {
     CallHostChangedData,
     CallJobState,
@@ -216,4 +216,15 @@ export const handleHostMute = async (serverUrl: string, msg: WebSocketMessage<Ho
     }
 
     muteMyself();
+};
+
+export const handleHostLowerHand = async (serverUrl: string, msg: WebSocketMessage<HostControlsLowerHandMsgData>) => {
+    const currentCall = getCurrentCall();
+    if (currentCall?.serverUrl !== serverUrl ||
+        currentCall?.channelId !== msg.data.channel_id ||
+        currentCall?.mySessionId !== msg.data.session_id) {
+        return;
+    }
+
+    unraiseHand();
 };

@@ -34,6 +34,7 @@ import {
     handleCallUserUnraiseHand,
     handleCallUserVoiceOff,
     handleCallUserVoiceOn,
+    handleHostLowerHand,
     handleHostMute,
     handleUserDismissedNotification,
 } from '@calls/connection/websocket_event_handlers';
@@ -454,6 +455,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.CALLS_HOST_MUTE:
             handleHostMute(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_HOST_LOWER_HAND:
+            handleHostLowerHand(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:
