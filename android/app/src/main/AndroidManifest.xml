@@ -14,6 +14,7 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
 
     <!-- Request legacy Bluetooth permissions on older devices. -->
     <uses-permission android:name="android.permission.BLUETOOTH"
@@ -105,6 +106,10 @@
       </activity>
 
         <!-- For Calls microphone to work in the background -->
-        <service android:name="com.voximplant.foregroundservice.VIForegroundService"/>
+        <service
+                android:name="com.voximplant.foregroundservice.VIForegroundService"
+                android:foregroundServiceType="microphone"
+                android:exported="true"
+        />
     </application>
 </manifest>
