@@ -154,6 +154,8 @@ jobs:
       - e2e-ios
     env:
       BUILD_ID: ${{ needs.generate-specs.outputs.BUILD_ID }}
+      DEVICE_NAME: ${{ needs.generate-specs.outputs.DEVICE_NAME }}
+      DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.DEVICE_OS_VERSION }}  
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
