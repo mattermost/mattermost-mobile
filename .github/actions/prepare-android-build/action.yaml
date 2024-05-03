@@ -12,14 +12,11 @@ runs:
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
 
-    # Disable this since we are not caching anything for now
-    # - name: ci/install-gradle-dependencies
-    #   shell: bash
-    #   working-directory: android
-    #   run: |
-    #     echo "::group::install-gradle-dependencies"
-    #     ./gradlew dependencies
-    #     echo "::endgroup::"
+    - name: ci/setup-java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "17"
 
     - name: ci/jetify-android-libraries
       shell: bash
