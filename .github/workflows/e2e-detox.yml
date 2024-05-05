@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - ios_detox_job
     types:
       - labeled
       - opened
