@@ -16,6 +16,7 @@ env:
 
 jobs:
   test:
+    if: ${{ github.event.label.name == 'Build App for Android' }}
     runs-on: ubuntu-22.04
     steps:
       - name: ci/checkout-repo
