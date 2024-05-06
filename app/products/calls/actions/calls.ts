@@ -620,13 +620,47 @@ const handleEndCall = async (serverUrl: string, channelId: string, currentUserId
     );
 };
 
-export const makeHost = async (serverUrl: string, callId: string, newHostId: string) => {
+export const hostMake = async (serverUrl: string, callId: string, newHostId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.makeHost(callId, newHostId);
+        return client.hostMake(callId, newHostId);
     } catch (error) {
-        logDebug('error on makeHost', getFullErrorMessage(error));
+        logDebug('error on hostMake', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
         return error;
     }
 };
+
+export const hostMuteSession = async (serverUrl: string, callId: string, sessionId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return client.hostMute(callId, sessionId);
+    } catch (error) {
+        logDebug('error on hostMute', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
+        return error;
+    }
+};
+
+export const hostStopScreenshare = async (serverUrl: string, callId: string, sessionId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return client.hostScreenOff(callId, sessionId);
+    } catch (error) {
+        logDebug('error on hostStopScreenshare', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
+        return error;
+    }
+};
+
+export const hostLowerHand = async (serverUrl: string, callId: string, sessionId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return client.hostLowerHand(callId, sessionId);
+    } catch (error) {
+        logDebug('error on hostLowerHand', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
+        return error;
+    }
+};
+
