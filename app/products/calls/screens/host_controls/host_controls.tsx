@@ -46,22 +46,22 @@ export const HostControls = ({
     const sharingScreen = currentCall.screenOn === session.sessionId;
 
     const makeHostPress = useCallback(async () => {
-        await hostMake(currentCall.serverUrl, currentCall.channelId, session.userId);
+        hostMake(currentCall.serverUrl, currentCall.channelId, session.userId);
         await dismissBottomSheet();
     }, [currentCall.serverUrl, currentCall.channelId, session.userId]);
 
     const mutePress = useCallback(async () => {
-        await hostMuteSession(currentCall.serverUrl, currentCall.channelId, session.sessionId);
+        hostMuteSession(currentCall.serverUrl, currentCall.channelId, session.sessionId);
         await dismissBottomSheet();
     }, [currentCall.serverUrl, currentCall.channelId, session.sessionId]);
 
     const lowerHandPress = useCallback(async () => {
-        await hostLowerHand(currentCall.serverUrl, currentCall.channelId, session.sessionId);
+        hostLowerHand(currentCall.serverUrl, currentCall.channelId, session.sessionId);
         await dismissBottomSheet();
     }, [currentCall.serverUrl, currentCall.channelId, session.sessionId]);
 
     const stopScreensharePress = useCallback(async () => {
-        await hostStopScreenshare(currentCall.serverUrl, currentCall.channelId, session.sessionId);
+        hostStopScreenshare(currentCall.serverUrl, currentCall.channelId, session.sessionId);
         await dismissBottomSheet();
     }, [currentCall.serverUrl, currentCall.id, session.sessionId]);
 
