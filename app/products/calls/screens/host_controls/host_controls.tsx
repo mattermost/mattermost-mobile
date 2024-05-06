@@ -7,6 +7,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {hostLowerHand, hostMake, hostMuteSession, hostStopScreenshare} from '@calls/actions/calls';
 import {removeFromCall} from '@calls/alerts';
+import {useHostMenus} from '@calls/hooks';
 import SettingSeparator from '@components/settings/separator';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
@@ -55,6 +56,7 @@ export const HostControls = ({
     const intl = useIntl();
     const {bottom} = useSafeAreaInsets();
     const theme = useTheme();
+    const {openUserProfile} = useHostMenus();
     const styles = getStyleFromTheme(theme);
 
     const sharingScreen = currentCall.screenOn === session.sessionId;
@@ -80,13 +82,18 @@ export const HostControls = ({
         await dismissBottomSheet();
     }, [currentCall.serverUrl, currentCall.channelId, session.sessionId]);
 
+    const profilePress = useCallback(async () => {
+        dismissBottomSheet();
+        openUserProfile(session);
+    }, [session]);
+
     const removePress = useCallback(async () => {
         removeFromCall(currentCall.serverUrl, displayName, currentCall.channelId, session.sessionId, intl);
         await dismissBottomSheet();
     }, [displayName, currentCall.serverUrl, currentCall.channelId, session.sessionId]);
 
     const snapPoints = useMemo(() => {
-        const items = 2 + (session.muted ? 0 : 1) + (sharingScreen ? 1 : 0) + (session.raisedHand ? 1 : 0);
+        const items = 3 + (session.muted ? 0 : 1) + (sharingScreen ? 1 : 0) + (session.raisedHand ? 1 : 0);
         return [
             1,
             bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + TITLE_HEIGHT + SEPARATOR_HEIGHT,
@@ -100,6 +107,7 @@ export const HostControls = ({
         id: 'mobile.calls_stop_screenshare',
         defaultMessage: 'Stop screen share',
     });
+    const profileText = intl.formatMessage({id: 'mobile.calls_view_profile', defaultMessage: 'View profile'});
     const removeText = intl.formatMessage({id: 'mobile.calls_remove_participant', defaultMessage: 'Remove from call'});
 
     const renderContent = () => {
@@ -148,6 +156,12 @@ export const HostControls = ({
                     leftIconStyles={styles.iconStyle}
                     onPress={makeHostPress}
                     text={makeHostText}
+                />
+                <SlideUpPanelItem
+                    leftIcon={'account-outline'}
+                    leftIconStyles={styles.iconStyle}
+                    onPress={profilePress}
+                    text={profileText}
                 />
                 <SettingSeparator lineStyles={styles.separator}/>
                 <SlideUpPanelItem
