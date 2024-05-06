@@ -132,6 +132,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.GALLERY:
             screen = withServerDatabase(require('@screens/gallery').default);
             break;
+        case Screens.GENERIC_OVERLAY:
+            screen = withServerDatabase(require('@screens/overlay').default);
+            break;
         case Screens.GLOBAL_THREADS:
             screen = withServerDatabase(require('@screens/global_threads').default);
             break;
@@ -271,8 +274,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CALL:
             screen = withServerDatabase(require('@calls/screens/call_screen').default);
             break;
-        case Screens.GENERIC_OVERLAY:
-            screen = withServerDatabase(require('@screens/overlay').default);
+        case Screens.CALL_PARTICIPANTS:
+            screen = withServerDatabase(require('@calls/screens/participants_list').default);
+            break;
+        case Screens.CALL_HOST_CONTROLS:
+            screen = withServerDatabase(require('@calls/screens/host_controls').default);
             break;
     }
 

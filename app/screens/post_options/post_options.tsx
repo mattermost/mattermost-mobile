@@ -140,7 +140,7 @@ const PostOptions = ({
                 {Boolean(canCopyText && post.message) &&
                 <CopyTextOption
                     bottomSheetId={Screens.POST_OPTIONS}
-                    postMessage={post.message}
+                    postMessage={post.messageSource || post.message}
                     sourceScreen={sourceScreen}
                 />}
                 {canPin &&

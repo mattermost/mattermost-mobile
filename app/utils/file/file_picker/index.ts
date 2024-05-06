@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, NativeModules, Platform, StatusBar} from 'react-native';
-import AndroidOpenSettings from 'react-native-android-open-settings';
+import {Alert, Linking, NativeModules, Platform, StatusBar} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import DocumentPicker, {type DocumentPickerResponse} from 'react-native-document-picker';
 import {type Asset, type CameraOptions, type ImageLibraryOptions, type ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
@@ -211,7 +210,7 @@ export default class FilePickerUtil {
                                 id: 'mobile.permission_denied_retry',
                                 defaultMessage: 'Settings',
                             }),
-                            onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                            onPress: () => Linking.openSettings(),
                         },
                     ]);
                     return false;
@@ -247,7 +246,7 @@ export default class FilePickerUtil {
                                 id: 'mobile.permission_denied_retry',
                                 defaultMessage: 'Settings',
                             }),
-                            onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                            onPress: () => Linking.openSettings(),
                         },
                     ]);
                     return false;

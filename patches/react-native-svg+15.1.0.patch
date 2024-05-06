@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-svg/src/xml.tsx b/node_modules/react-native-svg/src/xml.tsx
-index 385dd09..2b78d6e 100644
+index 9e2352a..fb45382 100644
 --- a/node_modules/react-native-svg/src/xml.tsx
 +++ b/node_modules/react-native-svg/src/xml.tsx
-@@ -137,9 +137,11 @@ export function SvgUri(props: UriProps) {
+@@ -138,9 +138,11 @@ export function SvgUri(props: UriProps) {
      uri
        ? fetchText(uri)
            .then((data) => {

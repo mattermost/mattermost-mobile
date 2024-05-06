@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import {act, renderHook} from '@testing-library/react-hooks';
+import {act, renderHook} from '@testing-library/react-hooks'; // Use instead of react-native version due to different behavior. Consider migrating
 import {createIntl} from 'react-intl';
 import InCallManager from 'react-native-incall-manager';
 

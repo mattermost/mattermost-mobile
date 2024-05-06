@@ -5,30 +5,23 @@ import {withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {observeCurrentSessionsDict} from '@calls/observers';
+import {observeCallDatabase, observeCurrentSessionsDict} from '@calls/observers';
 import CallScreen from '@calls/screens/call_screen/call_screen';
 import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
-import DatabaseManager from '@database/manager';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
 const enhanced = withObservables([], () => {
-    const currentCall = observeCurrentCall();
-    const database = currentCall.pipe(
-        switchMap((call) => of$(call ? call.serverUrl : '')),
-        distinctUntilChanged(),
-        switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
-    );
     const micPermissionsGranted = observeGlobalCallsState().pipe(
         switchMap((gs) => of$(gs.micPermissionsGranted)),
         distinctUntilChanged(),
     );
-    const teammateNameDisplay = database.pipe(
+    const teammateNameDisplay = observeCallDatabase().pipe(
         switchMap((db) => (db ? observeTeammateNameDisplay(db) : of$(''))),
         distinctUntilChanged(),
     );
 
     return {
-        currentCall,
+        currentCall: observeCurrentCall(),
         sessionsDict: observeCurrentSessionsDict(),
         micPermissionsGranted,
         teammateNameDisplay,

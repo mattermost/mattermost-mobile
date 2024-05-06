@@ -191,6 +191,11 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             handleThreadFollowChangedEvent(serverUrl, msg);
             break;
 
+        case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
+            break;
+
+            // return dispatch(handleRefreshAppsBindings());
+
         // Calls ws events:
         case WebsocketEvents.CALLS_CHANNEL_ENABLED:
             calls.handleCallChannelEnabled(serverUrl, msg);
@@ -248,14 +253,22 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.CALLS_USER_REACTED:
             calls.handleCallUserReacted(serverUrl, msg);
             break;
+
+        // DEPRECATED in favour of CALLS_JOB_STATE (since v2.15.0)
         case WebsocketEvents.CALLS_RECORDING_STATE:
             calls.handleCallRecordingState(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_JOB_STATE:
+            calls.handleCallJobState(serverUrl, msg);
             break;
         case WebsocketEvents.CALLS_HOST_CHANGED:
             calls.handleCallHostChanged(serverUrl, msg);
             break;
         case WebsocketEvents.CALLS_USER_DISMISSED_NOTIFICATION:
             calls.handleUserDismissedNotification(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_CAPTION:
+            calls.handleCallCaption(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:
@@ -272,6 +285,17 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.GROUP_DISSOCIATED_TO_TEAM:
             group.handleGroupTeamDissociateEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.GROUP_ASSOCIATED_TO_CHANNEL:
+            break;
+        case WebsocketEvents.GROUP_DISSOCIATED_TO_CHANNEL:
+            break;
+
+        // Plugins
+        case WebsocketEvents.PLUGIN_STATUSES_CHANGED:
+        case WebsocketEvents.PLUGIN_ENABLED:
+        case WebsocketEvents.PLUGIN_DISABLED:
+            // Do nothing, this event doesn't need logic in the mobile app
             break;
 
         // bookmarks

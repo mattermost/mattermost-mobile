@@ -21,6 +21,7 @@ import {Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
     getConfig,
@@ -103,7 +104,8 @@ async function doReconnect(serverUrl: string) {
     }
 
     const tabletDevice = isTablet();
-    if (tabletDevice && initialChannelId === currentChannelId) {
+    const isActiveServer = (await getActiveServerUrl()) === serverUrl;
+    if (isActiveServer && tabletDevice && initialChannelId === currentChannelId) {
         await markChannelAsRead(serverUrl, initialChannelId);
         markChannelAsViewed(serverUrl, initialChannelId);
     }
@@ -133,6 +135,11 @@ async function doReconnect(serverUrl: string) {
 
 async function fetchPostDataIfNeeded(serverUrl: string) {
     try {
+        const isActiveServer = (await getActiveServerUrl()) === serverUrl;
+        if (!isActiveServer) {
+            return;
+        }
+
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentChannelId = await getCurrentChannelId(database);
         const isCRTEnabled = await getIsCRTEnabled(database);

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act} from '@testing-library/react-native';
 import React from 'react';
-import {act} from 'react-test-renderer';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {getTeamById} from '@queries/servers/team';
