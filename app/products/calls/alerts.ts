@@ -4,7 +4,7 @@
 import {Alert} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
-import {dismissIncomingCall} from '@calls/actions/calls';
+import {dismissIncomingCall, hostRemove} from '@calls/actions/calls';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
 import {
@@ -418,3 +418,51 @@ export const showErrorAlertOnClose = (err: Error, intl: IntlShape) => {
             errorAlert(getFullErrorMessage(err, intl), intl);
     }
 };
+
+export const removeFromCall = (serverUrl: string, displayName: string, callId: string, sessionId: string, intl: IntlShape) => {
+    const {formatMessage} = intl;
+
+    const title = formatMessage({
+        id: 'mobile.calls_remove_alert_title',
+        defaultMessage: 'Remove participant',
+    });
+    const body = formatMessage({
+        id: 'mobile.calls_remove_alert_body',
+        defaultMessage: 'Are you sure you want to remove {displayName} from the call? ',
+    }, {displayName});
+
+    Alert.alert(title, body, [{
+        text: formatMessage({
+            id: 'mobile.post.cancel',
+            defaultMessage: 'Cancel',
+        }),
+    }, {
+        text: formatMessage({
+            id: 'mobile.calls_remove',
+            defaultMessage: 'Remove',
+        }),
+        onPress: () => hostRemove(serverUrl, callId, sessionId),
+        style: 'destructive',
+    }]);
+};
+
+export const removedAlert = (intl: IntlShape) => {
+    const {formatMessage} = intl;
+
+    const title = formatMessage({
+        id: 'mobile.calls_removed_alert_title',
+        defaultMessage: 'You were removed from the call',
+    });
+    const body = formatMessage({
+        id: 'mobile.calls_removed_alert_body',
+        defaultMessage: 'The host removed you from the call.',
+    });
+
+    Alert.alert(title, body, [{
+        text: formatMessage({
+            id: 'mobile.calls_dismiss',
+            defaultMessage: 'Dismiss',
+        }),
+    }]);
+};
+

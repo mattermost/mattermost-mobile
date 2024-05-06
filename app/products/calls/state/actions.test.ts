@@ -48,6 +48,7 @@ import {
     userJoinedCall,
     userLeftCall,
 } from '@calls/state/actions';
+import {usePreviousCall} from '@calls/state/previous_call';
 import {
     AudioDevice,
     type Call,
@@ -59,6 +60,7 @@ import {
     DefaultGlobalCallsState,
     DefaultIncomingCalls,
     type GlobalCallsState,
+    type PreviousCall,
 } from '@calls/types/calls';
 import {License} from '@constants';
 import Calls from '@constants/calls';
@@ -687,14 +689,20 @@ describe('useCallsState', () => {
             mySessionId: 'mySessionId',
             ...newCall1,
         };
+        const expectedPreviousCallState: PreviousCall = {
+            serverUrl: 'server1',
+            mySessionId: 'mySessionId',
+            channelId: 'channel-1',
+        };
 
         // setup
         const {result} = renderHook(() => {
-            return [useCallsState('server1'), useCurrentCall()];
+            return [useCallsState('server1'), useCurrentCall(), usePreviousCall()];
         });
         act(() => setCallsState('server1', initialCallsState));
         assert.deepEqual(result.current[0], initialCallsState);
         assert.deepEqual(result.current[1], null);
+        assert.deepEqual(result.current[2], null);
 
         // test
         act(() => {
@@ -703,6 +711,7 @@ describe('useCallsState', () => {
         });
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], expectedCurrentCallState);
+        assert.deepEqual(result.current[2], null);
 
         act(() => {
             myselfLeftCall();
@@ -710,6 +719,7 @@ describe('useCallsState', () => {
         });
         assert.deepEqual(result.current[0], initialCallsState);
         assert.deepEqual(result.current[1], null);
+        assert.deepEqual(result.current[2], expectedPreviousCallState);
     });
 
     it('setChannelEnabled', () => {

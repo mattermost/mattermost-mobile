@@ -4,7 +4,8 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
-import {muteMyself, unraiseHand} from '@calls/actions';
+import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
+import {removedAlert} from '@calls/alerts';
 import {
     callEnded,
     callStarted,
@@ -25,11 +26,14 @@ import {
     userLeftCall,
     userReacted,
 } from '@calls/state';
+import {getPreviousCall} from '@calls/state/previous_call';
 import {isMultiSessionSupported} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
+import {getCurrentUser} from '@queries/servers/user';
+import {getIntlShape} from '@utils/general';
 
 import type {CallRecordingStateData, HostControlsLowerHandMsgData, HostControlsMsgData} from '@calls/types/calls';
 import type {
@@ -227,4 +231,33 @@ export const handleHostLowerHand = async (serverUrl: string, msg: WebSocketMessa
     }
 
     unraiseHand();
+};
+
+export const handleHostRemoved = async (serverUrl: string, msg: WebSocketMessage<HostControlsMsgData>) => {
+    const currentCall = getCurrentCall();
+    if (currentCall?.serverUrl !== serverUrl ||
+        currentCall?.channelId !== msg.data.channel_id ||
+        currentCall?.mySessionId !== msg.data.session_id) {
+        // wasn't the current call, check previous call:
+        const previousCall = getPreviousCall();
+        if (previousCall?.serverUrl !== serverUrl ||
+            previousCall?.channelId !== msg.data.channel_id ||
+            previousCall?.mySessionId !== msg.data.session_id) {
+            return;
+        }
+    }
+
+    leaveCall();
+
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
+    const currentUser = await getCurrentUser(database);
+    if (!currentUser) {
+        return;
+    }
+
+    removedAlert(getIntlShape(currentUser.locale));
 };

@@ -21,6 +21,7 @@ export interface ClientCallsMix {
     hostMute: (callId: string, sessionId: string) => Promise<ApiResp>;
     hostScreenOff: (callId: string, sessionId: string) => Promise<ApiResp>;
     hostLowerHand: (callId: string, sessionId: string) => Promise<ApiResp>;
+    hostRemove: (callId: string, sessionId: string) => Promise<ApiResp>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -143,6 +144,16 @@ const ClientCalls = (superclass: any) => class extends superclass {
     hostLowerHand = async (callId: string, sessionId: string) => {
         return this.doFetch(
             `${this.getCallsRoute()}/calls/${callId}/host/lower-hand`,
+            {
+                method: 'post',
+                body: {session_id: sessionId},
+            },
+        );
+    };
+
+    hostRemove = async (callId: string, sessionId: string) => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/calls/${callId}/host/remove`,
             {
                 method: 'post',
                 body: {session_id: sessionId},

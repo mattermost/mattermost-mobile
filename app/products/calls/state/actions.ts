@@ -20,6 +20,7 @@ import {
     setGlobalCallsState,
     setIncomingCalls,
 } from '@calls/state';
+import {setPreviousCall} from '@calls/state/previous_call';
 import {
     type AudioDeviceInfo,
     type Call,
@@ -349,6 +350,17 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
 };
 
 export const myselfLeftCall = () => {
+    // Set the previous call for actions that need to know (e.g., handleHostRemoved)
+    const currentCall = getCurrentCall();
+    if (currentCall) {
+        setPreviousCall({
+            serverUrl: currentCall.serverUrl,
+            channelId: currentCall.channelId,
+            mySessionId: currentCall.mySessionId,
+        });
+    } else {
+        setPreviousCall(null);
+    }
     setCurrentCall(null);
 
     // Remove the call screen, and in some situations it needs to be removed twice before actually being removed.

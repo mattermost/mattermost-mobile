@@ -3,21 +3,26 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {hostLowerHand, hostMake, hostMuteSession, hostStopScreenshare} from '@calls/actions/calls';
+import {removeFromCall} from '@calls/alerts';
+import SettingSeparator from '@components/settings/separator';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
 import UserProfileTitle from '@screens/user_profile/title';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {displayUsername} from '@utils/user';
 
 import type {CallSession, CurrentCall} from '@calls/types/calls';
 
 const TITLE_HEIGHT = 118;
 const ITEM_HEIGHT = 48;
+const SEPARATOR_HEIGHT = 17;
 
 type Props = {
     currentCall: CurrentCall;
@@ -27,11 +32,18 @@ type Props = {
     hideGuestTags: boolean;
 }
 
-const styles = StyleSheet.create({
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
     iconStyle: {
         marginRight: 6,
     },
-});
+    red: {
+        color: theme.dndIndicator,
+    },
+    separator: {
+        width: '100%',
+        marginVertical: 8,
+    },
+}));
 
 export const HostControls = ({
     currentCall,
@@ -42,8 +54,11 @@ export const HostControls = ({
 }: Props) => {
     const intl = useIntl();
     const {bottom} = useSafeAreaInsets();
+    const theme = useTheme();
+    const styles = getStyleFromTheme(theme);
 
     const sharingScreen = currentCall.screenOn === session.sessionId;
+    const displayName = displayUsername(session.userModel, intl.locale, teammateNameDisplay, true);
 
     const makeHostPress = useCallback(async () => {
         hostMake(currentCall.serverUrl, currentCall.channelId, session.userId);
@@ -63,20 +78,29 @@ export const HostControls = ({
     const stopScreensharePress = useCallback(async () => {
         hostStopScreenshare(currentCall.serverUrl, currentCall.channelId, session.sessionId);
         await dismissBottomSheet();
-    }, [currentCall.serverUrl, currentCall.id, session.sessionId]);
+    }, [currentCall.serverUrl, currentCall.channelId, session.sessionId]);
+
+    const removePress = useCallback(async () => {
+        removeFromCall(currentCall.serverUrl, displayName, currentCall.channelId, session.sessionId, intl);
+        await dismissBottomSheet();
+    }, [displayName, currentCall.serverUrl, currentCall.channelId, session.sessionId]);
 
     const snapPoints = useMemo(() => {
-        const items = 1 + (session.muted ? 0 : 1) + (sharingScreen ? 1 : 0) + (session.raisedHand ? 1 : 0);
+        const items = 2 + (session.muted ? 0 : 1) + (sharingScreen ? 1 : 0) + (session.raisedHand ? 1 : 0);
         return [
             1,
-            bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + TITLE_HEIGHT,
+            bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + TITLE_HEIGHT + SEPARATOR_HEIGHT,
         ];
     }, [bottom, session.muted, sharingScreen, session.raisedHand]);
 
     const makeHostText = intl.formatMessage({id: 'mobile.calls_make_host', defaultMessage: 'Make host'});
     const muteText = intl.formatMessage({id: 'mobile.calls_mute_participant', defaultMessage: 'Mute participant'});
     const lowerHandText = intl.formatMessage({id: 'mobile.calls_lower_hand', defaultMessage: 'Lower hand'});
-    const stopScreenshareText = intl.formatMessage({id: 'mobile.calls_stop_screenshare', defaultMessage: 'Stop screen share'});
+    const stopScreenshareText = intl.formatMessage({
+        id: 'mobile.calls_stop_screenshare',
+        defaultMessage: 'Stop screen share',
+    });
+    const removeText = intl.formatMessage({id: 'mobile.calls_remove_participant', defaultMessage: 'Remove from call'});
 
     const renderContent = () => {
         if (!session?.userModel) {
@@ -124,6 +148,14 @@ export const HostControls = ({
                     leftIconStyles={styles.iconStyle}
                     onPress={makeHostPress}
                     text={makeHostText}
+                />
+                <SettingSeparator lineStyles={styles.separator}/>
+                <SlideUpPanelItem
+                    leftIcon={'minus-circle-outline'}
+                    leftIconStyles={[styles.iconStyle, styles.red]}
+                    onPress={removePress}
+                    text={removeText}
+                    textStyles={styles.red}
                 />
             </>
         );
