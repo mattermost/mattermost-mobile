@@ -22,7 +22,7 @@ on:
         required: false
         default: "iOS 17.4"
       device_name:
-        description: 'Enter Device Name'
+        description: 'Enter iOS Device Name'
         required: false
         default: "iPhone 15 Pro"
 

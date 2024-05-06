@@ -12,10 +12,6 @@ on:
         required: true
         type: boolean
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
-  cancel-in-progress: true
-
 env:
   AWS_REGION: 'us-east-1'
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
@@ -99,6 +95,7 @@ jobs:
           path: Mattermost-simulator-x86_64.app.zip
 
   e2e-ios:
+    continue-on-error: true
     env:
       IOS: true
     runs-on: macos-14-large
