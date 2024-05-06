@@ -49,9 +49,12 @@ jobs:
           SENTRY_AUTH_TOKEN: "${{ secrets.MM_MOBILE_SENTRY_AUTH_TOKEN }}"
           SENTRY_DSN_ANDROID: ${{ secrets.MM_MOBILE_BETA_SENTRY_DSN_ANDROID }}
           SUPPLY_JSON_KEY: ${{ github.workspace }}/mattermost-mobile-private/android/mattermost-credentials.json
+          ANDROID_BUILD_TASK: "assemble,bundle"
         run: |
           echo "::group::Build"
           bundle exec fastlane android build --env android.beta
+          find . -name '*.apk'
+          find . -name '*.aab'
           echo "::endgroup::"
           #echo "::group::Deploy to Play Store"
           #bundle exec fastlane android deploy file:"${{ github.workspace }}/*.apk" --env android.beta
@@ -63,3 +66,4 @@ jobs:
         with:
           name: android-build-beta-${{ github.run_id }}
           path: "*.apk"
+          path: "*.aab"
