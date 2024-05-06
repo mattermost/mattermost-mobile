@@ -53,6 +53,7 @@ public class CustomPushNotification extends PushNotification {
         final String ackId = initialData.getString("ack_id");
         final String postId = initialData.getString("post_id");
         final String channelId = initialData.getString("channel_id");
+        final String signature = initialData.getString("signature");
         final boolean isIdLoaded = initialData.getString("id_loaded") != null && initialData.getString("id_loaded").equals("true");
         int notificationId = NotificationHelper.getNotificationId(initialData);
 
@@ -68,6 +69,11 @@ public class CustomPushNotification extends PushNotification {
                 current.putAll(response);
                 mNotificationProps = createProps(current);
             }
+        }
+
+        if (!CustomPushNotificationHelper.verifySignature(mContext, signature, serverUrl, ackId)) {
+            Log.i("Mattermost Notifications Signature verification", "Notification skipped because we could not verify it.");
+            return;
         }
 
         finishProcessingNotification(serverUrl, type, channelId, notificationId);

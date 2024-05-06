@@ -110,7 +110,7 @@ exports[`Server Icon Server Icon Component should match snapshot with mentions 1
         {
           "alignSelf": "flex-end",
           "backgroundColor": "#ffffff",
-          "borderColor": "#14213e",
+          "borderColor": "#162545",
           "borderRadius": 11,
           "borderWidth": 2,
           "color": "#1e325c",
@@ -198,7 +198,7 @@ exports[`Server Icon Server Icon Component should match snapshot with unreads 1`
         {
           "alignSelf": "flex-end",
           "backgroundColor": "#ffffff",
-          "borderColor": "#14213e",
+          "borderColor": "#162545",
           "borderRadius": 6,
           "borderWidth": 2,
           "color": "#1e325c",

@@ -10,6 +10,19 @@ import Foundation
 import SQLite
 
 extension Database {
+    public func getDeviceToken() -> String? {
+        if let db = try? Connection(DEFAULT_DB_PATH) {
+            let idCol = Expression<String>("id")
+            let valueCol = Expression<String>("value")
+            let query = globalTable.select(valueCol).filter(idCol == "deviceToken")
+            if let result = try? db.pluck(query) {
+                return try? result.get(valueCol)
+            }
+        }
+        
+        return nil
+    }
+
     public func getConfig(_ serverUrl: String, _ key: String) -> String? {
         if let db = try? getDatabaseForServer(serverUrl) {
             let id = Expression<String>("id")

@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt b/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt
-index ca5646c..7bcc64d 100644
+index b29e787..074cbcc 100644
 --- a/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt
 +++ b/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt
-@@ -13,7 +13,7 @@ import java.util.*
+@@ -11,7 +11,7 @@ import com.facebook.react.views.view.ReactViewGroup
  import java.util.concurrent.locks.ReentrantLock
  import kotlin.concurrent.withLock
  
@@ -10,4 +10,4 @@ index ca5646c..7bcc64d 100644
 +private const val MAX_WAIT_TIME_NANO = 5000000L // 5ms
  
  class SafeAreaView(context: Context?) :
-     ReactViewGroup(context), ViewTreeObserver.OnPreDrawListener, HasFabricViewStateManager {
+     ReactViewGroup(context), ViewTreeObserver.OnPreDrawListener {

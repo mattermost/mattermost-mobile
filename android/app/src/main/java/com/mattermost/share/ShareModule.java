@@ -100,7 +100,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
     public Map<String, Object> getConstants() {
         HashMap<String, Object> constants = new HashMap<>(1);
         constants.put("cacheDirName", RealPathUtil.CACHE_DIR_NAME);
-        constants.put("isOpened", mApplication.sharedExtensionIsOpened);
+        constants.put("isOpened", mApplication.getSharedExtensionIsOpened());
         return constants;
     }
 
@@ -130,7 +130,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
             }
         }
 
-        mApplication.sharedExtensionIsOpened = false;
+        mApplication.setSharedExtensionIsOpened(false);
         RealPathUtil.deleteTempFiles(this.tempFolder);
     }
 

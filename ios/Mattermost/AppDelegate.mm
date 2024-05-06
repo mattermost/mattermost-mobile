@@ -84,6 +84,13 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
     return;
   }
 
+  if (![[GekidouWrapper default] verifySignature:userInfo]) {
+      NSMutableDictionary *notification = [userInfo mutableCopy];
+      [notification setValue:@"false" forKey:@"verified"];
+      [RNNotifications didReceiveBackgroundNotification:notification withCompletionHandler:completionHandler];
+      return;
+  }
+
   if (isClearAction) {
     // When CRT is OFF:
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
@@ -225,6 +232,11 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
+{
+  return [self getBundleURL];
+}
+
+- (NSURL *)getBundleURL
 {
   #if DEBUG
     return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];

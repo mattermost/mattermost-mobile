@@ -3,13 +3,14 @@
 
 import assert from 'assert';
 
-import {act, renderHook} from '@testing-library/react-hooks';
+import {act, renderHook} from '@testing-library/react-hooks'; // Use instead of react-native version due to different behavior. Consider migrating
 
 import {needsRecordingAlert} from '@calls/alerts';
 import {
     newCurrentCall,
     processIncomingCalls,
     processMeanOpinionScore,
+    receivedCaption,
     removeIncomingCall,
     setAudioDeviceInfo,
     setCallQualityAlertDismissed,
@@ -60,9 +61,10 @@ import {
     type GlobalCallsState,
 } from '@calls/types/calls';
 import {License} from '@constants';
+import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 
-import type {CallRecordingState} from '@mattermost/calls/lib/types';
+import type {CallJobState, LiveCaptionData} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
 
@@ -1202,7 +1204,8 @@ describe('useCallsState', () => {
             myUserId: 'myUserId',
             ...call1,
         };
-        const recState: CallRecordingState = {
+        const recState: CallJobState = {
+            type: Calls.JOB_TYPE_RECORDING,
             init_at: 123,
             start_at: 231,
             end_at: 345,
@@ -1406,5 +1409,82 @@ describe('useCallsState', () => {
         });
         assert.deepEqual(result.current[1], currentCallStateImIn);
         assert.deepEqual(result.current[2], expectedIncomingCalls);
+    });
+
+    it('captions', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+        };
+        const caption1user1Data: LiveCaptionData = {
+            session_id: 'session1',
+            user_id: 'user-1',
+            channel_id: 'channel-1',
+            text: 'caption 1',
+        };
+        const caption2user1Data: LiveCaptionData = {
+            session_id: 'session1',
+            user_id: 'user-1',
+            channel_id: 'channel-1',
+            text: 'caption 2',
+        };
+        const caption3user1Data: LiveCaptionData = {
+            session_id: 'session1',
+            user_id: 'user-1',
+            channel_id: 'channel-1',
+            text: 'caption 3',
+        };
+        const caption1user2Data: LiveCaptionData = {
+            session_id: 'session2',
+            user_id: 'user-2',
+            channel_id: 'channel-1',
+            text: 'caption 1 user 2',
+        };
+        const caption2user2Data: LiveCaptionData = {
+            session_id: 'session2',
+            user_id: 'user-2',
+            channel_id: 'channel-1',
+            text: 'caption 2 user 2',
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => {
+            setCallsState('server1', initialCallsState);
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+
+        // test sending the first 2 captions for user 1, 1 caption for user 2
+        act(() => {
+            receivedCaption('server1', caption1user1Data);
+            receivedCaption('server1', caption2user1Data);
+            receivedCaption('server1', caption1user2Data);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        let currentCall = result.current[1] as CurrentCall;
+        assert.equal(currentCall.captions.session1.text, 'caption 2');
+        assert.equal(currentCall.captions.session2.text, 'caption 1 user 2');
+
+        // test sending the next captions for users 1 and 2
+        act(() => {
+            receivedCaption('server1', caption3user1Data);
+            receivedCaption('server1', caption2user2Data);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        currentCall = result.current[1] as CurrentCall;
+        assert.equal(currentCall.captions.session1.text, 'caption 3');
+        assert.equal(currentCall.captions.session2.text, 'caption 2 user 2');
     });
 });
