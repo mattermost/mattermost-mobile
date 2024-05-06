@@ -1056,6 +1056,7 @@
   "suggestion.mention.here": "Notifies everyone online in this channel",
   "suggestion.mention.members": "Channel Members",
   "suggestion.mention.morechannels": "Other Channels",
+  "suggestion.mention.users": "Users",
   "suggestion.mention.nonmembers": "Not in Channel",
   "suggestion.mention.special": "Special Mentions",
   "suggestion.search.direct": "Direct Messages",
