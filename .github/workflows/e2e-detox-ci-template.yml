@@ -43,7 +43,7 @@ env:
 jobs:
   generate-specs:
     runs-on: ubuntu-22.04
-    if: ${{ inputs.run-ios-tests == 'true' }}
+    if: ${{ inputs.run-ios-tests == 'true' || inputs.run-android-tests == 'true' }}
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       BUILD_ID: ${{ steps.generate-specs.outputs.BUILD_ID }}
