@@ -1,9 +1,10 @@
 ---
 name: build-pr
 on:
-  pull_request:
-    types:
-      - labeled
+  workflow_dispatch:
+#  pull_request:
+#    types:
+#      - labeled
 
 env:
   NODE_VERSION: 18.7.0

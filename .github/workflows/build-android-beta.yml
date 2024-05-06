@@ -6,6 +6,9 @@ on:
     branches:
       - build-beta-[0-9]+
       - build-beta-android-[0-9]+
+  pull_request:
+    types:
+      - labeled
 
 env:
   NODE_VERSION: 18.7.0
@@ -21,6 +24,7 @@ jobs:
         uses: ./.github/actions/test
 
   build-and-deploy-android-beta:
+    if: ${{ github.event.label.name == 'Build App for Android' }}
     runs-on: ubuntu-22.04
     needs:
       - test
@@ -40,7 +44,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
+          #MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           SENTRY_AUTH_TOKEN: "${{ secrets.MM_MOBILE_SENTRY_AUTH_TOKEN }}"
           SENTRY_DSN_ANDROID: ${{ secrets.MM_MOBILE_BETA_SENTRY_DSN_ANDROID }}
           SUPPLY_JSON_KEY: ${{ github.workspace }}/mattermost-mobile-private/android/mattermost-credentials.json
@@ -48,9 +52,9 @@ jobs:
           echo "::group::Build"
           bundle exec fastlane android build --env android.beta
           echo "::endgroup::"
-          echo "::group::Deploy to Play Store"
-          bundle exec fastlane android deploy file:"${{ github.workspace }}/*.apk" --env android.beta
-          echo "::endgroup::"
+          #echo "::group::Deploy to Play Store"
+          #bundle exec fastlane android deploy file:"${{ github.workspace }}/*.apk" --env android.beta
+          #echo "::endgroup::"
         working-directory: ./fastlane
 
       - name: ci/upload-android-beta-build
