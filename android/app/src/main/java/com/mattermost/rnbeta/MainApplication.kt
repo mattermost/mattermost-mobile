@@ -17,7 +17,6 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
-import com.facebook.react.flipper.ReactNativeFlipper
 import com.facebook.react.module.model.ReactModuleInfo
 import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.facebook.react.modules.network.OkHttpClientProvider
@@ -137,7 +136,7 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
         }
 
     override val reactHost: ReactHost
-        get() = getDefaultReactHost(this.applicationContext, reactNativeHost)
+        get() = getDefaultReactHost(applicationContext, reactNativeHost)
 
     override fun onCreate() {
         super.onCreate()
@@ -163,7 +162,6 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
             // If you opted-in for the New Architecture, we load the native entry point for this app.
             load()
         }
-        ReactNativeFlipper.initializeFlipper(this, reactNativeHost.reactInstanceManager)
     }
 
     override fun getPushNotification(

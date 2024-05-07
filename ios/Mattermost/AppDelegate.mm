@@ -27,7 +27,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
+  if ( UIUserInterfaceIdiom() == UIUserInterfaceIdiomPad )
   {
     _allowRotation = YES;
   }
@@ -51,13 +51,10 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
   [RNNotifications startMonitorNotifications];
 
-  self.moduleName = @"Mattermost";
-  // You can add your custom initial props in the dictionary below.
-  // They will be passed down to the ViewController used by React Native.
-  self.initialProps = @{};
-  [ReactNativeNavigation bootstrapWithDelegate:self launchOptions:launchOptions];
+//  [ReactNativeNavigation bootstrapWithDelegate:self launchOptions:launchOptions];
 
   os_log(OS_LOG_DEFAULT, "Mattermost started!!");
+  [super application:application didFinishLaunchingWithOptions:launchOptions];
 
   return YES;
 }
@@ -222,21 +219,12 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
   [hwKeyEvent sendHWKeyEvent:@"find-channels"];
 }
 
-- (NSDictionary *)prepareInitialProps
-{
-  NSMutableDictionary *initProps = [NSMutableDictionary new];
-#ifdef RCT_NEW_ARCH_ENABLED
-  initProps[kRNConcurrentRoot] = @([self concurrentRootEnabled]);
-#endif
-  return initProps;
-}
-
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
-  return [self getBundleURL];
+  return [self bundleURL];
 }
 
-- (NSURL *)getBundleURL
+- (NSURL *)bundleURL
 {
   #if DEBUG
     return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
