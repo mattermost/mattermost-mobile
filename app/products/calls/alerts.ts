@@ -19,6 +19,7 @@ import {errorAlert} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getCurrentUser} from '@queries/servers/user';
+import {dismissBottomSheet} from '@screens/navigation';
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
@@ -441,7 +442,10 @@ export const removeFromCall = (serverUrl: string, displayName: string, callId: s
             id: 'mobile.calls_remove',
             defaultMessage: 'Remove',
         }),
-        onPress: () => hostRemove(serverUrl, callId, sessionId),
+        onPress: () => {
+            hostRemove(serverUrl, callId, sessionId);
+            dismissBottomSheet();
+        },
         style: 'destructive',
     }]);
 };
