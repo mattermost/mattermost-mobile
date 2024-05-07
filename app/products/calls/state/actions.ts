@@ -358,8 +358,6 @@ export const myselfLeftCall = () => {
             channelId: currentCall.channelId,
             mySessionId: currentCall.mySessionId,
         });
-    } else {
-        setPreviousCall(null);
     }
     setCurrentCall(null);
 
