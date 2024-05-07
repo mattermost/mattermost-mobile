@@ -220,7 +220,10 @@ const File = ({
     } else if (isAudio(file)) {
         const renderAudioFile = (
             <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
-                <AudioFile file={file}/>
+                <AudioFile
+                    file={file}
+                    canDownloadFiles={canDownloadFiles}
+                />
             </Animated.View>
         );
 
