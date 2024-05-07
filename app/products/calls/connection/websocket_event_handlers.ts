@@ -34,6 +34,7 @@ import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {getIntlShape} from '@utils/general';
+import {logError} from '@utils/log';
 
 import type {CallRecordingStateData, HostControlsLowerHandMsgData, HostControlsMsgData} from '@calls/types/calls';
 import type {
@@ -249,15 +250,15 @@ export const handleHostRemoved = async (serverUrl: string, msg: WebSocketMessage
 
     leaveCall();
 
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return;
-    }
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const currentUser = await getCurrentUser(database);
+        if (!currentUser) {
+            return;
+        }
 
-    const currentUser = await getCurrentUser(database);
-    if (!currentUser) {
-        return;
+        removedAlert(getIntlShape(currentUser.locale));
+    } catch (error) {
+        logError('failed to getServerDatabaseAndOperator in handleHostRemoved', error);
     }
-
-    removedAlert(getIntlShape(currentUser.locale));
 };

@@ -3,6 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
+import {StyleSheet} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {hostLowerHand, hostMake, hostMuteSession, hostStopScreenshare} from '@calls/actions/calls';
@@ -11,12 +12,10 @@ import {useHostMenus} from '@calls/hooks';
 import SettingSeparator from '@components/settings/separator';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
 import UserProfileTitle from '@screens/user_profile/title';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
 import type {CallSession, CurrentCall} from '@calls/types/calls';
@@ -33,18 +32,15 @@ type Props = {
     hideGuestTags: boolean;
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
+const styles = StyleSheet.create({
     iconStyle: {
         marginRight: 6,
-    },
-    red: {
-        color: theme.dndIndicator,
     },
     separator: {
         width: '100%',
         marginVertical: 8,
     },
-}));
+});
 
 export const HostControls = ({
     currentCall,
@@ -55,12 +51,9 @@ export const HostControls = ({
 }: Props) => {
     const intl = useIntl();
     const {bottom} = useSafeAreaInsets();
-    const theme = useTheme();
     const {openUserProfile} = useHostMenus();
-    const styles = getStyleFromTheme(theme);
 
     const sharingScreen = currentCall.screenOn === session.sessionId;
-    const displayName = displayUsername(session.userModel, intl.locale, teammateNameDisplay, true);
 
     const makeHostPress = useCallback(async () => {
         hostMake(currentCall.serverUrl, currentCall.channelId, session.userId);
@@ -83,14 +76,14 @@ export const HostControls = ({
     }, [currentCall.serverUrl, currentCall.channelId, session.sessionId]);
 
     const profilePress = useCallback(async () => {
-        dismissBottomSheet();
+        await dismissBottomSheet();
         openUserProfile(session);
     }, [session]);
 
     const removePress = useCallback(async () => {
+        const displayName = displayUsername(session.userModel, intl.locale, teammateNameDisplay, true);
         removeFromCall(currentCall.serverUrl, displayName, currentCall.channelId, session.sessionId, intl);
-        await dismissBottomSheet();
-    }, [displayName, currentCall.serverUrl, currentCall.channelId, session.sessionId]);
+    }, [session.userModel, intl, teammateNameDisplay, currentCall.serverUrl, currentCall.channelId, session.sessionId]);
 
     const snapPoints = useMemo(() => {
         const items = 3 + (session.muted ? 0 : 1) + (sharingScreen ? 1 : 0) + (session.raisedHand ? 1 : 0);
@@ -166,10 +159,10 @@ export const HostControls = ({
                 <SettingSeparator lineStyles={styles.separator}/>
                 <SlideUpPanelItem
                     leftIcon={'minus-circle-outline'}
-                    leftIconStyles={[styles.iconStyle, styles.red]}
+                    leftIconStyles={styles.iconStyle}
                     onPress={removePress}
                     text={removeText}
-                    textStyles={styles.red}
+                    destructive={true}
                 />
             </>
         );
