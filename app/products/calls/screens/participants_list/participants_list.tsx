@@ -9,7 +9,7 @@ import {FlatList} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {hostMuteAll} from '@calls/actions/calls';
-import {useHostMenus} from '@calls/hooks';
+import {useHostControlsAvailable, useHostMenus} from '@calls/hooks';
 import {Participant} from '@calls/screens/participants_list/participant';
 import Pill from '@calls/screens/participants_list/pill';
 import {sortSessions} from '@calls/utils';
@@ -34,7 +34,6 @@ type Props = {
     sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
     callServerUrl?: string;
-    isHost: boolean;
     callChannelId?: string;
 }
 
@@ -67,10 +66,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDisplay, callServerUrl, isHost, callChannelId}: Props) => {
+export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDisplay, callServerUrl, callChannelId}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const {onPress} = useHostMenus();
+    const hostControlsAvailable = useHostControlsAvailable();
     const {bottom} = useSafeAreaInsets();
     const {height} = useWindowDimensions();
     const isTablet = useIsTablet();
@@ -112,7 +112,7 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
                         defaultMessage={'Participants'}
                     />
                     <Pill text={sessions.length}/>
-                    {isHost && unMuted &&
+                    {hostControlsAvailable && unMuted &&
                         <TouchableOpacity
                             style={styles.muteButton}
                             onPress={muteAllPress}
