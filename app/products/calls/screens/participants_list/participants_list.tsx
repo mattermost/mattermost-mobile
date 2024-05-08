@@ -4,14 +4,16 @@
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {type ListRenderItemInfo, useWindowDimensions, View} from 'react-native';
+import {type ListRenderItemInfo, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {hostMuteAll} from '@calls/actions/calls';
 import {useHostMenus} from '@calls/hooks';
 import {Participant} from '@calls/screens/participants_list/participant';
 import Pill from '@calls/screens/participants_list/pill';
 import {sortSessions} from '@calls/utils';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -31,11 +33,15 @@ type Props = {
     closeButtonId: string;
     sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
+    callServerUrl?: string;
+    isHost: boolean;
+    callChannelId?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     header: {
         paddingBottom: 12,
+        paddingRight: 2,
         flexDirection: 'row',
         gap: 8,
         alignItems: 'center',
@@ -44,9 +50,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
         ...typography('Heading', 600, 'SemiBold'),
     },
+    muteButton: {
+        flexDirection: 'row',
+        padding: 6,
+        gap: 6,
+        alignItems: 'center',
+        marginLeft: 'auto',
+    },
+    muteIcon: {
+        color: theme.buttonBg,
+    },
+    muteText: {
+        color: theme.buttonBg,
+        ...typography('Body', 100, 'SemiBold'),
+        marginTop: -2,
+    },
 }));
 
-export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDisplay}: Props) => {
+export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDisplay, callServerUrl, isHost, callChannelId}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const {onPress} = useHostMenus();
@@ -63,6 +84,14 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
     if (sessions.length > MIN_ROWS && snapPoint1 < snapPoint2) {
         snapPoints.push(snapPoint2);
     }
+    const unMuted = useMemo(() => sessions.some((s) => !s.muted), [sessions]);
+
+    const muteAllPress = useCallback(async () => {
+        if (!callServerUrl || !callChannelId) {
+            return;
+        }
+        hostMuteAll(callServerUrl, callChannelId);
+    }, [callServerUrl, callChannelId]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<CallSession>) => (
         <Participant
@@ -83,6 +112,21 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
                         defaultMessage={'Participants'}
                     />
                     <Pill text={sessions.length}/>
+                    {isHost && unMuted &&
+                        <TouchableOpacity
+                            style={styles.muteButton}
+                            onPress={muteAllPress}
+                        >
+                            <CompassIcon
+                                size={16}
+                                name={'microphone-off'}
+                                style={styles.muteIcon}
+                            />
+                            <Text style={styles.muteText}>
+                                {intl.formatMessage({id: 'mobile.calls_mute_all', defaultMessage: 'Mute all'})}
+                            </Text>
+                        </TouchableOpacity>
+                    }
                 </View>
                 <List
                     data={sessions}

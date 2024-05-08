@@ -642,6 +642,17 @@ export const hostMuteSession = async (serverUrl: string, callId: string, session
     }
 };
 
+export const hostMuteAll = async (serverUrl: string, callId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return client.hostMuteAll(callId);
+    } catch (error) {
+        logDebug('error on hostMuteAll', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
+        return error;
+    }
+};
+
 export const hostStopScreenshare = async (serverUrl: string, callId: string, sessionId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);

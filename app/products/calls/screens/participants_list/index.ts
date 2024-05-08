@@ -7,6 +7,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {observeCallDatabase, observeCurrentSessionsDict} from '@calls/observers';
 import {ParticipantsList} from '@calls/screens/participants_list/participants_list';
+import {observeCurrentCall} from '@calls/state';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
 const enhanced = withObservables([], () => {
@@ -14,10 +15,22 @@ const enhanced = withObservables([], () => {
         switchMap((db) => (db ? observeTeammateNameDisplay(db) : of$(''))),
         distinctUntilChanged(),
     );
+    const callServerUrl = observeCurrentCall().pipe(
+        switchMap((call) => of$(call?.serverUrl)),
+    );
+    const isHost = observeCurrentCall().pipe(
+        switchMap((call) => of$(Boolean(call?.hostId === call?.myUserId))),
+    );
+    const callChannelId = observeCurrentCall().pipe(
+        switchMap((call) => of$(call?.channelId)),
+    );
 
     return {
         sessionsDict: observeCurrentSessionsDict(),
         teammateNameDisplay,
+        callServerUrl,
+        isHost,
+        callChannelId,
     };
 });
 
