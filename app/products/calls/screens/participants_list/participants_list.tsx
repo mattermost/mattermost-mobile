@@ -8,7 +8,7 @@ import {type ListRenderItemInfo, Text, TouchableOpacity, useWindowDimensions, Vi
 import {FlatList} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {hostMuteAll} from '@calls/actions/calls';
+import {hostMuteOthers} from '@calls/actions/calls';
 import {useHostControlsAvailable, useHostMenus} from '@calls/hooks';
 import {Participant} from '@calls/screens/participants_list/participant';
 import Pill from '@calls/screens/participants_list/pill';
@@ -35,6 +35,7 @@ type Props = {
     teammateNameDisplay: string;
     callServerUrl?: string;
     callChannelId?: string;
+    callUserId?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -66,7 +67,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDisplay, callServerUrl, callChannelId}: Props) => {
+export const ParticipantsList = ({
+    closeButtonId,
+    sessionsDict,
+    teammateNameDisplay,
+    callServerUrl,
+    callChannelId,
+    callUserId,
+}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const {onPress} = useHostMenus();
@@ -84,13 +92,13 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
     if (sessions.length > MIN_ROWS && snapPoint1 < snapPoint2) {
         snapPoints.push(snapPoint2);
     }
-    const unMuted = useMemo(() => sessions.some((s) => !s.muted), [sessions]);
+    const otherUnMuted = useMemo(() => sessions.some((s) => !s.muted && s.userId !== callUserId), [sessions, callUserId]);
 
-    const muteAllPress = useCallback(async () => {
+    const muteOthersPress = useCallback(async () => {
         if (!callServerUrl || !callChannelId) {
             return;
         }
-        hostMuteAll(callServerUrl, callChannelId);
+        hostMuteOthers(callServerUrl, callChannelId);
     }, [callServerUrl, callChannelId]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<CallSession>) => (
@@ -112,10 +120,10 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
                         defaultMessage={'Participants'}
                     />
                     <Pill text={sessions.length}/>
-                    {hostControlsAvailable && unMuted &&
+                    {hostControlsAvailable && otherUnMuted &&
                         <TouchableOpacity
                             style={styles.muteButton}
-                            onPress={muteAllPress}
+                            onPress={muteOthersPress}
                         >
                             <CompassIcon
                                 size={16}
@@ -123,7 +131,7 @@ export const ParticipantsList = ({closeButtonId, sessionsDict, teammateNameDispl
                                 style={styles.muteIcon}
                             />
                             <Text style={styles.muteText}>
-                                {intl.formatMessage({id: 'mobile.calls_mute_all', defaultMessage: 'Mute all'})}
+                                {intl.formatMessage({id: 'mobile.calls_mute_others', defaultMessage: 'Mute others'})}
                             </Text>
                         </TouchableOpacity>
                     }

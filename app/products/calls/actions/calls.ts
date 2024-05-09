@@ -642,12 +642,12 @@ export const hostMuteSession = async (serverUrl: string, callId: string, session
     }
 };
 
-export const hostMuteAll = async (serverUrl: string, callId: string) => {
+export const hostMuteOthers = async (serverUrl: string, callId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostMuteAll(callId);
+        return client.hostMuteOthers(callId);
     } catch (error) {
-        logDebug('error on hostMuteAll', getFullErrorMessage(error));
+        logDebug('error on hostMuteOthers', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
         return error;
     }

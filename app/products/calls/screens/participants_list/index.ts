@@ -21,12 +21,16 @@ const enhanced = withObservables([], () => {
     const callChannelId = observeCurrentCall().pipe(
         switchMap((call) => of$(call?.channelId)),
     );
+    const callUserId = observeCurrentCall().pipe(
+        switchMap((call) => of$(call?.myUserId)),
+    );
 
     return {
         sessionsDict: observeCurrentSessionsDict(),
         teammateNameDisplay,
         callServerUrl,
         callChannelId,
+        callUserId,
     };
 });
 
