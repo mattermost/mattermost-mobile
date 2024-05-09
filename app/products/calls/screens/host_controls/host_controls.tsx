@@ -3,19 +3,20 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
+import {Platform, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {hostLowerHand, hostMake, hostMuteSession, hostStopScreenshare} from '@calls/actions/calls';
 import {removeFromCall} from '@calls/alerts';
 import {useHostMenus} from '@calls/hooks';
-import SettingSeparator from '@components/settings/separator';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
 import UserProfileTitle from '@screens/user_profile/title';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
 import type {CallSession, CurrentCall} from '@calls/types/calls';
@@ -23,6 +24,7 @@ import type {CallSession, CurrentCall} from '@calls/types/calls';
 const TITLE_HEIGHT = 118;
 const ITEM_HEIGHT = 48;
 const SEPARATOR_HEIGHT = 17;
+const ANDROID_BUMP_HEIGHT = 20;
 
 type Props = {
     currentCall: CurrentCall;
@@ -32,15 +34,18 @@ type Props = {
     hideGuestTags: boolean;
 }
 
-const styles = StyleSheet.create({
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
     iconStyle: {
         marginRight: 6,
     },
     separator: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+        height: 1,
         width: '100%',
+        alignSelf: 'center',
         marginVertical: 8,
     },
-});
+}));
 
 export const HostControls = ({
     currentCall,
@@ -50,8 +55,10 @@ export const HostControls = ({
     hideGuestTags,
 }: Props) => {
     const intl = useIntl();
+    const theme = useTheme();
     const {bottom} = useSafeAreaInsets();
     const {openUserProfile} = useHostMenus();
+    const styles = getStyleFromTheme(theme);
 
     const sharingScreen = currentCall.screenOn === session.sessionId;
 
@@ -89,7 +96,7 @@ export const HostControls = ({
         const items = 3 + (session.muted ? 0 : 1) + (sharingScreen ? 1 : 0) + (session.raisedHand ? 1 : 0);
         return [
             1,
-            bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + TITLE_HEIGHT + SEPARATOR_HEIGHT,
+            bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + TITLE_HEIGHT + SEPARATOR_HEIGHT + (Platform.OS === 'android' ? ANDROID_BUMP_HEIGHT : 0),
         ];
     }, [bottom, session.muted, sharingScreen, session.raisedHand]);
 
@@ -156,7 +163,7 @@ export const HostControls = ({
                     onPress={profilePress}
                     text={profileText}
                 />
-                <SettingSeparator lineStyles={styles.separator}/>
+                <View style={styles.separator}/>
                 <SlideUpPanelItem
                     leftIcon={'minus-circle-outline'}
                     leftIconStyles={styles.iconStyle}
