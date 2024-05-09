@@ -120,18 +120,6 @@ export const DefaultCurrentCall: CurrentCall = {
     captions: {},
 };
 
-export type PreviousCall = {
-    serverUrl: string;
-    channelId: string;
-    mySessionId: string;
-}
-
-export const PreviousCallDefault: PreviousCall = {
-    serverUrl: '',
-    channelId: '',
-    mySessionId: '',
-};
-
 export type CallSession = {
     sessionId: string;
     userId: string;

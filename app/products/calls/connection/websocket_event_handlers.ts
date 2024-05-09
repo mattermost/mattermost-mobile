@@ -26,7 +26,6 @@ import {
     userLeftCall,
     userReacted,
 } from '@calls/state';
-import {getPreviousCall} from '@calls/state/previous_call';
 import {isMultiSessionSupported} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import Calls from '@constants/calls';
@@ -239,13 +238,7 @@ export const handleHostRemoved = async (serverUrl: string, msg: WebSocketMessage
     if (currentCall?.serverUrl !== serverUrl ||
         currentCall?.channelId !== msg.data.channel_id ||
         currentCall?.mySessionId !== msg.data.session_id) {
-        // wasn't the current call, check previous call:
-        const previousCall = getPreviousCall();
-        if (previousCall?.serverUrl !== serverUrl ||
-            previousCall?.channelId !== msg.data.channel_id ||
-            previousCall?.mySessionId !== msg.data.session_id) {
-            return;
-        }
+        return;
     }
 
     leaveCall();
