@@ -4,9 +4,9 @@
 import {Alert} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
-import {dismissIncomingCall} from '@calls/actions/calls';
+import {dismissIncomingCall, hostRemove} from '@calls/actions/calls';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
-import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
+import {hostRemovedErr, userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
 import {
     getCallsConfig,
     getCallsState,
@@ -19,6 +19,7 @@ import {errorAlert} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getCurrentUser} from '@queries/servers/user';
+import {dismissBottomSheet} from '@screens/navigation';
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
@@ -413,8 +414,55 @@ export const showErrorAlertOnClose = (err: Error, intl: IntlShape) => {
                 }),
             );
             break;
+        case hostRemovedErr:
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.calls_removed_alert_title',
+                    defaultMessage: 'You were removed from the call',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.calls_removed_alert_body',
+                    defaultMessage: 'The host removed you from the call.',
+                }),
+                [{
+                    text: intl.formatMessage({
+                        id: 'mobile.calls_dismiss',
+                        defaultMessage: 'Dismiss',
+                    }),
+                }]);
+            break;
         default:
             // Fallback with generic error
             errorAlert(getFullErrorMessage(err, intl), intl);
     }
+};
+
+export const removeFromCall = (serverUrl: string, displayName: string, callId: string, sessionId: string, intl: IntlShape) => {
+    const {formatMessage} = intl;
+
+    const title = formatMessage({
+        id: 'mobile.calls_remove_alert_title',
+        defaultMessage: 'Remove participant',
+    });
+    const body = formatMessage({
+        id: 'mobile.calls_remove_alert_body',
+        defaultMessage: 'Are you sure you want to remove {displayName} from the call? ',
+    }, {displayName});
+
+    Alert.alert(title, body, [{
+        text: formatMessage({
+            id: 'mobile.post.cancel',
+            defaultMessage: 'Cancel',
+        }),
+    }, {
+        text: formatMessage({
+            id: 'mobile.calls_remove',
+            defaultMessage: 'Remove',
+        }),
+        onPress: () => {
+            hostRemove(serverUrl, callId, sessionId);
+            dismissBottomSheet();
+        },
+        style: 'destructive',
+    }]);
 };
