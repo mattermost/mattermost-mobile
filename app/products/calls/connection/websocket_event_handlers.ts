@@ -233,7 +233,7 @@ export const handleHostLowerHand = async (serverUrl: string, msg: WebSocketMessa
 export const handleHostRemoved = async (serverUrl: string, msg: WebSocketMessage<HostControlsMsgData>) => {
     const currentCall = getCurrentCall();
     if (currentCall?.serverUrl !== serverUrl ||
-        currentCall?.channelId !== msg.data.channel_id ||
+        currentCall?.channelId !== msg.broadcast.channel_id ||
         currentCall?.mySessionId !== msg.data.session_id) {
         return;
     }
