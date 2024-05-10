@@ -664,3 +664,13 @@ export const hostLowerHand = async (serverUrl: string, callId: string, sessionId
     }
 };
 
+export const hostRemove = async (serverUrl: string, callId: string, sessionId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return client.hostRemove(callId, sessionId);
+    } catch (error) {
+        logDebug('error on hostRemove', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
+        return error;
+    }
+};

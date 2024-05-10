@@ -4,7 +4,8 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
-import {muteMyself, unraiseHand} from '@calls/actions';
+import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
+import {hostRemovedErr} from '@calls/errors';
 import {
     callEnded,
     callStarted,
@@ -227,4 +228,15 @@ export const handleHostLowerHand = async (serverUrl: string, msg: WebSocketMessa
     }
 
     unraiseHand();
+};
+
+export const handleHostRemoved = async (serverUrl: string, msg: WebSocketMessage<HostControlsMsgData>) => {
+    const currentCall = getCurrentCall();
+    if (currentCall?.serverUrl !== serverUrl ||
+        currentCall?.channelId !== msg.data.channel_id ||
+        currentCall?.mySessionId !== msg.data.session_id) {
+        return;
+    }
+
+    leaveCall(hostRemovedErr);
 };
