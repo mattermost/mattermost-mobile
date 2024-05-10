@@ -6,7 +6,7 @@ import {Alert} from 'react-native';
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
 import {dismissIncomingCall, hostRemove} from '@calls/actions/calls';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
-import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
+import {hostRemovedErr, userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
 import {
     getCallsConfig,
     getCallsState,
@@ -414,6 +414,23 @@ export const showErrorAlertOnClose = (err: Error, intl: IntlShape) => {
                 }),
             );
             break;
+        case hostRemovedErr:
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.calls_removed_alert_title',
+                    defaultMessage: 'You were removed from the call',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.calls_removed_alert_body',
+                    defaultMessage: 'The host removed you from the call.',
+                }),
+                [{
+                    text: intl.formatMessage({
+                        id: 'mobile.calls_dismiss',
+                        defaultMessage: 'Dismiss',
+                    }),
+                }]);
+            break;
         default:
             // Fallback with generic error
             errorAlert(getFullErrorMessage(err, intl), intl);
@@ -449,24 +466,3 @@ export const removeFromCall = (serverUrl: string, displayName: string, callId: s
         style: 'destructive',
     }]);
 };
-
-export const removedAlert = (intl: IntlShape) => {
-    const {formatMessage} = intl;
-
-    const title = formatMessage({
-        id: 'mobile.calls_removed_alert_title',
-        defaultMessage: 'You were removed from the call',
-    });
-    const body = formatMessage({
-        id: 'mobile.calls_removed_alert_body',
-        defaultMessage: 'The host removed you from the call.',
-    });
-
-    Alert.alert(title, body, [{
-        text: formatMessage({
-            id: 'mobile.calls_dismiss',
-            defaultMessage: 'Dismiss',
-        }),
-    }]);
-};
-
