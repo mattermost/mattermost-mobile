@@ -19,6 +19,7 @@ export interface ClientCallsMix {
     dismissCall: (channelId: string) => Promise<ApiResp>;
     hostMake: (callId: string, newHostId: string) => Promise<ApiResp>;
     hostMute: (callId: string, sessionId: string) => Promise<ApiResp>;
+    hostMuteOthers: (callId: string) => Promise<ApiResp>;
     hostScreenOff: (callId: string, sessionId: string) => Promise<ApiResp>;
     hostLowerHand: (callId: string, sessionId: string) => Promise<ApiResp>;
     hostRemove: (callId: string, sessionId: string) => Promise<ApiResp>;
@@ -128,6 +129,13 @@ const ClientCalls = (superclass: any) => class extends superclass {
                 method: 'post',
                 body: {session_id: sessionId},
             },
+        );
+    };
+
+    hostMuteOthers = async (callId: string) => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/calls/${callId}/host/mute-others`,
+            {method: 'post'},
         );
     };
 

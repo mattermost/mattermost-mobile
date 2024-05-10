@@ -486,6 +486,7 @@
   "mobile.calls_mic_error": "To participate, open Settings to grant Mattermost access to your microphone.",
   "mobile.calls_more": "More",
   "mobile.calls_mute": "Mute",
+  "mobile.calls_mute_others": "Mute others",
   "mobile.calls_mute_participant": "Mute participant",
   "mobile.calls_name_is_talking_postfix": "is talking...",
   "mobile.calls_name_started_call": "{name} started a call",
