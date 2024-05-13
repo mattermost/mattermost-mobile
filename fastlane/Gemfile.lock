@@ -166,9 +166,11 @@ GEM
     multipart-post (2.3.0)
     nanaimo (0.3.0)
     naturally (2.2.1)
-    nokogiri (1.15.5-arm64-darwin)
+    nokogiri (1.16.5-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.15.5-x86_64-darwin)
+    nokogiri (1.16.5-x86_64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.16.5-x86_64-linux)
       racc (~> 1.4)
     optparse (0.1.1)
     os (1.1.4)
@@ -223,6 +225,7 @@ PLATFORMS
   arm64-darwin-23
   x86_64-darwin-20
   x86_64-darwin-23
+  x86_64-linux
 
 DEPENDENCIES
   dotenv
