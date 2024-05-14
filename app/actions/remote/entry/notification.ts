@@ -5,6 +5,7 @@ import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById} from '@actions/remote/post';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import performance_metrics_manager from '@app/managers/performance_metrics_manager';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -103,13 +104,16 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
             const actualRootId = post && ('root_id' in post ? post.root_id : post.rootId);
 
             if (actualRootId) {
+                performance_metrics_manager.setLoadTarget('THREAD');
                 await fetchAndSwitchToThread(serverUrl, actualRootId, true);
             } else if (post) {
+                performance_metrics_manager.setLoadTarget('THREAD');
                 await fetchAndSwitchToThread(serverUrl, rootId, true);
             } else {
                 emitNotificationError('Post');
             }
         } else {
+            performance_metrics_manager.setLoadTarget('CHANNEL');
             await switchToChannelById(serverUrl, channelId, teamId);
         }
     }

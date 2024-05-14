@@ -87,6 +87,7 @@
     "react-native-section-list-get-item-layout": "2.2.3",
     "react-native-shadow-2": "7.0.8",
     "react-native-share": "10.1.0",
+    "react-native-startup-time": "2.1.0",
     "react-native-svg": "15.1.0",
     "react-native-vector-icons": "10.0.3",
     "react-native-video": "5.2.1",
@@ -199,6 +200,9 @@
     "updatesnapshot": "jest --updateSnapshot"
   },
   "overrides": {
+    "react-native-startup-time": {
+      "react": "^18.2.0"
+    },
     "@testing-library/react-hooks": {
       "@types/react": "^18.2.37",
       "react": "^18.2.0",

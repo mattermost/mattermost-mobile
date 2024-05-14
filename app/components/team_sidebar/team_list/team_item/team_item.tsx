@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {View} from 'react-native';
 
 import {handleTeamChange} from '@actions/remote/team';
+import performance_metrics_manager from '@app/managers/performance_metrics_manager';
 import Badge from '@components/badge';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
@@ -62,6 +63,14 @@ export default function TeamItem({team, hasUnreads, mentionCount, selected}: Pro
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
+    const onPress = useCallback(() => {
+        if (!team) {
+            return;
+        }
+        performance_metrics_manager.startMetric('teamSwitch');
+        handleTeamChange(serverUrl, team.id);
+    }, []);
+
     if (!team) {
         return null;
     }
@@ -92,7 +101,7 @@ export default function TeamItem({team, hasUnreads, mentionCount, selected}: Pro
         <>
             <View style={[styles.container, selected ? styles.containerSelected : undefined]}>
                 <TouchableWithFeedback
-                    onPress={() => handleTeamChange(serverUrl, team.id)}
+                    onPress={onPress}
                     type='opacity'
                     testID={teamItemTestId}
                 >

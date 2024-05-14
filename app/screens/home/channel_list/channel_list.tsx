@@ -10,6 +10,7 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {refetchCurrentUser} from '@actions/remote/user';
+import performance_metrics_manager from '@app/managers/performance_metrics_manager';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
@@ -167,6 +168,10 @@ const ChannelListScreen = (props: ChannelProps) => {
         if (!NavigationStore.isToSOpen()) {
             tryRunAppReview(props.launchType, props.coldStart);
         }
+    }, []);
+
+    useEffect(() => {
+        performance_metrics_manager.finishLoad('HOME');
     }, []);
 
     return (

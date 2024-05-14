@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {FlatList, StyleSheet, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
+import performance_metrics_manager from '@app/managers/performance_metrics_manager';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
@@ -68,6 +69,7 @@ const Categories = ({
     const [initiaLoad, setInitialLoad] = useState(!categoriesToShow.length);
 
     const onChannelSwitch = useCallback(async (c: Channel | ChannelModel) => {
+        performance_metrics_manager.startMetric('channelSwitch');
         switchToChannelById(serverUrl, c.id);
     }, [serverUrl]);
 
@@ -102,6 +104,14 @@ const Categories = ({
 
         return () => clearTimeout(t);
     }, []);
+
+    useEffect(() => {
+        if (switchingTeam) {
+            return;
+        }
+
+        performance_metrics_manager.endMetric('teamSwitch');
+    }, [switchingTeam]);
 
     if (!categories.length) {
         return <LoadCategoriesError/>;

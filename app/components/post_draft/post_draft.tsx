@@ -6,6 +6,7 @@ import {Platform} from 'react-native';
 import {KeyboardTrackingView, type KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import performance_metrics_manager from '@app/managers/performance_metrics_manager';
 import Autocomplete from '@components/autocomplete';
 import {View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -72,6 +73,11 @@ function PostDraft({
         setValue(message);
         setCursorPosition(message.length);
     }, [channelId, rootId]);
+
+    useEffect(() => {
+        performance_metrics_manager.finishLoad(rootId ? 'THREAD' : 'CHANNEL');
+        performance_metrics_manager.endMetric('channelSwitch');
+    }, []);
 
     const keyboardAdjustment = (isTablet && isChannelScreen) ? KEYBOARD_TRACKING_OFFSET : 0;
     const insetsAdjustment = (isTablet && isChannelScreen) ? 0 : insets.bottom;
