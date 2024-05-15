@@ -22,3 +22,4 @@ jobs:
     with:
       run-ios-tests: true
       run-android-tests: false
+    secrets: inherit
