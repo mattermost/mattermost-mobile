@@ -34,6 +34,9 @@ import {
     handleCallUserUnraiseHand,
     handleCallUserVoiceOff,
     handleCallUserVoiceOn,
+    handleHostLowerHand,
+    handleHostMute,
+    handleHostRemoved,
     handleUserDismissedNotification,
 } from '@calls/connection/websocket_event_handlers';
 import {isSupportedServerCalls} from '@calls/utils';
@@ -41,6 +44,7 @@ import {Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
     getConfig,
@@ -171,7 +175,8 @@ async function doReconnect(serverUrl: string) {
     }
 
     const tabletDevice = isTablet();
-    if (tabletDevice && initialChannelId === currentChannelId) {
+    const isActiveServer = (await getActiveServerUrl()) === serverUrl;
+    if (isActiveServer && tabletDevice && initialChannelId === currentChannelId) {
         await markChannelAsRead(serverUrl, initialChannelId);
         markChannelAsViewed(serverUrl, initialChannelId);
     }
@@ -451,6 +456,15 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.CALLS_CAPTION:
             handleCallCaption(serverUrl, msg);
             break;
+        case WebsocketEvents.CALLS_HOST_MUTE:
+            handleHostMute(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_HOST_LOWER_HAND:
+            handleHostLowerHand(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_HOST_REMOVED:
+            handleHostRemoved(serverUrl, msg);
+            break;
 
         case WebsocketEvents.GROUP_RECEIVED:
             handleGroupReceivedEvent(serverUrl, msg);
@@ -483,6 +497,11 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
 async function fetchPostDataIfNeeded(serverUrl: string) {
     try {
+        const isActiveServer = (await getActiveServerUrl()) === serverUrl;
+        if (!isActiveServer) {
+            return;
+        }
+
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentChannelId = await getCurrentChannelId(database);
         const isCRTEnabled = await getIsCRTEnabled(database);

@@ -62,6 +62,9 @@ const styles = StyleSheet.create({
     touchable: {
         flexDirection: 'row',
     },
+    gestureHandler: {
+        flex: 0,
+    },
 });
 
 const InAppNotification = ({componentId, serverName, serverUrl, notification}: InAppNotificationProps) => {
@@ -148,7 +151,7 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
 
     return (
-        <GestureHandlerRootView>
+        <GestureHandlerRootView style={styles.gestureHandler}>
             <GestureDetector gesture={gesture}>
                 <Animated.View
                     style={[styles.container, isTablet ? styles.tablet : undefined, animatedStyle]}
