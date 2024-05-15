@@ -1,19 +1,9 @@
 name: Detox E2E Tests
 
 on:
-  pull_request:
-    branches:
-      - main
-      - ios_detox_job
-    types:
-      - labeled
-      - opened
   push:
     branches:
-      - 'release-*'
       - 'test-template'
-  schedule:
-    - cron: '0 0 * * *'
 
   workflow_dispatch:
     inputs:
@@ -27,7 +17,6 @@ on:
         default: "iPhone 15 Pro"
 
 jobs:
-
   run-ios-tests:
     uses: ./.github/workflows/e2e-detox-ci-template.yml
     with:
