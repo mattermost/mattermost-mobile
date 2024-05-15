@@ -15,16 +15,16 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
-  # workflow_dispatch:
-  #   inputs:
-  #     ios_version:
-  #       description: 'Enter iOS version'
-  #       required: false
-  #       default: "iOS 17.4"
-  #     device_name:
-  #       description: 'Enter iOS Device Name'
-  #       required: false
-  #       default: "iPhone 15 Pro"
+  workflow_dispatch:
+    inputs:
+      ios_version:
+        description: 'Enter iOS version'
+        required: false
+        default: "iOS 17.4"
+      device_name:
+        description: 'Enter iOS Device Name'
+        required: false
+        default: "iPhone 15 Pro"
 
 jobs:
 
