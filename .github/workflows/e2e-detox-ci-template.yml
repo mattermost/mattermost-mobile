@@ -11,6 +11,11 @@ on:
         description: 'Run Android tests'
         required: true
         type: boolean
+      remove-pr-label:
+        description: 'Remove PR label'
+        required: true
+        type: boolean
+        default: false
 
 env:
   AWS_REGION: 'us-east-1'
@@ -39,7 +44,7 @@ env:
 jobs:
   generate-specs:
     runs-on: ubuntu-22.04
-    if: ${{ inputs.run-ios-tests == 'true' || inputs.run-android-tests == 'true' }}
+    if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       BUILD_ID: ${{ steps.generate-specs.outputs.BUILD_ID }}
@@ -71,7 +76,7 @@ jobs:
 
   build-ios-simulator:
     runs-on: macos-14-large
-    if: ${{ inputs.run-ios-tests == 'true' }}
+    if: ${{ inputs.run-ios-tests }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -100,7 +105,7 @@ jobs:
       IOS: true
     runs-on: macos-14-large
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.device }}-${{ matrix.osVersion }}
-    if: ${{ inputs.run-ios-tests == 'true' }}
+    if: ${{ inputs.run-ios-tests }}
     needs:
       - generate-specs
       - build-ios-simulator
@@ -146,7 +151,7 @@ jobs:
 
   download-e2e-results:
     runs-on: ubuntu-22.04
-    if: ${{ inputs.run-ios-tests == 'true' || inputs.run-android-tests == 'true' }}
+    if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     needs:
       - generate-specs
       - e2e-ios
@@ -179,7 +184,7 @@ jobs:
           IOS: true
 
   e2e-remove-label:
-    if: ${{ inputs.run-ios-tests == 'true' || inputs.run-android-tests == 'true' }}
+    if: ${{ inputs.remove-pr-label }}
     needs:
       - download-e2e-results
     runs-on: ubuntu-22.04
