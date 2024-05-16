@@ -92,6 +92,7 @@ describe('Messaging - Message Draft', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
+        await ChannelScreen.postInput.clearText();
         await ChannelScreen.postInput.replaceText(message);
 
         // * Verify message draft exists in post draft
@@ -122,6 +123,7 @@ describe('Messaging - Message Draft', () => {
         let message = '1234567890'.repeat(1638) + '1234';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
+        await ChannelScreen.postInput.clearText();
         await ChannelScreen.postInput.replaceText(message);
 
         // * Verify warning message is displayed and send button is disabled

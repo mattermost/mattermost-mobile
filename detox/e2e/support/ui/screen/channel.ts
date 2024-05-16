@@ -22,6 +22,7 @@ import {expect} from 'detox';
 
 class ChannelScreen {
     testID = {
+        archievedCloseChannelButton: 'channel.post_draft.archived.close_channel.button',
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
         channelQuickActionsButton: 'channel_header.channel_quick_actions.button',
@@ -43,6 +44,7 @@ class ChannelScreen {
         toastMessage: 'toast.message',
     };
 
+    archievedCloseChannelButton = element(by.id(this.testID.archievedCloseChannelButton));
     channelScreen = element(by.id(this.testID.channelScreen));
     channelQuickActionsButton = element(by.id(this.testID.channelQuickActionsButton));
     favoriteQuickAction = element(by.id(this.testID.favoriteQuickAction));
