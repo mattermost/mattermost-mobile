@@ -66,9 +66,9 @@ jobs:
     if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
-      build_id: ${{ steps.resolve-device.outputs.build_id }}
-      device_name: ${{ steps.resolve-device.outputs.device_name }}
-      device_os_version: ${{ steps.resolve-device.outputs.device_os_version }}
+      BUILD_ID: ${{ steps.resolve-device.outputs.BUILD_ID }}
+      DEVICE_NAME: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
+      DEVICE_OS_VERSION: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -81,9 +81,9 @@ jobs:
           DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.os")
           BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
 
-          echo "build_id=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
-          echo "device_name=${DEVICE_NAME}" >> $GITHUB_ENV
-          echo "device_os_version=${DEVICE_OS_VERSION}" >> $GITHUB_ENV
+          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
+          echo "DEVICE_NAME=${DEVICE_NAME}" >> $GITHUB_ENV
+          echo "DEVICE_OS_VERSION=${DEVICE_OS_VERSION}" >> $GITHUB_ENV
 
       - name: Generate Test Specs
         id: generate-specs
@@ -124,7 +124,7 @@ jobs:
     env:
       IOS: true
     runs-on: macos-14-large
-    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.device }}-${{ matrix.osVersion }}
+    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.device_name }}-${{ matrix.device_os_version }}
     if: ${{ inputs.run-ios-tests }}
     needs:
       - generate-specs
@@ -175,10 +175,6 @@ jobs:
     needs:
       - generate-specs
       - e2e-ios
-    env:
-      BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-      DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
-      DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
     outputs:
       failures: "${{ steps.calculate-failures.outputs.failures }}"
     steps:
@@ -205,19 +201,21 @@ jobs:
           npm run e2e:save-report
         env:
           IOS: true
-
+          BUILD_ID: ${{ needs.generate-specs.outputs.BUILD_ID }}
+          DEVICE_NAME: ${{ needs.generate-specs.outputs.DEVICE_NAME }}
+          DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.DEVICE_OS_VERSION }}
       - name: Calculate failures
         id: calculate-failures
         run: |
-          FAILURES=$(find artifacts/ -name 'summary.json' | xargs -l jq -r '.stats.failures' | jq -s add)
+          FAILURES=$(find detox/artifacts/ -name 'summary.json' | xargs -l jq -r '.stats.failures' | jq -s add)
           echo "failures=${FAILURES}" >> $GITHUB_OUTPUT
           echo "Detox run completed with $FAILURES failures"
 
   update-failure-final-status:
     runs-on: ubuntu-22.04
-    if: failure() || cancelled()
+    if: ${{ needs.e2e-ios.result != 'success' }}
     env:
-      BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+      BUILD_ID: ${{ needs.generate-specs.outputs.BUILD_ID }}
     needs:
       - generate-specs
       - e2e-ios
@@ -246,7 +244,7 @@ jobs:
 
   update-success-final-status:
     runs-on: ubuntu-22.04
-    if: success()
+    if: ${{ needs.e2e-ios.result == 'success' }}
     env:
       BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
     needs:
