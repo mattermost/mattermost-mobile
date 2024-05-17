@@ -5,11 +5,11 @@ import React, {useCallback} from 'react';
 import {View} from 'react-native';
 
 import {handleTeamChange} from '@actions/remote/team';
-import performance_metrics_manager from '@app/managers/performance_metrics_manager';
 import Badge from '@components/badge';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import TeamIcon from './team_icon';
@@ -67,7 +67,7 @@ export default function TeamItem({team, hasUnreads, mentionCount, selected}: Pro
         if (!team) {
             return;
         }
-        performance_metrics_manager.startMetric('teamSwitch');
+        PerformanceMetricsManager.startMetric('mobile_team_switch');
         handleTeamChange(serverUrl, team.id);
     }, []);
 

@@ -6,13 +6,13 @@ import {Platform} from 'react-native';
 import {KeyboardTrackingView, type KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import performance_metrics_manager from '@app/managers/performance_metrics_manager';
 import Autocomplete from '@components/autocomplete';
 import {View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 
 import Archived from './archived';
 import DraftHandler from './draft_handler';
@@ -75,8 +75,8 @@ function PostDraft({
     }, [channelId, rootId]);
 
     useEffect(() => {
-        performance_metrics_manager.finishLoad(rootId ? 'THREAD' : 'CHANNEL');
-        performance_metrics_manager.endMetric('channelSwitch');
+        PerformanceMetricsManager.finishLoad(rootId ? 'THREAD' : 'CHANNEL', serverUrl);
+        PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
     }, []);
 
     const keyboardAdjustment = (isTablet && isChannelScreen) ? KEYBOARD_TRACKING_OFFSET : 0;

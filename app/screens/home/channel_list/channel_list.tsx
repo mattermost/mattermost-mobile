@@ -10,7 +10,6 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {refetchCurrentUser} from '@actions/remote/user';
-import performance_metrics_manager from '@app/managers/performance_metrics_manager';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
@@ -19,6 +18,7 @@ import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {resetToTeams, openToS} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
@@ -171,7 +171,7 @@ const ChannelListScreen = (props: ChannelProps) => {
     }, []);
 
     useEffect(() => {
-        performance_metrics_manager.finishLoad('HOME');
+        PerformanceMetricsManager.finishLoad('HOME', serverUrl);
     }, []);
 
     return (

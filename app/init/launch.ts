@@ -8,11 +8,11 @@ import {Notifications} from 'react-native-notifications';
 import {switchToChannelById} from '@actions/remote/channel';
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
-import performance_metrics_manager from '@app/managers/performance_metrics_manager';
 import LocalConfig from '@assets/config.json';
 import {DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getLastViewedChannelIdAndServer, getOnboardingViewed, getLastViewedThreadIdAndServer} from '@queries/app/global';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
@@ -179,13 +179,13 @@ const launchToHome = async (props: LaunchProps) => {
                 const lastViewedThread = await getLastViewedThreadIdAndServer();
 
                 if (lastViewedThread && lastViewedThread.server_url === props.serverUrl && lastViewedThread.thread_id) {
-                    performance_metrics_manager.setLoadTarget('THREAD');
+                    PerformanceMetricsManager.setLoadTarget('THREAD');
                     fetchAndSwitchToThread(props.serverUrl!, lastViewedThread.thread_id);
                 } else if (lastViewedChannel && lastViewedChannel.server_url === props.serverUrl && lastViewedChannel.channel_id) {
-                    performance_metrics_manager.setLoadTarget('CHANNEL');
+                    PerformanceMetricsManager.setLoadTarget('CHANNEL');
                     switchToChannelById(props.serverUrl!, lastViewedChannel.channel_id);
                 } else {
-                    performance_metrics_manager.setLoadTarget('HOME');
+                    PerformanceMetricsManager.setLoadTarget('HOME');
                 }
 
                 appEntry(props.serverUrl!);
