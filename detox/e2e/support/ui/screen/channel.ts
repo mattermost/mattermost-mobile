@@ -174,6 +174,7 @@ class ChannelScreen {
     postMessage = async (message: string) => {
         // # Post message
         await this.postInput.tap();
+        await this.postInput.clearText();
         await this.postInput.replaceText(message);
         await this.tapSendButton();
     };

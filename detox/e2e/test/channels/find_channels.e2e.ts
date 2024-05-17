@@ -170,7 +170,7 @@ describe('Channels - Find Channels', () => {
     });
 });
 
-async function verifyDetailsOnChannelScreen(display_name: string){
+async function verifyDetailsOnChannelScreen(display_name: string) {
     await ChannelScreen.toBeVisible();
     await expect(ChannelScreen.headerTitle).toHaveText(display_name);
     await expect(ChannelScreen.introDisplayName).toHaveText(display_name);

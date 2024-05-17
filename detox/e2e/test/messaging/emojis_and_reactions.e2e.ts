@@ -124,7 +124,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await expect(UserProfileScreen.userDisplayName).toHaveText(`@${testUser.username}`);
 
         // # Go back to channel list screen
-        await UserProfileScreen.close()
+        await UserProfileScreen.close();
         await ChannelScreen.back();
     });
 

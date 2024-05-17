@@ -81,6 +81,12 @@ async function saveArtifacts() {
                 }
 
                 const reportLink = `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/jest-stare/${platform}-report.html`;
+
+                // Export link in CI
+                if (process.env.CI) {
+                    process.env.REPORT_LINK = reportLink;
+                }
+
                 resolve({success: true, reportLink});
             },
         );
