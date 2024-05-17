@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 class DeviceInfo {
-  constructor(device, osVersion) {
+  constructor(device, deviceOsVersion) {
     this.device = device;
-    this.osVersion = osVersion;
+    this.deviceOsVersion = deviceOsVersion;
   }
 }
 
@@ -13,7 +13,7 @@ class SpecGroup {
     this.runId = runId;
     this.specs = specs;
     this.device = deviceInfo.device;
-    this.osVersion = deviceInfo.osVersion;
+    this.deviceOsVersion = deviceInfo.deviceOsVersion;
   }
 }
 
@@ -81,10 +81,10 @@ class Specs {
 function main() {
   const searchPath = process.env.SEARCH_PATH;
   const parallelism = parseInt(process.env.PARALLELISM, 10);
-  const device = process.env.DEVICE;
-  const osVersion = process.env.OS_VERSION;
+  const device = process.env.DEVICE_NAME;
+  const deviceOsVersion = process.env.DEVICE_OS_VERSION;
 
-  const deviceInfo = new DeviceInfo(device, osVersion);
+  const deviceInfo = new DeviceInfo(device, deviceOsVersion);
   const specs = new Specs(searchPath, parallelism, deviceInfo);
 
   specs.findFiles();

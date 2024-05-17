@@ -66,9 +66,9 @@ jobs:
     if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
-      BUILD_ID: ${{ steps.resolve-device.outputs.BUILD_ID }}
-      DEVICE_NAME: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
-      DEVICE_OS_VERSION: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
+      build_id: ${{ steps.resolve-device.outputs.build_id }}
+      device_name: ${{ steps.resolve-device.outputs.device_name }}
+      device_os_version: ${{ steps.resolve-device.outputs.device_os_version }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -81,9 +81,9 @@ jobs:
           DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.os")
           BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
 
-          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
-          echo "DEVICE_NAME=${DEVICE_NAME}" >> $GITHUB_ENV
-          echo "DEVICE_OS_VERSION=${DEVICE_OS_VERSION}" >> $GITHUB_ENV
+          echo "build_id=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
+          echo "device_name=${DEVICE_NAME}" >> $GITHUB_ENV
+          echo "device_os_version=${DEVICE_OS_VERSION}" >> $GITHUB_ENV
 
       - name: Generate Test Specs
         id: generate-specs
@@ -91,8 +91,8 @@ jobs:
         with:
           parallelism: 10
           search_path: detox/e2e/test
-          device: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
-          os_version: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
+          device_name: ${{ steps.resolve-device.outputs.device_name }}
+          device_os_version: ${{ steps.resolve-device.outputs.device_os_version }}
 
   build-ios-simulator:
     runs-on: macos-14-large
@@ -176,13 +176,11 @@ jobs:
       - generate-specs
       - e2e-ios
     env:
-      BUILD_ID: ${{ needs.generate-specs.outputs.BUILD_ID }}
-      DEVICE_NAME: ${{ needs.generate-specs.outputs.DEVICE_NAME }}
-      DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.DEVICE_OS_VERSION }}
-      REPORT_LINK: "blank"
+      BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+      DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
+      DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
     outputs:
       failures: "${{ steps.calculate-failures.outputs.failures }}"
-      report_link: "${{ steps.report-link.outputs.report_link }}"
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -205,7 +203,6 @@ jobs:
           cd detox
           npm ci
           npm run e2e:save-report
-          echo "report_link=${REPORT_LINK}" >> $GITHUB_OUTPUT
         env:
           IOS: true
 
@@ -219,9 +216,22 @@ jobs:
   update-failure-final-status:
     runs-on: ubuntu-22.04
     if: failure() || cancelled()
+    env:
+      BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
     needs:
+      - generate-specs
+      - e2e-ios
       - download-e2e-results
     steps:
+      - name: Set Target URL
+        id: set-url
+        run: |
+          if [ ${{ inputs.run-ios-tests }} = true ]; then
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/ios-report.html" >> $GITHUB_ENV
+          else
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/android-report.html" >> $GITHUB_ENV
+          fi
+
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -232,14 +242,27 @@ jobs:
           description: |
             Completed with ${{ needs.download-e2e-results.outputs.failures }} failures
           status: failure
-          target_url: "${{ needs.download-e2e-results.outputs.report_link }}"
+          target_url: ${{ steps.set-url.outputs.TARGET_URL }}
 
   update-success-final-status:
     runs-on: ubuntu-22.04
     if: success()
+    env:
+      BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
     needs:
+      - generate-specs
+      - e2e-ios
       - download-e2e-results
     steps:
+      - name: Set Target URL
+        id: set-url
+        run: |
+          if [ ${{ inputs.run-ios-tests }} = true ]; then
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/ios-report.html" >> $GITHUB_ENV
+          else
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/android-report.html" >> $GITHUB_ENV
+          fi
+
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -250,7 +273,7 @@ jobs:
           description: |
             Completed with ${{ needs.download-e2e-results.outputs.failures }} failures
           status: success
-          target_url: "${{ needs.download-e2e-results.outputs.report_link }}"
+          target_url: ${{ steps.set-url.outputs.TARGET_URL }}
 
   e2e-remove-label:
     if: ${{ inputs.remove-pr-label }}

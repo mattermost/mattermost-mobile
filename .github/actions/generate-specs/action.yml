@@ -9,11 +9,11 @@ inputs:
   parallelism:
     description: The parallelism for the tests
     required: true
-  device:
+  device_name:
     description: The name of Device used for the tests
     required: false
     default: iPhone 15
-  os_version:
+  device_os_version:
     description: The os of the device used for the tests
     required: false
     default: iOS 17.1
@@ -30,8 +30,8 @@ runs:
       env:
         PARALLELISM: ${{ inputs.parallelism }}
         SEARCH_PATH: ${{ inputs.search_path }}
-        DEVICE: ${{ inputs.DEVICE }}
-        OS_VERSION: ${{ inputs.OS_VERSION }}
+        DEVICE: ${{ inputs.device_name }}
+        DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
       run: |
         set -e
         node ${{ github.action_path }}/split-tests.js > output.json
