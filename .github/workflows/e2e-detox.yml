@@ -7,21 +7,9 @@ on:
 
   workflow_dispatch:
     inputs:
-      ios_version:
-        description: 'Enter iOS version'
-        required: false
-        default: "iOS 17.4"
-      device_name:
-        description: 'Enter iOS Device Name'
-        required: false
-        default: "iPhone 15 Pro"
       commit_sha:
         type: string
         required: false
-
-env:
-  IOS_VERSION: ${{ github.event.inputs.ios_version }}
-  DEVICE_NAME: ${{ github.event.inputs.device_name }}
 
 jobs:
   run-ios-tests:

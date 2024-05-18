@@ -30,7 +30,7 @@ runs:
       env:
         PARALLELISM: ${{ inputs.parallelism }}
         SEARCH_PATH: ${{ inputs.search_path }}
-        DEVICE: ${{ inputs.device_name }}
+        DEVICE_NAME: ${{ inputs.device_name }}
         DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
       run: |
         set -e
