@@ -83,7 +83,7 @@ jobs:
 
           echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
           echo "DEVICE_NAME=$(echo ${DEVICE_NAME})" >> $GITHUB_ENV
-          echo "DEVICE_OS_VERSION=$(echo DEVICE_OS_VERSION)" >> $GITHUB_ENV
+          echo "DEVICE_OS_VERSION=$(echo ${DEVICE_OS_VERSION})" >> $GITHUB_ENV
 
       - name: Generate Test Specs
         id: generate-specs
