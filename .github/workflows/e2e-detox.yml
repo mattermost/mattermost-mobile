@@ -25,12 +25,12 @@ env:
 
 jobs:
   run-ios-tests:
-    name: Mobile iOS Detox Tests
+    name: Trigger iOS Detox Mobile Tests
     uses: ./.github/workflows/e2e-detox-ci-template.yml
     with:
       run-ios-tests: true
       run-android-tests: false
       commit_sha: "${{ inputs.commit_sha || github.sha }}"
-      status_check_context: "Mobile iOS Detox Tests"
+      status_check_context: "Detox iOS Mobile Tests"
     secrets: inherit
 

@@ -82,8 +82,8 @@ jobs:
           BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
 
           echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
-          echo "DEVICE_NAME=$(echo ${DEVICE_NAME})" >> $GITHUB_ENV
-          echo "DEVICE_OS_VERSION=$(echo DEVICE_OS_VERSION)" >> $GITHUB_ENV
+          echo "DEVICE_NAME=${DEVICE_NAME}" >> $GITHUB_ENV
+          echo "DEVICE_OS_VERSION=${DEVICE_OS_VERSION}" >> $GITHUB_ENV
 
       - name: Generate Test Specs
         id: generate-specs
@@ -124,7 +124,7 @@ jobs:
     env:
       IOS: true
     runs-on: macos-14-large
-    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.device }}-${{ matrix.deviceOsVersion }}
+    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.device_name }}-${{ matrix.device_os_version }}
     if: ${{ inputs.run-ios-tests }}
     needs:
       - generate-specs
@@ -226,7 +226,6 @@ jobs:
 
   update-failure-final-status:
     runs-on: ubuntu-22.04
-    # if: ${{ needs.e2e-ios.result != 'success' }}
     if: ${{ needs.e2e-ios.result != 'success' }}
     env:
       BUILD_ID: ${{ needs.generate-specs.outputs.BUILD_ID }}
@@ -243,7 +242,7 @@ jobs:
           else
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/android-report.html" >> $GITHUB_ENV
           fi
-          echo "******** ", ${{ env.TARGET_URL }}
+          echo "******** ", $TARGET_URL
 
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -275,7 +274,7 @@ jobs:
           else
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/android-report.html" >> $GITHUB_ENV
           fi
-          echo "******** ", ${{ env.TARGET_URL }}
+          echo "******** ", $TARGET_URL
 
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
