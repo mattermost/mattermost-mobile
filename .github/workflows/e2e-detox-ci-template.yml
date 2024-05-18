@@ -66,9 +66,9 @@ jobs:
     if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
-      build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
-      device_name: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
-      device_os_version: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
+      BUILD_ID: ${{ steps.resolve-device.outputs.BUILD_ID }}
+      DEVICE_NAME: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
+      DEVICE_OS_VERSION: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -183,9 +183,9 @@ jobs:
     outputs:
       failures: "${{ steps.calculate-failures.outputs.failures }}"
     env:
-      BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-      DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
-      DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
+      BUILD_ID: ${{ needs.generate-specs.outputs.BUILD_ID }}
+      DEVICE_NAME: ${{ needs.generate-specs.outputs.DEVICE_NAME }}
+      DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.DEVICE_OS_VERSION }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -226,7 +226,8 @@ jobs:
 
   update-failure-final-status:
     runs-on: ubuntu-22.04
-    if: ${{ needs.download-e2e-results.outputs.failures == 1}}
+    # if: ${{ needs.e2e-ios.result != 'success' }}
+    if: ${{ needs.e2e-ios.result != 'success' }}
     env:
       BUILD_ID: ${{ needs.generate-specs.outputs.BUILD_ID }}
     needs:
@@ -258,7 +259,7 @@ jobs:
 
   update-success-final-status:
     runs-on: ubuntu-22.04
-    if: ${{ needs.download-e2e-results.outputs.failures > 1}}
+    if: ${{ needs.e2e-ios.result == 'success' }}
     env:
       BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
     needs:
