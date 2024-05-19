@@ -24,7 +24,7 @@ on:
         required: true
       run-type:
         type: string
-        required: true
+        required: false
         default: 'PR'
 
 env:
