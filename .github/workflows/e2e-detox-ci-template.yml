@@ -85,6 +85,14 @@ jobs:
           echo "DEVICE_NAME=$(echo ${DEVICE_NAME})" >> $GITHUB_ENV
           echo "DEVICE_OS_VERSION=$(echo ${DEVICE_OS_VERSION})" >> $GITHUB_ENV
 
+          echo "*** ", $BUILD_ID
+          echo "*** ", $DEVICE_NAME
+          echo "*** ", $DEVICE_OS_VERSION
+      - name: Step output 
+        run: |
+          echo "*** ", ${{ steps.resolve-device.outputs.build_id }}
+          echo "*** ", ${{ steps.resolve-device.outputs.device_name}}
+          echo "*** ", ${{ steps.resolve-device.outputs.device_os_version}}
       - name: Generate Test Specs
         id: generate-specs
         uses: ./.github/actions/generate-specs
@@ -231,7 +239,7 @@ jobs:
           else
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/android-report.html" >> $GITHUB_ENV
           fi
-          echo "** ", $BUILD_ID
+          echo "** ", ${{env.BUILD_ID}}
         env:
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
@@ -265,7 +273,7 @@ jobs:
           else
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/android-report.html" >> $GITHUB_ENV
           fi
-          echo "** ", $BUILD_ID
+          echo "** ", ${{env.BUILD_ID}}
         env:
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
