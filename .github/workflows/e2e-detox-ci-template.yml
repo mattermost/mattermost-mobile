@@ -22,6 +22,10 @@ on:
       commit_sha:
         type: string
         required: true
+      run-type:
+        type: string
+        required: true
+        default: 'PR'
 
 env:
   AWS_REGION: 'us-east-1'
@@ -34,7 +38,7 @@ env:
   DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
   DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
   HEADLESS: 'true'
-  TYPE: 'PR'
+  TYPE: ${{ inputs.run-type }}
   PULL_REQUEST: 'https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}'
   SITE_1_URL: ${{ secrets.MM_MOBILE_E2E_SITE_1_URL }}
   SITE_2_URL: ${{ secrets.MM_MOBILE_E2E_SITE_2_URL }}
