@@ -85,18 +85,6 @@ jobs:
           echo "DEVICE_NAME=$(echo ${DEVICE_NAME})" >> $GITHUB_ENV
           echo "DEVICE_OS_VERSION=$(echo ${DEVICE_OS_VERSION})" >> $GITHUB_ENV
 
-      - name: ENV vars
-        run: |
-          echo "*** ", ${{ env.BUILD_ID }}
-          echo "*** ", ${{env.DEVICE_NAME}}
-          echo "*** ", ${{env.DEVICE_OS_VERSION}}
-
-      - name: Set output 
-        run: |
-          echo "*** ", ${{ steps.resolve-device.outputs.build_id }}
-          echo "*** ", ${{ steps.resolve-device.outputs.device_name}}
-          echo "*** ", ${{ steps.resolve-device.outputs.device_os_version}}
-
       - name: Generate Test Specs
         id: generate-specs
         uses: ./.github/actions/generate-specs

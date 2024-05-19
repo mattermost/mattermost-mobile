@@ -83,12 +83,6 @@ function main() {
   const parallelism = parseInt(process.env.PARALLELISM, 10);
   const deviceName = process.env.DEVICE_NAME;
   const deviceOsVersion = process.env.DEVICE_OS_VERSION;
-
-  console.log("*** ", searchPath);
-  console.log("*** ", parallelism);
-  console.log("*** ", deviceName);
-  console.log("*** ", deviceOsVersion);
-
   const deviceInfo = new DeviceInfo(deviceName, deviceOsVersion);
   const specs = new Specs(searchPath, parallelism, deviceInfo);
 

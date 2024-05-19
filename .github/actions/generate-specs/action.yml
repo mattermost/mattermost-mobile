@@ -33,13 +33,7 @@ runs:
         DEVICE_NAME: ${{ inputs.device_name }}
         DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
       run: |
-        echo "--", $PARALLELISM
-        echo "--", $SEARCH_PATH
-        echo "--", $DEVICE
-        echo "--", $DEVICE_OS_VERSION
-
         set -e
         node ${{ github.action_path }}/split-tests.js > output.json
         echo "specs=$(cat output.json)" >> $GITHUB_OUTPUT
-        echo "$(cat output.json)"
       shell: bash
