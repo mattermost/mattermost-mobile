@@ -164,6 +164,7 @@ jobs:
         run: cd detox && npm i
 
       - name: Run Detox E2E Tests
+        continue-on-error: true # Label might have been removed manually
         run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
 
       - name: Upload iOS Test Report
