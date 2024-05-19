@@ -89,7 +89,7 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 30
+          parallelism: 10
           search_path: detox/e2e/test
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{env.DEVICE_OS_VERSION}}
