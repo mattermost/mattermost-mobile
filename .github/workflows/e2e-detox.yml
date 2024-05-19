@@ -25,7 +25,7 @@ env:
 
 jobs:
   run-ios-tests:
-    name: Trigger iOS Detox Mobile Tests
+    name: iOS Mobile Tests
     uses: ./.github/workflows/e2e-detox-ci-template.yml
     with:
       run-ios-tests: true
