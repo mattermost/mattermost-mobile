@@ -66,9 +66,9 @@ jobs:
     if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
-      BUILD_ID: ${{ steps.resolve-device.outputs.BUILD_ID }}
-      DEVICE_NAME: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
-      DEVICE_OS_VERSION: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
+      build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
+      device_name: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
+      device_os_version: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -82,8 +82,8 @@ jobs:
           BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
 
           echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
-          echo "DEVICE_NAME=${DEVICE_NAME}" >> $GITHUB_ENV
-          echo "DEVICE_OS_VERSION=${DEVICE_OS_VERSION}" >> $GITHUB_ENV
+          echo "DEVICE_NAME=$(echo ${DEVICE_NAME})" >> $GITHUB_ENV
+          echo "DEVICE_OS_VERSION=$(echo ${DEVICE_OS_VERSION})" >> $GITHUB_ENV
 
       - name: Generate Test Specs
         id: generate-specs
@@ -101,30 +101,30 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Prepare iOS Build
-        uses: ./.github/actions/prepare-ios-build
+      # - name: Prepare iOS Build
+      #   uses: ./.github/actions/prepare-ios-build
 
-      - name: Build iOS Simulator
-        env:
-          TAG: "${{ github.ref_name }}"
-          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-        run: bundle exec fastlane ios simulator --env ios.simulator
-        working-directory: ./fastlane
+      # - name: Build iOS Simulator
+      #   env:
+      #     TAG: "${{ github.ref_name }}"
+      #     AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+      #     AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+      #     GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+      #   run: bundle exec fastlane ios simulator --env ios.simulator
+      #   working-directory: ./fastlane
 
-      - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-        with:
-          name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-x86_64.app.zip
+      # - name: Upload iOS Simulator Build
+      #   uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      #   with:
+      #     name: ios-build-simulator-${{ github.run_id }}
+      #     path: Mattermost-simulator-x86_64.app.zip
 
   e2e-ios:
     continue-on-error: true
     env:
       IOS: true
     runs-on: macos-14-large
-    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.device_name }}-${{ matrix.device_os_version }}
+    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     if: ${{ inputs.run-ios-tests }}
     needs:
       - generate-specs
@@ -136,38 +136,38 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: ci/prepare-node-deps
-        uses: ./.github/actions/prepare-node-deps
+      # - name: ci/prepare-node-deps
+      #   uses: ./.github/actions/prepare-node-deps
 
-      - name: Install Homebrew Dependencies
-        run: |
-          brew tap wix/brew
-          brew install applesimutils
+      # - name: Install Homebrew Dependencies
+      #   run: |
+      #     brew tap wix/brew
+      #     brew install applesimutils
 
-      - name: Download iOS Simulator Build
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
-        with:
-          name: ios-build-simulator-${{ github.run_id }}
-          path: mobile-artifacts
+      # - name: Download iOS Simulator Build
+      #   uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+      #   with:
+      #     name: ios-build-simulator-${{ github.run_id }}
+      #     path: mobile-artifacts
 
-      - name: Unzip iOS Simulator Build
-        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+      # - name: Unzip iOS Simulator Build
+      #   run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
 
-      - name: Start React Native Metro Server
-        run: npm run start &
+      # - name: Start React Native Metro Server
+      #   run: npm run start &
 
-      - name: Install Detox Dependencies
-        run: cd detox && npm i
+      # - name: Install Detox Dependencies
+      #   run: cd detox && npm i
 
-      - name: Run Detox E2E Tests
-        run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
+      # - name: Run Detox E2E Tests
+      #   run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
 
-      - name: Upload iOS Test Report
-        if: always()
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-        with:
-          name: ios-results-${{ matrix.runId }}
-          path: detox/artifacts/
+      # - name: Upload iOS Test Report
+      #   if: always()
+      #   uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      #   with:
+      #     name: ios-results-${{ matrix.runId }}
+      #     path: detox/artifacts/
 
   download-e2e-results:
     runs-on: ubuntu-22.04
@@ -181,41 +181,43 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
   
-      - name: ci/prepare-node-deps
-        uses: ./.github/actions/prepare-node-deps
+      # - name: ci/prepare-node-deps
+      #   uses: ./.github/actions/prepare-node-deps
   
-      - name: Create artifacts directory
-        run: mkdir -p detox/artifacts/
+      # - name: Create artifacts directory
+      #   run: mkdir -p detox/artifacts/
 
-      - name: Download All Artifacts
-        uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
-        with:
-          path: detox/artifacts/
-          pattern: ios-results-*
+      # - name: Download All Artifacts
+      #   uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+      #   with:
+      #     path: detox/artifacts/
+      #     pattern: ios-results-*
 
       - name: Save report Detox Dependencies
         id: report-link
         run: |
-          cd detox
-          npm ci
-          npm run e2e:save-report
+          # cd detox
+          # npm ci
+          # npm run e2e:save-report
+          echo "*** ", $BUILD_ID
+          echo "*** ", $DEVICE_NAME
+          echo "*** ", $DEVICE_OS_VERSION
         env:
           IOS: true
-          BUILD_ID: ${{ needs.generate-specs.outputs.BUILD_ID }}
-          DEVICE_NAME: ${{ needs.generate-specs.outputs.DEVICE_NAME }}
-          DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.DEVICE_OS_VERSION }}
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
+          DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
       - name: Calculate failures
         id: calculate-failures
         run: |
-          FAILURES=$(find detox/artifacts/ -name 'summary.json' | xargs -l jq -r '.stats.failures' | jq -s add)
-          echo "failures=${FAILURES}" >> $GITHUB_OUTPUT
+          FAILURES=1
+          # FAILURES=$(find detox/artifacts/ -name 'summary.json' | xargs -l jq -r '.stats.failures' | jq -s add)
+          # echo "failures=${FAILURES}" >> $GITHUB_OUTPUT
           echo "Detox run completed with $FAILURES failures"
 
   update-failure-final-status:
     runs-on: ubuntu-22.04
     if: ${{ needs.e2e-ios.result != 'success' }}
-    env:
-      BUILD_ID: ${{ needs.generate-specs.outputs.BUILD_ID }}
     needs:
       - generate-specs
       - e2e-ios
@@ -229,6 +231,9 @@ jobs:
           else
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/android-report.html" >> $GITHUB_ENV
           fi
+          echo "** ", $BUILD_ID
+        env:
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -260,6 +265,9 @@ jobs:
           else
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/android-report.html" >> $GITHUB_ENV
           fi
+          echo "** ", $BUILD_ID
+        env:
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:

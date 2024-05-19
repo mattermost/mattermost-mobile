@@ -36,4 +36,5 @@ runs:
         set -e
         node ${{ github.action_path }}/split-tests.js > output.json
         echo "specs=$(cat output.json)" >> $GITHUB_OUTPUT
+        echo "$(cat output.json)"
       shell: bash
