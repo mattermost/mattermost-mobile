@@ -193,20 +193,18 @@ jobs:
       #     path: detox/artifacts/
       #     pattern: ios-results-*
 
-      - name: Save report Detox Dependencies
-        id: report-link
-        run: |
-          # cd detox
-          # npm ci
-          # npm run e2e:save-report
-          echo "*** ", $BUILD_ID
-          echo "*** ", $DEVICE_NAME
-          echo "*** ", $DEVICE_OS_VERSION
-        env:
-          IOS: true
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-          DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
-          DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
+      # - name: Save report Detox Dependencies
+      #   id: report-link
+      #   run: |
+      #     cd detox
+      #     npm ci
+      #     npm run e2e:save-report
+      #   env:
+      #     IOS: true
+      #     BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+      #     DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
+      #     DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
+
       - name: Calculate failures
         id: calculate-failures
         run: |
@@ -217,7 +215,7 @@ jobs:
 
   update-failure-final-status:
     runs-on: ubuntu-22.04
-    if: ${{ needs.e2e-ios.result != 'success' }}
+    if: ${{ needs.download-e2e-results.outputs.failures > 0 }}
     needs:
       - generate-specs
       - e2e-ios
@@ -231,7 +229,7 @@ jobs:
           else
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/android-report.html" >> $GITHUB_ENV
           fi
-          echo "** ", ${{env.BUILD_ID}}
+          echo "TARGET_URL=$(echo ${TARGET_URL})" >> $GITHUB_ENV
         env:
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
@@ -245,13 +243,11 @@ jobs:
           description: |
             Completed with ${{ needs.download-e2e-results.outputs.failures }} failures
           status: failure
-          target_url: ${{ steps.set-url.outputs.TARGET_URL }}
+          target_url: ${{ env.TARGET_URL }}
 
   update-success-final-status:
     runs-on: ubuntu-22.04
-    if: ${{ needs.e2e-ios.result == 'success' }}
-    env:
-      BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+    if: ${{ needs.download-e2e-results.outputs.failures == 0 }}
     needs:
       - generate-specs
       - e2e-ios
@@ -265,7 +261,7 @@ jobs:
           else
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/android-report.html" >> $GITHUB_ENV
           fi
-          echo "** ", ${{env.BUILD_ID}}
+          echo "TARGET_URL=$(echo ${TARGET_URL})" >> $GITHUB_ENV
         env:
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
@@ -279,7 +275,7 @@ jobs:
           description: |
             Completed with ${{ needs.download-e2e-results.outputs.failures }} failures
           status: success
-          target_url: ${{ steps.set-url.outputs.TARGET_URL }}
+          target_url: ${{ env.TARGET_URL }}
 
   e2e-remove-label:
     if: ${{ inputs.remove-pr-label }}
