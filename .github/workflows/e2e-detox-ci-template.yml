@@ -66,9 +66,9 @@ jobs:
     if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
-      build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
-      device_name: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
-      device_os_version: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
+      build_id: ${{ env.BUILD_ID }}
+      device_name: ${{ env.DEVICE_NAME }}
+      device_os_version: ${{ env.DEVICE_OS_VERSION }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -85,22 +85,26 @@ jobs:
           echo "DEVICE_NAME=$(echo ${DEVICE_NAME})" >> $GITHUB_ENV
           echo "DEVICE_OS_VERSION=$(echo ${DEVICE_OS_VERSION})" >> $GITHUB_ENV
 
-          echo "*** ", $BUILD_ID
-          echo "*** ", $DEVICE_NAME
-          echo "*** ", $DEVICE_OS_VERSION
-      - name: Step output 
+      - name: ENV vars
+        run: |
+          echo "*** ", ${{ env.BUILD_ID }}
+          echo "*** ", ${{env.DEVICE_NAME}}
+          echo "*** ", ${{env.DEVICE_OS_VERSION}}
+
+      - name: Set output 
         run: |
           echo "*** ", ${{ steps.resolve-device.outputs.build_id }}
           echo "*** ", ${{ steps.resolve-device.outputs.device_name}}
           echo "*** ", ${{ steps.resolve-device.outputs.device_os_version}}
+
       - name: Generate Test Specs
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
           parallelism: 10
           search_path: detox/e2e/test
-          device_name: ${{ steps.resolve-device.outputs.device_name }}
-          device_os_version: ${{ steps.resolve-device.outputs.device_os_version }}
+          device_name: ${{ env.DEVICE_NAME }}
+          device_os_version: ${{env.DEVICE_OS_VERSION}}
 
   build-ios-simulator:
     runs-on: macos-14-large
