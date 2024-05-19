@@ -4,33 +4,49 @@ on:
   push:
     branches:
       - 'test-template'
-
-  workflow_dispatch:
-    inputs:
-      ios_version:
-        description: 'Enter iOS version'
-        required: false
-        default: "iOS 17.4"
-      device_name:
-        description: 'Enter iOS Device Name'
-        required: false
-        default: "iPhone 15 Pro"
-      commit_sha:
-        type: string
-        required: false
-
-env:
-  IOS_VERSION: ${{ github.event.inputs.ios_version }}
-  DEVICE_NAME: ${{ github.event.inputs.device_name }}
+      - 'release-*'
+  pull_request:
+    branches:
+      - 'master'
+    types:
+      - labeled
+  schedule:
+    - cron: '0 2 * * *' # Runs daily at 2 AM UTC
 
 jobs:
+  check-label-and-run-tests:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.set_should_run.outputs.should_run }}
+      run_ios: ${{ steps.check_label.outputs.run_ios }}
+      run_android: ${{ steps.check_label.outputs.run_android }}
+    steps:
+      - name: Check if PR has 'E2E iOS tests for PR' label
+        id: check_label
+        if: github.event_name == 'pull_request'
+        run: |
+          labels=$(jq -r '.pull_request.labels[].name' < "$GITHUB_EVENT_PATH")
+          echo "run_ios=$(echo "$labels" | grep -q 'E2E iOS tests for PR' && echo true || echo false)" >> $GITHUB_ENV
+          echo "run_android=$(echo "$labels" | grep -q 'E2E android tests for PR' && echo true || echo false)" >> $GITHUB_ENV
+
+      - name: Set should_run flag
+        id: set_should_run
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ github.ref }}" == "refs/heads/master" || "${{ startsWith(github.ref, 'refs/heads/release-') }}" == "true" || "${{ env.run_ios }}" == "true" || "${{ env.run_android }}" == "true" ]]; then
+          echo "should_run=true" >> $GITHUB_ENV
+          else
+            echo "should_run=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
   run-ios-tests:
     name: iOS Mobile Tests
+    needs: check-label-and-run-tests
+    if: ${{ needs.check-label-and-run-tests.outputs.should_run == 'true' }}
     uses: ./.github/workflows/e2e-detox-ci-template.yml
     with:
-      run-ios-tests: true
-      run-android-tests: false
-      commit_sha: "${{ inputs.commit_sha || github.sha }}"
+      run-ios-tests: ${{ needs.check-label-and-run-tests.outputs.run_ios}}
+      run-android-tests: ${{ needs.check-label-and-run-tests.outputs.run_android}}
+      commit_sha: "${{ github.event.inputs.commit_sha || github.sha }}"
       status_check_context: "Detox iOS Mobile Tests"
     secrets: inherit
-
