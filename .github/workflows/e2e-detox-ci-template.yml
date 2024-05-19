@@ -89,7 +89,7 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 30
+          parallelism: 10
           search_path: detox/e2e/test
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{env.DEVICE_OS_VERSION}}
@@ -200,7 +200,7 @@ jobs:
           npm ci
           npm run e2e:save-report
         env:
-          IOS:  ${{ inputs.run-ios-tests }}
+          IOS: true
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
           DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
           DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
@@ -223,13 +223,10 @@ jobs:
       - name: Set Target URL
         id: set-url
         run: |
-          s3Folder="${{ env.BUILD_ID }}-${{ env.COMMIT_HASH }}-${{ env.BRANCH }}"
-          s3Folder=$(echo "$s3Folder" | sed 's/\./-/g')
-
           if [ ${{ inputs.run-ios-tests }} = true ]; then
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/ios-report.html" >> $GITHUB_ENV
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/ios-report.html" >> $GITHUB_ENV
           else
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/android-report.html" >> $GITHUB_ENV
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ env.BUILD_ID}}-${{ env.COMMIT_HASH}}-${{ env.BRANCH}}/jest-stare/android-report.html" >> $GITHUB_ENV
           fi
         env:
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
