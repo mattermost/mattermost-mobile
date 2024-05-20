@@ -87,7 +87,7 @@ class DatabaseManager {
             const databaseName = APP_DATABASE;
 
             if (Platform.OS === 'android') {
-                await makeDirectoryAsync(this.databaseDirectory!);
+                await makeDirectoryAsync(this.databaseDirectory!, {intermediates: true});
             }
             const databaseFilePath = this.getDatabaseFilePath(databaseName);
             const modelClasses = this.appModels;
