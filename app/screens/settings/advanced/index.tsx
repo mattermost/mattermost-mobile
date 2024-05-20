@@ -17,7 +17,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
-import type {ReadDirItem} from 'react-native-fs';
+import type {FileInfo} from 'expo-file-system';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -28,7 +28,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const EMPTY_FILES: ReadDirItem[] = [];
+const EMPTY_FILES: FileInfo[] = [];
 
 type AdvancedSettingsProps = {
     componentId: AvailableScreens;
@@ -38,7 +38,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [dataSize, setDataSize] = useState<number | undefined>(0);
-    const [files, setFiles] = useState<ReadDirItem[]>(EMPTY_FILES);
+    const [files, setFiles] = useState<FileInfo[]>(EMPTY_FILES);
     const styles = getStyleSheet(theme);
 
     const getAllCachedFiles = async () => {

@@ -7,6 +7,8 @@ def node_require(script)
     )", __dir__]).strip
 end
 
+require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
+
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
@@ -29,6 +31,7 @@ setup_permissions([
 target 'Mattermost' do
   # Pods for Mattermost
 
+  use_expo_modules!
   config = use_native_modules!
 
   use_react_native!(
@@ -40,10 +43,6 @@ target 'Mattermost' do
   pod 'React-jsi', :path => '../node_modules/react-native/ReactCommon/jsi', :modular_headers => true
   pod 'React-jsc', :path => '../node_modules/react-native/ReactCommon/jsc', :modular_headers => true
   pod 'simdjson', path: '../node_modules/@nozbe/simdjson', :modular_headers => true
-
-  # TODO: Remove this once upstream PR https://github.com/daltoniam/Starscream/pull/871 is merged
-  pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => '7494780a021e44873e6e5fde5026ef96696c1865'
-
 
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
@@ -58,9 +57,5 @@ target 'Mattermost' do
     #     config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.4'
     #   end
     # end
-
-    puts 'Patching Alamofire to include X-Uncompressed-Content-Length to measure download progress'
-    %x(patch Pods/Alamofire/Source/SessionDelegate.swift < patches/SessionDelegate.patch)
-  
   end
 end

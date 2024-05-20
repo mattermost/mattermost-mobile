@@ -20,10 +20,10 @@
     "@gorhom/bottom-sheet": "4.6.1",
     "@mattermost/calls": "github:mattermost/calls-common#cc5e65f6c103138fd013d6fa45eb33bfe7544f2a",
     "@mattermost/compass-icons": "0.1.44",
-    "@mattermost/react-native-emm": "1.4.1",
-    "@mattermost/react-native-network-client": "1.5.1",
-    "@mattermost/react-native-paste-input": "0.7.1",
-    "@mattermost/react-native-turbo-log": "0.3.2",
+    "@mattermost/react-native-emm": "file:../react-native-emm/mattermost-react-native-emm-1.4.1.tgz",
+    "@mattermost/react-native-network-client": "file:../react-native-network-client/mattermost-react-native-network-client-1.5.1.tgz",
+    "@mattermost/react-native-paste-input": "file:../react-native-paste-input/mattermost-react-native-paste-input-0.7.1.tgz",
+    "@mattermost/react-native-turbo-log": "file:../react-native-turbo-log/mattermost-react-native-turbo-log-0.3.2.tgz",
     "@msgpack/msgpack": "2.8.0",
     "@nozbe/watermelondb": "0.27.1",
     "@react-native-camera-roll/camera-roll": "7.5.2",
@@ -43,6 +43,7 @@
     "deep-equal": "2.2.3",
     "deepmerge": "4.3.1",
     "emoji-regex": "10.3.0",
+    "expo": "51.0.5",
     "fuse.js": "7.0.0",
     "html-entities": "2.5.2",
     "jail-monkey": "2.8.0",
@@ -65,7 +66,6 @@
     "react-native-exception-handler": "2.10.10",
     "react-native-fast-image": "8.6.3",
     "react-native-file-viewer": "2.1.5",
-    "react-native-fs": "2.20.0",
     "react-native-gesture-handler": "2.16.0",
     "react-native-haptic-feedback": "2.2.0",
     "react-native-hw-keyboard-event": "0.0.4",
@@ -82,8 +82,8 @@
     "react-native-notifications": "5.1.0",
     "react-native-permissions": "4.1.5",
     "react-native-reanimated": "3.11.0",
-    "react-native-safe-area-context": "4.9.0",
-    "react-native-screens": "3.30.1",
+    "react-native-safe-area-context": "4.10.1",
+    "react-native-screens": "3.31.1",
     "react-native-section-list-get-item-layout": "2.2.3",
     "react-native-shadow-2": "7.0.8",
     "react-native-share": "10.1.0",
@@ -206,6 +206,16 @@
     },
     "@react-native-community/datetimepicker": {
       "react-native": "^0.74.0"
+    }
+  },
+  "expo": {
+    "autolinking": {
+      "exclude": [
+        "expo-keep-awake",
+        "expo-assets",
+        "expo-constants",
+        "expo-font"
+      ]
     }
   }
 }

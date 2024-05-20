@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
+import {deleteAsync} from 'expo-file-system';
 import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {NativeModules, Platform, StyleSheet, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FileViewer from 'react-native-file-viewer';
-import FileSystem from 'react-native-fs';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -131,7 +131,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
             downloadPromise.current?.cancel?.();
             const path = getLocalFilePathFromFile(serverUrl, galleryItemToFileInfo(item));
             downloadPromise.current = undefined;
-            await FileSystem.unlink(path);
+            await deleteAsync(path);
         } catch {
             // do nothing
         } finally {

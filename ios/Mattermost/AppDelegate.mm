@@ -51,12 +51,13 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
   [RNNotifications startMonitorNotifications];
 
-//  [ReactNativeNavigation bootstrapWithDelegate:self launchOptions:launchOptions];
-
   os_log(OS_LOG_DEFAULT, "Mattermost started!!");
-  [super application:application didFinishLaunchingWithOptions:launchOptions];
-
+  [ReactNativeNavigation bootstrapWithDelegate:self launchOptions:launchOptions];
   return YES;
+}
+
+-(BOOL)bridgelessEnabled {
+  return NO;
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
