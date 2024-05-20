@@ -26,9 +26,9 @@ buildscript {
         // in the individual module build.gradle files
     }
 
-    configurations.classpath {
-        resolutionStrategy.activateDependencyLocking()
-    }
+    // configurations.classpath {
+    //     resolutionStrategy.activateDependencyLocking()
+    // }
 }
 
 allprojects {
