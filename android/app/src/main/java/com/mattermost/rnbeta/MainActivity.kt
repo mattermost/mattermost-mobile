@@ -1,15 +1,14 @@
 package com.mattermost.rnbeta
 
-import android.os.Bundle
-
-import android.view.KeyEvent
 import android.content.res.Configuration
-
+import android.os.Bundle
+import android.view.KeyEvent
 import com.facebook.react.ReactActivityDelegate
-import com.reactnativenavigation.NavigationActivity
-import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactActivityDelegate
+import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule
+import com.reactnativenavigation.NavigationActivity
+import expo.modules.ReactActivityDelegateWrapper
 
 class MainActivity : NavigationActivity() {
     private var HWKeyboardConnected = false
@@ -26,7 +25,8 @@ class MainActivity : NavigationActivity() {
      * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
      */
     override fun createReactActivityDelegate(): ReactActivityDelegate =
-        DefaultReactActivityDelegate(this, mainComponentName, DefaultNewArchitectureEntryPoint.fabricEnabled)
+        ReactActivityDelegateWrapper(this, BuildConfig.IS_NEW_ARCHITECTURE_ENABLED,
+                DefaultReactActivityDelegate(this, mainComponentName, DefaultNewArchitectureEntryPoint.fabricEnabled))
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
