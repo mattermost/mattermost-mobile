@@ -2,78 +2,69 @@ package com.mattermost.helpers;
 
 import androidx.annotation.Nullable;
 import androidx.biometric.BiometricPrompt;
-import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
 import com.oblador.keychain.KeychainModule;
-import com.oblador.keychain.exceptions.KeyStoreAccessException;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class Credentials {
 
-    private static void authenticateUserWithBiometrics(ReactApplicationContext context, BiometricPrompt.AuthenticationCallback callback) {
-        Executor executor = ContextCompat.getMainExecutor(context);
-        BiometricPrompt biometricPrompt = new BiometricPrompt(
-                context.getCurrentActivity(),
-                executor,
-                callback
-        );
+    public static void getCredentialsForServer(ReactApplicationContext context, String serverUrl, ResolvePromise promise, boolean useBiometrics) {
+        final KeychainModule keychainModule = new KeychainModule(context);
 
-        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                .setTitle("Authenticate to retrieve secret")
-                .setSubtitle("Log in using your biometric credential")
-                .setNegativeButtonText("Use account password")
-                .build();
+        if (useBiometrics) {
+            authenticateUserWithBiometrics(context, new BiometricPrompt.AuthenticationCallback() {
+                @Override
+                public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                    WritableMap options = Arguments.createMap();
+                    WritableMap authPrompt = Arguments.createMap();
+                    authPrompt.putString("title", "Authenticate to retrieve secret");
+                    authPrompt.putString("cancel", "Cancel");
+                    options.putMap("authenticationPrompt", authPrompt);
+                    options.putString("service", serverUrl);
 
-        try {
-            Cipher cipher = getCipher(); // Your logic to initialize and return the Cipher
-            BiometricPrompt.CryptoObject cryptoObject = new BiometricPrompt.CryptoObject(cipher);
-            biometricPrompt.authenticate(promptInfo, cryptoObject);
-        } catch (Exception e) {
-            callback.onAuthenticationError(BiometricPrompt.ERROR_NO_BIOMETRICS, "Failed to initialize Cipher: " + e.getMessage());
+                    keychainModule.getGenericPasswordForOptions(options, promise);
+                }
+
+                @Override
+                public void onAuthenticationFailed() {
+                    promise.reject("Authentication failed", "Biometric authentication failed.");
+                }
+
+                @Override
+                public void onAuthenticationError(int errorCode, CharSequence errString) {
+                    promise.reject("Authentication error", errString.toString());
+                }
+            });
+        } else {
+            WritableMap options = Arguments.createMap();
+            WritableMap authPrompt = Arguments.createMap();
+            authPrompt.putString("title", "Authenticate to retrieve secret");
+            authPrompt.putString("cancel", "Cancel");
+            options.putMap("authenticationPrompt", authPrompt);
+            options.putString("service", serverUrl);
+
+            keychainModule.getGenericPasswordForOptions(options, promise);
         }
     }
 
-    private static Cipher getCipher() throws Exception {
-        // Your logic to initialize and return the Cipher
-        // For example:
-        // KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        // keyStore.load(null);
-        // Key key = keyStore.getKey("your-key-alias", null);
-        // Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
-        // cipher.init(Cipher.ENCRYPT_MODE, key);
-        // return cipher;
-    }
+    private static void authenticateUserWithBiometrics(ReactApplicationContext context, BiometricPrompt.AuthenticationCallback callback) {
+        Executor executor = Executors.newSingleThreadExecutor();
+        BiometricPrompt biometricPrompt = new BiometricPrompt((FragmentActivity) context.getCurrentActivity(), executor, callback);
 
-    public static void getCredentialsForServer(ReactApplicationContext context, String serverUrl, ResolvePromise promise) {
-        authenticateUserWithBiometrics(context, new BiometricPrompt.AuthenticationCallback() {
-            @Override
-            public void onAuthenticationError(int errorCode, CharSequence errString) {
-                promise.reject("AUTH_ERROR", errString.toString());
-            }
+        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Biometric Authentication")
+            .setSubtitle("Authenticate using your biometrics")
+            .setDescription("Use your fingerprint to authenticate")
+            .setNegativeButtonText("Cancel")
+            .build();
 
-            @Override
-            public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
-                final KeychainModule keychainModule = new KeychainModule(context);
-
-                final WritableMap options = Arguments.createMap();
-                options.putString("service", serverUrl);
-
-                try {
-                    keychainModule.getGenericPasswordForOptions(options, promise);
-                } catch (KeyStoreAccessException e) {
-                    promise.reject("KEYSTORE_ERROR", e.getMessage());
-                }
-            }
-
-            @Override
-            public void onAuthenticationFailed() {
-                promise.reject("AUTH_FAILED", "Authentication failed");
-            }
-        });
+        biometricPrompt.authenticate(promptInfo);
     }
 
     public static String getCredentialsForServerSync(ReactApplicationContext context, String serverUrl) {
@@ -94,7 +85,37 @@ public class Credentials {
                     }
                 }
             }
-        });
+
+            @Override
+            public void reject(String code, String message) {
+                token[0] = null;
+            }
+
+            @Override
+            public void reject(String code, Throwable throwable) {
+                token[0] = null;
+            }
+
+            @Override
+            public void reject(String code, String message, Throwable throwable) {
+                token[0] = null;
+            }
+
+            @Override
+            public void reject(Throwable throwable) {
+                token[0] = null;
+            }
+
+            @Override
+            public void reject(String code, WritableMap userInfo) {
+                token[0] = null;
+            }
+
+            @Override
+            public void reject(String code, WritableMap userInfo, Throwable throwable) {
+                token[0] = null;
+            }
+        }, false);
 
         return token[0];
     }
