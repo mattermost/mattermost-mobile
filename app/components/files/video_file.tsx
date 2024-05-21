@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {getThumbnailAsync} from 'expo-video-thumbnails';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {StyleSheet, useWindowDimensions, View, NativeModules} from 'react-native';
+import {StyleSheet, useWindowDimensions, View} from 'react-native';
+import urlParse from 'url-parse';
 
 import {updateLocalFile} from '@actions/local/file';
 import {buildFilePreviewUrl, buildFileUrl} from '@actions/remote/file';
@@ -10,6 +12,7 @@ import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {getServerCredentials} from '@init/credentials';
 import {fileExists} from '@utils/file';
 import {calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -17,7 +20,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import FileIcon from './file_icon';
 
 import type {ResizeMode} from 'react-native-fast-image';
-const {createThumbnail} = NativeModules.MattermostManaged;
 
 type Props = {
     index: number;
@@ -86,7 +88,14 @@ const VideoFile = ({
             if (!data.mini_preview || !exists) {
                 const videoUrl = buildFileUrl(serverUrl, data.id!);
                 if (videoUrl) {
-                    const {path: uri, height, width} = await createThumbnail({url: data.localPath || videoUrl, timeStamp: 2000});
+                    const parse = urlParse(videoUrl);
+                    const s = `${parse.protocol}//${parse.hostname}:${parse.port}`;
+                    const cred = await getServerCredentials(s);
+                    const headers: Record<string, string> = {};
+                    if (cred?.token) {
+                        headers.Authorization = `Bearer ${cred.token}`;
+                    }
+                    const {uri, height, width} = await getThumbnailAsync(data.localPath || videoUrl, {time: 2000, headers});
                     data.mini_preview = uri;
                     data.height = height;
                     data.width = width;
