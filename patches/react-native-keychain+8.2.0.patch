@@ -167,4 +167,3 @@ index 6846468..bc03596 100644
    function hasInternetCredentials(server: string): Promise<false | Result>;
  
    function setInternetCredentials(
-   
