@@ -1,11 +1,15 @@
 package com.mattermost.helpers;
 
 import androidx.annotation.Nullable;
+import androidx.biometric.BiometricPrompt;
+import androidx.fragment.app.FragmentActivity;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
 import com.oblador.keychain.KeychainModule;
-import androidx.biometric.BiometricPrompt;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 
 public class Credentials {
 
