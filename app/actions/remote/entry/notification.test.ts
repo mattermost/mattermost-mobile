@@ -47,6 +47,10 @@ describe('Performance metrics are set correctly', () => {
             return {status: 404, ok: false};
         });
         mockedNavigationStore.waitUntilScreenIsTop.mockImplementation(() => Promise.resolve());
+
+        // There are no problems when running the tests for this file alone without this line
+        // but for some reason, when running several tests together, it fails if we don't add this.
+        mockedNavigationStore.getScreensInStack.mockImplementation(() => []);
     });
     afterAll(() => {
         mockApiClient.get.mockReset();
