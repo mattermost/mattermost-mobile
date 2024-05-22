@@ -363,7 +363,7 @@ export const canEndCall = async (serverUrl: string, channelId: string) => {
         return false;
     }
 
-    return isSystemAdmin(currentUser.roles) || currentUser.id === call.ownerId;
+    return isSystemAdmin(currentUser.roles) || currentUser.id === call.hostId;
 };
 
 export const getEndCallMessage = async (serverUrl: string, channelId: string, currentUserId: string, intl: IntlShape) => {
