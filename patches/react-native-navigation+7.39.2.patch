@@ -150,6 +150,25 @@ index 4cc09eb..2c46d59 100644
          if (navigationActivity != null) {
              navigationActivity.onCatalystInstanceDestroy();
          }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
+index 834d734..3fc00c3 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
+@@ -96,12 +96,12 @@ public class ReactTypefaceUtils {
+ 
+     int want = 0;
+     if ((weight == Typeface.BOLD)
+-        || ((oldStyle & Typeface.BOLD) != 0 && weight == ReactTextShadowNode.UNSET)) {
++        || ((oldStyle & Typeface.BOLD) != 0 && weight == -1)) {
+       want |= Typeface.BOLD;
+     }
+ 
+     if ((style == Typeface.ITALIC)
+-        || ((oldStyle & Typeface.ITALIC) != 0 && style == ReactTextShadowNode.UNSET)) {
++        || ((oldStyle & Typeface.ITALIC) != 0 && style == -1)) {
+       want |= Typeface.ITALIC;
+     }
+ 
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
 index 035ec31..630b8d4 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
