@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useMemo, useRef, useState} from 'react';
+import {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StatusBar, type StatusBarStyle} from 'react-native';
 import FileViewer from 'react-native-file-viewer';
@@ -70,7 +70,29 @@ export const useDownloadFileAndPreview = () => {
         // do nothing
     }
 
-    const openFile = (file: FileInfo) => {
+    const setStatusBarColor = useCallback((style: StatusBarStyle = 'light-content') => {
+        if (Platform.OS === 'ios') {
+            if (style) {
+                StatusBar.setBarStyle(style, true);
+            } else {
+                const headerColor = tinycolor(theme.sidebarHeaderBg);
+                let barStyle: StatusBarStyle = 'light-content';
+                if (headerColor.isLight() && Platform.OS === 'ios') {
+                    barStyle = 'dark-content';
+                }
+                StatusBar.setBarStyle(barStyle, true);
+            }
+        }
+    }, [theme.sidebarHeaderBg]);
+
+    const onDonePreviewingFile = useCallback(() => {
+        setProgress(0);
+        setDownloading(false);
+        setPreview(false);
+        setStatusBarColor();
+    }, [setStatusBarColor]);
+
+    const openFile = useCallback((file: FileInfo) => {
         if (!didCancel && !preview) {
             const path = getLocalFilePathFromFile(serverUrl, file);
             setPreview(true);
@@ -92,9 +114,9 @@ export const useDownloadFileAndPreview = () => {
                 }
             });
         }
-    };
+    }, [didCancel, preview, serverUrl, intl, onDonePreviewingFile, setStatusBarColor]);
 
-    const downloadAndPreviewFile = async (file: FileInfo) => {
+    const downloadAndPreviewFile = useCallback(async (file: FileInfo) => {
         setDidCancel(false);
         let path;
 
@@ -124,24 +146,9 @@ export const useDownloadFileAndPreview = () => {
                 alertDownloadFailed(intl);
             }
         }
-    };
+    }, [client, intl, openFile, serverUrl]);
 
-    const setStatusBarColor = (style: StatusBarStyle = 'light-content') => {
-        if (Platform.OS === 'ios') {
-            if (style) {
-                StatusBar.setBarStyle(style, true);
-            } else {
-                const headerColor = tinycolor(theme.sidebarHeaderBg);
-                let barStyle: StatusBarStyle = 'light-content';
-                if (headerColor.isLight() && Platform.OS === 'ios') {
-                    barStyle = 'dark-content';
-                }
-                StatusBar.setBarStyle(barStyle, true);
-            }
-        }
-    };
-
-    const toggleDownloadAndPreview = (file: FileInfo) => {
+    const toggleDownloadAndPreview = useCallback((file: FileInfo) => {
         if (downloading && progress < 1) {
             cancelDownload();
         } else if (downloading) {
@@ -151,20 +158,13 @@ export const useDownloadFileAndPreview = () => {
         } else {
             downloadAndPreviewFile(file);
         }
-    };
+    }, [downloading, progress, downloadAndPreviewFile]);
 
     const cancelDownload = () => {
         setDidCancel(true);
         if (downloadTask.current?.cancel) {
             downloadTask.current.cancel();
         }
-    };
-
-    const onDonePreviewingFile = () => {
-        setProgress(0);
-        setDownloading(false);
-        setPreview(false);
-        setStatusBarColor();
     };
 
     return {
