@@ -77,7 +77,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.onlineIndicator,
         },
         phoneHangupIcon: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.6),
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         callButton: {
             flexDirection: 'row',
