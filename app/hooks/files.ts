@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {deleteAsync} from 'expo-file-system';
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StatusBar, type StatusBarStyle} from 'react-native';
 import FileViewer from 'react-native-file-viewer';
@@ -111,7 +111,29 @@ export const useDownloadFileAndPreview = () => {
     const [downloading, setDownloading] = useState(false);
     const [didCancel, setDidCancel] = useState(false);
 
-    const openDocument = async (file: FileInfo) => {
+    const setStatusBarColor = useCallback((style: StatusBarStyle = 'light-content') => {
+        if (Platform.OS === 'ios') {
+            if (style) {
+                StatusBar.setBarStyle(style, true);
+            } else {
+                const headerColor = tinyColor(theme.sidebarHeaderBg);
+                let barStyle: StatusBarStyle = 'light-content';
+                if (headerColor.isLight() && Platform.OS === 'ios') {
+                    barStyle = 'dark-content';
+                }
+                StatusBar.setBarStyle(barStyle, true);
+            }
+        }
+    }, [theme.sidebarHeaderBg]);
+
+    const onDonePreviewingFile = useCallback(() => {
+        setProgress(0);
+        setDownloading(false);
+        setPreview(false);
+        setStatusBarColor();
+    }, [setStatusBarColor]);
+
+    const openDocument = useCallback(async (file: FileInfo) => {
         if (!didCancel && !preview) {
             let path = decodeURIComponent(file.localPath || '');
             let exists = false;
@@ -142,9 +164,9 @@ export const useDownloadFileAndPreview = () => {
                 }
             });
         }
-    };
+    }, [didCancel, preview, serverUrl, intl, onDonePreviewingFile, setStatusBarColor]);
 
-    const downloadAndPreviewFile = async (file: FileInfo) => {
+    const downloadAndPreviewFile = useCallback(async (file: FileInfo) => {
         setDidCancel(false);
         let path;
         let exists = false;
@@ -183,45 +205,25 @@ export const useDownloadFileAndPreview = () => {
                 alertDownloadFailed(intl);
             }
         }
-    };
+    }, [intl, openDocument, serverUrl]);
 
-    const setStatusBarColor = (style: StatusBarStyle = 'light-content') => {
-        if (Platform.OS === 'ios') {
-            if (style) {
-                StatusBar.setBarStyle(style, true);
-            } else {
-                const headerColor = tinyColor(theme.sidebarHeaderBg);
-                let barStyle: StatusBarStyle = 'light-content';
-                if (headerColor.isLight() && Platform.OS === 'ios') {
-                    barStyle = 'dark-content';
-                }
-                StatusBar.setBarStyle(barStyle, true);
-            }
-        }
-    };
-
-    const toggleDownloadAndPreview = (file: FileInfo) => {
-        if (downloading) {
+    const toggleDownloadAndPreview = useCallback((file: FileInfo) => {
+        if (downloading && progress < 1) {
+            cancelDownload();
+        } else if (downloading) {
             setProgress(0);
             cancelDownload();
             setDownloading(false);
         } else {
             downloadAndPreviewFile(file);
         }
-    };
+    }, [downloading, progress, downloadAndPreviewFile]);
 
     const cancelDownload = () => {
         setDidCancel(true);
         if (downloadTask.current?.cancel) {
             downloadTask.current.cancel();
         }
-    };
-
-    const onDonePreviewingFile = () => {
-        setProgress(0);
-        setDownloading(false);
-        setPreview(false);
-        setStatusBarColor();
     };
 
     return {
