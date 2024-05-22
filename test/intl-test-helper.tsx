@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {DatabaseProvider} from '@nozbe/watermelondb/react';
-import {render} from '@testing-library/react-native';
+import {render, type RenderOptions} from '@testing-library/react-native';
 import React, {type ReactElement} from 'react';
 import {IntlProvider} from 'react-intl';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
+import ServerUrlProvider from '@context/server';
 import {ThemeContext, getDefaultThemeByAppearance} from '@context/theme';
 import {getTranslations} from '@i18n';
 
@@ -48,13 +49,13 @@ export function renderWithIntlAndTheme(ui: ReactElement, {locale = 'en', ...rend
     return render(ui, {wrapper: Wrapper, ...renderOptions});
 }
 
-export function renderWithEverything(ui: ReactElement, {locale = 'en', database, ...renderOptions}: {locale?: string; database?: Database; renderOptions?: any} = {}) {
+export function renderWithEverything(ui: ReactElement, {locale = 'en', database, serverUrl, ...renderOptions}: {locale?: string; database?: Database; serverUrl?: string; renderOptions?: RenderOptions} = {}) {
     function Wrapper({children}: {children: ReactElement}) {
         if (!database) {
             return null;
         }
 
-        return (
+        const wrapper = (
             <DatabaseProvider database={database}>
                 <IntlProvider
                     locale={locale}
@@ -68,6 +69,16 @@ export function renderWithEverything(ui: ReactElement, {locale = 'en', database,
                 </IntlProvider>
             </DatabaseProvider>
         );
+
+        if (serverUrl) {
+            return (
+                <ServerUrlProvider server={{displayName: serverUrl, url: serverUrl}}>
+                    {wrapper}
+                </ServerUrlProvider>
+            );
+        }
+
+        return wrapper;
     }
 
     return render(ui, {wrapper: Wrapper, ...renderOptions});

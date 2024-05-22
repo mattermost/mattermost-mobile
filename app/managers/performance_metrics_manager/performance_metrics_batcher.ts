@@ -47,8 +47,8 @@ class Batcher {
             return;
         }
 
-        const clientPerformanceSetting = getConfigValue(database, 'EnableClientMetrics');
-        if (!clientPerformanceSetting) {
+        const clientPerformanceSetting = await getConfigValue(database, 'EnableClientMetrics');
+        if (clientPerformanceSetting !== 'true') {
             return;
         }
 

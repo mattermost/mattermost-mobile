@@ -67,9 +67,13 @@ export default function TeamItem({team, hasUnreads, mentionCount, selected}: Pro
         if (!team) {
             return;
         }
+        if (selected) {
+            return;
+        }
+
         PerformanceMetricsManager.startMetric('mobile_team_switch');
         handleTeamChange(serverUrl, team.id);
-    }, []);
+    }, [selected]);
 
     if (!team) {
         return null;
