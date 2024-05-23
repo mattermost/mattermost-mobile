@@ -7,11 +7,14 @@ import android.os.Bundle
 import android.util.Log
 import com.facebook.react.PackageList
 import com.facebook.react.ReactHost
+import com.facebook.react.ReactInstanceManager
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.react.TurboReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
@@ -35,9 +38,8 @@ import expo.modules.ReactNativeHostWrapper
 import java.io.File
 
 class MainApplication : NavigationApplication(), INotificationsApplication {
-    var instance: MainApplication? = null
     var sharedExtensionIsOpened = false
-    var watermelonDBInitialized = false
+    private var listenerAdded = false
 
     override val reactNativeHost: ReactNativeHost =
         ReactNativeHostWrapper(this,
@@ -52,57 +54,20 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
                                 name: String,
                                 reactContext: ReactApplicationContext
                             ): NativeModule {
-                                if (!watermelonDBInitialized) {
-                                    JSIInstaller.install(reactContext, reactContext.javaScriptContextHolder!!.get())
-                                    watermelonDBInitialized = true
-                                }
                                 return when (name) {
-                                    "MattermostManaged" -> MattermostManagedModule.getInstance(
-                                        reactContext
-                                    )
                                     "MattermostShare" -> ShareModule.getInstance(reactContext)
-                                    "Notifications" -> NotificationsModule.getInstance(
-                                        instance,
-                                        reactContext
-                                    )
-                                    "SplitView" -> SplitViewModule.getInstance(
-                                        reactContext
-                                    )
                                     else ->
                                         throw IllegalArgumentException("Could not find module $name")
                                 }
                             }
 
                             override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
+
                                 return ReactModuleInfoProvider {
                                     val map: MutableMap<String, ReactModuleInfo> = java.util.HashMap()
-                                    map["MattermostManaged"] = ReactModuleInfo(
-                                        "MattermostManaged",
-                                        "com.mattermost.rnbeta.MattermostManagedModule",
-                                        false,
-                                        false,
-                                        false,
-                                        false
-                                    )
                                     map["MattermostShare"] = ReactModuleInfo(
                                         "MattermostShare",
                                         "com.mattermost.share.ShareModule",
-                                        false,
-                                        false,
-                                        false,
-                                        false
-                                    )
-                                    map["Notifications"] = ReactModuleInfo(
-                                        "Notifications",
-                                        "com.mattermost.rnbeta.NotificationsModule",
-                                        false,
-                                        false,
-                                        false,
-                                        false
-                                    )
-                                    map["SplitView"] = ReactModuleInfo(
-                                        "SplitView",
-                                        "com.mattermost.rnbeta.SplitViewModule",
                                         false,
                                         false,
                                         false,
@@ -127,10 +92,9 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
 
     override fun onCreate() {
         super.onCreate()
-        instance = this
-        val context: Context = applicationContext
+
         // Delete any previous temp files created by the app
-        val tempFolder = File(context.cacheDir, RealPathUtil.CACHE_DIR_NAME)
+        val tempFolder = File(applicationContext.cacheDir, RealPathUtil.CACHE_DIR_NAME)
         RealPathUtil.deleteTempFiles(tempFolder)
         Log.i("ReactNative", "Cleaning temp cache " + tempFolder.absolutePath)
 
@@ -149,6 +113,7 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
             load(bridgelessEnabled = false)
         }
         ApplicationLifecycleDispatcher.onApplicationCreate(this)
+        registerJSIModules()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -169,5 +134,37 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
             defaultAppLaunchHelper!!,
             JsIOHelper()
         )
+    }
+
+    private fun runOnJSQueueThread(action: () -> Unit) {
+        reactNativeHost.reactInstanceManager.currentReactContext?.runOnJSQueueThread {
+            action()
+        } ?: UiThreadUtil.runOnUiThread {
+            reactNativeHost.reactInstanceManager.currentReactContext?.runOnJSQueueThread {
+                action()
+            }
+        }
+    }
+
+    private fun registerJSIModules() {
+        val reactInstanceManager = reactNativeHost.reactInstanceManager
+
+        if (!listenerAdded) {
+            listenerAdded = true
+            reactInstanceManager.addReactInstanceEventListener(object : ReactInstanceManager.ReactInstanceEventListener {
+                override fun onReactContextInitialized(context: ReactContext) {
+                    runOnJSQueueThread {
+                        registerWatermelonJSI(context)
+                    }
+                }
+            })
+        }
+    }
+
+    private fun registerWatermelonJSI(context: ReactContext) {
+        val holder = context.javaScriptContextHolder?.get()
+        if (holder != null) {
+            JSIInstaller.install(context, holder)
+        }
     }
 }

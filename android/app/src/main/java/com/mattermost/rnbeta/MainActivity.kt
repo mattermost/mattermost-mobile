@@ -7,6 +7,7 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule
+import com.mattermost.rnutils.helpers.FoldableObserver
 import com.reactnativenavigation.NavigationActivity
 import expo.modules.ReactActivityDelegateWrapper
 
@@ -44,6 +45,11 @@ class MainActivity : NavigationActivity() {
     override fun onStop() {
         super.onStop()
         foldableObserver.onStop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        foldableObserver.onDestroy()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
