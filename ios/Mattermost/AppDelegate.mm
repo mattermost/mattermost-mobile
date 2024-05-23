@@ -14,6 +14,8 @@
 
 @implementation AppDelegate
 
+@synthesize orientationLock;
+
 NSString* const NOTIFICATION_MESSAGE_ACTION = @"message";
 NSString* const NOTIFICATION_CLEAR_ACTION = @"clear";
 NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
@@ -27,10 +29,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  if ( UIUserInterfaceIdiom() == UIUserInterfaceIdiomPad )
-  {
-    _allowRotation = YES;
-  }
+  OrientationManager.shared.delegate = self;
   
   // Clear keychain on first run in case of reinstallation
   if (![[NSUserDefaults standardUserDefaults] objectForKey:@"FirstRun"]) {
@@ -151,11 +150,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 }
 
 - (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
-  if (_allowRotation == YES) {
-        return UIInterfaceOrientationMaskAllButUpsideDown;
-    }else{
-        return (UIInterfaceOrientationMaskPortrait);
-    }
+  return self.orientationLock;
 }
 
 - (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge

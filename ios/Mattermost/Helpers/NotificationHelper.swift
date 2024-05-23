@@ -7,7 +7,7 @@ import UIKit
   @objc public static let `default` = NotificationHelper()
   private let notificationCenter = UNUserNotificationCenter.current()
   
-  @objc func getDeliveredNotifications(completionHandler: @escaping ([UNNotification]) -> Void) {
+  func getDeliveredNotifications(completionHandler: @escaping ([UNNotification]) -> Void) {
     notificationCenter.getDeliveredNotifications(completionHandler: completionHandler)
   }
   
@@ -33,7 +33,7 @@ import UIKit
     UIApplication.shared.applicationIconBadgeNumber = mentions
   }
   
-  @objc func removeChannelNotifications(serverUrl: String, channelId: String) {
+  func removeChannelNotifications(serverUrl: String, channelId: String) {
     getDeliveredNotifications(completionHandler: {notifications in
       var notificationIds = [String]()
 
@@ -55,7 +55,7 @@ import UIKit
     })
   }
   
-  @objc func removeThreadNotifications(serverUrl: String, threadId: String) {
+  func removeThreadNotifications(serverUrl: String, threadId: String) {
     getDeliveredNotifications(completionHandler: {notifications in
       var notificationIds = [String]()
       
@@ -67,25 +67,6 @@ import UIKit
         let rootId = content.userInfo["root_id"] as? String
         
         if rootId == threadId || postId == threadId {
-          notificationIds.append(identifier)
-        }
-      }
-      
-      self.notificationCenter.removeDeliveredNotifications(withIdentifiers: notificationIds)
-    })
-  }
-  
-  @objc func removeServerNotifications(serverUrl: String) {
-    getDeliveredNotifications(completionHandler: {notifications in
-      var notificationIds = [String]()
-      
-      for notification in notifications {
-        let request = notification.request
-        let content = request.content
-        let identifier = request.identifier
-        let url = content.userInfo["server_url"] as? String
-        
-        if url == serverUrl {
           notificationIds.append(identifier)
         }
       }

@@ -78,8 +78,6 @@
 		7F537B2928A517580086D6B3 /* NotificationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F537B2828A517580086D6B3 /* NotificationHelper.swift */; };
 		7F581D35221ED5C60099E66B /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F581D34221ED5C60099E66B /* NotificationService.swift */; };
 		7F581D39221ED5C60099E66B /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7F581D32221ED5C60099E66B /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		7F59882B29827F2200C8C108 /* SplitViewModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F59882A29827F2200C8C108 /* SplitViewModule.swift */; };
-		7F59882E2982850000C8C108 /* SplitViewModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F59882D2982850000C8C108 /* SplitViewModule.m */; };
 		7F6E6D592BEA215C0003F141 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 672D985229F1927F004228D6 /* InfoPlist.strings */; };
 		7F6E6D5A2BEA215C0003F141 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 672D985E29F1927F004228D6 /* InfoPlist.strings */; };
 		7F6E6D5B2BEA215C0003F141 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 672D984629F1927E004228D6 /* InfoPlist.strings */; };
@@ -171,8 +169,6 @@
 		7FD482672864DC5900A5B18B /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BC977883E2624E05975CA65B /* OpenSans-Regular.ttf */; };
 		7FD482682864DC5900A5B18B /* OpenSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E5C16B14E1CE4868886A1A00 /* OpenSans-SemiBold.ttf */; };
 		7FD482692864DC5900A5B18B /* OpenSans-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0DB14DFDF6E04FA69FE769DC /* OpenSans-SemiBoldItalic.ttf */; };
-		7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEB109A1F61019C0039A015 /* MattermostManaged.m */; };
-		7FEC870128A4325D00DE96CB /* NotificationsModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEC870028A4325D00DE96CB /* NotificationsModule.m */; };
 		7FF9C03D2983E7C6005CDCF5 /* ErrorSharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF9C03C2983E7C6005CDCF5 /* ErrorSharingView.swift */; };
 		A94508A396424B2DB778AFE9 /* OpenSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E5C16B14E1CE4868886A1A00 /* OpenSans-SemiBold.ttf */; };
 		C9A107102BBD7C8700753CDC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C9A1070F2BBD7C8700753CDC /* PrivacyInfo.xcprivacy */; };
@@ -247,8 +243,8 @@
 		49AE36FB26D4452900EF4E52 /* Gekidou */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Gekidou; sourceTree = "<group>"; };
 		49B4BF51230C83D2006E919E /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = ../../../../../../../../../usr/lib/libz.1.dylib; sourceTree = "<group>"; };
 		531BEBC52513E93C00BC05B1 /* compass-icons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "compass-icons.ttf"; path = "../assets/fonts/compass-icons.ttf"; sourceTree = "<group>"; };
-		536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "RNNotificationEventHandler+HandleReplyAction.m"; path = "Mattermost/RNNotificationEventHandler+HandleReplyAction.m"; sourceTree = "<group>"; };
-		536CC6C223E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "RNNotificationEventHandler+HandleReplyAction.h"; path = "Mattermost/RNNotificationEventHandler+HandleReplyAction.h"; sourceTree = "<group>"; };
+		536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RNNotificationEventHandler+HandleReplyAction.m"; sourceTree = "<group>"; };
+		536CC6C223E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RNNotificationEventHandler+HandleReplyAction.h"; sourceTree = "<group>"; };
 		54956DEFEBB74EF78C3A6AE5 /* Metropolis-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Metropolis-SemiBold.ttf"; path = "../assets/fonts/Metropolis-SemiBold.ttf"; sourceTree = "<group>"; };
 		57CB4735B7E57B50D0B50E16 /* Pods-MattermostTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MattermostTests.debug.xcconfig"; path = "Target Support Files/Pods-MattermostTests/Pods-MattermostTests.debug.xcconfig"; sourceTree = "<group>"; };
 		6561AEAC21CC40B8A72ABB93 /* OpenSans-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Light.ttf"; path = "../assets/fonts/OpenSans-Light.ttf"; sourceTree = "<group>"; };
@@ -299,7 +295,7 @@
 		67FEAE2B2A127C3600DDF4AE /* NumberFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NumberFormatter.swift; sourceTree = "<group>"; };
 		6BAF8296411D4657B5A0E8F8 /* libRNReactNativeDocViewer.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNReactNativeDocViewer.a; sourceTree = "<group>"; };
 		7F0F4B0924BA173900E14C60 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = SplashScreenResource/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeUtils.swift; path = Mattermost/RuntimeUtils.swift; sourceTree = "<group>"; };
+		7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RuntimeUtils.swift; sourceTree = "<group>"; };
 		7F151D43221B082A00FAD8F3 /* Mattermost-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Mattermost-Bridging-Header.h"; path = "Mattermost/Mattermost-Bridging-Header.h"; sourceTree = "<group>"; };
 		7F1EB88427FDE361002E7EEC /* GekidouWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GekidouWrapper.swift; sourceTree = "<group>"; };
 		7F1EBFCD286F2AE200824AF1 /* MultipleAttachmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipleAttachmentView.swift; sourceTree = "<group>"; };
@@ -311,13 +307,11 @@
 		7F428809286672F6006B48E1 /* ServerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerService.swift; sourceTree = "<group>"; };
 		7F42880B2866A9C0006B48E1 /* ChannelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelService.swift; sourceTree = "<group>"; };
 		7F43D6051F6BF9EB001FC614 /* libPods-Mattermost.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-Mattermost.a"; path = "../../../../../../../Library/Developer/Xcode/DerivedData/Mattermost-czlinsdviifujheezzjvmisotjrm/Build/Products/Debug-iphonesimulator/libPods-Mattermost.a"; sourceTree = "<group>"; };
-		7F537B2828A517580086D6B3 /* NotificationHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationHelper.swift; path = Mattermost/NotificationHelper.swift; sourceTree = "<group>"; };
+		7F537B2828A517580086D6B3 /* NotificationHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationHelper.swift; sourceTree = "<group>"; };
 		7F581D32221ED5C60099E66B /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F581D34221ED5C60099E66B /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		7F581D36221ED5C60099E66B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7F581F77221EEA5A0099E66B /* NotificationService.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationService.entitlements; sourceTree = "<group>"; };
-		7F59882A29827F2200C8C108 /* SplitViewModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SplitViewModule.swift; path = Mattermost/Modules/SplitViewModule.swift; sourceTree = "<group>"; };
-		7F59882D2982850000C8C108 /* SplitViewModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SplitViewModule.m; path = Mattermost/Modules/SplitViewModule.m; sourceTree = "<group>"; };
 		7F63D2C21E6DD98A001FAE12 /* Mattermost.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Mattermost.entitlements; path = Mattermost/Mattermost.entitlements; sourceTree = "<group>"; };
 		7F7E9F442864E6C60064BFAF /* Color.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		7F7E9F452864E6C60064BFAF /* View.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
@@ -362,13 +356,9 @@
 		7FC5698B28563FDB000B0905 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
 		7FC5698D28563FDB000B0905 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7FC569962856436E000B0905 /* MattermostShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MattermostShare.entitlements; sourceTree = "<group>"; };
-		7FCEFB9126B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "SDWebImageDownloaderOperation+Swizzle.h"; path = "Mattermost/SDWebImageDownloaderOperation+Swizzle.h"; sourceTree = "<group>"; };
-		7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "SDWebImageDownloaderOperation+Swizzle.m"; path = "Mattermost/SDWebImageDownloaderOperation+Swizzle.m"; sourceTree = "<group>"; };
+		7FCEFB9126B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SDWebImageDownloaderOperation+Swizzle.h"; sourceTree = "<group>"; };
+		7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "SDWebImageDownloaderOperation+Swizzle.m"; sourceTree = "<group>"; };
 		7FD482282864D69700A5B18B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		7FEB10991F61019C0039A015 /* MattermostManaged.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MattermostManaged.h; path = Mattermost/MattermostManaged.h; sourceTree = "<group>"; };
-		7FEB109A1F61019C0039A015 /* MattermostManaged.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MattermostManaged.m; path = Mattermost/MattermostManaged.m; sourceTree = "<group>"; };
-		7FEC870028A4325D00DE96CB /* NotificationsModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NotificationsModule.m; path = Mattermost/NotificationsModule.m; sourceTree = "<group>"; };
-		7FEC870428A44A7B00DE96CB /* NotificationsModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NotificationsModule.h; path = Mattermost/NotificationsModule.h; sourceTree = "<group>"; };
 		7FF9C03C2983E7C6005CDCF5 /* ErrorSharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorSharingView.swift; sourceTree = "<group>"; };
 		7FFE32B51FD9CCAA0038C7A0 /* FLAnimatedImage.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FLAnimatedImage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FFE32B61FD9CCAA0038C7A0 /* KSCrash.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = KSCrash.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -498,10 +488,9 @@
 		13B07FAE1A68108700A75B9A /* Mattermost */ = {
 			isa = PBXGroup;
 			children = (
-				7F537B2128A514CB0086D6B3 /* Extensions */,
-				7F537B2728A517430086D6B3 /* Helpers */,
-				7F537B2428A515730086D6B3 /* Modules */,
-				7F537B2328A515600086D6B3 /* Utils */,
+				7FFD23BF2BFE008600FB34FA /* Extensions */,
+				7FFD23BE2BFE004300FB34FA /* Helpers */,
+				7FFD23C02BFE011400FB34FA /* Utils */,
 				7F537B2228A515400086D6B3 /* Wrappers */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
@@ -808,52 +797,12 @@
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
-		7F537B2128A514CB0086D6B3 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				536CC6C223E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.h */,
-				536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */,
-				7FCEFB9126B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.h */,
-				7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m */,
-			);
-			name = Extensions;
-			sourceTree = "<group>";
-		};
 		7F537B2228A515400086D6B3 /* Wrappers */ = {
 			isa = PBXGroup;
 			children = (
 				7F1EB88427FDE361002E7EEC /* GekidouWrapper.swift */,
 			);
 			name = Wrappers;
-			sourceTree = "<group>";
-		};
-		7F537B2328A515600086D6B3 /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */,
-			);
-			name = Utils;
-			sourceTree = "<group>";
-		};
-		7F537B2428A515730086D6B3 /* Modules */ = {
-			isa = PBXGroup;
-			children = (
-				7FEB10991F61019C0039A015 /* MattermostManaged.h */,
-				7FEB109A1F61019C0039A015 /* MattermostManaged.m */,
-				7FEC870428A44A7B00DE96CB /* NotificationsModule.h */,
-				7FEC870028A4325D00DE96CB /* NotificationsModule.m */,
-				7F59882A29827F2200C8C108 /* SplitViewModule.swift */,
-				7F59882D2982850000C8C108 /* SplitViewModule.m */,
-			);
-			name = Modules;
-			sourceTree = "<group>";
-		};
-		7F537B2728A517430086D6B3 /* Helpers */ = {
-			isa = PBXGroup;
-			children = (
-				7F537B2828A517580086D6B3 /* NotificationHelper.swift */,
-			);
-			name = Helpers;
 			sourceTree = "<group>";
 		};
 		7F581D33221ED5C60099E66B /* NotificationService */ = {
@@ -1010,6 +959,36 @@
 				C9A107132BBDBC8F00753CDC /* PrivacyInfo.xcprivacy */,
 			);
 			path = MattermostShare;
+			sourceTree = "<group>";
+		};
+		7FFD23BE2BFE004300FB34FA /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				7F537B2828A517580086D6B3 /* NotificationHelper.swift */,
+			);
+			name = Helpers;
+			path = Mattermost/Helpers;
+			sourceTree = "<group>";
+		};
+		7FFD23BF2BFE008600FB34FA /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				536CC6C223E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.h */,
+				536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */,
+				7FCEFB9126B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.h */,
+				7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m */,
+			);
+			name = Extensions;
+			path = Mattermost/Extensions;
+			sourceTree = "<group>";
+		};
+		7FFD23C02BFE011400FB34FA /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */,
+			);
+			name = Utils;
+			path = Mattermost/Utils;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -1523,16 +1502,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7FEC870128A4325D00DE96CB /* NotificationsModule.m in Sources */,
-				7F59882E2982850000C8C108 /* SplitViewModule.m in Sources */,
 				7F1EB88527FDE361002E7EEC /* GekidouWrapper.swift in Sources */,
 				7FCEFB9326B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */,
 				7F537B2928A517580086D6B3 /* NotificationHelper.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
-				7F59882B29827F2200C8C108 /* SplitViewModule.swift in Sources */,
-				7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */,
 				536CC6C323E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m in Sources */,
 				1AC06461F0B9867B11829943 /* ExpoModulesProvider.swift in Sources */,
 			);
@@ -1992,10 +1967,7 @@
 				CURRENT_PROJECT_VERSION = 525;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/UploadAttachments/UploadAttachments",
-				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -2037,10 +2009,7 @@
 				CURRENT_PROJECT_VERSION = 525;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/UploadAttachments/UploadAttachments",
-				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
