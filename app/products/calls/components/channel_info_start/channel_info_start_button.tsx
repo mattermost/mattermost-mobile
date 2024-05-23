@@ -75,11 +75,9 @@ const ChannelInfoStartButton = ({
             setJoiningMsg(isACallInCurrentChannel ? joining : starting);
             setConnecting(true);
 
-            const connected = await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+            await leaveAndJoinWithAlert(intl, serverUrl, channelId);
             setConnecting(false);
-            if (connected) {
-                dismissChannelInfo();
-            }
+            dismissChannelInfo();
         }
     }, [isLimitRestricted, alreadyInCall, dismissChannelInfo, intl, serverUrl, channelId, isACallInCurrentChannel]);
 
