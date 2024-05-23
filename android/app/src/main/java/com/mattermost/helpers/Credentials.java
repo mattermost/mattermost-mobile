@@ -28,7 +28,6 @@ public class Credentials {
             return options;
         }
 
-        if (useBiometrics) {
             authenticateUserWithBiometrics(context, new BiometricPrompt.AuthenticationCallback() {
                 @Override
                 public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
