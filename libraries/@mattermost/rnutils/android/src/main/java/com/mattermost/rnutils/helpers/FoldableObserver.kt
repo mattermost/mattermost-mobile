@@ -26,7 +26,6 @@ class FoldableObserver(activity: Activity) {
         fun getInstance(activity: Activity): FoldableObserver {
             if (instance == null) {
                 instance = FoldableObserver(activity)
-                instance!!.onCreate()
             }
             return instance!!
         }

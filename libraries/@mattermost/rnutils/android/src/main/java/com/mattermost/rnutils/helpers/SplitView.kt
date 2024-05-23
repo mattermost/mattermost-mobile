@@ -11,17 +11,20 @@ import com.mattermost.rnutils.enums.Events
 
 class SplitView {
     companion object {
-        private lateinit var context: ReactApplicationContext
+        private var context: ReactApplicationContext? = null
 
         fun setCtx(reactContext: ReactApplicationContext) {
             context = reactContext
         }
 
         private fun isTablet(): Boolean {
-            val configuration = context.resources.configuration
+            if (context == null) {
+                return false
+            }
+            val configuration = context!!.resources.configuration
             val screenLayout = configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK
             val smallestScreenWidthDp = configuration.smallestScreenWidthDp
-            val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            val telephonyManager = context!!.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 
             val isLargeScreen = screenLayout >= Configuration.SCREENLAYOUT_SIZE_LARGE
             val isSmallestWidthLarge = smallestScreenWidthDp >= 600
@@ -37,10 +40,10 @@ class SplitView {
         }
 
         private fun getSplitViewResults(folded: Boolean): WritableMap? {
-            if (context.currentActivity != null) {
+            if (context?.currentActivity != null) {
                 val map = Arguments.createMap()
                 var isSplitView = folded;
-                if (context.currentActivity?.isInMultiWindowMode == true) {
+                if (context?.currentActivity?.isInMultiWindowMode == true) {
                     isSplitView = FoldableObserver.getInstance()?.isCompactView() == true
                 }
                 map.putBoolean("isSplit", isSplitView)

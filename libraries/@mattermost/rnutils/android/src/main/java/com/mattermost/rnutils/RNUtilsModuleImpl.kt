@@ -2,28 +2,27 @@ package com.mattermost.rnutils
 
 import android.app.Activity
 import android.net.Uri
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
-import com.mattermost.rnutils.helpers.FoldableObserver
 import com.mattermost.rnutils.helpers.Notifications
 import com.mattermost.rnutils.helpers.RealPathUtil
 import com.mattermost.rnutils.helpers.SaveDataTask
 import com.mattermost.rnutils.helpers.SplitView
 
 class RNUtilsModuleImpl(val reactContext: ReactApplicationContext) {
-    private val foldableObserver = FoldableObserver.getInstance()
     companion object {
         const val NAME = "RNUtils"
 
-        private lateinit var context: ReactApplicationContext
+        private var context: ReactApplicationContext? = null
 
         fun sendJSEvent(eventName: String, data: ReadableMap?) {
-            if (context.hasActiveReactInstance()) {
-                context.getJSModule(ReactContext.RCTDeviceEventEmitter::class.java)
-                        .emit(eventName, data)
+            if (context?.hasActiveReactInstance() == true) {
+                context?.getJSModule(ReactContext.RCTDeviceEventEmitter::class.java)
+                        ?.emit(eventName, data)
             }
         }
 
@@ -36,7 +35,6 @@ class RNUtilsModuleImpl(val reactContext: ReactApplicationContext) {
         setCtx(reactContext)
         SplitView.setCtx(reactContext)
         Notifications.setCtx(reactContext)
-        foldableObserver?.onStart()
     }
 
     fun getTypedExportedConstants(): MutableMap<String, Any> {
@@ -73,24 +71,26 @@ class RNUtilsModuleImpl(val reactContext: ReactApplicationContext) {
         return SplitView.isRunningInSplitView()
     }
 
-    fun unlockOrientation() {
-        TODO("Not yet implemented")
-    }
+    fun unlockOrientation() {}
 
-    fun lockPortrait() {
-        TODO("Not yet implemented")
-    }
+    fun lockPortrait() {}
 
     fun deleteDatabaseDirectory(databaseName: String?, shouldRemoveDirectory: Boolean): WritableMap {
-        TODO("Not yet implemented")
+        val map = Arguments.createMap()
+        map.putNull("error")
+        map.putBoolean("success", true)
+        return map
     }
 
     fun renameDatabase(databaseName: String?, newDatabaseName: String?): WritableMap {
-        TODO("Not yet implemented")
+        val map = Arguments.createMap()
+        map.putNull("error")
+        map.putBoolean("success", true)
+        return map
     }
 
     fun deleteEntitiesFile(): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     fun getDeliveredNotifications(promise: Promise?) {
