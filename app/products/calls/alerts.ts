@@ -102,7 +102,7 @@ export const leaveAndJoinWithAlert = async (
         }
     } catch (error) {
         logError('failed to getServerDatabase in leaveAndJoinWithAlert', error);
-        return;
+        return false;
     }
 
     if (leaveServerUrl && leaveChannelId) {
@@ -119,33 +119,38 @@ export const leaveAndJoinWithAlert = async (
             }, {leaveChannelName, joinChannelName});
         }
 
-        Alert.alert(
-            formatMessage({
-                id: 'mobile.leave_and_join_title',
-                defaultMessage: 'Are you sure you want to switch to a different call?',
-            }),
-            joinMessage,
-            [
-                {
-                    text: formatMessage({
-                        id: 'mobile.post.cancel',
-                        defaultMessage: 'Cancel',
-                    }),
-                    style: 'destructive',
-                },
-                {
-                    text: formatMessage({
-                        id: 'mobile.leave_and_join_confirmation',
-                        defaultMessage: 'Leave & Join',
-                    }),
-                    onPress: () => doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId),
-                    style: 'cancel',
-                },
-            ],
-        );
-    } else {
-        doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId);
+        const asyncAlert = async () => new Promise((resolve) => {
+            Alert.alert(
+                formatMessage({
+                    id: 'mobile.leave_and_join_title',
+                    defaultMessage: 'Are you sure you want to switch to a different call?',
+                }),
+                joinMessage,
+                [
+                    {
+                        text: formatMessage({
+                            id: 'mobile.post.cancel',
+                            defaultMessage: 'Cancel',
+                        }),
+                        onPress: async () => resolve(false),
+                        style: 'destructive',
+                    },
+                    {
+                        text: formatMessage({
+                            id: 'mobile.leave_and_join_confirmation',
+                            defaultMessage: 'Leave & Join',
+                        }),
+                        onPress: async () => resolve(await doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId)),
+                        style: 'cancel',
+                    },
+                ],
+            );
+        });
+
+        return asyncAlert();
     }
+
+    return doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId);
 };
 
 const doJoinCall = async (
@@ -166,7 +171,7 @@ const doJoinCall = async (
         user = await getCurrentUser(database);
         if (!user) {
             // This shouldn't happen, so don't bother localizing and displaying an alert.
-            return;
+            return false;
         }
 
         if (newCall) {
@@ -189,12 +194,12 @@ const doJoinCall = async (
                 // continue through and start the call
             } else {
                 contactAdminAlert(intl);
-                return;
+                return false;
             }
         }
     } catch (error) {
         logError('failed to getServerDatabaseAndOperator in doJoinCall', error);
-        return;
+        return false;
     }
 
     recordingAlertLock = false;
@@ -215,12 +220,14 @@ const doJoinCall = async (
     if (res.error) {
         const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);
-        return;
+        return false;
     }
 
     if (joinChannelIsDMorGM) {
         unmuteMyself();
     }
+
+    return true;
 };
 
 const contactAdminAlert = ({formatMessage}: IntlShape) => {
