@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import {deleteAsync} from 'expo-file-system';
 import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {NativeModules, Platform, StyleSheet, Text, View} from 'react-native';
+import {Platform, StyleSheet, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FileViewer from 'react-native-file-viewer';
 import {TouchableOpacity} from 'react-native-gesture-handler';
@@ -170,7 +171,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
         if (mounted.current) {
             if (Platform.OS === 'android') {
                 try {
-                    await NativeModules.MattermostManaged.saveFile(path);
+                    await RNUtils.saveFile(path);
                 } catch {
                     // do nothing in case the user decides not to save the file
                 }

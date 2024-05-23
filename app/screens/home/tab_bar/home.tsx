@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils/src';
 import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 import {Notifications} from 'react-native-notifications';
@@ -12,7 +13,6 @@ import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer, type UnreadObserverArgs} from '@database/subscription/unreads';
 import {useAppState} from '@hooks/device';
-import NativeNotification from '@notifications';
 import {logDebug} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
 
@@ -57,7 +57,7 @@ const getTotalMentionsAndUnread = () => {
 const updateBadge = () => {
     if (Platform.OS === 'ios') {
         const {mentions} = getTotalMentionsAndUnread();
-        NativeNotification.getDeliveredNotifications().then((delivered) => {
+        RNUtils.getDeliveredNotifications().then((delivered) => {
             if (mentions === 0 && delivered.length > 0) {
                 logDebug('Not updating badge count, since we have no mentions in the database, and the number of notifications in the notification center is', delivered.length);
                 return;

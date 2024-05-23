@@ -10,8 +10,8 @@ import {DeviceContext} from '@context/device';
 import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
 export function useSplitView() {
-    const {isSplitView} = React.useContext(DeviceContext);
-    return isSplitView;
+    const {isSplit} = React.useContext(DeviceContext);
+    return isSplit;
 }
 
 export function useAppState() {
@@ -29,8 +29,8 @@ export function useAppState() {
 }
 
 export function useIsTablet() {
-    const {isSplitView, isTablet} = React.useContext(DeviceContext);
-    return isTablet && !isSplitView;
+    const {isSplit, isTablet} = React.useContext(DeviceContext);
+    return isTablet && !isSplit;
 }
 
 export function useKeyboardHeightWithDuration(keyboardTracker?: React.RefObject<KeyboardTrackingViewRef>) {

@@ -97,7 +97,7 @@ jest.doMock('react-native', () => {
         Appearance: {
             getColorScheme: jest.fn().mockReturnValue('light'),
         },
-        MattermostManaged: {
+        RNUtils: {
             getConstants: () => ({
                 appGroupIdentifier: 'group.mattermost.rnbeta',
                 appGroupSharedDirectory: {
@@ -105,13 +105,10 @@ jest.doMock('react-native', () => {
                     databasePath: '',
                 },
             }),
-        },
-        SplitView: {
             addListener: jest.fn(),
             removeListeners: jest.fn(),
-            isRunningInSplitView: jest.fn().mockReturnValue(() => ({isSplitView: false, isTablet: false})),
-        },
-        Notifications: {
+            isRunningInSplitView: jest.fn().mockReturnValue(() => ({isSplit: false, isTablet: false})),
+
             getDeliveredNotifications: jest.fn().mockResolvedValue([]),
             removeChannelNotifications: jest.fn().mockImplementation(),
             removeThreadNotifications: jest.fn().mockImplementation(),
@@ -356,6 +353,20 @@ jest.mock('react-native-haptic-feedback', () => {
         trigger: () => '',
     };
 });
+jest.mock('expo-file-system', () => ({
+    downloadAsync: jest.fn(() => Promise.resolve({md5: 'md5', uri: 'uri'})),
+    getInfoAsync: jest.fn(() => Promise.resolve({exists: true, md5: 'md5', uri: 'uri'})),
+    readAsStringAsync: jest.fn(() => Promise.resolve()),
+    writeAsStringAsync: jest.fn(() => Promise.resolve()),
+    deleteAsync: jest.fn(() => Promise.resolve()),
+    moveAsync: jest.fn(() => Promise.resolve()),
+    copyAsync: jest.fn(() => Promise.resolve()),
+    makeDirectoryAsync: jest.fn(() => Promise.resolve()),
+    readDirectoryAsync: jest.fn(() => Promise.resolve()),
+    createDownloadResumable: jest.fn(() => Promise.resolve()),
+    documentDirectory: 'file:///test-directory/',
+    cacheDirectory: 'file://test-cache-directory/',
+}));
 
 declare const global: {requestAnimationFrame: (callback: any) => void};
 global.requestAnimationFrame = (callback) => {

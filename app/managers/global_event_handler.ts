@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter, NativeModules} from 'react-native';
+import RNUtils, {type SplitViewResult} from '@mattermost/rnutils';
+import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter} from 'react-native';
 import semver from 'semver';
 
 import {switchToChannelById} from '@actions/remote/channel';
@@ -22,8 +23,7 @@ import {getIntlShape} from '@utils/general';
 
 type LinkingCallbackArg = {url: string};
 
-const {SplitView} = NativeModules;
-const splitViewEmitter = new NativeEventEmitter(SplitView);
+const splitViewEmitter = new NativeEventEmitter(RNUtils);
 
 class GlobalEventHandler {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;

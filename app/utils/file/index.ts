@@ -15,7 +15,7 @@ import {Files} from '@constants';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
-import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
+import {deleteEntitiesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
 
 import type {PastedFile} from '@mattermost/react-native-paste-input';
@@ -159,7 +159,7 @@ export async function deleteV1Data() {
     try {
         const entitiesInfo = await getInfoAsync(`${dir}/entities`);
         if (entitiesInfo.exists) {
-            deleteEntititesFile();
+            deleteEntitiesFile();
         }
     } catch (e) {
         // do nothing
