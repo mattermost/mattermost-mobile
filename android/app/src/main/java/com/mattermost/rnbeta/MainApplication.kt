@@ -1,6 +1,7 @@
 package com.mattermost.rnbeta
 
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
@@ -10,21 +11,15 @@ import com.facebook.react.ReactHost
 import com.facebook.react.ReactInstanceManager
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
-import com.facebook.react.TurboReactPackage
-import com.facebook.react.bridge.NativeModule
-import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
-import com.facebook.react.module.model.ReactModuleInfo
-import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.facebook.react.modules.network.OkHttpClientProvider
 import com.facebook.soloader.SoLoader
-import com.mattermost.helpers.RealPathUtil
 import com.mattermost.networkclient.RCTOkHttpClientFactory
-import com.mattermost.share.ShareModule
+import com.mattermost.rnshare.helpers.RealPathUtil
 import com.nozbe.watermelondb.jsi.JSIInstaller
 import com.reactnativenavigation.NavigationApplication
 import com.wix.reactnativenotifications.RNNotificationsPackage
@@ -38,7 +33,6 @@ import expo.modules.ReactNativeHostWrapper
 import java.io.File
 
 class MainApplication : NavigationApplication(), INotificationsApplication {
-    var sharedExtensionIsOpened = false
     private var listenerAdded = false
 
     override val reactNativeHost: ReactNativeHost =
@@ -49,34 +43,6 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
                         // Packages that cannot be autolinked yet can be added manually here, for example:
                         // add(MyReactNativePackage())
                         add(RNNotificationsPackage(this@MainApplication))
-                        add(object : TurboReactPackage() {
-                            override fun getModule(
-                                name: String,
-                                reactContext: ReactApplicationContext
-                            ): NativeModule {
-                                return when (name) {
-                                    "MattermostShare" -> ShareModule.getInstance(reactContext)
-                                    else ->
-                                        throw IllegalArgumentException("Could not find module $name")
-                                }
-                            }
-
-                            override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
-
-                                return ReactModuleInfoProvider {
-                                    val map: MutableMap<String, ReactModuleInfo> = java.util.HashMap()
-                                    map["MattermostShare"] = ReactModuleInfo(
-                                        "MattermostShare",
-                                        "com.mattermost.share.ShareModule",
-                                        false,
-                                        false,
-                                        false,
-                                        false
-                                    )
-                                    map
-                                }
-                            }
-                        })
                     }
 
                 override fun getJSMainModuleName(): String = "index"
@@ -136,6 +102,7 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
         )
     }
 
+    @SuppressLint("VisibleForTests")
     private fun runOnJSQueueThread(action: () -> Unit) {
         reactNativeHost.reactInstanceManager.currentReactContext?.runOnJSQueueThread {
             action()
@@ -146,6 +113,7 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun registerJSIModules() {
         val reactInstanceManager = reactNativeHost.reactInstanceManager
 
