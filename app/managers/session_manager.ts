@@ -121,13 +121,6 @@ class SessionManager {
         NetworkManager.invalidateClient(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);
 
-        if (removeServer) {
-            await removePushDisabledInServerAcknowledged(urlSafeBase64Encode(serverUrl));
-            await DatabaseManager.destroyServerDatabase(serverUrl);
-        } else {
-            await DatabaseManager.deleteServerDatabase(serverUrl);
-        }
-
         const analyticsClient = analytics.get(serverUrl);
         if (analyticsClient) {
             analyticsClient.reset();
@@ -142,6 +135,13 @@ class SessionManager {
         deleteFileCacheByDir('thumbnails');
         if (Platform.OS === 'android') {
             deleteFileCacheByDir('image_cache');
+        }
+
+        if (removeServer) {
+            await removePushDisabledInServerAcknowledged(urlSafeBase64Encode(serverUrl));
+            await DatabaseManager.destroyServerDatabase(serverUrl);
+        } else {
+            await DatabaseManager.deleteServerDatabase(serverUrl);
         }
     };
 
@@ -170,8 +170,6 @@ class SessionManager {
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         const activeServerDisplayName = await DatabaseManager.getActiveServerDisplayName();
 
-        await this.terminateSession(serverUrl, removeServer);
-
         if (activeServerUrl === serverUrl) {
             let displayName = '';
             let launchType: LaunchType = Launch.AddServer;
@@ -191,6 +189,9 @@ class SessionManager {
             }
 
             relaunchApp({launchType, serverUrl, displayName});
+
+            //moved here so that we have time to unmount components listening to db changes
+            await this.terminateSession(serverUrl, removeServer);
         }
         this.terminatingSessionUrl.delete(serverUrl);
     };
