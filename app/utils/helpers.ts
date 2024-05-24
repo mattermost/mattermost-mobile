@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import MattermostShare from '@mattermost/rnshare';
 import RNUtils, {type SplitViewResult} from '@mattermost/rnutils';
 import moment, {type Moment} from 'moment-timezone';
 import {Platform} from 'react-native';
@@ -10,6 +9,10 @@ import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_
 import {STATUS_BAR_HEIGHT} from '@constants/view';
 
 const {isRunningInSplitView} = RNUtils;
+const MattermostShare = Platform.select({
+    default: null,
+    android: require('@mattermost/rnshare').default,
+});
 
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than
 // the provided minimum version. A non-equal major version will ignore minor and dot
@@ -154,7 +157,7 @@ export function hasTrailingSpaces(term: string) {
 export function isMainActivity() {
     return Platform.select({
         default: true,
-        android: MattermostShare.getCurrentActivityName() === 'MainActivity',
+        android: MattermostShare?.getCurrentActivityName() === 'MainActivity',
     });
 }
 
