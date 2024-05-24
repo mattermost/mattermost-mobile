@@ -19,6 +19,8 @@ import PostButton from '@share/components/header/post_button';
 import {hasChannels} from '@share/queries';
 import {setShareExtensionState, useShareExtensionServerUrl} from '@share/state';
 
+import type {SharedItem} from '@mattermost/rnshare';
+
 export const errorScreenMessages = defineMessages({
     label: {
         id: 'share_extension.error_screen.label',

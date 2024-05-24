@@ -24,6 +24,7 @@
     "@mattermost/react-native-network-client": "file:../react-native-network-client/mattermost-react-native-network-client-1.5.1.tgz",
     "@mattermost/react-native-paste-input": "file:../react-native-paste-input/mattermost-react-native-paste-input-0.7.1.tgz",
     "@mattermost/react-native-turbo-log": "file:../react-native-turbo-log/mattermost-react-native-turbo-log-0.3.2.tgz",
+    "@mattermost/rnshare": "file:./libraries/@mattermost/rnshare",
     "@mattermost/rnutils": "file:./libraries/@mattermost/rnutils",
     "@msgpack/msgpack": "2.8.0",
     "@nozbe/watermelondb": "0.27.1",
