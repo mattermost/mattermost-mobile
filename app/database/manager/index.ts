@@ -4,9 +4,9 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
+import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {deleteAsync, documentDirectory, getInfoAsync, makeDirectoryAsync, moveAsync} from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 
 import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
@@ -61,17 +61,17 @@ class DatabaseManager {
     */
     public init = async (serverUrls: string[]): Promise<void> => {
         await this.createAppDatabase();
-        const buildNumber = DeviceInfo.getBuildNumber();
-        const versionNumber = DeviceInfo.getVersion();
+        const buildNumber = nativeBuildVersion;
+        const versionNumber = nativeApplicationVersion;
         await beforeUpgrade.call(this, serverUrls, versionNumber, buildNumber);
         for await (const serverUrl of serverUrls) {
             await this.initServerDatabase(serverUrl);
         }
         this.appDatabase?.operator.handleInfo({
             info: [{
-                build_number: buildNumber,
+                build_number: buildNumber || '',
                 created_at: Date.now(),
-                version_number: versionNumber,
+                version_number: versionNumber || '',
             }],
             prepareRecordsOnly: false,
         });

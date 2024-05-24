@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import RNUtils from '@mattermost/rnutils';
+import {applicationName} from 'expo-application';
 import {Alert, Linking, Platform, StatusBar} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import DocumentPicker, {type DocumentPickerResponse} from 'react-native-document-picker';
 import {type Asset, type CameraOptions, type ImageLibraryOptions, type ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
@@ -29,8 +29,6 @@ export default class FilePickerUtil {
 
     private getPermissionMessages = (source: PermissionSource) => {
         const {formatMessage} = this.intl;
-        const applicationName = DeviceInfo.getApplicationName();
-
         const permissions: Record<string, { title: string; text: string }> = {
             camera: {
                 title: formatMessage(

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {applicationId} from 'expo-application';
 import {createIntl} from 'react-intl';
-import DeviceInfo from 'react-native-device-info';
 import ReactNativeHapticFeedback, {HapticFeedbackTypes} from 'react-native-haptic-feedback';
 
 import {getTranslations} from '@i18n';
@@ -63,4 +63,4 @@ export const sortByNewest = (a: SortByCreatAt, b: SortByCreatAt) => {
     return 1;
 };
 
-export const isBetaApp = DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta');
+export const isBetaApp = applicationId && applicationId.includes('rnbeta');

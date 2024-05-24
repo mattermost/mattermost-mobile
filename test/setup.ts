@@ -203,14 +203,21 @@ jest.mock('react-native-vector-icons', () => {
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
-jest.mock('react-native-device-info', () => {
+jest.mock('expo-application', () => {
     return {
-        getVersion: jest.fn(() => '0.0.0'),
-        getBuildNumber: jest.fn(() => '0'),
-        getModel: jest.fn(() => 'iPhone X'),
-        hasNotch: jest.fn(() => true),
-        isTablet: jest.fn(() => false),
-        getApplicationName: jest.fn(() => 'Mattermost'),
+        nativeApplicationVersion: '0.0.0',
+        nativeBuildVersion: '0',
+        applicationName: 'Mattermost',
+        applicationId: 'com.mattermost.rnbeta',
+    };
+});
+
+jest.mock('expo-device', () => {
+    return {
+        deviceName: 'Device',
+        osName: 'Test',
+        osVersion: '0.0.0',
+        applicationId: 'com.mattermost.rnbeta',
     };
 });
 

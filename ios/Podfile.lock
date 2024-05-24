@@ -7,7 +7,11 @@ PODS:
     - CocoaLumberjack/Core (= 3.8.5)
   - CocoaLumberjack/Core (3.8.5)
   - DoubleConversion (1.1.6)
+  - EXApplication (5.9.1):
+    - ExpoModulesCore
   - Expo (51.0.8):
+    - ExpoModulesCore
+  - ExpoDevice (6.0.2):
     - ExpoModulesCore
   - ExpoFileSystem (17.0.1):
     - ExpoModulesCore
@@ -1439,8 +1443,6 @@ PODS:
     - React-Core
   - RNDateTimePicker (8.0.0):
     - React-Core
-  - RNDeviceInfo (10.13.1):
-    - React-Core
   - RNFastImage (8.6.3):
     - React-Core
     - SDWebImage (~> 5.19.0)
@@ -1571,7 +1573,9 @@ DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
+  - EXApplication (from `../node_modules/expo-application/ios`)
   - Expo (from `../node_modules/expo`)
+  - ExpoDevice (from `../node_modules/expo-device/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - ExpoVideoThumbnails (from `../node_modules/expo-video-thumbnails/ios`)
@@ -1654,7 +1658,6 @@ DEPENDENCIES:
   - ReactNativeNavigation (from `../node_modules/react-native-navigation`)
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
-  - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNFastImage (from `../node_modules/react-native-fast-image`)
   - RNFileViewer (from `../node_modules/react-native-file-viewer`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -1694,8 +1697,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-linear-gradient"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
+  EXApplication:
+    :path: "../node_modules/expo-application/ios"
   Expo:
     :path: "../node_modules/expo"
+  ExpoDevice:
+    :path: "../node_modules/expo-device/ios"
   ExpoFileSystem:
     :path: "../node_modules/expo-file-system/ios"
   ExpoModulesCore:
@@ -1857,8 +1864,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-clipboard/clipboard"
   RNDateTimePicker:
     :path: "../node_modules/@react-native-community/datetimepicker"
-  RNDeviceInfo:
-    :path: "../node_modules/react-native-device-info"
   RNFastImage:
     :path: "../node_modules/react-native-fast-image"
   RNFileViewer:
@@ -1898,7 +1903,9 @@ SPEC CHECKSUMS:
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
   DoubleConversion: 76ab83afb40bddeeee456813d9c04f67f78771b5
+  EXApplication: c08200c34daca7af7fd76ac4b9d606077410e8ad
   Expo: c99f14ca53381d5399b88684c88e20ff7928d3c7
+  ExpoDevice: fc94f0e42ecdfd897e7590f2874fc64dfa7e9b1c
   ExpoFileSystem: 80bfe850b1f9922c16905822ecbf97acd711dc51
   ExpoModulesCore: 4eb2165cde325c8c121d495bb8beb0da9b30c92e
   ExpoVideoThumbnails: 40c737b2507a7470b14e9452e286513beb9a7d77
@@ -1982,7 +1989,6 @@ SPEC CHECKSUMS:
   ReactNativeNavigation: 4d9e6883ecd61e68829403d65083709d9344e7e3
   RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
   RNDateTimePicker: cd42eda5f315fc320f0b359413bd598957f7e601
-  RNDeviceInfo: 4f9c7cfd6b9db1b05eb919620a001cf35b536423
   RNFastImage: 9f74ad6b5cfa9bfc6738ee76cfad9ed79cd8d485
   RNFileViewer: ce7ca3ac370e18554d35d6355cffd7c30437c592
   RNGestureHandler: 4d271a5d9178403bd8dae0d853e2be21cf53743c

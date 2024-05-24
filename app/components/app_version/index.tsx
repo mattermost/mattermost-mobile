@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import React, {useEffect} from 'react';
 import {Keyboard, StyleSheet, type TextStyle, View} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
@@ -54,8 +54,8 @@ const AppVersion = ({isWrapped = true, textStyle = {}}: AppVersionProps) => {
             defaultMessage='App Version: {version} (Build {number})'
             style={StyleSheet.flatten([style.version, textStyle])}
             values={{
-                version: DeviceInfo.getVersion(),
-                number: DeviceInfo.getBuildNumber(),
+                version: nativeApplicationVersion,
+                number: nativeBuildVersion,
             }}
         />
     );

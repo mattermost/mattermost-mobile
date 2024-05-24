@@ -1006,7 +1006,7 @@
   "settings.about.server.version": "Server Version: {version} (Build {buildNumber}",
   "settings.about.server.version.noBuild": "Server Version: {version}",
   "settings.about.server.version.title": "Server Version:",
-  "settings.about.server.version.value": "{version} (Build {number})",
+  "settings.about.server.version.value": "{version} (Build {buildNumber})",
   "settings.advanced_settings": "Advanced Settings",
   "settings.advanced.cancel": "Cancel",
   "settings.advanced.delete": "Delete",

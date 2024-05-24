@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import Model from '@nozbe/watermelondb/Model';
+import {applicationName} from 'expo-application';
 import {
     cacheDirectory, deleteAsync, documentDirectory, getInfoAsync,
     type FileInfo as ExpoFileInfo, makeDirectoryAsync,
 } from 'expo-file-system';
 import mimeDB from 'mime-db';
 import {Alert, Linking, Platform} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
@@ -483,7 +483,6 @@ export const hasWriteStoragePermission = async (intl: IntlShape) => {
                 permissionRequest = await Permissions.request(storagePermission);
                 return permissionRequest === Permissions.RESULTS.GRANTED;
             case Permissions.RESULTS.BLOCKED: {
-                const applicationName = DeviceInfo.getApplicationName();
                 const title = intl.formatMessage(
                     {
                         id: 'mobile.storage_permission_denied_title',
