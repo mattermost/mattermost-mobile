@@ -52,7 +52,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
                 width: 0,
                 height: 2,
             },
-            shadowRadius: 3,
+            shadowRadius: 1,
             shadowOpacity: 0.08,
             elevation: 1,
         },
