@@ -87,7 +87,7 @@ if [ -n "${CREATE_PR}" ]; then
   log "Creating PR"
   PR_TITLE="Bump app ${BUMP_BUILD_NUMBER:+build}${BUMP_VERSION_NUMBER:+${BUMP_BUILD_NUMBER:+ and }version} number"
   # We won't specify the milestone when opening the PR if either we're not bumping the version number, or if the milestone is not found
-  MILESTONE_FOUND=$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" --jq '.[] | .title' /repos/mattermost/mattermost-mobile/milestones | grep -E "^v${VERSION_NUMBER}$")
+  MILESTONE_FOUND=$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" --jq '.[] | .title' /repos/mattermost/mattermost-mobile/milestones | sed -n -E "s/^v${VERSION_NUMBER:-}$/yes/p")
   #shellcheck disable=SC2046
   gh pr create \
     --repo mattermost/mattermost-mobile \
