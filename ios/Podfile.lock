@@ -1036,7 +1036,7 @@ PODS:
     - React-debug
   - react-native-background-timer (2.4.1):
     - React-Core
-  - react-native-cameraroll (7.5.2):
+  - react-native-cameraroll (7.8.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1938,7 +1938,7 @@ SPEC CHECKSUMS:
   React-logger: 7e7403a2b14c97f847d90763af76b84b152b6fce
   React-Mapbuffer: 11029dcd47c5c9e057a4092ab9c2a8d10a496a33
   react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
-  react-native-cameraroll: 30a156b13f45e404475f87cd7feafd7d5f8c1159
+  react-native-cameraroll: e16041458be826e247f0bb8467b98cda35c0cf76
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
   react-native-document-picker: 3599b238843369026201d2ef466df53f77ae0452
   react-native-emm: c9be3f8ac8cca161af8cb7cc1508e162b91d906b
