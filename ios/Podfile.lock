@@ -1063,7 +1063,7 @@ PODS:
     - Yoga
   - react-native-cookies (6.2.1):
     - React-Core
-  - react-native-document-picker (9.1.1):
+  - react-native-document-picker (9.2.0):
     - React-Core
   - react-native-emm (1.4.1):
     - DoubleConversion
@@ -1944,7 +1944,7 @@ SPEC CHECKSUMS:
   react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
   react-native-cameraroll: e16041458be826e247f0bb8467b98cda35c0cf76
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
-  react-native-document-picker: 3599b238843369026201d2ef466df53f77ae0452
+  react-native-document-picker: 2b3efb60622b7be891b8d0e0e5424632150e0c94
   react-native-emm: c9be3f8ac8cca161af8cb7cc1508e162b91d906b
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: c3afe5472ef870d98a4b28415fc0b928161ee5f7
