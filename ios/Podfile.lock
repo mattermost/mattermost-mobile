@@ -1111,7 +1111,7 @@ PODS:
     - Yoga
   - react-native-in-app-review (4.3.3):
     - React-Core
-  - react-native-netinfo (11.3.1):
+  - react-native-netinfo (11.3.2):
     - React-Core
   - react-native-network-client (1.5.1):
     - Alamofire (~> 5.9.1)
@@ -1952,7 +1952,7 @@ SPEC CHECKSUMS:
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: c3afe5472ef870d98a4b28415fc0b928161ee5f7
   react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
-  react-native-netinfo: bdb108d340cdb41875c9ced535977cac6d2ff321
+  react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
   react-native-network-client: 5ec11b534369d8ffff36a75faba6d66098666d90
   react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
   react-native-paste-input: b24971115d7133bf16001a47f33b539ee491dc86
