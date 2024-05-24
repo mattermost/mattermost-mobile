@@ -1521,11 +1521,11 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSentry (5.20.0):
+  - RNSentry (5.22.2):
     - hermes-engine
     - React-Core
     - React-hermes
-    - Sentry/HybridSDK (= 8.21.0)
+    - Sentry/HybridSDK (= 8.25.0)
   - RNShare (10.1.0):
     - React-Core
   - RNSVG (15.1.0):
@@ -1557,9 +1557,7 @@ PODS:
   - SDWebImageWebPCoder (0.14.6):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
-  - Sentry/HybridSDK (8.21.0):
-    - SentryPrivate (= 8.21.0)
-  - SentryPrivate (8.21.0)
+  - Sentry/HybridSDK (8.25.0)
   - simdjson (3.1.0-wmelon1)
   - SocketRocket (0.7.0)
   - Starscream (4.0.8)
@@ -1685,7 +1683,6 @@ SPEC REPOS:
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
-    - SentryPrivate
     - SocketRocket
     - Starscream
     - SwiftyJSON
@@ -1998,14 +1995,13 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: ec56a5f81c3941206fd85625fa669ffc7b4545f9
   RNReanimated: 7ad0f08a845cb60955ee5d461d2156d7b9707118
   RNScreens: b32a9ff15bea7fcdbe5dff6477bc503f792b1208
-  RNSentry: 5381e9284aec59a546e4a7d40e33ad0839b99c1e
+  RNSentry: f6a5aee809d646763640130714d1fdfe69aac36b
   RNShare: b674d9f1cb0dc11116983bebd8712908a226a3ee
   RNSVG: 50cf2c7018e57cf5d3522d98d0a3a4dd6bf9d093
   RNVectorIcons: 50ea777efffdd991a22e968aa312d75da7ff46c3
   SDWebImage: 40b0b4053e36c660a764958bff99eed16610acbb
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
-  Sentry: ebc12276bd17613a114ab359074096b6b3725203
-  SentryPrivate: d651efb234cf385ec9a1cdd3eff94b5e78a0e0fe
+  Sentry: cd86fc55628f5b7c572cabe66cc8f95a9d2f165a
   simdjson: e6bfae9ce4bcdc80452d388d593816f1ca2106f3
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Starscream: 19b5533ddb925208db698f0ac508a100b884a1b9
