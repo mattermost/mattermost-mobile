@@ -13,7 +13,6 @@ import {resetMomentLocale} from '@i18n';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
 import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
-import * as analytics from '@managers/analytics';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
@@ -120,12 +119,6 @@ class SessionManager {
 
         NetworkManager.invalidateClient(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);
-
-        const analyticsClient = analytics.get(serverUrl);
-        if (analyticsClient) {
-            analyticsClient.reset();
-            analytics.invalidate(serverUrl);
-        }
 
         this.resetLocale();
         this.clearCookiesForServer(serverUrl);

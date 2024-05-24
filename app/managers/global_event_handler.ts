@@ -6,13 +6,11 @@ import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter} from 'react-nati
 import semver from 'semver';
 
 import {switchToChannelById} from '@actions/remote/channel';
-import LocalConfig from '@assets/config.json';
 import {Device, Events, Sso} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
-import * as analytics from '@managers/analytics';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {queryTeamDefaultChannel} from '@queries/servers/channel';
 import {getCommonSystemValues} from '@queries/servers/system';
@@ -30,7 +28,6 @@ class GlobalEventHandler {
 
     constructor() {
         DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
-        DeviceEventEmitter.addListener(Events.CONFIG_CHANGED, this.onServerConfigChanged);
         splitViewEmitter.addListener('SplitViewChanged', this.onSplitViewChanged);
         Linking.addEventListener('url', this.onDeepLink);
     }
@@ -38,17 +35,6 @@ class GlobalEventHandler {
     init = () => {
         this.JavascriptAndNativeErrorHandler = require('@utils/error_handling').default;
         this.JavascriptAndNativeErrorHandler?.initializeErrorHandling();
-    };
-
-    configureAnalytics = async (serverUrl: string, config?: ClientConfig) => {
-        if (serverUrl && config?.DiagnosticsEnabled === 'true' && config?.DiagnosticId && LocalConfig.RudderApiKey) {
-            let client = analytics.get(serverUrl);
-            if (!client) {
-                client = analytics.create(serverUrl);
-            }
-
-            await client.init(config);
-        }
     };
 
     onDeepLink = async (event: LinkingCallbackArg) => {
@@ -62,10 +48,6 @@ class GlobalEventHandler {
                 alertInvalidDeepLink(getIntlShape(DEFAULT_LOCALE));
             }
         }
-    };
-
-    onServerConfigChanged = ({serverUrl, config}: {serverUrl: string; config: ClientConfig}) => {
-        this.configureAnalytics(serverUrl, config);
     };
 
     onServerVersionChanged = async ({serverUrl, serverVersion}: {serverUrl: string; serverVersion?: string}) => {

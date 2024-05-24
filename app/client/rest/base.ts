@@ -6,7 +6,6 @@ import {DeviceEventEmitter} from 'react-native';
 import {Events, Calls} from '@constants';
 import {t} from '@i18n';
 import {setServerCredentials} from '@init/credentials';
-import {Analytics, create} from '@managers/analytics';
 import {semverFromServerVersion} from '@utils/server';
 
 import * as ClientConstants from './constants';
@@ -20,7 +19,6 @@ import type {
 } from '@mattermost/react-native-network-client';
 
 export default class ClientBase {
-    analytics: Analytics|undefined;
     apiClient: APIClientInterface;
     csrfToken = '';
     requestHeaders: {[x: string]: string} = {};
@@ -30,7 +28,6 @@ export default class ClientBase {
 
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
         this.apiClient = apiClient;
-        this.analytics = create(serverUrl);
 
         if (bearerToken) {
             this.setBearerToken(bearerToken);
