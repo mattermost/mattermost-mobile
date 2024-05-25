@@ -1530,7 +1530,7 @@ PODS:
     - React-Core
   - RNSVG (15.3.0):
     - React-Core
-  - RNVectorIcons (10.0.3):
+  - RNVectorIcons (10.1.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1998,7 +1998,7 @@ SPEC CHECKSUMS:
   RNSentry: f6a5aee809d646763640130714d1fdfe69aac36b
   RNShare: 0fad69ae2d71de9d1f7b9a43acf876886a6cb99c
   RNSVG: a48668fd382115bc89761ce291a81c4ca5f2fd2e
-  RNVectorIcons: 50ea777efffdd991a22e968aa312d75da7ff46c3
+  RNVectorIcons: 2a2f79274248390b80684ea3c4400bd374a15c90
   SDWebImage: 40b0b4053e36c660a764958bff99eed16610acbb
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   Sentry: cd86fc55628f5b7c572cabe66cc8f95a9d2f165a
