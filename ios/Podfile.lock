@@ -1449,7 +1449,7 @@ PODS:
     - SDWebImageWebPCoder (~> 0.14.5)
   - RNFileViewer (2.1.5):
     - React-Core
-  - RNGestureHandler (2.16.0):
+  - RNGestureHandler (2.16.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1988,7 +1988,7 @@ SPEC CHECKSUMS:
   RNDateTimePicker: b6a9b35a785ecbe12b4e7d6de5439d0aa4614146
   RNFastImage: 9f74ad6b5cfa9bfc6738ee76cfad9ed79cd8d485
   RNFileViewer: ce7ca3ac370e18554d35d6355cffd7c30437c592
-  RNGestureHandler: 4d271a5d9178403bd8dae0d853e2be21cf53743c
+  RNGestureHandler: 2282cfbcf86c360d29f44ace393203afd5c6cff7
   RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
   RNLocalize: e8694475db034bf601e17bd3dfa8986565e769eb
   RNPermissions: 80011019862146c08f5bad2a86c27e982f483a99
