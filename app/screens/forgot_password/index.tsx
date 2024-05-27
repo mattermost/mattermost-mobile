@@ -22,7 +22,7 @@ import {isEmail} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Inbox from './inbox.svg';
+import Inbox from './inbox';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 

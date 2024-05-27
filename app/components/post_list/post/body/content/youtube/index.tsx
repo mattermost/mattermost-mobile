@@ -13,7 +13,7 @@ import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
 
-import YouTubeLogo from './youtube.svg';
+import YouTubeLogo from './youtube_logo';
 
 type YouTubeProps = {
     isReplyPost: boolean;

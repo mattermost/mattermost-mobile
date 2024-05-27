@@ -25,7 +25,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Shield from './mfa.svg';
+import Shield from './shield';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
