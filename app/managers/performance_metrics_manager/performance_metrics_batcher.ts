@@ -32,6 +32,7 @@ class Batcher {
 
     private async sendBatch() {
         clearTimeout(this.sendTimeout);
+        this.started = false;
         if (this.batch.length === 0) {
             return;
         }
@@ -40,7 +41,6 @@ class Batcher {
 
         // Empty the batch as soon as possible to avoid race conditions
         this.batch = [];
-        this.started = false;
 
         const database = DatabaseManager.serverDatabases[this.serverUrl]?.database;
         if (!database) {

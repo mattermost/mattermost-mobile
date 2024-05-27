@@ -13,6 +13,7 @@ type LoadingProps = {
     themeColor?: keyof Theme;
     footerText?: string;
     footerTextStyles?: TextStyle;
+    testID?: string;
 }
 
 const Loading = ({
@@ -22,12 +23,16 @@ const Loading = ({
     themeColor,
     footerText,
     footerTextStyles,
+    testID,
 }: LoadingProps) => {
     const theme = useTheme();
     const indicatorColor = themeColor ? theme[themeColor] : color;
 
     return (
-        <View style={containerStyle}>
+        <View
+            style={containerStyle}
+            testID={testID}
+        >
             <ActivityIndicator
                 color={indicatorColor}
                 size={size}

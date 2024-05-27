@@ -14,6 +14,8 @@ import {mockApiClient} from './mock_api_client';
 import type {RequestOptions} from '@mattermost/react-native-network-client';
 import type {ReadDirItem, StatResult} from 'react-native-fs';
 
+import '@testing-library/react-native/extend-expect';
+
 // @ts-expect-error Promise does not exists in global
 global.Promise = jest.requireActual('promise');
 

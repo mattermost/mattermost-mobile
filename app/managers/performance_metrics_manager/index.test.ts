@@ -25,7 +25,7 @@ describe('load metrics', () => {
     const measure: PerformanceReportMeasure = {
         metric: 'mobile_load',
         timestamp: 1577836861000,
-        value: 2,
+        value: 2000,
     };
 
     beforeEach(async () => {
@@ -82,13 +82,13 @@ describe('other metrics', () => {
     const measure1: PerformanceReportMeasure = {
         metric: 'mobile_channel_switch',
         timestamp: 1577836800000,
-        value: 0.1,
+        value: 100,
     };
 
     const measure2: PerformanceReportMeasure = {
         metric: 'mobile_team_switch',
         timestamp: 1577836800050,
-        value: 0.15,
+        value: 150,
     };
 
     beforeEach(async () => {

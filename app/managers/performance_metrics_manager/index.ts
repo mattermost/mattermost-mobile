@@ -35,7 +35,7 @@ class PerformanceMetricsManager {
         getTimeSinceStartup().then((measure) => {
             this.ensureBatcher(serverUrl).addToBatch({
                 metric: 'mobile_load',
-                value: measure / 1000,
+                value: measure,
                 timestamp: Date.now(),
             });
         });
@@ -57,7 +57,7 @@ class PerformanceMetricsManager {
 
         this.ensureBatcher(serverUrl).addToBatch({
             metric: metricName,
-            value: (performanceNow - startTime) / 1000,
+            value: performanceNow - startTime,
             timestamp: Math.round(startTime + performanceNowSkew),
         });
 

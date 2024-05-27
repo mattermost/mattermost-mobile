@@ -149,6 +149,7 @@ const Categories = ({
                     <Loading
                         size='large'
                         themeColor='sidebarText'
+                        testID='categories.loading'
                     />
                 </View>
             )}

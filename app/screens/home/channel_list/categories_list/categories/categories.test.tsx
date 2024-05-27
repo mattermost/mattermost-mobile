@@ -6,7 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {renderWithEverything, act} from '@test/intl-test-helper';
+import {renderWithEverything, act, waitFor, screen, waitForElementToBeRemoved} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import Categories from '.';
@@ -56,15 +56,15 @@ describe('performance metrics', () => {
     it('properly call again after switching teams', async () => {
         renderWithEverything(<Categories/>, {database, serverUrl});
         expect(PerformanceMetricsManager.endMetric).toHaveBeenCalledTimes(1);
-        await act(async () => {
+        act(() => {
             DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
-            await TestHelper.wait(100);
         });
+        await waitFor(() => expect(screen.queryByTestId('categories.loading')).toBeVisible());
         expect(PerformanceMetricsManager.endMetric).toHaveBeenCalledTimes(1);
-        await act(async () => {
+        act(() => {
             DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
-            await TestHelper.wait(100);
         });
+        await waitForElementToBeRemoved(() => screen.queryByTestId('categories.loading'));
         expect(PerformanceMetricsManager.endMetric).toHaveBeenCalledTimes(2);
         expect(PerformanceMetricsManager.endMetric).toHaveBeenLastCalledWith('mobile_team_switch', serverUrl);
     });
