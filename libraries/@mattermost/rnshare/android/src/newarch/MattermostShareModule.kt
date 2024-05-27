@@ -1,10 +1,8 @@
-package com.mattermostshare
+package com.mattermost.rnshare
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableMap
-import com.mattermost.rnshare.MattermostShareImpl
-import com.mattermost.rnshare.NativeMattermostShareSpec
 
 class MattermostShareModule(private val reactContext: ReactApplicationContext) : NativeMattermostShareSpec(reactContext) {
     private var implementation = MattermostShareImpl(reactContext)
