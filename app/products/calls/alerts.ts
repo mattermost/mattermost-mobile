@@ -141,7 +141,7 @@ export const leaveAndJoinWithAlert = async (
                             defaultMessage: 'Leave & Join',
                         }),
                         onPress: async () => resolve(await doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId)),
-                        style: 'cancel',
+                        isPreferred: true,
                     },
                 ],
             );
