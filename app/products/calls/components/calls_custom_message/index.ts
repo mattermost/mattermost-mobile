@@ -11,7 +11,7 @@ import {observeCurrentCall} from '@calls/state';
 import {Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {observeCurrentUser, observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
+import {observeCurrentUser} from '@queries/servers/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
@@ -23,7 +23,6 @@ type OwnProps = {
 
 const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProps & WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
-    const author = observeUser(database, post.userId);
     const isMilitaryTime = queryDisplayNamePreferences(database).observeWithColumns(['value']).pipe(
         switchMap(
             (preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME)),
@@ -34,7 +33,6 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
     if (post.props.end_at) {
         return {
             currentUser,
-            author,
             isMilitaryTime,
         };
     }
@@ -46,9 +44,7 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
 
     return {
         currentUser,
-        author,
         isMilitaryTime,
-        teammateNameDisplay: observeTeammateNameDisplay(database),
         limitRestrictedInfo: observeIsCallLimitRestricted(database, serverUrl, post.channelId),
         ccChannelId,
     };
