@@ -7,7 +7,6 @@
 #import <RNKeychain/RNKeychainManager.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UserNotifications/UserNotifications.h>
-#import <RNHWKeyboardEvent.h>
 
 #import "Mattermost-Swift.h"
 #import <os/log.h>
@@ -163,58 +162,6 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   return extraModules;
 }
 
-/*
-  https://mattermost.atlassian.net/browse/MM-10601
-  Required by react-native-hw-keyboard-event
-  (https://github.com/emilioicai/react-native-hw-keyboard-event)
-*/
-RNHWKeyboardEvent *hwKeyEvent = nil;
-- (NSMutableArray<UIKeyCommand *> *)keyCommands {
-  if (hwKeyEvent == nil) {
-    hwKeyEvent = [[RNHWKeyboardEvent alloc] init];
-  }
-  
-  NSMutableArray *commands = [NSMutableArray new];
-  
-  if ([hwKeyEvent isListening]) {
-    UIKeyCommand *enter = [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(sendEnter:)];
-    UIKeyCommand *shiftEnter = [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:UIKeyModifierShift action:@selector(sendShiftEnter:)];
-    UIKeyCommand *findChannels = [UIKeyCommand keyCommandWithInput:@"k" modifierFlags:UIKeyModifierCommand action:@selector(sendFindChannels:)];
-    if (@available(iOS 13.0, *)) {
-      [enter setTitle:@"Send message"];
-      [enter setDiscoverabilityTitle:@"Send message"];
-      [shiftEnter setTitle:@"Add new line"];
-      [shiftEnter setDiscoverabilityTitle:@"Add new line"];
-      [findChannels setTitle:@"Find channels"];
-      [findChannels setDiscoverabilityTitle:@"Find channels"];
-    }
-    if (@available(iOS 15.0, *)) {
-      [enter setWantsPriorityOverSystemBehavior:YES];
-      [shiftEnter setWantsPriorityOverSystemBehavior:YES];
-      [findChannels setWantsPriorityOverSystemBehavior:YES];
-    }
-    
-    [commands addObject: enter];
-    [commands addObject: shiftEnter];
-    [commands addObject: findChannels];
-  }
-  
-  return commands;
-}
-
-- (void)sendEnter:(UIKeyCommand *)sender {
-  NSString *selected = sender.input;
-  [hwKeyEvent sendHWKeyEvent:@"enter"];
-}
-- (void)sendShiftEnter:(UIKeyCommand *)sender {
-  NSString *selected = sender.input;
-  [hwKeyEvent sendHWKeyEvent:@"shift-enter"];
-}
-- (void)sendFindChannels:(UIKeyCommand *)sender {
-  NSString *selected = sender.input;
-  [hwKeyEvent sendHWKeyEvent:@"find-channels"];
-}
-
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
   return [self bundleURL];
@@ -227,6 +174,23 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
   #else
     return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
   #endif
+}
+
+- (NSMutableArray<UIKeyCommand *> *)keyCommands {
+  return [MattermostHardwareKeyboardWrapper registerKeyCommandsWithEnterPressed:
+          @selector(sendEnter:) shiftEnterPressed:@selector(sendShiftEnter:) findChannels:@selector(sendFindChannels:)];
+}
+
+- (void)sendEnter:(UIKeyCommand *)sender {
+  [MattermostHardwareKeyboardWrapper enterKeyPressed];
+}
+
+- (void)sendShiftEnter:(UIKeyCommand *)sender {
+  [MattermostHardwareKeyboardWrapper shiftEnterKeyPressed];
+}
+
+- (void)sendFindChannels:(UIKeyCommand *)sender {
+  [MattermostHardwareKeyboardWrapper findChannels];
 }
 
 @end

@@ -6,7 +6,7 @@ import android.view.KeyEvent
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactActivityDelegate
-import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule
+import com.mattermost.hardware.keyboard.MattermostHardwareKeyboardImpl
 import com.mattermost.rnutils.helpers.FoldableObserver
 import com.reactnativenavigation.NavigationActivity
 import expo.modules.ReactActivityDelegateWrapper
@@ -66,24 +66,11 @@ class MainActivity : NavigationActivity() {
         reactGateway.onWindowFocusChanged(hasFocus)
     }
 
-    /*
-    https://mattermost.atlassian.net/browse/MM-10601
-    Required by react-native-hw-keyboard-event
-    (https://github.com/emilioicai/react-native-hw-keyboard-event)
-    */
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (HWKeyboardConnected) {
-            val keyCode = event.keyCode
-            val keyAction = event.action
-            if (keyAction == KeyEvent.ACTION_UP) {
-                if (keyCode == KeyEvent.KEYCODE_ENTER) {
-                    val keyPressed = if (event.isShiftPressed) "shift-enter" else "enter"
-                    HWKeyboardEventModule.getInstance().keyPressed(keyPressed)
-                    return true
-                } else if (keyCode == KeyEvent.KEYCODE_K && event.isCtrlPressed) {
-                    HWKeyboardEventModule.getInstance().keyPressed("find-channels")
-                    return true
-                }
+            val ok = MattermostHardwareKeyboardImpl.dispatchKeyEvent(event)
+            if (ok) {
+                return true
             }
         }
         return super.dispatchKeyEvent(event)

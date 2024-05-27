@@ -62,6 +62,27 @@ PODS:
   - libwebp/sharpyuv (1.3.2)
   - libwebp/webp (1.3.2):
     - libwebp/sharpyuv
+  - mattermost-hardware-keyboard (0.0.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - mattermost-react-native-turbo-log (0.3.2):
     - CocoaLumberjack (~> 3.8.5)
     - DoubleConversion
@@ -1086,8 +1107,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-hw-keyboard-event (0.0.4):
-    - React
   - react-native-image-picker (7.1.2):
     - DoubleConversion
     - glog
@@ -1582,6 +1601,7 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - jail-monkey (from `../node_modules/jail-monkey`)
+  - "mattermost-hardware-keyboard (from `../node_modules/@mattermost/hardware-keyboard`)"
   - "mattermost-react-native-turbo-log (from `../node_modules/@mattermost/react-native-turbo-log`)"
   - "mattermost-rnutils (from `../node_modules/@mattermost/rnutils`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1616,7 +1636,6 @@ DEPENDENCIES:
   - "react-native-cookies (from `../node_modules/@react-native-cookies/cookies`)"
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - "react-native-emm (from `../node_modules/@mattermost/react-native-emm`)"
-  - react-native-hw-keyboard-event (from `../node_modules/react-native-hw-keyboard-event`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-in-app-review (from `../node_modules/react-native-in-app-review`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
@@ -1717,6 +1736,8 @@ EXTERNAL SOURCES:
     :tag: hermes-2024-04-25-RNv0.74.1-b54a3a01c531f4f5f1904cb0770033e8b7153dff
   jail-monkey:
     :path: "../node_modules/jail-monkey"
+  mattermost-hardware-keyboard:
+    :path: "../node_modules/@mattermost/hardware-keyboard"
   mattermost-react-native-turbo-log:
     :path: "../node_modules/@mattermost/react-native-turbo-log"
   mattermost-rnutils:
@@ -1781,8 +1802,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-document-picker"
   react-native-emm:
     :path: "../node_modules/@mattermost/react-native-emm"
-  react-native-hw-keyboard-event:
-    :path: "../node_modules/react-native-hw-keyboard-event"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
   react-native-in-app-review:
@@ -1914,6 +1933,7 @@ SPEC CHECKSUMS:
   jail-monkey: a71b35d482a70ecba844a90f002994012cf12a5d
   JitsiWebRTC: 80f62908fcf2a1160e0d14b584323fb6e6be630b
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
+  mattermost-hardware-keyboard: 68afa92f9eae96278157fb4c26167565825bd786
   mattermost-react-native-turbo-log: a5c3a01594cd886ed02fc87fd2855a06b0aa52d2
   mattermost-rnutils: c30be0c570262aa6aec08bd5d5aaa00702afe975
   RCT-Folly: 02617c592a293bd6d418e0a88ff4ee1f88329b47
@@ -1946,7 +1966,6 @@ SPEC CHECKSUMS:
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
   react-native-document-picker: 2b3efb60622b7be891b8d0e0e5424632150e0c94
   react-native-emm: c9be3f8ac8cca161af8cb7cc1508e162b91d906b
-  react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: c3afe5472ef870d98a4b28415fc0b928161ee5f7
   react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
   react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
