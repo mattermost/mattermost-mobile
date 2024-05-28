@@ -84,7 +84,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
         return () => null;
     }, [hasEnded]);
 
-    const source = useMemo(() => ({uri: file.uri + 'dasdasdsa'}), [file.uri]);
+    const source = useMemo(() => ({uri: file.uri}), [file.uri]);
 
     const {toggleDownloadAndPreview} = useDownloadFileAndPreview();
 
