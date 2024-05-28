@@ -18,6 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import CompassIcon from '../compass_icon';
+import FormattedText from '../formatted_text';
 import ProgressBar from '../progress_bar';
 
 type Props = {
@@ -83,7 +84,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
         return () => null;
     }, [hasEnded]);
 
-    const source = useMemo(() => ({uri: file.uri}), [file.uri]);
+    const source = useMemo(() => ({uri: file.uri + 'dasdasdsa'}), [file.uri]);
 
     const {toggleDownloadAndPreview} = useDownloadFileAndPreview();
 
@@ -128,7 +129,12 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
     };
 
     if (hasError) {
-        return <Text>{'Error loading audio'}</Text>;
+        return (
+            <FormattedText
+                id={'audio.loading_error'}
+                defaultMessage={'Error loading audio.'}
+            />
+        );
     }
 
     return (
