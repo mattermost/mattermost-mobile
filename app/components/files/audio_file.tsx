@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {throttle} from 'lodash';
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     View,
@@ -64,9 +64,24 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
     const style = getStyleSheet(theme);
     const [hasPaused, setHasPaused] = useState<boolean>(true);
     const [hasError, setHasError] = useState<boolean>(false);
+    const [hasEnded, setHasEnded] = useState<boolean>(false);
     const [progress, setProgress] = useState<number>(0);
     const [timeInMinutes, setTimeInMinutes] = useState<string>('0:00');
     const videoRef = useRef<Video>(null);
+
+    useEffect(() => {
+        if (hasEnded) {
+            const timer = setTimeout(() => {
+                setHasPaused(true);
+                setProgress(0);
+                setHasEnded(false);
+            }, 100);
+
+            return () => clearTimeout(timer);
+        }
+
+        return () => null;
+    }, [hasEnded]);
 
     const source = useMemo(() => ({uri: file.uri}), [file.uri]);
 
@@ -102,11 +117,10 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
     };
 
     const onEnd = () => {
-        setHasPaused(true);
-        setProgress(0);
         if (videoRef.current) {
             videoRef.current.seek(0);
         }
+        setHasEnded(true);
     };
 
     const onError = () => {
