@@ -147,10 +147,11 @@ export default class WebSocketClient {
         }
 
         this.conn!.onOpen(() => {
+            clearTimeout(this.connectionTimeout);
+
             // No need to reset sequence number here.
             if (!reliableWebSockets) {
                 this.serverSequence = 0;
-                this.responseSequence = 1;
             }
 
             if (this.token) {

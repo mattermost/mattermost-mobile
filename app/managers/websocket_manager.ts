@@ -19,7 +19,7 @@ import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
 import {logError} from '@utils/log';
 
-const WAIT_TO_CLOSE = toMilliseconds({seconds: 1});
+const WAIT_TO_CLOSE = toMilliseconds({seconds: 15});
 const WAIT_UNTIL_NEXT = toMilliseconds({seconds: 5});
 
 class WebsocketManager {
