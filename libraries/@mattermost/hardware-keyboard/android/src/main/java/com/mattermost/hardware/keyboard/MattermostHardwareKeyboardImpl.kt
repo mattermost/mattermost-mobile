@@ -2,14 +2,17 @@ package com.mattermost.hardware.keyboard
 
 import android.view.KeyEvent
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
 
-class MattermostHardwareKeyboardImpl(context: ReactApplicationContext) {
+class MattermostHardwareKeyboardImpl(reactApplicationContext: ReactApplicationContext) {
     companion object {
         const val NAME = "MattermostHardwareKeyboard"
-        var context: ReactApplicationContext? = null
+        private lateinit var context: ReactApplicationContext
+
+        fun setCtx(ctx: ReactApplicationContext) {
+            context = ctx
+        }
 
         fun dispatchKeyEvent(event: KeyEvent): Boolean {
             val keyCode = event.keyCode
@@ -29,13 +32,15 @@ class MattermostHardwareKeyboardImpl(context: ReactApplicationContext) {
         }
 
         private fun sendEvent(action: String) {
-            val result: WritableMap = WritableNativeMap()
-            result.putString("action", action)
-            context?.getJSModule(ReactContext.RCTDeviceEventEmitter::class.java)?.emit("mmHardwareKeyboardEvent", result)
+            if (context.hasActiveReactInstance()) {
+                val result: WritableMap = WritableNativeMap()
+                result.putString("action", action)
+                context.emitDeviceEvent("mmHardwareKeyboardEvent", result)
+            }
         }
     }
 
     init {
-        MattermostHardwareKeyboardImpl.context = context
+        setCtx(reactApplicationContext)
     }
 }

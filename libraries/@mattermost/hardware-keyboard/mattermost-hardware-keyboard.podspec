@@ -27,6 +27,7 @@ Pod::Spec.new do |s|
     "BUILD_LIBRARY_FOR_DISTRIBUTION" => "YES",
     "OTHER_CPLUSPLUSFLAGS" => other_cpp_flags,
     "OTHER_SWIFT_FLAGS" => "-no-verify-emitted-module-interface",
+    "CLANG_CXX_LANGUAGE_STANDARD" => "c++20",
   }
 
   user_header_search_paths = [

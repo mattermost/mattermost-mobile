@@ -5,6 +5,8 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 
 class MattermostHardwareKeyboardModule(context: ReactApplicationContext) : ReactContextBaseJavaModule(context) {
+    private val impl = MattermostHardwareKeyboardImpl(context)
+
     override fun getName() = MattermostHardwareKeyboardImpl.NAME
 
     @ReactMethod
