@@ -1,7 +1,7 @@
 name: Detox E2E Tests Template
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       run-ios-tests:
         description: 'Run iOS tests'
@@ -128,7 +128,8 @@ jobs:
     env:
       IOS: true
     runs-on: macos-14-large
-    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    # name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    name: ios-detox-e2e
     if: ${{ inputs.run-ios-tests }}
     needs:
       - generate-specs
