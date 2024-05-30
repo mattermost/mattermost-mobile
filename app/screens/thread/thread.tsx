@@ -22,9 +22,9 @@ import NavigationStore from '@store/navigation_store';
 
 import ThreadPostList from './thread_post_list';
 
+import type {KeyboardTrackingViewRef} from '@mattermost/keyboard-tracker';
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
 type ThreadProps = {
     componentId: AvailableScreens;

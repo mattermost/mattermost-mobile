@@ -83,6 +83,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - mattermost-keyboard-tracker (0.0.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - mattermost-react-native-turbo-log (0.3.2):
     - CocoaLumberjack (~> 3.8.5)
     - DoubleConversion
@@ -1443,8 +1464,6 @@ PODS:
     - React-Core
   - ReactNativeIncallManager (4.2.0):
     - React-Core
-  - ReactNativeKeyboardTrackingView (5.7.0):
-    - React
   - ReactNativeNavigation (7.39.2):
     - HMSegmentedControl
     - React-Core
@@ -1570,9 +1589,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - SDWebImage (5.19.1):
-    - SDWebImage/Core (= 5.19.1)
-  - SDWebImage/Core (5.19.1)
+  - SDWebImage (5.19.2):
+    - SDWebImage/Core (= 5.19.2)
+  - SDWebImage/Core (5.19.2)
   - SDWebImageWebPCoder (0.14.6):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
@@ -1602,6 +1621,7 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - jail-monkey (from `../node_modules/jail-monkey`)
   - "mattermost-hardware-keyboard (from `../node_modules/@mattermost/hardware-keyboard`)"
+  - "mattermost-keyboard-tracker (from `../node_modules/@mattermost/keyboard-tracker`)"
   - "mattermost-react-native-turbo-log (from `../node_modules/@mattermost/react-native-turbo-log`)"
   - "mattermost-rnutils (from `../node_modules/@mattermost/rnutils`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1671,7 +1691,6 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeExceptionHandler (from `../node_modules/react-native-exception-handler`)
   - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
-  - ReactNativeKeyboardTrackingView (from `../node_modules/react-native-keyboard-tracking-view`)
   - ReactNativeNavigation (from `../node_modules/react-native-navigation`)
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
@@ -1738,6 +1757,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/jail-monkey"
   mattermost-hardware-keyboard:
     :path: "../node_modules/@mattermost/hardware-keyboard"
+  mattermost-keyboard-tracker:
+    :path: "../node_modules/@mattermost/keyboard-tracker"
   mattermost-react-native-turbo-log:
     :path: "../node_modules/@mattermost/react-native-turbo-log"
   mattermost-rnutils:
@@ -1872,8 +1893,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-exception-handler"
   ReactNativeIncallManager:
     :path: "../node_modules/react-native-incall-manager"
-  ReactNativeKeyboardTrackingView:
-    :path: "../node_modules/react-native-keyboard-tracking-view"
   ReactNativeNavigation:
     :path: "../node_modules/react-native-navigation"
   RNCClipboard:
@@ -1933,9 +1952,10 @@ SPEC CHECKSUMS:
   jail-monkey: a71b35d482a70ecba844a90f002994012cf12a5d
   JitsiWebRTC: 80f62908fcf2a1160e0d14b584323fb6e6be630b
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
-  mattermost-hardware-keyboard: 68afa92f9eae96278157fb4c26167565825bd786
+  mattermost-hardware-keyboard: b916a168bb3add779bb226b3a62d6ac5ec225a79
+  mattermost-keyboard-tracker: b48752a97e731fdae5e8259a4ea0e731e1a05094
   mattermost-react-native-turbo-log: a5c3a01594cd886ed02fc87fd2855a06b0aa52d2
-  mattermost-rnutils: c30be0c570262aa6aec08bd5d5aaa00702afe975
+  mattermost-rnutils: 01504fb26beb75594f4c6e2150668b27783112f5
   RCT-Folly: 02617c592a293bd6d418e0a88ff4ee1f88329b47
   RCTDeprecation: efb313d8126259e9294dc4ee0002f44a6f676aba
   RCTRequired: f49ea29cece52aee20db633ae7edc4b271435562
@@ -2001,7 +2021,6 @@ SPEC CHECKSUMS:
   ReactCommon: f42444e384d82ab89184aed5d6f3142748b54768
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   ReactNativeIncallManager: bfc9c67358cd524882a7c4116dcb311ac2293d4b
-  ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: 4d9e6883ecd61e68829403d65083709d9344e7e3
   RNCClipboard: 0a720adef5ec193aa0e3de24c3977222c7e52a37
   RNDateTimePicker: b6a9b35a785ecbe12b4e7d6de5439d0aa4614146
@@ -2018,7 +2037,7 @@ SPEC CHECKSUMS:
   RNShare: 0fad69ae2d71de9d1f7b9a43acf876886a6cb99c
   RNSVG: a48668fd382115bc89761ce291a81c4ca5f2fd2e
   RNVectorIcons: 2a2f79274248390b80684ea3c4400bd374a15c90
-  SDWebImage: 40b0b4053e36c660a764958bff99eed16610acbb
+  SDWebImage: dfe95b2466a9823cf9f0c6d01217c06550d7b29a
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   Sentry: cd86fc55628f5b7c572cabe66cc8f95a9d2f165a
   simdjson: e6bfae9ce4bcdc80452d388d593816f1ca2106f3
