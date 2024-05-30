@@ -89,21 +89,22 @@ import React
             ]
         }
         
-        let databaseDir = shouldRemoveDirectory ? "\(appGroupDir.path)/\(name).db" : appGroupDir.path
+        let databaseFile = "\(appGroupDir.path)/\(name).db"
+        let databaseDirOrFile = shouldRemoveDirectory ? appGroupDir.path : databaseFile
         let fileManager = FileManager.default
         
-        let walFile = "\(databaseDir)-wal"
+        let walFile = "\(databaseFile)-wal"
         if !shouldRemoveDirectory && fileManager.fileExists(atPath: walFile) {
             try? fileManager.removeItem(atPath: walFile)
         }
         
-        let shmFile = "\(databaseDir)-shm"
+        let shmFile = "\(databaseFile)-shm"
         if !shouldRemoveDirectory && fileManager.fileExists(atPath: shmFile) {
             try? fileManager.removeItem(atPath: shmFile)
         }
         
         do {
-            try fileManager.removeItem(atPath: databaseDir)
+            try fileManager.removeItem(atPath: databaseDirOrFile)
             return [
                 "error": "",
                 "success": true
