@@ -66,6 +66,7 @@ jobs:
           status: pending
 
   generate-specs:
+    needs: update-initial-status
     runs-on: ubuntu-22.04
     if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     outputs:
@@ -99,6 +100,7 @@ jobs:
           device_os_version: ${{env.DEVICE_OS_VERSION}}
 
   build-ios-simulator:
+    needs: update-initial-status
     runs-on: macos-14-large
     if: ${{ inputs.run-ios-tests }}
     steps:
@@ -179,7 +181,6 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     needs:
-      - generate-specs
       - e2e-ios
     outputs:
       failures: "${{ steps.calculate-failures.outputs.failures }}"
@@ -222,8 +223,6 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ needs.download-e2e-results.outputs.failures > 0 }}
     needs:
-      - generate-specs
-      - e2e-ios
       - download-e2e-results
     steps:
       - name: Set Target URL
@@ -256,8 +255,6 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ needs.download-e2e-results.outputs.failures == 0 }}
     needs:
-      - generate-specs
-      - e2e-ios
       - download-e2e-results
     steps:
       - name: Set Target URL
