@@ -18,12 +18,11 @@ setGenerator(uuidv4);
 
 require('isomorphic-fetch');
 
-const WebViewMock = () => {
-    return null;
-};
-
-jest.mock('react-native-webview', () => ({
-    WebView: WebViewMock,
+jest.mock('expo-web-browser', () => ({
+    openAuthSessionAsync: jest.fn().mockResolvedValue(({
+        type: 'success',
+        url: 'mmauthbeta://callback?MMAUTHTOKEN=123&MMCSRF=456',
+    })),
 }));
 
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));

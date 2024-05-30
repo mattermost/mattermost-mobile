@@ -80,8 +80,6 @@ class SessionManager {
     private clearCookiesForServer = async (serverUrl: string) => {
         if (Platform.OS === 'ios') {
             this.clearCookies(serverUrl, false);
-
-            // Also delete any cookies that were set by react-native-webview
             this.clearCookies(serverUrl, true);
         } else if (Platform.OS === 'android') {
             CookieManager.flush();

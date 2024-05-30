@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {openAuthSessionAsync} from 'expo-web-browser';
 import qs from 'querystringify';
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Linking, Platform, Text, View} from 'react-native';
+import {Linking, Platform, Text, View, type EventSubscription} from 'react-native';
 import Button from 'react-native-button';
 import urlParse from 'url-parse';
 
@@ -12,11 +13,9 @@ import FormattedText from '@components/formatted_text';
 import {Sso} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {isErrorWithMessage} from '@utils/errors';
 import {isBetaApp} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {tryOpenURL} from '@utils/url';
 
 interface SSOWithRedirectURLProps {
     doSSOLogin: (bearerToken: string, csrfToken: string) => void;
@@ -68,7 +67,7 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
     }
 
     const redirectUrl = customUrlScheme + 'callback';
-    const init = (resetErrors = true) => {
+    const init = async (resetErrors = true) => {
         if (resetErrors !== false) {
             setError('');
             setLoginError('');
@@ -82,55 +81,56 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
         };
         parsedUrl.set('query', qs.stringify(query));
         const url = parsedUrl.toString();
-
-        const onError = (e: unknown) => {
-            let message;
-            if (e && Platform.OS === 'android' && isErrorWithMessage(e) && e.message.match(/no activity found to handle intent/i)) {
-                message = intl.formatMessage({
-                    id: 'mobile.oauth.failed_to_open_link_no_browser',
-                    defaultMessage: 'The link failed to open. Please verify that a browser is installed on the device.',
-                });
-            } else {
-                message = intl.formatMessage({
-                    id: 'mobile.oauth.failed_to_open_link',
-                    defaultMessage: 'The link failed to open. Please try again.',
-                });
+        const result = await openAuthSessionAsync(url, null, {preferEphemeralSession: true});
+        if ('url' in result && result.url) {
+            const resultUrl = urlParse(result.url, true);
+            const bearerToken = resultUrl.query?.MMAUTHTOKEN;
+            const csrfToken = resultUrl.query?.MMCSRF;
+            if (bearerToken && csrfToken) {
+                doSSOLogin(bearerToken, csrfToken);
             }
+        } else if (Platform.OS === 'ios') {
             setError(
-                message,
+                intl.formatMessage({
+                    id: 'mobile.oauth.failed_to_login',
+                    defaultMessage: 'Your login attempt failed. Please try again.',
+                }),
             );
-        };
-
-        tryOpenURL(url, onError);
+        }
     };
 
     useEffect(() => {
-        const onURLChange = ({url}: { url: string }) => {
-            if (url && url.startsWith(redirectUrl)) {
-                const parsedUrl = urlParse(url, true);
-                const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
-                const csrfToken = parsedUrl.query?.MMCSRF;
-                if (bearerToken && csrfToken) {
-                    doSSOLogin(bearerToken, csrfToken);
-                } else {
-                    setError(
-                        intl.formatMessage({
-                            id: 'mobile.oauth.failed_to_login',
-                            defaultMessage: 'Your login attempt failed. Please try again.',
-                        }),
-                    );
-                }
-            }
-        };
+        let listener: EventSubscription | null = null;
 
-        const listener = Linking.addEventListener('url', onURLChange);
+        if (Platform.OS === 'android') {
+            const onURLChange = ({url}: { url: string }) => {
+                if (url && url.startsWith(redirectUrl)) {
+                    const parsedUrl = urlParse(url, true);
+                    const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
+                    const csrfToken = parsedUrl.query?.MMCSRF;
+                    if (bearerToken && csrfToken) {
+                        doSSOLogin(bearerToken, csrfToken);
+                    } else {
+                        setError(
+                            intl.formatMessage({
+                                id: 'mobile.oauth.failed_to_login',
+                                defaultMessage: 'Your login attempt failed. Please try again.',
+                            }),
+                        );
+                    }
+                }
+            };
+
+            listener = Linking.addEventListener('url', onURLChange);
+        }
 
         const timeout = setTimeout(() => {
             init(false);
         }, 1000);
+
         return () => {
-            listener.remove();
             clearTimeout(timeout);
+            listener?.remove();
         };
     }, []);
 
