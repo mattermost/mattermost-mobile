@@ -16,11 +16,11 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
     companion object {
         const val NAME = "RNUtils"
 
-        private lateinit var context: ReactApplicationContext
+        private var context: ReactApplicationContext? = null
 
         fun sendJSEvent(eventName: String, data: ReadableMap?) {
-            if (context.hasActiveReactInstance()) {
-                context.emitDeviceEvent(eventName, data)
+            if (context?.hasActiveReactInstance() == true) {
+                context?.emitDeviceEvent(eventName, data)
             }
         }
 
