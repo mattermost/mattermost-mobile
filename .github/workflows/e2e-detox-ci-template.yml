@@ -181,6 +181,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     needs:
+      - generate-specs
       - e2e-ios
     outputs:
       failures: "${{ steps.calculate-failures.outputs.failures }}"
