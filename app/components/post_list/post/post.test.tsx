@@ -5,37 +5,45 @@ import React, {type ComponentProps} from 'react';
 
 import NetworkManager from '@managers/network_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
+import {getPostById} from '@queries/servers/post';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import PostDraft from './post_draft';
+import Post from './post';
 
 import type {Database} from '@nozbe/watermelondb';
+import type PostModel from '@typings/database/models/servers/post';
 
 jest.mock('@managers/performance_metrics_manager');
 
-function getBaseProps(): ComponentProps<typeof PostDraft> {
-    return {
-        canPost: true,
-        channelId: '',
-        channelIsReadOnly: false,
-        containerHeight: 0,
-        deactivatedChannel: false,
-        isChannelScreen: true,
-        keyboardTracker: {current: null},
-        accessoriesContainerID: '',
-        canShowPostPriority: false,
-        channelIsArchived: false,
-    };
-}
-
 describe('performance metrics', () => {
     let database: Database;
+    let post: PostModel;
+
+    function getBaseProps(): ComponentProps<typeof Post> {
+        return {
+            appsEnabled: false,
+            canDelete: false,
+            customEmojiNames: [],
+            differentThreadSequence: false,
+            hasFiles: false,
+            hasReactions: false,
+            hasReplies: false,
+            highlightReplyBar: false,
+            isEphemeral: false,
+            isPostAddChannelMember: false,
+            isPostPriorityEnabled: false,
+            location: 'Channel',
+            post,
+        };
+    }
+
     const serverUrl = 'http://www.someserverurl.com';
     beforeEach(async () => {
         const client = await NetworkManager.createClient(serverUrl);
         expect(client).toBeTruthy();
         database = (await TestHelper.setupServerDatabase(serverUrl)).database;
+        post = (await getPostById(database, TestHelper.basicPost!.id))!;
     });
 
     afterEach(async () => {
@@ -43,16 +51,23 @@ describe('performance metrics', () => {
         NetworkManager.invalidateClient(serverUrl);
     });
 
+    it('do not call the performance metrics if it is not the last post', () => {
+        const props = getBaseProps();
+        props.nextPost = {} as PostModel;
+        renderWithEverything(<Post {...props}/>, {database, serverUrl});
+        expect(PerformanceMetricsManager.finishLoad).not.toHaveBeenCalled();
+        expect(PerformanceMetricsManager.endMetric).not.toHaveBeenCalled();
+    });
     it('on channel', () => {
         const props = getBaseProps();
-        renderWithEverything(<PostDraft {...props}/>, {database, serverUrl});
+        renderWithEverything(<Post {...props}/>, {database, serverUrl});
         expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('CHANNEL', serverUrl);
         expect(PerformanceMetricsManager.endMetric).toHaveBeenCalledWith('mobile_channel_switch', serverUrl);
     });
     it('on thread', () => {
         const props = getBaseProps();
-        props.rootId = 'someId';
-        renderWithEverything(<PostDraft {...props}/>, {database, serverUrl});
+        props.location = 'Thread';
+        renderWithEverything(<Post {...props}/>, {database, serverUrl});
         expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('THREAD', serverUrl);
         expect(PerformanceMetricsManager.endMetric).toHaveBeenCalledWith('mobile_channel_switch', serverUrl);
     });

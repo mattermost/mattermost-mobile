@@ -46,7 +46,7 @@ interface ClientConfig {
     EnableBanner: string;
     EnableBotAccountCreation: string;
     EnableChannelViewedMessages: string;
-    EnableClientMetrics: string;
+    EnableClientMetrics?: string;
     EnableCluster: string;
     EnableCommands: string;
     EnableCompliance: string;

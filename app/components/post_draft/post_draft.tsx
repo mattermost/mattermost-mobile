@@ -12,7 +12,6 @@ import {useServerUrl} from '@context/server';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
-import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 
 import Archived from './archived';
 import DraftHandler from './draft_handler';
@@ -73,11 +72,6 @@ function PostDraft({
         setValue(message);
         setCursorPosition(message.length);
     }, [channelId, rootId]);
-
-    useEffect(() => {
-        PerformanceMetricsManager.finishLoad(rootId ? 'THREAD' : 'CHANNEL', serverUrl);
-        PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
-    }, []);
 
     const keyboardAdjustment = (isTablet && isChannelScreen) ? KEYBOARD_TRACKING_OFFSET : 0;
     const insetsAdjustment = (isTablet && isChannelScreen) ? 0 : insets.bottom;

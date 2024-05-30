@@ -10,6 +10,7 @@ import nock from 'nock';
 
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
+import {ActionType} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
@@ -109,6 +110,13 @@ class TestHelper {
         await operator.handleSystem({
             prepareRecordsOnly: false,
             systems: [{id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: PUSH_PROXY_STATUS_VERIFIED}],
+        });
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_NEW,
+            order: [this.basicPost!.id],
+            posts: [this.basicPost!],
+            prepareRecordsOnly: false,
         });
 
         return {database, operator};

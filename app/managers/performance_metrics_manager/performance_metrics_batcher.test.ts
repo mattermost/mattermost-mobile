@@ -128,6 +128,18 @@ describe('perfromance metrics batcher', () => {
         expect(mockApiClient.post).not.toHaveBeenCalled();
     });
 
+    it('do not send batches when the config is set to false even on force send', async () => {
+        await setMetricsConfig('false');
+        const batcher = new Batcher(serverUrl);
+        batcher.addToBatch(measure2);
+        batcher.forceSend();
+        await TestHelper.tick();
+        expect(mockApiClient.post).not.toHaveBeenCalled();
+        jest.advanceTimersByTime(61000);
+        await TestHelper.tick();
+        expect(mockApiClient.post).not.toHaveBeenCalled();
+    });
+
     it('old elements do not drip into the next batch', async () => {
         const batcher = new Batcher(serverUrl);
         let expectedRequest = getBaseReportRequest(measure1.timestamp, measure1.timestamp + 1);
@@ -154,5 +166,30 @@ describe('perfromance metrics batcher', () => {
         jest.advanceTimersByTime(61000);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenLastCalledWith(expectedUrl, expectedRequest);
+    });
+
+    it('force send sends the batch, and does not get resent after the timeout', async () => {
+        const batcher = new Batcher(serverUrl);
+
+        const expectedRequest = getBaseReportRequest(measure1.timestamp, measure2.timestamp);
+        expectedRequest.body.histograms = [measure1, measure2];
+
+        batcher.addToBatch(measure1);
+        await TestHelper.tick();
+        expect(mockApiClient.post).not.toHaveBeenCalled();
+
+        batcher.addToBatch(measure2);
+        await TestHelper.tick();
+        expect(mockApiClient.post).not.toHaveBeenCalled();
+
+        jest.advanceTimersByTime(61000);
+        await TestHelper.tick();
+        expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl, expectedRequest);
+
+        mockApiClient.post.mockClear();
+
+        jest.advanceTimersByTime(61000);
+        await TestHelper.tick();
+        expect(mockApiClient.post).not.toHaveBeenCalled();
     });
 });

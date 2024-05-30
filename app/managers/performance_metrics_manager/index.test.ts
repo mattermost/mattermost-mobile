@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import performance from 'react-native-performance';
+
 import {mockApiClient} from '@test/mock_api_client';
 import TestHelper from '@test/test_helper';
 
@@ -10,13 +12,12 @@ import {getBaseReportRequest} from './test_utils';
 
 import PerformanceMetricsManager from '.';
 
+const TEST_EPOCH = 1577836800000;
 jest.mock('@utils/log', () => ({
     logDebug: () => '',
 }));
 
-jest.mock('react-native-startup-time', () => ({
-    getTimeSinceStartup: () => Promise.resolve(2000),
-}));
+performance.timeOrigin = TEST_EPOCH;
 
 describe('load metrics', () => {
     const serverUrl = 'http://www.someserverurl.com/';
@@ -24,8 +25,8 @@ describe('load metrics', () => {
 
     const measure: PerformanceReportMeasure = {
         metric: 'mobile_load',
-        timestamp: 1577836861000,
-        value: 2000,
+        timestamp: TEST_EPOCH + 61000,
+        value: 61000,
     };
 
     beforeEach(async () => {
@@ -40,13 +41,12 @@ describe('load metrics', () => {
             'clearTimeout',
             'hrtime',
             'nextTick',
-            'performance',
             'queueMicrotask',
             'requestAnimationFrame',
             'requestIdleCallback',
             'setImmediate',
             'setInterval',
-        ]}).setSystemTime(new Date('2020-01-01'));
+        ]}).setSystemTime(new Date(TEST_EPOCH));
     });
     afterEach(async () => {
         jest.useRealTimers();
@@ -55,6 +55,7 @@ describe('load metrics', () => {
     });
 
     it('only load on target', async () => {
+        performance.mark('nativeLaunchStart');
         const expectedRequest = getBaseReportRequest(measure.timestamp, measure.timestamp + 1);
         expectedRequest.body.histograms = [measure];
 
@@ -81,13 +82,13 @@ describe('other metrics', () => {
 
     const measure1: PerformanceReportMeasure = {
         metric: 'mobile_channel_switch',
-        timestamp: 1577836800000,
+        timestamp: TEST_EPOCH + 100,
         value: 100,
     };
 
     const measure2: PerformanceReportMeasure = {
         metric: 'mobile_team_switch',
-        timestamp: 1577836800050,
+        timestamp: TEST_EPOCH + 150 + 50,
         value: 150,
     };
 
@@ -111,7 +112,7 @@ describe('other metrics', () => {
             'requestIdleCallback',
             'setImmediate',
             'setInterval',
-        ]}).setSystemTime(new Date('2020-01-01'));
+        ]}).setSystemTime(new Date(TEST_EPOCH));
     });
     afterEach(async () => {
         jest.useRealTimers();
@@ -120,7 +121,7 @@ describe('other metrics', () => {
         await TestHelper.tearDown();
     });
 
-    it('do not send metrics when we dont start them', async () => {
+    it('do not send metrics when we do not start them', async () => {
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl1);
 
         jest.advanceTimersByTime(61000);

@@ -408,7 +408,14 @@ jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
-declare const global: {requestAnimationFrame: (callback: () => void) => void};
+declare const global: {
+    requestAnimationFrame: (callback: () => void) => void;
+    performance: {
+        now: () => number;
+    };
+};
 global.requestAnimationFrame = (callback) => {
     setTimeout(callback, 0);
 };
+
+global.performance.now = () => Date.now();

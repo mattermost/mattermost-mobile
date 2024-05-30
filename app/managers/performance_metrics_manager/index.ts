@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getTimeSinceStartup} from 'react-native-startup-time';
+import {AppState, type AppStateStatus} from 'react-native';
+import performance from 'react-native-performance';
 
 import Batcher from './performance_metrics_batcher';
 
@@ -10,9 +11,24 @@ type MetricName = 'mobile_channel_switch' |
     'mobile_team_switch';
 
 class PerformanceMetricsManager {
-    private startTimes: {[metricName: string]: undefined | number} = {};
     private target: Target;
     private batchers: {[serverUrl: string]: Batcher} = {};
+    private hasRegisteredLoad = false;
+    private lastAppStateIsActive = AppState.currentState === 'active';
+
+    constructor() {
+        AppState.addEventListener('change', (appState) => this.onAppStateChange(appState));
+    }
+
+    private onAppStateChange(appState: AppStateStatus) {
+        const isAppStateActive = appState === 'active';
+        if (this.lastAppStateIsActive !== isAppStateActive && !isAppStateActive) {
+            for (const batcher of Object.values(this.batchers)) {
+                batcher.forceSend();
+            }
+        }
+        this.lastAppStateIsActive = isAppStateActive;
+    }
 
     private ensureBatcher(serverUrl: string) {
         if (this.batchers[serverUrl]) {
@@ -28,40 +44,41 @@ class PerformanceMetricsManager {
     }
 
     public finishLoad(location: Target, serverUrl: string) {
-        if (this.target !== location) {
+        if (this.target !== location || this.hasRegisteredLoad) {
             return;
         }
 
-        getTimeSinceStartup().then((measure) => {
-            this.ensureBatcher(serverUrl).addToBatch({
-                metric: 'mobile_load',
-                value: measure,
-                timestamp: Date.now(),
-            });
+        const measure = performance.measure('mobile_load', 'nativeLaunchStart');
+        this.ensureBatcher(serverUrl).addToBatch({
+            metric: 'mobile_load',
+            value: measure.duration,
+            timestamp: Date.now(),
         });
+        performance.clearMeasures('mobile_load');
+        this.hasRegisteredLoad = true;
     }
 
     public startMetric(metricName: MetricName) {
-        this.startTimes[metricName] = global.performance.now();
+        performance.mark(metricName);
     }
 
     public endMetric(metricName: MetricName, serverUrl: string) {
-        const startTime = this.startTimes[metricName];
-        if (startTime === undefined) {
+        const marks = performance.getEntriesByName(metricName, 'mark');
+        if (!marks.length) {
             return;
         }
 
-        const dateNow = Date.now();
-        const performanceNow = global.performance.now();
-        const performanceNowSkew = dateNow - performanceNow;
+        const measureName = `${metricName}_measure`;
+        const measure = performance.measure(measureName, metricName);
 
         this.ensureBatcher(serverUrl).addToBatch({
             metric: metricName,
-            value: performanceNow - startTime,
-            timestamp: Math.round(startTime + performanceNowSkew),
+            value: measure.duration,
+            timestamp: Date.now(),
         });
 
-        delete this.startTimes[metricName];
+        performance.clearMarks(metricName);
+        performance.clearMeasures(metricName);
     }
 }
 

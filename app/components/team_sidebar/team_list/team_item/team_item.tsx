@@ -64,10 +64,7 @@ export default function TeamItem({team, hasUnreads, mentionCount, selected}: Pro
     const serverUrl = useServerUrl();
 
     const onPress = useCallback(() => {
-        if (!team) {
-            return;
-        }
-        if (selected) {
+        if (!team || selected) {
             return;
         }
 

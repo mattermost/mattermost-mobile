@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, Platform, type AppStateStatus} from 'react-native';
+import {Platform} from 'react-native';
 
 import {sendPerformanceReport} from '@actions/remote/performance';
 import DatabaseManager from '@database/manager';
@@ -13,26 +13,30 @@ const MAX_BATCH_SIZE = 100;
 const INTERVAL_TIME = toMilliseconds({seconds: 60});
 
 class Batcher {
-    private started = false;
     private batch: PerformanceReportMeasure[] = [];
     private serverUrl: string;
     private sendTimeout: NodeJS.Timeout | undefined;
-    private lastAppStateIsActive = AppState.currentState === 'active';
 
     constructor(serverUrl: string) {
         this.serverUrl = serverUrl;
-        AppState.addEventListener('change', (appState) => this.onAppStateChange(appState));
+    }
+
+    private started() {
+        return Boolean(this.sendTimeout);
+    }
+
+    private clearTimeout() {
+        clearTimeout(this.sendTimeout);
+        this.sendTimeout = undefined;
     }
 
     private start() {
-        this.started = true;
-        clearTimeout(this.sendTimeout);
+        this.clearTimeout();
         this.sendTimeout = setTimeout(() => this.sendBatch(), INTERVAL_TIME);
     }
 
     private async sendBatch() {
-        clearTimeout(this.sendTimeout);
-        this.started = false;
+        this.clearTimeout();
         if (this.batch.length === 0) {
             return;
         }
@@ -79,24 +83,20 @@ class Batcher {
         };
     }
 
-    private onAppStateChange(appState: AppStateStatus) {
-        const isAppStateActive = appState === 'active';
-        if (this.lastAppStateIsActive !== isAppStateActive && !isAppStateActive) {
-            this.sendBatch();
-        }
-        this.lastAppStateIsActive = isAppStateActive;
-    }
-
     public addToBatch(measure: PerformanceReportMeasure) {
-        if (!this.started) {
+        if (!this.started()) {
             this.start();
         }
 
-        logDebug('Performance metric:', measure);
+        logDebug('Performance metric:', measure, Date.now());
         this.batch.push(measure);
         if (this.batch.length >= MAX_BATCH_SIZE) {
             this.sendBatch();
         }
+    }
+
+    public forceSend() {
+        this.sendBatch();
     }
 }
 
