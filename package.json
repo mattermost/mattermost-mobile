@@ -51,6 +51,7 @@
     "expo-application": "5.9.1",
     "expo-device": "6.0.2",
     "expo-linear-gradient": "13.0.2",
+    "expo-store-review": "7.0.2",
     "expo-video-thumbnails": "8.0.0",
     "expo-web-browser": "13.0.3",
     "fuse.js": "7.0.0",
@@ -75,7 +76,6 @@
     "react-native-gesture-handler": "2.16.2",
     "react-native-haptic-feedback": "2.2.0",
     "react-native-image-picker": "7.1.2",
-    "react-native-in-app-review": "4.3.3",
     "react-native-incall-manager": "4.2.0",
     "react-native-keyboard-aware-scroll-view": "0.9.5",
     "react-native-keychain": "8.2.0",
@@ -224,7 +224,6 @@
       "exclude": [
         "expo-keep-awake",
         "expo-asset",
-        "expo-constants",
         "expo-font"
       ]
     }
