@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {LinearGradient} from 'expo-linear-gradient';
 import React, {useMemo} from 'react';
 import {StyleSheet, useWindowDimensions, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';
 import {imageDimensions} from '@share/utils';
