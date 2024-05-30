@@ -1,7 +1,7 @@
 name: Detox E2E Tests Template
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       run-ios-tests:
         description: 'Run iOS tests'
@@ -231,7 +231,7 @@ jobs:
           s3Folder="${{ env.BUILD_ID }}-${{ env.COMMIT_HASH }}-${{ env.BRANCH }}"
           s3Folder=$(echo "$s3Folder" | sed 's/\./-/g')
 
-          if [ ${{ inputs.run-ios-tests }} = true ]; then
+          if ${{ inputs.run-ios-tests }}; then
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/ios-report.html" >> $GITHUB_ENV
           else
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/android-report.html" >> $GITHUB_ENV
@@ -265,7 +265,7 @@ jobs:
           s3Folder="${{ env.BUILD_ID }}-${{ env.COMMIT_HASH }}-${{ env.BRANCH }}"
           s3Folder=$(echo "$s3Folder" | sed 's/\./-/g')
 
-          if [ ${{ inputs.run-ios-tests }} = true ]; then
+          if ${{ inputs.run-ios-tests }}; then
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/ios-report.html" >> $GITHUB_ENV
           else
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/android-report.html" >> $GITHUB_ENV
