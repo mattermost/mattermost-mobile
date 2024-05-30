@@ -278,7 +278,7 @@ const AtMention = ({
             const filteredUsers = filterResults(fallbackUsers, term);
             setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyUserlList);
         } else if (receivedUsers) {
-            sortRecievedUsers(sUrl, term, receivedUsers?.users, receivedUsers?.out_of_channel);
+            await sortRecievedUsers(sUrl, term, receivedUsers?.users, receivedUsers?.out_of_channel);
         }
 
         setLoading(false);
