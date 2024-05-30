@@ -75,7 +75,8 @@ import React
     }
     
     @objc public func deleteDatabaseDirectory(databaseName: String?, shouldRemoveDirectory: Bool) -> Dictionary<String, Any> {
-        guard let appGroupDir = getSharedDirectory() else {
+        let appGroupDatabaseDir = getDatabasePath()
+        guard !appGroupDatabaseDir.isEmpty else {
             return [
                 "error": "No app group directory found",
                 "success": false
@@ -89,8 +90,8 @@ import React
             ]
         }
         
-        let databaseFile = "\(appGroupDir.path)/\(name).db"
-        let databaseDirOrFile = shouldRemoveDirectory ? appGroupDir.path : databaseFile
+        let databaseFile = "\(appGroupDatabaseDir)/\(name).db"
+        let databaseDirOrFile = shouldRemoveDirectory ? appGroupDatabaseDir : databaseFile
         let fileManager = FileManager.default
         
         let walFile = "\(databaseFile)-wal"
