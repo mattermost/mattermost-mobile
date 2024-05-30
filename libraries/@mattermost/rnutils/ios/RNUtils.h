@@ -5,7 +5,7 @@
 #ifdef RCT_NEW_ARCH_ENABLED
 #import "RNUtilsSpec.h"
 
-@interface RNUtils : RCTEventEmitter <NativeRnutilsSpec>
+@interface RNUtils : RCTEventEmitter <NativeRNUtilsSpec>
 #else
 #import <React/RCTBridgeModule.h>
 

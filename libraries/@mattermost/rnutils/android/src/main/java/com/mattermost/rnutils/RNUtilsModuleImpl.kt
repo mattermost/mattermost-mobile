@@ -5,7 +5,6 @@ import android.net.Uri
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
 import com.mattermost.rnutils.helpers.Notifications
@@ -13,16 +12,15 @@ import com.mattermost.rnutils.helpers.RealPathUtil
 import com.mattermost.rnutils.helpers.SaveDataTask
 import com.mattermost.rnutils.helpers.SplitView
 
-class RNUtilsModuleImpl(val reactContext: ReactApplicationContext) {
+class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
     companion object {
         const val NAME = "RNUtils"
 
-        private var context: ReactApplicationContext? = null
+        private lateinit var context: ReactApplicationContext
 
         fun sendJSEvent(eventName: String, data: ReadableMap?) {
-            if (context?.hasActiveReactInstance() == true) {
-                context?.getJSModule(ReactContext.RCTDeviceEventEmitter::class.java)
-                        ?.emit(eventName, data)
+            if (context.hasActiveReactInstance()) {
+                context.emitDeviceEvent(eventName, data)
             }
         }
 
