@@ -8,8 +8,7 @@ on:
       - 'release-*'
   pull_request:
     branches:
-      - 'master'
-      - 'ios_detox_job'
+      - 'main'
     types:
       - labeled
   workflow_dispatch:
