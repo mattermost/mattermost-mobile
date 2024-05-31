@@ -71,19 +71,13 @@ describe('Channels - Find Channels', () => {
     it('MM-T4907_2 - should be able to find and navigate to a public channel', async () => {
         // # Open find channels screen and search for a public channel to navigate to
         await FindChannelsScreen.open();
-        await FindChannelsScreen.searchInput.replaceText(testChannel.name);
-
-        // * Verify search returns the target public channel item
-        await wait(timeouts.ONE_SEC);
-        await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(testChannel.name)).toHaveText(testChannel.display_name);
+        await FindChannelsScreen.searchInput.replaceText(testChannel.display_name);
 
         // # Tap on the target public channel item
         await FindChannelsScreen.getFilteredChannelItem(testChannel.name).tap();
 
         // * Verify on target public channel screen
-        await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
-        await expect(ChannelScreen.introDisplayName).toHaveText(testChannel.display_name);
+        await verifyDetailsOnChannelScreen(testChannel.display_name);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -124,10 +118,13 @@ describe('Channels - Find Channels', () => {
 
         // * Verify search returns the target group message channel item
         await wait(timeouts.ONE_SEC);
-        await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(groupMessageChannel.name)).toHaveText(`${testOtherUser1.username}, ${testOtherUser2.username}, sysadmin`);
+        await FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name).tap();
+
+        // * Verify on target GM screen
+        await verifyDetailsOnChannelScreen(`${testOtherUser1.username}, admin, ${testOtherUser2.username}`);
 
         // # Go back to channel list screen
-        await FindChannelsScreen.close();
+        await ChannelScreen.back();
     });
 
     it('MM-T4907_5 - should be able to find an archived channel', async () => {
@@ -140,10 +137,14 @@ describe('Channels - Find Channels', () => {
 
         // * Verify search returns the target archived channel item
         await wait(timeouts.ONE_SEC);
-        await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(archivedChannel.name)).toHaveText(archivedChannel.display_name);
+        await FindChannelsScreen.getFilteredChannelItem(archivedChannel.name).tap();
 
-        // # Go back to channel list screen
-        await FindChannelsScreen.close();
+        // * Verify on archievd channel name
+        await verifyDetailsOnChannelScreen(archivedChannel.display_name);
+
+        // # Go back to channel list screen by closing archived channel
+        await expect(ChannelScreen.archievedCloseChannelButton).toBeVisible();
+        await ChannelScreen.archievedCloseChannelButton.tap();
     });
 
     it('MM-T4907_6 - should be able to find a joined private channel and not find an unjoined private channel', async () => {
@@ -156,7 +157,6 @@ describe('Channels - Find Channels', () => {
 
         // * Verify search returns the target joined private channel item
         await wait(timeouts.ONE_SEC);
-        await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(joinedPrivateChannel.name)).toHaveText(joinedPrivateChannel.display_name);
 
         // # Search for an unjoined private channel
         await FindChannelsScreen.searchInput.replaceText(unjoinedPrivateChannel.name);
@@ -169,3 +169,9 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.close();
     });
 });
+
+async function verifyDetailsOnChannelScreen(display_name: string) {
+    await ChannelScreen.toBeVisible();
+    await expect(ChannelScreen.headerTitle).toHaveText(display_name);
+    await expect(ChannelScreen.introDisplayName).toHaveText(display_name);
+}
