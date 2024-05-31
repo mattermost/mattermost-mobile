@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - 'release-*'
-      - 'test_triggers'
   pull_request:
     branches:
       - 'master'
@@ -51,7 +50,7 @@ jobs:
   run-ios-tests-on-release:
     name: iOS Mobile Tests on Release
     uses: ./.github/workflows/e2e-detox-ci-template.yml
-    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/test_triggers') }}
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release-') }}
     with:
       run-ios-tests: true
       run-android-tests: false
