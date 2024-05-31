@@ -8,7 +8,7 @@ on:
       - 'release-*'
   pull_request:
     branches:
-      - 'master'
+      - 'main'
     types:
       - labeled
   workflow_dispatch:
