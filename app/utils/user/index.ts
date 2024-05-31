@@ -339,6 +339,10 @@ export function getNotificationProps(user?: UserModel) {
         push_status: 'online',
         push_threads: 'all',
         email_threads: 'all',
+        calls_desktop_sound: 'true',
+        calls_notification_sound: 'calm',
+        calls_mobile_sound: '',
+        calls_mobile_notification_sound: '',
     };
 
     return props;

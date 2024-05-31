@@ -1,0 +1,93 @@
+diff --git a/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java b/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
+index 10cb1e5..b78205e 100644
+--- a/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
++++ b/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
+@@ -1267,6 +1267,32 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+         return getAudioUri(type, fileBundle, fileBundleExt, fileSysWithExt, fileSysPath, "bundleBusytoneUri", "defaultBusytoneUri");
+     }
+ 
++    private Uri getRingtoneUriFromBundle(final String filename) {
++        if (audioUriMap.containsKey(filename)) {
++            Log.d(TAG, "getAudioUri() using: " + filename);
++            return audioUriMap.get(filename);
++        }
++
++        int res = 0;
++        ReactContext reactContext = getReactApplicationContext();
++        if (reactContext == null) {
++            Log.d(TAG, "getAudioUri() reactContext is null");
++        } else {
++            res = reactContext.getResources().getIdentifier(filename, "raw", mPackageName);
++        }
++
++        if (res <= 0) {
++            Log.d(TAG, String.format("getAudioUri() %s.%s not found in bundle.", filename, "mp3"));
++            audioUriMap.put(filename, null);
++            return null;
++        }
++
++        Uri uri = Uri.parse("android.resource://" + mPackageName + "/" + Integer.toString(res));
++        audioUriMap.put(filename, uri);
++        Log.d(TAG, "getAudioUri() using: " + filename);
++        return uri;
++    }
++
+     private Uri getAudioUri(final String _type, final String fileBundle, final String fileBundleExt, final String fileSysWithExt, final String fileSysPath, final String uriBundle, final String uriDefault) {
+         String type = _type;
+         if (type.equals("_BUNDLE_")) {
+@@ -1300,6 +1326,12 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+         final String target = fileSysPath + "/" + type;
+         Uri _uri = getSysFileUri(target);
+         if (_uri == null) {
++            Log.d(TAG, "getAudioUri() file not found in system, trying bundle");
++            _uri = getRingtoneUriFromBundle(type);
++            if (_uri != null) {
++                return _uri;
++            }
++
+             Log.d(TAG, "getAudioUri() using user default");
+             return getDefaultUserUri(uriDefault);
+         } else {
+diff --git a/node_modules/react-native-incall-manager/ios/RNInCallManager/RNInCallManager.m b/node_modules/react-native-incall-manager/ios/RNInCallManager/RNInCallManager.m
+index 7c54f6e..f861a0f 100644
+--- a/node_modules/react-native-incall-manager/ios/RNInCallManager/RNInCallManager.m
++++ b/node_modules/react-native-incall-manager/ios/RNInCallManager/RNInCallManager.m
+@@ -1126,6 +1126,18 @@ - (NSURL *)getRingtoneUri:(NSString *)_type
+     return uri;
+ }
+ 
++
++- (NSURL *)getRingtoneUriFromBundle:(NSString *)filename
++{
++    NSString *fileBundleExt = @"mp3";
++    NSLog(@"RNInCallManager.getRingtoneUriFromBundle(): trying to get from bundle: %@.%@", filename, fileBundleExt);
++    NSURL *uriBundle = [[NSBundle mainBundle] URLForResource:filename withExtension:fileBundleExt];
++    if (uriBundle == nil) {
++        NSLog(@"RNInCallManager.getRingtoneUriFromBundle(): not found in bundle: %@.%@", filename, fileBundleExt);
++    }
++    return uriBundle;
++}
++
+ - (NSURL *)getAudioUri:(NSString *)_type
+             fileBundle:(NSString *)fileBundle
+          fileBundleExt:(NSString *)fileBundleExt
+@@ -1149,11 +1161,15 @@ - (NSURL *)getAudioUri:(NSString *)_type
+         }
+     }
+ 
+-    if (*uriDefault == nil) {
+-        NSString *target = [NSString stringWithFormat:@"%@/%@", fileSysPath, type];
+-        *uriDefault = [self getSysFileUri:target];
++    // --- Check file every time in case user deleted.
++    NSString *target = [NSString stringWithFormat:@"%@/%@", fileSysPath, type];
++    NSURL *uri = [self getSysFileUri:target];
++
++    if (uri == nil) {
++        uri = [self getRingtoneUriFromBundle:type];
+     }
+-    return *uriDefault;
++
++    return uri;
+ }
+ 
+ - (NSURL *)getSysFileUri:(NSString *)target

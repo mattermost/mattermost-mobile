@@ -51,6 +51,10 @@ describe('components/channel_list_row', () => {
             highlight_keys: '',
             push: 'mention',
             push_status: 'away',
+            calls_desktop_sound: 'true',
+            calls_mobile_sound: '',
+            calls_notification_sound: 'Calm',
+            calls_mobile_notification_sound: '',
         },
     };
 
@@ -80,6 +84,10 @@ describe('components/channel_list_row', () => {
             highlight_keys: '',
             push: 'mention',
             push_status: 'away',
+            calls_desktop_sound: 'true',
+            calls_mobile_sound: '',
+            calls_notification_sound: 'Calm',
+            calls_mobile_notification_sound: '',
         },
     };
 

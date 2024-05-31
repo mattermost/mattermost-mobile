@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {mosThreshold} from '@mattermost/calls/lib/rtc_monitor';
+import InCallManager from 'react-native-incall-manager';
 import {Navigation} from 'react-native-navigation';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
@@ -37,10 +38,10 @@ import {Calls, General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getThreadById} from '@queries/servers/thread';
-import {getUserById} from '@queries/servers/user';
+import {getCurrentUser, getUserById} from '@queries/servers/user';
 import {isDMorGM} from '@utils/channel';
 import {generateId} from '@utils/general';
-import {logDebug} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
 
@@ -144,7 +145,10 @@ export const processIncomingCalls = async (serverUrl: string, calls: Call[], kee
     }
 
     newIncoming.sort((a, b) => a.startAt - b.startAt);
-    setIncomingCalls({incomingCalls: newIncoming});
+
+    setIncomingCalls({...getIncomingCalls(), incomingCalls: newIncoming});
+
+    playIncomingCallsRinging(serverUrl);
 };
 
 const getChannelIdFromCallId = (serverUrl: string, callId: string) => {
@@ -161,6 +165,8 @@ export const removeIncomingCall = (serverUrl: string, callId: string, channelId?
     if (!getCallsConfig(serverUrl).EnableRinging) {
         return;
     }
+
+    stopIncomingCallsRinging();
 
     const incomingCalls = getIncomingCalls();
     const newIncomingCalls = incomingCalls.incomingCalls.filter((ic) => ic.callID !== callId);
@@ -182,6 +188,76 @@ export const removeIncomingCall = (serverUrl: string, callId: string, channelId?
         nextCalls[chId].dismissed[callsState.myUserId] = true;
     }
     setCallsState(serverUrl, {...callsState, calls: nextCalls});
+};
+
+const getRingtoneOrNone = async (serverUrl: string) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const user = await getCurrentUser(database);
+        if (!user) {
+            // This shouldn't happen, so don't bother localizing and displaying an alert.
+            return 'none';
+        }
+
+        const enabled = user.notifyProps?.calls_mobile_sound ? user.notifyProps.calls_mobile_sound === 'true' : user.notifyProps?.calls_desktop_sound === 'true';
+        if (!enabled) {
+            return 'none';
+        }
+
+        let tone = user.notifyProps?.calls_mobile_notification_sound ? user.notifyProps.calls_mobile_notification_sound : user.notifyProps?.calls_notification_sound;
+        if (!tone) {
+            tone = Calls.RINGTONE_DEFAULT;
+        }
+        return 'calls_' + tone.toLowerCase();
+    } catch (error) {
+        logError('failed to getServerDatabase in getRingtoneOrNone', error);
+        return 'none';
+    }
+};
+
+const shouldRing = () => {
+    // Do not ring if we are already ringing, or we have no incoming calls
+    const incomingCalls = getIncomingCalls();
+    if (incomingCalls.currentRingId || incomingCalls.incomingCalls.length === 0) {
+        return false;
+    }
+
+    // Do not ring if we are in a call
+    const currentCall = getCurrentCall();
+    return !currentCall;
+};
+
+const playIncomingCallsRinging = async (serverUrl: string) => {
+    if (!shouldRing()) {
+        return;
+    }
+
+    const ringId = generateId();
+    const ringTone = await getRingtoneOrNone(serverUrl);
+    if (ringTone === 'none') {
+        return;
+    }
+    setIncomingCalls({...getIncomingCalls(), currentRingId: ringId});
+    InCallManager.startRingtone(ringTone, Calls.RINGTONE_VIBRATE_PATTERN);
+
+    setTimeout(() => {
+        const incoming = getIncomingCalls();
+        if (incoming.currentRingId === ringId) {
+            InCallManager.stopRingback();
+            setIncomingCalls({...getIncomingCalls(), currentRingId: undefined});
+        }
+    }, Calls.RING_LENGTH);
+};
+
+const stopIncomingCallsRinging = () => {
+    const incomingCalls = getIncomingCalls();
+    if (!incomingCalls.currentRingId) {
+        return;
+    }
+
+    InCallManager.stopRingtone();
+    setIncomingCalls({...incomingCalls, currentRingId: undefined});
 };
 
 export const setCallForChannel = (serverUrl: string, channelId: string, enabled?: boolean, call?: Call) => {

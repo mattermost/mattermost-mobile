@@ -47,6 +47,7 @@ export type IncomingCallNotification = {
 
 export type IncomingCalls = {
     incomingCalls: IncomingCallNotification[];
+    currentRingId?: string;
 }
 
 export const DefaultIncomingCalls: IncomingCalls = {
