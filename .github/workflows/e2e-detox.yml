@@ -17,18 +17,26 @@ on:
         description: 'Enter iOS version'
         required: false
         default: "iOS 17.4"
+        type: choice
+        options:
+          - "iOS 17.5"
+          - "iOS 17.4"
+          - "iOS 17.2"
+          - "iOS 17.0"
       device_name:
         description: 'Enter iOS Device Name'
         required: false
         default: "iPhone 15 Pro"
-      commit_sha:
-        type: string
-        required: false
-
+        type: choice
+        options:
+          - "iPhone 15 Pro"
+          - "iPhone 15"
+          - "iPhone 14 Pro"
+          - "iPhone 14"
 jobs:
 
   run-ios-tests-on-pr:
-    name: iOS Mobile Tests
+    name: iOS Mobile Tests on PR
     uses: ./.github/workflows/e2e-detox-ci-template.yml
     if: ${{ 
       (
