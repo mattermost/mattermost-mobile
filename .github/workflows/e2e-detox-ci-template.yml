@@ -223,6 +223,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ needs.download-e2e-results.outputs.failures > 0 }}
     needs:
+      - generate-specs
       - download-e2e-results
     steps:
       - name: Set Target URL
@@ -255,6 +256,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ needs.download-e2e-results.outputs.failures == 0 }}
     needs:
+      - generate-specs
       - download-e2e-results
     steps:
       - name: Set Target URL
