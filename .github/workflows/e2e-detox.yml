@@ -26,6 +26,7 @@ on:
         required: false
 
 jobs:
+
   run-ios-tests-on-pr:
     name: iOS Mobile Tests
     uses: ./.github/workflows/e2e-detox-ci-template.yml
@@ -41,19 +42,21 @@ jobs:
       run-android-tests: false
       remove-pr-label: true
       commit_sha: "${{ inputs.commit_sha || github.event.pull_request.head.sha || github.sha }}"
-      status_check_context: "Detox iOS Mobile Tests"
+      status_check_context: "Detox iOS Mobile Tests on PR"
+      run-type: 'PR'
     secrets: inherit
 
   run-ios-tests-on-release:
     name: iOS Mobile Tests on Release
     uses: ./.github/workflows/e2e-detox-ci-template.yml
-    if: ${{ startsWith(github.ref, 'refs/heads/release-') }}
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release-') }}
     with:
       run-ios-tests: true
       run-android-tests: false
       remove-pr-label: false
       commit_sha: "${{ github.sha }}"
       status_check_context: "Detox iOS Mobile Tests on Release"
+      run-type: 'RELEASE'
     secrets: inherit
 
   run-ios-tests-on-main-scheduled:
@@ -66,6 +69,7 @@ jobs:
       remove-pr-label: false
       commit_sha: "${{ github.sha }}"
       status_check_context: "Detox iOS Mobile Tests on Main (Scheduled)"
+      run-type: 'MAIN'
     secrets: inherit
 
   run-ios-tests-on-manual-trigger:
@@ -78,4 +82,5 @@ jobs:
       remove-pr-label: false
       commit_sha: "${{ inputs.commit_sha || github.sha }}"
       status_check_context: "Detox iOS Mobile Tests on Manual Trigger"
+      run-type: 'MANUAL'
     secrets: inherit
