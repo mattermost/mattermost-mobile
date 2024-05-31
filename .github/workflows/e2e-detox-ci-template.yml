@@ -26,6 +26,11 @@ on:
         type: string
         required: false
         default: 'PR'
+      testcase_failure_fatal:
+        description: 'Should failures be considered fatal'
+        required: false
+        type: boolean
+        default: false
 
 env:
   AWS_REGION: 'us-east-1'
@@ -219,9 +224,8 @@ jobs:
           echo "failures=${FAILURES}" >> $GITHUB_OUTPUT
           echo "Detox run completed with $FAILURES failures"
 
-  update-failure-final-status:
+  update-final-status:
     runs-on: ubuntu-22.04
-    if: ${{ needs.download-e2e-results.outputs.failures > 0 }}
     needs:
       - generate-specs
       - download-e2e-results
@@ -240,38 +244,14 @@ jobs:
         env:
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.commit_sha }}
-          context: ${{ inputs.status_check_context }}
-          description: |
-            Completed with ${{ needs.download-e2e-results.outputs.failures }} failures
-          status: failure
-          target_url: ${{ env.TARGET_URL }}
-
-  update-success-final-status:
-    runs-on: ubuntu-22.04
-    if: ${{ needs.download-e2e-results.outputs.failures == 0 }}
-    needs:
-      - generate-specs
-      - download-e2e-results
-    steps:
-      - name: Set Target URL
-        id: set-url
+      - name: Determine Status
+        id: determine-status
         run: |
-          s3Folder="${{ env.BUILD_ID }}-${{ env.COMMIT_HASH }}-${{ env.BRANCH }}"
-          s3Folder=$(echo "$s3Folder" | sed 's/\./-/g')
-
-          if ${{ inputs.run-ios-tests }}; then
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/ios-report.html" >> $GITHUB_ENV
+          if [[ ${{ needs.download-e2e-results.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
+            echo "status=failure" >> $GITHUB_ENV
           else
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/android-report.html" >> $GITHUB_ENV
+            echo "status=success" >> $GITHUB_ENV
           fi
-        env:
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -282,7 +262,7 @@ jobs:
           context: ${{ inputs.status_check_context }}
           description: |
             Completed with ${{ needs.download-e2e-results.outputs.failures }} failures
-          status: success
+          status: ${{ env.status }}
           target_url: ${{ env.TARGET_URL }}
 
   e2e-remove-label:
