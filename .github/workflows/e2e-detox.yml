@@ -12,7 +12,26 @@ on:
     types:
       - labeled
       - opened
-
+  workflow_dispatch:
+    inputs:
+      api-level:
+        description: 'Android API Level'
+        required: true
+        default: '29'
+        type: choice
+        options:
+          - '29'
+          - '30'
+          - '31'
+      device:
+        description: 'Device Type'
+        required: true
+        default: 'Pixel_3'
+        type: choice
+        options:
+          - 'Pixel_3'
+          - 'Pixel_4'
+    
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
@@ -102,8 +121,8 @@ jobs:
           cache: "gradle"
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v3
-  
+        uses: gradle/actions/wrapper-validation@v3
+
       - name: Detox build
         run: |
           cd detox
@@ -167,19 +186,36 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
         with:
-          api-level: 29
-          build-tools-version: 29.0.3
-  
+          api-level: ${{ github.event.inputs['api-level'] }}
+          build-tools-version: ${{ github.event.inputs['api-level'] }}.0.3
+
+      - name: Create AVD
+        run: |
+          echo "no" | avdmanager create avd -n test -k "system-images;android-${{ github.event.inputs['api-level'] }};google_apis;x86" -d ${{ github.event.inputs['device'] }}
+          $ANDROID_HOME/emulator/emulator -list-avds
+        shell: bash
+
+      - name: Update detoxrc.json
+        run: |
+          sed -i 's/"avdName": "Pixel_3_API_29"/"avdName": "test"/' detoxrc.json
+        shell: bash
+
       - name: Start AVD
         run: |
-          sudo $ANDROID_HOME/emulator/emulator -avd test -no-audio -no-window -gpu swiftshader_indirect &
+          $ANDROID_HOME/emulator/emulator -avd test -no-audio -no-window -gpu swiftshader_indirect &
           adb wait-for-device
-
+          adb devices
+        shell: bash
+  
       - name: Start React Native Metro Server
         run: npm run start &
 
       - name: Install Detox Dependencies
         run: cd detox && npm i
+
+      - name: Run Detox E2E Tests
+        continue-on-error: true
+        run: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
       - name: Upload Android Test Report
         if: always()
