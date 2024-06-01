@@ -31,7 +31,7 @@ on:
         options:
           - 'Pixel_3'
           - 'Pixel_4'
-    
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
@@ -139,7 +139,7 @@ jobs:
   e2e-android:
     services:
       docker:
-        image: circleci/android:api-29
+        image: circleci/android:api-${{ inputs.api-level }}
         options: --privileged
         ports:
           - 5566:5566
@@ -186,12 +186,12 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
         with:
-          api-level: ${{ github.event.inputs['api-level'] }}
-          build-tools-version: ${{ github.event.inputs['api-level'] }}.0.3
+          api-level: ${{ inputs.api-level }}
+          build-tools-version: ${{ inputs.api-level }}
 
       - name: Create AVD
         run: |
-          echo "no" | avdmanager create avd -n test -k "system-images;android-${{ github.event.inputs['api-level'] }};google_apis;x86" -d ${{ github.event.inputs['device'] }}
+          echo "no" | avdmanager create avd -n test -k "system-images;android-${{ inputs.api-level }};google_apis;x86" -d ${{ inputs.device }}
           $ANDROID_HOME/emulator/emulator -list-avds
         shell: bash
 
