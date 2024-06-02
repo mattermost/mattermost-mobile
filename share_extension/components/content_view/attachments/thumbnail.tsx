@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image} from 'expo-image';
 import {LinearGradient} from 'expo-linear-gradient';
 import React, {useMemo} from 'react';
 import {StyleSheet, useWindowDimensions, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
 import {imageDimensions} from '@share/utils';
@@ -88,10 +88,10 @@ const Thumbnail = ({contentMode, file, hasError, theme, type}: Props) => {
     return (
         <View style={containerStyle}>
             <View style={styles.center}>
-                <FastImage
+                <Image
                     source={source}
                     style={[imgStyle, styles.radius]}
-                    resizeMode='cover'
+                    contentFit='cover'
                 />
                 {type === 'video' &&
                 <>

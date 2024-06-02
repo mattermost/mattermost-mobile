@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import CookieManager, {type Cookie} from '@react-native-cookies/cookies';
+import {Image} from 'expo-image';
 import {AppState, type AppStateStatus, DeviceEventEmitter, Platform} from 'react-native';
-import FastImage from 'react-native-fast-image';
 
 import {removePushDisabledInServerAcknowledged, storeOnboardingViewedValue} from '@actions/app/global';
 import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
@@ -127,7 +127,7 @@ class SessionManager {
 
         this.resetLocale();
         this.clearCookiesForServer(serverUrl);
-        FastImage.clearDiskCache();
+        Image.clearDiskCache();
         deleteFileCache(serverUrl);
         deleteFileCacheByDir('mmPasteInput');
         deleteFileCacheByDir('thumbnails');

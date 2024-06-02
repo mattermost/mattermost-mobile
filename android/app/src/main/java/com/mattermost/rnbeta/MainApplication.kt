@@ -30,6 +30,7 @@ import com.wix.reactnativenotifications.core.notification.INotificationsApplicat
 import com.wix.reactnativenotifications.core.notification.IPushNotification
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
+import expo.modules.image.okhttp.ExpoImageOkHttpClientGlideModule
 import java.io.File
 
 class MainApplication : NavigationApplication(), INotificationsApplication {
@@ -72,6 +73,7 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
         // with a cookie jar defined in APIClientModule and an interceptor to intercept all
         // requests that originate from React Native's OKHttpClient
         OkHttpClientProvider.setOkHttpClientFactory(RCTOkHttpClientFactory())
+        ExpoImageOkHttpClientGlideModule.okHttpClient = RCTOkHttpClientFactory().createNewNetworkModuleClient()
 
         SoLoader.init(this, false)
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {

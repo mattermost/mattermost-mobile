@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {PanGestureHandler, type PanGestureHandlerGestureEvent, TapGestureHandler} from 'react-native-gesture-handler';
-import Animated, {cancelAnimation, runOnJS, type SharedValue, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring, type WithSpringConfig} from 'react-native-reanimated';
+import Animated, {cancelAnimation, runOnJS, type SharedValue, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring, type WithSpringConfig, useAnimatedReaction} from 'react-native-reanimated';
 
 import {useAnimatedGestureHandler} from '@hooks/gallery';
 import {clampVelocity, friction, getShouldRender, workletNoop, workletNoopTrue} from '@utils/gallery';
@@ -44,6 +44,23 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
 });
+
+function getSpringConfig(velocity: number): WithSpringConfig {
+    'worklet';
+
+    const ratio = 1.1;
+    const mass = 0.4;
+    const stiffness = 100.0;
+
+    return {
+        stiffness,
+        mass,
+        damping: ratio * 2.0 * Math.sqrt(mass * stiffness),
+        restDisplacementThreshold: 1,
+        restSpeedThreshold: 5,
+        velocity,
+    };
+}
 
 const Pager = ({
     gutterWidth = GUTTER_WIDTH, initialDiffValue = 0, initialIndex, keyExtractor,
@@ -96,7 +113,21 @@ const Pager = ({
     const length = useSharedValue(totalCount);
     const pagerX = useSharedValue(0);
     const toValueAnimation = useSharedValue(getPageTranslate(initialIndex));
-    const offsetX = useDerivedValue(() => getPageTranslate(activeIndexRef.value), [width]);
+
+    const offsetX = useDerivedValue(() => {
+        const config = getSpringConfig(velocity.value);
+        return withSpring(
+            toValueAnimation.value,
+            config,
+            (isCanceled) => {
+                'worklet';
+
+                if (!isCanceled) {
+                    velocity.value = 0;
+                }
+            },
+        );
+    }, []);
     const totalWidth = useDerivedValue(() => ((length.value * width) + ((gutterWidthToUse * length.value) - 2)), [width]);
 
     const onIndexChangeCb = useCallback((nextIndex: number) => {
@@ -114,46 +145,11 @@ const Pager = ({
         onIndexChangeCb(initialIndex);
     }, [initialIndex]);
 
-    function getSpringConfig(noVelocity?: boolean): WithSpringConfig {
-        'worklet';
-
-        const ratio = 1.1;
-        const mass = 0.4;
-        const stiffness = 100.0;
-
-        return {
-            stiffness,
-            mass,
-            damping: ratio * 2.0 * Math.sqrt(mass * stiffness),
-            restDisplacementThreshold: 1,
-            restSpeedThreshold: 5,
-            velocity: noVelocity ? 0 : velocity.value,
-        };
-    }
-
-    const onChangePageAnimation = (noVelocity?: boolean) => {
-        'worklet';
-
-        const config = getSpringConfig(noVelocity);
-
-        if (offsetX.value === toValueAnimation.value) {
-            return;
+    useAnimatedReaction(() => sharedWidth.value, (current, previous) => {
+        if (current !== previous) {
+            toValueAnimation.value = (getPageTranslate(index.value));
         }
-
-        // @ts-expect-error defined as read only but this is the
-        // only way it works with rotation
-        offsetX.value = withSpring(
-            toValueAnimation.value,
-            config,
-            (isCanceled) => {
-                'worklet';
-
-                if (!isCanceled) {
-                    velocity.value = 0;
-                }
-            },
-        );
-    };
+    });
 
     // S3 Pager Interaction
     function getCanSwipe(currentTranslate = 0) {
@@ -257,15 +253,10 @@ const Pager = ({
             const isHalf = sharedWidth.value / 2 < translation;
             const shouldMoveToNextPage = (vx > 10 || isHalf) && canSwipe;
 
-            // @ts-expect-error defined as read only but this is the
-            // only way it works with rotation
-            offsetX.value += pagerX.value;
             pagerX.value = 0;
 
             // we invert the value since the translationY is left to right
             toValueAnimation.value = -(shouldMoveToNextPage ? -getPageTranslate(nextIndex) : -getPageTranslate(index.value));
-
-            onChangePageAnimation(!shouldMoveToNextPage);
 
             if (shouldMoveToNextPage) {
                 index.value = nextIndex;
@@ -284,7 +275,7 @@ const Pager = ({
         },
 
         onEnd: () => {
-            onChangePageAnimation(true);
+            toValueAnimation.value = getPageTranslate(index.value);
         },
     });
 

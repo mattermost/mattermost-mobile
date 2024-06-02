@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image} from 'expo-image';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, StyleSheet, TouchableOpacity, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
 
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {emptyFunction} from '@utils/general';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
@@ -109,9 +108,8 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
             style={[styles.imageContainer, {height: dimensions.height, width: dimensions.width}]}
             onPress={playYouTubeVideo}
         >
-            <FastImage
-                onError={emptyFunction}
-                resizeMode='cover'
+            <Image
+                contentFit='cover'
                 style={[styles.image, dimensions]}
                 source={{uri: imgUrl}}
             />

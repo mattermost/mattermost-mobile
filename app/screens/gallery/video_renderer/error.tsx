@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image} from 'expo-image';
 import React, {type Dispatch, type SetStateAction, useCallback, useState} from 'react';
 import {StyleSheet, Text, useWindowDimensions, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
 import {RectButton, TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
@@ -78,7 +78,7 @@ const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideCont
     let poster;
     if (posterUri && !loadPosterError) {
         poster = (
-            <FastImage
+            <Image
                 source={{uri: posterUri}}
                 style={hasPoster && imageDimensions}
                 onLoad={handlePosterSet}

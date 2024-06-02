@@ -16,7 +16,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FileIcon from './file_icon';
 
-import type {ResizeMode} from 'react-native-fast-image';
+import type {ImageContentFit} from 'expo-image';
 
 type ImageFileProps = {
     backgroundColor?: string;
@@ -24,7 +24,7 @@ type ImageFileProps = {
     forwardRef?: React.RefObject<unknown>;
     inViewPort?: boolean;
     isSingleImage?: boolean;
-    resizeMode?: ResizeMode;
+    contentFit?: ImageContentFit;
     wrapperWidth?: number;
 }
 
@@ -67,7 +67,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ImageFile = ({
     backgroundColor, file, forwardRef, inViewPort, isSingleImage,
-    resizeMode = 'cover', wrapperWidth,
+    contentFit = 'cover', wrapperWidth,
 }: ImageFileProps) => {
     const dimensions = useWindowDimensions();
     const theme = useTheme();
@@ -120,7 +120,7 @@ const ImageFile = ({
             style={[isSingleImage ? null : style.imagePreview, imageDimensions]}
             tintDefaultSource={!file.localPath && !failed}
             onError={handleError}
-            resizeMode={resizeMode}
+            contentFit={contentFit}
             {...imageProps()}
         />
     );

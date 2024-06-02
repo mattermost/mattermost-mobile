@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image, type ImageSource} from 'expo-image';
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useState} from 'react';
 import {type ImageStyle, StyleSheet, View, type ViewStyle} from 'react-native';
-import FastImage, {type Source} from 'react-native-fast-image';
 import Animated, {
     cancelAnimation, Easing, interpolate, runOnJS, runOnUI,
     useAnimatedReaction, useAnimatedStyle, useSharedValue, withSpring, withTiming, type WithTimingConfig,
@@ -26,7 +26,7 @@ interface Size {
 }
 
 export interface RenderItemInfo {
-    source: Source;
+    source: ImageSource;
     width: number;
     height: number;
     itemStyles: ViewStyle | ImageStyle;
@@ -45,7 +45,7 @@ interface LightboxSwipeoutProps {
     renderBackdropComponent?: (info: BackdropProps) => JSX.Element;
     renderItem: (info: RenderItemInfo) => JSX.Element | null;
     sharedValues: GalleryManagerSharedValues;
-    source: Source | string;
+    source: ImageSource | string;
     target: GalleryItemType;
     targetDimensions: Size;
 }
@@ -54,7 +54,7 @@ export interface LightboxSwipeoutRef {
     closeLightbox: () => void;
 }
 
-const AnimatedImage = Animated.createAnimatedComponent(FastImage);
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 const timingConfig: WithTimingConfig = {
     duration: 250,
@@ -66,7 +66,7 @@ const LightboxSwipeout = forwardRef<LightboxSwipeoutRef, LightboxSwipeoutProps>(
     renderBackdropComponent, renderItem,
     sharedValues, source, target, targetDimensions,
 }: LightboxSwipeoutProps, ref) => {
-    const imageSource: Source = typeof source === 'string' ? {uri: source} : source;
+    const imageSource: ImageSource = typeof source === 'string' ? {uri: source} : source;
     const {x, y, width, height, opacity, targetWidth, targetHeight} = sharedValues;
     const animationProgress = useSharedValue(0);
     const childTranslateY = useSharedValue(0);

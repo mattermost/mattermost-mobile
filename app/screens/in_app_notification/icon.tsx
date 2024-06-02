@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {withObservables} from '@nozbe/watermelondb/react';
+import {Image, type ImageSource} from 'expo-image';
 import React from 'react';
-import {Image, StyleSheet, View} from 'react-native';
-import FastImage, {type Source} from 'react-native-fast-image';
+import {StyleSheet, View} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
@@ -39,9 +39,9 @@ const NotificationIcon = ({author, enablePostIconOverride, fromWebhook, override
     let icon;
     if (fromWebhook && !useUserIcon && enablePostIconOverride) {
         if (overrideIconUrl) {
-            const source: Source = {uri: buildAbsoluteUrl(serverUrl, overrideIconUrl)};
+            const source: ImageSource = {uri: buildAbsoluteUrl(serverUrl, overrideIconUrl)};
             icon = (
-                <FastImage
+                <Image
                     source={source}
                     style={styles.icon}
                 />
@@ -57,7 +57,7 @@ const NotificationIcon = ({author, enablePostIconOverride, fromWebhook, override
     } else if (author) {
         const pictureUrl = buildProfileImageUrlFromUser(serverUrl, author);
         icon = (
-            <FastImage
+            <Image
                 key={pictureUrl}
                 style={{width: IMAGE_SIZE, height: IMAGE_SIZE, borderRadius: (IMAGE_SIZE / 2)}}
                 source={{uri: buildAbsoluteUrl(serverUrl, pictureUrl)}}

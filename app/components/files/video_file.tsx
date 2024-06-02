@@ -19,7 +19,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FileIcon from './file_icon';
 
-import type {ResizeMode} from 'react-native-fast-image';
+import type {ImageContentFit} from 'expo-image';
 
 type Props = {
     index: number;
@@ -27,7 +27,7 @@ type Props = {
     forwardRef?: React.RefObject<unknown>;
     inViewPort?: boolean;
     isSingleImage?: boolean;
-    resizeMode?: ResizeMode;
+    contentFit?: ImageContentFit;
     wrapperWidth: number;
     updateFileForGallery?: (idx: number, file: FileInfo) => void;
 }
@@ -63,7 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const VideoFile = ({
     index, file, forwardRef, inViewPort, isSingleImage,
-    resizeMode = 'cover', wrapperWidth, updateFileForGallery,
+    contentFit = 'cover', wrapperWidth, updateFileForGallery,
 }: Props) => {
     const serverUrl = useServerUrl();
     const [failed, setFailed] = useState(false);
@@ -160,7 +160,7 @@ const VideoFile = ({
             forwardRef={forwardRef}
             style={[isSingleImage ? null : style.imagePreview, imageDimensions]}
             onError={handleError}
-            resizeMode={resizeMode}
+            contentFit={contentFit}
             {...imageProps()}
         />
     );

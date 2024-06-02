@@ -7,8 +7,8 @@
   "license": "Apache 2.0",
   "private": true,
   "engines": {
-    "node": "^20.10.0",
-    "npm": "^10.0.0"
+    "node": "^18 || ^20",
+    "npm": "^9 || ^10"
   },
   "dependencies": {
     "@formatjs/intl-datetimeformat": "6.12.5",
@@ -50,6 +50,7 @@
     "expo": "51.0.8",
     "expo-application": "5.9.1",
     "expo-device": "6.0.2",
+    "expo-image": "1.12.9",
     "expo-linear-gradient": "13.0.2",
     "expo-store-review": "7.0.2",
     "expo-video-thumbnails": "8.0.0",
@@ -71,7 +72,6 @@
     "react-native-dotenv": "3.4.11",
     "react-native-elements": "3.4.3",
     "react-native-exception-handler": "2.10.10",
-    "react-native-fast-image": "8.6.3",
     "react-native-file-viewer": "2.1.5",
     "react-native-gesture-handler": "2.16.2",
     "react-native-haptic-feedback": "2.2.0",

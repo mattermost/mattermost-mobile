@@ -108,7 +108,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId
                             imageStyle={style.attachmentMargin}
                             imageUri={imageUrl}
                             onError={onError}
-                            resizeMode='contain'
+                            contentFit='contain'
                             style={{height, width}}
                         />
                     </Animated.View>
