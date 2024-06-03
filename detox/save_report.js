@@ -75,7 +75,7 @@ const saveReport = async () => {
     removeOldGeneratedReports();
 
     const detox_version = shell.exec('npm list detox').stdout.split('\n')[1].split('@')[1].trim();
-    const headless = IOS === 'true' ? false : HEADLESS === 'true';
+    const headless = IOS === 'true' ? 'false' : HEADLESS === 'true';
     const os_name = os.platform();
     const os_version = os.release();
     const node_version = process.version;

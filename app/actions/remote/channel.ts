@@ -667,6 +667,17 @@ export async function markChannelAsRead(serverUrl: string, channelId: string, up
     }
 }
 
+export async function unsetActiveChannelOnServer(serverUrl: string) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.viewMyChannel('');
+        return {};
+    } catch (error) {
+        logDebug('error on markChannelAsRead', getFullErrorMessage(error));
+        return {error};
+    }
+}
+
 export async function switchToChannelByName(serverUrl: string, channelName: string, teamName: string, errorHandler: (intl: IntlShape) => void, intl: IntlShape) {
     const onError = (joinedTeam: boolean, teamId?: string) => {
         errorHandler(intl);

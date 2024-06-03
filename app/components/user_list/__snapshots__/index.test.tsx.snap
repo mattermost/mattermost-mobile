@@ -9,43 +9,7 @@ exports[`components/channel_list_row should show no results 1`] = `
       "flexGrow": 1,
     }
   }
-  data={
-    [
-      {
-        "data": [
-          {
-            "auth_service": "",
-            "create_at": 1111,
-            "delete_at": 0,
-            "email": "john@doe.com",
-            "first_name": "",
-            "id": "1",
-            "last_name": "",
-            "locale": "",
-            "nickname": "",
-            "notify_props": {
-              "channel": "true",
-              "comments": "never",
-              "desktop": "mention",
-              "desktop_sound": "true",
-              "email": "true",
-              "first_name": "true",
-              "highlight_keys": "",
-              "mention_keys": "",
-              "push": "mention",
-              "push_status": "away",
-            },
-            "position": "",
-            "roles": "",
-            "update_at": 1111,
-            "username": "johndoe",
-          },
-        ],
-        "first": true,
-        "id": "J",
-      },
-    ]
-  }
+  data={[]}
   getItem={[Function]}
   getItemCount={[Function]}
   initialNumToRender={15}
@@ -54,7 +18,6 @@ exports[`components/channel_list_row should show no results 1`] = `
   keyboardShouldPersistTaps="always"
   maxToRenderPerBatch={16}
   onContentSizeChange={[Function]}
-  onEndReached={[Function]}
   onLayout={[Function]}
   onMomentumScrollBegin={[Function]}
   onMomentumScrollEnd={[Function]}
@@ -71,201 +34,194 @@ exports[`components/channel_list_row should show no results 1`] = `
       "flex": 1,
     }
   }
-  testID="UserListRow.section_list"
+  testID="UserListRow.flat_list"
+  viewabilityConfigCallbackPairs={[]}
 >
   <View>
     <View
-      onFocusCapture={[Function]}
-      onLayout={[Function]}
-      style={null}
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flexGrow": 1,
+            "justifyContent": "center",
+          },
+          {
+            "paddingBottom": 0,
+          },
+        ]
+      }
     >
       <View
         style={
           {
-            "backgroundColor": "#ffffff",
+            "alignItems": "center",
+            "flexGrow": 1,
+            "height": "100%",
+            "justifyContent": "center",
+            "paddingHorizontal": 32,
           }
         }
       >
-        <View
-          style={
-            {
-              "backgroundColor": "rgba(63,67,80,0.08)",
-              "height": 24,
-              "justifyContent": "center",
-              "paddingLeft": 16,
-            }
-          }
-        >
-          <Text
-            style={
-              {
-                "color": "#3f4350",
-                "fontFamily": "OpenSans-SemiBold",
-                "fontSize": 12,
-                "fontWeight": "600",
-                "lineHeight": 16,
-              }
-            }
-          >
-            J
-          </Text>
-        </View>
-      </View>
-    </View>
-    <View
-      onFocusCapture={[Function]}
-      onLayout={[Function]}
-      style={null}
-    >
-      <View
-        accessibilityState={
-          {
-            "busy": undefined,
-            "checked": undefined,
-            "disabled": false,
-            "expanded": undefined,
-            "selected": undefined,
-          }
-        }
-        accessibilityValue={
-          {
-            "max": undefined,
-            "min": undefined,
-            "now": undefined,
-            "text": undefined,
-          }
-        }
-        accessible={true}
-        collapsable={false}
-        focusable={true}
-        onClick={[Function]}
-        onLayout={[Function]}
-        onResponderGrant={[Function]}
-        onResponderMove={[Function]}
-        onResponderRelease={[Function]}
-        onResponderTerminate={[Function]}
-        onResponderTerminationRequest={[Function]}
-        onStartShouldSetResponder={[Function]}
-        style={
-          {
-            "opacity": 1,
-          }
-        }
-      >
-        <View
+        <RNSVGSvgView
+          align="xMidYMid"
+          bbHeight={149}
+          bbWidth={140}
+          fill="none"
+          focusable={false}
+          height={149}
+          meetOrSlice={0}
+          minX={0}
+          minY={0}
           style={
             [
-              [
-                {
-                  "alignItems": "center",
-                  "flexDirection": "row",
-                  "height": 40,
-                  "paddingBottom": 8,
-                  "paddingTop": 4,
-                },
-                {
-                  "opacity": 1,
-                  "paddingHorizontal": 20,
-                },
-                undefined,
-              ],
-              undefined,
+              {
+                "backgroundColor": "transparent",
+                "borderWidth": 0,
+              },
+              {
+                "flex": 0,
+                "height": 149,
+                "width": 140,
+              },
             ]
           }
-          testID="create_direct_message.user_list.user_item.1.1"
+          vbHeight={149}
+          vbWidth={140}
+          width={140}
         >
-          <View
-            style={
+          <RNSVGGroup
+            fill={null}
+            propList={
               [
-                {
-                  "alignItems": "center",
-                  "justifyContent": "center",
-                },
-                {
-                  "height": 24,
-                  "width": 24,
-                },
-                {
-                  "marginRight": 12,
-                },
+                "fill",
               ]
             }
-            testID="create_direct_message.user_list.user_item.1.1.profile_picture"
           >
-            <Icon
-              name="account-outline"
-              size={24}
-              style={
+            <RNSVGEllipse
+              cx={70}
+              cy={122.5}
+              fill={
                 {
-                  "color": "rgba(63,67,80,0.48)",
+                  "payload": 4278190080,
+                  "type": 0,
                 }
+              }
+              fillOpacity={0.06}
+              propList={
+                [
+                  "fill",
+                  "fillOpacity",
+                ]
+              }
+              rx={45}
+              ry={3}
+            />
+            <RNSVGPath
+              d="M37.593 38.008c4.754-4.815 10.754-7.295 17.989-7.428 7.101.133 13.065 2.601 17.892 7.428 4.815 4.827 7.295 10.791 7.428 17.892-.133 7.235-2.601 13.223-7.428 17.99-4.827 4.754-10.791 7.27-17.892 7.512-7.235-.254-13.223-2.758-17.99-7.513-4.754-4.766-7.258-10.766-7.512-18 .254-7.102 2.758-13.066 7.513-17.881z"
+              fill={
+                {
+                  "payload": 4294967295,
+                  "type": 0,
+                }
+              }
+              opacity={0.4}
+              propList={
+                [
+                  "fill",
+                ]
               }
             />
-          </View>
-          <View
-            style={
-              {
-                "flex": 1,
-              }
-            }
-          >
-            <View
-              style={
+            <RNSVGPath
+              d="M78.887 51.382c-2.152-6.992-6.225-12.225-12.226-15.69-6.001-3.465-12.57-4.376-19.701-2.744-3.9.996-7.297 2.718-10.22 5.163 3.269-3.567 7.415-6.037 12.428-7.416 7.13-1.633 13.732-.703 19.787 2.793s10.16 8.748 12.313 15.74c1.322 5.037 1.256 9.862-.21 14.47-1.455 4.614-4.067 8.49-7.84 11.611 2.833-3.087 4.783-6.713 5.844-10.894 1.05-4.187.991-8.523-.175-13.033z"
+              fill={
                 {
-                  "flex": 1,
-                  "flexDirection": "row",
+                  "payload": 4278190080,
+                  "type": 0,
                 }
               }
-            >
-              <Text
-                numberOfLines={1}
-                style={
-                  {
-                    "color": "#3f4350",
-                    "flex": 0,
-                    "flexShrink": 1,
-                    "fontFamily": "OpenSans",
-                    "fontSize": 16,
-                    "fontWeight": "400",
-                    "lineHeight": 24,
-                  }
+              fillOpacity={0.4}
+              propList={
+                [
+                  "fill",
+                  "fillOpacity",
+                ]
+              }
+            />
+            <RNSVGPath
+              d="M86.76 53.929c-.508-7.506-3.554-14.097-9.126-19.774-6.345-6.05-13.67-9.08-21.973-9.08-8.303 0-15.616 3.03-21.961 9.08-6.08 6.315-9.126 13.591-9.126 21.855 0 8.262 3.046 15.551 9.126 21.854 5.825 5.556 12.485 8.551 19.967 8.984 7.481.445 14.383-1.611 20.728-6.146l4.75 4.727 6.08-6.05-4.75-4.727c4.69-6.302 6.78-13.218 6.285-20.723zm-13.126 19.87c-4.823 4.726-10.782 7.228-17.876 7.468-7.228-.252-13.211-2.742-17.973-7.469-4.75-4.727-7.252-10.692-7.506-17.885.254-7.06 2.756-12.99 7.506-17.789 4.75-4.787 10.745-7.252 17.973-7.385 7.094.133 13.053 2.586 17.876 7.385 4.81 4.8 7.288 10.73 7.42 17.79-.132 7.192-2.598 13.157-7.42 17.884z"
+              fill={
+                {
+                  "payload": 4290428617,
+                  "type": 0,
                 }
-                testID="create_direct_message.user_list.user_item.1.1.display_name"
-              >
-                johndoe
-              </Text>
-              <View
-                style={
-                  {
-                    "flex": 1,
-                  }
+              }
+              propList={
+                [
+                  "fill",
+                ]
+              }
+            />
+            <RNSVGPath
+              d="M106.202 114.187c-1.568.448-2.728.291-3.482-.472L78.06 86.651c-.754-.763-1.065-1.743-.945-2.954s.873-2.567 2.261-4.093c1.508-1.393 2.848-2.192 4.044-2.386 1.197-.193 2.166.158 2.92 1.054l26.921 24.957c.754.763.874 1.901.371 3.427-.502 1.525-1.448 3.051-2.824 4.577-1.495 1.526-3.039 2.506-4.606 2.954z"
+              fill={
+                {
+                  "payload": 4294949919,
+                  "type": 0,
                 }
-              />
-              <View
-                style={
-                  {
-                    "alignItems": "center",
-                    "justifyContent": "center",
-                    "marginLeft": 12,
-                  }
+              }
+              propList={
+                [
+                  "fill",
+                ]
+              }
+            />
+            <RNSVGPath
+              d="M108.007 98.343l-10.08 10.164-12.155-13.34 8.915-9.106 13.32 12.281z"
+              fill={
+                {
+                  "payload": 4286207488,
+                  "type": 0,
                 }
-              >
-                <Icon
-                  color="rgba(63,67,80,0.32)"
-                  name="circle-outline"
-                  size={28}
-                />
-              </View>
-            </View>
-          </View>
-        </View>
+              }
+              propList={
+                [
+                  "fill",
+                ]
+              }
+            />
+          </RNSVGGroup>
+        </RNSVGSvgView>
+        <Text
+          style={
+            {
+              "color": "#3f4350",
+              "fontFamily": "Metropolis-SemiBold",
+              "fontSize": 20,
+              "fontWeight": "600",
+              "lineHeight": 28,
+              "textAlign": "center",
+            }
+          }
+        >
+          No matches found for “some term”
+        </Text>
+        <Text
+          style={
+            {
+              "color": "rgba(63,67,80,0.72)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+              "marginTop": 8,
+            }
+          }
+        >
+          Check the spelling or try another search.
+        </Text>
       </View>
     </View>
-    <View
-      onFocusCapture={[Function]}
-      onLayout={[Function]}
-      style={null}
-    />
     <View
       onLayout={[Function]}
     >
@@ -309,6 +265,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             "first_name": "",
             "id": "1",
             "last_name": "",
+            "last_picture_update": 123456,
             "locale": "",
             "nickname": "",
             "notify_props": {
@@ -480,15 +437,40 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             }
             testID="create_direct_message.user_list.user_item.1.1.profile_picture"
           >
-            <Icon
-              name="account-outline"
-              size={24}
+            <View
               style={
-                {
-                  "color": "rgba(63,67,80,0.48)",
-                }
+                [
+                  {
+                    "overflow": "hidden",
+                  },
+                  {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": 12,
+                    "height": 24,
+                    "width": 24,
+                  },
+                ]
               }
-            />
+            >
+              <FastImageView
+                defaultSource={null}
+                resizeMode="cover"
+                source={
+                  {
+                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
+                  }
+                }
+                style={
+                  {
+                    "bottom": 0,
+                    "left": 0,
+                    "position": "absolute",
+                    "right": 0,
+                    "top": 0,
+                  }
+                }
+              />
+            </View>
           </View>
           <View
             style={
@@ -597,6 +579,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             "first_name": "",
             "id": "1",
             "last_name": "",
+            "last_picture_update": 123456,
             "locale": "",
             "nickname": "",
             "notify_props": {
@@ -768,15 +751,40 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             }
             testID="create_direct_message.user_list.user_item.1.1.profile_picture"
           >
-            <Icon
-              name="account-outline"
-              size={24}
+            <View
               style={
-                {
-                  "color": "rgba(63,67,80,0.48)",
-                }
+                [
+                  {
+                    "overflow": "hidden",
+                  },
+                  {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": 12,
+                    "height": 24,
+                    "width": 24,
+                  },
+                ]
               }
-            />
+            >
+              <FastImageView
+                defaultSource={null}
+                resizeMode="cover"
+                source={
+                  {
+                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
+                  }
+                }
+                style={
+                  {
+                    "bottom": 0,
+                    "left": 0,
+                    "position": "absolute",
+                    "right": 0,
+                    "top": 0,
+                  }
+                }
+              />
+            </View>
           </View>
           <View
             style={
@@ -885,6 +893,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             "first_name": "",
             "id": "1",
             "last_name": "",
+            "last_picture_update": 123456,
             "locale": "",
             "nickname": "",
             "notify_props": {
@@ -918,6 +927,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             "first_name": "",
             "id": "2",
             "last_name": "",
+            "last_picture_update": 123456,
             "locale": "",
             "nickname": "",
             "notify_props": {
@@ -1089,15 +1099,40 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             }
             testID="create_direct_message.user_list.user_item.1.1.profile_picture"
           >
-            <Icon
-              name="account-outline"
-              size={24}
+            <View
               style={
-                {
-                  "color": "rgba(63,67,80,0.48)",
-                }
+                [
+                  {
+                    "overflow": "hidden",
+                  },
+                  {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": 12,
+                    "height": 24,
+                    "width": 24,
+                  },
+                ]
               }
-            />
+            >
+              <FastImageView
+                defaultSource={null}
+                resizeMode="cover"
+                source={
+                  {
+                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
+                  }
+                }
+                style={
+                  {
+                    "bottom": 0,
+                    "left": 0,
+                    "position": "absolute",
+                    "right": 0,
+                    "top": 0,
+                  }
+                }
+              />
+            </View>
           </View>
           <View
             style={
@@ -1281,15 +1316,40 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             }
             testID="create_direct_message.user_list.user_item.2.2.profile_picture"
           >
-            <Icon
-              name="account-outline"
-              size={24}
+            <View
               style={
-                {
-                  "color": "rgba(63,67,80,0.48)",
-                }
+                [
+                  {
+                    "overflow": "hidden",
+                  },
+                  {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": 12,
+                    "height": 24,
+                    "width": 24,
+                  },
+                ]
               }
-            />
+            >
+              <FastImageView
+                defaultSource={null}
+                resizeMode="cover"
+                source={
+                  {
+                    "uri": "https://community.mattermost.com/api/v4/users/2/image?_=123456",
+                  }
+                }
+                style={
+                  {
+                    "bottom": 0,
+                    "left": 0,
+                    "position": "absolute",
+                    "right": 0,
+                    "top": 0,
+                  }
+                }
+              />
+            </View>
           </View>
           <View
             style={

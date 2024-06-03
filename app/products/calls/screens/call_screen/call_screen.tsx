@@ -35,8 +35,8 @@ import MessageBar from '@calls/components/message_bar';
 import ReactionBar from '@calls/components/reaction_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {useHostMenus, usePermissionsChecker} from '@calls/hooks';
+import {HeaderCenter} from '@calls/screens/call_screen/header_center';
 import {ParticipantCard} from '@calls/screens/call_screen/participant_card';
-import {RaisedHandBanner} from '@calls/screens/call_screen/raised_hand_banner';
 import {
     setCallQualityAlertDismissed,
     setMicPermissionsErrorDismissed,
@@ -86,6 +86,8 @@ export type Props = {
     micPermissionsGranted: boolean;
     teammateNameDisplay: string;
     fromThreadScreen?: boolean;
+    displayName?: string;
+    isOwnDirectMessage: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
@@ -119,8 +121,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         alignItems: 'center',
         width: '100%',
         height: 56,
-        paddingLeft: 24,
-        paddingRight: 16,
+        gap: 8,
     },
     headerPortraitSpacer: {
         height: 12,
@@ -138,7 +139,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     time: {
         color: theme.buttonColor,
         ...typography('Heading', 200),
-        width: 60,
+        width: 56,
+        marginLeft: 24,
+        marginRight: 8,
+        marginVertical: 2,
     },
     collapseIconContainer: {
         display: 'flex',
@@ -146,6 +150,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         justifyContent: 'center',
         width: 48,
         height: 48,
+        marginLeft: 24,
+        marginRight: 8,
     },
     collapseIcon: {
         color: changeOpacity(theme.buttonColor, 0.56),
@@ -303,6 +309,8 @@ const CallScreen = ({
     micPermissionsGranted,
     teammateNameDisplay,
     fromThreadScreen,
+    displayName,
+    isOwnDirectMessage,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -685,10 +693,12 @@ const CallScreen = ({
                 value={currentCall.startTime}
                 updateIntervalInSeconds={1}
             />
-            <RaisedHandBanner
+            <HeaderCenter
                 raisedHands={raisedHands}
                 sessionId={currentCall.mySessionId}
                 teammateNameDisplay={teammateNameDisplay}
+                displayName={displayName}
+                isOwnDirectMessage={isOwnDirectMessage}
             />
             <Pressable
                 onPress={collapse}

@@ -9,7 +9,7 @@ import {getHandsRaisedNames, makeCallsTheme} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {CallSession, CallsTheme} from '@calls/types/calls';
@@ -18,6 +18,8 @@ export type Props = {
     raisedHands: CallSession[];
     sessionId: string;
     teammateNameDisplay: string;
+    displayName?: string;
+    isOwnDirectMessage: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
@@ -51,16 +53,36 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         ...typography(),
         color: theme.sidebarTeamBarBg,
     },
+    titleBanner: {
+        ...typography('Body', 200, 'SemiBold'),
+        color: changeOpacity(theme.buttonColor, 0.72),
+    },
 }));
 
-export const RaisedHandBanner = ({raisedHands, sessionId, teammateNameDisplay}: Props) => {
+export const HeaderCenter = ({raisedHands, sessionId, teammateNameDisplay, displayName, isOwnDirectMessage}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
     const style = getStyleSheet(callsTheme);
+    let channelTitle = displayName;
+    if (isOwnDirectMessage) {
+        channelTitle = intl.formatMessage({
+            id: 'channel_header.directchannel.you',
+            defaultMessage: '{displayName} (you)',
+        }, {displayName});
+    }
 
     if (raisedHands.length === 0) {
-        return <View style={style.raisedHandBannerContainer}/>;
+        return (
+            <View style={style.raisedHandBannerContainer}>
+                <Text
+                    style={style.titleBanner}
+                    numberOfLines={1}
+                >
+                    {channelTitle}
+                </Text>
+            </View>
+        );
     }
 
     const names = getHandsRaisedNames(raisedHands, sessionId, intl.locale, teammateNameDisplay, intl);

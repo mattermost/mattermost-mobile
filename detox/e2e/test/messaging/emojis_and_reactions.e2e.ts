@@ -24,6 +24,7 @@ import {
     PostOptionsScreen,
     ReactionsScreen,
     ServerScreen,
+    UserProfileScreen,
 } from '@support/ui/screen';
 import {getRandomId} from '@support/utils';
 import {expect} from 'detox';
@@ -115,14 +116,15 @@ describe('Messaging - Emojis and Reactions', () => {
 
         // * Verify user who reacted with the emoji
         await ReactionsScreen.toBeVisible();
-        const {reactorItemEmojiAliases, reactorItemUserProfilePicture, reactorItemUserDisplayName, reactorItemUsername} = ReactionsScreen.getReactorItem(testUser.id, 'fire');
+        const {reactorItemEmojiAliases, reactorItemUserProfilePicture, reactorItemUser} = ReactionsScreen.getReactorItem(testUser.id, 'fire');
         await expect(reactorItemEmojiAliases).toHaveText(':fire:');
         await expect(reactorItemUserProfilePicture).toBeVisible();
-        await expect(reactorItemUserDisplayName).toHaveText(`${testUser.first_name} ${testUser.last_name}`);
-        await expect(reactorItemUsername).toHaveText(` @${testUser.username}`);
+        await expect(reactorItemUser).toBeVisible();
+        await reactorItemUser.tap();
+        await expect(UserProfileScreen.userDisplayName).toHaveText(`@${testUser.username}`);
 
         // # Go back to channel list screen
-        await ReactionsScreen.close();
+        await UserProfileScreen.close();
         await ChannelScreen.back();
     });
 
