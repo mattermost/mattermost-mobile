@@ -186,7 +186,7 @@ jobs:
           mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
           unzip -q sdk-tools-linux.zip -d $ANDROID_SDK_ROOT/cmdline-tools
           mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/tools
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} "platform-tools" "emulator" "platforms;android-${{ github.event.inputs['api-level'] }}" "build-tools;${{ github.event.inputs['api-level'] }}.0.3" "system-images;android-${{ github.event.inputs['api-level'] }};google_apis;x86"
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} "platform-tools" "emulator" "platforms;android-${{ inputs.apiLevel }}" "build-tools;${{ inputs.apiLevel }}.0.3" "system-images;android-${{ inputs.apiLevel }};google_apis;x86"
           yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --licenses
         shell: bash
 
@@ -223,7 +223,7 @@ jobs:
           adb wait-for-device
           adb devices
         shell: bash
-  
+
       - name: Start React Native Metro Server
         run: npm run start &
 
