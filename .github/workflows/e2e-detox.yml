@@ -14,7 +14,7 @@ on:
       - opened
   workflow_dispatch:
     inputs:
-      api-level:
+      apiLevel:
         description: 'Android API Level'
         required: true
         default: '29'
@@ -86,64 +86,57 @@ jobs:
           device: ${{ env.DEVICE_NAME }}
           os_version: ${{ env.DEVICE_OS_VERSION }}
 
-  build-android-apk-on-mac:
-    # if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
-    runs-on: macos-14-large
-    env:
-      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
-    steps:
-      - name: ci/checkout-repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+  # build-android-apk-on-mac:
+  #   # if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
+  #   runs-on: macos-14-large
+  #   env:
+  #     ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+  #   steps:
+  #     - name: ci/checkout-repo
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #       with:
+  #         ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: ci/prepare-android-build
-        uses: ./.github/actions/prepare-android-build
-        env:
-          STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
-          STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
-          STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
-          MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+  #     - name: ci/prepare-android-build
+  #       uses: ./.github/actions/prepare-android-build
+  #       env:
+  #         STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+  #         STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+  #         STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+  #         MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+  #     - name: Cache Gradle dependencies
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: ~/.gradle/caches
+  #         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-gradle-
 
-      - name: Install Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: "17"
-          distribution: "adopt"
-          cache: "gradle"
+  #     - name: Install Java
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         java-version: "17"
+  #         distribution: "adopt"
+  #         cache: "gradle"
 
-      - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v3
+  #     - name: Validate Gradle wrapper
+  #       uses: gradle/actions/wrapper-validation@v3
 
-      - name: Detox build
-        run: |
-          cd detox
-          npm install
-          npm install -g detox-cli
-          npm run e2e:android-build
+  #     - name: Detox build
+  #       run: |
+  #         cd detox
+  #         npm install
+  #         npm install -g detox-cli
+  #         npm run e2e:android-build
 
-      - name: ci/upload-android-pr-build
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-        with:
-          name: android-build-apk-${{ github.run_id }}
-          path: "android/app/build/outputs/apk/**/app-*.apk"
+  #     - name: ci/upload-android-pr-build
+  #       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+  #       with:
+  #         name: android-build-apk-${{ github.run_id }}
+  #         path: "android/app/build/outputs/apk/**/app-*.apk"
 
   e2e-android:
-    services:
-      docker:
-        image: circleci/android:api-${{ inputs.api-level }}
-        options: --privileged
-        ports:
-          - 5566:5566
-          - 5567:5567
     # if: contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
     env:
       IOS: false
@@ -152,7 +145,7 @@ jobs:
     name: android-detox-e2e-${{ matrix.runId }}
     needs:
       - generate-specs
-      - build-android-apk-on-mac
+      # - build-android-apk-on-mac
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-specs.outputs.specs)}}
@@ -184,17 +177,41 @@ jobs:
           path: android/app/build/outputs/apk/
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: ${{ inputs.api-level }}
-          build-tools-version: ${{ inputs.api-level }}
-
-      - name: Create AVD
+        env:
+          ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
         run: |
-          echo "no" | avdmanager create avd -n test -k "system-images;android-${{ inputs.api-level }};google_apis;x86" -d ${{ inputs.device }}
-          $ANDROID_HOME/emulator/emulator -list-avds
+          sudo apt-get update -y
+          sudo apt-get install -y curl unzip
+          curl -o sdk-tools-linux.zip https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+          unzip -q sdk-tools-linux.zip -d $ANDROID_SDK_ROOT/cmdline-tools
+          mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/tools
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} "platform-tools" "emulator" "platforms;android-${{ github.event.inputs['api-level'] }}" "build-tools;${{ github.event.inputs['api-level'] }}.0.3" "system-images;android-${{ github.event.inputs['api-level'] }};google_apis;x86"
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --licenses
         shell: bash
 
+      - name: Create AVD
+        env:
+          ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
+        run: |
+          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/avdmanager create avd -n test -k "system-images;android-${{ github.event.inputs['api-level'] }};google_apis;x86" -d "${{ github.event.inputs['device'] }}"
+          $ANDROID_SDK_ROOT/emulator/emulator -list-avds
+        shell: bash
+
+      - name: Update detoxrc.json
+        run: |
+          sed -i 's/"avdName": "Pixel_3_API_29"/"avdName": "test"/' detoxrc.json
+        shell: bash
+
+      - name: Start AVD
+        env:
+          ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
+        run: |
+          $ANDROID_SDK_ROOT/emulator/emulator -avd test -no-audio -no-window -gpu swiftshader_indirect &
+          adb wait-for-device
+          adb devices
+        shell: bash
+  
       - name: Update detoxrc.json
         run: |
           sed -i 's/"avdName": "Pixel_3_API_29"/"avdName": "test"/' detoxrc.json
