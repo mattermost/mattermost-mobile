@@ -45,7 +45,7 @@ function main(platform) {
 
 const args = process.argv.slice(2);
 if (args.length !== 1 || (args[0] !== 'ios' && args[0] !== 'android')) {
-    console.error('Usage: node script.js <platform>');
+    console.error('Usage: node test_device_info.js <platform>');
     process.exit(1);
 }
 

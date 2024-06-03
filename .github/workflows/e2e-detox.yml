@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - 'release-*'
+      - 'add_e2e_android' # remove before merge
   pull_request:
     branches:
       - 'main'
@@ -14,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       ios_version:
-        description: 'Enter iOS version'
+        description: 'Choose iOS version'
         required: false
         default: "iOS 17.4"
         type: choice
@@ -23,8 +24,9 @@ on:
           - "iOS 17.4"
           - "iOS 17.2"
           - "iOS 17.0"
-      device_name:
-        description: 'Enter iOS Device Name'
+
+      ios_device_name:
+        description: 'Choose iOS Device Name'
         required: false
         default: "iPhone 15 Pro"
         type: choice
@@ -33,6 +35,26 @@ on:
           - "iPhone 15"
           - "iPhone 14 Pro"
           - "iPhone 14"
+
+      android_api_level:
+        description: 'Choose Android API Level'
+        required: true
+        default: '29'
+        type: choice
+        options:
+          - '29'
+          - '30'
+          - '31'
+
+      android_device:
+        description: 'Choose Android Device Type'
+        required: true
+        default: 'Pixel_3'
+        type: choice
+        options:
+          - 'Pixel_3'
+          - 'Pixel_4'
+
 jobs:
 
   run-ios-tests-on-pr:
@@ -56,15 +78,16 @@ jobs:
 
   run-ios-tests-on-release:
     name: iOS Mobile Tests on Release
-    uses: ./.github/workflows/e2e-detox-ci-template.yml
-    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release-') }}
+    # remove before merge 
+    uses: ./.github/workflows/e2e-detox-android-template.yml
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/add_e2e_android') }}
     with:
-      run-ios-tests: true
-      run-android-tests: false
+      run-ios-tests: false
+      run-android-tests: true
       remove-pr-label: false
       commit_sha: "${{ github.sha }}"
       status_check_context: "Detox iOS Mobile Tests on Release"
-      run-type: 'RELEASE'
+      run-type: 'PR' # remove before merge 
     secrets: inherit
 
   run-ios-tests-on-main-scheduled:
