@@ -3,14 +3,6 @@ name: Detox E2E Tests Template
 on:
   workflow_call:
     inputs:
-      run-ios-tests:
-        description: 'Run iOS tests'
-        required: true
-        type: boolean
-      run-android-tests:
-        description: 'Run Android tests'
-        required: true
-        type: boolean
       remove-pr-label:
         description: 'Remove PR label'
         required: false
@@ -72,7 +64,7 @@ jobs:
 
   generate-specs:
     runs-on: ubuntu-22.04
-    if: ${{ inputs.run-android-tests }}
+    needs: update-initial-status
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       BUILD_ID: ${{ steps.generate-specs.outputs.BUILD_ID }}
@@ -92,11 +84,11 @@ jobs:
         with:
           parallelism: 10
           search_path: detox/e2e/test
-          device: ${{ env.DEVICE_NAME }}
-          os_version: ${{ env.DEVICE_OS_VERSION }}
+          device_name: ${{ env.DEVICE_NAME }}
+          device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
-  build-android-apk-on-mac:
-    if: ${{ inputs.run-android-tests }}
+  build-android-apk:
+    needs: update-initial-status
     runs-on: macos-14-large
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
@@ -146,9 +138,8 @@ jobs:
           path: "android/app/build/outputs/apk/**/app-*.apk"
 
   e2e-android:
-    if: ${{ inputs.run-android-tests }}
     continue-on-error: true
-    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    name: androud-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     env:
       IOS: false
       GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
@@ -157,7 +148,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - generate-specs
-      - build-android-apk-on-mac
+      - build-android-apk
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-specs.outputs.specs)}}
@@ -260,7 +251,6 @@ jobs:
 
   download-e2e-results:
     runs-on: ubuntu-22.04
-    if: ${{ inputs.run-android-tests }}
     needs:
       - generate-specs
       - e2e-android
@@ -299,12 +289,7 @@ jobs:
         run: |
           s3Folder="${{ env.BUILD_ID }}-${{ env.COMMIT_HASH }}-${{ env.BRANCH }}"
           s3Folder=$(echo "$s3Folder" | sed 's/\./-/g')
-
-          if ${{ inputs.run-ios-tests }}; then
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/ios-report.html" >> $GITHUB_ENV
-          else
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/android-report.html" >> $GITHUB_ENV
-          fi
+          echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/android-report.html" >> $GITHUB_ENV
         env:
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
@@ -340,19 +325,9 @@ jobs:
         continue-on-error: true # Label might have been removed manually
         with:
           script: |
-            const iosLabel = 'E2E iOS tests for PR';
             const androidLabel = 'E2E Android tests for PR';
             const labels = context.payload.pull_request.labels.map(label => label.name);
-  
-            if (labels.includes(iosLabel)) {
-              github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: iosLabel,
-              });
-            }
-  
+
             if (labels.includes(androidLabel)) {
               github.rest.issues.removeLabel({
                 issue_number: context.issue.number,

@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - 'release-*'
-      - 'add_e2e_android' # remove before merge
   pull_request:
     branches:
       - 'main'
@@ -59,7 +58,7 @@ jobs:
 
   run-ios-tests-on-pr:
     name: iOS Mobile Tests on PR
-    uses: ./.github/workflows/e2e-detox-ci-template.yml
+    uses: ./.github/workflows/e2e-detox-ios-template.yml
     if: ${{ 
       (
       github.event_name == 'pull_request' &&
@@ -68,8 +67,6 @@ jobs:
       )
      }}
     with:
-      run-ios-tests: true
-      run-android-tests: false
       remove-pr-label: true
       commit_sha: "${{ github.event.pull_request.head.sha || github.sha }}"
       status_check_context: "Detox iOS Mobile Tests on PR"
@@ -78,25 +75,20 @@ jobs:
 
   run-ios-tests-on-release:
     name: iOS Mobile Tests on Release
-    # remove before merge 
-    uses: ./.github/workflows/e2e-detox-android-template.yml
-    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/add_e2e_android') }}
+    uses: ./.github/workflows/e2e-detox-ios-template.yml
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release-') }}
     with:
-      run-ios-tests: false
-      run-android-tests: true
       remove-pr-label: false
       commit_sha: "${{ github.sha }}"
       status_check_context: "Detox iOS Mobile Tests on Release"
-      run-type: 'PR' # remove before merge 
+      run-type: 'RELEASE'
     secrets: inherit
 
   run-ios-tests-on-main-scheduled:
     name: iOS Mobile Tests on Main (Scheduled)
-    uses: ./.github/workflows/e2e-detox-ci-template.yml
+    uses: ./.github/workflows/e2e-detox-ios-template.yml
     if: ${{ github.event_name == 'schedule' && github.ref == 'refs/heads/main' }}
     with:
-      run-ios-tests: true
-      run-android-tests: false
       remove-pr-label: false
       commit_sha: "${{ github.sha }}"
       status_check_context: "Detox iOS Mobile Tests on Main (Scheduled)"
@@ -105,13 +97,61 @@ jobs:
 
   run-ios-tests-on-manual-trigger:
     name: iOS Mobile Tests on Manual Trigger
-    uses: ./.github/workflows/e2e-detox-ci-template.yml
+    uses: ./.github/workflows/e2e-detox-ios-template.yml
     if: ${{ github.event_name == 'workflow_dispatch' }}
     with:
-      run-ios-tests: true
-      run-android-tests: false
       remove-pr-label: false
       commit_sha: "${{ github.sha }}"
       status_check_context: "Detox iOS Mobile Tests on Manual Trigger"
+      run-type: 'MANUAL'
+    secrets: inherit
+
+  run-android-tests-on-pr:
+    name: Android Mobile Tests on PR
+    uses: ./.github/workflows/e2e-detox-android-template.yml
+    if: ${{ 
+      (
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.labels &&
+      contains(github.event.pull_request.labels.*.name, 'E2E Android tests for PR')
+      )
+      }}
+    with:
+      remove-pr-label: true
+      commit_sha: "${{ github.event.pull_request.head.sha || github.sha }}"
+      status_check_context: "Detox Android Mobile Tests on PR"
+      run-type: 'PR'
+    secrets: inherit
+
+  run-android-tests-on-release:
+    name: Android Mobile Tests on Release
+    uses: ./.github/workflows/e2e-detox-android-template.yml
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release-') }}
+    with:
+      remove-pr-label: false
+      commit_sha: "${{ github.sha }}"
+      status_check_context: "Detox Android Mobile Tests on Release"
+      run-type: 'PR' # remove before merge 
+    secrets: inherit
+
+  run-android-tests-on-main-scheduled:
+    name: Android Mobile Tests on Main (Scheduled)
+    uses: ./.github/workflows/e2e-detox-android-template.yml
+    if: ${{ github.event_name == 'schedule' && github.ref == 'refs/heads/main' }}
+    with:
+      remove-pr-label: false
+      commit_sha: "${{ github.sha }}"
+      status_check_context: "Detox Android Mobile Tests on Main (Scheduled)"
+      run-type: 'MAIN'
+    secrets: inherit
+
+  run-android-tests-on-manual-trigger:
+    name: Android Mobile Tests on Manual Trigger
+    uses: ./.github/workflows/e2e-detox-android-template.yml
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    with:
+      remove-pr-label: false
+      commit_sha: "${{ github.sha }}"
+      status_check_context: "Detox Android Mobile Tests on Manual Trigger"
       run-type: 'MANUAL'
     secrets: inherit

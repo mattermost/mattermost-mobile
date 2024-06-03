@@ -3,14 +3,6 @@ name: Detox E2E Tests Template
 on:
   workflow_call:
     inputs:
-      run-ios-tests:
-        description: 'Run iOS tests'
-        required: true
-        type: boolean
-      run-android-tests:
-        description: 'Run Android tests'
-        required: true
-        type: boolean
       remove-pr-label:
         description: 'Remove PR label'
         required: false
@@ -73,7 +65,6 @@ jobs:
   generate-specs:
     needs: update-initial-status
     runs-on: ubuntu-22.04
-    if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       build_id: ${{ env.BUILD_ID }}
@@ -107,7 +98,6 @@ jobs:
   build-ios-simulator:
     needs: update-initial-status
     runs-on: macos-14-large
-    if: ${{ inputs.run-ios-tests }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -136,7 +126,6 @@ jobs:
       IOS: true
     runs-on: macos-14-large
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
-    if: ${{ inputs.run-ios-tests }}
     needs:
       - generate-specs
       - build-ios-simulator
@@ -183,7 +172,6 @@ jobs:
 
   download-e2e-results:
     runs-on: ubuntu-22.04
-    if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     needs:
       - generate-specs
       - e2e-ios
@@ -212,7 +200,7 @@ jobs:
           npm ci
           npm run e2e:save-report
         env:
-          IOS: ${{ inputs.run-ios-tests }}
+          IOS: true
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
           DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
           DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
@@ -235,12 +223,7 @@ jobs:
         run: |
           s3Folder="${{ env.BUILD_ID }}-${{ env.COMMIT_HASH }}-${{ env.BRANCH }}"
           s3Folder=$(echo "$s3Folder" | sed 's/\./-/g')
-
-          if ${{ inputs.run-ios-tests }}; then
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/ios-report.html" >> $GITHUB_ENV
-          else
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/android-report.html" >> $GITHUB_ENV
-          fi
+          echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/ios-report.html" >> $GITHUB_ENV
         env:
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
@@ -277,7 +260,6 @@ jobs:
         with:
           script: |
             const iosLabel = 'E2E iOS tests for PR';
-            const androidLabel = 'E2E Android tests for PR';
             const labels = context.payload.pull_request.labels.map(label => label.name);
   
             if (labels.includes(iosLabel)) {
@@ -288,12 +270,4 @@ jobs:
                 name: iosLabel,
               });
             }
-  
-            if (labels.includes(androidLabel)) {
-              github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: androidLabel,
-              });
-            }
+
