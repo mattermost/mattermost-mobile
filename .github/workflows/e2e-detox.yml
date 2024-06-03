@@ -184,7 +184,7 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y curl unzip
-          curl -o sdk-tools-linux.zip https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip
+          curl -o sdk-tools-linux.zip https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip
           mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
           unzip -q sdk-tools-linux.zip -d $ANDROID_SDK_ROOT/cmdline-tools
           mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/tools
@@ -256,6 +256,15 @@ jobs:
       with:
         java-version: '11'
         distribution: 'zulu'
+
+    - name: Install XML Bind
+      run: |
+        mkdir -p ~/android-cmdline-tools/latest/package-cache
+        curl -o ~/android-cmdline-tools/latest/package-cache/xml-resolver-20041126.zip https://maven.googlesource.com/a/android/platform/libcore/+/refs/heads/master/xml/res/xml-resolver-20041126.zip
+        unzip ~/android-cmdline-tools/latest/package-cache/xml-resolver-20041126.zip -d ~/android-cmdline-tools/latest/xml-resolver
+        export ANDROID_HOME=${{ github.workspace }}/android-home
+        export CMDLINE_TOOLS_LATEST_PATH=$(find $ANDROID_HOME -name "cmdline-tools" | sort -r | head -n1)
+        ln -s ~/android-cmdline-tools/latest/xml-resolver $CMDLINE_TOOLS_LATEST_PATH/lib/xml-resolver
 
     - name: Create Android Virtual Device
       run: |
