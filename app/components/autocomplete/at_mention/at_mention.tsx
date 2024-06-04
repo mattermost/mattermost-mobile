@@ -278,7 +278,7 @@ const AtMention = ({
             const filteredUsers = filterResults(fallbackUsers, term);
             setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyUserlList);
         } else if (receivedUsers) {
-            sortRecievedUsers(sUrl, term, receivedUsers?.users, receivedUsers?.out_of_channel);
+            await sortRecievedUsers(sUrl, term, receivedUsers?.users, receivedUsers?.out_of_channel);
         }
 
         setLoading(false);
@@ -298,8 +298,14 @@ const AtMention = ({
 
         if (outOfChannel?.length) {
             const outChannelMemberIds = outOfChannel.map((e) => e.id);
+
+            // This only get us the users we have on the database.
+            // We need to append those users from which we don't have
+            // information at the end of the list.
             const outSortedMembers = await getUsersFromDMSorted(database, outChannelMemberIds);
-            sortedMembers.push(...outSortedMembers);
+            const idSet = new Set(outSortedMembers.map((v) => v.id));
+            const outRest = outOfChannel.filter((v) => !idSet.has(v.id));
+            sortedMembers.push(...outSortedMembers, ...outRest);
         }
 
         if (hasTrailingSpaces(term)) {
