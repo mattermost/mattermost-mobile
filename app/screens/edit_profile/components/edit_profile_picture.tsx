@@ -82,7 +82,7 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
             let prefix = '';
             if (pictureUrl.includes('/api/')) {
                 prefix = serverUrl;
-            } else if (Platform.OS === 'android' && !pictureUrl.startsWith('content://') && !pictureUrl.startsWith('http://') && !pictureUrl.startsWith('https://')) {
+            } else if (Platform.OS === 'android' && !pictureUrl.startsWith('content://') && !pictureUrl.startsWith('http://') && !pictureUrl.startsWith('https://') && !pictureUrl.startsWith('file://')) {
                 prefix = 'file://';
             }
 
