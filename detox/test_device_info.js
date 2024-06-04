@@ -34,9 +34,6 @@ function main(platform) {
         process.env.DEVICE_NAME = deviceName;
         process.env.DEVICE_OS_VERSION = deviceOSVersion;
 
-        console.log(`BUILD_ID=${buildID}`);
-        console.log(`DEVICE_NAME=${deviceName}`);
-        console.log(`DEVICE_OS_VERSION=${deviceOSVersion}`);
     } catch (error) {
         console.error(error.message);
         process.exit(1);
