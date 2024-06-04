@@ -79,7 +79,7 @@ jobs:
         run: |
           cd detox
           DEVICE_NAME=$(node -p "require('./.detoxrc').devices['android'].device.avdName")
-          DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.api")
+          DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['android'].device.api")
           BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
 
           echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
