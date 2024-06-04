@@ -27,6 +27,7 @@ Place an '[x]' (no spaces) in all applicable fields. Please remove unrelated fie
 - [ ] Has UI changes
 - [ ] Includes text changes and localization file updates
 - [ ] Have tested against the 5 core themes to ensure consistency between them.
+- [ ] Have run E2E tests by adding label `E2E iOS tests for PR`.
 
 #### Device Information
 This PR was tested on: <!-- Device name(s), OS version(s) -->
