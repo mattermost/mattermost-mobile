@@ -308,7 +308,7 @@ function generateTestReport(summary, isUploadedToS3, reportLink, environment, te
 function generateTitle() {
     const {
         BRANCH,
-        BUILD_AWS_S3_BUCKET,
+        DETOX_AWS_S3_BUCKET,
         BUILD_ID,
         COMMIT_HASH,
         IOS,
@@ -332,7 +332,7 @@ function generateTitle() {
 
     switch (TYPE) {
         case 'PR':
-            buildLink = ` with [${lane}:${COMMIT_HASH}](https://${BUILD_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/${appFilePath})`;
+            buildLink = ` with [${lane}:${COMMIT_HASH}](https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/${appFilePath})`;
             title = `${platform} E2E for Pull Request Build: [${BRANCH}](${PULL_REQUEST})${buildLink}`;
             break;
         case 'RELEASE':
