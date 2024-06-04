@@ -167,6 +167,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
+      - name: Empty disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
         env:
@@ -218,7 +229,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Liberate disk space
+      - name: Empty disk space
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: false
