@@ -78,8 +78,8 @@ jobs:
         id: resolve-device
         run: |
           cd detox
-          DEVICE_NAME=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.type")
-          DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.os")
+          DEVICE_NAME=$(node -p "require('./.detoxrc').devices['android'].device.avdName")
+          DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.api")
           BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
 
           echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
@@ -151,9 +151,10 @@ jobs:
     env:
       IOS: false
       GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
-      API_LEVEL: 33
       ARCH: x86_64
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+      DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
+      DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
     runs-on: ubuntu-22.04
     needs:
       - update-initial-status
@@ -235,13 +236,13 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ env.API_LEVEL }}
+          key: avd-${{ env.DEVICE_OS_VERSION }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ env.API_LEVEL }}
+          api-level: ${{ env.DEVICE_OS_VERSION }}
           arch: ${{ env.ARCH }}
           disable-animations: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
@@ -254,12 +255,6 @@ jobs:
       #     name: android-build-apk-${{ github.run_id }}
       #     path: android/app/build/outputs/apk/
 
-      - name: Get device name
-        id: device
-        run: |
-          AVD_NAME=$(node -p "require('./detox/.detoxrc.json').devices.android.device.avdName")
-          echo "AVD_NAME=$AVD_NAME" >> $GITHUB_OUTPUT
-  
       - name: Start React Native Metro Server
         run: npm run start &
 
@@ -269,9 +264,9 @@ jobs:
       - name: Detox test
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ env.API_LEVEL }}
+          api-level: ${{ env.DEVICE_OS_VERSION }}
           arch: ${{ env.ARCH }}
-          avd-name: ${{ steps.device.outputs.AVD_NAME }}
+          avd-name: ${{env.DEVICE_NAME }}
           disable-animations: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           force-avd-creation: false
