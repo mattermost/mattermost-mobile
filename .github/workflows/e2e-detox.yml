@@ -9,7 +9,6 @@ on:
   pull_request:
     branches:
       - 'main'
-      - 'ios_detox_job' # remove before merge
     types:
       - labeled
   workflow_dispatch:
