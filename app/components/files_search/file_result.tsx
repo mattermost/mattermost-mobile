@@ -57,19 +57,13 @@ const FileResult = ({
     const [xyOffset, setXYoffset] = useState<XyOffset>(undefined);
     const {height} = Dimensions.get('window');
 
-    const fileRef = useCallback((element: View) => {
-        if (showOptions) {
-            elementsRef.current = element;
-            elementsRef?.current?.measureInWindow((x, y) => {
-                setOpenUp((y > height / 2));
-                setXYoffset({x, y});
-            });
-        }
-    }, [elementsRef, showOptions]);
-
     const handleOptionsPress = useCallback((fInfo: FileInfo) => {
-        setShowOptions(true);
-        onOptionsPress(fInfo);
+        elementsRef.current?.measureInWindow((x, y) => {
+            setOpenUp((y > height / 2));
+            setXYoffset({x, y});
+            setShowOptions(true);
+            onOptionsPress(fInfo);
+        });
     }, []);
 
     const handleSetAction = useCallback((action: GalleryAction) => {
@@ -82,8 +76,9 @@ const FileResult = ({
     return (
         <>
             <View
-                ref={fileRef}
+                ref={elementsRef}
                 style={styles.container}
+                collapsable={false}
             >
                 <File
                     asCard={true}

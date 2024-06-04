@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Button} from '@rneui/base';
 import {openAuthSessionAsync} from 'expo-web-browser';
 import qs from 'querystringify';
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Linking, Platform, Text, View, type EventSubscription} from 'react-native';
-import Button from 'react-native-button';
 import urlParse from 'url-parse';
 
 import FormattedText from '@components/formatted_text';
@@ -89,7 +89,7 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
             if (bearerToken && csrfToken) {
                 doSSOLogin(bearerToken, csrfToken);
             }
-        } else if (Platform.OS === 'ios') {
+        } else if (Platform.OS === 'ios' || result.type === 'dismiss') {
             setError(
                 intl.formatMessage({
                     id: 'mobile.oauth.failed_to_login',
@@ -104,6 +104,7 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
 
         if (Platform.OS === 'android') {
             const onURLChange = ({url}: { url: string }) => {
+                setError('');
                 if (url && url.startsWith(redirectUrl)) {
                     const parsedUrl = urlParse(url, true);
                     const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
@@ -151,9 +152,9 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
                         {`${loginError || error}.`}
                     </Text>
                     <Button
+                        buttonStyle={[style.button, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
                         testID='mobile.oauth.try_again'
                         onPress={() => init()}
-                        containerStyle={[style.button, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
                     >
                         <FormattedText
                             id='mobile.oauth.try_again'

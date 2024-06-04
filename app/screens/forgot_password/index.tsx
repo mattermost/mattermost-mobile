@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Button} from '@rneui/base';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, useWindowDimensions, View} from 'react-native';
-import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -172,7 +172,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                     <Button
                         testID='password_send.return'
                         onPress={onReturn}
-                        containerStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
+                        buttonStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
                     >
                         <FormattedText
                             id='password_send.return'
@@ -234,7 +234,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                         />
                         <Button
                             testID='forgot.password.button'
-                            containerStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', email ? 'default' : 'disabled'), error ? styles.error : undefined]}
+                            buttonStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', email ? 'default' : 'disabled'), error ? styles.error : undefined]}
                             disabled={!email}
                             onPress={submitResetPassword}
                         >

@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Button} from '@rneui/base';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, useWindowDimensions, View} from 'react-native';
-import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -236,7 +236,7 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
                             />
                             <Button
                                 testID='login_mfa.submit'
-                                containerStyle={[styles.proceedButton, buttonBackgroundStyle(theme, 'lg', 'primary', token ? 'default' : 'disabled'), error ? styles.error : undefined]}
+                                buttonStyle={[styles.proceedButton, buttonBackgroundStyle(theme, 'lg', 'primary', token ? 'default' : 'disabled'), error ? styles.error : undefined]}
                                 disabled={!token}
                                 onPress={submit}
                             >

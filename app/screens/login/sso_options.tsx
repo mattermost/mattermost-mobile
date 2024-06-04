@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Button} from '@rneui/base';
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {Image, type ImageSourcePropType, Text, View} from 'react-native';
-import Button from 'react-native-button';
 
 import CompassIcon from '@components/compass_icon';
 import {Sso} from '@constants';
@@ -81,7 +81,8 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
             <Button
                 key={ssoType}
                 onPress={handlePress}
-                containerStyle={[styleButtonBackground, styleButtonContainer, styles.button]}
+                buttonStyle={[styleButtonBackground, styles.button]}
+                containerStyle={[styleButtonContainer]}
             >
                 {imageSrc && (
                     <Image
