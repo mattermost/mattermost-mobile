@@ -19,7 +19,6 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
 typedef void (*SendReplyCompletionHandlerIMP)(id, SEL, UNNotificationResponse *, void (^)(void));
 static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplementation = NULL;
 
-
 @implementation RNNotificationEventHandler (HandleReplyAction)
 
 - (RNNotificationCenter *)notificationCenter{

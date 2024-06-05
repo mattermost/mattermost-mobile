@@ -13,6 +13,9 @@ typedef void (*URLSessionTaskDidReceiveChallengeIMP)(id, SEL, NSURLSession *, NS
 
 @implementation SDWebImageDownloaderOperation (Swizzle)
 
+static InitWithRequestInSessionOptionsContextIMP originalInitWithRequestInSessionOptionsContextImplementation = NULL;
+static URLSessionTaskDidReceiveChallengeIMP originalURLSessionTaskDidReceiveChallengeImplementation = NULL;
+
 + (void) load {
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
