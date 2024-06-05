@@ -1,0 +1,102 @@
+name: Compatibility Matrix Testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      CMT_MATRIX:
+        description: "A JSON object representing the testing matrix"
+        required: true
+        type: string
+      MOBILE_VERSION:
+        description: "The mattermost mobile version to test"
+        required: true
+
+jobs:
+  ## This is picked up after the finish for cleanup
+  upload-cmt-server-detals:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: cmt/generate-instance-details-file
+        run: echo '${{ inputs.CMT_MATRIX }}' > instance-details.json
+
+      - name: cmt/upload-instance-details
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: instance-details.json
+          path: instance-details.json
+          retention-days: 1
+
+  calculate-commit-hash:
+    runs-on: ubuntu-22.04
+    outputs:
+      MOBILE_SHA: ${{ steps.repo.outputs.MOBILE_SHA }}
+    steps:
+      - name: cmt/checkout-mobile
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: cmt/calculate-mattermost-sha
+        id: repo
+        run: echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
+
+  update-initial-status:
+    runs-on: ubuntu-22.04
+    needs:
+      - calculate-commit-hash
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@746563b58e737a17a8ceb00b84a813b9e6e1b236
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
+          context: e2e/compatibility-matrix-testing
+          description: "Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version"
+          status: pending
+
+  # Input follows the below schema
+  # {
+  #   "server": [
+  #     {
+  #       "version": "9.6.1",
+  #       "url": "https://delivery-cmt-8467830017-9-6-1.test.mattermost.cloud/"
+  #     },
+  #     {
+  #       "version": "9.5.2",
+  #       "url": "https://delivery-cmt-8467830017-9-5-2.test.mattermost.cloud/"
+  #     }
+  #   ]
+  # }
+  detox-e2e:
+    name: mobile-cmt-${{ matrix.server.version }}
+    uses: ./.github/workflows/e2e-detox-template.yml
+    needs:
+      - update-initial-status
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
+    secrets: inherit
+    with:
+      run-ios-tests: true
+      run-android-tests: false
+      run-type: "RELEASE"
+      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+
+  update-final-status:
+    runs-on: ubuntu-22.04
+    needs:
+      - calculate-commit-hash
+      - detox-e2e
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
+          context: e2e/compatibility-matrix-testing
+          description: Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version
+          status: ${{ needs.detox-e2e.outputs.STATUS }}
+          target_url: ${{ needs.detox-e2e.outputs.TARGET_URL }}
