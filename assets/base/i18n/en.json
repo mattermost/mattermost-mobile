@@ -790,7 +790,7 @@
   "notification_settings.calls": "Call Notifications",
   "notification_settings.calls_off": "Off",
   "notification_settings.calls_on": "On",
-  "notification_settings.calls.callsInfo": "After selecting a ringtone, select it again to preview the sound. Select it once more to stop the preview. Note: silent mode must be off to hear the ringtone.",
+  "notification_settings.calls.callsInfo": "Note: silent mode must be off to hear the ringtone preview.",
   "notification_settings.calls.calm": "Calm",
   "notification_settings.calls.cheerful": "Cheerful",
   "notification_settings.calls.dynamic": "Dynamic",

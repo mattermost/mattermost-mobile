@@ -30,7 +30,7 @@ type Props = {
 
 const footerText = {
     id: t('notification_settings.calls.callsInfo'),
-    defaultMessage: 'After selecting a ringtone, select it again to preview the sound. Select it once more to stop the preview. Note: silent mode must be off to hear the ringtone.',
+    defaultMessage: 'Note: silent mode must be off to hear the ringtone preview.',
 };
 
 const NotificationCall = ({componentId, currentUser}: Props) => {
@@ -62,8 +62,18 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
     }, [componentId, playingRingtone]);
 
     const selectOption = useCallback((value: string) => {
+        const tone = 'calls_' + value.toLowerCase();
+
         if (value !== callsMobileNotificationSound) {
             setCallsMobileNotificationSound(value);
+
+            if (playingRingtone) {
+                InCallManager.stopRingtone();
+                InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
+            } else {
+                InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
+                setPlayingRingtone(true);
+            }
             return;
         }
 
@@ -71,7 +81,6 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
             InCallManager.stopRingtone();
             setPlayingRingtone(false);
         } else {
-            const tone = 'calls_' + value.toLowerCase();
             InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
             setPlayingRingtone(true);
         }
