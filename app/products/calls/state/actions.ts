@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {mosThreshold} from '@mattermost/calls/lib/rtc_monitor';
+import {AppState} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import {Navigation} from 'react-native-navigation';
 
@@ -217,6 +218,11 @@ const getRingtoneOrNone = async (serverUrl: string) => {
 };
 
 const shouldRing = () => {
+    // Do not ring if we are in the background
+    if (AppState.currentState !== 'active') {
+        return false;
+    }
+
     // Do not ring if we are already ringing, or we have no incoming calls
     const incomingCalls = getIncomingCalls();
     if (incomingCalls.currentRingId || incomingCalls.incomingCalls.length === 0) {
