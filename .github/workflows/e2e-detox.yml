@@ -131,7 +131,7 @@ jobs:
       remove-pr-label: false
       commit_sha: "${{ github.sha }}"
       status_check_context: "Detox Android Mobile Tests on Release"
-      run-type: 'PR' # remove before merge 
+      run-type: 'RELEASE'
     secrets: inherit
 
   run-android-tests-on-main-scheduled:

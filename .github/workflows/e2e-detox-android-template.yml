@@ -95,88 +95,16 @@ jobs:
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{env.DEVICE_OS_VERSION}}
         
-  # build-android-apk:
-  #   needs: update-initial-status
-  #   runs-on: macos-14-large
-  #   env:
-  #     ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
-  #   steps:
-  #     - name: ci/checkout-repo
-  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-  #       with:
-  #         ref: ${{ github.event.pull_request.head.sha }}
-
-  #     - name: ci/prepare-android-build
-  #       uses: ./.github/actions/prepare-android-build
-  #       env:
-  #         STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
-  #         STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
-  #         STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
-  #         MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
-
-  #     - name: Cache Gradle dependencies
-  #       uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-  #       with:
-  #         path: ~/.gradle/caches
-  #         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-gradle-
-
-  #     - name: Install Java
-  #       uses: actions/setup-java@v4
-  #       with:
-  #         java-version: "17"
-  #         distribution: "adopt"
-  #         cache: "gradle"
-
-  #     - name: Validate Gradle wrapper
-  #       uses: gradle/actions/wrapper-validation@v3
-
-  #     - name: Detox build
-  #       run: |
-  #         cd detox
-  #         npm install
-  #         npm install -g detox-cli
-  #         npm run e2e:android-build
-
-  #     - name: ci/upload-android-pr-build
-  #       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-  #       with:
-  #         name: android-build-apk-${{ github.run_id }}
-  #         path: "android/app/build/outputs/apk/**/app-*.apk"
-
-  e2e-android:
-    continue-on-error: true
-    name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+  build-android-apk:
+    needs: update-initial-status
+    runs-on: macos-14-large
     env:
-      IOS: false
-      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
-      ARCH: x86_64
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
-      DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
-      DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
-    runs-on: ubuntu-22.04
-    needs:
-      - update-initial-status
-      - generate-specs
-      # - build-android-apk
-    strategy:
-      fail-fast: false
-      matrix: ${{fromJson(needs.generate-specs.outputs.specs)}}
     steps:
-      - name: Checkout Repository
+      - name: ci/checkout-repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Empty disk space
-        uses: jlumbroso/free-disk-space@main
         with:
-          tool-cache: false
-          android: false
-          dotnet: true
-          haskell: true
-          large-packages: false
-          docker-images: true
-          swap-storage: false
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
@@ -210,6 +138,32 @@ jobs:
           npm install
           npm install -g detox-cli
           npm run e2e:android-build
+
+      - name: ci/upload-android-pr-build
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: android-build-apk-${{ github.run_id }}
+          path: "android/app/build/outputs/apk/**/app-*.apk"
+
+  e2e-android:
+    continue-on-error: true
+    name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    env:
+      IOS: false
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
+      ARCH: x86_64
+      DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
+      DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
+    runs-on: ubuntu-22.04
+    needs:
+      - generate-specs
+      - build-android-apk
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-specs.outputs.specs)}}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Enable KVM
         run: |
@@ -260,11 +214,11 @@ jobs:
           force-avd-creation: false
           script: echo 'Generated AVD snapshot for caching.'
   
-      # - name: Download Android APK
-      #   uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
-      #   with:
-      #     name: android-build-apk-${{ github.run_id }}
-      #     path: android/app/build/outputs/apk/
+      - name: Download Android APK
+        uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        with:
+          name: android-build-apk-${{ github.run_id }}
+          path: android/app/build/outputs/apk/
 
       - name: Start React Native Metro Server
         run: npm run start &

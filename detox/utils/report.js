@@ -233,7 +233,7 @@ function generateTestReport(summary, isUploadedToS3, reportLink, environment, te
     }
 
     const title = generateTitle();
-    const envValue = `detox@${detox_version} | node@${node_version} | npm@${npm_version} | ${device_name}@${device_os_version}${headless ? ' (headless)' : ''} | ${os_name}@${os_version}`;
+    const envValue = `detox@${detox_version} | node@${node_version} | npm@${npm_version} | ${device_name}@${device_os_version}${headless ? ' (headless)' : ''}`;
 
     if (FULL_REPORT === 'true') {
         let reportField;
@@ -350,7 +350,7 @@ function generateTitle() {
             title = `${platform} E2E for Main Nightly Build (Prod tests)${buildLink}`;
             break;
         default:
-            title = `${platform} E2E for Build${buildLink}`;
+            title = `${platform} E2E for Build ${buildLink}`;
     }
 
     return title;

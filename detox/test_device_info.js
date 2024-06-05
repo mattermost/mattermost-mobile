@@ -33,7 +33,6 @@ function main(platform) {
         process.env.BUILD_ID = buildID;
         process.env.DEVICE_NAME = deviceName;
         process.env.DEVICE_OS_VERSION = deviceOSVersion;
-
     } catch (error) {
         console.error(error.message);
         process.exit(1);

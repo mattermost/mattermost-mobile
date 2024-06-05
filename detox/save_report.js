@@ -120,14 +120,14 @@ const saveReport = async () => {
     }
 
     // 'ios-results-*' is the path in CI where the parallel detox jobs save artifacts
-    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/ios-results*/jest-stare/${platform}-data*.json`]);
+    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`]);
     generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath);
 
     if (process.env.CI) {
         // Delete folders starting with "iOS-results-" only in CI environment
         const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
         for (const entry of entries) {
-            if (entry.isDirectory() && (entry.name.startsWith('ios-results-') || entry.name.startsWith('android-results-'))) {
+            if (entry.isDirectory() && (entry.name.startsWith(`${platform}-results-`))) {
                 fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
             }
         }
