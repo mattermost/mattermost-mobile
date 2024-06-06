@@ -1,0 +1,15 @@
+diff --git a/node_modules/jest-expo/src/preset/setup.js b/node_modules/jest-expo/src/preset/setup.js
+index 8567387..42ceb1f 100644
+--- a/node_modules/jest-expo/src/preset/setup.js
++++ b/node_modules/jest-expo/src/preset/setup.js
+@@ -223,8 +223,8 @@ try {
+     const { NativeModulesProxy } = ExpoModulesCore;
+ 
+     // Mock the `uuid` object with the implementation for web.
+-    ExpoModulesCore.uuid.v4 = uuid.default.v4;
+-    ExpoModulesCore.uuid.v5 = uuid.default.v5;
++    // ExpoModulesCore.uuid.v4 = uuid.default.v4;
++    // ExpoModulesCore.uuid.v5 = uuid.default.v5;
+ 
+     // After the NativeModules mock is set up, we can mock NativeModuleProxy's functions that call
+     // into the native proxy module. We're not really interested in checking whether the underlying

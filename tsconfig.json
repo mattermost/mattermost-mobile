@@ -64,7 +64,6 @@
             "@test/*": ["test/*"],
             "@utils/*": ["app/utils/*"],
             "@websocket": ["app/client/websocket"],
-            "*": ["./*", "node_modules/*"],
         }
     },
     "include": ["app/**/*", "share_extension/**/*", "test/**/*", "types/**/*"],

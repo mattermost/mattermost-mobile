@@ -18,6 +18,40 @@ setGenerator(uuidv4);
 
 require('isomorphic-fetch');
 
+jest.mock('expo-application', () => {
+    return {
+        nativeApplicationVersion: '0.0.0',
+        nativeBuildVersion: '0',
+        applicationName: 'Mattermost',
+        applicationId: 'com.mattermost.rnbeta',
+    };
+});
+
+jest.mock('expo-device', () => {
+    return {
+        deviceName: 'Device',
+        osName: 'Test',
+        osVersion: '0.0.0',
+        applicationId: 'com.mattermost.rnbeta',
+        isRootedExperimentalAsync: jest.fn().mockResolvedValue(false),
+    };
+});
+
+jest.mock('expo-file-system', () => ({
+    downloadAsync: jest.fn(() => Promise.resolve({md5: 'md5', uri: 'uri'})),
+    getInfoAsync: jest.fn(() => Promise.resolve({exists: true, md5: 'md5', uri: 'uri'})),
+    readAsStringAsync: jest.fn(() => Promise.resolve()),
+    writeAsStringAsync: jest.fn(() => Promise.resolve()),
+    deleteAsync: jest.fn(() => Promise.resolve()),
+    moveAsync: jest.fn(() => Promise.resolve()),
+    copyAsync: jest.fn(() => Promise.resolve()),
+    makeDirectoryAsync: jest.fn(() => Promise.resolve()),
+    readDirectoryAsync: jest.fn(() => Promise.resolve()),
+    createDownloadResumable: jest.fn(() => Promise.resolve()),
+    documentDirectory: 'file:///test-directory/',
+    cacheDirectory: 'file://test-cache-directory/',
+}));
+
 jest.mock('expo-web-browser', () => ({
     openAuthSessionAsync: jest.fn().mockResolvedValue(({
         type: 'success',
@@ -202,24 +236,6 @@ jest.mock('react-native-vector-icons', () => {
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
-jest.mock('expo-application', () => {
-    return {
-        nativeApplicationVersion: '0.0.0',
-        nativeBuildVersion: '0',
-        applicationName: 'Mattermost',
-        applicationId: 'com.mattermost.rnbeta',
-    };
-});
-
-jest.mock('expo-device', () => {
-    return {
-        deviceName: 'Device',
-        osName: 'Test',
-        osVersion: '0.0.0',
-        applicationId: 'com.mattermost.rnbeta',
-    };
-});
-
 jest.mock('react-native-localize', () => ({
     getTimeZone: () => 'World/Somewhere',
     getLocales: () => ([
@@ -359,20 +375,6 @@ jest.mock('react-native-haptic-feedback', () => {
         trigger: () => '',
     };
 });
-jest.mock('expo-file-system', () => ({
-    downloadAsync: jest.fn(() => Promise.resolve({md5: 'md5', uri: 'uri'})),
-    getInfoAsync: jest.fn(() => Promise.resolve({exists: true, md5: 'md5', uri: 'uri'})),
-    readAsStringAsync: jest.fn(() => Promise.resolve()),
-    writeAsStringAsync: jest.fn(() => Promise.resolve()),
-    deleteAsync: jest.fn(() => Promise.resolve()),
-    moveAsync: jest.fn(() => Promise.resolve()),
-    copyAsync: jest.fn(() => Promise.resolve()),
-    makeDirectoryAsync: jest.fn(() => Promise.resolve()),
-    readDirectoryAsync: jest.fn(() => Promise.resolve()),
-    createDownloadResumable: jest.fn(() => Promise.resolve()),
-    documentDirectory: 'file:///test-directory/',
-    cacheDirectory: 'file://test-cache-directory/',
-}));
 
 declare const global: {requestAnimationFrame: (callback: any) => void};
 global.requestAnimationFrame = (callback) => {
