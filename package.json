@@ -58,7 +58,6 @@
     "expo-web-browser": "13.0.3",
     "fuse.js": "7.0.0",
     "html-entities": "2.5.2",
-    "jail-monkey": "2.8.0",
     "mime-db": "1.52.0",
     "moment-timezone": "0.5.45",
     "pako": "2.1.0",
