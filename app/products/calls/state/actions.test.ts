@@ -19,6 +19,7 @@ import {
     setChannelsWithCalls,
     setCurrentCall,
     setHost,
+    setJoiningChannelId,
     setMicPermissionsErrorDismissed,
     setMicPermissionsGranted,
     setRecordingState,
@@ -919,6 +920,7 @@ describe('useCallsState', () => {
         };
         const expectedGlobalState: GlobalCallsState = {
             micPermissionsGranted: true,
+            joiningChannelId: null,
         };
 
         // setup
@@ -955,9 +957,33 @@ describe('useCallsState', () => {
         act(() => {
             myselfLeftCall();
             userLeftCall('server1', 'channel-1', 'mySessionId');
+
+            // reset state to default
+            setMicPermissionsGranted(false);
         });
         assert.deepEqual(result.current[0], initialCallsState);
         assert.deepEqual(result.current[1], null);
+    });
+
+    it('joining call', () => {
+        const initialGlobalState = DefaultGlobalCallsState;
+        const expectedGlobalState: GlobalCallsState = {
+            ...DefaultGlobalCallsState,
+            joiningChannelId: 'channel-1',
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useGlobalCallsState()];
+        });
+
+        // start joining call
+        act(() => setJoiningChannelId('channel-1'));
+        assert.deepEqual(result.current[0], expectedGlobalState);
+
+        // end joining call
+        act(() => setJoiningChannelId(null));
+        assert.deepEqual(result.current[0], initialGlobalState);
     });
 
     it('CallQuality', async () => {
