@@ -1098,7 +1098,7 @@ PODS:
     - React-debug
   - react-native-background-timer (2.4.1):
     - React-Core
-  - react-native-cameraroll (7.8.0):
+  - react-native-cameraroll (7.8.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1121,7 +1121,7 @@ PODS:
     - Yoga
   - react-native-cookies (6.2.1):
     - React-Core
-  - react-native-document-picker (9.2.0):
+  - react-native-document-picker (9.3.0):
     - React-Core
   - react-native-emm (1.4.1):
     - DoubleConversion
@@ -1214,7 +1214,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context (4.10.1):
+  - react-native-safe-area-context (4.10.4):
     - React-Core
   - react-native-video (5.2.1):
     - React-Core
@@ -1472,7 +1472,7 @@ PODS:
     - React-RCTText
   - RNCClipboard (1.14.1):
     - React-Core
-  - RNDateTimePicker (8.0.1):
+  - RNDateTimePicker (8.1.0):
     - React-Core
   - RNFileViewer (2.1.5):
     - React-Core
@@ -1505,7 +1505,7 @@ PODS:
     - React-Core
   - RNReactNativeHapticFeedback (2.2.0):
     - React-Core
-  - RNReanimated (3.11.0):
+  - RNReanimated (3.12.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1985,16 +1985,16 @@ SPEC CHECKSUMS:
   React-logger: 29fa3e048f5f67fe396bc08af7606426d9bd7b5d
   React-Mapbuffer: bf56147c9775491e53122a94c423ac201417e326
   react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
-  react-native-cameraroll: e16041458be826e247f0bb8467b98cda35c0cf76
+  react-native-cameraroll: a9138c165c9975da773d26945591d313992c799b
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
-  react-native-document-picker: 2b3efb60622b7be891b8d0e0e5424632150e0c94
+  react-native-document-picker: 5b97e24a7f1a1e4a50a72c540a043f32d29a70a2
   react-native-emm: c9be3f8ac8cca161af8cb7cc1508e162b91d906b
   react-native-image-picker: c3afe5472ef870d98a4b28415fc0b928161ee5f7
   react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
   react-native-network-client: 5ec11b534369d8ffff36a75faba6d66098666d90
   react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
   react-native-paste-input: b24971115d7133bf16001a47f33b539ee491dc86
-  react-native-safe-area-context: dcab599c527c2d7de2d76507a523d20a0b83823d
+  react-native-safe-area-context: 399a5859f6acbdf67f671c69b53113f535f3b5b0
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
   react-native-webrtc: 255a1172fd31525b952b36aef7b8e9a41de325e5
   React-nativeconfig: 9f223cd321823afdecf59ed00861ab2d69ee0fc1
@@ -2024,14 +2024,14 @@ SPEC CHECKSUMS:
   ReactNativeIncallManager: bfc9c67358cd524882a7c4116dcb311ac2293d4b
   ReactNativeNavigation: 4d9e6883ecd61e68829403d65083709d9344e7e3
   RNCClipboard: 0a720adef5ec193aa0e3de24c3977222c7e52a37
-  RNDateTimePicker: b6a9b35a785ecbe12b4e7d6de5439d0aa4614146
+  RNDateTimePicker: 6dfc4acb94e520ccb1f1697e9d4cd64fd0817314
   RNFileViewer: ce7ca3ac370e18554d35d6355cffd7c30437c592
   RNGestureHandler: 2282cfbcf86c360d29f44ace393203afd5c6cff7
   RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
   RNLocalize: e8694475db034bf601e17bd3dfa8986565e769eb
   RNPermissions: 80011019862146c08f5bad2a86c27e982f483a99
   RNReactNativeHapticFeedback: ec56a5f81c3941206fd85625fa669ffc7b4545f9
-  RNReanimated: 7ad0f08a845cb60955ee5d461d2156d7b9707118
+  RNReanimated: 8978449b2a511388ea71faf1e66f669134e87658
   RNScreens: b32a9ff15bea7fcdbe5dff6477bc503f792b1208
   RNSentry: f6a5aee809d646763640130714d1fdfe69aac36b
   RNShare: 0fad69ae2d71de9d1f7b9a43acf876886a6cb99c
