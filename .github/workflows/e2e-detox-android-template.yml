@@ -217,13 +217,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y openjdk-11-jdk wget unzip
+          mkdir -p $HOME/android-sdk/cmdline-tools/latest
           wget https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip -O cmdline-tools.zip
-          unzip cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools
-          mkdir -p $ANDROID_HOME/cmdline-tools/latest
-          mv $HOME/android-sdk/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "system-images;android-33;default;x86_64" "emulator"
-
+          unzip cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools/latest
+          yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+          $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "system-images;android-33;default;x86_64" "emulator"
+  
       - name: Create AVD
         run: |
           echo no | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --force -n pixel_6_pro --abi 'default/x86_64' --package 'system-images;android-33;default;x86_64'
