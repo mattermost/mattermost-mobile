@@ -11,10 +11,12 @@ import type UserModel from '@typings/database/models/servers/user';
 
 export type GlobalCallsState = {
     micPermissionsGranted: boolean;
+    joiningChannelId: string | null;
 }
 
 export const DefaultGlobalCallsState: GlobalCallsState = {
     micPermissionsGranted: false,
+    joiningChannelId: null,
 };
 
 export type CallsState = {

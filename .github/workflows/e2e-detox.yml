@@ -1,0 +1,94 @@
+name: Detox E2E Tests
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight
+  push:
+    branches:
+      - 'release-*'
+  pull_request:
+    branches:
+      - 'main'
+    types:
+      - labeled
+  workflow_dispatch:
+    inputs:
+      ios_version:
+        description: 'Enter iOS version'
+        required: false
+        default: "iOS 17.4"
+        type: choice
+        options:
+          - "iOS 17.5"
+          - "iOS 17.4"
+          - "iOS 17.2"
+          - "iOS 17.0"
+      device_name:
+        description: 'Enter iOS Device Name'
+        required: false
+        default: "iPhone 15 Pro"
+        type: choice
+        options:
+          - "iPhone 15 Pro"
+          - "iPhone 15"
+          - "iPhone 14 Pro"
+          - "iPhone 14"
+jobs:
+
+  run-ios-tests-on-pr:
+    name: iOS Mobile Tests on PR
+    uses: ./.github/workflows/e2e-detox-ci-template.yml
+    if: ${{ 
+      (
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.labels &&
+      contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR')
+      )
+     }}
+    with:
+      run-ios-tests: true
+      run-android-tests: false
+      remove-pr-label: true
+      commit_sha: "${{ github.event.pull_request.head.sha || github.sha }}"
+      status_check_context: "Detox iOS Mobile Tests on PR"
+      run-type: 'PR'
+    secrets: inherit
+
+  run-ios-tests-on-release:
+    name: iOS Mobile Tests on Release
+    uses: ./.github/workflows/e2e-detox-ci-template.yml
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release-') }}
+    with:
+      run-ios-tests: true
+      run-android-tests: false
+      remove-pr-label: false
+      commit_sha: "${{ github.sha }}"
+      status_check_context: "Detox iOS Mobile Tests on Release"
+      run-type: 'RELEASE'
+    secrets: inherit
+
+  run-ios-tests-on-main-scheduled:
+    name: iOS Mobile Tests on Main (Scheduled)
+    uses: ./.github/workflows/e2e-detox-ci-template.yml
+    if: ${{ github.event_name == 'schedule' && github.ref == 'refs/heads/main' }}
+    with:
+      run-ios-tests: true
+      run-android-tests: false
+      remove-pr-label: false
+      commit_sha: "${{ github.sha }}"
+      status_check_context: "Detox iOS Mobile Tests on Main (Scheduled)"
+      run-type: 'MAIN'
+    secrets: inherit
+
+  run-ios-tests-on-manual-trigger:
+    name: iOS Mobile Tests on Manual Trigger
+    uses: ./.github/workflows/e2e-detox-ci-template.yml
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    with:
+      run-ios-tests: true
+      run-android-tests: false
+      remove-pr-label: false
+      commit_sha: "${{ github.sha }}"
+      status_check_context: "Detox iOS Mobile Tests on Manual Trigger"
+      run-type: 'MANUAL'
+    secrets: inherit

@@ -7,7 +7,7 @@ import {View, Pressable} from 'react-native';
 
 import {dismissIncomingCall} from '@calls/actions';
 import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
-import {removeIncomingCall} from '@calls/state';
+import {removeIncomingCall, setJoiningChannelId} from '@calls/state';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
@@ -148,7 +148,10 @@ const JoinCallBanner = ({
             showLimitRestrictedAlert(limitRestrictedInfo, intl);
             return;
         }
-        leaveAndJoinWithAlert(intl, serverUrl, channelId);
+
+        setJoiningChannelId(channelId);
+        await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+        setJoiningChannelId(null);
     };
 
     const onDismissPress = () => {
