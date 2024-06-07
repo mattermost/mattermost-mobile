@@ -308,16 +308,15 @@ function generateTestReport(summary, isUploadedToS3, reportLink, environment, te
 function generateTitle() {
     const {
         BRANCH,
-        DETOX_AWS_S3_BUCKET,
-        BUILD_ID,
         COMMIT_HASH,
+        DETOX_AWS_S3_BUCKET,
         IOS,
         PULL_REQUEST,
         RELEASE_BUILD_NUMBER,
         RELEASE_DATE,
         RELEASE_VERSION,
         TYPE,
-        REPORT_PATH
+        REPORT_PATH,
     } = process.env;
 
     const platform = IOS === 'true' ? 'iOS' : 'Android';
