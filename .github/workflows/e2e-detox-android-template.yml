@@ -149,7 +149,7 @@ jobs:
     name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     continue-on-error: true
     runs-on: macos-latest
-    timeout-minutes: 15
+    timeout-minutes: 35
     needs:
       - generate-specs
       # - build-android-apk
@@ -165,12 +165,22 @@ jobs:
     - name: ci/prepare-node-deps
       uses: ./.github/actions/prepare-node-deps
 
+    - name: Install Sharp CLI for faster image generation during prebuild
+      run: npm install --global sharp-cli
+
+    - name: Start React Native Metro Server
+      run: npm run start &
+
+    - name: Install Detox Dependencies
+      run: cd detox && npm i
+
     - name: Install Java
       uses: actions/setup-java@v4
       with:
         java-version: "17"
         distribution: "adopt"
         cache: "gradle"
+
     - name: Create destination path
       run: mkdir -p android/app/build/outputs/apk
 
@@ -188,32 +198,59 @@ jobs:
 
     - name: Cleanup
       run: rm android/app/build/outputs/apk/artifact.zip
-    
-    - name: Download Android Emulator Image
-      run: |
-        echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-29;google_apis;x86"
-        echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd --force --name emu --device "Nexus 5X" -k 'system-images;android-29;google_apis;x86'
-        $ANDROID_HOME/emulator/emulator -list-avds
 
-    - name: Android Emulator
-      timeout-minutes: 10
-      continue-on-error: true
-      run: |
-        echo "Starting emulator"
-        nohup $ANDROID_HOME/emulator/emulator -avd emu -no-audio -no-snapshot -no-window &
-        $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done; input keyevent 82'
-        $ANDROID_HOME/platform-tools/adb devices
-        echo "Emulator started"
+    - name: Cache AVD snapshot
+      uses: actions/cache@v4
+      id: avd-cache
+      with:
+        path: |
+          ~/.android/avd/*
+          ~/.android/adb*
+        key: avd-30-aosp-atd
 
-    - name: Start React Native Metro Server
-      run: npm run start &
+    - name: Create AVD and generate snapshot for caching
+      if: steps.avd-cache.outputs.cache-hit != 'true'
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        # Use the slimmer aosp_atd images for working
+        # around "System UI isn't responding" ANR
+        # (Application Not Responding) error
+        #
+        # https://android-developers.googleblog.com/2021/10/whats-new-in-scalable-automated-testing.html#:~:text=Slimmer%20Emulator%20System%20Images
+        # https://github.com/ReactiveCircus/android-emulator-runner/issues/129
+        # https://github.com/upleveled/hotline-bling-codealong/pull/26#issuecomment-1094659722
+        target: aosp_atd
+        api-level: 33
+        arch: x86
+        ram-size: 4096M
+        channel: canary
+        profile: pixel
+        avd-name: pixel_6_pro
+        force-avd-creation: false
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        emulator-boot-timeout: 12000
+        disable-animations: false
+        script: echo "Generated AVD snapshot for caching"
 
-    - name: Install Detox Dependencies
-      run: cd detox && npm i
+    - name: Start emulator and run Detox integration tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        target: aosp_atd
+        api-level: 33
+        arch: x86
+        ram-size: 4096M
+        channel: canary
+        profile: pixel
+        avd-name: pixel_6_pro
+        force-avd-creation: false
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        emulator-boot-timeout: 12000
+        disable-animations: true
+        script: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
-    - name: Run Detox Tests
-      run: |
-        cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
+    # - name: Run Detox Tests
+    #   run: |
+    #     cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
     - name: Upload Android Test Report
       if: always()

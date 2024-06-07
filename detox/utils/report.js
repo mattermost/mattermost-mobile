@@ -218,8 +218,6 @@ function generateTestReport(summary, isUploadedToS3, reportLink, environment, te
         device_name,
         device_os_version,
         headless,
-        os_name,
-        os_version,
         node_version,
         npm_version,
     } = environment;
