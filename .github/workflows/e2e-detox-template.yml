@@ -51,8 +51,6 @@ env:
   ADMIN_USERNAME: ${{ inputs.MM_TEST_USER_NAME || secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
   ADMIN_PASSWORD: ${{ inputs.MM_TEST_PASSWORD || secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
-  DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-  DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
   HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}
   PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
@@ -218,6 +216,12 @@ jobs:
           path: detox/artifacts/
           pattern: ios-results-*
 
+      - name: Generate Report Path
+        id: s3
+        run: |
+          path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
+          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
+
       - name: Save report Detox Dependencies
         id: report-link
         run: |
@@ -225,10 +229,13 @@ jobs:
           npm ci
           npm run e2e:save-report
         env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
           IOS: ${{ inputs.run-ios-tests }}
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
           DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
           DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
+          REPORT_PATH: ${{ steps.s3.outputs.path }}
 
       - name: Calculate failures
         id: calculate-failures
@@ -240,19 +247,16 @@ jobs:
       - name: Set Target URL
         id: set-url
         run: |
-          s3Folder="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
-          s3Folder=$(echo "$s3Folder" | sed 's/\./-/g')
-
           if ${{ inputs.run-ios-tests }}; then
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/ios-report.html" >> ${GITHUB_OUTPUT}
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/ios-report.html" >> ${GITHUB_OUTPUT}
           else
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/android-report.html" >> ${GITHUB_OUTPUT}
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/android-report.html" >> ${GITHUB_OUTPUT}
           fi
 
       - name: Determine Status
         id: determine-status
         run: |
-          if [[ ${{ steps.calculate-failures.outputs.failures }} -gt 0 && ${{ inputs.testcase_failure_fatal }} ]]; then
+          if [[ ${{ steps.calculate-failures.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
             echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
             echo "STATUS=success" >> ${GITHUB_OUTPUT}

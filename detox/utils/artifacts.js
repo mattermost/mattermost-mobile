@@ -6,20 +6,17 @@
 const fs = require('fs');
 const path = require('path');
 
-const {S3} = require('@aws-sdk/client-s3');
-const {Upload} = require('@aws-sdk/lib-storage');
+const { S3 } = require('@aws-sdk/client-s3');
+const { Upload } = require('@aws-sdk/lib-storage');
 const async = require('async');
 const mime = require('mime-types');
 const readdir = require('recursive-readdir');
 
-const {ARTIFACTS_DIR} = require('./constants');
+const { ARTIFACTS_DIR } = require('./constants');
 
 require('dotenv').config();
 
 const {
-    BRANCH,
-    BUILD_ID,
-    COMMIT_HASH,
     DETOX_AWS_S3_BUCKET,
     DETOX_AWS_ACCESS_KEY_ID,
     DETOX_AWS_SECRET_ACCESS_KEY,
@@ -38,14 +35,13 @@ function getFiles(dirPath) {
     return fs.existsSync(dirPath) ? readdir(dirPath) : [];
 }
 
-async function saveArtifacts() {
+async function saveArtifacts(s3Folder) {
     if (!DETOX_AWS_S3_BUCKET || !DETOX_AWS_ACCESS_KEY_ID || !DETOX_AWS_SECRET_ACCESS_KEY) {
         console.log('No AWS credentials found. Test artifacts not uploaded to S3.');
 
         return;
     }
 
-    const s3Folder = `${BUILD_ID}-${COMMIT_HASH}-${BRANCH}`.replace(/\./g, '-');
     const uploadPath = path.resolve(__dirname, `../${ARTIFACTS_DIR}`);
     const filesToUpload = await getFiles(uploadPath);
 
@@ -68,7 +64,7 @@ async function saveArtifacts() {
                             ContentType: `${contentType}${charset ? '; charset=' + charset : ''}`,
                         },
                     }).done();
-                    return {success: true};
+                    return { success: true };
                 } catch (e) {
                     console.log('Failed to upload artifact:', file);
                     throw new Error(e);
@@ -81,10 +77,10 @@ async function saveArtifacts() {
                 }
 
                 const reportLink = `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/jest-stare/${platform}-report.html`;
-                resolve({success: true, reportLink});
+                resolve({ success: true, reportLink });
             },
         );
     });
 }
 
-module.exports = {saveArtifacts};
+module.exports = { saveArtifacts };
