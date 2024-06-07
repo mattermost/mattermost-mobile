@@ -216,11 +216,11 @@ jobs:
       - name: Install Android SDK
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk wget unzip libpulse0 libpulse-dev
+          sudo apt-get install -y openjdk-11-jdk wget unzip
           wget https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip -O cmdline-tools.zip
-          unzip cmdline-tools.zip -d $HOME
-          mkdir -p $ANDROID_HOME/cmdline-tools
-          mv $HOME/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+          unzip cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools
+          mkdir -p $ANDROID_HOME/cmdline-tools/latest
+          mv $HOME/android-sdk/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "system-images;android-33;default;x86_64" "emulator"
 
@@ -242,7 +242,7 @@ jobs:
           adb shell settings put global window_animation_scale 0.0
           adb shell settings put global transition_animation_scale 0.0
           adb shell settings put global animator_duration_scale 0.0
-  
+
     # - name: Download Android APK
       #   uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
       #   with:
