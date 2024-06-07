@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     outputs:
-      specs: ${{ steps.resolve-device.outputs.specs }}
+      specs: ${{ steps.generate-specs.outputs.specs }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
       device_name: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
       device_os_version: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
