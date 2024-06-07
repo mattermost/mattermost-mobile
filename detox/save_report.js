@@ -116,7 +116,7 @@ const saveReport = async () => {
     const jestStareOutputDir = path.join(__dirname, `${ARTIFACTS_DIR}/jest-stare`);
     const jestStareCombinedFilePath = `${jestStareOutputDir}/${platform}-combined.json`;
     if (!fs.existsSync(jestStareOutputDir)) {
-        fs.mkdirSync(jestStareOutputDir, { recursive: true });
+        fs.mkdirSync(jestStareOutputDir, {recursive: true});
     }
 
     // 'ios-results-*' is the path in CI where the parallel detox jobs save artifacts
@@ -125,10 +125,10 @@ const saveReport = async () => {
 
     if (process.env.CI) {
         // Delete folders starting with "iOS-results-" only in CI environment
-        const entries = fs.readdirSync(ARTIFACTS_DIR, { withFileTypes: true });
+        const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
         for (const entry of entries) {
             if (entry.isDirectory() && entry.name.startsWith('ios-results-')) {
-                fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), { recursive: true });
+                fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
             }
         }
     }
@@ -140,8 +140,8 @@ const saveReport = async () => {
     // Create or use an existing test cycle
     let testCycle = {};
     if (ZEPHYR_ENABLE === 'true') {
-        const { start, end } = summary.stats;
-        testCycle = ZEPHYR_CYCLE_KEY ? { key: ZEPHYR_CYCLE_KEY } : await createTestCycle(start, end);
+        const {start, end} = summary.stats;
+        testCycle = ZEPHYR_CYCLE_KEY ? {key: ZEPHYR_CYCLE_KEY} : await createTestCycle(start, end);
     }
 
     // Send test report to "QA: Mobile Test Automation Report" channel via webhook
