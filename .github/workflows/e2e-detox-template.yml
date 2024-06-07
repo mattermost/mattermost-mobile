@@ -50,6 +50,8 @@ env:
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ inputs.MM_TEST_USER_NAME || secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
   ADMIN_PASSWORD: ${{ inputs.MM_TEST_PASSWORD || secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  BRANCH: ${{ github.head_ref || github.ref_name }} 
+  COMMIT_HASH: ${{ github.sha }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
   HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}

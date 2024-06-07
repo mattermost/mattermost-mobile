@@ -36,11 +36,11 @@ const os = require('os');
 const path = require('path');
 
 const fse = require('fs-extra');
-const { mergeFiles } = require('junit-report-merger');
+const {mergeFiles} = require('junit-report-merger');
 const shell = require('shelljs');
 
-const { saveArtifacts } = require('./utils/artifacts');
-const { ARTIFACTS_DIR } = require('./utils/constants');
+const {saveArtifacts} = require('./utils/artifacts');
+const {ARTIFACTS_DIR} = require('./utils/constants');
 const {
     generateJestStareHtmlReport,
     mergeJestStareJsonFiles,
@@ -55,7 +55,7 @@ const {
     readJsonFromFile,
     writeJsonToFile,
 } = require('./utils/report');
-const { createTestCycle, createTestExecutions } = require('./utils/test_cases');
+const {createTestCycle, createTestExecutions} = require('./utils/test_cases');
 
 require('dotenv').config();
 
@@ -69,7 +69,6 @@ const saveReport = async () => {
         WEBHOOK_URL,
         ZEPHYR_ENABLE,
         ZEPHYR_CYCLE_KEY,
-        REPORT_PATH,
     } = process.env;
 
     // Remove old generated reports
@@ -105,7 +104,7 @@ const saveReport = async () => {
 
     // Read XML from a file
     const xml = fse.readFileSync(combinedFilePath);
-    const { testsuites } = convertXmlToJson(xml);
+    const {testsuites} = convertXmlToJson(xml);
 
     // Generate short summary, write to file and then send report via webhook
     const allTests = getAllTests(testsuites);
@@ -133,7 +132,7 @@ const saveReport = async () => {
             }
         }
     }
-    const result = await saveArtifacts(REPORT_PATH);
+    const result = await saveArtifacts();
     if (result && result.success) {
         console.log('Successfully uploaded artifacts to S3:', result.reportLink);
     }
