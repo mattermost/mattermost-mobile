@@ -115,7 +115,7 @@
     "@react-native/metro-config": "0.74.84",
     "@react-native/typescript-config": "0.74.84",
     "@testing-library/react-hooks": "8.0.1",
-    "@testing-library/react-native": "12.4.5",
+    "@testing-library/react-native": "12.5.1",
     "@types/base-64": "1.0.2",
     "@types/commonmark": "0.27.9",
     "@types/commonmark-react-renderer": "4.3.4",
@@ -147,7 +147,7 @@
     "eslint": "8.57.0",
     "eslint-plugin-header": "3.1.1",
     "eslint-plugin-import": "2.29.1",
-    "eslint-plugin-jest": "28.5.0",
+    "eslint-plugin-jest": "28.6.0",
     "eslint-plugin-react": "7.34.2",
     "eslint-plugin-react-hooks": "4.6.2",
     "husky": "9.0.11",
@@ -198,23 +198,26 @@
     "updatesnapshot": "jest --updateSnapshot"
   },
   "overrides": {
+    "@testing-library/react-native": {
+      "react": "^18.2.0"
+    },
     "@testing-library/react-hooks": {
       "@types/react": "^18.2.37",
       "react": "^18.2.0",
       "react-test-renderer": "^18.2.0"
     },
     "@react-native-community/datetimepicker": {
-      "react-native": "^0.74.0"
+      "react-native": "^0.74.2"
     },
     "@react-native/eslint-config": {
-      "@typescript-eslint/eslint-plugin": "^7.10.0",
-      "@typescript-eslint/parser": "^7.10.0"
+      "@typescript-eslint/eslint-plugin": "^7.12.0",
+      "@typescript-eslint/parser": "^7.12.0"
     },
     "@react-native-clipboard/clipboard": {
-      "react-native": "^0.74.1"
+      "react-native": "^0.74.2"
     },
     "react-native-windows": {
-      "react-native": "^0.74.1"
+      "react-native": "^0.74.2"
     }
   },
   "expo": {
