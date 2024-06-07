@@ -148,7 +148,7 @@ jobs:
   e2e-android-on-mac:
     name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     continue-on-error: true
-    runs-on: macos-latest
+    runs-on: macos-13
     timeout-minutes: 35
     needs:
       - generate-specs
@@ -199,6 +199,17 @@ jobs:
     - name: Cleanup
       run: rm android/app/build/outputs/apk/artifact.zip
 
+    # Set up Detox as compiling dependency as
+    # temporary workaround for React Native 0.68
+    # https://wix.github.io/Detox/docs/introduction/android/#setting-detox-up-as-a-compiling-dependency
+    # https://github.com/wix/Detox/issues/3344#issuecomment-1111197955
+    - name: Set up Detox as compiling dependency for React Native 0.68
+      run: |
+        sed -i'' -e $'s/rootProject.name = \'hotline-bling-codealong\'/rootProject.name = \'hotline-bling-codealong\'\\\ninclude \':detox\'\\\nproject(\':detox\').projectDir = new File(rootProject.projectDir, \'..\/node_modules\/detox\/android\/detox\')/' android/settings.gradle
+        sed -i'' -e $'s/\'com.wix:detox:+\'/project(path: ":detox")/' android/app/build.gradle
+        sed -i'' -e $'s/defaultConfig {/defaultConfig {\\\n        testBuildType System.getProperty("testBuildType", "debug")\\\n        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"\\\n        missingDimensionStrategy "detox", "full"/' android/app/build.gradle
+
+      
     - name: Cache AVD snapshot
       uses: actions/cache@v4
       id: avd-cache
@@ -212,18 +223,11 @@ jobs:
       if: steps.avd-cache.outputs.cache-hit != 'true'
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        # Use the slimmer aosp_atd images for working
-        # around "System UI isn't responding" ANR
-        # (Application Not Responding) error
-        #
-        # https://android-developers.googleblog.com/2021/10/whats-new-in-scalable-automated-testing.html#:~:text=Slimmer%20Emulator%20System%20Images
-        # https://github.com/ReactiveCircus/android-emulator-runner/issues/129
-        # https://github.com/upleveled/hotline-bling-codealong/pull/26#issuecomment-1094659722
-        target: aosp_atd
+        target: google_apis
         api-level: 33
         arch: x86
         ram-size: 4096M
-        channel: canary
+        channel: stable
         profile: pixel
         avd-name: pixel_6_pro
         force-avd-creation: false
@@ -235,11 +239,11 @@ jobs:
     - name: Start emulator and run Detox integration tests
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        target: aosp_atd
+        target: google_apis
         api-level: 33
         arch: x86
         ram-size: 4096M
-        channel: canary
+        channel: stable
         profile: pixel
         avd-name: pixel_6_pro
         force-avd-creation: false
