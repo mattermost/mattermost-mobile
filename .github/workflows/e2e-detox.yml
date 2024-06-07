@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - 'release-*'
+      - 'add_e2e_android'
   pull_request:
     branches:
       - 'main'
@@ -126,7 +127,7 @@ jobs:
   run-android-tests-on-release:
     name: Android Mobile Tests on Release
     uses: ./.github/workflows/e2e-detox-android-template.yml
-    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release-') }}
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/add_e2e_android') }}
     with:
       remove-pr-label: false
       commit_sha: "${{ github.sha }}"
