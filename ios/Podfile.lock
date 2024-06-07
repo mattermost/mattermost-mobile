@@ -1457,14 +1457,14 @@ PODS:
     - React-Core
   - ReactNativeIncallManager (4.2.0):
     - React-Core
-  - ReactNativeNavigation (7.39.2):
+  - ReactNativeNavigation (7.40.0):
     - HMSegmentedControl
     - React-Core
     - React-CoreModules
     - React-RCTImage
     - React-RCTText
-    - ReactNativeNavigation/Core (= 7.39.2)
-  - ReactNativeNavigation/Core (7.39.2):
+    - ReactNativeNavigation/Core (= 7.40.0)
+  - ReactNativeNavigation/Core (7.40.0):
     - HMSegmentedControl
     - React-Core
     - React-CoreModules
@@ -2022,7 +2022,7 @@ SPEC CHECKSUMS:
   ReactCommon: ecad995f26e0d1e24061f60f4e5d74782f003f12
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   ReactNativeIncallManager: bfc9c67358cd524882a7c4116dcb311ac2293d4b
-  ReactNativeNavigation: 4d9e6883ecd61e68829403d65083709d9344e7e3
+  ReactNativeNavigation: e62ba14d9cd44774dca6068b6559ec872e0e61a6
   RNCClipboard: 0a720adef5ec193aa0e3de24c3977222c7e52a37
   RNDateTimePicker: 6dfc4acb94e520ccb1f1697e9d4cd64fd0817314
   RNFileViewer: ce7ca3ac370e18554d35d6355cffd7c30437c592
