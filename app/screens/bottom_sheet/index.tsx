@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps, type BottomSheetFooterProps} from '@gorhom/bottom-sheet';
+import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
 
@@ -27,7 +27,7 @@ type Props = {
     componentId: AvailableScreens;
     contentStyle?: StyleProp<ViewStyle>;
     initialSnapIndex?: number;
-    footerComponent?: React.FC<BottomSheetFooterProps>;
+    footerComponent?: React.FC<unknown>;
     renderContent: () => ReactNode;
     snapPoints?: Array<string | number>;
     testID?: string;
@@ -188,10 +188,12 @@ const BottomSheet = ({
     );
 
     if (isTablet) {
+        const FooterComponent = footerComponent;
         return (
             <>
                 <View style={styles.separator}/>
                 {renderContainerContent()}
+                {FooterComponent && (<FooterComponent/>)}
             </>
         );
     }
