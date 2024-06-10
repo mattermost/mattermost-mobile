@@ -24,16 +24,17 @@ on:
         description: "Run iOS tests"
         required: true
         type: boolean
-      run-android-tests:
-        description: "Run Android tests"
-        required: true
-        type: boolean
       run-type:
         type: string
         required: false
         default: "PR"
       testcase_failure_fatal:
         description: "Should failures be considered fatal"
+        required: false
+        type: boolean
+        default: false
+      record_tests_in_zephyre:
+        description: "Record Test results in Zephyr. (Nightly and Release runs)"
         required: false
         type: boolean
         default: false
@@ -59,7 +60,7 @@ env:
   SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || secrets.MM_MOBILE_E2E_SITE_1_URL }}
   SITE_2_URL: ${{ secrets.MM_MOBILE_E2E_SITE_2_URL }}
   SITE_3_URL: ${{ secrets.MM_MOBILE_E2E_SITE_3_URL }}
-  ZEPHYR_ENABLE: false
+  ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyre }}
   JIRA_PROJECT_KEY: "MM"
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
   ZEPHYR_FOLDER_ID: "3233873"
@@ -70,7 +71,7 @@ env:
 jobs:
   generate-specs:
     runs-on: ubuntu-22.04
-    if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
+    if: ${{ inputs.run-ios-tests }}
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
@@ -192,7 +193,7 @@ jobs:
 
   download-e2e-results:
     runs-on: ubuntu-22.04
-    if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
+    if: ${{ inputs.run-ios-tests}}
     needs:
       - generate-specs
       - e2e-ios

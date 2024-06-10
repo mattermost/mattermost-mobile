@@ -25,7 +25,6 @@ jobs:
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release-') }}
     with:
       run-ios-tests: true
-      run-android-tests: false
       run-type: "RELEASE"
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
@@ -45,3 +44,4 @@ jobs:
           description: Completed with ${{ needs.run-ios-tests-on-release.outputs.FAILURES }} failures
           status: ${{ needs.run-ios-tests-on-release.outputs.STATUS }}
           target_url: ${{ needs.run-ios-tests-on-release.outputs.TARGET_URL }}
+          record_tests_in_zephyre: true

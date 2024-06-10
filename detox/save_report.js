@@ -140,7 +140,7 @@ const saveReport = async () => {
 
     // Create or use an existing test cycle
     let testCycle = {};
-    if (ZEPHYR_ENABLE === 'true') {
+    if (ZEPHYR_ENABLE === true) {
         const {start, end} = summary.stats;
         testCycle = ZEPHYR_CYCLE_KEY ? {key: ZEPHYR_CYCLE_KEY} : await createTestCycle(start, end);
     }

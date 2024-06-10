@@ -29,7 +29,6 @@ jobs:
       - update-initial-status
     with:
       run-ios-tests: true
-      run-android-tests: false
       run-type: "PR"
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
     secrets: inherit
@@ -49,6 +48,7 @@ jobs:
           description: Completed with ${{ needs.run-ios-tests-on-pr.outputs.FAILURES }} failures
           status: ${{ needs.run-ios-tests-on-pr.outputs.STATUS }}
           target_url: ${{ needs.run-ios-tests-on-pr.outputs.TARGET_URL }}
+          record_tests_in_zephyre: true # testing purposes. should be removed
 
   e2e-remove-label:
     runs-on: ubuntu-22.04
@@ -73,11 +73,3 @@ jobs:
               });
             }
 
-            if (labels.includes(androidLabel)) {
-              github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: androidLabel,
-              });
-            }

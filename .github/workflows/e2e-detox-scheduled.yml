@@ -2,7 +2,7 @@ name: Detox E2E Tests (Scheduled)
 
 on:
   schedule:
-    - cron: "0 0 * * *" # every day at midnight
+    - cron: "0 0 * * 4,5" # Wednesday and Thrusday midnight
 
 jobs:
   update-initial-status:
@@ -23,7 +23,6 @@ jobs:
     uses: ./.github/workflows/e2e-detox-template.yml
     with:
       run-ios-tests: true
-      run-android-tests: false
       run-type: "MAIN"
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
@@ -43,3 +42,4 @@ jobs:
           description: Completed with ${{ needs.run-ios-tests-on-main-scheduled.outputs.FAILURES }} failures
           status: ${{ needs.run-ios-tests-on-main-scheduled.outputs.STATUS }}
           target_url: ${{ needs.run-ios-tests-on-main-scheduled.outputs.TARGET_URL }}
+          record_tests_in_zephyre: true
