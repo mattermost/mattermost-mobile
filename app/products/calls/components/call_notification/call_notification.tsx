@@ -8,7 +8,7 @@ import {Pressable, Text, View} from 'react-native';
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchProfilesInChannel} from '@actions/remote/user';
 import {dismissIncomingCall} from '@calls/actions/calls';
-import {removeIncomingCall} from '@calls/state';
+import {playIncomingCallsRinging, removeIncomingCall} from '@calls/state';
 import {ChannelType, type IncomingCallNotification} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -17,6 +17,7 @@ import {CALL_NOTIFICATION_BAR_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
+import {useAppState} from '@hooks/device';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServerDisplayName} from '@queries/app/servers';
 import ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -123,6 +124,7 @@ export const CallNotification = ({
 }: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const appState = useAppState();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const [serverName, setServerName] = useState('');
@@ -134,6 +136,10 @@ export const CallNotification = ({
             fetchProfilesInChannel(serverUrl, incomingCall.channelID, currentUserId, undefined, false);
         }
     }, []);
+
+    useEffect(() => {
+        playIncomingCallsRinging(serverUrl, incomingCall.callID);
+    }, [serverUrl, incomingCall.callID, appState]);
 
     // We only need to getServerDisplayName once
     useEffect(() => {

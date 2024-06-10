@@ -149,8 +149,6 @@ export const processIncomingCalls = async (serverUrl: string, calls: Call[], kee
     newIncoming.sort((a, b) => a.startAt - b.startAt);
 
     setIncomingCalls({...getIncomingCalls(), incomingCalls: newIncoming});
-
-    playIncomingCallsRinging(serverUrl);
 };
 
 const getChannelIdFromCallId = (serverUrl: string, callId: string) => {
@@ -173,7 +171,7 @@ export const removeIncomingCall = (serverUrl: string, callId: string, channelId?
     const incomingCalls = getIncomingCalls();
     const newIncomingCalls = incomingCalls.incomingCalls.filter((ic) => ic.callID !== callId);
     if (incomingCalls.incomingCalls.length !== newIncomingCalls.length) {
-        setIncomingCalls({incomingCalls: newIncomingCalls});
+        setIncomingCalls({...incomingCalls, incomingCalls: newIncomingCalls});
     }
 
     let chId = channelId;
@@ -192,7 +190,7 @@ export const removeIncomingCall = (serverUrl: string, callId: string, channelId?
     setCallsState(serverUrl, {...callsState, calls: nextCalls});
 };
 
-let previousAppState: AppStateStatus = 'inactive';
+let previousAppState: AppStateStatus;
 
 export const callsOnAppStateChange = async (appState: AppStateStatus) => {
     if (appState === previousAppState || !isMainActivity()) {
@@ -204,7 +202,7 @@ export const callsOnAppStateChange = async (appState: AppStateStatus) => {
         case 'inactive':
         case 'background':
             InCallManager.stopRingtone();
-            setIncomingCalls({...getIncomingCalls(), currentRingId: undefined});
+            setIncomingCalls({...getIncomingCalls(), currentRingingCallId: undefined});
             break;
     }
 };
@@ -235,15 +233,15 @@ const getRingtoneOrNone = async (serverUrl: string) => {
     }
 };
 
-const shouldRing = () => {
+const shouldRing = (callId: string) => {
     // Do not ring if we are in the background
     if (AppState.currentState !== 'active') {
         return false;
     }
 
-    // Do not ring if we are already ringing, or we have no incoming calls
+    // Do not ring if we are already ringing, or we have no incoming calls, or we have rung for this call already
     const incomingCalls = getIncomingCalls();
-    if (incomingCalls.currentRingId || incomingCalls.incomingCalls.length === 0) {
+    if (incomingCalls.currentRingingCallId || incomingCalls.incomingCalls.length === 0 || incomingCalls.callIdHasRung[callId]) {
         return false;
     }
 
@@ -252,36 +250,40 @@ const shouldRing = () => {
     return !currentCall;
 };
 
-const playIncomingCallsRinging = async (serverUrl: string) => {
-    if (!shouldRing()) {
+export const playIncomingCallsRinging = async (serverUrl: string, callId: string) => {
+    if (!shouldRing(callId)) {
         return;
     }
 
-    const ringId = generateId();
     const ringTone = await getRingtoneOrNone(serverUrl);
     if (ringTone === 'none') {
         return;
     }
-    setIncomingCalls({...getIncomingCalls(), currentRingId: ringId});
+    const incomingCalls = getIncomingCalls();
+    setIncomingCalls({
+        ...incomingCalls,
+        currentRingingCallId: callId,
+        callIdHasRung: {...incomingCalls.callIdHasRung, [callId]: true},
+    });
     InCallManager.startRingtone(ringTone, Calls.RINGTONE_VIBRATE_PATTERN);
 
     setTimeout(() => {
         const incoming = getIncomingCalls();
-        if (incoming.currentRingId === ringId) {
+        if (incoming.currentRingingCallId === callId) {
             InCallManager.stopRingtone();
-            setIncomingCalls({...getIncomingCalls(), currentRingId: undefined});
+            setIncomingCalls({...getIncomingCalls(), currentRingingCallId: undefined});
         }
     }, Calls.RING_LENGTH);
 };
 
 const stopIncomingCallsRinging = () => {
     const incomingCalls = getIncomingCalls();
-    if (!incomingCalls.currentRingId) {
+    if (!incomingCalls.currentRingingCallId) {
         return;
     }
 
     InCallManager.stopRingtone();
-    setIncomingCalls({...incomingCalls, currentRingId: undefined});
+    setIncomingCalls({...incomingCalls, currentRingingCallId: undefined});
 };
 
 export const setCallForChannel = (serverUrl: string, channelId: string, enabled?: boolean, call?: Call) => {
