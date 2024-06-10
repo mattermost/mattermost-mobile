@@ -9,7 +9,7 @@ PODS:
     - ExpoModulesCore
   - EXConstants (16.0.2):
     - ExpoModulesCore
-  - Expo (51.0.11):
+  - Expo (51.0.12):
     - ExpoModulesCore
   - ExpoDevice (6.0.2):
     - ExpoModulesCore
@@ -60,7 +60,7 @@ PODS:
     - hermes-engine/Pre-built (= 0.74.2)
   - hermes-engine/Pre-built (0.74.2)
   - HMSegmentedControl (1.5.6)
-  - JitsiWebRTC (111.0.2)
+  - JitsiWebRTC (124.0.0)
   - libavif/core (0.11.1)
   - libavif/libdav1d (0.11.1):
     - libavif/core
@@ -1259,8 +1259,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-webrtc (111.0.6):
-    - JitsiWebRTC (~> 111.0.0)
+  - react-native-webrtc (124.0.0):
+    - JitsiWebRTC (~> 124.0.0)
     - React-Core
   - React-nativeconfig (0.74.2)
   - React-NativeModulesApple (0.74.2):
@@ -1975,7 +1975,7 @@ SPEC CHECKSUMS:
   DoubleConversion: 76ab83afb40bddeeee456813d9c04f67f78771b5
   EXApplication: c08200c34daca7af7fd76ac4b9d606077410e8ad
   EXConstants: 409690fbfd5afea964e5e9d6c4eb2c2b59222c59
-  Expo: 8af2fbdfe35b232c2361cc9b9f09a5719ceb4635
+  Expo: be0f48f4f1aa08d863d88480c2810b956e05e813
   ExpoDevice: fc94f0e42ecdfd897e7590f2874fc64dfa7e9b1c
   ExpoFileSystem: 80bfe850b1f9922c16905822ecbf97acd711dc51
   ExpoImage: 93915a11c23fa6c62ee84ecf60dc1ff4c7c73d3b
@@ -1989,7 +1989,7 @@ SPEC CHECKSUMS:
   glog: fdfdfe5479092de0c4bdbebedd9056951f092c4f
   hermes-engine: 49d04e119f7241031cb4718f6bdea0a536c0ddd9
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
-  JitsiWebRTC: 80f62908fcf2a1160e0d14b584323fb6e6be630b
+  JitsiWebRTC: 37fb2fb70d42cac58c06948527a5f9e1b3f50812
   libavif: 84bbb62fb232c3018d6f1bab79beea87e35de7b7
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
@@ -2034,7 +2034,7 @@ SPEC CHECKSUMS:
   react-native-paste-input: b24971115d7133bf16001a47f33b539ee491dc86
   react-native-safe-area-context: 399a5859f6acbdf67f671c69b53113f535f3b5b0
   react-native-video: 8cd68fa00f56087184154c0e976d3756adaad144
-  react-native-webrtc: 255a1172fd31525b952b36aef7b8e9a41de325e5
+  react-native-webrtc: ae5f9793fc58138ecb5bdf0afe7cfdb3f09888ed
   React-nativeconfig: 9f223cd321823afdecf59ed00861ab2d69ee0fc1
   React-NativeModulesApple: ff7efaff7098639db5631236cfd91d60abff04c0
   React-perflogger: 32ed45d9cee02cf6639acae34251590dccd30994
