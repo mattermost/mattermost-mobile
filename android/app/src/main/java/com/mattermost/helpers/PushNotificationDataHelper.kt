@@ -4,29 +4,27 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import com.facebook.react.bridge.Arguments
-
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
-
-import com.mattermost.helpers.database_extension.*
-import com.mattermost.helpers.push_notification.*
-
-import kotlinx.coroutines.*
+import com.mattermost.helpers.database_extension.getDatabaseForServer
+import com.mattermost.helpers.database_extension.saveToDatabase
+import com.mattermost.helpers.push_notification.addToDefaultCategoryIfNeeded
+import com.mattermost.helpers.push_notification.fetchMyChannel
+import com.mattermost.helpers.push_notification.fetchMyTeamCategories
+import com.mattermost.helpers.push_notification.fetchNeededUsers
+import com.mattermost.helpers.push_notification.fetchPosts
+import com.mattermost.helpers.push_notification.fetchTeamIfNeeded
+import com.mattermost.helpers.push_notification.fetchThread
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 class PushNotificationDataHelper(private val context: Context) {
-    private var coroutineScope = CoroutineScope(Dispatchers.Default)
-    fun fetchAndStoreDataForPushNotification(initialData: Bundle, isReactInit: Boolean): Bundle? {
-        var result: Bundle? = null
-        val job = coroutineScope.launch(Dispatchers.Default) {
-            result = PushNotificationDataRunnable.start(context, initialData, isReactInit)
+    suspend fun fetchAndStoreDataForPushNotification(initialData: Bundle, isReactInit: Boolean): Bundle? {
+        return withContext(Dispatchers.Default) {
+            PushNotificationDataRunnable.start(context, initialData, isReactInit)
         }
-        runBlocking {
-            job.join()
-        }
-
-        return result
     }
 }
 
@@ -37,8 +35,8 @@ class PushNotificationDataRunnable {
         private val mutex = Mutex()
 
         suspend fun start(context: Context, initialData: Bundle, isReactInit: Boolean): Bundle? {
-            // for more info see: https://blog.danlew.net/2020/01/28/coroutines-and-java-synchronization-dont-mix/
             mutex.withLock {
+                // for more info see: https://blog.danlew.net/2020/01/28/coroutines-and-java-synchronization-dont-mix/
                 val serverUrl: String = initialData.getString("server_url") ?: return null
                 val db = dbHelper.getDatabaseForServer(context, serverUrl)
                 var result: Bundle? = null
@@ -50,8 +48,9 @@ class PushNotificationDataRunnable {
                         val postId = initialData.getString("post_id")
                         val rootId = initialData.getString("root_id")
                         val isCRTEnabled = initialData.getString("is_crt_enabled") == "true"
+                        val ackId = initialData.getString("ack_id")
 
-                        Log.i("ReactNative", "Start fetching notification data in server=$serverUrl for channel=$channelId")
+                        Log.i("ReactNative", "Start fetching notification data in server=$serverUrl for channel=$channelId and ack=$ackId")
 
                         val receivingThreads = isCRTEnabled && !rootId.isNullOrEmpty()
                         val notificationData = Arguments.createMap()
@@ -89,7 +88,7 @@ class PushNotificationDataRunnable {
 
                             getThreadList(notificationThread, postData?.getArray("threads"))?.let {
                                 val threadsArray = Arguments.createArray()
-                                for(item in it) {
+                                for (item in it) {
                                     threadsArray.pushMap(item)
                                 }
                                 notificationData.putArray("threads", threadsArray)
@@ -105,7 +104,7 @@ class PushNotificationDataRunnable {
                             dbHelper.saveToDatabase(db, notificationData, teamId, channelId, receivingThreads)
                         }
 
-                        Log.i("ReactNative", "Done processing push notification=$serverUrl for channel=$channelId")
+                        Log.i("ReactNative", "Done processing push notification=$serverUrl for channel=$channelId and ack=$ackId")
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
