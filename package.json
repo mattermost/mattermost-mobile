@@ -39,7 +39,7 @@
     "@react-navigation/native": "6.1.17",
     "@react-navigation/stack": "6.3.29",
     "@rneui/base": "4.0.0-rc.8",
-    "@sentry/react-native": "5.22.3",
+    "@sentry/react-native": "5.23.1",
     "@stream-io/flat-list-mvcp": "0.10.3",
     "@voximplant/react-native-foreground-service": "3.0.2",
     "base-64": "1.0.0",
@@ -77,7 +77,7 @@
     "react-native-incall-manager": "4.2.0",
     "react-native-keyboard-aware-scroll-view": "0.9.5",
     "react-native-keychain": "8.2.0",
-    "react-native-localize": "3.1.0",
+    "react-native-localize": "3.2.0",
     "react-native-math-view": "3.9.5",
     "react-native-navigation": "7.40.0",
     "react-native-notifications": "5.1.0",
@@ -121,7 +121,7 @@
     "@types/commonmark-react-renderer": "4.3.4",
     "@types/deep-equal": "1.0.4",
     "@types/jest": "29.5.12",
-    "@types/lodash": "4.17.4",
+    "@types/lodash": "4.17.5",
     "@types/mime-db": "1.43.5",
     "@types/pako": "2.0.3",
     "@types/querystringify": "2.0.2",
@@ -163,7 +163,7 @@
     "tough-cookie": "4.1.4",
     "ts-jest": "29.1.4",
     "typescript": "5.4.5",
-    "uuid": "9.0.1"
+    "uuid": "10.0.0"
   },
   "scripts": {
     "android": "react-native run-android",
