@@ -33,7 +33,7 @@ on:
         required: false
         type: boolean
         default: false
-      record_tests_in_zephyre:
+      record_tests_in_zephyr:
         description: "Record Test results in Zephyr. (Nightly and Release runs)"
         required: false
         type: boolean
@@ -60,7 +60,7 @@ env:
   SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || secrets.MM_MOBILE_E2E_SITE_1_URL }}
   SITE_2_URL: ${{ secrets.MM_MOBILE_E2E_SITE_2_URL }}
   SITE_3_URL: ${{ secrets.MM_MOBILE_E2E_SITE_3_URL }}
-  ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyre }}
+  ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
   JIRA_PROJECT_KEY: "MM"
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
   ZEPHYR_FOLDER_ID: "3233873"

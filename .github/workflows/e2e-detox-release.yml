@@ -44,4 +44,4 @@ jobs:
           description: Completed with ${{ needs.run-ios-tests-on-release.outputs.FAILURES }} failures
           status: ${{ needs.run-ios-tests-on-release.outputs.STATUS }}
           target_url: ${{ needs.run-ios-tests-on-release.outputs.TARGET_URL }}
-          record_tests_in_zephyre: true
+          record_tests_in_zephyr: true
