@@ -95,7 +95,7 @@ const VideoFile = ({
                     if (cred?.token) {
                         headers.Authorization = `Bearer ${cred.token}`;
                     }
-                    const {uri, height, width} = await getThumbnailAsync(data.localPath || videoUrl, {time: 2000, headers});
+                    const {uri, height, width} = await getThumbnailAsync(data.localPath || videoUrl, {time: 1000, headers});
                     data.mini_preview = uri;
                     data.height = height;
                     data.width = width;
