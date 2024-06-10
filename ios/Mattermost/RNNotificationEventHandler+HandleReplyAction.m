@@ -16,6 +16,10 @@
 
 NSString *const ReplyActionID = @"REPLY_ACTION";
 
+typedef void (*SendReplyCompletionHandlerIMP)(id, SEL, UNNotificationResponse *, void (^)(void));
+static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplementation = NULL;
+
+
 @implementation RNNotificationEventHandler (HandleReplyAction)
 
 - (RNNotificationCenter *)notificationCenter{
@@ -37,7 +41,16 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
     Method originalMethod = class_getInstanceMethod(class, originalSelector);
     Method swizzledMethod = class_getInstanceMethod(class, swizzledSelector);
     
-    method_exchangeImplementations(originalMethod, swizzledMethod);
+    // Get the implementation of the swizzled method
+    IMP swizzledImplementation = method_getImplementation(swizzledMethod);
+    
+    // Get the original implementation
+    IMP originalImplementation = method_getImplementation(originalMethod);
+    
+    // Set the original method's implementation to the swizzled method's implementation
+    method_setImplementation(originalMethod, swizzledImplementation);
+    
+    originalSendReplyCompletionHandlerImplementation = (SendReplyCompletionHandlerIMP)originalImplementation;
   });
 }
 
@@ -140,7 +153,7 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
   if ([response.actionIdentifier isEqualToString:ReplyActionID]) {
     [self sendReply:response completionHandler:completionHandler];
   } else {
-    [self handleReplyAction_didReceiveNotificationResponse:response completionHandler:completionHandler];
+    originalSendReplyCompletionHandlerImplementation(self, @selector(sendReply:completionHandler:), response, completionHandler);
   }
 }
 
