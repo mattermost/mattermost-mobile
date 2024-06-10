@@ -24,9 +24,6 @@ static URLSessionTaskDidReceiveChallengeIMP originalURLSessionTaskDidReceiveChal
   });
 }
 
-static InitWithRequestInSessionOptionsContextIMP originalInitWithRequestInSessionOptionsContextImplementation = NULL;
-static URLSessionTaskDidReceiveChallengeIMP originalURLSessionTaskDidReceiveChallengeImplementation = NULL;
-
 + (void) swizzleInitMethod {
   Class class = [self class];
   
