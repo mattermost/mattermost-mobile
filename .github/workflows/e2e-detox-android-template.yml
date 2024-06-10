@@ -168,6 +168,26 @@ jobs:
     - name: Install Sharp CLI for faster image generation during prebuild
       run: npm install --global sharp-cli
 
+    - name: Cache AVD snapshot
+      uses: actions/cache@v4
+      id: avd-cache
+      with:
+        path: |
+          ~/.android/avd/*
+          ~/.android/adb*
+        key: avd-33-pixel_6_pro
+
+    - name: create AVD and generate snapshot for caching
+      if: steps.avd-cache.outputs.cache-hit != 'true'
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        profile: pixel_6_pro
+        api-level: ${{ matrix.api-level }}
+        arch: x86_64
+        force-avd-creation: false
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        script: echo "Generated AVD snapshot for caching."
+
     - name: Start React Native Metro Server
       run: npm run start &
 
@@ -199,35 +219,16 @@ jobs:
     - name: Cleanup
       run: rm android/app/build/outputs/apk/artifact.zip
 
-    - name: Cache AVD snapshot
-      uses: actions/cache@v4
-      id: avd-cache
+    - name: Run tests
+      uses: reactivecircus/android-emulator-runner@v2
       with:
-        path: |
-          ~/.android/avd/*
-          ~/.android/adb*
-        key: avd-33-pixel_6_pro
-
-    - name: Set up Android Emulator (using Docker - adjust as needed)
-      uses: actions/checkout@v3
-      with:
-        repository: 'google/android-emulator'
-        ref: 'v3.2.4'  # Consider using a specific tag for stability
-
-    - name: run docker
-      run: |
-        docker build -t android-emulator .
-        docker run -d --name android-emulator android-emulator
-
-    - name: Start Android Emulator
-      run: docker exec android-emulator emulator -avd Pixel_3A_API_30
-
-    - name: Run Detox tests
-      run: yarn detox test -c android.json
-
-    - name: Stop Android Emulator (optional)
-      run: docker stop android-emulator
-
+        profile: pixel_6_pro
+        api-level: 33
+        arch: x86_64
+        force-avd-creation: false
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        disable-animations: true
+        script: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
         
     # - name: Create AVD and generate snapshot for caching
     #   if: steps.avd-cache.outputs.cache-hit != 'true'
