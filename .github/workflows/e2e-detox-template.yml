@@ -105,35 +105,6 @@ jobs:
           device_name: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
           device_os_version: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
 
-  build-ios-simulator:
-    if: ${{ inputs.run-ios-tests }}
-    runs-on: macos-14-large
-    needs:
-      - generate-specs
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-
-      - name: Prepare iOS Build
-        uses: ./.github/actions/prepare-ios-build
-
-      - name: Build iOS Simulator
-        env:
-          TAG: "${{ needs.generate-specs.outputs.mobile_ref }}"
-          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-        run: bundle exec fastlane ios simulator --env ios.simulator
-        working-directory: ./fastlane
-
-      - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-        with:
-          name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-x86_64.app.zip
-
   e2e-ios:
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     if: ${{ inputs.run-ios-tests }}
@@ -144,7 +115,6 @@ jobs:
       IOS: true
     needs:
       - generate-specs
-      - build-ios-simulator
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
