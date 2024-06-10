@@ -6,13 +6,13 @@
 const fs = require('fs');
 const path = require('path');
 
-const { S3 } = require('@aws-sdk/client-s3');
-const { Upload } = require('@aws-sdk/lib-storage');
+const {S3} = require('@aws-sdk/client-s3');
+const {Upload} = require('@aws-sdk/lib-storage');
 const async = require('async');
 const mime = require('mime-types');
 const readdir = require('recursive-readdir');
 
-const { ARTIFACTS_DIR } = require('./constants');
+const {ARTIFACTS_DIR} = require('./constants');
 
 require('dotenv').config();
 
@@ -64,7 +64,7 @@ async function saveArtifacts(s3Folder) {
                             ContentType: `${contentType}${charset ? '; charset=' + charset : ''}`,
                         },
                     }).done();
-                    return { success: true };
+                    return {success: true};
                 } catch (e) {
                     console.log('Failed to upload artifact:', file);
                     throw new Error(e);
@@ -77,10 +77,10 @@ async function saveArtifacts(s3Folder) {
                 }
 
                 const reportLink = `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/jest-stare/${platform}-report.html`;
-                resolve({ success: true, reportLink });
+                resolve({success: true, reportLink});
             },
         );
     });
 }
 
-module.exports = { saveArtifacts };
+module.exports = {saveArtifacts};

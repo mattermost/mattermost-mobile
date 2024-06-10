@@ -36,11 +36,11 @@ const os = require('os');
 const path = require('path');
 
 const fse = require('fs-extra');
-const { mergeFiles } = require('junit-report-merger');
+const {mergeFiles} = require('junit-report-merger');
 const shell = require('shelljs');
 
-const { saveArtifacts } = require('./utils/artifacts');
-const { ARTIFACTS_DIR } = require('./utils/constants');
+const {saveArtifacts} = require('./utils/artifacts');
+const {ARTIFACTS_DIR} = require('./utils/constants');
 const {
     generateJestStareHtmlReport,
     mergeJestStareJsonFiles,
@@ -55,7 +55,7 @@ const {
     readJsonFromFile,
     writeJsonToFile,
 } = require('./utils/report');
-const { createTestCycle, createTestExecutions } = require('./utils/test_cases');
+const {createTestCycle, createTestExecutions} = require('./utils/test_cases');
 
 require('dotenv').config();
 
@@ -105,7 +105,7 @@ const saveReport = async () => {
 
     // Read XML from a file
     const xml = fse.readFileSync(combinedFilePath);
-    const { testsuites } = convertXmlToJson(xml);
+    const {testsuites} = convertXmlToJson(xml);
 
     // Generate short summary, write to file and then send report via webhook
     const allTests = getAllTests(testsuites);
@@ -117,7 +117,7 @@ const saveReport = async () => {
     const jestStareOutputDir = path.join(__dirname, `${ARTIFACTS_DIR}/jest-stare`);
     const jestStareCombinedFilePath = `${jestStareOutputDir}/${platform}-combined.json`;
     if (!fs.existsSync(jestStareOutputDir)) {
-        fs.mkdirSync(jestStareOutputDir, { recursive: true });
+        fs.mkdirSync(jestStareOutputDir, {recursive: true});
     }
 
     // 'ios-results-*' is the path in CI where the parallel detox jobs save artifacts
@@ -126,10 +126,10 @@ const saveReport = async () => {
 
     if (process.env.CI) {
         // Delete folders starting with "iOS-results-" only in CI environment
-        const entries = fs.readdirSync(ARTIFACTS_DIR, { withFileTypes: true });
+        const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
         for (const entry of entries) {
             if (entry.isDirectory() && entry.name.startsWith('ios-results-')) {
-                fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), { recursive: true });
+                fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
             }
         }
     }
@@ -141,8 +141,8 @@ const saveReport = async () => {
     // Create or use an existing test cycle
     let testCycle = {};
     if (ZEPHYR_ENABLE === 'true') {
-        const { start, end } = summary.stats;
-        testCycle = ZEPHYR_CYCLE_KEY ? { key: ZEPHYR_CYCLE_KEY } : await createTestCycle(start, end);
+        const {start, end} = summary.stats;
+        testCycle = ZEPHYR_CYCLE_KEY ? {key: ZEPHYR_CYCLE_KEY} : await createTestCycle(start, end);
     }
 
     // Send test report to "QA: Mobile Test Automation Report" channel via webhook
