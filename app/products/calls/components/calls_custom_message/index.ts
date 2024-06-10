@@ -7,7 +7,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {CallsCustomMessage} from '@calls/components/calls_custom_message/calls_custom_message';
 import {observeIsCallLimitRestricted} from '@calls/observers';
-import {observeCurrentCall} from '@calls/state';
+import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
 import {Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
@@ -41,12 +41,17 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
         switchMap((call) => of$(call?.channelId)),
         distinctUntilChanged(),
     );
+    const joiningChannelId = observeGlobalCallsState().pipe(
+        switchMap((state) => of$(state?.joiningChannelId)),
+        distinctUntilChanged(),
+    );
 
     return {
         currentUser,
         isMilitaryTime,
         limitRestrictedInfo: observeIsCallLimitRestricted(database, serverUrl, post.channelId),
         ccChannelId,
+        joiningChannelId,
     };
 });
 

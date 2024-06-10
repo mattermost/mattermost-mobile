@@ -61,34 +61,41 @@ const PostPriorityPickerFooter = ({onCancel, onSubmit, ...props}: Props) => {
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
+    const footer = (
+        <View
+            style={[style.container, {
+                paddingBottom: FOOTER_PADDING + Platform.select({ios: (isTablet ? FOOTER_PADDING_BOTTOM_TABLET_ADJUST : 0), default: 0}),
+            }]}
+        >
+            <TouchableOpacity
+                onPress={onCancel}
+                style={style.cancelButton}
+            >
+                <FormattedText
+                    id='post_priority.picker.cancel'
+                    defaultMessage='Cancel'
+                    style={style.cancelButtonText}
+                />
+            </TouchableOpacity>
+            <TouchableOpacity
+                onPress={onSubmit}
+                style={style.applyButton}
+            >
+                <FormattedText
+                    id='post_priority.picker.apply'
+                    defaultMessage='Apply'
+                    style={style.applyButtonText}
+                />
+            </TouchableOpacity>
+        </View>
+    );
+
+    if (isTablet) {
+        return footer;
+    }
     return (
         <BottomSheetFooter {...props}>
-            <View
-                style={[style.container, {
-                    paddingBottom: FOOTER_PADDING + Platform.select({ios: (isTablet ? FOOTER_PADDING_BOTTOM_TABLET_ADJUST : 0), default: 0}),
-                }]}
-            >
-                <TouchableOpacity
-                    onPress={onCancel}
-                    style={style.cancelButton}
-                >
-                    <FormattedText
-                        id='post_priority.picker.cancel'
-                        defaultMessage='Cancel'
-                        style={style.cancelButtonText}
-                    />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={onSubmit}
-                    style={style.applyButton}
-                >
-                    <FormattedText
-                        id='post_priority.picker.apply'
-                        defaultMessage='Apply'
-                        style={style.applyButtonText}
-                    />
-                </TouchableOpacity>
-            </View>
+            {footer}
         </BottomSheetFooter>
     );
 };

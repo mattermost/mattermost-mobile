@@ -564,6 +564,14 @@ export const setSpeakerPhone = (speakerphoneOn: boolean) => {
     }
 };
 
+export const setJoiningChannelId = (joiningChannelId: string | null) => {
+    const globalCallsState = getGlobalCallsState();
+    setGlobalCallsState({
+        ...globalCallsState,
+        joiningChannelId,
+    });
+};
+
 export const setAudioDeviceInfo = (info: AudioDeviceInfo) => {
     const call = getCurrentCall();
     if (call) {

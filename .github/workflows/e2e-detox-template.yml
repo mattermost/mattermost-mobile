@@ -238,6 +238,9 @@ jobs:
           DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
           DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
           REPORT_PATH: ${{ steps.s3.outputs.path }}
+          ## These are needed for the MM Webhook report
+          COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
+          BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
 
       - name: Calculate failures
         id: calculate-failures

@@ -69,6 +69,7 @@ const saveReport = async () => {
         WEBHOOK_URL,
         ZEPHYR_ENABLE,
         ZEPHYR_CYCLE_KEY,
+        REPORT_PATH,
     } = process.env;
 
     // Remove old generated reports
@@ -132,7 +133,7 @@ const saveReport = async () => {
             }
         }
     }
-    const result = await saveArtifacts();
+    const result = await saveArtifacts(REPORT_PATH);
     if (result && result.success) {
         console.log('Successfully uploaded artifacts to S3:', result.reportLink);
     }
