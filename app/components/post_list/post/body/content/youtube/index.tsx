@@ -4,7 +4,7 @@
 import {ImageBackground} from 'expo-image';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Alert, StyleSheet, TouchableOpacity} from 'react-native';
 
 import {useIsTablet} from '@hooks/device';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
@@ -36,19 +36,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: changeOpacity('#000', 0.24),
     },
-    playButton: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
     shadow: {
         elevation: 3,
         shadowColor: changeOpacity('#000', 0.8),
         shadowOffset: {width: 0, height: 2},
         shadowOpacity: 1,
         shadowRadius: 3,
-        backgroundColor: '#000',
-        height: 48,
     },
 });
 
@@ -108,11 +101,7 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
                 style={[styles.image, dimensions]}
                 source={{uri: imgUrl}}
             >
-                <View style={[styles.playButton]}>
-                    <View style={styles.shadow}>
-                        <YouTubeLogo/>
-                    </View>
-                </View>
+                <YouTubeLogo style={styles.shadow}/>
             </ImageBackground>
         </TouchableOpacity>
     );
