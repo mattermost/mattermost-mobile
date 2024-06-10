@@ -239,7 +239,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
             paddingHorizontal: focusedLabel || inputText ? 4 : 0,
             color,
         };
-    }, [color]);
+    });
 
     return (
         <TouchableWithoutFeedback
