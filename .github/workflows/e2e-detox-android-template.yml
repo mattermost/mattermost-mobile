@@ -211,7 +211,7 @@ jobs:
     - name: Set up Android Emulator (using Docker - adjust as needed)
       uses: actions/checkout@v3
       with:
-        repository: https://github.com/google/android-emulator
+        repository: 'google/android-emulator'
         ref: 'v3.2.4'  # Consider using a specific tag for stability
 
     - name: run docker
