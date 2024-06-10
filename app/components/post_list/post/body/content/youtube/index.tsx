@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
+import {ImageBackground} from 'expo-image';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, StyleSheet, TouchableOpacity, View} from 'react-native';
 
-import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity} from '@utils/theme';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
 
 import YouTubeLogo from './youtube_logo';
@@ -23,7 +22,7 @@ type YouTubeProps = {
 const MAX_YOUTUBE_IMAGE_HEIGHT = 280;
 const MAX_YOUTUBE_IMAGE_WIDTH = 500;
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const styles = StyleSheet.create({
     imageContainer: {
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
@@ -35,31 +34,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         borderRadius: 4,
         justifyContent: 'center',
+        backgroundColor: changeOpacity('#000', 0.24),
     },
     playButton: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    playContainer: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: changeOpacity('#000', 0.24),
-        borderColor: changeOpacity(theme.centerChannelColor, 0.08),
-        borderRadius: 4,
-        borderWidth: 1,
+    shadow: {
         elevation: 3,
-        shadowColor: changeOpacity('#000', 0.08),
+        shadowColor: changeOpacity('#000', 0.8),
         shadowOffset: {width: 0, height: 2},
         shadowOpacity: 1,
         shadowRadius: 3,
+        backgroundColor: '#000',
+        height: 48,
     },
-}));
+});
 
 const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
     const link = metadata?.embeds![0].url;
     const videoId = getYouTubeVideoId(link);
     const dimensions = calculateDimensions(
@@ -108,16 +103,17 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
             style={[styles.imageContainer, {height: dimensions.height, width: dimensions.width}]}
             onPress={playYouTubeVideo}
         >
-            <Image
+            <ImageBackground
                 contentFit='cover'
                 style={[styles.image, dimensions]}
                 source={{uri: imgUrl}}
-            />
-            <View style={styles.playContainer}>
-                <View style={styles.playButton}>
-                    <YouTubeLogo/>
+            >
+                <View style={[styles.playButton]}>
+                    <View style={styles.shadow}>
+                        <YouTubeLogo/>
+                    </View>
                 </View>
-            </View>
+            </ImageBackground>
         </TouchableOpacity>
     );
 };
