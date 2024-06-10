@@ -3,85 +3,84 @@ name: Detox E2E Tests Template
 on:
   workflow_call:
     inputs:
+      MM_TEST_SERVER_URL:
+        description: "The test server URL"
+        required: false
+        type: string
+      MM_TEST_USER_NAME:
+        description: "The admin username of the test instance"
+        required: false
+        type: string
+      MM_TEST_PASSWORD:
+        description: "The admin password of the test instance"
+        required: false
+        type: string
+      MOBILE_VERSION:
+        description: "The mobile version to test"
+        required: false
+        default: ${{ github.head_ref || github.ref }}
+        type: string
       run-ios-tests:
-        description: 'Run iOS tests'
+        description: "Run iOS tests"
         required: true
         type: boolean
       run-android-tests:
-        description: 'Run Android tests'
+        description: "Run Android tests"
         required: true
         type: boolean
-      remove-pr-label:
-        description: 'Remove PR label'
-        required: false
-        type: boolean
-        default: false
-      status_check_context:
-        type: string
-        required: true
-      commit_sha:
-        type: string
-        required: true
       run-type:
         type: string
         required: false
-        default: 'PR'
+        default: "PR"
       testcase_failure_fatal:
-        description: 'Should failures be considered fatal'
+        description: "Should failures be considered fatal"
         required: false
         type: boolean
         default: false
+    outputs:
+      STATUS:
+        value: ${{ jobs.download-e2e-results.outputs.STATUS }}
+      TARGET_URL:
+        value: ${{ jobs.download-e2e-results.outputs.TARGET_URL }}
+      FAILURES:
+        value: ${{ jobs.download-e2e-results.outputs.FAILURES }}
 
 env:
-  AWS_REGION: 'us-east-1'
+  AWS_REGION: "us-east-1"
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-  BRANCH: ${{ github.head_ref || github.ref_name }} 
-  COMMIT_HASH: ${{ github.sha }}
-  DETOX_AWS_S3_BUCKET: 'mattermost-detox-report'
-  DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-  DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-  HEADLESS: 'true'
+  ADMIN_USERNAME: ${{ inputs.MM_TEST_USER_NAME || secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ inputs.MM_TEST_PASSWORD || secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+  HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}
-  PULL_REQUEST: 'https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}'
-  SITE_1_URL: ${{ secrets.MM_MOBILE_E2E_SITE_1_URL }}
+  PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
+  SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || secrets.MM_MOBILE_E2E_SITE_1_URL }}
   SITE_2_URL: ${{ secrets.MM_MOBILE_E2E_SITE_2_URL }}
   SITE_3_URL: ${{ secrets.MM_MOBILE_E2E_SITE_3_URL }}
   ZEPHYR_ENABLE: false
-  JIRA_PROJECT_KEY: 'MM'
+  JIRA_PROJECT_KEY: "MM"
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
-  ZEPHYR_FOLDER_ID: '3233873'
+  ZEPHYR_FOLDER_ID: "3233873"
   TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
   WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
   FAILURE_MESSAGE: "Something has failed"
-  
-jobs:
-  update-initial-status:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.commit_sha }}
-          context: ${{ inputs.status_check_context }}
-          description: Detox tests for mattermost mobile app
-          status: pending
 
+jobs:
   generate-specs:
-    needs: update-initial-status
     runs-on: ubuntu-22.04
     if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
-      build_id: ${{ env.BUILD_ID }}
-      device_name: ${{ env.DEVICE_NAME }}
-      device_os_version: ${{ env.DEVICE_OS_VERSION }}
+      build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
+      device_name: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
+      device_os_version: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
+      mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
+      mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Set Build ID
         id: resolve-device
@@ -89,11 +88,13 @@ jobs:
           cd detox
           DEVICE_NAME=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.type")
           DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.os")
-          BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
+          BUILD_ID="${{ github.run_id }}-${DEVICE_NAME}-${DEVICE_OS_VERSION}"
 
-          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
-          echo "DEVICE_NAME=$(echo ${DEVICE_NAME})" >> $GITHUB_ENV
-          echo "DEVICE_OS_VERSION=$(echo ${DEVICE_OS_VERSION})" >> $GITHUB_ENV
+          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
+          echo "DEVICE_NAME=${DEVICE_NAME}" >> ${GITHUB_OUTPUT}
+          echo "DEVICE_OS_VERSION=${DEVICE_OS_VERSION}" >> ${GITHUB_OUTPUT}
+          echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
+          echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
 
       - name: Generate Test Specs
         id: generate-specs
@@ -101,23 +102,26 @@ jobs:
         with:
           parallelism: 10
           search_path: detox/e2e/test
-          device_name: ${{ env.DEVICE_NAME }}
-          device_os_version: ${{env.DEVICE_OS_VERSION}}
+          device_name: ${{ steps.resolve-device.outputs.DEVICE_NAME }}
+          device_os_version: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
 
   build-ios-simulator:
-    needs: update-initial-status
-    runs-on: macos-14-large
     if: ${{ inputs.run-ios-tests }}
+    runs-on: macos-14-large
+    needs:
+      - generate-specs
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
 
       - name: Build iOS Simulator
         env:
-          TAG: "${{ github.ref_name }}"
+          TAG: "${{ needs.generate-specs.outputs.mobile_ref }}"
           AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
@@ -131,13 +135,13 @@ jobs:
           path: Mattermost-simulator-x86_64.app.zip
 
   e2e-ios:
-    continue-on-error: true
-    env:
-      IOS: true
-    runs-on: macos-14-large
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     if: ${{ inputs.run-ios-tests }}
+    runs-on: macos-14-large
+    continue-on-error: true
     timeout-minutes: 40
+    env:
+      IOS: true
     needs:
       - generate-specs
       - build-ios-simulator
@@ -147,6 +151,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
@@ -189,22 +195,32 @@ jobs:
       - generate-specs
       - e2e-ios
     outputs:
-      failures: "${{ steps.calculate-failures.outputs.failures }}"
+      TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
+      STATUS: ${{ steps.determine-status.outputs.STATUS }}
+      FAILURES: ${{ steps.calculate-failures.outputs.FAILURES }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-  
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
-  
+
       - name: Create artifacts directory
         run: mkdir -p detox/artifacts/
 
       - name: Download All Artifacts
-        uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
           path: detox/artifacts/
           pattern: ios-results-*
+
+      - name: Generate Report Path
+        id: s3
+        run: |
+          path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
+          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
 
       - name: Save report Detox Dependencies
         id: report-link
@@ -213,88 +229,38 @@ jobs:
           npm ci
           npm run e2e:save-report
         env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
           IOS: ${{ inputs.run-ios-tests }}
           BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
           DEVICE_NAME: ${{ needs.generate-specs.outputs.device_name }}
           DEVICE_OS_VERSION: ${{ needs.generate-specs.outputs.device_os_version }}
+          REPORT_PATH: ${{ steps.s3.outputs.path }}
+          ## These are needed for the MM Webhook report
+          COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
+          BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
 
       - name: Calculate failures
         id: calculate-failures
         run: |
           FAILURES=$(find detox/artifacts/ -name 'summary.json' | xargs -l jq -r '.stats.failures' | jq -s add)
-          echo "failures=${FAILURES}" >> $GITHUB_OUTPUT
+          echo "FAILURES=${FAILURES}" >> ${GITHUB_OUTPUT}
           echo "Detox run completed with $FAILURES failures"
 
-  update-final-status:
-    runs-on: ubuntu-22.04
-    needs:
-      - generate-specs
-      - download-e2e-results
-    steps:
       - name: Set Target URL
         id: set-url
         run: |
-          s3Folder="${{ env.BUILD_ID }}-${{ env.COMMIT_HASH }}-${{ env.BRANCH }}"
-          s3Folder=$(echo "$s3Folder" | sed 's/\./-/g')
-
           if ${{ inputs.run-ios-tests }}; then
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/ios-report.html" >> $GITHUB_ENV
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/ios-report.html" >> ${GITHUB_OUTPUT}
           else
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/android-report.html" >> $GITHUB_ENV
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/android-report.html" >> ${GITHUB_OUTPUT}
           fi
-        env:
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
       - name: Determine Status
         id: determine-status
         run: |
-          if [[ ${{ needs.download-e2e-results.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
-            echo "status=failure" >> $GITHUB_ENV
+          if [[ ${{ steps.calculate-failures.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
+            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
-            echo "status=success" >> $GITHUB_ENV
+            echo "STATUS=success" >> ${GITHUB_OUTPUT}
           fi
-
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.commit_sha }}
-          context: ${{ inputs.status_check_context }}
-          description: |
-            Completed with ${{ needs.download-e2e-results.outputs.failures }} failures
-          status: ${{ env.status }}
-          target_url: ${{ env.TARGET_URL }}
-
-  e2e-remove-label:
-    if: ${{ inputs.remove-pr-label }}
-    needs:
-      - download-e2e-results
-    runs-on: ubuntu-22.04
-    steps:
-      - name: e2e/remove-label-from-pr
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        continue-on-error: true # Label might have been removed manually
-        with:
-          script: |
-            const iosLabel = 'E2E iOS tests for PR';
-            const androidLabel = 'E2E Android tests for PR';
-            const labels = context.payload.pull_request.labels.map(label => label.name);
-  
-            if (labels.includes(iosLabel)) {
-              github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: iosLabel,
-              });
-            }
-  
-            if (labels.includes(androidLabel)) {
-              github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: androidLabel,
-              });
-            }
