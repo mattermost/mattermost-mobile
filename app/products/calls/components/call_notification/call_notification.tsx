@@ -138,8 +138,8 @@ export const CallNotification = ({
     }, []);
 
     useEffect(() => {
-        playIncomingCallsRinging(serverUrl, incomingCall.callID);
-    }, [serverUrl, incomingCall.callID, appState]);
+        playIncomingCallsRinging(incomingCall.serverUrl, incomingCall.callID);
+    }, [incomingCall.serverUrl, incomingCall.callID, appState]);
 
     // We only need to getServerDisplayName once
     useEffect(() => {
