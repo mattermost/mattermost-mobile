@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {mosThreshold} from '@mattermost/calls/lib/rtc_monitor';
-import {AppState} from 'react-native';
+import {AppState, type AppStateStatus} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import {Navigation} from 'react-native-navigation';
 
@@ -42,6 +42,7 @@ import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
 import {isDMorGM} from '@utils/channel';
 import {generateId} from '@utils/general';
+import {isMainActivity} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 
 import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
@@ -191,6 +192,23 @@ export const removeIncomingCall = (serverUrl: string, callId: string, channelId?
     setCallsState(serverUrl, {...callsState, calls: nextCalls});
 };
 
+let previousAppState: AppStateStatus = 'inactive';
+
+export const callsOnAppStateChange = async (appState: AppStateStatus) => {
+    if (appState === previousAppState || !isMainActivity()) {
+        return;
+    }
+
+    previousAppState = appState;
+    switch (appState) {
+        case 'inactive':
+        case 'background':
+            InCallManager.stopRingtone();
+            setIncomingCalls({...getIncomingCalls(), currentRingId: undefined});
+            break;
+    }
+};
+
 const getRingtoneOrNone = async (serverUrl: string) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -250,7 +268,7 @@ const playIncomingCallsRinging = async (serverUrl: string) => {
     setTimeout(() => {
         const incoming = getIncomingCalls();
         if (incoming.currentRingId === ringId) {
-            InCallManager.stopRingback();
+            InCallManager.stopRingtone();
             setIncomingCalls({...getIncomingCalls(), currentRingId: undefined});
         }
     }, Calls.RING_LENGTH);
