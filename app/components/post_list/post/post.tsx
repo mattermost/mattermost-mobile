@@ -61,7 +61,7 @@ type PostProps = {
     post: PostModel;
     rootId?: string;
     previousPost?: PostModel;
-    nextPost?: PostModel;
+    isLastPost: boolean;
     hasReactions: boolean;
     searchPatterns?: SearchPattern[];
     shouldRenderReplyButton?: boolean;
@@ -143,7 +143,7 @@ const Post = ({
     testID,
     thread,
     previousPost,
-    nextPost,
+    isLastPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -175,8 +175,6 @@ const Post = ({
         }
         return false;
     }, [customEmojiNames, post.message]);
-
-    const isLastPost = !nextPost;
 
     const handlePostPress = () => {
         if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {

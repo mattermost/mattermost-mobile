@@ -35,6 +35,7 @@ describe('performance metrics', () => {
             isPostPriorityEnabled: false,
             location: 'Channel',
             post,
+            isLastPost: true,
         };
     }
 
@@ -53,7 +54,7 @@ describe('performance metrics', () => {
 
     it('do not call the performance metrics if it is not the last post', () => {
         const props = getBaseProps();
-        props.nextPost = {} as PostModel;
+        props.isLastPost = false;
         renderWithEverything(<Post {...props}/>, {database, serverUrl});
         expect(PerformanceMetricsManager.finishLoad).not.toHaveBeenCalled();
         expect(PerformanceMetricsManager.endMetric).not.toHaveBeenCalled();

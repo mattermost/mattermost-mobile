@@ -88,7 +88,7 @@ class Batcher {
             this.start();
         }
 
-        logDebug('Performance metric:', measure, Date.now());
+        logDebug('Performance metric:', measure);
         this.batch.push(measure);
         if (this.batch.length >= MAX_BATCH_SIZE) {
             this.sendBatch();

@@ -200,9 +200,6 @@
     "updatesnapshot": "jest --updateSnapshot"
   },
   "overrides": {
-    "react-native-startup-time": {
-      "react": "^18.2.0"
-    },
     "@testing-library/react-hooks": {
       "@types/react": "^18.2.37",
       "react": "^18.2.0",

@@ -78,7 +78,7 @@ class PerformanceMetricsManager {
         });
 
         performance.clearMarks(metricName);
-        performance.clearMeasures(metricName);
+        performance.clearMeasures(measureName);
     }
 }
 
