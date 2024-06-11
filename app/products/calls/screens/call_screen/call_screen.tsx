@@ -24,7 +24,12 @@ import {RTCView} from 'react-native-webrtc';
 
 import {leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
 import {startCallRecording, stopCallRecording} from '@calls/actions/calls';
-import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
+import {
+    recordingAlert,
+    recordingWillBePostedAlert,
+    recordingErrorAlert,
+    stopRecordingConfirmationAlert,
+} from '@calls/alerts';
 import {AudioDeviceButton} from '@calls/components/audio_device_button';
 import CallDuration from '@calls/components/call_duration';
 import CallNotification from '@calls/components/call_notification';
@@ -120,8 +125,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         flexDirection: 'row',
         alignItems: 'center',
         width: '100%',
-        height: 56,
+        height: 52,
         gap: 8,
+    },
+    headerLeft: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        paddingLeft: 24,
+        width: 117,
+        gap: 8,
+    },
+    time: {
+        color: theme.buttonColor,
+        ...typography('Heading', 200),
+        width: 56,
+    },
+    timeSpacer: {
+        marginLeft: 36,
     },
     headerPortraitSpacer: {
         height: 12,
@@ -136,22 +157,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     headerLandscapeNoControls: {
         top: -1000,
     },
-    time: {
-        color: theme.buttonColor,
-        ...typography('Heading', 200),
-        width: 56,
-        marginLeft: 24,
-        marginRight: 8,
-        marginVertical: 2,
-    },
     collapseIconContainer: {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        width: 48,
-        height: 48,
-        marginLeft: 24,
-        marginRight: 8,
+        justifyContent: 'flex-end',
+        width: 117,
     },
     collapseIcon: {
         color: changeOpacity(theme.buttonColor, 0.56),
@@ -411,6 +421,12 @@ const CallScreen = ({
     }, [currentCall?.channelId, currentCall?.serverUrl]);
 
     const stopRecording = useCallback(async () => {
+        const stop = await stopRecordingConfirmationAlert(intl, EnableTranscriptions);
+
+        if (!stop) {
+            return;
+        }
+
         Keyboard.dismiss();
         await dismissBottomSheet();
         if (!currentCall) {
@@ -686,13 +702,16 @@ const CallScreen = ({
                 isLandscape && !showControlsInLandscape && style.headerLandscapeNoControls,
             ]}
         >
-            {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
-            {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
-            <CallDuration
-                style={style.time}
-                value={currentCall.startTime}
-                updateIntervalInSeconds={1}
-            />
+            <View style={style.headerLeft}>
+                {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
+                {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
+                <CallDuration
+                    style={[style.time, !(waitingForRecording || recording) && style.timeSpacer]}
+                    value={currentCall.startTime}
+                    updateIntervalInSeconds={1}
+                    truncateWhenLong={true}
+                />
+            </View>
             <HeaderCenter
                 raisedHands={raisedHands}
                 sessionId={currentCall.mySessionId}

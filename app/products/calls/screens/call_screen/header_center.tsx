@@ -56,6 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     titleBanner: {
         ...typography('Body', 200, 'SemiBold'),
         color: changeOpacity(theme.buttonColor, 0.72),
+        height: 28,
     },
 }));
 

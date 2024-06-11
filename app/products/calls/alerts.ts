@@ -335,6 +335,54 @@ export const recordingAlert = (isHost: boolean, transcriptionsEnabled: boolean, 
     );
 };
 
+export const stopRecordingConfirmationAlert = (intl: IntlShape, transcriptionsEnabled: boolean) => {
+    const {formatMessage} = intl;
+
+    const asyncAlert = async () => new Promise((resolve) => {
+        let title = formatMessage({
+            id: 'mobile.calls_host_rec_stop_title',
+            defaultMessage: 'Stop recording',
+        });
+        let body = formatMessage({
+            id: 'mobile.calls_host_rec_stop_body',
+            defaultMessage: 'The call recording will be processed and posted in the call thread. Are you sure you want to stop the recording?',
+        });
+
+        if (transcriptionsEnabled) {
+            title = formatMessage({
+                id: 'mobile.calls_host_rec_trans_stop_title',
+                defaultMessage: 'Stop recording and transcription',
+            });
+            body = formatMessage({
+                id: 'mobile.calls_host_rec_trans_stop_body',
+                defaultMessage: 'The call recording and transcription files will be processed and posted in the call thread. Are you sure you want to stop the recording and transcription?',
+            });
+        }
+
+        Alert.alert(
+            title,
+            body,
+            [{
+                text: formatMessage({
+                    id: 'mobile.calls_cancel',
+                    defaultMessage: 'Cancel',
+                }),
+                onPress: async () => resolve(false),
+                style: 'cancel',
+            }, {
+                text: formatMessage({
+                    id: 'mobile.calls_host_rec_stop_confirm',
+                    defaultMessage: 'Stop recording',
+                }),
+                onPress: async () => resolve(true),
+                style: 'destructive',
+            }],
+        );
+    });
+
+    return asyncAlert();
+};
+
 export const needsRecordingWillBePostedAlert = () => {
     recordingWillBePostedLock = false;
 };
