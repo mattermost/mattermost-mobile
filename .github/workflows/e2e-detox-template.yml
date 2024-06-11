@@ -34,7 +34,7 @@ on:
         type: boolean
         default: false
       record_tests_in_zephyr:
-        description: "Record Test results in Zephyr. (Nightly and Release runs)"
+        description: "Record test results in Zephyr, typically for nightly and release runs"
         required: false
         type: boolean
         default: false
