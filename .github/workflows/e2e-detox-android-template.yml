@@ -182,7 +182,7 @@ jobs:
       uses: reactivecircus/android-emulator-runner@v2
       with:
         profile: pixel_6_pro
-        api-level: ${{ matrix.api-level }}
+        api-level: 33
         arch: x86_64
         force-avd-creation: false
         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
