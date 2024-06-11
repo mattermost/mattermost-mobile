@@ -39,11 +39,11 @@ on:
         default: false
     outputs:
       STATUS:
-        value: ${{ jobs.download-e2e-results.outputs.STATUS }}
+        value: ${{ jobs.generate-report.outputs.STATUS }}
       TARGET_URL:
-        value: ${{ jobs.download-e2e-results.outputs.TARGET_URL }}
+        value: ${{ jobs.generate-report.outputs.TARGET_URL }}
       FAILURES:
-        value: ${{ jobs.download-e2e-results.outputs.FAILURES }}
+        value: ${{ jobs.generate-report.outputs.FAILURES }}
 
 env:
   AWS_REGION: "us-east-1"
@@ -76,6 +76,7 @@ jobs:
       device_os_version: ${{ steps.resolve-device.outputs.DEVICE_OS_VERSION }}
       mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
       mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
+      workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -88,7 +89,11 @@ jobs:
           cd detox
           DEVICE_NAME=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.type")
           DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['ios.simulator'].device.os")
-          BUILD_ID="${{ github.run_id }}-${DEVICE_NAME}-${DEVICE_OS_VERSION}"
+          WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
+          BUILD_ID="${{ github.run_id }}-${DEVICE_NAME}-${DEVICE_OS_VERSION}-${WORKFLOW_HASH}"
+
+          ## We need that hash to separate the artifacts
+          echo "WORKFLOW_HASH=${WORKFLOW_HASH}" >> ${GITHUB_OUTPUT}
 
           echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
           echo "DEVICE_NAME=${DEVICE_NAME}" >> ${GITHUB_OUTPUT}
@@ -155,10 +160,10 @@ jobs:
         if: always()
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
-          name: ios-results-${{ matrix.runId }}
+          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
 
-  download-e2e-results:
+  generate-report:
     runs-on: ubuntu-22.04
     if: ${{ inputs.run-ios-tests || inputs.run-android-tests }}
     needs:
@@ -167,7 +172,7 @@ jobs:
     outputs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
-      FAILURES: ${{ steps.calculate-failures.outputs.FAILURES }}
+      FAILURES: ${{ steps.summary.outputs.FAILURES }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -184,7 +189,7 @@ jobs:
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
           path: detox/artifacts/
-          pattern: ios-results-*
+          pattern: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
 
       - name: Generate Report Path
         id: s3
@@ -211,11 +216,13 @@ jobs:
           BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
 
       - name: Calculate failures
-        id: calculate-failures
+        id: summary
         run: |
-          FAILURES=$(find detox/artifacts/ -name 'summary.json' | xargs -l jq -r '.stats.failures' | jq -s add)
-          echo "FAILURES=${FAILURES}" >> ${GITHUB_OUTPUT}
-          echo "Detox run completed with $FAILURES failures"
+          echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
+
+      - name: Generate Summary
+        run: |
+          echo "$(cat detox/artifacts/summary.json | jq .statsFieldValue)" >> ${GITHUB_STEP_SUMMARY}
 
       - name: Set Target URL
         id: set-url
@@ -229,7 +236,7 @@ jobs:
       - name: Determine Status
         id: determine-status
         run: |
-          if [[ ${{ steps.calculate-failures.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
+          if [[ ${{ steps.summary.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
             echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
             echo "STATUS=success" >> ${GITHUB_OUTPUT}
