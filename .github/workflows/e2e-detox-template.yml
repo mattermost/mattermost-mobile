@@ -42,12 +42,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 15 Pro"
+        default: "iPhone 14"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 17.4"
+        default: "iOS 17.0"
     outputs:
       STATUS:
         value: ${{ jobs.download-e2e-results.outputs.STATUS }}
@@ -63,8 +63,8 @@ env:
   ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
   BRANCH: ${{ github.head_ref || github.ref_name }} 
   COMMIT_HASH: ${{ github.sha }}
-  DEVICE_NAME: ${{ inputs.ios_device_name || 'iPhone 14' }}
-  DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name || 'iOS 17.3' }}
+  DEVICE_NAME: ${{ inputs.ios_device_name }}
+  DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
   HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}
@@ -98,7 +98,7 @@ jobs:
       - name: Set Build ID
         id: resolve-device
         run: |
-          BUILD_ID="${{ github.run_id }}-${{ env.DEVICE_NAME }}-${DEVICE_OS_VERSION}"
+          BUILD_ID="${{ github.run_id }}-${{ env.DEVICE_NAME }}-${{ env.DEVICE_OS_VERSION}}"
 
           echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
           echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
