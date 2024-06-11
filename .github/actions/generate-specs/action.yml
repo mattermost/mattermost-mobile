@@ -1,0 +1,39 @@
+# Copyright 2024 Mattermost, Inc.
+name: "generate-specs"
+description: This action used to split Detox integration tests based on the parallelism provided
+
+inputs:
+  search_path:
+    description: The path to look for from within the directory
+    required: true
+  parallelism:
+    description: The parallelism for the tests
+    required: true
+  device_name:
+    description: The name of Device used for the tests
+    required: false
+    default: "iPhone 15"
+  device_os_version:
+    description: The os of the device used for the tests
+    required: false
+    default: "iOS 17.1"
+
+outputs:
+  specs:
+    description: The specs generated for the strategy
+    value: ${{ steps.generate-specs.outputs.specs }}
+runs:
+  using: "composite"
+  steps:
+    - name: ci/generate-specs
+      id: generate-specs
+      env:
+        PARALLELISM: ${{ inputs.parallelism }}
+        SEARCH_PATH: ${{ inputs.search_path }}
+        DEVICE_NAME: ${{ inputs.device_name }}
+        DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
+      run: |
+        set -e
+        node ${{ github.action_path }}/split-tests.js | tee output.json
+        echo "specs=$(cat output.json)" >> $GITHUB_OUTPUT
+      shell: bash

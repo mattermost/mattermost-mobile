@@ -1,0 +1,83 @@
+name: Detox E2E Tests PR
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - labeled
+
+jobs:
+  update-initial-status:
+    runs-on: ubuntu-22.04
+    if: contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR')
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          context: e2e/detox-tests
+          description: Detox tests for mattermost mobile app have started ...
+          status: pending
+
+  run-ios-tests-on-pr:
+    name: iOS Mobile Tests on PR
+    uses: ./.github/workflows/e2e-detox-template.yml
+    needs:
+      - update-initial-status
+    with:
+      run-ios-tests: true
+      run-android-tests: false
+      run-type: "PR"
+      MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
+    secrets: inherit
+
+  update-final-status:
+    runs-on: ubuntu-22.04
+    needs:
+      - run-ios-tests-on-pr
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          context: e2e/detox-tests
+          description: Completed with ${{ needs.run-ios-tests-on-pr.outputs.FAILURES }} failures
+          status: ${{ needs.run-ios-tests-on-pr.outputs.STATUS }}
+          target_url: ${{ needs.run-ios-tests-on-pr.outputs.TARGET_URL }}
+
+  e2e-remove-label:
+    runs-on: ubuntu-22.04
+    needs:
+      - run-ios-tests-on-pr
+    steps:
+      - name: e2e/remove-label-from-pr
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        continue-on-error: true # Label might have been removed manually
+        with:
+          script: |
+            const iosLabel = 'E2E iOS tests for PR';
+            const androidLabel = 'E2E Android tests for PR';
+            const labels = context.payload.pull_request.labels.map(label => label.name);
+
+            if (labels.includes(iosLabel)) {
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: iosLabel,
+              });
+            }
+
+            if (labels.includes(androidLabel)) {
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: androidLabel,
+              });
+            }

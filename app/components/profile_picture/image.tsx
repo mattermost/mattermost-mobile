@@ -13,6 +13,7 @@ import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getLastPictureUpdate} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -42,6 +43,7 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
     serverUrl = url || serverUrl;
 
     const style = getStyleSheet(theme);
+    const lastPictureUpdateAt = author ? getLastPictureUpdate(author) : 0;
     const fIStyle = useMemo(() => ({
         borderRadius: size / 2,
         backgroundColor: theme.centerChannelBg,
@@ -56,7 +58,7 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
 
         const pictureUrl = buildProfileImageUrlFromUser(serverUrl, author);
         return source ?? {uri: buildAbsoluteUrl(serverUrl, pictureUrl)};
-    }, [author, serverUrl, source]);
+    }, [author, serverUrl, source, lastPictureUpdateAt]);
 
     if (typeof source === 'string') {
         return (

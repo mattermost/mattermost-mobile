@@ -8,10 +8,12 @@ import {Text, TouchableOpacity, View} from 'react-native';
 
 import {leaveCall} from '@calls/actions';
 import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
+import {setJoiningChannelId} from '@calls/state';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
+import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -28,6 +30,7 @@ type Props = {
     isMilitaryTime: boolean;
     limitRestrictedInfo?: LimitRestrictedInfo;
     ccChannelId?: string;
+    joiningChannelId: string | null;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -121,23 +124,34 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export const CallsCustomMessage = ({post, currentUser, isMilitaryTime, ccChannelId, limitRestrictedInfo}: Props) => {
+export const CallsCustomMessage = ({
+    post,
+    currentUser,
+    isMilitaryTime,
+    ccChannelId,
+    limitRestrictedInfo,
+    joiningChannelId,
+}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const timezone = getUserTimezone(currentUser);
 
+    const joiningThisCall = Boolean(joiningChannelId === post.channelId);
     const alreadyInTheCall = Boolean(ccChannelId && ccChannelId === post.channelId);
     const isLimitRestricted = Boolean(limitRestrictedInfo?.limitRestricted);
+    const joiningMsg = intl.formatMessage({id: 'mobile.calls_joining', defaultMessage: 'Joining...'});
 
-    const joinHandler = useCallback(() => {
+    const joinHandler = useCallback(async () => {
         if (isLimitRestricted) {
             showLimitRestrictedAlert(limitRestrictedInfo!, intl);
             return;
         }
 
-        leaveAndJoinWithAlert(intl, serverUrl, post.channelId);
+        setJoiningChannelId(post.channelId);
+        await leaveAndJoinWithAlert(intl, serverUrl, post.channelId);
+        setJoiningChannelId(null);
     }, [limitRestrictedInfo, intl, serverUrl, post.channelId]);
 
     const leaveHandler = useCallback(() => {
@@ -227,6 +241,16 @@ export const CallsCustomMessage = ({post, currentUser, isMilitaryTime, ccChannel
         </TouchableOpacity>
     );
 
+    const joiningButton = (
+        <Loading
+            color={theme.buttonColor}
+            size={'small'}
+            footerText={joiningMsg}
+            containerStyle={[style.callButton, style.joinCallButton]}
+            footerTextStyles={style.buttonText}
+        />
+    );
+
     return (
         <>
             {title}
@@ -248,7 +272,7 @@ export const CallsCustomMessage = ({post, currentUser, isMilitaryTime, ccChannel
                         style={style.timeText}
                     />
                 </View>
-                {button}
+                {joiningThisCall ? joiningButton : button}
             </View>
         </>
     );

@@ -5,7 +5,6 @@
 
 import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 import * as ReactNative from 'react-native';
-import 'react-native-gesture-handler/jestSetup';
 import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
 import {v4 as uuidv4} from 'uuid';
 
@@ -14,6 +13,7 @@ import {mockApiClient} from './mock_api_client';
 import type {RequestOptions} from '@mattermost/react-native-network-client';
 import type {ReadDirItem, StatResult} from 'react-native-fs';
 
+import 'react-native-gesture-handler/jestSetup';
 import '@testing-library/react-native/extend-expect';
 
 // @ts-expect-error Promise does not exists in global
@@ -247,14 +247,14 @@ jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitte
 
 jest.mock('react-native-device-info', () => {
     return {
-        getVersion: () => '0.0.0',
-        getBuildNumber: () => '0',
-        getModel: () => 'iPhone X',
-        hasNotch: () => true,
-        isTablet: () => false,
-        getApplicationName: () => 'Mattermost',
-        getSystemName: () => 'ios',
-        getSystemVersion: () => '0.0.0',
+        getVersion: jest.fn(() => '0.0.0'),
+        getBuildNumber: jest.fn(() => '0'),
+        getModel: jest.fn(() => 'iPhone X'),
+        hasNotch: jest.fn(() => true),
+        isTablet: jest.fn(() => false),
+        getApplicationName: jest.fn(() => 'Mattermost'),
+        getSystemName: jest.fn(() => 'ios'),
+        getSystemVersion: jest.fn(() => '0.0.0'),
     };
 });
 
@@ -408,12 +408,21 @@ jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
+jest.mock('react-native-haptic-feedback', () => {
+    const RNHF = jest.requireActual('react-native-haptic-feedback');
+    return {
+        ...RNHF,
+        trigger: () => '',
+    };
+});
+
 declare const global: {
     requestAnimationFrame: (callback: () => void) => void;
     performance: {
         now: () => number;
     };
 };
+
 global.requestAnimationFrame = (callback) => {
     setTimeout(callback, 0);
 };

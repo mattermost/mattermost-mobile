@@ -1,0 +1,45 @@
+name: Detox E2E Tests (Scheduled)
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # every day at midnight
+
+jobs:
+  update-initial-status:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.sha }}
+          context: e2e/detox-tests
+          description: Detox tests for mattermost mobile app have started ...
+          status: pending
+
+  run-ios-tests-on-main-scheduled:
+    name: iOS Mobile Tests on Main (Scheduled)
+    uses: ./.github/workflows/e2e-detox-template.yml
+    with:
+      run-ios-tests: true
+      run-android-tests: false
+      run-type: "MAIN"
+      MOBILE_VERSION: ${{ github.ref }}
+    secrets: inherit
+
+  update-final-status:
+    runs-on: ubuntu-22.04
+    needs:
+      - run-ios-tests-on-main-scheduled
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.sha }}
+          context: e2e/detox-tests
+          description: Completed with ${{ needs.run-ios-tests-on-main-scheduled.outputs.FAILURES }} failures
+          status: ${{ needs.run-ios-tests-on-main-scheduled.outputs.STATUS }}
+          target_url: ${{ needs.run-ios-tests-on-main-scheduled.outputs.TARGET_URL }}

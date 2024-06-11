@@ -308,8 +308,7 @@ function generateTestReport(summary, isUploadedToS3, reportLink, environment, te
 function generateTitle() {
     const {
         BRANCH,
-        BUILD_AWS_S3_BUCKET,
-        BUILD_ID,
+        DETOX_AWS_S3_BUCKET,
         COMMIT_HASH,
         IOS,
         PULL_REQUEST,
@@ -317,6 +316,7 @@ function generateTitle() {
         RELEASE_DATE,
         RELEASE_VERSION,
         TYPE,
+        REPORT_PATH,
     } = process.env;
 
     const platform = IOS === 'true' ? 'iOS' : 'Android';
@@ -324,7 +324,7 @@ function generateTitle() {
     const appExtension = IOS === 'true' ? 'ipa' : 'apk';
     const appFileName = `Mattermost_Beta.${appExtension}`;
     const appBuildType = 'mattermost-mobile-beta';
-    const s3Folder = `${platform.toLocaleLowerCase()}/${BUILD_ID}-${COMMIT_HASH}-${BRANCH}`.replace(/\./g, '-');
+    const s3Folder = `${platform.toLocaleLowerCase()}/${REPORT_PATH}`.replace(/\./g, '-');
     const appFilePath = IOS === 'true' ? 'Mattermost-simulator-x86_64.app.zip' : 'android/app/build/outputs/apk/release/app-release.apk';
     let buildLink = '';
     let releaseDate = '';
@@ -332,7 +332,7 @@ function generateTitle() {
 
     switch (TYPE) {
         case 'PR':
-            buildLink = ` with [${lane}:${COMMIT_HASH}](https://${BUILD_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/${appFilePath})`;
+            buildLink = ` with [${lane}:${COMMIT_HASH}](https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/${appFilePath})`;
             title = `${platform} E2E for Pull Request Build: [${BRANCH}](${PULL_REQUEST})${buildLink}`;
             break;
         case 'RELEASE':
