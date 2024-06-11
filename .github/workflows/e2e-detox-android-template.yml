@@ -148,7 +148,7 @@ jobs:
   e2e-android-on-mac:
     name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     continue-on-error: true
-    runs-on: macos-13
+    runs-on: macos-14-large
     timeout-minutes: 35
     needs:
       - generate-specs
@@ -185,7 +185,7 @@ jobs:
         api-level: 33
         arch: x86_64
         force-avd-creation: false
-        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 4096 -cores 4
         script: echo "Generated AVD snapshot for caching."
 
     - name: Start React Native Metro Server
@@ -229,7 +229,7 @@ jobs:
         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
         disable-animations: true
         script: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
-        
+
     # - name: Create AVD and generate snapshot for caching
     #   if: steps.avd-cache.outputs.cache-hit != 'true'
     #   uses: reactivecircus/android-emulator-runner@v2
