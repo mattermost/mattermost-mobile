@@ -20,7 +20,7 @@ jobs:
           status: pending
 
   build-ios-simulator:
-    runs-on: macos-13
+    runs-on: macos-14
     needs:
       - update-initial-status
     steps:

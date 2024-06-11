@@ -113,7 +113,7 @@ jobs:
   e2e-ios:
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     if: ${{ inputs.run-ios-tests }}
-    runs-on: macos-13
+    runs-on: macos-14
     continue-on-error: true
     timeout-minutes: 40
     env:
