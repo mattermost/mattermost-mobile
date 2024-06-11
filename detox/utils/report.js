@@ -114,7 +114,7 @@ function generateStats(allTests) {
     const start = allTests.start;
     const end = allTests.end;
     const passes = tests - (failures + errors);
-    const passPercent = tests > 0 ? (passes / tests) * 100 : 0;
+    const passPercent = tests > 0 ? ((passes / tests) * 100).toFixed(2) : 0;
 
     return {
         suites,
@@ -134,7 +134,7 @@ function generateStatsFieldValue(stats, failedFullTitles) {
     let statsFieldValue = `
 | Key | Value |
 |:---|:---|
-| Passing Rate | ${stats.passPercent.toFixed(2)}% |
+| Passing Rate | ${stats.passPercent}% |
 | Duration | ${(stats.duration / (60 * 1000)).toFixed(4)} mins |
 | Suites | ${stats.suites} |
 | Tests | ${stats.tests} |
