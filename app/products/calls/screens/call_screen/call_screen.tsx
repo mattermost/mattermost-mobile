@@ -434,7 +434,7 @@ const CallScreen = ({
         }
 
         await stopCallRecording(currentCall.serverUrl, currentCall.channelId);
-    }, [currentCall?.channelId, currentCall?.serverUrl]);
+    }, [currentCall?.channelId, currentCall?.serverUrl, EnableTranscriptions]);
 
     const toggleCC = useCallback(async () => {
         Keyboard.dismiss();

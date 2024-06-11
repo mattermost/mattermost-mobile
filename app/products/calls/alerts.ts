@@ -335,7 +335,7 @@ export const recordingAlert = (isHost: boolean, transcriptionsEnabled: boolean, 
     );
 };
 
-export const stopRecordingConfirmationAlert = (intl: IntlShape, transcriptionsEnabled: boolean) => {
+export const stopRecordingConfirmationAlert = (intl: IntlShape, enableTranscriptions: boolean) => {
     const {formatMessage} = intl;
 
     const asyncAlert = async () => new Promise((resolve) => {
@@ -348,7 +348,7 @@ export const stopRecordingConfirmationAlert = (intl: IntlShape, transcriptionsEn
             defaultMessage: 'The call recording will be processed and posted in the call thread. Are you sure you want to stop the recording?',
         });
 
-        if (transcriptionsEnabled) {
+        if (enableTranscriptions) {
             title = formatMessage({
                 id: 'mobile.calls_host_rec_trans_stop_title',
                 defaultMessage: 'Stop recording and transcription',
