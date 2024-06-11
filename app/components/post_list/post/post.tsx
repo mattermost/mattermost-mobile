@@ -297,6 +297,12 @@ const Post = ({
             <CallsCustomMessage
                 serverUrl={serverUrl}
                 post={post}
+
+                // Note: the below are provided by the index, but typescript seems to be having problems.
+                otherParticipants={false}
+                isAdmin={false}
+                isHost={false}
+                joiningChannelId={null}
             />
         );
     } else {

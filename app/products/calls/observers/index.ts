@@ -17,6 +17,7 @@ import {observeConfigValue, observeLicense} from '@queries/servers/system';
 import {queryUsersById} from '@queries/servers/user';
 import UserModel from '@typings/database/models/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
+import {isSystemAdmin} from '@utils/user';
 
 import type {CallSession} from '@calls/types/calls';
 import type {Database} from '@nozbe/watermelondb';
@@ -135,5 +136,27 @@ export const observeCallStateInChannel = (serverUrl: string, database: Database,
         showJoinCallBanner,
         isInACall,
         showIncomingCalls,
+    };
+};
+
+export const observeEndCallDetails = () => {
+    const cc = observeCurrentCall();
+    const otherParticipants = cc.pipe(
+        switchMap((call) => of$(Object.keys(call?.sessions || {}).length > 1)),
+        distinctUntilChanged(),
+    );
+    const isAdmin = cc.pipe(
+        switchMap((call) => of$(isSystemAdmin(call?.sessions[call?.mySessionId || '']?.userModel?.roles || ''))),
+        distinctUntilChanged(),
+    );
+    const isHost = cc.pipe(
+        switchMap((call) => of$(call?.hostId === call?.myUserId)),
+        distinctUntilChanged(),
+    );
+
+    return {
+        otherParticipants,
+        isAdmin,
+        isHost,
     };
 };
