@@ -2,7 +2,7 @@ name: Detox E2E Tests (Scheduled)
 
 on:
   schedule:
-    - cron: "0 0 * * 4,5" # Wednesday and Thrusday midnight
+    - cron: "0 0 * * 4,5" # Wednesday and Thursday midnight
 
 jobs:
   update-initial-status:
