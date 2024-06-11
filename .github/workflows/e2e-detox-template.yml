@@ -49,15 +49,15 @@ on:
 env:
   AWS_REGION: "us-east-1"
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-  ADMIN_USERNAME: ${{ inputs.MM_TEST_USER_NAME || secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-  ADMIN_PASSWORD: ${{ inputs.MM_TEST_PASSWORD || secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
   BRANCH: ${{ github.head_ref || github.ref_name }} 
   COMMIT_HASH: ${{ github.sha }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
   HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}
   PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
-  SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || secrets.MM_MOBILE_E2E_SITE_1_URL }}
+  SITE_1_URL: ${{ secrets.MM_MOBILE_E2E_SITE_1_URL }}
   SITE_2_URL: ${{ secrets.MM_MOBILE_E2E_SITE_2_URL }}
   SITE_3_URL: ${{ secrets.MM_MOBILE_E2E_SITE_3_URL }}
   ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
