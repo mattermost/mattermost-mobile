@@ -149,6 +149,8 @@ jobs:
     name: ubuntu tests
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      api-level: 33
     needs:
       - generate-specs
     strategy:
@@ -195,11 +197,16 @@ jobs:
           run: rm android/app/build/outputs/apk/artifact.zip
     
         # API 30+ emulators only have x86_64 system images.
-        - name: Get AVD info
-          uses: ./.github/actions/get-avd-info
-          id: avd-info
-          with:
-              api-level: 33
+        - name: Determine emulator target
+          id: determine-target
+          run: |
+            TARGET="google_apis"
+            if [[ ${{ env.api-level }} -ge 30 ]]; then
+              TARGET="aosp_atd"
+            elif [[ ${{ env.api-level }} -le 27 ]]; then
+              TARGET="default"
+            fi
+            echo "TARGET=$TARGET" >> "$GITHUB_OUTPUT"
 
         - name: Enable KVM
           run: |
@@ -210,11 +217,16 @@ jobs:
         - name: detox tests
           uses: reactivecircus/android-emulator-runner@v2
           with:
-              api-level: 33
-              arch: x86_64
-              target: 33
-              script: |
-                cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
+            api-level: ${{ env.api-level }}
+            arch: x86_64
+            target: ${{ steps.determine-target.outputs.TARGET }}
+            channel: canary
+            force-avd-creation: false
+            emulator-boot-timeout: 300
+            emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -logcat-output ${{ github.workspace }}/app/build/reports/avd${{ matrix.api-level }}.log
+            disable-animations: true
+            script: |
+              cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
   e2e-android-on-mac:
     name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
@@ -244,15 +256,6 @@ jobs:
       with:
         sdk-package-names: "emulator,platform-tools,platforms;android-33"
         build-tools-version: "33.0.0"
-
-    - name: Cache AVD snapshot
-      uses: actions/cache@v4
-      id: avd-cache
-      with:
-        path: |
-          ~/.android/avd/*
-          ~/.android/adb*
-        key: avd-33-pixel_6_pro
 
     - name: Start React Native Metro Server
       run: npm run start &
@@ -292,7 +295,6 @@ jobs:
         fi
 
     - name: Create AVD and generate snapshot for caching
-      if: steps.avd-cache.outputs.cache-hit != 'true'
       uses: reactivecircus/android-emulator-runner@v2
       with:
         target: google_apis
@@ -307,7 +309,7 @@ jobs:
         emulator-boot-timeout: 12000
         disable-animations: false
         script: echo "Generated AVD snapshot for caching"
-
+  
     - name: Start emulator and run Detox integration tests
       uses: reactivecircus/android-emulator-runner@v2
       with:
