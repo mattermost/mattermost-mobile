@@ -68,11 +68,39 @@ jobs:
   #     }
   #   ]
   # }
+  build-ios-simulator:
+    runs-on: macos-14
+    needs:
+      - update-initial-status
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
+
+      - name: Build iOS Simulator
+        env:
+          TAG: "${{ inputs.MOBILE_VERSION }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
+
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-x86_64.app.zip
+
   detox-e2e:
     name: mobile-cmt-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-detox-template.yml
     needs:
-      - update-initial-status
+      - build-ios-simulator
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}

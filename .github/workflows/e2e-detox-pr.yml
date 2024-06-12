@@ -22,11 +22,37 @@ jobs:
           description: Detox tests for mattermost mobile app have started ...
           status: pending
 
+  build-ios-simulator:
+    runs-on: macos-14
+    needs:
+      - update-initial-status
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
+
+      - name: Build iOS Simulator
+        env:
+          TAG: "${{ github.event.pull_request.head.sha }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
+
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-x86_64.app.zip
+
   run-ios-tests-on-pr:
     name: iOS Mobile Tests on PR
     uses: ./.github/workflows/e2e-detox-template.yml
     needs:
-      - update-initial-status
+      - build-ios-simulator
     with:
       run-ios-tests: true
       run-android-tests: false
