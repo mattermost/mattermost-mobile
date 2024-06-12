@@ -145,6 +145,77 @@ jobs:
   #         name: android-build-apk-${{ github.run_id }}
   #         path: "android/app/build/outputs/apk/**/app-*.apk"
 
+  trial-tests:
+    name: ubuntu tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs:
+      - generate-specs
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-specs.outputs.specs)}}
+    steps:
+        - uses: actions/checkout@v4
+        - name: ci/prepare-node-deps
+          uses: ./.github/actions/prepare-node-deps
+  
+        - uses: actions/setup-java@v4
+          with:
+              distribution: 'zulu'
+              java-version: 17
+        - uses: gradle/actions/setup-gradle@v3
+          continue-on-error: true
+          timeout-minutes: 5
+          with:
+              cache-overwrite-existing: true
+              gradle-home-cache-cleanup: true
+
+        - name: Start React Native Metro Server
+          run: npm run start &
+    
+        - name: Install Detox Dependencies
+          run: cd detox && npm i
+
+        - name: Create destination path
+          run: mkdir -p android/app/build/outputs/apk
+    
+        - name: Download artifact
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            curl -L -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/1578521977/zip \
+                --output android/app/build/outputs/apk/artifact.zip
+    
+        - name: Unzip artifact
+          run: unzip android/app/build/outputs/apk/artifact.zip -d android/app/build/outputs/apk
+    
+        - name: Cleanup
+          run: rm android/app/build/outputs/apk/artifact.zip
+    
+        # API 30+ emulators only have x86_64 system images.
+        - name: Get AVD info
+          uses: ./.github/actions/get-avd-info
+          id: avd-info
+          with:
+              api-level: 33
+
+        - name: Enable KVM
+          run: |
+              echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+              sudo udevadm control --reload-rules
+              sudo udevadm trigger --name-match=kvm
+
+        - name: detox tests
+          uses: reactivecircus/android-emulator-runner@v2
+          with:
+              api-level: 33
+              arch: x86_64
+              target: 33
+              script: |
+                cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
+
   e2e-android-on-mac:
     name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     continue-on-error: true
@@ -226,7 +297,7 @@ jobs:
       with:
         target: google_apis
         api-level: 33
-        arch: x86
+        arch: x86_64
         ram-size: 4096M
         channel: stable
         profile: pixel
@@ -242,7 +313,7 @@ jobs:
       with:
         target: google_apis
         api-level: 33
-        arch: x86
+        arch: x86_64
         ram-size: 4096M
         channel: stable
         profile: pixel
