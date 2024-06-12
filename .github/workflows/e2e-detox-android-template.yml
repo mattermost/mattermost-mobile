@@ -214,6 +214,12 @@ jobs:
     - name: Cleanup
       run: rm android/app/build/outputs/apk/artifact.zip
 
+    - name: Kill any existing emulators
+      run: |
+        if /Users/runner/Library/Android/sdk/platform-tools/adb devices | grep -q emulator-5554; then
+          /Users/runner/Library/Android/sdk/platform-tools/adb -s emulator-5554 emu kill
+        fi
+
     - name: Create AVD and generate snapshot for caching
       if: steps.avd-cache.outputs.cache-hit != 'true'
       uses: reactivecircus/android-emulator-runner@v2
