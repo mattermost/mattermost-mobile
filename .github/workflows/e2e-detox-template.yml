@@ -188,6 +188,9 @@ jobs:
       - name: Run Detox E2E Tests
         continue-on-error: true # Label might have been removed manually
         run: cd detox && npm run e2e:ios-test -- ${{ matrix.specs }}
+        env:
+          DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
+          DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
 
       - name: Upload iOS Test Report
         if: always()
