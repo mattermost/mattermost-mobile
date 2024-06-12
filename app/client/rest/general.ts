@@ -24,6 +24,7 @@ export interface ClientGeneralMix {
     getChannelDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<PoliciesResponse<ChannelDataRetentionPolicy>>;
     getRolesByNames: (rolesNames: string[]) => Promise<Role[]>;
     getRedirectLocation: (urlParam: string) => Promise<Record<string, string>>;
+    sendPerformanceReport: (batch: PerformanceReport) => Promise<{}>;
 }
 
 const ClientGeneral = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -110,6 +111,13 @@ const ClientGeneral = <TBase extends Constructor<ClientBase>>(superclass: TBase)
         }
         const url = `${this.getRedirectLocationRoute()}${buildQueryString({url: urlParam})}`;
         return this.doFetch(url, {method: 'get'});
+    };
+
+    sendPerformanceReport = async (report: PerformanceReport) => {
+        return this.doFetch(
+            this.getPerformanceRoute(),
+            {method: 'post', body: report},
+        );
     };
 };
 
