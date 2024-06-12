@@ -281,7 +281,7 @@ function generateTestReport(summary, isUploadedToS3, reportLink, environment, te
         };
     }
 
-    let quickSummary = `${stats.passPercent.toFixed(2)}% (${stats.passes}/${stats.tests}) in ${stats.suites} suites`;
+    let quickSummary = `${stats.passPercent}% (${stats.passes}/${stats.tests}) in ${stats.suites} suites`;
     if (isUploadedToS3) {
         quickSummary = `[${quickSummary}](${reportLink})`;
     }
