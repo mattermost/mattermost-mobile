@@ -18,6 +18,7 @@ import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {resetToTeams, openToS} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
@@ -167,6 +168,10 @@ const ChannelListScreen = (props: ChannelProps) => {
         if (!NavigationStore.isToSOpen()) {
             tryRunAppReview(props.launchType, props.coldStart);
         }
+    }, []);
+
+    useEffect(() => {
+        PerformanceMetricsManager.finishLoad('HOME', serverUrl);
     }, []);
 
     return (

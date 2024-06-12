@@ -8,6 +8,9 @@ import * as ReactNative from 'react-native';
 import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
 import {v4 as uuidv4} from 'uuid';
 
+import {mockApiClient} from './mock_api_client';
+
+import type {RequestOptions} from '@mattermost/react-native-network-client';
 import type {ReadDirItem, StatResult} from 'react-native-fs';
 
 import 'react-native-gesture-handler/jestSetup';
@@ -186,17 +189,11 @@ jest.doMock('react-native', () => {
 
 jest.mock('react-native-vector-icons', () => {
     const React = jest.requireActual('react');
-    const PropTypes = jest.requireActual('prop-types');
     class CompassIcon extends React.PureComponent {
         render() {
             return React.createElement('Icon', this.props);
         }
     }
-    CompassIcon.propTypes = {
-        name: PropTypes.string,
-        size: PropTypes.number,
-        style: PropTypes.oneOfType([PropTypes.array, PropTypes.number, PropTypes.object]),
-    };
     CompassIcon.getImageSource = jest.fn().mockResolvedValue({});
     return {
         createIconSet: () => CompassIcon,
@@ -256,6 +253,8 @@ jest.mock('react-native-device-info', () => {
         hasNotch: jest.fn(() => true),
         isTablet: jest.fn(() => false),
         getApplicationName: jest.fn(() => 'Mattermost'),
+        getSystemName: jest.fn(() => 'ios'),
+        getSystemVersion: jest.fn(() => '0.0.0'),
     };
 });
 
@@ -367,6 +366,8 @@ jest.mock('@screens/navigation', () => ({
     popToRoot: jest.fn(() => Promise.resolve()),
     dismissModal: jest.fn(() => Promise.resolve()),
     dismissAllModals: jest.fn(() => Promise.resolve()),
+    dismissAllModalsAndPopToScreen: jest.fn(),
+    dismissAllModalsAndPopToRoot: jest.fn(),
     dismissOverlay: jest.fn(() => Promise.resolve()),
 }));
 
@@ -386,6 +387,22 @@ jest.mock('@mattermost/react-native-emm', () => ({
     useManagedConfig: () => ({}),
 }));
 
+jest.mock('@react-native-clipboard/clipboard', () => ({}));
+
+jest.mock('react-native-document-picker', () => ({}));
+
+jest.mock('@mattermost/react-native-network-client', () => ({
+    getOrCreateAPIClient: (serverUrl: string) => ({client: {
+        baseUrl: serverUrl,
+        get: (url: string, options?: RequestOptions) => mockApiClient.get(`${serverUrl}${url}`, options),
+        post: (url: string, options?: RequestOptions) => mockApiClient.post(`${serverUrl}${url}`, options),
+        invalidate: jest.fn(),
+    }}),
+    RetryTypes: {
+        EXPONENTIAL_RETRY: 'exponential',
+    },
+}));
+
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
@@ -399,7 +416,15 @@ jest.mock('react-native-haptic-feedback', () => {
     };
 });
 
-declare const global: {requestAnimationFrame: (callback: any) => void};
+declare const global: {
+    requestAnimationFrame: (callback: () => void) => void;
+    performance: {
+        now: () => number;
+    };
+};
+
 global.requestAnimationFrame = (callback) => {
     setTimeout(callback, 0);
 };
+
+global.performance.now = () => Date.now();
