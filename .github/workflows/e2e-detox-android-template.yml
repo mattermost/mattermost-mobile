@@ -221,11 +221,13 @@ jobs:
             arch: x86_64
             target: ${{ steps.determine-target.outputs.TARGET }}
             channel: canary
-            force-avd-creation: false
+            force-avd-creation: true
             emulator-boot-timeout: 300
             emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -logcat-output ${{ github.workspace }}/app/build/reports/avd${{ matrix.api-level }}.log
             disable-animations: true
             script: |
+              /Users/runner/Library/Android/sdk/emulator/emulator -list-avds
+              echo "**************"
               cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
   e2e-android-on-mac:
