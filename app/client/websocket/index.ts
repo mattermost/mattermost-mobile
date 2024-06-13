@@ -184,8 +184,10 @@ export default class WebSocketClient {
             this.conn = undefined;
             this.responseSequence = 1;
 
-            // If we close for whatever reason, we want to sync when we connect again
-            // unless said otherwise at initialize.
+            // We skip the sync on first connect, since we are syncing along
+            // the init logic. If the connection closes at any point after that,
+            // we don't want to skip the sync. If we keep the same connection and
+            // reliable websockets are enabled this won't trigger a new sync.
             this.shouldSkipSync = false;
 
             if (this.connectFailCount === 0) {

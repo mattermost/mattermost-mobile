@@ -219,23 +219,45 @@ class WebsocketManager {
         delete this.statusUpdatesIntervalIDs[serverUrl];
     }
 
-    private onAppStateChange = async (appState: AppStateStatus) => {
+    private onAppStateChange = (appState: AppStateStatus) => {
         const isMain = isMainActivity();
         if (!isMain) {
             return;
         }
 
         const isActive = appState === 'active';
-        if (isActive === this.previousActiveState) {
+        this.handleStateChange(this.netConnected, isActive);
+    };
+
+    private onNetStateChange = (netState: NetInfoState) => {
+        const newState = Boolean(netState.isConnected);
+        if (this.netConnected === newState) {
             return;
         }
 
-        this.previousActiveState = isActive;
+        this.handleStateChange(newState, this.previousActiveState);
+    };
+
+    private handleStateChange = (currentIsConnected: boolean, currentIsActive: boolean) => {
+        if (currentIsActive === this.previousActiveState && currentIsConnected === this.netConnected) {
+            return;
+        }
+
         this.cancelConnectTimers();
 
-        if (isActive) {
-            if (this.backgroundIntervalId) {
-                BackgroundTimer.clearInterval(this.backgroundIntervalId);
+        const wentBackground = this.previousActiveState && !currentIsActive;
+
+        this.previousActiveState = currentIsActive;
+        this.netConnected = currentIsConnected;
+
+        if (!currentIsConnected) {
+            this.closeAll();
+            return;
+        }
+
+        if (currentIsActive) {
+            if (this.isBackgroundTimerRunning) {
+                BackgroundTimer.clearInterval(this.backgroundIntervalId!);
             }
             this.isBackgroundTimerRunning = false;
             if (this.netConnected) {
@@ -245,31 +267,13 @@ class WebsocketManager {
             return;
         }
 
-        if (!this.isBackgroundTimerRunning) {
+        if (wentBackground && !this.isBackgroundTimerRunning) {
             this.isBackgroundTimerRunning = true;
             this.backgroundIntervalId = BackgroundTimer.setInterval(() => {
                 this.closeAll();
                 BackgroundTimer.clearInterval(this.backgroundIntervalId!);
                 this.isBackgroundTimerRunning = false;
             }, WAIT_TO_CLOSE);
-        }
-    };
-
-    private onNetStateChange = async (netState: NetInfoState) => {
-        const newState = Boolean(netState.isConnected);
-        if (this.netConnected === newState) {
-            return;
-        }
-
-        this.netConnected = newState;
-
-        if (this.netConnected && this.previousActiveState) { // Reopen the websockets only if the app is active
-            this.openAll();
-            return;
-        }
-
-        if (!this.netConnected) {
-            this.closeAll();
         }
     };
 
