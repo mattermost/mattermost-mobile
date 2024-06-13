@@ -8,6 +8,9 @@
 @import react_native_network_client;
 #import <objc/runtime.h>
 
+typedef id (*InitWithRequestInSessionOptionsContextIMP)(id, SEL, NSURLRequest *, NSURLSession *, SDWebImageDownloaderOptions *, id);
+typedef void (*URLSessionTaskDidReceiveChallengeIMP)(id, SEL, NSURLSession *, NSURLSessionTask *, NSURLAuthenticationChallenge *, void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *));
+
 @implementation SDWebImageDownloaderOperation (Swizzle)
 
 + (void) load {
@@ -18,6 +21,9 @@
   });
 }
 
+static InitWithRequestInSessionOptionsContextIMP originalInitWithRequestInSessionOptionsContextImplementation = NULL;
+static URLSessionTaskDidReceiveChallengeIMP originalURLSessionTaskDidReceiveChallengeImplementation = NULL;
+
 + (void) swizzleInitMethod {
   Class class = [self class];
   
@@ -27,7 +33,16 @@
   Method originalMethod = class_getInstanceMethod(class, originalSelector);
   Method swizzledMethod = class_getInstanceMethod(class, swizzledSelector);
   
-  method_exchangeImplementations(originalMethod, swizzledMethod);
+  // Get the implementation of the swizzled method
+  IMP swizzledImplementation = method_getImplementation(swizzledMethod);
+  
+  // Get the original implementation
+  IMP originalImplementation = method_getImplementation(originalMethod);
+  
+  // Set the original method's implementation to the swizzled method's implementation
+  method_setImplementation(originalMethod, swizzledImplementation);
+  
+  originalInitWithRequestInSessionOptionsContextImplementation = (InitWithRequestInSessionOptionsContextIMP)originalImplementation;
 
 }
 
@@ -40,7 +55,16 @@
   Method originalMethod = class_getInstanceMethod(class, originalSelector);
   Method swizzledMethod = class_getInstanceMethod(class, swizzledSelector);
   
-  method_exchangeImplementations(originalMethod, swizzledMethod);
+  // Get the implementation of the swizzled method
+  IMP swizzledImplementation = method_getImplementation(swizzledMethod);
+  
+  // Get the original implementation
+  IMP originalImplementation = method_getImplementation(originalMethod);
+  
+  // Set the original method's implementation to the swizzled method's implementation
+  method_setImplementation(originalMethod, swizzledImplementation);
+  
+  originalURLSessionTaskDidReceiveChallengeImplementation = (URLSessionTaskDidReceiveChallengeIMP)originalImplementation;
 }
 
 #pragma mark - Method Swizzling
@@ -56,14 +80,14 @@
     // our BearerAuthenticationAdapter.
     NSURLSessionConfiguration *configuration = [nativeClientSessionManager getSessionConfigurationFor:sessionBaseUrl];
     NSURLSession *newSession = [NSURLSession sessionWithConfiguration:configuration
-                                                        delegate:self
+                                                             delegate:self
                                                         delegateQueue:session.delegateQueue];
     NSURLRequest *authorizedRequest = [BearerAuthenticationAdapter addAuthorizationBearerTokenTo:request withSessionBaseUrlString:sessionBaseUrl.absoluteString];
     
-    return [self swizzled_initWithRequest:authorizedRequest inSession:newSession options:options context:context];
+    return originalInitWithRequestInSessionOptionsContextImplementation(self, @selector(initWithRequest:inSession:options:context:), authorizedRequest, session, &options, context);
   }
   
-  return [self swizzled_initWithRequest:request inSession:session options:options context:context];
+  return originalInitWithRequestInSessionOptionsContextImplementation(self, @selector(initWithRequest:inSession:options:context:), request, session, &options, context);
 }
 
 
@@ -95,7 +119,7 @@
     return;
   }
 
-  [self swizzled_URLSession:session task:task didReceiveChallenge:challenge completionHandler:completionHandler];
+  originalURLSessionTaskDidReceiveChallengeImplementation(self, @selector(URLSession:task:didReceiveChallenge:completionHandler:), session, task, challenge, completionHandler);
 }
 
 @end

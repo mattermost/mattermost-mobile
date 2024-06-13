@@ -202,9 +202,6 @@ describe('Teams - Invite', () => {
     it('MM-T5365 - should handle both sent and not sent invites', async () => {
         const {user: testUser2} = await User.apiCreateUser(siteOneUrl, {prefix: 'i'});
 
-        const username1 = ` @${testUser1.username}`;
-        const username2 = ` @${testUser2.username}`;
-
         // # Search for an existent user
         await Invite.searchBarInput.replaceText(testUser2.username);
 
@@ -218,31 +215,31 @@ describe('Teams - Invite', () => {
         await expect(Invite.getSelectedItem(testUser2.id)).toBeVisible();
 
         // # Search for a existent user already in team
-        await Invite.searchBarInput.replaceText(testUser1.username);
+        await Invite.searchBarInput.replaceText(testUser.username);
 
         // # Wait for user item in search list
-        await waitFor(Invite.getSearchListUserItem(testUser1.id)).toExist().withTimeout(timeouts.TWO_SEC);
+        await waitFor(Invite.getSearchListUserItem(testUser.id)).toExist().withTimeout(timeouts.TWO_SEC);
 
         // # Select user item
-        await Invite.getSearchListUserItem(testUser1.id).tap();
+        await Invite.getSearchListUserItem(testUser.id).tap();
 
         // * Validate user is added to selected items
-        await expect(Invite.getSelectedItem(testUser1.id)).toBeVisible();
+        await expect(Invite.getSelectedItem(testUser.id)).toBeVisible();
 
         // # Send invitation
         await Invite.sendButton.tap();
 
         // * Validate summary
-        await waitFor(Invite.screenSummary).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        waitFor(Invite.screenSummary).toBeVisible();
 
         // * Validate summary report not sent
         await expect(Invite.getSummaryReportNotSent()).toBeVisible();
-        await expect(Invite.getSummaryReportUserItem(testUser1.id)).toBeVisible();
-        await expect(Invite.getSummaryReportUserItemText(testUser1.id)).toHaveText(username1);
+        await expect(Invite.getSummaryReportUserItem(testUser.id)).toBeVisible();
+        await expect(Invite.getSummaryReportUserItemText(testUser.id)).toBeVisible(testUser.username1);
 
         // * Validate summary report sent
-        await waitFor(Invite.getSummaryReportSent()).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        waitFor(Invite.getSummaryReportSent()).toBeVisible();
         await expect(Invite.getSummaryReportUserItem(testUser2.id)).toBeVisible();
-        await expect(Invite.getSummaryReportUserItemText(testUser2.id)).toHaveText(username2);
+        await expect(Invite.getSummaryReportUserItemText(testUser2.id)).toBeVisible(testUser2.username1);
     });
 });

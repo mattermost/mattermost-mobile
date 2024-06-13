@@ -17,9 +17,6 @@ const {ARTIFACTS_DIR} = require('./constants');
 require('dotenv').config();
 
 const {
-    BRANCH,
-    BUILD_ID,
-    COMMIT_HASH,
     DETOX_AWS_S3_BUCKET,
     DETOX_AWS_ACCESS_KEY_ID,
     DETOX_AWS_SECRET_ACCESS_KEY,
@@ -38,14 +35,13 @@ function getFiles(dirPath) {
     return fs.existsSync(dirPath) ? readdir(dirPath) : [];
 }
 
-async function saveArtifacts() {
+async function saveArtifacts(s3Folder) {
     if (!DETOX_AWS_S3_BUCKET || !DETOX_AWS_ACCESS_KEY_ID || !DETOX_AWS_SECRET_ACCESS_KEY) {
         console.log('No AWS credentials found. Test artifacts not uploaded to S3.');
 
         return;
     }
 
-    const s3Folder = `${BUILD_ID}-${COMMIT_HASH}-${BRANCH}`.replace(/\./g, '-');
     const uploadPath = path.resolve(__dirname, `../${ARTIFACTS_DIR}`);
     const filesToUpload = await getFiles(uploadPath);
 
