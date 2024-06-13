@@ -82,7 +82,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                 key={ssoType}
                 onPress={handlePress}
                 buttonStyle={[styleButtonBackground, styles.button]}
-                containerStyle={[styleButtonContainer]}
+                containerStyle={styleButtonContainer}
             >
                 {imageSrc && (
                     <Image

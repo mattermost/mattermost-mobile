@@ -17,7 +17,7 @@ import {dismissModal, popTopScreen, resetToHome} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
 import {logWarning} from '@utils/log';
 
-import SSORedirect from './sso';
+import SSOAuthentication from './sso_authentication';
 
 import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -159,7 +159,7 @@ const SSO = ({
         <View style={styles.flex}>
             <Background theme={theme}/>
             <AnimatedSafeArea style={[styles.flex, transform]}>
-                <SSORedirect
+                <SSOAuthentication
                     {...props}
                     serverUrl={serverUrl!}
                 />

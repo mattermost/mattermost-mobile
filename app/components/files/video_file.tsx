@@ -4,7 +4,6 @@
 import {getThumbnailAsync} from 'expo-video-thumbnails';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, useWindowDimensions, View} from 'react-native';
-import urlParse from 'url-parse';
 
 import {updateLocalFile} from '@actions/local/file';
 import {buildFilePreviewUrl, buildFileUrl} from '@actions/remote/file';
@@ -88,9 +87,7 @@ const VideoFile = ({
             if (!data.mini_preview || !exists) {
                 const videoUrl = buildFileUrl(serverUrl, data.id!);
                 if (videoUrl) {
-                    const parse = urlParse(videoUrl);
-                    const s = `${parse.protocol}//${parse.hostname}:${parse.port}`;
-                    const cred = await getServerCredentials(s);
+                    const cred = await getServerCredentials(serverUrl);
                     const headers: Record<string, string> = {};
                     if (cred?.token) {
                         headers.Authorization = `Bearer ${cred.token}`;

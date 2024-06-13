@@ -55,5 +55,5 @@ export function useHardwareKeyboardEvents(events: Events) {
         const listener = emitter.addListener('mmHardwareKeyboardEvent', handleEvent);
 
         return () => listener.remove();
-    });
+    }, []);
 }

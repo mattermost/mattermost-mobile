@@ -221,7 +221,7 @@ export default function Summary({
         return (
             <Button
                 containerStyle={styles.summaryButtonContainerStyle}
-                buttonStyle={[styleButtonBackground]}
+                buttonStyle={styleButtonBackground}
                 onPress={onPress}
                 testID={`invite.summary_button.${SummaryButtonType.RETRY}`}
             >

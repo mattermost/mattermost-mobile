@@ -6,7 +6,7 @@ import React from 'react';
 import Preferences from '@constants/preferences';
 import {renderWithIntl} from '@test/intl-test-helper';
 
-import SSOWithRedirectURL from './sso';
+import SSOAuthentication from './sso_authentication';
 
 jest.mock('@utils/url', () => {
     return {
@@ -27,13 +27,13 @@ describe('SSO with redirect url', () => {
     };
 
     test('should show message when user navigates to the page', () => {
-        const {getByTestId} = renderWithIntl(<SSOWithRedirectURL {...baseProps}/>);
+        const {getByTestId} = renderWithIntl(<SSOAuthentication {...baseProps}/>);
         expect(getByTestId('mobile.oauth.switch_to_browser')).toBeDefined();
     });
 
     test('should show "try again" and hide default message when error text is displayed', () => {
         const {getByTestId} = renderWithIntl(
-            <SSOWithRedirectURL
+            <SSOAuthentication
                 {...baseProps}
                 loginError='some error'
             />,

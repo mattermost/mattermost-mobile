@@ -62,7 +62,7 @@ export default function HomeScreen(props: HomeProps) {
     const intl = useIntl();
     const appState = useAppState();
 
-    const handlFindChannels = () => {
+    const handleFindChannels = () => {
         if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS)) {
             findChannels(
                 intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
@@ -71,7 +71,7 @@ export default function HomeScreen(props: HomeProps) {
         }
     };
 
-    useHardwareKeyboardEvents({onFindChannels: handlFindChannels});
+    useHardwareKeyboardEvents({onFindChannels: handleFindChannels});
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel' | 'Post' | 'Connection') => {

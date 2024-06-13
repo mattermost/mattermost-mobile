@@ -411,10 +411,7 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
             outFile.size = file.fileSize || 0;
             outFile.name = file.fileName || '';
         } else {
-            const localPath = Platform.select({
-                ios: (file.uri || ''),
-                default: file.uri || '',
-            });
+            const localPath = file.uri || '';
             try {
                 const fileInfo = await getInfoAsync(decodeURIComponent(localPath), {size: true});
                 if ('size' in fileInfo) {
