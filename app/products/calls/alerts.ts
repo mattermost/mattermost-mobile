@@ -367,14 +367,14 @@ export const stopRecordingConfirmationAlert = (intl: IntlShape, enableTranscript
                     id: 'mobile.calls_cancel',
                     defaultMessage: 'Cancel',
                 }),
-                onPress: async () => resolve(false),
+                onPress: () => resolve(false),
                 style: 'cancel',
             }, {
                 text: formatMessage({
                     id: 'mobile.calls_host_rec_stop_confirm',
                     defaultMessage: 'Stop recording',
                 }),
-                onPress: async () => resolve(true),
+                onPress: () => resolve(true),
                 style: 'destructive',
             }],
         );
