@@ -133,7 +133,7 @@ export const leaveAndJoinWithAlert = async (
                             id: 'mobile.post.cancel',
                             defaultMessage: 'Cancel',
                         }),
-                        onPress: async () => resolve(false),
+                        onPress: () => resolve(false),
                         style: 'destructive',
                     },
                     {
@@ -484,14 +484,14 @@ export const endCallConfirmationAlert = (intl: IntlShape, showHostControls: bool
                 id: 'mobile.calls_cancel',
                 defaultMessage: 'Cancel',
             }),
-            onPress: async () => resolve(EndCallReturn.Cancel),
+            onPress: () => resolve(EndCallReturn.Cancel),
             style: 'cancel',
         }, {
             text: formatMessage({
                 id: 'mobile.calls_host_leave_confirm',
                 defaultMessage: 'Leave call',
             }),
-            onPress: async () => resolve(EndCallReturn.LeaveCall),
+            onPress: () => resolve(EndCallReturn.LeaveCall),
             style: 'destructive',
         }];
 
@@ -501,7 +501,7 @@ export const endCallConfirmationAlert = (intl: IntlShape, showHostControls: bool
                     id: 'mobile.calls_host_end_confirm',
                     defaultMessage: 'End call for everyone',
                 }),
-                onPress: async () => resolve(EndCallReturn.EndCall),
+                onPress: () => resolve(EndCallReturn.EndCall),
                 style: 'destructive',
             };
             const leaveCallButton = {
@@ -509,7 +509,7 @@ export const endCallConfirmationAlert = (intl: IntlShape, showHostControls: bool
                     id: 'mobile.calls_host_leave_confirm',
                     defaultMessage: 'Leave call',
                 }),
-                onPress: async () => resolve(EndCallReturn.LeaveCall),
+                onPress: () => resolve(EndCallReturn.LeaveCall),
             };
 
             if (Platform.OS === 'ios') {
