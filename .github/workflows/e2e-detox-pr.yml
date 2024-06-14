@@ -1,0 +1,109 @@
+name: Detox E2E Tests PR
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - labeled
+
+jobs:
+  update-initial-status:
+    runs-on: ubuntu-22.04
+    if: contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR')
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          context: e2e/detox-tests
+          description: Detox tests for mattermost mobile app have started ...
+          status: pending
+
+  build-ios-simulator:
+    runs-on: macos-14
+    needs:
+      - update-initial-status
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
+
+      - name: Build iOS Simulator
+        env:
+          TAG: "${{ github.event.pull_request.head.sha }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
+
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-x86_64.app.zip
+
+  run-ios-tests-on-pr:
+    name: iOS Mobile Tests on PR
+    uses: ./.github/workflows/e2e-detox-template.yml
+    needs:
+      - build-ios-simulator
+    with:
+      run-ios-tests: true
+      run-android-tests: false
+      run-type: "PR"
+      MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
+    secrets: inherit
+
+  update-final-status:
+    runs-on: ubuntu-22.04
+    needs:
+      - run-ios-tests-on-pr
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          context: e2e/detox-tests
+          description: Completed with ${{ needs.run-ios-tests-on-pr.outputs.FAILURES }} failures
+          status: ${{ needs.run-ios-tests-on-pr.outputs.STATUS }}
+          target_url: ${{ needs.run-ios-tests-on-pr.outputs.TARGET_URL }}
+
+  e2e-remove-label:
+    runs-on: ubuntu-22.04
+    needs:
+      - run-ios-tests-on-pr
+    steps:
+      - name: e2e/remove-label-from-pr
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        continue-on-error: true # Label might have been removed manually
+        with:
+          script: |
+            const iosLabel = 'E2E iOS tests for PR';
+            const androidLabel = 'E2E Android tests for PR';
+            const labels = context.payload.pull_request.labels.map(label => label.name);
+
+            if (labels.includes(iosLabel)) {
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: iosLabel,
+              });
+            }
+
+            if (labels.includes(androidLabel)) {
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: androidLabel,
+              });
+            }
