@@ -7,7 +7,6 @@ import FastImage from 'react-native-fast-image';
 
 import {removePushDisabledInServerAcknowledged, storeOnboardingViewedValue} from '@actions/app/global';
 import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
-import {callsOnAppStateChange} from '@calls/state';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
@@ -42,15 +41,12 @@ class SessionManager {
         if (Platform.OS === 'android') {
             AppState.addEventListener('blur', () => {
                 this.onAppStateChange('inactive');
-                callsOnAppStateChange('inactive');
             });
             AppState.addEventListener('focus', () => {
                 this.onAppStateChange('active');
-                callsOnAppStateChange('active');
             });
         } else {
             AppState.addEventListener('change', this.onAppStateChange);
-            AppState.addEventListener('change', callsOnAppStateChange);
         }
 
         DeviceEventEmitter.addListener(Events.SERVER_LOGOUT, this.onLogout);

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import InCallManager from 'react-native-incall-manager';
 
 import {updateMe} from '@actions/remote/user';
@@ -11,11 +11,11 @@ import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
 import {Calls} from '@constants';
+import {Ringtone} from '@constants/calls';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
-import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 import {getNotificationProps} from '@utils/user';
@@ -28,10 +28,12 @@ type Props = {
     currentUser?: UserModel;
 };
 
-const footerText = {
-    id: t('notification_settings.calls.callsInfo'),
-    defaultMessage: 'Note: silent mode must be off to hear the ringtone preview.',
-};
+const {footerText} = defineMessages({
+    footerText: {
+        id: 'notification_settings.calls.callsInfo',
+        defaultMessage: 'Note: silent mode must be off to hear the ringtone preview.',
+    },
+});
 
 const NotificationCall = ({componentId, currentUser}: Props) => {
     const serverUrl = useServerUrl();
@@ -54,34 +56,27 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
     const [playingRingtone, setPlayingRingtone] = useState(false);
 
     const close = useCallback(() => {
-        if (playingRingtone) {
-            InCallManager.stopRingtone();
-            setPlayingRingtone(false);
-        }
+        InCallManager.stopRingtone();
         popTopScreen(componentId);
-    }, [componentId, playingRingtone]);
+    }, [componentId]);
 
-    const selectOption = useCallback((value: string) => {
+    const selectOption = useCallback(async (value: string) => {
         const tone = 'calls_' + value.toLowerCase();
 
         if (value !== callsMobileNotificationSound) {
             setCallsMobileNotificationSound(value);
 
-            if (playingRingtone) {
-                InCallManager.stopRingtone();
-                InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
-            } else {
-                InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
-                setPlayingRingtone(true);
-            }
+            await InCallManager.stopRingtone();
+            await InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
+            setPlayingRingtone(true);
             return;
         }
 
         if (playingRingtone) {
-            InCallManager.stopRingtone();
+            await InCallManager.stopRingtone();
             setPlayingRingtone(false);
         } else {
-            InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
+            await InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
             setPlayingRingtone(true);
         }
     }, [callsMobileNotificationSound, playingRingtone]);

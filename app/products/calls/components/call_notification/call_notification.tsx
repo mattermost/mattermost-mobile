@@ -108,7 +108,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     servers: ServersModel[];
     incomingCall: IncomingCallNotification;
-    currentUserId: string;
+    currentUserId?: string;
+    userStatus?: string;
     teammateNameDisplay: string;
     members?: ChannelMembershipModel[];
     onCallsScreen?: boolean;
@@ -118,6 +119,7 @@ export const CallNotification = ({
     servers,
     incomingCall,
     currentUserId,
+    userStatus,
     teammateNameDisplay,
     members,
     onCallsScreen,
@@ -138,7 +140,7 @@ export const CallNotification = ({
     }, []);
 
     useEffect(() => {
-        playIncomingCallsRinging(incomingCall.serverUrl, incomingCall.callID);
+        playIncomingCallsRinging(incomingCall.serverUrl, incomingCall.callID, userStatus || '');
     }, [incomingCall.serverUrl, incomingCall.callID, appState]);
 
     // We only need to getServerDisplayName once

@@ -233,9 +233,9 @@ const getRingtoneOrNone = async (serverUrl: string) => {
     }
 };
 
-const shouldRing = (callId: string) => {
+const shouldRing = (callId: string, userStatus: string) => {
     // Do not ring if we are in the background
-    if (AppState.currentState !== 'active') {
+    if (AppState.currentState !== 'active' || userStatus === General.DND || userStatus === General.OUT_OF_OFFICE) {
         return false;
     }
 
@@ -250,8 +250,8 @@ const shouldRing = (callId: string) => {
     return !currentCall;
 };
 
-export const playIncomingCallsRinging = async (serverUrl: string, callId: string) => {
-    if (!shouldRing(callId)) {
+export const playIncomingCallsRinging = async (serverUrl: string, callId: string, userStatus: string) => {
+    if (!shouldRing(callId, userStatus)) {
         return;
     }
 
