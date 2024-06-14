@@ -369,6 +369,7 @@ jest.mock('@screens/navigation', () => ({
     dismissAllModalsAndPopToScreen: jest.fn(),
     dismissAllModalsAndPopToRoot: jest.fn(),
     dismissOverlay: jest.fn(() => Promise.resolve()),
+    dismissAllOverlays: jest.fn(() => Promise.resolve()),
 }));
 
 jest.mock('@mattermost/react-native-emm', () => ({
