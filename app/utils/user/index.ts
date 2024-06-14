@@ -5,6 +5,7 @@ import moment from 'moment-timezone';
 import {Alert} from 'react-native';
 
 import {General, Permissions, Preferences} from '@constants';
+import {Ringtone} from '@constants/calls';
 import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {toTitleCase} from '@utils/helpers';
@@ -340,7 +341,7 @@ export function getNotificationProps(user?: UserModel) {
         push_threads: 'all',
         email_threads: 'all',
         calls_desktop_sound: 'true',
-        calls_notification_sound: 'calm',
+        calls_notification_sound: Ringtone.Calm,
         calls_mobile_sound: '',
         calls_mobile_notification_sound: '',
     };

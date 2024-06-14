@@ -10,6 +10,7 @@ import nock from 'nock';
 
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
+import {Ringtone} from '@constants/calls';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
@@ -399,7 +400,7 @@ class TestHelper {
                 highlight_keys: '',
                 calls_desktop_sound: 'true',
                 calls_mobile_sound: '',
-                calls_notification_sound: 'Calm',
+                calls_notification_sound: Ringtone.Calm,
                 calls_mobile_notification_sound: '',
             },
             last_picture_update: 0,

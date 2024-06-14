@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Ringtone} from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {buildPreferenceKey} from '@database/operator/server_data_operator/comparators';
 import {shouldUpdateUserRecord} from '@database/operator/server_data_operator/comparators/user';
@@ -84,7 +85,7 @@ describe('*** Operator: User Handlers tests ***', () => {
                     push_status: 'online',
                     calls_desktop_sound: 'true',
                     calls_mobile_sound: '',
-                    calls_notification_sound: 'Calm',
+                    calls_notification_sound: Ringtone.Calm,
                     calls_mobile_notification_sound: '',
                 },
                 last_picture_update: 1604686302260,

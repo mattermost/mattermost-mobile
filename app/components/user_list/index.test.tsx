@@ -4,6 +4,7 @@
 import React from 'react';
 import {Image} from 'react-native';
 
+import {Ringtone} from '@constants/calls';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -53,7 +54,7 @@ describe('components/channel_list_row', () => {
             push_status: 'away',
             calls_desktop_sound: 'true',
             calls_mobile_sound: '',
-            calls_notification_sound: 'Calm',
+            calls_notification_sound: Ringtone.Calm,
             calls_mobile_notification_sound: '',
         },
     };
@@ -86,7 +87,7 @@ describe('components/channel_list_row', () => {
             push_status: 'away',
             calls_desktop_sound: 'true',
             calls_mobile_sound: '',
-            calls_notification_sound: 'Calm',
+            calls_notification_sound: Ringtone.Calm,
             calls_mobile_notification_sound: '',
         },
     };

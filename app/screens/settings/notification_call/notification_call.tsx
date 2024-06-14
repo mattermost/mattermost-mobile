@@ -131,10 +131,10 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
                             id: 'notification_settings.calls.dynamic',
                             defaultMessage: 'Dynamic',
                         })}
-                        selected={callsMobileNotificationSound === 'Dynamic'}
+                        selected={callsMobileNotificationSound === Ringtone.Dynamic}
                         testID='notification_settings.calls.dynamic.option'
                         type='select'
-                        value='Dynamic'
+                        value={Ringtone.Dynamic}
                         icon='volume-high'
                         iconColor={changeOpacity(theme.centerChannelColor, 0.56)}
                     />
@@ -145,10 +145,10 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
                             id: 'notification_settings.calls.calm',
                             defaultMessage: 'Calm',
                         })}
-                        selected={callsMobileNotificationSound === 'Calm'}
+                        selected={callsMobileNotificationSound === Ringtone.Calm}
                         testID='notification_settings.calls.calm.option'
                         type='select'
-                        value='Calm'
+                        value={Ringtone.Calm}
                         icon='volume-high'
                         iconColor={changeOpacity(theme.centerChannelColor, 0.56)}
                     />
@@ -159,10 +159,10 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
                             id: 'notification_settings.calls.urgent',
                             defaultMessage: 'Urgent',
                         })}
-                        selected={callsMobileNotificationSound === 'Urgent'}
+                        selected={callsMobileNotificationSound === Ringtone.Urgent}
                         testID='notification_settings.calls.urgent.option'
                         type='select'
-                        value='Urgent'
+                        value={Ringtone.Urgent}
                         icon='volume-high'
                         iconColor={changeOpacity(theme.centerChannelColor, 0.56)}
                     />
@@ -173,10 +173,10 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
                             id: 'notification_settings.calls.cheerful',
                             defaultMessage: 'Cheerful',
                         })}
-                        selected={callsMobileNotificationSound === 'Cheerful'}
+                        selected={callsMobileNotificationSound === Ringtone.Cheerful}
                         testID='notification_settings.calls.cheerful.option'
                         type='select'
-                        value='Cheerful'
+                        value={Ringtone.Cheerful}
                         icon='volume-high'
                         iconColor={changeOpacity(theme.centerChannelColor, 0.56)}
                     />
