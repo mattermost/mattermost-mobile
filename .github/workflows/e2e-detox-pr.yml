@@ -57,6 +57,7 @@ jobs:
       run-ios-tests: true
       run-type: "PR"
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
+      record_tests_in_zephyr: true # testing purposes. should be removed
     secrets: inherit
 
   update-final-status:
@@ -74,7 +75,6 @@ jobs:
           description: Completed with ${{ needs.run-ios-tests-on-pr.outputs.FAILURES }} failures
           status: ${{ needs.run-ios-tests-on-pr.outputs.STATUS }}
           target_url: ${{ needs.run-ios-tests-on-pr.outputs.TARGET_URL }}
-          record_tests_in_zephyr: true # testing purposes. should be removed
 
   e2e-remove-label:
     runs-on: ubuntu-22.04

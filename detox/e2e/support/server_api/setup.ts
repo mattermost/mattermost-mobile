@@ -16,6 +16,12 @@ export const apiInit = async (baseUrl: string, {
     teamOptions = {type: 'O', prefix: 'team'},
     userOptions = {prefix: 'user'},
 }: any = {}): Promise<any> => {
+
+    console.log('**********************************');
+    console.log('**********************************');
+    console.log("baseUrl : ", baseUrl);
+    console.log('**********************************');
+    console.log('**********************************');
     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);
     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});
     const {user} = await User.apiCreateUser(baseUrl, userOptions);

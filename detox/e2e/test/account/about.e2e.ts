@@ -28,6 +28,11 @@ describe('Account - Settings - About', () => {
     let testUser: any;
 
     beforeAll(async () => {
+        console.log('**********************************');
+        console.log('**********************************');
+        console.log("siteOneUrl : ", siteOneUrl);
+        console.log('**********************************');
+        console.log('**********************************');
         const {license} = await System.apiGetClientLicense(siteOneUrl);
         isLicensed = license.IsLicensed === 'true';
         const {user} = await Setup.apiInit(siteOneUrl);
