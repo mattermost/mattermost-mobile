@@ -219,7 +219,7 @@ jobs:
           REPORT_PATH: ${{ steps.s3.outputs.path }}
           ## These are needed for the MM Webhook report
           COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
-          BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
+          BRANCH: ${{ env.BRANCH }}
 
       - name: Calculate failures
         id: summary
