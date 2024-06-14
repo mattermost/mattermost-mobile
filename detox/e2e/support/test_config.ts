@@ -3,10 +3,10 @@
 
 export const serverOneUrl = 'https://mobile-e2e-site-1.test.mattermost.cloud'
 export const siteOneUrl = 'https://mobile-e2e-site-1.test.mattermost.cloud'
-export const serverTwoUrl = 'https://mobile-e2e-site-1.test.mattermost.cloud'
-export const siteTwoUrl = 'https://mobile-e2e-site-1.test.mattermost.cloud'
-export const serverThreeUrl = 'https://mobile-e2e-site-1.test.mattermost.cloud'
-export const siteThreeUrl = 'https://mobile-e2e-site-1.test.mattermost.cloud'
+export const serverTwoUrl = 'https://mobile-e2e-site-2.test.mattermost.cloud'
+export const siteTwoUrl = 'https://mobile-e2e-site-2.test.mattermost.cloud'
+export const serverThreeUrl = 'https://mobile-e2e-site-3.test.mattermost.cloud'
+export const siteThreeUrl = 'https://mobile-e2e-site-3.test.mattermost.cloud'
 export const smtpUrl = process.env.SMTP_URL || 'http://127.0.0.1:9001';
 export const adminEmail = 'success+sysadmin@simulator.amazonses.com'
 export const adminUsername = 'admin'

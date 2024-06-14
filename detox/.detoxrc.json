@@ -30,8 +30,8 @@
     "ios.simulator": {
       "type": "ios.simulator",
       "device": {
-        "type": "${DETOX_DEVICE_TYPE:-iPhone 15 Pro}",
-        "os": "${DETOX_OS_VERSION:-iOS 17.4}"
+        "type": "iPhone 15 Pro",
+        "os": "iOS 17.4"
       }
     },
     "android.emulator": {

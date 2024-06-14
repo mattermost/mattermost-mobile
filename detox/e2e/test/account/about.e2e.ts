@@ -31,6 +31,7 @@ describe('Account - Settings - About', () => {
         console.log('**********************************');
         console.log('**********************************');
         console.log("siteOneUrl : ", siteOneUrl);
+        console.log("serverOneUrl : ", serverOneUrl);
         console.log('**********************************');
         console.log('**********************************');
         const {license} = await System.apiGetClientLicense(siteOneUrl);

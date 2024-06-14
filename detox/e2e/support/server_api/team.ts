@@ -57,20 +57,20 @@ export const apiCreateTeam = async (baseUrl: string, {type = 'O', prefix = 'team
     console.log('**********************************');
     console.log('**********************************');
 
+    let response;
     try {
-        const response = await client.post(
+        response = await client.post(
             `${baseUrl}/api/v4/teams`,
             team || generateRandomTeam(type, prefix),
         );
-
+        return {team: response.data};
+    } catch (err) {
         console.log('**********************************');
         console.log('**********************************');
         console.log("response : ", JSON.stringify(response));
         console.log('**********************************');
         console.log('**********************************');
 
-        return {team: response.data};
-    } catch (err) {
         return getResponseFromError(err);
     }
 };
