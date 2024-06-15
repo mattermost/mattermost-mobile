@@ -415,6 +415,10 @@ class TestHelper {
             mention_keys: '',
             push: 'default',
             push_status: 'away',
+            calls_desktop_sound: 'true',
+            calls_mobile_notification_sound: '',
+            calls_mobile_sound: 'true',
+            calls_notification_sound: '',
         };
     };
 
