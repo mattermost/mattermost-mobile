@@ -494,6 +494,10 @@ export const endCallConfirmationAlert = (intl: IntlShape, showHostControls: bool
             onPress: () => resolve(EndCallReturn.LeaveCall),
             style: 'destructive',
         }];
+        const questionMsg = formatMessage({
+            id: 'mobile.calls_host_leave_title',
+            defaultMessage: 'Are you sure you want to leave this call?',
+        });
 
         if (showHostControls) {
             const endCallButton: AlertButton = {
@@ -519,12 +523,11 @@ export const endCallConfirmationAlert = (intl: IntlShape, showHostControls: bool
             }
         }
 
-        Alert.alert(
-            formatMessage({
-                id: 'mobile.calls_host_leave_title',
-                defaultMessage: 'Are you sure you want to leave this call?',
-            }), '', buttons,
-        );
+        if (Platform.OS === 'ios') {
+            Alert.alert(questionMsg, '', buttons);
+        } else {
+            Alert.alert('', questionMsg, buttons);
+        }
     });
 
     return asyncAlert();
