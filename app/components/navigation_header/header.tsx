@@ -32,7 +32,6 @@ type Props = {
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
     scrollValue?: Animated.SharedValue<number>;
-    lockValue?: Animated.SharedValue<number | null>;
     showBackButton?: boolean;
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
@@ -135,7 +134,6 @@ const Header = ({
     onTitlePress,
     rightButtons,
     scrollValue,
-    lockValue,
     showBackButton = true,
     subtitle,
     subtitleCompanion,
@@ -155,7 +153,7 @@ const Header = ({
         }
 
         const barHeight = heightOffset - ViewConstants.LARGE_HEADER_TITLE_HEIGHT;
-        const val = (scrollValue?.value ?? 0);
+        const val = (scrollValue?.value || 0);
         const showDuration = 200;
         const hideDuration = 50;
         const duration = val >= barHeight ? showDuration : hideDuration;
@@ -168,7 +166,7 @@ const Header = ({
     const containerAnimatedStyle = useAnimatedStyle(() => ({
         height: defaultHeight,
         paddingTop: insets.top,
-    }), [defaultHeight, lockValue]);
+    }), [defaultHeight]);
 
     const containerStyle = useMemo(() => (
         [styles.container, containerAnimatedStyle]), [styles, containerAnimatedStyle]);

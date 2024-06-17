@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {forwardRef} from 'react';
+import React, {forwardRef, useEffect} from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import {SEARCH_INPUT_HEIGHT, SEARCH_INPUT_MARGIN} from '@constants/view';
@@ -24,7 +24,7 @@ type Props = SearchProps & {
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
     scrollValue?: Animated.SharedValue<number>;
-    lockValue?: Animated.SharedValue<number | null>;
+    lockValue?: number;
     hideHeader?: () => void;
     showBackButton?: boolean;
     subtitle?: string;
@@ -60,33 +60,38 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    const [heightOffset, setHeightOffset] = React.useState(0);
     const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
+
+    useEffect(() => {
+        if (lockValue) {
+            setHeightOffset(lockValue);
+        } else {
+            setHeightOffset(headerOffset);
+        }
+    }, [lockValue, headerOffset]);
+
+    const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
+
     const containerHeight = useAnimatedStyle(() => {
-        const value = -(scrollValue?.value || 0);
-        const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + value;
-        const height = lockValue?.value ? lockValue.value : calculatedHeight;
+        const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + -(minScrollValue.value);
+        const height = lockValue || calculatedHeight;
         return {
             height: Math.max(height, defaultHeight),
             minHeight: defaultHeight,
             maxHeight: largeHeight + MAX_OVERSCROLL,
         };
-    });
-
-    const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
+    }, [defaultHeight, largeHeight, lockValue, isLargeTitle]);
 
     const translateY = useDerivedValue(() => (
-        lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, headerOffset)
-    ), [lockValue, minScrollValue, headerOffset]);
+        lockValue ? -lockValue : Math.min(-minScrollValue.value, headerOffset)
+    ), [lockValue, headerOffset]);
 
     const searchTopStyle = useAnimatedStyle(() => {
         const margin = clamp(-minScrollValue.value, -headerOffset, headerOffset);
-        const marginTop = (lockValue?.value ? -lockValue?.value : margin) - SEARCH_INPUT_HEIGHT - SEARCH_INPUT_MARGIN;
+        const marginTop = (lockValue ? -lockValue : margin) - SEARCH_INPUT_HEIGHT - SEARCH_INPUT_MARGIN;
         return {marginTop};
-    }, [lockValue, headerOffset, scrollValue]);
-
-    const heightOffset = useDerivedValue(() => (
-        lockValue?.value ? lockValue.value : headerOffset
-    ), [lockValue, headerOffset]);
+    }, [lockValue, headerOffset]);
 
     return (
         <Animated.View style={[styles.container, containerHeight]}>
@@ -94,12 +99,11 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
                 defaultHeight={defaultHeight}
                 hasSearch={hasSearch}
                 isLargeTitle={isLargeTitle}
-                heightOffset={heightOffset.value}
+                heightOffset={heightOffset}
                 leftComponent={leftComponent}
                 onBackPress={onBackPress}
                 onTitlePress={onTitlePress}
                 rightButtons={rightButtons}
-                lockValue={lockValue}
                 scrollValue={scrollValue}
                 showBackButton={showBackButton}
                 subtitle={subtitle}
@@ -109,7 +113,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
             />
             {isLargeTitle &&
                 <NavigationHeaderLargeTitle
-                    heightOffset={heightOffset.value}
+                    heightOffset={heightOffset}
                     hasSearch={hasSearch}
                     subtitle={subtitle}
                     theme={theme}

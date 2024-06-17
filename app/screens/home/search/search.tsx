@@ -281,7 +281,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
     }, [isFocused, stateIndex]);
 
     const headerTopStyle = useAnimatedStyle(() => ({
-        top: lockValue.value ? lockValue.value : headerHeight.value,
+        top: lockValue || headerHeight.value,
         zIndex: lastSearchedValue ? 10 : 0,
     }), [headerHeight, lastSearchedValue, lockValue]);
 
@@ -409,7 +409,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                             posts={posts}
                             matches={matches}
                             fileInfos={fileInfos}
-                            scrollPaddingTop={lockValue.value}
+                            scrollPaddingTop={lockValue}
                             fileChannelIds={fileChannelIds}
                         />
                         }
