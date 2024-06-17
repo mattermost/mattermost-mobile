@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java b/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
-index 10cb1e5..73b81ba 100644
+index 10cb1e5..ba5d918 100644
 --- a/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
 +++ b/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
-@@ -1040,107 +1040,106 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+@@ -1040,107 +1040,107 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
      }
  
      @ReactMethod
@@ -186,13 +186,14 @@ index 10cb1e5..73b81ba 100644
 +            }
 +        } catch (Exception e) {
 +            Log.d(TAG, "stopRingtone() failed");
++            wakeLockUtils.releasePartialWakeLock();
 +            throw e;
 +        }
 +        wakeLockUtils.releasePartialWakeLock();
      }
  
      private void setMediaPlayerEvents(MediaPlayer mp, final String name) {
-@@ -1267,6 +1266,32 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+@@ -1267,6 +1267,32 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
          return getAudioUri(type, fileBundle, fileBundleExt, fileSysWithExt, fileSysPath, "bundleBusytoneUri", "defaultBusytoneUri");
      }
  
@@ -225,7 +226,7 @@ index 10cb1e5..73b81ba 100644
      private Uri getAudioUri(final String _type, final String fileBundle, final String fileBundleExt, final String fileSysWithExt, final String fileSysPath, final String uriBundle, final String uriDefault) {
          String type = _type;
          if (type.equals("_BUNDLE_")) {
-@@ -1300,6 +1325,12 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+@@ -1300,6 +1326,12 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
          final String target = fileSysPath + "/" + type;
          Uri _uri = getSysFileUri(target);
          if (_uri == null) {
@@ -255,7 +256,7 @@ index c8ebe9d..5f2ab9e 100644
    startProximitySensor(): void;
  
 diff --git a/node_modules/react-native-incall-manager/index.js b/node_modules/react-native-incall-manager/index.js
-index ac5cafb..6710a7f 100644
+index ac5cafb..6887150 100644
 --- a/node_modules/react-native-incall-manager/index.js
 +++ b/node_modules/react-native-incall-manager/index.js
 @@ -73,14 +73,14 @@ class InCallManager {
