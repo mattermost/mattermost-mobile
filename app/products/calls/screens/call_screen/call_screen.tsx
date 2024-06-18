@@ -130,17 +130,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         width: '100%',
         height: 52,
         gap: 8,
+        paddingHorizontal: 24,
     },
     headerLeft: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center',
-        paddingLeft: 24,
-        width: 117,
+        width: 93,
         gap: 8,
     },
-    headerLeftRecOff: {
-        width: 81,
+    headerLeftRightRecOff: {
+        width: 57,
     },
     time: {
         color: theme.buttonColor,
@@ -160,15 +160,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     headerLandscapeNoControls: {
         top: -1000,
     },
-    collapseIconContainer: {
+    headerRight: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-end',
-        width: 117,
-        paddingRight: 24,
-    },
-    collapseIconContainerRecOff: {
-        width: 81,
+        width: 93,
     },
     collapseIcon: {
         color: changeOpacity(theme.buttonColor, 0.56),
@@ -711,7 +707,7 @@ const CallScreen = ({
                 isLandscape && !showControlsInLandscape && style.headerLandscapeNoControls,
             ]}
         >
-            <View style={[style.headerLeft, !(waitingForRecording || recording) && style.headerLeftRecOff]}>
+            <View style={[style.headerLeft, !(waitingForRecording || recording) && style.headerLeftRightRecOff]}>
                 {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
                 {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
                 <CallDuration
@@ -730,7 +726,7 @@ const CallScreen = ({
             />
             <Pressable
                 onPress={collapse}
-                style={[style.collapseIconContainer, !(waitingForRecording || recording) && style.collapseIconContainerRecOff]}
+                style={[style.headerRight, !(waitingForRecording || recording) && style.headerLeftRightRecOff]}
             >
                 <CompassIcon
                     name='arrow-collapse'
