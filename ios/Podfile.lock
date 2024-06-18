@@ -1123,7 +1123,7 @@ PODS:
     - React-Core
   - react-native-document-picker (9.3.0):
     - React-Core
-  - react-native-emm (1.4.1):
+  - react-native-emm (1.5.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1167,7 +1167,7 @@ PODS:
     - Yoga
   - react-native-netinfo (11.3.2):
     - React-Core
-  - react-native-network-client (1.5.1):
+  - react-native-network-client (1.6.0):
     - Alamofire (~> 5.9.1)
     - DoubleConversion
     - glog
@@ -1193,7 +1193,7 @@ PODS:
     - Yoga
   - react-native-notifications (5.1.0):
     - React-Core
-  - react-native-paste-input (0.7.1):
+  - react-native-paste-input (0.8.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2026,12 +2026,12 @@ SPEC CHECKSUMS:
   react-native-cameraroll: a9138c165c9975da773d26945591d313992c799b
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
   react-native-document-picker: 5b97e24a7f1a1e4a50a72c540a043f32d29a70a2
-  react-native-emm: c9be3f8ac8cca161af8cb7cc1508e162b91d906b
+  react-native-emm: ecab44d78fb1cc7d7b7901914f48fb6309c46ff2
   react-native-image-picker: c3afe5472ef870d98a4b28415fc0b928161ee5f7
   react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
-  react-native-network-client: 5ec11b534369d8ffff36a75faba6d66098666d90
+  react-native-network-client: a862d041763721fddb9802a24fb6bb28208781cb
   react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
-  react-native-paste-input: b24971115d7133bf16001a47f33b539ee491dc86
+  react-native-paste-input: 011a9916ef3acf809a7da122847c61ca0f93a60e
   react-native-safe-area-context: 399a5859f6acbdf67f671c69b53113f535f3b5b0
   react-native-video: 8cd68fa00f56087184154c0e976d3756adaad144
   react-native-webrtc: ae5f9793fc58138ecb5bdf0afe7cfdb3f09888ed
