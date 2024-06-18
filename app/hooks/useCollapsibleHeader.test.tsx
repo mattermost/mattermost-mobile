@@ -5,25 +5,62 @@ import {act} from '@testing-library/react-native';
 
 import ViewConstants from '@constants/view';
 
+import * as DeviceFunctions from './device';
 import {useCollapsibleHeader} from './header';
 
+const LARGE_HEADER_TITLE_HEIGHT = 128;
+const HEADER_OFFSET = LARGE_HEADER_TITLE_HEIGHT - ViewConstants.DEFAULT_HEADER_HEIGHT;
+
 describe('useCollapsibleHeader', () => {
-    it('should return the correct values', () => {
+    afterEach(() => {
+        jest.resetAllMocks();
+    });
+
+    const commonHookResponse = {
+        largeHeight: LARGE_HEADER_TITLE_HEIGHT,
+        scrollRef: {current: null},
+        scrollValue: {value: 0},
+        onScroll: expect.any(Function),
+        hideHeader: expect.any(Function),
+        lockValue: 0,
+        unlock: expect.any(Function),
+        headerOffset: HEADER_OFFSET,
+        scrollEnabled: {value: true},
+        setAutoScroll: expect.any(Function),
+    };
+
+    it('should return the correct values with isLargeTitle is true', () => {
         const {result} = renderHook(() => useCollapsibleHeader(true));
+
         expect(result.current).toEqual({
             defaultHeight: ViewConstants.DEFAULT_HEADER_HEIGHT,
-            largeHeight: 128,
-            scrollPaddingTop: 128,
-            scrollRef: {current: null},
-            scrollValue: {value: 0},
-            onScroll: expect.any(Function),
-            hideHeader: expect.any(Function),
-            lockValue: 0,
-            unlock: expect.any(Function),
-            headerHeight: {value: 128},
-            headerOffset: 84,
-            scrollEnabled: {value: true},
-            setAutoScroll: expect.any(Function),
+            scrollPaddingTop: LARGE_HEADER_TITLE_HEIGHT,
+            headerHeight: {value: LARGE_HEADER_TITLE_HEIGHT},
+            ...commonHookResponse,
+        });
+    });
+
+    it('should return the correct values with isLargeTitle is false', () => {
+        const {result} = renderHook(() => useCollapsibleHeader(false));
+
+        expect(result.current).toEqual({
+            defaultHeight: ViewConstants.DEFAULT_HEADER_HEIGHT,
+            scrollPaddingTop: ViewConstants.DEFAULT_HEADER_HEIGHT,
+            headerHeight: {value: ViewConstants.DEFAULT_HEADER_HEIGHT},
+            ...commonHookResponse,
+        });
+    });
+
+    it('should return the correct values with isLargeTitle is true, and on a tablet', () => {
+        jest.spyOn(DeviceFunctions, 'useIsTablet').mockReturnValue(true);
+
+        const {result} = renderHook(() => useCollapsibleHeader(true));
+
+        expect(result.current).toEqual({
+            defaultHeight: ViewConstants.TABLET_HEADER_HEIGHT,
+            scrollPaddingTop: LARGE_HEADER_TITLE_HEIGHT,
+            headerHeight: {value: LARGE_HEADER_TITLE_HEIGHT},
+            ...commonHookResponse,
         });
     });
 
@@ -34,7 +71,7 @@ describe('useCollapsibleHeader', () => {
 
         act(() => result.current.hideHeader(true));
 
-        expect(result.current.lockValue).toBe(44);
+        expect(result.current.lockValue).toBe(ViewConstants.DEFAULT_HEADER_HEIGHT);
     });
 
     it('should reset the lockValue when unlock is called', () => {
@@ -42,7 +79,7 @@ describe('useCollapsibleHeader', () => {
 
         act(() => result.current.hideHeader(true));
 
-        expect(result.current.lockValue).toBe(44);
+        expect(result.current.lockValue).toBe(ViewConstants.DEFAULT_HEADER_HEIGHT);
 
         act(() => result.current.unlock());
 
