@@ -2,29 +2,43 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet, type StyleProp, View, type ViewStyle} from 'react-native';
+import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+
+import {useTheme} from '@context/theme';
+import {changeOpacity} from '@utils/theme';
 
 type ProgressBarProps = {
     color: string;
     progress: number;
+    withCursor?: boolean;
     style?: StyleProp<ViewStyle>;
 }
 
 const styles = StyleSheet.create({
     container: {
+        position: 'relative',
+        justifyContent: 'center',
+    },
+    progressBarContainer: {
         height: 4,
         borderRadius: 2,
-        backgroundColor: 'rgba(255, 255, 255, 0.16)',
         overflow: 'hidden',
         width: '100%',
     },
     progressBar: {
         flex: 1,
     },
+    cursor: {
+        position: 'absolute',
+        borderRadius: 100,
+        width: 15,
+        height: 15,
+    },
 });
 
-const ProgressBar = ({color, progress, style}: ProgressBarProps) => {
+const ProgressBar = ({color, progress, withCursor, style}: ProgressBarProps) => {
+    const theme = useTheme();
     const [width, setWidth] = useState(0);
 
     const progressValue = useSharedValue(progress);
@@ -38,6 +52,13 @@ const ProgressBar = ({color, progress, style}: ProgressBarProps) => {
         };
     }, [width]);
 
+    const cursorAnimatedStyle = useAnimatedStyle(() => {
+        const cursorWidth = 15;
+        return {
+            left: withTiming((progressValue.value * width) - (cursorWidth / 2), {duration: 200}),
+        };
+    }, [width]);
+
     useEffect(() => {
         progressValue.value = progress;
     }, [progress]);
@@ -47,20 +68,39 @@ const ProgressBar = ({color, progress, style}: ProgressBarProps) => {
     }, []);
 
     return (
-        <View
-            onLayout={onLayout}
-            style={[styles.container, style]}
-        >
-            <Animated.View
+        <View style={styles.container}>
+            <View
+                onLayout={onLayout}
                 style={[
-                    styles.progressBar,
+                    styles.progressBarContainer,
                     {
-                        backgroundColor: color,
-                        width,
+                        backgroundColor: withCursor ? changeOpacity(theme.centerChannelColor, 0.2) : 'rgba(255, 255, 255, 0.16)',
                     },
-                    progressAnimatedStyle,
+                    style,
                 ]}
-            />
+            >
+                <Animated.View
+                    style={[
+                        styles.progressBar,
+                        {
+                            backgroundColor: color,
+                            width,
+                        },
+                        progressAnimatedStyle,
+                    ]}
+                />
+            </View>
+
+            {withCursor &&
+                <Animated.View
+                    style={[
+                        styles.cursor,
+                        {
+                            backgroundColor: color,
+                        },
+                        cursorAnimatedStyle,
+                    ]}
+                />}
         </View>
     );
 };
