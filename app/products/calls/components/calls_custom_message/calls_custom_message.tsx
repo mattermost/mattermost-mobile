@@ -6,7 +6,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
-import {leaveCall} from '@calls/actions';
+import {leaveCallConfirmation} from '@calls/actions/calls';
 import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
 import {setJoiningChannelId} from '@calls/state';
 import CompassIcon from '@components/compass_icon';
@@ -26,11 +26,14 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     post: PostModel;
-    currentUser?: UserModel;
     isMilitaryTime: boolean;
+    joiningChannelId: string | null;
+    otherParticipants: boolean;
+    isAdmin: boolean;
+    isHost: boolean;
+    currentUser?: UserModel;
     limitRestrictedInfo?: LimitRestrictedInfo;
     ccChannelId?: string;
-    joiningChannelId: string | null;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -131,6 +134,9 @@ export const CallsCustomMessage = ({
     ccChannelId,
     limitRestrictedInfo,
     joiningChannelId,
+    otherParticipants,
+    isAdmin,
+    isHost,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -154,9 +160,9 @@ export const CallsCustomMessage = ({
         setJoiningChannelId(null);
     }, [limitRestrictedInfo, intl, serverUrl, post.channelId]);
 
-    const leaveHandler = useCallback(() => {
-        leaveCall();
-    }, []);
+    const leaveCallHandler = useCallback(() => {
+        leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, post.channelId);
+    }, [intl, otherParticipants, isAdmin, isHost, serverUrl, post.channelId]);
 
     const title = post.props.title ? (
         <Text style={style.title}>
@@ -210,7 +216,7 @@ export const CallsCustomMessage = ({
     const button = alreadyInTheCall ? (
         <TouchableOpacity
             style={[style.callButton, style.leaveCallButton]}
-            onPress={leaveHandler}
+            onPress={leaveCallHandler}
         >
             <CompassIcon
                 name='phone-hangup'
