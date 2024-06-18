@@ -52,7 +52,7 @@ type AuthorsRequest = {
     error?: unknown;
 }
 
-export async function createPost(serverUrl: string, post: Partial<Post>, files: FileInfo[] = []): Promise<{data?: boolean; error?: any}> {
+export async function createPost(serverUrl: string, post: Partial<Post>, files: FileInfo[] = []): Promise<{data?: boolean; error?: unknown}> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -571,7 +571,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
         });
         const result = processPostsFetched(data);
         let posts: Model[] = [];
-        if (!fetchOnly) {
+        if (result.posts.length && !fetchOnly) {
             const models: Model[] = [];
             posts = await operator.handlePosts({
                 ...result,

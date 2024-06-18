@@ -10,6 +10,7 @@ import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {useTeamSwitch} from '@hooks/team_switch';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 
 import CategoryBody from './body';
 import LoadCategoriesError from './error';
@@ -68,6 +69,7 @@ const Categories = ({
     const [initiaLoad, setInitialLoad] = useState(!categoriesToShow.length);
 
     const onChannelSwitch = useCallback(async (c: Channel | ChannelModel) => {
+        PerformanceMetricsManager.startMetric('mobile_channel_switch');
         switchToChannelById(serverUrl, c.id);
     }, [serverUrl]);
 
@@ -102,6 +104,14 @@ const Categories = ({
 
         return () => clearTimeout(t);
     }, []);
+
+    useEffect(() => {
+        if (switchingTeam) {
+            return;
+        }
+
+        PerformanceMetricsManager.endMetric('mobile_team_switch', serverUrl);
+    }, [switchingTeam]);
 
     if (!categories.length) {
         return <LoadCategoriesError/>;
@@ -139,6 +149,7 @@ const Categories = ({
                     <Loading
                         size='large'
                         themeColor='sidebarText'
+                        testID='categories.loading'
                     />
                 </View>
             )}

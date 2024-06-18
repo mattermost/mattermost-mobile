@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-exception-handler/android/src/main/AndroidManifest.xml b/node_modules/react-native-exception-handler/android/src/main/AndroidManifest.xml
+index 58dfc7b..47c9954 100644
+--- a/node_modules/react-native-exception-handler/android/src/main/AndroidManifest.xml
++++ b/node_modules/react-native-exception-handler/android/src/main/AndroidManifest.xml
+@@ -3,7 +3,7 @@
+     package="com.masteratul.exceptionhandler">
+ 
+     <application>
+-        <activity android:name=".DefaultErrorScreen">
++        <activity android:name=".DefaultErrorScreen" android:exported="false">
+         </activity>
+     </application>
+ 

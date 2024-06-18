@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {DeviceEventEmitter, StyleSheet} from 'react-native';
 
 import {Events} from '@constants';
+import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 
 import Picker from './picker';
@@ -25,6 +26,8 @@ const style = StyleSheet.create({
 });
 
 const EmojiPickerScreen = ({closeButtonId, componentId, onEmojiPress}: Props) => {
+    const isTablet = useIsTablet();
+
     const handleEmojiPress = useCallback((emoji: string) => {
         onEmojiPress(emoji);
         DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
@@ -46,7 +49,7 @@ const EmojiPickerScreen = ({closeButtonId, componentId, onEmojiPress}: Props) =>
             componentId={componentId}
             contentStyle={style.contentStyle}
             initialSnapIndex={1}
-            footerComponent={PickerFooter}
+            footerComponent={isTablet ? undefined : PickerFooter}
             testID='post_options'
         />
     );

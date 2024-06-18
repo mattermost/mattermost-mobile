@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert} from 'react-native';
+import {Alert, type AlertButton, Platform} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
 import {dismissIncomingCall, hostRemove} from '@calls/actions/calls';
@@ -15,6 +15,7 @@ import {
     removeIncomingCall,
     setMicPermissionsGranted,
 } from '@calls/state';
+import {EndCallReturn} from '@calls/types/calls';
 import {errorAlert} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
@@ -132,7 +133,7 @@ export const leaveAndJoinWithAlert = async (
                             id: 'mobile.post.cancel',
                             defaultMessage: 'Cancel',
                         }),
-                        onPress: async () => resolve(false),
+                        onPress: () => resolve(false),
                         style: 'destructive',
                     },
                     {
@@ -520,4 +521,62 @@ export const removeFromCall = (serverUrl: string, displayName: string, callId: s
         },
         style: 'destructive',
     }]);
+};
+
+export const endCallConfirmationAlert = (intl: IntlShape, showHostControls: boolean) => {
+    const {formatMessage} = intl;
+
+    const asyncAlert = async () => new Promise((resolve) => {
+        const buttons: AlertButton[] = [{
+            text: formatMessage({
+                id: 'mobile.calls_cancel',
+                defaultMessage: 'Cancel',
+            }),
+            onPress: () => resolve(EndCallReturn.Cancel),
+            style: 'cancel',
+        }, {
+            text: formatMessage({
+                id: 'mobile.calls_host_leave_confirm',
+                defaultMessage: 'Leave call',
+            }),
+            onPress: () => resolve(EndCallReturn.LeaveCall),
+            style: 'destructive',
+        }];
+        const questionMsg = formatMessage({
+            id: 'mobile.calls_host_leave_title',
+            defaultMessage: 'Are you sure you want to leave this call?',
+        });
+
+        if (showHostControls) {
+            const endCallButton: AlertButton = {
+                text: formatMessage({
+                    id: 'mobile.calls_host_end_confirm',
+                    defaultMessage: 'End call for everyone',
+                }),
+                onPress: () => resolve(EndCallReturn.EndCall),
+                style: 'destructive',
+            };
+            const leaveCallButton = {
+                text: formatMessage({
+                    id: 'mobile.calls_host_leave_confirm',
+                    defaultMessage: 'Leave call',
+                }),
+                onPress: () => resolve(EndCallReturn.LeaveCall),
+            };
+
+            if (Platform.OS === 'ios') {
+                buttons.splice(1, 1, endCallButton, leaveCallButton);
+            } else {
+                buttons.splice(1, 1, leaveCallButton, endCallButton);
+            }
+        }
+
+        if (Platform.OS === 'ios') {
+            Alert.alert(questionMsg, '', buttons);
+        } else {
+            Alert.alert('', questionMsg, buttons);
+        }
+    });
+
+    return asyncAlert();
 };
