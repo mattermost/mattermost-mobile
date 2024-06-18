@@ -81,6 +81,13 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
         }
     }, [callsMobileNotificationSound, playingRingtone]);
 
+    const selectNotificationOnOff = useCallback(async (on: boolean) => {
+        setCallsMobileSound(on);
+        if (!on) {
+            await InCallManager.stopRingtone();
+        }
+    }, []);
+
     const canSaveSettings = useCallback(() => {
         const cmsString = callsMobileSound ? 'true' : 'false';
         const cms = cmsString !== notifyProps.calls_mobile_sound;
@@ -113,7 +120,7 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
                     id: 'notification_settings.calls.enable_sound',
                     defaultMessage: 'Notification sound for incoming calls',
                 })}
-                action={setCallsMobileSound}
+                action={selectNotificationOnOff}
                 testID='notification_settings.calls.enable_sound.option'
                 type='toggle'
                 selected={callsMobileSound}
