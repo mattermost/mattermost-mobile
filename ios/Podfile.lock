@@ -1214,6 +1214,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-performance (5.1.2):
+    - React-Core
   - react-native-safe-area-context (4.10.4):
     - React-Core
   - react-native-video (6.2.0):
@@ -1696,6 +1698,7 @@ DEPENDENCIES:
   - "react-native-network-client (from `../node_modules/@mattermost/react-native-network-client`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - "react-native-paste-input (from `../node_modules/@mattermost/react-native-paste-input`)"
+  - react-native-performance (from `../node_modules/react-native-performance`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webrtc (from `../node_modules/react-native-webrtc`)
@@ -1875,6 +1878,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-notifications"
   react-native-paste-input:
     :path: "../node_modules/@mattermost/react-native-paste-input"
+  react-native-performance:
+    :path: "../node_modules/react-native-performance"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-video:
@@ -2032,6 +2037,7 @@ SPEC CHECKSUMS:
   react-native-network-client: a862d041763721fddb9802a24fb6bb28208781cb
   react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
   react-native-paste-input: 011a9916ef3acf809a7da122847c61ca0f93a60e
+  react-native-performance: ff93f8af3b2ee9519fd7879896aa9b8b8272691d
   react-native-safe-area-context: 399a5859f6acbdf67f671c69b53113f535f3b5b0
   react-native-video: 8cd68fa00f56087184154c0e976d3756adaad144
   react-native-webrtc: ae5f9793fc58138ecb5bdf0afe7cfdb3f09888ed

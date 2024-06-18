@@ -5,37 +5,8 @@ import {type StyleProp, StyleSheet, type TextStyle, type ViewStyle} from 'react-
 
 import {blendColors, changeOpacity} from '@utils/theme';
 
-/**
- * Returns the appropriate Style object for <View style={} />
- *
- *
- * @param theme
- * @param size
- * @param emphasis
- * @param type
- * @param state
- * @returns
- */
-export const buttonBackgroundStyle = (
-    theme: Theme,
-    size: ButtonSize = 'm',
-    emphasis: ButtonEmphasis = 'primary',
-    type: ButtonType = 'default',
-    state: ButtonState = 'default',
-): StyleProp<ViewStyle> => {
-    const styles = StyleSheet.create({
-        main: {
-            flex: 0,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 4,
-        },
-        fullWidth: {
-            width: '100%',
-        },
-    });
-
-    const backgroundStyles: BackgroundStyles = {
+export const getBackgroundStyles = (theme: Theme): BackgroundStyles => {
+    return {
         primary: {
             default: {
                 default: {
@@ -313,31 +284,102 @@ export const buttonBackgroundStyle = (
             },
         },
     };
+};
 
-    const sizes: ButtonSizes = StyleSheet.create({
-        xs: {
-            height: 24,
-            paddingVertical: 6,
-            paddingHorizontal: 10,
-        },
-        s: {
-            height: 32,
-            paddingVertical: 10,
-            paddingHorizontal: 16,
-        },
-        m: {
-            height: 40,
-            paddingVertical: 12,
-            paddingHorizontal: 20,
-        },
-        lg: {
-            height: 48,
-            paddingVertical: 14,
-            paddingHorizontal: 24,
-        },
-    });
+export const buttonSizeStyles: ButtonSizes = StyleSheet.create({
+    xs: {
+        height: 24,
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+    },
+    s: {
+        height: 32,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+    },
+    m: {
+        height: 40,
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+    },
+    lg: {
+        height: 48,
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+    },
+});
 
-    return [styles.main, sizes[size], backgroundStyles[emphasis][type][state]];
+export const buttonStyles = StyleSheet.create({
+    main: {
+        flex: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 4,
+    },
+    fullWidth: {
+        width: '100%',
+    },
+});
+
+export const buttonTextStyles = StyleSheet.create({
+    main: {
+        fontFamily: 'OpenSans-SemiBold',
+        fontWeight: '600',
+        textAlignVertical: 'center',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 1,
+    },
+    underline: {
+        textDecorationLine: 'underline',
+    },
+});
+
+export const buttonTextSizeStyles = StyleSheet.create({
+    xs: {
+        fontSize: 11,
+        lineHeight: 10,
+        letterSpacing: 0.02,
+        marginTop: 2,
+    },
+    s: {
+        fontSize: 12,
+        lineHeight: 12,
+        marginTop: 1,
+    },
+    m: {
+        fontSize: 14,
+        lineHeight: 14,
+        marginTop: 3,
+    },
+    lg: {
+        fontSize: 16,
+        lineHeight: 18,
+        marginTop: 1,
+    },
+});
+
+/**
+ * Returns the appropriate Style object for <View style={} />
+ *
+ *
+ * @param theme
+ * @param size
+ * @param emphasis
+ * @param type
+ * @param state
+ * @returns
+ */
+export const buttonBackgroundStyle = (
+    theme: Theme,
+    size: ButtonSize = 'm',
+    emphasis: ButtonEmphasis = 'primary',
+    type: ButtonType = 'default',
+    state: ButtonState = 'default',
+): StyleProp<ViewStyle> => {
+    const backgroundStyles = getBackgroundStyles(theme);
+
+    return [buttonStyles.main, buttonSizeStyles[size], backgroundStyles[emphasis][type][state]];
 };
 
 /**
@@ -376,43 +418,5 @@ export const buttonTextStyle = (
         color = theme.sidebarText;
     }
 
-    const styles = StyleSheet.create({
-        main: {
-            fontFamily: 'OpenSans-SemiBold',
-            fontWeight: '600',
-            textAlignVertical: 'center',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 1,
-        },
-        underline: {
-            textDecorationLine: 'underline',
-        },
-    });
-
-    const sizes = StyleSheet.create({
-        xs: {
-            fontSize: 11,
-            lineHeight: 10,
-            letterSpacing: 0.02,
-            marginTop: 2,
-        },
-        s: {
-            fontSize: 12,
-            lineHeight: 12,
-            marginTop: 1,
-        },
-        m: {
-            fontSize: 14,
-            lineHeight: 14,
-            marginTop: 3,
-        },
-        lg: {
-            fontSize: 16,
-            lineHeight: 18,
-            marginTop: 1,
-        },
-    });
-
-    return [styles.main, sizes[size], {color}];
+    return [buttonTextStyles.main, buttonTextSizeStyles[size], {color}];
 };
