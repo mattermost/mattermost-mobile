@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, combineLatestWith} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {observeCallDatabase, observeCurrentSessionsDict} from '@calls/observers';
+import {observeCallDatabase, observeCurrentSessionsDict, observeEndCallDetails} from '@calls/observers';
 import CallScreen from '@calls/screens/call_screen/call_screen';
 import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
 import {General} from '@constants';
@@ -53,6 +53,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         teammateNameDisplay,
         displayName,
         isOwnDirectMessage,
+        ...observeEndCallDetails(),
     };
 });
 

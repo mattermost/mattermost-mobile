@@ -252,3 +252,9 @@ export type HostControlsLowerHandMsgData = HostControlsMsgData & {
     call_id: string;
     host_id: string;
 }
+
+export enum EndCallReturn {
+    Cancel,
+    LeaveCall,
+    EndCall,
+}

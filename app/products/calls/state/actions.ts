@@ -286,15 +286,16 @@ const stopIncomingCallsRinging = () => {
     setIncomingCalls({...incomingCalls, currentRingingCallId: undefined});
 };
 
-export const setCallForChannel = (serverUrl: string, channelId: string, enabled?: boolean, call?: Call) => {
+export const setCallForChannel = (serverUrl: string, channelId: string, call?: Call, enabled?: boolean) => {
     const callsState = getCallsState(serverUrl);
     let nextEnabled = callsState.enabled;
     if (typeof enabled !== 'undefined') {
         nextEnabled = {...callsState.enabled, [channelId]: enabled};
     }
 
-    const nextCalls = {...callsState.calls};
+    let nextCalls = callsState.calls;
     if (call) {
+        nextCalls = {...callsState.calls};
         nextCalls[channelId] = call;
 
         // In case we got a complete update on the currentCall
