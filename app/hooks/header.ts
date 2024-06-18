@@ -153,9 +153,9 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         }
     }, [largeHeight, defaultHeight]);
 
-    const unlock = () => {
+    const unlock = useCallback(() => {
         setLockValue(0);
-    };
+    }, []);
 
     return {
         defaultHeight,
