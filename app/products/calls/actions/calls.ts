@@ -8,6 +8,7 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {
+    endCallConfirmationAlert,
     leaveAndJoinWithAlert,
     needsRecordingErrorAlert,
     needsRecordingWillBePostedAlert,
@@ -28,6 +29,7 @@ import {
     setScreenShareURL,
     setSpeakerPhone,
 } from '@calls/state';
+import {type AudioDevice, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
 import {General, Preferences} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
@@ -44,7 +46,6 @@ import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/u
 
 import {newConnection} from '../connection/connection';
 
-import type {AudioDevice, Call, CallSession, CallsConnection} from '@calls/types/calls';
 import type {CallChannelState, CallState, EmojiData, SessionState} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
@@ -132,7 +133,7 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
         fetchUsersByIds(serverUrl, Array.from(ids));
     }
 
-    setCallForChannel(serverUrl, channelId, resp.enabled, call);
+    setCallForChannel(serverUrl, channelId, call, resp.enabled);
 
     return {data: {call, enabled: resp.enabled}};
 };
@@ -160,11 +161,12 @@ const convertOldCallToNew = (call: CallState): CallState => {
     };
 };
 
-const createCallAndAddToIds = (channelId: string, call: CallState, ids: Set<string>) => {
-    return {
+export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: Set<string>) => {
+    // Don't cast so that we get alerted to missing types
+    const convertedCall: Call = {
         sessions: Object.values(call.sessions).reduce((accum, cur) => {
             // Add the id to the set of UserModels we want to ensure are loaded.
-            ids.add(cur.user_id);
+            ids?.add(cur.user_id);
 
             // Create the CallParticipant
             accum[cur.session_id] = {
@@ -184,7 +186,9 @@ const createCallAndAddToIds = (channelId: string, call: CallState, ids: Set<stri
         hostId: call.host_id,
         recState: call.recording,
         dismissed: call.dismissed_notification || {},
-    } as Call;
+    };
+
+    return convertedCall;
 };
 
 export const loadConfigAndCalls = async (serverUrl: string, userId: string) => {
@@ -299,6 +303,29 @@ export const leaveCall = (err?: Error) => {
     if (connection) {
         connection.disconnect(err);
         connection = null;
+    }
+};
+
+export const leaveCallConfirmation = async (
+    intl: IntlShape,
+    otherParticipants: boolean,
+    isAdmin: boolean,
+    isHost: boolean,
+    serverUrl: string,
+    channelId: string,
+    leaveCb?: () => void) => {
+    const showHostControls = (isHost || isAdmin) && otherParticipants;
+    const ret = await endCallConfirmationAlert(intl, showHostControls) as EndCallReturn;
+    switch (ret) {
+        case EndCallReturn.Cancel:
+            return;
+        case EndCallReturn.LeaveCall:
+            leaveCall();
+            leaveCb?.();
+            return;
+        case EndCallReturn.EndCall:
+            endCall(serverUrl, channelId);
+            leaveCb?.();
     }
 };
 

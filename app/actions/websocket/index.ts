@@ -24,7 +24,10 @@ import {
     handleCallRecordingState,
     handleCallScreenOff,
     handleCallScreenOn,
-    handleCallStarted, handleCallUserConnected, handleCallUserDisconnected,
+    handleCallStarted,
+    handleCallState,
+    handleCallUserConnected,
+    handleCallUserDisconnected,
     handleCallUserJoined,
     handleCallUserLeft,
     handleCallUserMuted,
@@ -449,6 +452,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.CALLS_HOST_REMOVED:
             handleHostRemoved(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_CALL_STATE:
+            handleCallState(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:

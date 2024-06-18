@@ -5,7 +5,8 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, Pressable, Platform} from 'react-native';
 
-import {leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
+import {muteMyself, unmuteMyself} from '@calls/actions';
+import {leaveCallConfirmation} from '@calls/actions/calls';
 import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
@@ -34,6 +35,9 @@ type Props = {
     teammateNameDisplay: string;
     micPermissionsGranted: boolean;
     threadScreen?: boolean;
+    otherParticipants: boolean;
+    isAdmin: boolean;
+    isHost: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
@@ -139,6 +143,9 @@ const CurrentCallBar = ({
     teammateNameDisplay,
     micPermissionsGranted,
     threadScreen,
+    otherParticipants,
+    isAdmin,
+    isHost,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -168,8 +175,8 @@ const CurrentCallBar = ({
     }, [formatMessage, threadScreen]);
 
     const leaveCallHandler = useCallback(() => {
-        leaveCall();
-    }, []);
+        leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId || '');
+    }, [intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId]);
 
     const mySession = currentCall?.sessions[currentCall.mySessionId];
 
@@ -210,7 +217,6 @@ const CurrentCallBar = ({
 
     // The user should receive an alert if all of the following conditions apply:
     // - Recording has started and recording has not ended.
-    const isHost = Boolean(currentCall?.hostId === mySession?.userId);
     if (currentCall?.recState?.start_at && !currentCall?.recState?.end_at) {
         recordingAlert(isHost, EnableTranscriptions, intl);
     }
