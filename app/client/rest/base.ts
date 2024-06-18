@@ -234,6 +234,10 @@ export default class ClientBase {
         return this.getPluginRoute(Calls.PluginId);
     }
 
+    getPerformanceRoute() {
+        return `${this.urlVersion}/client_perf`;
+    }
+
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
         let request;
         const method = options.method?.toLowerCase();

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import htmlParser from 'fast-html-parser';
 import {decode} from 'html-entities';
+import htmlParser from 'node-html-parser';
 import urlParse from 'url-parse';
 
 export type BestImage = {

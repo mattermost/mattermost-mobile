@@ -16,10 +16,10 @@ index 30bb01c..bba788d 100644
                  events "PASSED", "SKIPPED", "FAILED", "standardOut", "standardError"
              }
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/AndroidManifest.xml b/node_modules/react-native-notifications/lib/android/app/src/main/AndroidManifest.xml
-index 24cd226..4bfacba 100644
+index 24cd226..3aa1728 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/AndroidManifest.xml
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/AndroidManifest.xml
-@@ -3,6 +3,7 @@
+@@ -3,19 +3,19 @@
      xmlns:android="http://schemas.android.com/apk/res/android"
      package="com.wix.reactnativenotifications">
  
@@ -27,7 +27,22 @@ index 24cd226..4bfacba 100644
      <application>
  
          <!--
-@@ -23,6 +24,9 @@
+          A proxy-service that gives the library an opportunity to do some work before launching/resuming the actual application task.
+          -->
+-        <service android:name=".core.ProxyService"/>
++        <service android:name=".core.ProxyService" android:exported="false"/>
+ 
+         <service
+             android:name=".fcm.FcmInstanceIdListenerService"
+-            android:exported="true">
++            android:exported="false">
+             <intent-filter>
+                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
+-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+             </intent-filter>
+         </service>
+ 
+@@ -23,6 +23,9 @@
              android:name=".fcm.FcmInstanceIdRefreshHandlerService"
              android:exported="false"
              android:permission="android.permission.BIND_JOB_SERVICE" />

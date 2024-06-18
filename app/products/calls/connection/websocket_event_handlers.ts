@@ -4,10 +4,13 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
+import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
+import {hostRemovedErr} from '@calls/errors';
 import {
     callEnded,
     callStarted,
     getCallsConfig,
+    getCurrentCall,
     receivedCaption,
     removeIncomingCall,
     setCallScreenOff,
@@ -29,7 +32,7 @@ import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 
-import type {CallRecordingStateData} from '@calls/types/calls';
+import type {CallRecordingStateData, HostControlsLowerHandMsgData, HostControlsMsgData} from '@calls/types/calls';
 import type {
     CallHostChangedData,
     CallJobState,
@@ -203,4 +206,37 @@ export const handleUserDismissedNotification = async (serverUrl: string, msg: We
 
 export const handleCallCaption = (serverUrl: string, msg: WebSocketMessage<LiveCaptionData>) => {
     receivedCaption(serverUrl, msg.data);
+};
+
+export const handleHostMute = async (serverUrl: string, msg: WebSocketMessage<HostControlsMsgData>) => {
+    const currentCall = getCurrentCall();
+    if (currentCall?.serverUrl !== serverUrl ||
+        currentCall?.channelId !== msg.data.channel_id ||
+        currentCall?.mySessionId !== msg.data.session_id) {
+        return;
+    }
+
+    muteMyself();
+};
+
+export const handleHostLowerHand = async (serverUrl: string, msg: WebSocketMessage<HostControlsLowerHandMsgData>) => {
+    const currentCall = getCurrentCall();
+    if (currentCall?.serverUrl !== serverUrl ||
+        currentCall?.channelId !== msg.data.channel_id ||
+        currentCall?.mySessionId !== msg.data.session_id) {
+        return;
+    }
+
+    unraiseHand();
+};
+
+export const handleHostRemoved = async (serverUrl: string, msg: WebSocketMessage<HostControlsMsgData>) => {
+    const currentCall = getCurrentCall();
+    if (currentCall?.serverUrl !== serverUrl ||
+        currentCall?.channelId !== msg.data.channel_id ||
+        currentCall?.mySessionId !== msg.data.session_id) {
+        return;
+    }
+
+    leaveCall(hostRemovedErr);
 };

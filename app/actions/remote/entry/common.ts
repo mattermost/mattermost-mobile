@@ -22,7 +22,7 @@ import {getDeviceToken} from '@queries/app/global';
 import {getChannelById, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig, getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getConfig, getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getLastFullSync, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import NavigationStore from '@store/navigation_store';
 import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
@@ -124,7 +124,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
     }
     const {database} = operator;
 
-    const lastDisconnectedAt = since || await getWebSocketLastDisconnected(database);
+    const lastDisconnectedAt = since || await getLastFullSync(database);
 
     const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, teamId, channelId);
     if ('error' in fetchedData) {

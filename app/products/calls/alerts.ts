@@ -4,9 +4,9 @@
 import {Alert} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
-import {dismissIncomingCall} from '@calls/actions/calls';
+import {dismissIncomingCall, hostRemove} from '@calls/actions/calls';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
-import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
+import {hostRemovedErr, userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
 import {
     getCallsConfig,
     getCallsState,
@@ -19,6 +19,7 @@ import {errorAlert} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getCurrentUser} from '@queries/servers/user';
+import {dismissBottomSheet} from '@screens/navigation';
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
@@ -101,7 +102,7 @@ export const leaveAndJoinWithAlert = async (
         }
     } catch (error) {
         logError('failed to getServerDatabase in leaveAndJoinWithAlert', error);
-        return;
+        return false;
     }
 
     if (leaveServerUrl && leaveChannelId) {
@@ -118,33 +119,38 @@ export const leaveAndJoinWithAlert = async (
             }, {leaveChannelName, joinChannelName});
         }
 
-        Alert.alert(
-            formatMessage({
-                id: 'mobile.leave_and_join_title',
-                defaultMessage: 'Are you sure you want to switch to a different call?',
-            }),
-            joinMessage,
-            [
-                {
-                    text: formatMessage({
-                        id: 'mobile.post.cancel',
-                        defaultMessage: 'Cancel',
-                    }),
-                    style: 'destructive',
-                },
-                {
-                    text: formatMessage({
-                        id: 'mobile.leave_and_join_confirmation',
-                        defaultMessage: 'Leave & Join',
-                    }),
-                    onPress: () => doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId),
-                    style: 'cancel',
-                },
-            ],
-        );
-    } else {
-        doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId);
+        const asyncAlert = async () => new Promise((resolve) => {
+            Alert.alert(
+                formatMessage({
+                    id: 'mobile.leave_and_join_title',
+                    defaultMessage: 'Are you sure you want to switch to a different call?',
+                }),
+                joinMessage,
+                [
+                    {
+                        text: formatMessage({
+                            id: 'mobile.post.cancel',
+                            defaultMessage: 'Cancel',
+                        }),
+                        onPress: async () => resolve(false),
+                        style: 'destructive',
+                    },
+                    {
+                        text: formatMessage({
+                            id: 'mobile.leave_and_join_confirmation',
+                            defaultMessage: 'Leave & Join',
+                        }),
+                        onPress: async () => resolve(await doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId)),
+                        isPreferred: true,
+                    },
+                ],
+            );
+        });
+
+        return asyncAlert();
     }
+
+    return doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title, rootId);
 };
 
 const doJoinCall = async (
@@ -165,7 +171,7 @@ const doJoinCall = async (
         user = await getCurrentUser(database);
         if (!user) {
             // This shouldn't happen, so don't bother localizing and displaying an alert.
-            return;
+            return false;
         }
 
         if (newCall) {
@@ -188,12 +194,12 @@ const doJoinCall = async (
                 // continue through and start the call
             } else {
                 contactAdminAlert(intl);
-                return;
+                return false;
             }
         }
     } catch (error) {
         logError('failed to getServerDatabaseAndOperator in doJoinCall', error);
-        return;
+        return false;
     }
 
     recordingAlertLock = false;
@@ -214,12 +220,14 @@ const doJoinCall = async (
     if (res.error) {
         const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);
-        return;
+        return false;
     }
 
     if (joinChannelIsDMorGM) {
         unmuteMyself();
     }
+
+    return true;
 };
 
 const contactAdminAlert = ({formatMessage}: IntlShape) => {
@@ -413,8 +421,55 @@ export const showErrorAlertOnClose = (err: Error, intl: IntlShape) => {
                 }),
             );
             break;
+        case hostRemovedErr:
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.calls_removed_alert_title',
+                    defaultMessage: 'You were removed from the call',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.calls_removed_alert_body',
+                    defaultMessage: 'The host removed you from the call.',
+                }),
+                [{
+                    text: intl.formatMessage({
+                        id: 'mobile.calls_dismiss',
+                        defaultMessage: 'Dismiss',
+                    }),
+                }]);
+            break;
         default:
             // Fallback with generic error
             errorAlert(getFullErrorMessage(err, intl), intl);
     }
+};
+
+export const removeFromCall = (serverUrl: string, displayName: string, callId: string, sessionId: string, intl: IntlShape) => {
+    const {formatMessage} = intl;
+
+    const title = formatMessage({
+        id: 'mobile.calls_remove_alert_title',
+        defaultMessage: 'Remove participant',
+    });
+    const body = formatMessage({
+        id: 'mobile.calls_remove_alert_body',
+        defaultMessage: 'Are you sure you want to remove {displayName} from the call? ',
+    }, {displayName});
+
+    Alert.alert(title, body, [{
+        text: formatMessage({
+            id: 'mobile.post.cancel',
+            defaultMessage: 'Cancel',
+        }),
+    }, {
+        text: formatMessage({
+            id: 'mobile.calls_remove',
+            defaultMessage: 'Remove',
+        }),
+        onPress: () => {
+            hostRemove(serverUrl, callId, sessionId);
+            dismissBottomSheet();
+        },
+        style: 'destructive',
+    }]);
 };

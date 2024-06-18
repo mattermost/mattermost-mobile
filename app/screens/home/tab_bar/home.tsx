@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
+import useDidUpdate from '@app/hooks/did_update';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
@@ -22,6 +23,8 @@ type Props = {
     isFocused: boolean;
     theme: Theme;
 }
+
+const HOME_TOTAL_MENTIONS_EVENT = 'home_total_mentions_event';
 
 const subscriptions: Map<string, UnreadSubscription> = new Map();
 
@@ -41,81 +44,101 @@ const style = StyleSheet.create({
     },
 });
 
+const getTotalMentionsAndUnread = () => {
+    let unread = false;
+    let mentions = 0;
+    subscriptions.forEach((value) => {
+        unread = unread || value.unread;
+        mentions += value.mentions;
+    });
+    return {unread, mentions};
+};
+
+const updateBadge = () => {
+    if (Platform.OS === 'ios') {
+        const {mentions} = getTotalMentionsAndUnread();
+        NativeNotification.getDeliveredNotifications().then((delivered) => {
+            if (mentions === 0 && delivered.length > 0) {
+                logDebug('Not updating badge count, since we have no mentions in the database, and the number of notifications in the notification center is', delivered.length);
+                return;
+            }
+
+            logDebug('Setting the badge count based on database values to', mentions);
+            Notifications.ios.setBadgeCount(mentions);
+        });
+    }
+};
+
+const unreadsSubscription = (serverUrl: string, {myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
+    const unreads = subscriptions.get(serverUrl);
+    if (unreads) {
+        let mentions = 0;
+        let unread = false;
+        for (const myChannel of myChannels) {
+            const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
+            mentions += isMuted ? 0 : myChannel.mentionsCount;
+            unread = unread || (myChannel.isUnread && !isMuted);
+        }
+
+        unreads.mentions = mentions + threadMentionCount;
+        unreads.unread = unread;
+        subscriptions.set(serverUrl, unreads);
+        DeviceEventEmitter.emit(HOME_TOTAL_MENTIONS_EVENT);
+    }
+};
+
+const serversObserver = async (servers: ServersModel[]) => {
+    // unsubscribe mentions from servers that were removed
+    const allUrls = new Set(servers.map((s) => s.url));
+    const subscriptionsToRemove = [...subscriptions].filter(([key]) => !allUrls.has(key));
+    let hasRemovedServers = false;
+    for (const [key, map] of subscriptionsToRemove) {
+        map.subscription?.unsubscribe();
+        subscriptions.delete(key);
+        hasRemovedServers = true;
+    }
+
+    for (const server of servers) {
+        const {lastActiveAt, url} = server;
+        if (lastActiveAt && !subscriptions.has(url)) {
+            const unreads: UnreadSubscription = {
+                mentions: 0,
+                unread: false,
+            };
+            subscriptions.set(url, unreads);
+            unreads.subscription = subscribeUnreadAndMentionsByServer(url, unreadsSubscription);
+        } else if (!lastActiveAt && subscriptions.has(url)) {
+            subscriptions.get(url)?.subscription?.unsubscribe();
+            subscriptions.delete(url);
+            hasRemovedServers = true;
+        }
+    }
+    if (hasRemovedServers) {
+        DeviceEventEmitter.emit(HOME_TOTAL_MENTIONS_EVENT);
+    }
+};
+
 const Home = ({isFocused, theme}: Props) => {
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
     const appState = useAppState();
 
-    const updateTotal = () => {
-        let unread = false;
-        let mentions = 0;
-        subscriptions.forEach((value) => {
-            unread = unread || value.unread;
-            mentions += value.mentions;
-        });
-        setTotal({mentions, unread});
-
-        if (Platform.OS === 'ios') {
-            NativeNotification.getDeliveredNotifications().then((delivered) => {
-                if (mentions === 0 && delivered.length > 0) {
-                    logDebug('Not updating badge count, since we have no mentions in the database, and the number of notifications in the notification center is', delivered.length);
-                    return;
-                }
-
-                logDebug('Setting the badge count based on database values to', mentions);
-                Notifications.ios.setBadgeCount(mentions);
-            });
-        }
-    };
-
-    const unreadsSubscription = (serverUrl: string, {myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
-        const unreads = subscriptions.get(serverUrl);
-        if (unreads) {
-            let mentions = 0;
-            let unread = false;
-            for (const myChannel of myChannels) {
-                const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
-                mentions += isMuted ? 0 : myChannel.mentionsCount;
-                unread = unread || (myChannel.isUnread && !isMuted);
-            }
-
-            unreads.mentions = mentions + threadMentionCount;
-            unreads.unread = unread;
-            subscriptions.set(serverUrl, unreads);
-            updateTotal();
-        }
-    };
-
-    const serversObserver = async (servers: ServersModel[]) => {
-        // unsubscribe mentions from servers that were removed
-        const allUrls = new Set(servers.map((s) => s.url));
-        const subscriptionsToRemove = [...subscriptions].filter(([key]) => !allUrls.has(key));
-        for (const [key, map] of subscriptionsToRemove) {
-            map.subscription?.unsubscribe();
-            subscriptions.delete(key);
-            updateTotal();
-        }
-
-        for (const server of servers) {
-            const {lastActiveAt, url} = server;
-            if (lastActiveAt && !subscriptions.has(url)) {
-                const unreads: UnreadSubscription = {
-                    mentions: 0,
-                    unread: false,
-                };
-                subscriptions.set(url, unreads);
-                unreads.subscription = subscribeUnreadAndMentionsByServer(url, unreadsSubscription);
-            } else if (!lastActiveAt && subscriptions.has(url)) {
-                subscriptions.get(url)?.subscription?.unsubscribe();
-                subscriptions.delete(url);
-                updateTotal();
-            }
-        }
-    };
-
     useEffect(() => {
+        const totalMentionsEventListener = () => {
+            setTotal((prev) => {
+                const newTotal = getTotalMentionsAndUnread();
+                if (prev.mentions === newTotal.mentions && prev.unread === newTotal.unread) {
+                    return prev;
+                }
+                return newTotal;
+            });
+        };
+        const totalSubscription = DeviceEventEmitter.addListener(HOME_TOTAL_MENTIONS_EVENT, totalMentionsEventListener);
+
         const subscription = subscribeAllServers(serversObserver);
 
         return () => {
+            totalSubscription.remove();
+
             subscription?.unsubscribe();
             subscriptions.forEach((unreads) => {
                 unreads.subscription?.unsubscribe();
@@ -124,11 +147,11 @@ const Home = ({isFocused, theme}: Props) => {
         };
     }, []);
 
-    useEffect(() => {
-        if (appState === 'background') {
-            updateTotal();
+    useDidUpdate(() => {
+        if (appState !== 'active') {
+            updateBadge();
         }
-    }, [appState]);
+    }, [total, appState !== 'active']);
 
     let unreadStyle;
     if (total.mentions) {

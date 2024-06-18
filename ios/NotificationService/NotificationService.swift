@@ -30,7 +30,7 @@ class NotificationService: UNNotificationServiceExtension {
               self?.sendMessageIntent()
             })
           } else {
-            bestAttemptContent.badge = Gekidou.Database.default.getTotalMentions() as NSNumber
+            bestAttemptContent.badge = nil
             os_log(OSLogType.default, "Mattermost Notifications: app in use, no data processed. Will call sendMessageIntent")
             self?.sendMessageIntent()
           }

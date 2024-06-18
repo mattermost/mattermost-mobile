@@ -1,0 +1,73 @@
+name: Detox E2E Tests (Scheduled)
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # every day at midnight
+
+jobs:
+  update-initial-status:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.sha }}
+          context: e2e/detox-tests
+          description: Detox tests for mattermost mobile app have started ...
+          status: pending
+
+  build-ios-simulator:
+    runs-on: macos-14
+    needs:
+      - update-initial-status
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
+
+      - name: Build iOS Simulator
+        env:
+          TAG: "${{ github.ref }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
+
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-x86_64.app.zip
+
+  run-ios-tests-on-main-scheduled:
+    name: iOS Mobile Tests on Main (Scheduled)
+    uses: ./.github/workflows/e2e-detox-template.yml
+    needs:
+      - build-ios-simulator
+    with:
+      run-ios-tests: true
+      run-android-tests: false
+      run-type: "MAIN"
+      MOBILE_VERSION: ${{ github.ref }}
+    secrets: inherit
+
+  update-final-status:
+    runs-on: ubuntu-22.04
+    needs:
+      - run-ios-tests-on-main-scheduled
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.sha }}
+          context: e2e/detox-tests
+          description: Completed with ${{ needs.run-ios-tests-on-main-scheduled.outputs.FAILURES }} failures
+          status: ${{ needs.run-ios-tests-on-main-scheduled.outputs.STATUS }}
+          target_url: ${{ needs.run-ios-tests-on-main-scheduled.outputs.TARGET_URL }}

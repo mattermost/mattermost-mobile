@@ -24,19 +24,15 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.EPHEMERAL_MESSAGE:
             posts.handleNewPostEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.POST_EDITED:
             posts.handlePostEdited(serverUrl, msg);
             break;
-
         case WebsocketEvents.POST_DELETED:
             posts.handlePostDeleted(serverUrl, msg);
             break;
-
         case WebsocketEvents.POST_UNREAD:
             posts.handlePostUnread(serverUrl, msg);
             break;
-
         case WebsocketEvents.POST_ACKNOWLEDGEMENT_ADDED:
             posts.handlePostAcknowledgementAdded(serverUrl, msg);
             break;
@@ -52,6 +48,12 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.ADDED_TO_TEAM:
             teams.handleUserAddedToTeamEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.DELETE_TEAM:
+            teams.handleTeamArchived(serverUrl, msg);
+            break;
+        case WebsocketEvents.RESTORE_TEAM:
+            teams.handleTeamRestored(serverUrl, msg);
             break;
 
         case WebsocketEvents.USER_ADDED:
@@ -91,38 +93,30 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.CHANNEL_CREATED:
             channel.handleChannelCreatedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.CHANNEL_DELETED:
             channel.handleChannelDeletedEvent(serverUrl, msg);
             break;
         case WebsocketEvents.CHANNEL_UNARCHIVED:
             channel.handleChannelUnarchiveEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.CHANNEL_UPDATED:
             channel.handleChannelUpdatedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.CHANNEL_CONVERTED:
             channel.handleChannelConvertedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.CHANNEL_VIEWED:
             channel.handleChannelViewedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.MULTIPLE_CHANNELS_VIEWED:
             channel.handleMultipleChannelsViewedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.CHANNEL_MEMBER_UPDATED:
             channel.handleChannelMemberUpdatedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.CHANNEL_SCHEME_UPDATED:
             // Do nothing, handled by CHANNEL_UPDATED due to changes in the channel scheme.
             break;
-
         case WebsocketEvents.DIRECT_ADDED:
         case WebsocketEvents.GROUP_ADDED:
             channel.handleDirectAddedEvent(serverUrl, msg);
@@ -131,11 +125,9 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.PREFERENCE_CHANGED:
             preferences.handlePreferenceChangedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.PREFERENCES_CHANGED:
             preferences.handlePreferencesChangedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.PREFERENCES_DELETED:
             preferences.handlePreferencesDeletedEvent(serverUrl, msg);
             break;
@@ -150,11 +142,9 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.REACTION_ADDED:
             handleReactionAddedToPostEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.REACTION_REMOVED:
             handleReactionRemovedFromPostEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.EMOJI_ADDED:
             handleAddCustomEmoji(serverUrl, msg);
             break;
@@ -162,7 +152,6 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.LICENSE_CHANGED:
             handleLicenseChangedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.CONFIG_CHANGED:
             handleConfigChangedEvent(serverUrl, msg);
             break;
@@ -170,31 +159,18 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.OPEN_DIALOG:
             handleOpenDialogEvent(serverUrl, msg);
             break;
-
-        case WebsocketEvents.DELETE_TEAM:
-            teams.handleTeamArchived(serverUrl, msg);
-            break;
-
-        case WebsocketEvents.RESTORE_TEAM:
-            teams.handleTeamRestored(serverUrl, msg);
+        case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
             break;
 
         case WebsocketEvents.THREAD_UPDATED:
             handleThreadUpdatedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.THREAD_READ_CHANGED:
             handleThreadReadChangedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.THREAD_FOLLOW_CHANGED:
             handleThreadFollowChangedEvent(serverUrl, msg);
             break;
-
-        case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
-            break;
-
-            // return dispatch(handleRefreshAppsBindings());
 
         // Calls ws events:
         case WebsocketEvents.CALLS_CHANNEL_ENABLED:
@@ -269,6 +245,15 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.CALLS_CAPTION:
             calls.handleCallCaption(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_HOST_MUTE:
+            calls.handleHostMute(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_HOST_LOWER_HAND:
+            calls.handleHostLowerHand(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_HOST_REMOVED:
+            calls.handleHostRemoved(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:
