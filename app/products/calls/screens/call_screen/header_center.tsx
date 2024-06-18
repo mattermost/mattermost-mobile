@@ -28,6 +28,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         flexDirection: 'row',
         flex: 1,
         justifyContent: 'center',
+        alignItems: 'center',
     },
     raisedHandBanner: {
         flexDirection: 'row',
@@ -56,7 +57,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     titleBanner: {
         ...typography('Body', 200, 'SemiBold'),
         color: changeOpacity(theme.buttonColor, 0.72),
-        height: 28,
     },
 }));
 

@@ -136,13 +136,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         width: 117,
         gap: 8,
     },
+    headerLeftRecOff: {
+        width: 81,
+    },
     time: {
         color: theme.buttonColor,
         ...typography('Heading', 200),
         width: 56,
-    },
-    timeSpacer: {
-        marginLeft: 36,
     },
     headerPortraitSpacer: {
         height: 12,
@@ -158,10 +158,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         top: -1000,
     },
     collapseIconContainer: {
-        display: 'flex',
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-end',
         width: 117,
+        paddingRight: 24,
+    },
+    collapseIconContainerRecOff: {
+        width: 81,
     },
     collapseIcon: {
         color: changeOpacity(theme.buttonColor, 0.56),
@@ -518,6 +522,7 @@ const CallScreen = ({
                         showStopRecording &&
                         <SlideUpPanelItem
                             leftIcon={'record-square-outline'}
+                            leftIconStyles={style.denimDND}
                             onPress={stopRecording}
                             text={stopRecordingOptionTitle}
                             textStyles={style.denimDND}
@@ -702,11 +707,11 @@ const CallScreen = ({
                 isLandscape && !showControlsInLandscape && style.headerLandscapeNoControls,
             ]}
         >
-            <View style={style.headerLeft}>
+            <View style={[style.headerLeft, !(waitingForRecording || recording) && style.headerLeftRecOff]}>
                 {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
                 {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
                 <CallDuration
-                    style={[style.time, !(waitingForRecording || recording) && style.timeSpacer]}
+                    style={style.time}
                     value={currentCall.startTime}
                     updateIntervalInSeconds={1}
                     truncateWhenLong={true}
@@ -721,7 +726,7 @@ const CallScreen = ({
             />
             <Pressable
                 onPress={collapse}
-                style={style.collapseIconContainer}
+                style={[style.collapseIconContainer, !(waitingForRecording || recording) && style.collapseIconContainerRecOff]}
             >
                 <CompassIcon
                     name='arrow-collapse'
@@ -935,7 +940,7 @@ const CallScreen = ({
                                     <CompassIcon
                                         name='record-square-outline'
                                         size={32}
-                                        style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
+                                        style={[style.buttonIcon, style.hangUpIcon, isLandscape && style.buttonIconLandscape]}
                                     />
                                     <Text style={style.buttonText}>{stopRecordingOptionTitle}</Text>
                                 </Pressable>
