@@ -74,7 +74,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
     const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
 
     const containerHeight = useAnimatedStyle(() => {
-        const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + -(minScrollValue.value);
+        const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) - minScrollValue.value;
         const height = lockValue || calculatedHeight;
         return {
             height: Math.max(height, defaultHeight),
