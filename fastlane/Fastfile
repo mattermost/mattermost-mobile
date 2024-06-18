@@ -811,7 +811,7 @@ platform :android do
     if ENV['REPLACE_ASSETS'] == 'true'
       sh 'cp -R ../dist/assets/release/icons/android/* ../android/app/src/main/res/'
       sh 'cp -R ../dist/assets/release/splash_screen/android/* ../android/app/src/main/res/'
-      sh 'cp -R ../assets/sound/* ../android/app/src/main/res/raw/'
+      sh 'cp -R ../assets/sounds/* ../android/app/src/main/res/raw/'
     end
   end
 
