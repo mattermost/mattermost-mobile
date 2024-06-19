@@ -170,8 +170,6 @@
   "mobile.message_length.message_split_left": "Mesazhi tejkalon limitin e karakterit",
   "mobile.message_length.title": "Gjatësia e mesazhit",
   "mobile.oauth.failed_to_login": "Përpjekja juaj për hyrje dështoi. Ju lutemi provoni përsëri.",
-  "mobile.oauth.failed_to_open_link": "Lidhja nuk u hap. Ju lutemi provoni përsëri.",
-  "mobile.oauth.something_wrong": "Dicka shkoi keq",
   "mobile.oauth.try_again": "Provo përseri",
   "mobile.open_gm.error": "Ne nuk mund të hapnim një mesazh në grup me ata përdorues. Ju lutemi kontrolloni lidhjen tuaj dhe provoni përsëri.",
   "mobile.permission_denied_dismiss": "Mos Lejo",
