@@ -28,6 +28,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         flexDirection: 'row',
         flex: 1,
         justifyContent: 'center',
+        alignItems: 'center',
     },
     raisedHandBanner: {
         flexDirection: 'row',
