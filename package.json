@@ -97,7 +97,8 @@
     "react-syntax-highlighter": "15.5.0",
     "semver": "7.6.2",
     "tinycolor2": "1.6.0",
-    "url-parse": "1.5.10"
+    "url-parse": "1.5.10",
+    "expo-crypto": "13.0.2"
   },
   "devDependencies": {
     "@babel/cli": "7.24.7",

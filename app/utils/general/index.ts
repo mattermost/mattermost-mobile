@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {applicationId} from 'expo-application';
+import {randomUUID} from 'expo-crypto';
 import {createIntl} from 'react-intl';
 import ReactNativeHapticFeedback, {HapticFeedbackTypes} from 'react-native-haptic-feedback';
 
@@ -25,22 +26,7 @@ export function emptyFunction(..._args: any[]) {
 
 // Generates a RFC-4122 version 4 compliant globally unique identifier.
 export const generateId = (prefix?: string): string => {
-    // implementation taken from http://stackoverflow.com/a/2117523
-    let id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
-    id = id.replace(/[xy]/g, (c) => {
-        const r = Math.floor(Math.random() * 16);
-        let v;
-
-        if (c === 'x') {
-            v = r;
-        } else {
-            // eslint-disable-next-line no-mixed-operators
-            v = (r & 0x3) | 0x8;
-        }
-
-        return v.toString(16);
-    });
-
+    const id = randomUUID();
     if (prefix) {
         return `${prefix}-${id}`;
     }
