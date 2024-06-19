@@ -1,0 +1,66 @@
+diff --git a/node_modules/@rneui/base/dist/SearchBar/SearchBar-android.js b/node_modules/@rneui/base/dist/SearchBar/SearchBar-android.js
+index c5a574c..e2362e3 100644
+--- a/node_modules/@rneui/base/dist/SearchBar/SearchBar-android.js
++++ b/node_modules/@rneui/base/dist/SearchBar/SearchBar-android.js
+@@ -12,6 +12,7 @@ var __rest = (this && this.__rest) || function (s, e) {
+ import React, { Component } from 'react';
+ import { StyleSheet, View, ActivityIndicator, Keyboard, } from 'react-native';
+ import { defaultTheme, renderNode } from '../helpers';
++import {Commands} from 'react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent';
+ import { Input } from '../Input';
+ import { Icon } from '../Icon';
+ const defaultSearchIcon = (theme) => {
+@@ -59,6 +60,13 @@ export class SearchBarAndroid extends Component {
+             this.blur();
+             this.props.onCancel();
+         };
++        this.setSelection = (start, end) => {
++            if (Commands.setTextAndSelection && this.input.input) {
++                Commands.setTextAndSelection(this.input.input,
++                    0, null, start, end
++                )
++            }
++        };
+         this.onFocus = (event) => {
+             this.props.onFocus(event);
+             this.setState({
+diff --git a/node_modules/@rneui/base/dist/SearchBar/SearchBar-ios.js b/node_modules/@rneui/base/dist/SearchBar/SearchBar-ios.js
+index 46e6b31..1446a66 100644
+--- a/node_modules/@rneui/base/dist/SearchBar/SearchBar-ios.js
++++ b/node_modules/@rneui/base/dist/SearchBar/SearchBar-ios.js
+@@ -11,6 +11,7 @@ var __rest = (this && this.__rest) || function (s, e) {
+ };
+ import React, { Component } from 'react';
+ import { Pressable, LayoutAnimation, StyleSheet, View, ActivityIndicator, Text, } from 'react-native';
++import {Commands} from 'react-native/Libraries/Components/TextInput/RCTSingelineTextInputNativeComponent';
+ import { Input } from '../Input';
+ import { Icon } from '../Icon';
+ import { defaultTheme, renderNode } from '../helpers';
+@@ -46,6 +47,13 @@ export class SearchBarIOS extends Component {
+             this.onChangeText('');
+             this.props.onClear();
+         };
++        this.setSelection = (start, end) => {
++            if (Commands.setTextAndSelection && this.input.input) {
++                Commands.setTextAndSelection(this.input.input,
++                    0, null, start, end
++                )
++            }
++        };
+         this.cancel = () => {
+             this.onChangeText('');
+             if (this.props.showCancel) {
+diff --git a/node_modules/@rneui/base/dist/SearchBar/SearchBar.js b/node_modules/@rneui/base/dist/SearchBar/SearchBar.js
+index 17e1b3a..dd28cdc 100644
+--- a/node_modules/@rneui/base/dist/SearchBar/SearchBar.js
++++ b/node_modules/@rneui/base/dist/SearchBar/SearchBar.js
+@@ -23,6 +23,9 @@ export class SearchBar extends React.Component {
+             var _a;
+             (_a = this.searchBar) === null || _a === void 0 ? void 0 : _a.cancel();
+         };
++        this.setSelection = (start, end) => {
++            this.searchBar.setSelection(start, end)
++        }
+     }
+     render() {
+         const Component = SEARCH_BAR_COMPONENTS[this.props.platform] || SearchBarDefault;

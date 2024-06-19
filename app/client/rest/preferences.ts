@@ -11,7 +11,6 @@ export interface ClientPreferencesMix {
 
 const ClientPreferences = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     savePreferences = async (userId: string, preferences: PreferenceType[]) => {
-        this.analytics?.trackAPI('action_posts_flag');
         return this.doFetch(
             `${this.getPreferencesRoute(userId)}`,
             {method: 'put', body: preferences},
@@ -26,7 +25,6 @@ const ClientPreferences = <TBase extends Constructor<ClientBase>>(superclass: TB
     };
 
     deletePreferences = async (userId: string, preferences: PreferenceType[]) => {
-        this.analytics?.trackAPI('action_posts_unflag');
         return this.doFetch(
             `${this.getPreferencesRoute(userId)}/delete`,
             {method: 'post', body: preferences},

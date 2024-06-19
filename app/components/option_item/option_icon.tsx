@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image} from 'expo-image';
 import React, {useCallback, useMemo, useState} from 'react';
-import FastImage from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -40,7 +40,7 @@ const OptionIcon = ({icon, iconColor, destructive}: OptionIconProps) => {
 
     if (isValidUrl(icon) && !failedToLoadImage) {
         return (
-            <FastImage
+            <Image
                 source={iconAsSource}
                 style={styles.icon}
                 onError={onErrorLoadingIcon}

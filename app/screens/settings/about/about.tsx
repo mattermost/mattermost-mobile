@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import Clipboard from '@react-native-clipboard/clipboard';
+import {applicationId, nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 
 import Config from '@assets/config.json';
 import Button from '@components/button';
@@ -176,7 +176,7 @@ const About = ({componentId, config, license}: AboutProps) => {
 
     const copyToClipboard = useCallback(
         () => {
-            const appVersion = intl.formatMessage({id: 'settings.about.app.version', defaultMessage: 'App Version: {version} (Build {number})'}, {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()});
+            const appVersion = intl.formatMessage({id: 'settings.about.app.version', defaultMessage: 'App Version: {version} (Build {number})'}, {version: nativeApplicationVersion, number: nativeBuildVersion});
             const buildNumber = config.BuildNumber;
             const version = config.Version;
             const server = buildNumber === version ? intl.formatMessage({id: 'settings.about.server.version.noBuild', defaultMessage: 'Server Version: {version}'}, {version}) : intl.formatMessage({id: 'settings.about.server.version', defaultMessage: 'Server Version: {version} (Build {buildNumber})'}, {version, buildNumber});
@@ -221,7 +221,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                         testID='about.app_version.value'
                     >
                         {intl.formatMessage({id: 'settings.about.app.version.value', defaultMessage: '{version} (Build {number})'},
-                            {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()})}
+                            {version: nativeApplicationVersion, number: nativeBuildVersion})}
                     </Text>
                 </View>
                 <View style={styles.group}>
@@ -292,7 +292,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                     config={config}
                     onPress={handleAboutTeam}
                 />
-                {!MATTERMOST_BUNDLE_IDS.includes(DeviceInfo.getBundleId()) &&
+                {!MATTERMOST_BUNDLE_IDS.includes(applicationId || '') &&
                     <FormattedText
                         defaultMessage='{site} is powered by Mattermost'
                         id={t('settings.about.powered_by')}

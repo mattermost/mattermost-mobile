@@ -8,10 +8,9 @@ import androidx.core.app.NotificationCompat
 import com.mattermost.helpers.CustomPushNotificationHelper
 import com.mattermost.helpers.DatabaseHelper
 import com.mattermost.helpers.Network
-import com.mattermost.helpers.NotificationHelper
 import com.mattermost.helpers.PushNotificationDataHelper
 import com.mattermost.helpers.database_extension.getServerUrlForIdentifier
-import com.mattermost.share.ShareModule
+import com.mattermost.rnutils.helpers.NotificationHelper
 import com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME
 import com.wix.reactnativenotifications.core.AppLaunchHelper
 import com.wix.reactnativenotifications.core.AppLifecycleFacade
@@ -104,8 +103,7 @@ class CustomPushNotification(
 
         when (type) {
             CustomPushNotificationHelper.PUSH_TYPE_MESSAGE, CustomPushNotificationHelper.PUSH_TYPE_SESSION -> {
-                val shareModule = ShareModule.getInstance()
-                val currentActivityName = shareModule?.currentActivityName ?: ""
+                val currentActivityName = mAppLifecycleFacade.runningReactContext.currentActivity?.componentName?.className ?: ""
                 Log.i("ReactNative", currentActivityName)
                 if (!mAppLifecycleFacade.isAppVisible() || currentActivityName != "MainActivity") {
                     var createSummary = type == CustomPushNotificationHelper.PUSH_TYPE_MESSAGE

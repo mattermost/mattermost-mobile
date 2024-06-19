@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 /* eslint max-lines: off */
 
+import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     Keyboard,
     type LayoutChangeEvent,
     type LayoutRectangle,
-    NativeModules,
     Platform,
     Pressable,
     SafeAreaView,
@@ -372,14 +372,14 @@ const CallScreen = ({
             },
         });
         if (Platform.OS === 'ios') {
-            NativeModules.SplitView.unlockOrientation();
+            RNUtils.unlockOrientation();
         }
 
         return () => {
             setScreensOrientation(isTablet);
             if (Platform.OS === 'ios' && !isTablet) {
                 // We need both the navigation & the module
-                NativeModules.SplitView.lockPortrait();
+                RNUtils.lockPortrait();
             }
             freezeOtherScreens(false);
         };

@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image, type ImageSource} from 'expo-image';
 import React, {useMemo, useRef} from 'react';
 import {TouchableWithoutFeedback, useWindowDimensions} from 'react-native';
-import FastImage, {type Source} from 'react-native-fast-image';
 import Animated from 'react-native-reanimated';
 
 import {View as ViewConstants} from '@constants';
@@ -106,7 +106,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
     };
 
-    const source: Source = {};
+    const source: ImageSource = {};
     if (isValidUrl(imageUrl)) {
         source.uri = imageUrl;
     }
@@ -123,13 +123,11 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
             <Animated.View style={[styles, style.imageContainer, dimensionsStyle]}>
                 <TouchableWithoutFeedback onPress={onGestureEvent}>
                     <Animated.View testID={`OpenGraphImage-${fileId}`}>
-                        <FastImage
+                        <Image
                             style={[style.image, dimensionsStyle]}
                             source={source}
-
-                            // @ts-expect-error legacy ref
+                            contentFit='contain'
                             ref={ref}
-                            resizeMode='contain'
                             nativeID={`OpenGraphImage-${fileId}`}
                         />
                     </Animated.View>

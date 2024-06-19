@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image as ExpoImage, type ImageSource} from 'expo-image';
 import React, {useMemo} from 'react';
-import {Image as RNImage} from 'react-native';
-import FastImage, {type Source} from 'react-native-fast-image';
 import Animated from 'react-native-reanimated';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
@@ -22,12 +21,11 @@ type Props = {
     forwardRef?: React.RefObject<any>;
     iconSize?: number;
     size: number;
-    source?: Source | string;
+    source?: ImageSource | string;
     url?: string;
 };
 
-const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
-const AnimatedImage = Animated.createAnimatedComponent(RNImage);
+const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -83,10 +81,8 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
 
     if (imgSource) {
         return (
-            <AnimatedFastImage
+            <AnimatedImage
                 key={imgSource.uri}
-
-                // @ts-expect-error TS expects old type ref
                 ref={forwardRef}
                 style={fIStyle}
                 source={imgSource}

@@ -1,0 +1,18 @@
+{
+  "name": "@mattermost/rnutils",
+  "version": "0.0.0",
+  "description": "Native utility functions for the Mattermost app",
+  "main": "src/index",
+  "codegenConfig": {
+    "name": "RNUtilsSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.mattermost.rnutils"
+    }
+  },
+  "author": "Mattermost, Inc.",
+  "license": "Apache 2.0",
+  "private": true,
+  "homepage": "#readme"
+}

@@ -1,0 +1,18 @@
+{
+  "name": "mattermost-hardware-keyboard",
+  "version": "0.0.0",
+  "description": "Hardware keyboard event capture replacing the project from react-native-hw-keyboard-event",
+  "main": "src/index",
+  "codegenConfig": {
+    "name": "MattermostHardwareKeyboardSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.mattermost.hardwarekeyboard"
+    }
+  },
+  "author": "Mattermost, Inc.",
+  "license": "Apache 2.0",
+  "private": true,
+  "homepage": "#readme"
+}
