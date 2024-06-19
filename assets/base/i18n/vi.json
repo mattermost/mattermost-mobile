@@ -479,7 +479,6 @@
   "mobile.calls_raise_hand": "Giơ tay",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# người nữa }}</bold>đã giơ tay",
   "mobile.calls_react": "Phản ứng",
-  "mobile.calls_rec": "ghi",
   "mobile.calls_record": "Ghi",
   "mobile.calls_recording_start_in_progress": "Một bản ghi đang được tiến hành.",
   "mobile.calls_recording_start_no_permissions": "Bạn không có quyền bắt đầu ghi âm. Vui lòng yêu cầu người tổ chức cuộc gọi bắt đầu ghi âm.",

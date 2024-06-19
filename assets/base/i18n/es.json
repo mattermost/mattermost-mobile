@@ -501,7 +501,6 @@
   "mobile.calls_raise_hand": "Levantar mano",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# more }}</bold>alzó una mano",
   "mobile.calls_react": "Reaccionar",
-  "mobile.calls_rec": "rec",
   "mobile.calls_record": "Grabar",
   "mobile.calls_recording_start_in_progress": "Una grabación ya está en progreso.",
   "mobile.calls_recording_start_no_permissions": "No tienes permisos para iniciar una grabación. Por favor solicita al anfitrión de la llamada el iniciar una grabación.",

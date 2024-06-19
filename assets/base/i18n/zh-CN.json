@@ -509,7 +509,6 @@
   "mobile.calls_raise_hand": "举手",
   "mobile.calls_raised_hand": "<bold>{name}{num, plural, =0 {} other {与其他 # 人}}</bold>举起了手",
   "mobile.calls_react": "反馈",
-  "mobile.calls_rec": "反馈",
   "mobile.calls_record": "录制",
   "mobile.calls_recording_start_in_progress": "录制已经在进行中了。",
   "mobile.calls_recording_start_no_permissions": "您没有开始录制的权限。请联系通话的主持人开始录制。",

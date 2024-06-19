@@ -510,7 +510,6 @@
   "mobile.calls_raise_hand": "Handje opsteken",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {stak} other {+# meer staken }}</bold> een handje op",
   "mobile.calls_react": "Reageren",
-  "mobile.calls_rec": "Opnemen",
   "mobile.calls_record": "Opnemen",
   "mobile.calls_recording_start_in_progress": "Er is al een opname bezig.",
   "mobile.calls_recording_start_no_permissions": "Je hebt geen rechten om een opname te starten. Vraag de gesprekshost om een opname te starten.",
