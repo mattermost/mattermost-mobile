@@ -480,7 +480,6 @@
   "mobile.calls_raise_hand": "손 들기",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# more }}</bold>가 손을 들었습니다",
   "mobile.calls_react": "반응하기",
-  "mobile.calls_rec": "녹화",
   "mobile.calls_record": "녹화",
   "mobile.calls_recording_start_in_progress": "녹화가 이미 진행 중입니다.",
   "mobile.calls_recording_start_no_permissions": "녹음을 시작할 수 있는 권한이 없습니다. 통화 호스트에게 녹음을 시작하도록 요청하세요.",

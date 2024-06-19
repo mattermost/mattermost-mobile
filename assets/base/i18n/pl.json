@@ -510,7 +510,6 @@
   "mobile.calls_raise_hand": "Zgłoś się",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# więcej}}</bold>zgłosiło się",
   "mobile.calls_react": "Reaguj",
-  "mobile.calls_rec": "rec",
   "mobile.calls_record": "Zapis",
   "mobile.calls_recording_start_in_progress": "Nagranie jest już w trakcie realizacji.",
   "mobile.calls_recording_start_no_permissions": "Nie masz uprawnień do rozpoczęcia nagrywania. Poproś prowadzącego rozmowę o uruchomienie nagrania.",

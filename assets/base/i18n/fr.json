@@ -482,7 +482,6 @@
   "mobile.calls_raise_hand": "Lever la main",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# more }}</bold>a levé la main",
   "mobile.calls_react": "Réagir",
-  "mobile.calls_rec": "rec",
   "mobile.calls_record": "Enregistrer",
   "mobile.calls_recording_start_in_progress": "Un enregistrement est déjà en cours.",
   "mobile.calls_recording_start_no_permissions": "Vous n'avez pas la permission d'enregistrer la conversation. Contactez l'hôte pour commencer à enregistrer.",

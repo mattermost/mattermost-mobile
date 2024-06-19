@@ -510,7 +510,6 @@
   "mobile.calls_raise_hand": "Поднять руку",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# несколько участников}}</bold>подняло руку",
   "mobile.calls_react": "Реакции",
-  "mobile.calls_rec": "запись",
   "mobile.calls_record": "Запись",
   "mobile.calls_recording_start_in_progress": "Запись уже ведется.",
   "mobile.calls_recording_start_no_permissions": "У вас нет прав для начала записи. Пожалуйста, попросите ведущего звонка начать запись.",

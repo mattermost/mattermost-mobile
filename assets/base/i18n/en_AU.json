@@ -509,7 +509,6 @@
   "mobile.calls_raise_hand": "Raise hand",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# more }}</bold>raised a hand",
   "mobile.calls_react": "React",
-  "mobile.calls_rec": "rec",
   "mobile.calls_record": "Record",
   "mobile.calls_recording_start_in_progress": "A recording is already in progress.",
   "mobile.calls_recording_start_no_permissions": "You don't have permission to start recording. Please ask the call host to start a recording.",

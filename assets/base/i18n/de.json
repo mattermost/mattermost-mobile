@@ -514,7 +514,6 @@
   "mobile.calls_raise_hand": "Hand heben",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 { hob eine Hand} other {+# mehr hoben eine Hand}}</bold>",
   "mobile.calls_react": "Reaktion",
-  "mobile.calls_rec": "rec",
   "mobile.calls_record": "Aufnehmen",
   "mobile.calls_recording_start_in_progress": "Eine Aufzeichnung ist bereits im Gange.",
   "mobile.calls_recording_start_no_permissions": "Du hast nicht die Berechtigung, eine Aufzeichnung zu starten. Bitte frage den Gesprächsleiter, ob er eine Aufzeichnung starten darf.",

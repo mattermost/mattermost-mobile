@@ -510,7 +510,6 @@
   "mobile.calls_raise_hand": "El kaldır",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# diğer kişi }}</bold>el kaldırdı",
   "mobile.calls_react": "Tepki ver",
-  "mobile.calls_rec": "kayıt",
   "mobile.calls_record": "Kaydet",
   "mobile.calls_recording_start_in_progress": "Sürmekte olan bir kayıt var.",
   "mobile.calls_recording_start_no_permissions": "Kayıt başlatma izniniz yok. Lütfen çağrı sahibinden kaydı başlatmasını isteyin.",

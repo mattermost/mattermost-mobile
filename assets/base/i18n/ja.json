@@ -510,7 +510,6 @@
   "mobile.calls_raise_hand": "手を挙げる",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# 名}} が挙手しています</bold>",
   "mobile.calls_react": "リアクション",
-  "mobile.calls_rec": "レコーディング",
   "mobile.calls_record": "レコーディング",
   "mobile.calls_recording_start_in_progress": "既にレコーディング中です。",
   "mobile.calls_recording_start_no_permissions": "レコーディングを開始する権限がありません。通話のホストにレコーディングを開始するよう依頼してください。",

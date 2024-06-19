@@ -514,7 +514,6 @@
   "mobile.calls_raise_hand": "Räck upp handen",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# andra }}</bold>räcker upp handen",
   "mobile.calls_react": "Reaktioner",
-  "mobile.calls_rec": "rec",
   "mobile.calls_record": "Spela in",
   "mobile.calls_recording_start_in_progress": "En inspelning pågår redan.",
   "mobile.calls_recording_start_no_permissions": "Du har inte behörighet att starta en inspelning. Be samtalsvärden att starta en inspelning.",

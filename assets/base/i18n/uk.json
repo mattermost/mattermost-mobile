@@ -467,7 +467,6 @@
   "mobile.calls_raise_hand": "Підніміть руку",
   "mobile.calls_raised_hand": "<bold>{ім'я} {число, множина, =0 {} інше {+# більше }}</bold>підняв руку",
   "mobile.calls_react": "Реакція",
-  "mobile.calls_rec": "Запис",
   "mobile.calls_record": "Запис",
   "mobile.calls_recording_start_in_progress": "Запис вже триває.",
   "mobile.calls_recording_start_no_permissions": "У вас немає дозволу на початок запису. Попросіть абонента розпочати запис.",
