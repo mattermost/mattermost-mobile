@@ -173,10 +173,10 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
         defaultAppLaunchHelper: AppLaunchHelper?
     ): IPushNotification {
         return CustomPushNotification(
-            context,
-            bundle,
-            defaultFacade,
-            defaultAppLaunchHelper,
+            context!!,
+            bundle!!,
+            defaultFacade!!,
+            defaultAppLaunchHelper!!,
             JsIOHelper()
         )
     }
