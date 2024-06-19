@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {forwardRef, useEffect} from 'react';
+import React, {forwardRef} from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import {SEARCH_INPUT_HEIGHT, SEARCH_INPUT_MARGIN} from '@constants/view';
@@ -60,16 +60,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const [heightOffset, setHeightOffset] = React.useState(0);
     const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
-
-    useEffect(() => {
-        if (lockValue) {
-            setHeightOffset(lockValue);
-        } else {
-            setHeightOffset(headerOffset);
-        }
-    }, [lockValue, headerOffset]);
 
     const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
 
@@ -99,7 +90,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
                 defaultHeight={defaultHeight}
                 hasSearch={hasSearch}
                 isLargeTitle={isLargeTitle}
-                heightOffset={heightOffset}
+                heightOffset={lockValue || headerOffset}
                 leftComponent={leftComponent}
                 onBackPress={onBackPress}
                 onTitlePress={onTitlePress}
@@ -113,7 +104,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
             />
             {isLargeTitle &&
                 <NavigationHeaderLargeTitle
-                    heightOffset={heightOffset}
+                    heightOffset={lockValue || headerOffset}
                     hasSearch={hasSearch}
                     subtitle={subtitle}
                     theme={theme}
