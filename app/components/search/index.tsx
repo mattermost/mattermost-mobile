@@ -4,10 +4,10 @@
 /* eslint-disable react/prop-types */
 // We disable the prop types check here as forwardRef & typescript has a bug
 
+import {SearchBar} from '@rneui/base';
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {type ActivityIndicatorProps, Keyboard, Platform, type StyleProp, TextInput, type TextInputProps, type TextStyle, type TouchableOpacityProps, type ViewStyle} from 'react-native';
-import {SearchBar} from 'react-native-elements';
 
 import CompassIcon from '@components/compass_icon';
 import {SEARCH_INPUT_HEIGHT} from '@constants/view';
@@ -42,12 +42,14 @@ export type SearchProps = TextInputProps & {
     showLoading?: boolean;
 };
 
+type Selection = {start: number; end: number};
+
 export type SearchRef = {
     blur: () => void;
     cancel: () => void;
     clear: () => void;
     focus: () => void;
-    setNativeProps(nativeProps: object): void;
+    setCaretPosition(selection: Selection): void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -152,8 +154,8 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
         focus: () => {
             searchRef.current?.focus();
         },
-        setNativeProps: (nativeProps: object) => {
-            searchRef.current?.setNativeProps(nativeProps);
+        setCaretPosition: (nativeProps: Selection) => {
+            searchRef.current?.setSelection(nativeProps.start, nativeProps.end);
         },
     }), [searchRef]);
 
@@ -163,8 +165,6 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
             cancelButtonProps={props.cancelButtonProps || cancelButtonProps}
             cancelButtonTitle={props.cancelButtonTitle || intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
             cancelIcon={cancelIcon}
-
-            // @ts-expect-error clearIcon definition does not include a ReactElement
             clearIcon={clearIcon}
             containerStyle={[styles.containerStyle, props.containerStyle]}
             inputContainerStyle={[styles.inputContainerStyle, props.inputContainerStyle]}
@@ -172,15 +172,13 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
             returnKeyType='search'
             onCancel={onCancel}
             onClear={onClear}
-
-            // @ts-expect-error onChangeText type definition is wrong in elements
             onChangeText={onChangeText}
             placeholder={props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
             placeholderTextColor={props.placeholderTextColor || changeOpacity(theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
             platform={Platform.select({android: 'android', default: 'ios'})}
-            ref={searchRef}
 
-            // @ts-expect-error searchIcon definition does not include a ReactElement
+            // @ts-expect-error legacy ref
+            ref={searchRef}
             searchIcon={searchIcon}
             selectionColor={Platform.select({android: changeOpacity(props.selectionColor || theme.centerChannelColor, 0.24), default: props.selectionColor || theme.centerChannelColor})}
             testID={searchInputTestID}

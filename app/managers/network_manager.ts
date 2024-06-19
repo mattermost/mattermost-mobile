@@ -9,8 +9,9 @@ import {
     RetryTypes,
     type APIClientConfiguration,
 } from '@mattermost/react-native-network-client';
+import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
+import {deviceName, osName, osVersion} from 'expo-device';
 import {Alert, DeviceEventEmitter} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import urlParse from 'url-parse';
 
 import LocalConfig from '@assets/config.json';
@@ -98,7 +99,7 @@ class NetworkManager {
     };
 
     private buildConfig = async () => {
-        const userAgent = `Mattermost Mobile/${DeviceInfo.getVersion()}+${DeviceInfo.getBuildNumber()} (${DeviceInfo.getSystemName()}; ${DeviceInfo.getSystemVersion()}; ${DeviceInfo.getModel()})`;
+        const userAgent = `Mattermost Mobile/${nativeApplicationVersion}+${nativeBuildVersion} (${osName}; ${osVersion}; ${deviceName})`;
         const managedConfig = ManagedApp.enabled ? Emm.getManagedConfig<ManagedConfig>() : undefined;
         const headers: Record<string, string> = {
             [ClientConstants.HEADER_USER_AGENT]: userAgent,

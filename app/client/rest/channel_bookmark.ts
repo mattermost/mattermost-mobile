@@ -15,8 +15,6 @@ export interface ClientChannelBookmarksMix {
 
 const ClientChannelBookmarks = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     createChannelBookmark = async (channelId: string, bookmark: ChannelBookmark, connectionId = '') => {
-        this.analytics?.trackAPI('api_channels_bookmark_create', {channel_id: channelId});
-
         return this.doFetch(
             this.getChannelBookmarksRoute(channelId),
             {
@@ -28,8 +26,6 @@ const ClientChannelBookmarks = <TBase extends Constructor<ClientBase>>(superclas
     };
 
     updateChannelBookmark(channelId: string, bookmark: ChannelBookmark, connectionId?: string) {
-        this.analytics?.trackAPI('api_channels_bookmark_update', {channel_id: channelId, bookmark_id: bookmark.id});
-
         return this.doFetch(
             this.getChannelBookmarkRoute(channelId, bookmark.id),
             {
@@ -41,8 +37,6 @@ const ClientChannelBookmarks = <TBase extends Constructor<ClientBase>>(superclas
     }
 
     updateChannelBookmarkSortOrder(channelId: string, bookmarkId: string, newSortOrder: number, connectionId?: string) {
-        this.analytics?.trackAPI('api_channels_bookmark_sort_order', {channel_id: channelId, bookmark_id: bookmarkId});
-
         return this.doFetch(
             `${this.getChannelBookmarkRoute(channelId, bookmarkId)}/sort_order`,
             {
@@ -54,8 +48,6 @@ const ClientChannelBookmarks = <TBase extends Constructor<ClientBase>>(superclas
     }
 
     deleteChannelBookmark(channelId: string, bookmarkId: string, connectionId?: string) {
-        this.analytics?.trackAPI('api_channels_bookmark_delete', {channel_id: channelId, bookmark_id: bookmarkId});
-
         return this.doFetch(
             this.getChannelBookmarkRoute(channelId, bookmarkId),
             {
@@ -66,7 +58,6 @@ const ClientChannelBookmarks = <TBase extends Constructor<ClientBase>>(superclas
     }
 
     getChannelBookmarksForChannel(channelId: string, since: number) {
-        this.analytics?.trackAPI('api_channels_bookmark_get', {channel_id: channelId});
         return this.doFetch(
             `${this.getChannelBookmarksRoute(channelId)}${buildQueryString({bookmarks_since: since})}`,
             {method: 'get'},

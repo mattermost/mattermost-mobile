@@ -139,6 +139,14 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
 
     const positions = useMemo(() => getLabelPositions(styles.textInput, styles.label, styles.smallLabel), [styles]);
     const size = useMemo(() => [styles.textInput.fontSize, styles.smallLabel.fontSize], [styles]);
+    const shouldShowError = (!focused && error);
+
+    let color = styles.label.color;
+    if (shouldShowError) {
+        color = theme.errorTextColor;
+    } else if (focused) {
+        color = theme.buttonBg;
+    }
 
     useImperativeHandle(ref, () => ({
         blur: () => inputRef.current?.blur(),
@@ -175,7 +183,6 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         return focused ? null : inputRef?.current?.focus();
     }, [focused]);
 
-    const shouldShowError = (!focused && error);
     const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
 
     const combinedContainerStyle = useMemo(() => {
@@ -224,13 +231,6 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         const index = inputText || focusedLabel ? 1 : 0;
         const toValue = positions[index];
         const toSize = size[index];
-
-        let color = styles.label.color;
-        if (shouldShowError) {
-            color = theme.errorTextColor;
-        } else if (focused) {
-            color = theme.buttonBg;
-        }
 
         return {
             top: withTiming(toValue, {duration: 100, easing: Easing.linear}),

@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Button as ElementButton} from '@rneui/base';
 import React, {useMemo, type ReactNode} from 'react';
 import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
-import RNButton from 'react-native-button';
 
 import CompassIcon from '@components/compass_icon';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -92,8 +92,8 @@ const Button = ({
     }
 
     return (
-        <RNButton
-            containerStyle={buttonContainerStyle}
+        <ElementButton
+            buttonStyle={buttonContainerStyle}
             onPress={onPress}
             testID={testID}
             disabled={disabled}
@@ -108,7 +108,7 @@ const Button = ({
                     {text}
                 </Text>
             </View>
-        </RNButton>
+        </ElementButton>
     );
 };
 

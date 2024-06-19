@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Button} from '@rneui/base';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TextInput, View} from 'react-native';
-import Button from 'react-native-button';
 
 import BookmarkIcon from '@components/channel_bookmarks/channel_bookmark/bookmark_icon';
 import CompassIcon from '@components/compass_icon';
@@ -49,6 +49,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         justifyContent: 'center',
         flexDirection: 'row',
+    },
+    iconButton: {
+        backgroundColor: 'transparent',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     imageContainer: {width: 28, height: 28, marginRight: 2},
     image: {width: 24, height: 24},
@@ -100,6 +105,7 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
             />
             <View style={[styles.container, disabled && styles.disabled]}>
                 <Button
+                    buttonStyle={styles.iconButton}
                     containerStyle={styles.iconContainer}
                     onPress={openEmojiPicker}
                 >

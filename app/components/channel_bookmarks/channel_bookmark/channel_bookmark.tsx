@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
+import {Button} from '@rneui/base';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl, type IntlShape} from 'react-intl';
 import {Alert, StyleSheet} from 'react-native';
-import Button from 'react-native-button';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ITEM_HEIGHT} from '@components/option_item';
@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         height: 48,
     },
+    button: {backgroundColor: 'transparent'},
 });
 
 const openLink = async (href: string, serverUrl: string, siteURL: string, intl: IntlShape) => {
@@ -150,8 +151,11 @@ const ChannelBookmark = ({
     return (
         <Button
             containerStyle={styles.container}
+            buttonStyle={styles.button}
             onPress={onGestureEvent}
             onLongPress={handleLongPress}
+
+            // @ts-expect-error ref not present in TS def
             ref={ref}
         >
             <BookmarkDetails

@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {NativeModules, useWindowDimensions, Platform} from 'react-native';
+import {useWindowDimensions, Platform} from 'react-native';
 
 import {CaptionsEnabledContext} from '@calls/context';
 import {hasCaptions} from '@calls/utils';
@@ -67,7 +68,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
         setScreensOrientation(isTablet);
         if (Platform.OS === 'ios' && !isTablet) {
             // We need both the navigation & the module
-            NativeModules.SplitView.lockPortrait();
+            RNUtils.lockPortrait();
         }
         freezeOtherScreens(false);
         requestAnimationFrame(async () => {

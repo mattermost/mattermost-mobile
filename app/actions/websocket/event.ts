@@ -68,11 +68,9 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.ROLE_UPDATED:
             handleRoleUpdatedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.USER_ROLE_UPDATED:
             handleUserRoleUpdatedEvent(serverUrl, msg);
             break;
-
         case WebsocketEvents.MEMBERROLE_UPDATED:
             handleTeamMemberRoleUpdatedEvent(serverUrl, msg);
             break;
@@ -255,7 +253,9 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.CALLS_HOST_REMOVED:
             calls.handleHostRemoved(serverUrl, msg);
             break;
-
+        case WebsocketEvents.CALLS_CALL_STATE:
+            calls.handleCallState(serverUrl, msg);
+            break;
         case WebsocketEvents.GROUP_RECEIVED:
             group.handleGroupReceivedEvent(serverUrl, msg);
             break;

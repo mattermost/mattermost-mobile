@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Button} from '@rneui/base';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, Platform, type Insets} from 'react-native';
-import Button from 'react-native-button';
 import {Shadow} from 'react-native-shadow-2';
 
 import {uploadFile} from '@actions/remote/file';

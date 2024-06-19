@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image} from 'expo-image';
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
@@ -61,7 +61,7 @@ const AttachmentAuthor = ({icon, link, name, theme}: Props) => {
     return (
         <View style={style.container}>
             {Boolean(icon) &&
-            <FastImage
+            <Image
                 source={{uri: icon}}
                 key='author_icon'
                 style={style.icon}

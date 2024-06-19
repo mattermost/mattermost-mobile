@@ -20,7 +20,6 @@ import ImageFileOverlay from './image_file_overlay';
 import VideoFile from './video_file';
 
 import type {DocumentRef} from '@components/document';
-import type {ResizeMode} from 'react-native-fast-image';
 
 type FileProps = {
     canDownloadFiles: boolean;
@@ -39,7 +38,6 @@ type FileProps = {
     showDate?: boolean;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
     asCard?: boolean;
-    resizeMode?: ResizeMode;
     isPressDisabled?: boolean;
 };
 
@@ -84,7 +82,6 @@ const File = ({
     showDate = false,
     updateFileForGallery,
     wrapperWidth = 300,
-    resizeMode = 'cover',
     isPressDisabled = false,
 }: FileProps) => {
     const document = useRef<DocumentRef>(null);
@@ -145,7 +142,7 @@ const File = ({
                         forwardRef={ref}
                         inViewPort={inViewPort}
                         isSingleImage={isSingleImage}
-                        resizeMode={resizeMode}
+                        contentFit={'cover'}
                         wrapperWidth={wrapperWidth}
                         updateFileForGallery={updateFileForGallery}
                         index={index}
@@ -172,7 +169,7 @@ const File = ({
                         forwardRef={ref}
                         inViewPort={inViewPort}
                         isSingleImage={isSingleImage}
-                        resizeMode={resizeMode}
+                        contentFit={'cover'}
                         wrapperWidth={wrapperWidth}
                     />
                     {Boolean(nonVisibleImagesCount) &&

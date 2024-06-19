@@ -10,7 +10,6 @@ import AtMentionItem from '@components/autocomplete/at_mention_item';
 import ChannelItem from '@components/channel_item';
 import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@constants/apps';
 import {useServerUrl} from '@context/server';
-import analytics from '@managers/analytics';
 
 import {AppCommandParser, type ExtendedAutocompleteSuggestion} from '../app_command_parser/app_command_parser';
 import SlashSuggestionItem from '../slash_suggestion_item';
@@ -78,8 +77,6 @@ const AppSlashSuggestion = ({
     };
 
     const completeSuggestion = useCallback((command: string) => {
-        analytics.get(serverUrl)?.trackCommand('complete_suggestion', `/${command} `);
-
         // We are going to set a double / on iOS to prevent the auto correct from taking over and replacing it
         // with the wrong value, this is a hack but I could not found another way to solve it
         let completedDraft = `/${command} `;

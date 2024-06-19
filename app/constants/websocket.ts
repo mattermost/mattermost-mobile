@@ -91,6 +91,7 @@ const WebsocketEvents = {
     CALLS_HOST_MUTE: `custom_${Calls.PluginId}_host_mute`,
     CALLS_HOST_LOWER_HAND: `custom_${Calls.PluginId}_host_lower_hand`,
     CALLS_HOST_REMOVED: `custom_${Calls.PluginId}_host_removed`,
+    CALLS_CALL_STATE: `custom_${Calls.PluginId}_call_state`,
 
     GROUP_RECEIVED: 'received_group',
     GROUP_MEMBER_ADD: 'group_member_add',

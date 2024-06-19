@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 /* eslint max-lines: off */
 
+import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     Keyboard,
     type LayoutChangeEvent,
     type LayoutRectangle,
-    NativeModules,
     Platform,
     Pressable,
     SafeAreaView,
@@ -22,8 +22,8 @@ import {Navigation} from 'react-native-navigation';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
-import {leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
-import {startCallRecording, stopCallRecording} from '@calls/actions/calls';
+import {muteMyself, unmuteMyself} from '@calls/actions';
+import {leaveCallConfirmation, startCallRecording, stopCallRecording} from '@calls/actions/calls';
 import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
 import {AudioDeviceButton} from '@calls/components/audio_device_button';
 import CallDuration from '@calls/components/call_duration';
@@ -88,6 +88,9 @@ export type Props = {
     fromThreadScreen?: boolean;
     displayName?: string;
     isOwnDirectMessage: boolean;
+    otherParticipants: boolean;
+    isAdmin: boolean;
+    isHost: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
@@ -311,6 +314,9 @@ const CallScreen = ({
     fromThreadScreen,
     displayName,
     isOwnDirectMessage,
+    otherParticipants,
+    isAdmin,
+    isHost,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -366,23 +372,22 @@ const CallScreen = ({
             },
         });
         if (Platform.OS === 'ios') {
-            NativeModules.SplitView.unlockOrientation();
+            RNUtils.unlockOrientation();
         }
 
         return () => {
             setScreensOrientation(isTablet);
             if (Platform.OS === 'ios' && !isTablet) {
                 // We need both the navigation & the module
-                NativeModules.SplitView.lockPortrait();
+                RNUtils.lockPortrait();
             }
             freezeOtherScreens(false);
         };
     }, []);
 
     const leaveCallHandler = useCallback(() => {
-        popTopScreen();
-        leaveCall();
-    }, []);
+        leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId || '', popTopScreen);
+    }, [intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId]);
 
     const muteUnmuteHandler = useCallback(() => {
         if (mySession?.muted) {
@@ -453,7 +458,6 @@ const CallScreen = ({
 
     // The user should receive a recording alert if all of the following conditions apply:
     // - Recording has started, recording has not ended
-    const isHost = Boolean(currentCall?.hostId === mySession?.userId);
     const recording = Boolean(currentCall?.recState?.start_at && !currentCall.recState.end_at);
     if (recording) {
         recordingAlert(isHost, EnableTranscriptions, intl);

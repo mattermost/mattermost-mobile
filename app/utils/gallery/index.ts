@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
 import React from 'react';
-import {DeviceEventEmitter, Image, Keyboard, NativeModules, Platform} from 'react-native';
+import {DeviceEventEmitter, Image, Keyboard, Platform} from 'react-native';
 import {Navigation, type Options, type OptionsLayout} from 'react-native-navigation';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
@@ -156,7 +157,7 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
     if (Platform.OS === 'ios') {
         // on iOS we need both the navigation & the module
         Navigation.setDefaultOptions({layout});
-        NativeModules.SplitView.unlockOrientation();
+        RNUtils.unlockOrientation();
     }
     showOverlay(Screens.GALLERY, props, options);
 

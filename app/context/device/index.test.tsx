@@ -1,21 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
 import React, {useContext} from 'react';
-import {NativeEventEmitter, NativeModules, Text, View} from 'react-native';
+import {NativeEventEmitter, Text, View} from 'react-native';
 
 import DeviceInfoProvider, {DeviceContext} from '@context/device';
 import {act, render} from '@test/intl-test-helper';
 
-const {SplitView} = NativeModules;
-const emitter = new NativeEventEmitter(SplitView);
+const emitter = new NativeEventEmitter(RNUtils);
 
 const TestComponent = () => {
-    const {isSplitView, isTablet} = useContext(DeviceContext);
+    const {isSplit, isTablet} = useContext(DeviceContext);
 
     return (
         <View>
-            <Text testID='isSplitView'>{isSplitView}</Text>
+            <Text testID='isSplit'>{isSplit}</Text>
             <Text testID='isTablet'>{isTablet}</Text>
         </View>
     );
@@ -30,7 +30,7 @@ describe('<DeviceInfoProvider/>', () => {
         );
 
         const isTablet = getByTestId('isTablet');
-        const isSplitView = getByTestId('isSplitView');
+        const isSplitView = getByTestId('isSplit');
         expect(isTablet.props.children).toBe(false);
         expect(isSplitView.props.children).toBe(false);
     });
@@ -43,11 +43,11 @@ describe('<DeviceInfoProvider/>', () => {
         );
 
         act(() => {
-            emitter.emit('SplitViewChanged', {isTablet: true, isSplitView: true});
+            emitter.emit('SplitViewChanged', {isTablet: true, isSplit: true});
         });
 
         const isTablet = getByTestId('isTablet');
-        const isSplitView = getByTestId('isSplitView');
+        const isSplitView = getByTestId('isSplit');
         expect(isTablet.props.children).toBe(true);
         expect(isSplitView.props.children).toBe(true);
     });

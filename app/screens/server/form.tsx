@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Button} from '@rneui/base';
 import React, {type MutableRefObject, useCallback, useEffect, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, useWindowDimensions, View} from 'react-native';
-import Button from 'react-native-button';
 
 import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -54,12 +54,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 75, 'Regular'),
     },
     connectButton: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         width: '100%',
         marginTop: 32,
         marginLeft: 20,
         marginRight: 20,
-        padding: 15,
     },
     connectingIndicator: {
         marginRight: 10,
@@ -221,10 +219,11 @@ const ServerForm = ({
             />
             }
             <Button
-                containerStyle={[styles.connectButton, styleButtonBackground]}
+                containerStyle={styles.connectButton}
                 disabled={buttonDisabled}
                 onPress={onConnect}
                 testID={connectButtonTestId}
+                buttonStyle={styleButtonBackground}
             >
                 {buttonIcon}
                 <FormattedText

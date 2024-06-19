@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image, type ImageSource, type ImageStyle} from 'expo-image';
 import React, {useCallback} from 'react';
 import {type StyleProp, Text, type TextStyle, TouchableHighlight, View, type ViewStyle} from 'react-native';
-import FastImage, {type ImageStyle, type Source} from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -14,10 +14,10 @@ import {isValidUrl} from '@utils/url';
 
 type SlideUpPanelProps = {
     destructive?: boolean;
-    leftIcon?: string | Source;
+    leftIcon?: string | ImageSource;
     leftImageStyles?: StyleProp<ImageStyle>;
     leftIconStyles?: StyleProp<TextStyle>;
-    rightIcon?: string | Source;
+    rightIcon?: string | ImageSource;
     rightImageStyles?: StyleProp<ImageStyle>;
     rightIconStyles?: StyleProp<TextStyle>;
     onPress: () => void;
@@ -110,7 +110,7 @@ const SlideUpPanelItem = ({
     );
 };
 
-const useImageAndStyle = (icon: string | Source | undefined, imageStyles: StyleProp<ImageStyle>, iconStyles: StyleProp<TextStyle>, destructive: boolean) => {
+const useImageAndStyle = (icon: string | ImageSource | undefined, imageStyles: StyleProp<ImageStyle>, iconStyles: StyleProp<TextStyle>, destructive: boolean) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -122,7 +122,7 @@ const useImageAndStyle = (icon: string | Source | undefined, imageStyles: StyleP
                 const imageStyle: StyleProp<ImageStyle> = [imageStyles];
                 imageStyle.push({width: 24, height: 24});
                 image = (
-                    <FastImage
+                    <Image
                         source={icon}
                         style={imageStyle}
                     />

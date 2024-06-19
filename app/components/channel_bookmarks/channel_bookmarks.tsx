@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {LinearGradient} from 'expo-linear-gradient';
 import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, View, type ListRenderItemInfo, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import Animated from 'react-native-reanimated';
 
 import {GalleryInit} from '@context/gallery';
@@ -149,8 +149,6 @@ const ChannelBookmarks = ({
                             <View style={styles.addContainer}>
                                 {allowEndFade &&
                                 <LinearGradient
-                                    angle={290}
-                                    useAngle={true}
                                     locations={GRADIENT_LOCATIONS}
                                     colors={gradientColors}
                                     style={styles.gradient}

@@ -30,6 +30,7 @@ import androidx.core.app.RemoteInput;
 import androidx.core.graphics.drawable.IconCompat;
 
 import com.mattermost.rnbeta.*;
+import com.mattermost.rnutils.helpers.NotificationHelper;
 import com.nozbe.watermelondb.WMDatabase;
 
 import java.io.IOException;
@@ -57,7 +58,6 @@ public class CustomPushNotificationHelper {
     public static final String CHANNEL_HIGH_IMPORTANCE_ID = "channel_01";
     public static final String CHANNEL_MIN_IMPORTANCE_ID = "channel_02";
     public static final String KEY_TEXT_REPLY = "CAN_REPLY";
-    public static final int MESSAGE_NOTIFICATION_ID = 435345;
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String NOTIFICATION = "notification";
     public static final String PUSH_TYPE_MESSAGE = "message";
@@ -192,7 +192,7 @@ public class CustomPushNotificationHelper {
         String channelId = bundle.getString("channel_id");
         String postId = bundle.getString("post_id");
         String rootId = bundle.getString("root_id");
-        int notificationId = postId != null ? postId.hashCode() : MESSAGE_NOTIFICATION_ID;
+        int notificationId = postId != null ? postId.hashCode() : NotificationHelper.INSTANCE.MESSAGE_NOTIFICATION_ID;
 
         boolean is_crt_enabled = bundle.containsKey("is_crt_enabled") && Objects.equals(bundle.getString("is_crt_enabled"), "true");
         String groupId = is_crt_enabled && !android.text.TextUtils.isEmpty(rootId) ? rootId : channelId;

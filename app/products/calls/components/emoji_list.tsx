@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {LinearGradient} from 'expo-linear-gradient';
 import React, {useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 
 import EmojiPill from '@calls/components/emoji_pill';
 import {makeCallsTheme} from '@calls/utils';

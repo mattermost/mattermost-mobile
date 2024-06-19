@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {LinearGradient} from 'expo-linear-gradient';
 import React, {useCallback, useMemo, useState} from 'react';
 import {StyleSheet, useWindowDimensions, View} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 
 import {buildFilePreviewUrl, buildFileThumbnailUrl, buildFileUrl} from '@actions/remote/file';
 import CompassIcon from '@components/compass_icon';
@@ -16,7 +16,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FileIcon from './file_icon';
 
-import type {ResizeMode} from 'react-native-fast-image';
+import type {ImageContentFit} from 'expo-image';
 
 type ImageFileProps = {
     backgroundColor?: string;
@@ -24,7 +24,7 @@ type ImageFileProps = {
     forwardRef?: React.RefObject<unknown>;
     inViewPort?: boolean;
     isSingleImage?: boolean;
-    resizeMode?: ResizeMode;
+    contentFit?: ImageContentFit;
     wrapperWidth?: number;
 }
 
@@ -67,7 +67,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ImageFile = ({
     backgroundColor, file, forwardRef, inViewPort, isSingleImage,
-    resizeMode = 'cover', wrapperWidth,
+    contentFit = 'cover', wrapperWidth,
 }: ImageFileProps) => {
     const dimensions = useWindowDimensions();
     const theme = useTheme();
@@ -125,7 +125,7 @@ const ImageFile = ({
             style={[isSingleImage ? null : style.imagePreview, imageDimensions]}
             tintDefaultSource={!file.localPath && !failed}
             onError={handleError}
-            resizeMode={resizeMode}
+            contentFit={contentFit}
             {...imageProps()}
         />
     );

@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetSectionList} from '@gorhom/bottom-sheet';
+import {Image} from 'expo-image';
 import {chunk} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, SectionList, type SectionListData, StyleSheet, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
@@ -123,7 +123,7 @@ const ImageEmoji = ({file, imageUrl, onEmojiPress, path}: ImageEmojiProps) => {
                         />
                         }
                         {Boolean(imageUrl) &&
-                        <FastImage
+                        <Image
                             source={{uri: path}}
                             style={styles.imageEmoji}
                         />

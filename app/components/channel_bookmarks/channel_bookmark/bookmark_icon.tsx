@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image, type ImageStyle} from 'expo-image';
 import React, {useState, useCallback} from 'react';
 import {type StyleProp, type TextStyle, type ViewStyle} from 'react-native';
-import FastImage, {type ImageStyle} from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
@@ -39,7 +39,7 @@ const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSiz
         );
     } else if (imageUrl && !emoji && !hasImageError) {
         return (
-            <FastImage
+            <Image
                 source={{uri: imageUrl}}
                 style={imageStyle}
                 onError={handleImageError}

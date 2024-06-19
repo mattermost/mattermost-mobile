@@ -10,7 +10,8 @@ import Permissions from 'react-native-permissions';
 
 import {initializeVoiceTrack} from '@calls/actions/calls';
 import {
-    getCallsConfig, getCurrentCall,
+    getCallsConfig,
+    getCurrentCall,
     setMicPermissionsGranted,
     useCallsState,
     useChannelsWithCalls,
@@ -18,6 +19,7 @@ import {
     useGlobalCallsState,
     useIncomingCalls,
 } from '@calls/state';
+import {type CallSession} from '@calls/types/calls';
 import {errorAlert, isHostControlsAllowed} from '@calls/utils';
 import {Screens} from '@constants';
 import {
@@ -37,7 +39,6 @@ import {openAsBottomSheet} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {isSystemAdmin} from '@utils/user';
 
-import type {CallSession} from '@calls/types/calls';
 import type {Client} from '@client/rest';
 
 export const useTryCallsFunction = (fn: () => void) => {

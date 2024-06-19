@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image} from 'expo-image';
 import {chunk} from 'lodash';
 import React from 'react';
 import {View} from 'react-native';
-import FastImage from 'react-native-fast-image';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
@@ -42,7 +42,7 @@ const Group = ({theme, users}: Props) => {
         const group = c.map((u, i) => {
             const pictureUrl = buildProfileImageUrlFromUser(serverUrl, u);
             return (
-                <FastImage
+                <Image
                     key={pictureUrl + i.toString()}
                     style={[styles.profile, {transform: [{translateX: -(i * 24)}]}]}
                     source={{uri: buildAbsoluteUrl(serverUrl, pictureUrl)}}

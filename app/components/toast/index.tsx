@@ -3,7 +3,7 @@
 
 import React, {useMemo} from 'react';
 import {type StyleProp, Text, type TextStyle, useWindowDimensions, View, type ViewStyle} from 'react-native';
-import Animated, {type AnimatedStyleProp} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -12,7 +12,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type ToastProps = {
-    animatedStyle: AnimatedStyleProp<ViewStyle>;
+    animatedStyle: StyleProp<ViewStyle>;
     children?: React.ReactNode;
     iconName?: string;
     message?: string;

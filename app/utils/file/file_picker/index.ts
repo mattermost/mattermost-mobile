@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, Linking, NativeModules, Platform, StatusBar} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
+import RNUtils from '@mattermost/rnutils';
+import {applicationName} from 'expo-application';
+import {Alert, Linking, Platform, StatusBar} from 'react-native';
 import DocumentPicker, {type DocumentPickerResponse} from 'react-native-document-picker';
 import {type Asset, type CameraOptions, type ImageLibraryOptions, type ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
@@ -12,8 +13,6 @@ import {extractFileInfo, lookupMimeType} from '@utils/file';
 import {logWarning} from '@utils/log';
 
 import type {IntlShape} from 'react-intl';
-
-const MattermostManaged = NativeModules.MattermostManaged;
 
 type PermissionSource = 'camera' | 'storage' | 'photo_android' | 'photo_ios' | 'photo';
 
@@ -30,8 +29,6 @@ export default class FilePickerUtil {
 
     private getPermissionMessages = (source: PermissionSource) => {
         const {formatMessage} = this.intl;
-        const applicationName = DeviceInfo.getApplicationName();
-
         const permissions: Record<string, { title: string; text: string }> = {
             camera: {
                 title: formatMessage(
@@ -126,13 +123,12 @@ export default class FilePickerUtil {
         await Promise.all((response.assets.map(async (file) => {
             if (Platform.OS === 'ios') {
                 files.push(file);
-            } else {
-                // For android we need to retrieve the realPath in case the file being imported is from the cloud
-                const uri = (await MattermostManaged.getFilePath(file.uri)).filePath;
+            } else if (file.uri) {
+                const uri = await RNUtils.getRealFilePath(file.uri);
                 const type = file.type || lookupMimeType(uri);
                 let fileName = file.fileName;
                 if (type.includes('video/') && uri) {
-                    fileName = decodeURIComponent(uri.split('\\').pop().split('/').pop());
+                    fileName = decodeURIComponent(uri.split('\\').pop()?.split('/').pop() || '');
                 }
 
                 if (uri) {
@@ -266,9 +262,8 @@ export default class FilePickerUtil {
                 uri = doc.fileCopyUri;
             } else {
                 // For android we need to retrieve the realPath in case the file being imported is from the cloud
-                const newUri = await MattermostManaged.getFilePath(doc.uri);
-                uri = newUri?.filePath;
-                if (uri === undefined) {
+                const newUri = await RNUtils.getRealFilePath(doc.uri);
+                if (newUri == null) {
                     return {doc: undefined};
                 }
             }

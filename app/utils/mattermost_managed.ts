@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {NativeModules, Platform} from 'react-native';
-
-const {MattermostManaged} = NativeModules;
+import RNUtils from '@mattermost/rnutils';
+import {Platform} from 'react-native';
 
 type IOSDeleteDatabase = { databaseName?: string; shouldRemoveDirectory?: boolean }
 type IOSAppGroupDetails = { appGroupIdentifier: string; appGroupSharedDirectory: string; appGroupDatabase: string }
@@ -16,7 +15,7 @@ export const getIOSAppGroupDetails = (): IOSAppGroupDetails => {
     const {
         appGroupIdentifier,
         appGroupSharedDirectory: {sharedDirectory, databasePath},
-    } = MattermostManaged.getConstants();
+    } = RNUtils.getConstants();
 
     const appGroup = {
         appGroupIdentifier,
@@ -37,11 +36,11 @@ export const getIOSAppGroupDetails = (): IOSAppGroupDetails => {
  * MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, (error: any, success: any) => {    });
  */
 export const deleteIOSDatabase = async ({
-    databaseName = undefined,
+    databaseName = '',
     shouldRemoveDirectory = false,
 }: IOSDeleteDatabase) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, () => null);
+    return RNUtils.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory);
 };
 
 /**
@@ -50,17 +49,13 @@ export const deleteIOSDatabase = async ({
  * @param {string} to new database name
  */
 export const renameIOSDatabase = (from: string, to: string) => {
-    MattermostManaged.renameDatabase(from, to, () => null);
+    return RNUtils.renameDatabase(from, to);
 };
 
-export const deleteEntititesFile = (callback?: (success: boolean) => void) => {
+export const deleteEntitiesFile = () => {
     if (Platform.OS === 'ios') {
-        MattermostManaged.deleteEntititesFile((result: boolean) => {
-            if (callback) {
-                callback(result);
-            }
-        });
-    } else if (callback) {
-        callback(true);
+        return RNUtils.deleteEntitiesFile();
     }
+
+    return Promise.resolve(true);
 };

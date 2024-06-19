@@ -3,7 +3,7 @@
 
 import {makeCallsBaseAndBadgeRGB, rgbToCSS} from '@mattermost/calls';
 import {Alert} from 'react-native';
-import {TextTrackType} from 'react-native-video';
+import {SelectedTrackType, TextTrackType, type ISO639_1, type SelectedTrack, type TextTracks} from 'react-native-video';
 
 import {buildFileUrl} from '@actions/remote/file';
 import {Calls, Post} from '@constants';
@@ -16,8 +16,6 @@ import type {
     CallSession,
     CallsTheme,
     CallsVersion,
-    SelectedSubtitleTrack,
-    SubtitleTrack,
 } from '@calls/types/calls';
 import type {CallsConfig, Caption} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
@@ -220,27 +218,27 @@ export const hasCaptions = (postProps?: Record<string, any> & { captions?: Capti
 };
 
 export const getTranscriptionUri = (serverUrl: string, postProps?: Record<string, any> & { captions?: Caption[] }): {
-    tracks?: SubtitleTrack[];
-    selected: SelectedSubtitleTrack;
+    tracks?: TextTracks;
+    selected: SelectedTrack;
 } => {
     // Note: We're not using hasCaptions above because this tells typescript that the caption exists later.
     // We could use some fancy typescript to do the same, but it's not worth the complexity.
     if (!postProps || !postProps.captions?.[0]) {
         return {
             tracks: undefined,
-            selected: {type: 'disabled'},
+            selected: {type: SelectedTrackType.DISABLED, value: ''},
         };
     }
 
-    const tracks: SubtitleTrack[] = postProps.captions.map((t) => ({
+    const tracks: TextTracks = postProps.captions.map((t) => ({
         title: t.title,
-        language: t.language,
+        language: t.language as ISO639_1,
         type: TextTrackType.VTT,
         uri: buildFileUrl(serverUrl, t.file_id),
     }));
 
     return {
         tracks,
-        selected: {type: 'index', value: 0},
+        selected: {type: SelectedTrackType.INDEX, value: 0},
     };
 };
