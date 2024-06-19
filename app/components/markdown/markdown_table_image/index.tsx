@@ -122,7 +122,7 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
                         imageUri={source}
                         forwardRef={ref}
                         onError={onLoadFailed}
-                        resizeMode='contain'
+                        contentFit='contain'
                         style={{width, height}}
                     />
                 </Animated.View>

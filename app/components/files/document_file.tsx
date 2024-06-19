@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {deleteAsync} from 'expo-file-system';
 import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StatusBar, type StatusBarStyle, StyleSheet, TouchableOpacity, View} from 'react-native';
 import FileViewer from 'react-native-file-viewer';
-import FileSystem from 'react-native-fs';
 import tinyColor from 'tinycolor2';
 
 import ProgressBar from '@components/progress_bar';
@@ -16,7 +16,6 @@ import NetworkManager from '@managers/network_manager';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
 import {getFullErrorMessage, isErrorWithMessage} from '@utils/errors';
 import {fileExists, getLocalFilePathFromFile} from '@utils/file';
-import {emptyFunction} from '@utils/general';
 import {logDebug} from '@utils/log';
 
 import FileIcon from './file_icon';
@@ -87,7 +86,7 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
             }
         } catch (error) {
             if (path) {
-                FileSystem.unlink(path).catch(emptyFunction);
+                deleteAsync(path, {idempotent: true});
             }
             setDownloading(false);
             setProgress(0);
@@ -141,7 +140,7 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
                 onDonePreviewingFile();
 
                 if (path) {
-                    FileSystem.unlink(path).catch(emptyFunction);
+                    deleteAsync(path, {idempotent: true});
                 }
             });
         }

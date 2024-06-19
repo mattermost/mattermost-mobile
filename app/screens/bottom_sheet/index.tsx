@@ -4,6 +4,7 @@
 import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
+import {ReduceMotion, type WithSpringConfig} from 'react-native-reanimated';
 
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
@@ -17,7 +18,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import Indicator from './indicator';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
-import type {WithSpringConfig} from 'react-native-reanimated';
 
 export {default as BottomSheetButton, BUTTON_HEIGHT} from './button';
 export {default as BottomSheetContent, TITLE_HEIGHT} from './content';
@@ -78,6 +78,7 @@ export const animatedConfig: Omit<WithSpringConfig, 'velocity'> = {
     overshootClamping: true,
     restSpeedThreshold: 0.3,
     restDisplacementThreshold: 0.3,
+    reduceMotion: ReduceMotion.Never,
 };
 
 const BottomSheet = ({

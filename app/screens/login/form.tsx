@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
+import {Button} from '@rneui/base';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
-import Button from 'react-native-button';
 
 import {login} from '@actions/remote/session';
 import CompassIcon from '@components/compass_icon';
@@ -48,6 +48,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
     },
     forgotPasswordBtn: {
+        backgroundColor: 'transparent',
+        paddingHorizontal: 0,
+        paddingVertical: 0,
+        justifyContent: 'flex-start',
         borderColor: 'transparent',
         width: '60%',
     },
@@ -269,7 +273,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
             <Button
                 disabled={buttonDisabled}
                 onPress={onLogin}
-                containerStyle={[styles.loginButton, styleButtonBackground]}
+                buttonStyle={[styles.loginButton, styleButtonBackground]}
                 testID={signinButtonTestId}
             >
                 {buttonIcon}
@@ -343,7 +347,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
             {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (
                 <Button
                     onPress={onPressForgotPassword}
-                    containerStyle={[styles.forgotPasswordBtn, error ? styles.forgotPasswordError : undefined]}
+                    buttonStyle={[styles.forgotPasswordBtn, error ? styles.forgotPasswordError : undefined]}
                     testID='login_form.forgot_password.button'
                 >
                     <FormattedText

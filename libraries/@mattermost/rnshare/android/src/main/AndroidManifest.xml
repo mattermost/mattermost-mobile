@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.mattermost.rnshare">
+    <application>
+        <service android:name=".ShareWorker"
+            android:permission="android.permission.FOREGROUND_SERVICE"
+            android:exported="false" />
+    </application>
+</manifest>

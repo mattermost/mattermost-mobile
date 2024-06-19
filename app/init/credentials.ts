@@ -5,7 +5,6 @@ import {Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
 import DatabaseManager from '@database/manager';
-import * as analytics from '@managers/analytics';
 import {logWarning} from '@utils/log';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
@@ -101,9 +100,6 @@ export const getServerCredentials = async (serverUrl: string): Promise<ServerCre
             const token = credentials.password;
 
             if (token && token !== 'undefined') {
-                const analyticsClient = analytics.get(serverUrl);
-                analyticsClient?.setUserId(userId);
-
                 return {serverUrl, userId, token};
             }
         }

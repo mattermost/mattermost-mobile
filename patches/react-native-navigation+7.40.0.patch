@@ -1,0 +1,358 @@
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
+index 481aaf0..609e359 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
+@@ -1,18 +1,15 @@
+ package com.reactnativenavigation;
+ 
+-import android.annotation.TargetApi;
+ import android.content.Intent;
+ import android.content.res.Configuration;
+-import android.graphics.Color;
+-import android.os.Build;
+ import android.os.Bundle;
+ import android.view.KeyEvent;
+ import android.view.View;
+ 
++import com.facebook.react.ReactActivity;
+ import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
+ import com.facebook.react.modules.core.PermissionAwareActivity;
+ import com.facebook.react.modules.core.PermissionListener;
+-import com.reactnativenavigation.options.Options;
+ import com.reactnativenavigation.viewcontrollers.overlay.OverlayManager;
+ import com.reactnativenavigation.viewcontrollers.viewcontroller.RootPresenter;
+ import com.reactnativenavigation.react.JsDevReloadHandler;
+@@ -25,9 +22,8 @@ import com.reactnativenavigation.viewcontrollers.navigator.Navigator;
+ import androidx.activity.OnBackPressedCallback;
+ import androidx.annotation.NonNull;
+ import androidx.annotation.Nullable;
+-import androidx.appcompat.app.AppCompatActivity;
+ 
+-public class NavigationActivity extends AppCompatActivity implements DefaultHardwareBackBtnHandler, PermissionAwareActivity, JsDevReloadHandler.ReloadListener {
++public class NavigationActivity extends ReactActivity implements DefaultHardwareBackBtnHandler, PermissionAwareActivity, JsDevReloadHandler.ReloadListener {
+     @Nullable
+     private PermissionListener mPermissionListener;
+ 
+@@ -50,7 +46,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+         );
+         navigator.bindViews();
+         getReactGateway().onActivityCreated(this);
+-        setBackPressedCallback();
++        // setBackPressedCallback();
+     }
+ 
+     @Override
+@@ -96,15 +92,16 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+ 
+     @Override
+     public void invokeDefaultOnBackPressed() {
+-        if (!navigator.handleBack(new CommandListenerAdapter())) {
+-            callback.setEnabled(false);
+-            NavigationActivity.super.onBackPressed();
+-            callback.setEnabled(true);
+-        }
++        // if (!navigator.handleBack(new CommandListenerAdapter())) {
++        //     callback.setEnabled(false);
++        //     NavigationActivity.super.onBackPressed();
++        //     callback.setEnabled(true);
++        // }
++        super.invokeDefaultOnBackPressed();
+     }
+ 
+     @Override
+-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
++    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+         super.onActivityResult(requestCode, resultCode, data);
+         getReactGateway().onActivityResult(this, requestCode, resultCode, data);
+     }
+@@ -126,7 +123,6 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+         return navigator;
+     }
+ 
+-    @TargetApi(Build.VERSION_CODES.M)
+     public void requestPermissions(String[] permissions, int requestCode, PermissionListener listener) {
+         mPermissionListener = listener;
+         requestPermissions(permissions, requestCode);
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
+index 4cc09eb..857bbd4 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
+@@ -31,6 +31,7 @@ import com.reactnativenavigation.viewcontrollers.viewcontroller.ViewController;
+ 
+ import java.util.ArrayList;
+ import java.util.Objects;
++import java.util.Optional;
+ 
+ import static com.reactnativenavigation.utils.UiUtils.pxToDp;
+ 
+@@ -60,21 +61,28 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+             public void onHostPause() {
+                 super.onHostPause();
+                 UiUtils.runOnMainThread(() -> {
+-                    if (activity() != null) navigator().onHostPause();
++                    if (activity() != null) navigator().ifPresent(Navigator::onHostPause);
+                 });
+             }
+ 
+             @Override
+             public void onHostResume() {
+-                eventEmitter = new EventEmitter(reactContext);
+-                navigator().setEventEmitter(eventEmitter);
+-                layoutFactory.init(
+-                        activity(),
+-                        eventEmitter,
+-                        navigator().getChildRegistry(),
+-                        ((NavigationApplication) activity().getApplication()).getExternalComponents()
+-                );
+-                UiUtils.runOnMainThread(() -> navigator().onHostResume());
++                try {
++                    eventEmitter = new EventEmitter(reactContext);
++                    if (navigator().isPresent()) {
++                        Navigator navigator = navigator().get();
++                        navigator.setEventEmitter(eventEmitter);
++                        layoutFactory.init(
++                                activity(),
++                                eventEmitter,
++                                navigator.getChildRegistry(),
++                                ((NavigationApplication) activity().getApplication()).getExternalComponents()
++                        );
++                        UiUtils.runOnMainThread(navigator::onHostResume);
++                    }
++                } catch (ClassCastException e) {
++                    // The most current activity is not a NavigationActivity
++                }
+             }
+         });
+     }
+@@ -116,7 +124,7 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+         final LayoutNode layoutTree = LayoutNodeParser.parse(Objects.requireNonNull(jsonParser.parse(rawLayoutTree).optJSONObject("root")));
+         handle(() -> {
+             final ViewController<?> viewController = layoutFactory.create(layoutTree);
+-            navigator().setRoot(viewController, new NativeCommandListener("setRoot", commandId, promise, eventEmitter, now), reactInstanceManager);
++            navigator().ifPresent(nav -> nav.setRoot(viewController, new NativeCommandListener("setRoot", commandId, promise, eventEmitter, now), reactInstanceManager));
+         });
+     }
+ 
+@@ -125,13 +133,13 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+         handle(() -> {
+             Options defaultOptions = parse(options);
+             layoutFactory.setDefaultOptions(defaultOptions);
+-            navigator().setDefaultOptions(defaultOptions);
++            navigator().ifPresent(nav -> nav.setDefaultOptions(defaultOptions));
+         });
+     }
+ 
+     @ReactMethod
+     public void mergeOptions(String onComponentId, @Nullable ReadableMap options) {
+-        handle(() -> navigator().mergeOptions(onComponentId, parse(options)));
++        handle(() -> navigator().ifPresent(nav -> nav.mergeOptions(onComponentId, parse(options))));
+     }
+ 
+     @ReactMethod
+@@ -139,7 +147,7 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+         final LayoutNode layoutTree = LayoutNodeParser.parse(jsonParser.parse(rawLayoutTree));
+         handle(() -> {
+             final ViewController<?> viewController = layoutFactory.create(layoutTree);
+-            navigator().push(onComponentId, viewController, new NativeCommandListener("push", commandId, promise, eventEmitter, now));
++            navigator().ifPresent(nav -> nav.push(onComponentId, viewController, new NativeCommandListener("push", commandId, promise, eventEmitter, now)));
+         });
+     }
+ 
+@@ -151,23 +159,23 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+                 final LayoutNode layoutTree = LayoutNodeParser.parse(jsonParser.parse(children.getMap(i)));
+                 _children.add(layoutFactory.create(layoutTree));
+             }
+-            navigator().setStackRoot(onComponentId, _children, new NativeCommandListener("setStackRoot", commandId, promise, eventEmitter, now));
++            navigator().ifPresent(nav -> nav.setStackRoot(onComponentId, _children, new NativeCommandListener("setStackRoot", commandId, promise, eventEmitter, now)));
+         });
+     }
+ 
+     @ReactMethod
+     public void pop(String commandId, String componentId, @Nullable ReadableMap mergeOptions, Promise promise) {
+-        handle(() -> navigator().pop(componentId, parse(mergeOptions), new NativeCommandListener("pop", commandId, promise, eventEmitter, now)));
++        handle(() -> navigator().ifPresent(nav -> nav.pop(componentId, parse(mergeOptions), new NativeCommandListener("pop", commandId, promise, eventEmitter, now))));
+     }
+ 
+     @ReactMethod
+     public void popTo(String commandId, String componentId, @Nullable ReadableMap mergeOptions, Promise promise) {
+-        handle(() -> navigator().popTo(componentId, parse(mergeOptions), new NativeCommandListener("popTo", commandId, promise, eventEmitter, now)));
++        handle(() -> navigator().ifPresent(nav -> nav.popTo(componentId, parse(mergeOptions), new NativeCommandListener("popTo", commandId, promise, eventEmitter, now))));
+     }
+ 
+     @ReactMethod
+     public void popToRoot(String commandId, String componentId, @Nullable ReadableMap mergeOptions, Promise promise) {
+-        handle(() -> navigator().popToRoot(componentId, parse(mergeOptions), new NativeCommandListener("popToRoot", commandId, promise, eventEmitter, now)));
++        handle(() -> navigator().ifPresent(nav -> nav.popToRoot(componentId, parse(mergeOptions), new NativeCommandListener("popToRoot", commandId, promise, eventEmitter, now))));
+     }
+ 
+     @ReactMethod
+@@ -175,21 +183,21 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+         final LayoutNode layoutTree = LayoutNodeParser.parse(jsonParser.parse(rawLayoutTree));
+         handle(() -> {
+             final ViewController<?> viewController = layoutFactory.create(layoutTree);
+-            navigator().showModal(viewController, new NativeCommandListener("showModal", commandId, promise, eventEmitter, now));
++            navigator().ifPresent(nav -> nav.showModal(viewController, new NativeCommandListener("showModal", commandId, promise, eventEmitter, now)));
+         });
+     }
+ 
+     @ReactMethod
+     public void dismissModal(String commandId, String componentId, @Nullable ReadableMap mergeOptions, Promise promise) {
+         handle(() -> {
+-            navigator().mergeOptions(componentId, parse(mergeOptions));
+-            navigator().dismissModal(componentId, new NativeCommandListener("dismissModal", commandId, promise, eventEmitter, now));
++            navigator().ifPresent(nav -> nav.mergeOptions(componentId, parse(mergeOptions)));
++            navigator().ifPresent(nav -> nav.dismissModal(componentId, new NativeCommandListener("dismissModal", commandId, promise, eventEmitter, now)));
+         });
+     }
+ 
+     @ReactMethod
+     public void dismissAllModals(String commandId, @Nullable ReadableMap mergeOptions, Promise promise) {
+-        handle(() -> navigator().dismissAllModals(parse(mergeOptions), new NativeCommandListener("dismissAllModals", commandId, promise, eventEmitter, now)));
++        handle(() -> navigator().ifPresent(nav -> nav.dismissAllModals(parse(mergeOptions), new NativeCommandListener("dismissAllModals", commandId, promise, eventEmitter, now))));
+     }
+ 
+     @ReactMethod
+@@ -197,22 +205,25 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+         final LayoutNode layoutTree = LayoutNodeParser.parse(jsonParser.parse(rawLayoutTree));
+         handle(() -> {
+             final ViewController<?> viewController = layoutFactory.create(layoutTree);
+-            navigator().showOverlay(viewController, new NativeCommandListener("showOverlay", commandId, promise, eventEmitter, now));
++            navigator().ifPresent(nav -> nav.showOverlay(viewController, new NativeCommandListener("showOverlay", commandId, promise, eventEmitter, now)));
+         });
+     }
+ 
+     @ReactMethod
+     public void dismissOverlay(String commandId, String componentId, Promise promise) {
+-        handle(() -> navigator().dismissOverlay(componentId, new NativeCommandListener("dismissOverlay", commandId, promise, eventEmitter, now)));
++        handle(() -> navigator().ifPresent(nav -> nav.dismissOverlay(componentId, new NativeCommandListener("dismissOverlay", commandId, promise, eventEmitter, now))));
+     }
+ 
+     @ReactMethod
+     public void dismissAllOverlays(String commandId, Promise promise) {
+-        handle(() -> navigator().dismissAllOverlays(new NativeCommandListener("dismissAllOverlays", commandId, promise, eventEmitter, now)));
++        handle(() -> navigator().ifPresent(nav -> nav.dismissAllOverlays(new NativeCommandListener("dismissAllOverlays", commandId, promise, eventEmitter, now))));
+     }
+ 
+-    private Navigator navigator() {
+-        return activity().getNavigator();
++    private Optional<Navigator> navigator() {
++        if (activity() instanceof NavigationActivity) {
++            return Optional.ofNullable(((NavigationActivity)activity()).getNavigator());
++        }
++        return Optional.empty();
+     }
+ 
+     private Options parse(@Nullable ReadableMap mergeOptions) {
+@@ -223,22 +234,26 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+ 
+     protected void handle(Runnable task) {
+         UiThread.post(() -> {
+-            if (getCurrentActivity() != null && !activity().isFinishing()) {
+-                task.run();
++            try {
++                if (getCurrentActivity() != null && !activity().isFinishing()) {
++                    task.run();
++                }
++            } catch (ClassCastException e) {
++                // The most current activity is not a NavigationActivity)
+             }
+         });
+     }
+ 
+-    protected NavigationActivity activity() {
+-        return (NavigationActivity) getCurrentActivity();
++    protected Activity activity() {
++        return getCurrentActivity();
+     }
+ 
+     @Override
+-    public void onCatalystInstanceDestroy() {
+-        final NavigationActivity navigationActivity = activity();
++    public void invalidate() {
++        final NavigationActivity navigationActivity = (NavigationActivity)activity();
+         if (navigationActivity != null) {
+             navigationActivity.onCatalystInstanceDestroy();
+         }
+-        super.onCatalystInstanceDestroy();
++        super.invalidate();
+     }
+ }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
+index 834d734..3fc00c3 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
+@@ -96,12 +96,12 @@ public class ReactTypefaceUtils {
+ 
+     int want = 0;
+     if ((weight == Typeface.BOLD)
+-        || ((oldStyle & Typeface.BOLD) != 0 && weight == ReactTextShadowNode.UNSET)) {
++        || ((oldStyle & Typeface.BOLD) != 0 && weight == -1)) {
+       want |= Typeface.BOLD;
+     }
+ 
+     if ((style == Typeface.ITALIC)
+-        || ((oldStyle & Typeface.ITALIC) != 0 && style == ReactTextShadowNode.UNSET)) {
++        || ((oldStyle & Typeface.ITALIC) != 0 && style == -1)) {
+       want |= Typeface.ITALIC;
+     }
+ 
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
+index 035ec31..630b8d4 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
+@@ -69,4 +69,10 @@ public class ReactGateway {
+     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+         host.getReactInstanceManager().onActivityResult(activity, requestCode, resultCode, data);
+     }
++
++    public void onWindowFocusChanged(boolean hasFocus) {
++        if (host.hasInstance()) {
++            host.getReactInstanceManager().onWindowFocusChange(hasFocus);
++        }
++    }
+ }
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
+index fc482a6..9406bbf 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
+@@ -94,6 +94,7 @@
+                                                                }];
+                                   }];
+         self.reactView.backgroundColor = UIColor.clearColor;
++        self.reactView.frame = UIScreen.mainScreen.bounds;
+         self.reactView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+         [self.reactView setFrame:self.view.frame];
+         [self.view addSubview:self.reactView];
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
+index b44f24f..bf4e1c3 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
+@@ -1,6 +1,8 @@
+ #import "RNNOverlayWindow.h"
+ #import "RNNReactView.h"
+ #import <React/RCTModalHostView.h>
++#import <react-native-safe-area-context/RNCSafeAreaView.h>
++#import <react-native-safe-area-context/RNCSafeAreaProvider.h>
+ 
+ @implementation RNNOverlayWindow
+ 
+@@ -9,6 +11,8 @@
+ 
+     if ([hitTestResult isKindOfClass:[UIWindow class]] ||
+         [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class] ||
++        [hitTestResult isKindOfClass:[RNCSafeAreaView class]] ||
++        [hitTestResult isKindOfClass:[RNCSafeAreaProvider class]] ||
+         [hitTestResult isKindOfClass:[RCTModalHostView class]] ||
+         [hitTestResult isKindOfClass:NSClassFromString(@"RCTRootComponentView")]) {
+         return nil;
+diff --git a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts b/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
+index 1ab5b4e..ccd0b74 100644
+--- a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
++++ b/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
+@@ -1,5 +1,5 @@
+ // tslint:disable jsdoc-format
+-import { ImageRequireSource, ImageSourcePropType, Insets, OpaqueColorValue } from 'react-native';
++import type { ImageRequireSource, ImageSourcePropType, Insets, OpaqueColorValue } from 'react-native';
+ 
+ // TODO: Import ColorValue instead when upgrading @types/react-native to 0.63+
+ // Only assign PlatformColor or DynamicColorIOS as a Color symbol!

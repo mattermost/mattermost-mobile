@@ -1,0 +1,143 @@
+diff --git a/node_modules/react-native-webrtc/lib/commonjs/MediaDevices.js b/node_modules/react-native-webrtc/lib/commonjs/MediaDevices.js
+index 10a51e5..99428ad 100644
+--- a/node_modules/react-native-webrtc/lib/commonjs/MediaDevices.js
++++ b/node_modules/react-native-webrtc/lib/commonjs/MediaDevices.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = void 0;
+-var _index = require("event-target-shim/index");
++var _index = require("event-target-shim");
+ var _reactNative = require("react-native");
+ var _getDisplayMedia = _interopRequireDefault(require("./getDisplayMedia"));
+ var _getUserMedia = _interopRequireDefault(require("./getUserMedia"));
+diff --git a/node_modules/react-native-webrtc/lib/commonjs/MediaStream.js b/node_modules/react-native-webrtc/lib/commonjs/MediaStream.js
+index 4c9653f..e142232 100644
+--- a/node_modules/react-native-webrtc/lib/commonjs/MediaStream.js
++++ b/node_modules/react-native-webrtc/lib/commonjs/MediaStream.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = void 0;
+-var _index = require("event-target-shim/index");
++var _index = require("event-target-shim");
+ var _reactNative = require("react-native");
+ var _MediaStreamTrack = _interopRequireDefault(require("./MediaStreamTrack"));
+ var _RTCUtil = require("./RTCUtil");
+diff --git a/node_modules/react-native-webrtc/lib/commonjs/MediaStreamTrack.js b/node_modules/react-native-webrtc/lib/commonjs/MediaStreamTrack.js
+index fb79282..9219abd 100644
+--- a/node_modules/react-native-webrtc/lib/commonjs/MediaStreamTrack.js
++++ b/node_modules/react-native-webrtc/lib/commonjs/MediaStreamTrack.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = void 0;
+-var _index = require("event-target-shim/index");
++var _index = require("event-target-shim");
+ var _reactNative = require("react-native");
+ var _EventEmitter = require("./EventEmitter");
+ var _Logger = _interopRequireDefault(require("./Logger"));
+diff --git a/node_modules/react-native-webrtc/lib/commonjs/MediaStreamTrackEvent.js b/node_modules/react-native-webrtc/lib/commonjs/MediaStreamTrackEvent.js
+index c90f7c3..e6105db 100644
+--- a/node_modules/react-native-webrtc/lib/commonjs/MediaStreamTrackEvent.js
++++ b/node_modules/react-native-webrtc/lib/commonjs/MediaStreamTrackEvent.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = void 0;
+-var _index = require("event-target-shim/index");
++var _index = require("event-target-shim");
+ function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+ /**
+  * @eventClass
+diff --git a/node_modules/react-native-webrtc/lib/commonjs/MessageEvent.js b/node_modules/react-native-webrtc/lib/commonjs/MessageEvent.js
+index a4d4a53..e123aca 100644
+--- a/node_modules/react-native-webrtc/lib/commonjs/MessageEvent.js
++++ b/node_modules/react-native-webrtc/lib/commonjs/MessageEvent.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = void 0;
+-var _index = require("event-target-shim/index");
++var _index = require("event-target-shim");
+ function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+ /**
+  * @eventClass
+diff --git a/node_modules/react-native-webrtc/lib/commonjs/RTCDataChannel.js b/node_modules/react-native-webrtc/lib/commonjs/RTCDataChannel.js
+index 51fc497..100f6d6 100644
+--- a/node_modules/react-native-webrtc/lib/commonjs/RTCDataChannel.js
++++ b/node_modules/react-native-webrtc/lib/commonjs/RTCDataChannel.js
+@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ exports.default = void 0;
+ var base64 = _interopRequireWildcard(require("base64-js"));
+-var _index = require("event-target-shim/index");
++var _index = require("event-target-shim");
+ var _reactNative = require("react-native");
+ var _EventEmitter = require("./EventEmitter");
+ var _MessageEvent = _interopRequireDefault(require("./MessageEvent"));
+diff --git a/node_modules/react-native-webrtc/lib/commonjs/RTCDataChannelEvent.js b/node_modules/react-native-webrtc/lib/commonjs/RTCDataChannelEvent.js
+index b41a908..9d99329 100644
+--- a/node_modules/react-native-webrtc/lib/commonjs/RTCDataChannelEvent.js
++++ b/node_modules/react-native-webrtc/lib/commonjs/RTCDataChannelEvent.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = void 0;
+-var _index = require("event-target-shim/index");
++var _index = require("event-target-shim");
+ function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+ /**
+  * @eventClass
+diff --git a/node_modules/react-native-webrtc/lib/commonjs/RTCErrorEvent.js b/node_modules/react-native-webrtc/lib/commonjs/RTCErrorEvent.js
+index c62e943..e5e40b4 100644
+--- a/node_modules/react-native-webrtc/lib/commonjs/RTCErrorEvent.js
++++ b/node_modules/react-native-webrtc/lib/commonjs/RTCErrorEvent.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = void 0;
+-var _index = require("event-target-shim/index");
++var _index = require("event-target-shim");
+ function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+ /**
+  * @brief This class Represents internal error happening on the native side as
+diff --git a/node_modules/react-native-webrtc/lib/commonjs/RTCIceCandidateEvent.js b/node_modules/react-native-webrtc/lib/commonjs/RTCIceCandidateEvent.js
+index b09fa22..7ba3927 100644
+--- a/node_modules/react-native-webrtc/lib/commonjs/RTCIceCandidateEvent.js
++++ b/node_modules/react-native-webrtc/lib/commonjs/RTCIceCandidateEvent.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = void 0;
+-var _index = require("event-target-shim/index");
++var _index = require("event-target-shim");
+ function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+ /**
+  * @eventClass
+diff --git a/node_modules/react-native-webrtc/lib/commonjs/RTCPeerConnection.js b/node_modules/react-native-webrtc/lib/commonjs/RTCPeerConnection.js
+index 954e7e7..e55c9b4 100644
+--- a/node_modules/react-native-webrtc/lib/commonjs/RTCPeerConnection.js
++++ b/node_modules/react-native-webrtc/lib/commonjs/RTCPeerConnection.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = void 0;
+-var _index = require("event-target-shim/index");
++var _index = require("event-target-shim");
+ var _reactNative = require("react-native");
+ var _EventEmitter = require("./EventEmitter");
+ var _Logger = _interopRequireDefault(require("./Logger"));
+diff --git a/node_modules/react-native-webrtc/lib/commonjs/RTCTrackEvent.js b/node_modules/react-native-webrtc/lib/commonjs/RTCTrackEvent.js
+index 7c4b49e..228d917 100644
+--- a/node_modules/react-native-webrtc/lib/commonjs/RTCTrackEvent.js
++++ b/node_modules/react-native-webrtc/lib/commonjs/RTCTrackEvent.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = void 0;
+-var _index = require("event-target-shim/index");
++var _index = require("event-target-shim");
+ function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+ /**
+  * @eventClass

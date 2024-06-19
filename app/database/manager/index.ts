@@ -4,9 +4,9 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
+import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
+import {deleteAsync, documentDirectory, getInfoAsync, makeDirectoryAsync, moveAsync} from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
-import FileSystem from 'react-native-fs';
 
 import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
@@ -24,7 +24,6 @@ import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {beforeUpgrade} from '@helpers/database/upgrade';
 import {getActiveServer, getServer, getServerByIdentifier} from '@queries/app/servers';
-import {emptyFunction} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
 import {deleteIOSDatabase, getIOSAppGroupDetails, renameIOSDatabase} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
@@ -52,7 +51,7 @@ class DatabaseManager {
             ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
         ];
 
-        this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${FileSystem.DocumentDirectoryPath}/databases/`;
+        this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${documentDirectory}/databases/`;
     }
 
     /**
@@ -62,17 +61,17 @@ class DatabaseManager {
     */
     public init = async (serverUrls: string[]): Promise<void> => {
         await this.createAppDatabase();
-        const buildNumber = DeviceInfo.getBuildNumber();
-        const versionNumber = DeviceInfo.getVersion();
+        const buildNumber = nativeBuildVersion;
+        const versionNumber = nativeApplicationVersion;
         await beforeUpgrade.call(this, serverUrls, versionNumber, buildNumber);
         for await (const serverUrl of serverUrls) {
             await this.initServerDatabase(serverUrl);
         }
         this.appDatabase?.operator.handleInfo({
             info: [{
-                build_number: buildNumber,
+                build_number: buildNumber || '',
                 created_at: Date.now(),
-                version_number: versionNumber,
+                version_number: versionNumber || '',
             }],
             prepareRecordsOnly: false,
         });
@@ -88,7 +87,7 @@ class DatabaseManager {
             const databaseName = APP_DATABASE;
 
             if (Platform.OS === 'android') {
-                await FileSystem.mkdir(this.databaseDirectory!);
+                await makeDirectoryAsync(this.databaseDirectory!, {intermediates: true});
             }
             const databaseFilePath = this.getDatabaseFilePath(databaseName);
             const modelClasses = this.appModels;
@@ -420,9 +419,9 @@ class DatabaseManager {
         const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
         const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
 
-        await FileSystem.unlink(databaseFile).catch(emptyFunction);
-        await FileSystem.unlink(databaseShm).catch(emptyFunction);
-        await FileSystem.unlink(databaseWal).catch(emptyFunction);
+        await deleteAsync(databaseFile, {idempotent: true});
+        await deleteAsync(databaseShm, {idempotent: true});
+        await deleteAsync(databaseWal, {idempotent: true});
     };
 
     /**
@@ -448,20 +447,20 @@ class DatabaseManager {
         const newDatabaseShm = `${androidFilesDir}${newDBName}.db-shm`;
         const newDatabaseWal = `${androidFilesDir}${newDBName}.db-wal`;
 
-        if (await FileSystem.exists(newDatabaseFile)) {
+        if ((await getInfoAsync(newDatabaseFile)).exists) {
             // Already renamed, do not try
             return;
         }
 
-        if (!await FileSystem.exists(databaseFile)) {
+        if (!(await getInfoAsync(databaseFile)).exists) {
             // Nothing to rename, do not try
             return;
         }
 
         try {
-            await FileSystem.moveFile(databaseFile, newDatabaseFile);
-            await FileSystem.moveFile(databaseShm, newDatabaseShm);
-            await FileSystem.moveFile(databaseWal, newDatabaseWal);
+            await moveAsync({from: databaseFile, to: newDatabaseFile});
+            await moveAsync({from: databaseShm, to: newDatabaseShm});
+            await moveAsync({from: databaseWal, to: newDatabaseWal});
         } catch (error) {
             // Do nothing
         }
@@ -482,7 +481,7 @@ class DatabaseManager {
 
             // On Android, we'll remove the databases folder under the Document Directory
             const androidFilesDir = `${this.databaseDirectory}databases/`;
-            await FileSystem.unlink(androidFilesDir);
+            await deleteAsync(androidFilesDir);
             return true;
         } catch (e) {
             return false;

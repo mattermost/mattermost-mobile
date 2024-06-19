@@ -94,7 +94,7 @@
         android:exported="false"
       />
       <activity
-        android:name="com.mattermost.share.ShareActivity"
+        android:name="com.mattermost.rnshare.ShareActivity"
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
         android:windowSoftInputMode="adjustResize"
         android:theme="@style/AppTheme"
