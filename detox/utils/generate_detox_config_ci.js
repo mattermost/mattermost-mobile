@@ -7,9 +7,7 @@ const fs = require('fs');
 const deviceType = process.env.DETOX_DEVICE_TYPE || 'iPhone 15 Pro';
 const deviceOS = process.env.DETOX_DEVICE_OS || 'iOS 17.4';
 const detoxConfigTemplate = fs.readFileSync('../.detoxrc.json', 'utf8');
-const detoxConfig = detoxConfigTemplate
-  .replace('__DEVICE_TYPE__', deviceType)
-  .replace('__DEVICE_OS__', deviceOS);
+const detoxConfig = detoxConfigTemplate.replace('__DEVICE_TYPE__', deviceType).replace('__DEVICE_OS__', deviceOS);
 
 fs.writeFileSync('../.detoxrc.json', detoxConfig);
 
