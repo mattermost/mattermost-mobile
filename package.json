@@ -50,6 +50,7 @@
     "emoji-regex": "10.3.0",
     "expo": "51.0.14",
     "expo-application": "5.9.1",
+    "expo-crypto": "13.0.2",
     "expo-device": "6.0.2",
     "expo-image": "1.12.12",
     "expo-linear-gradient": "13.0.2",
@@ -97,8 +98,7 @@
     "react-syntax-highlighter": "15.5.0",
     "semver": "7.6.2",
     "tinycolor2": "1.6.0",
-    "url-parse": "1.5.10",
-    "expo-crypto": "13.0.2"
+    "url-parse": "1.5.10"
   },
   "devDependencies": {
     "@babel/cli": "7.24.7",
