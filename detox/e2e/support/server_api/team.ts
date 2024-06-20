@@ -50,13 +50,6 @@ export const apiAddUserToTeam = async (baseUrl: string, userId: string, teamId: 
  * @return {Object} returns {team} on success or {error, status} on error
  */
 export const apiCreateTeam = async (baseUrl: string, {type = 'O', prefix = 'team', team = null}: any = {}): Promise<any> => {
-    
-    console.log('**********************************');
-    console.log('**********************************');
-    console.log("baseUrl : ", baseUrl);
-    console.log('**********************************');
-    console.log('**********************************');
-
     let response;
     try {
         response = await client.post(
@@ -65,12 +58,6 @@ export const apiCreateTeam = async (baseUrl: string, {type = 'O', prefix = 'team
         );
         return {team: response.data};
     } catch (err) {
-        console.log('**********************************');
-        console.log('**********************************');
-        console.log("response : ", JSON.stringify(response));
-        console.log('**********************************');
-        console.log('**********************************');
-
         return getResponseFromError(err);
     }
 };

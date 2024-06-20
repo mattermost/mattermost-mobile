@@ -55,12 +55,6 @@ export const capitalize = (text: string): string => {
  * Get admin account.
  */
 export const getAdminAccount = () => {
-    console.log('**********************************');
-    console.log('**********************************');
-    console.log("adminUsername : ", adminUsername);
-    console.log("adminUsername : ", adminPassword);
-    console.log('**********************************');
-    console.log('**********************************');
     return {
         username: adminUsername,
         password: adminPassword,

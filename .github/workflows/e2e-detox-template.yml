@@ -234,11 +234,7 @@ jobs:
       - name: Set Target URL
         id: set-url
         run: |
-          if ${{ inputs.run-ios-tests }}; then
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/ios-report.html" >> ${GITHUB_OUTPUT}
-          else
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/android-report.html" >> ${GITHUB_OUTPUT}
-          fi
 
       - name: Determine Status
         id: determine-status
