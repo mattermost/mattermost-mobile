@@ -148,7 +148,7 @@ jobs:
   e2e-android-on-mac:
     name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     continue-on-error: true
-    runs-on: macos-14
+    runs-on: macos-13
     timeout-minutes: 40
     needs:
       - generate-specs
@@ -199,18 +199,35 @@ jobs:
     - name: Cleanup
       run: rm android/app/build/outputs/apk/artifact.zip
 
-    - name: Set up Android SDK
-      uses: android-actions/setup-android@v2
+    - name: launch
+      run: |
+        echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-31;google_apis;x86_64'
+        echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-31;google_apis;x86_64' --force --device "pixel_6"
+        echo "Emulator created successfully"
+        nohup $ANDROID_HOME/emulator/emulator -memory 2048 -avd android_emulator -skin 1080x1920 -no-snapshot -netdelay none -netspeed full -no-audio -no-boot-anim -accel auto -gpu guest -qemu -lcd-density 420 > /dev/null 2>&1 &
+        $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done'
+        $ANDROID_HOME/platform-tools/adb devices
+        $ANDROID_HOME/platform-tools/adb shell input keyevent 82
+        $ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
+        $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
+        $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
+        sleep 120
+        screencapture emulator-macos-13.jpg
+        $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-macos-13.png
+
+    - uses: actions/upload-artifact@v3
       with:
-        android-sdk-root: ${{ github.workspace }}/android-sdk
+        name: Android-Emulator-Screenshots
+        path: emulator-macos-13.jpg
+  
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Android-Emulator-Screenshots
+        path: emulator-macos-13.jpg.png
 
     - name: Run Android Detox E2E Tests on macOS
       run: |
-        echo "no" | ${{ github.workspace }}/android-sdk/cmdline-tools/latest/bin/avdmanager create avd --force -n emu.avd -k "system-images;android-29;google_apis;x86_64" --device "pixel_4"
-        echo "hw.gpu.enabled=true" >> ~/.android/avd/emu.avd/config.ini
-        ${{ github.workspace }}/android-sdk/emulator/emulator -avd emu.avd -no-audio -no-window &
-        ${{ github.workspace }}/android-sdk/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
-        cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
+          cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
     - name: Upload Android Test Report
       if: always()
