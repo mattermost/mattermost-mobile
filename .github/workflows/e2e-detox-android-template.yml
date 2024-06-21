@@ -358,6 +358,57 @@ jobs:
           name: Android-Emulator-Screenshots
           path: emulator-${{ matrix.os }}-${{ matrix.try }}.png
 
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+
+    - name: Node
+      uses: actions/setup-node@v1
+
+    - name: Use specific Java version for sdkmanager to work
+      uses: joschi/setup-jdk@v1
+      with:
+        java-version: 'openjdk8'
+        architecture: 'x64'
+
+    - name: Download Android Emulator Image
+      run: |
+        echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-29;google_apis;x86"
+        echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd --force --name emu --device "Nexus 5X" -k 'system-images;android-29;google_apis;x86'
+        $ANDROID_HOME/emulator/emulator -list-avds
+
+    - name: Android Emulator
+      timeout-minutes: 10
+      continue-on-error: true
+      run: |
+        echo "Starting emulator"
+        nohup $ANDROID_HOME/emulator/emulator -avd emu -no-audio -no-snapshot -no-window &
+        $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done; input keyevent 82'
+        $ANDROID_HOME/platform-tools/adb devices
+        echo "Emulator started"
+
+    - name: capture
+      run: |
+        screencapture emulator-31.jpg
+        $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-31.png
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Android-Emulator-Screenshots
+        path: emulator-31.jpg
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Android-Emulator-Screenshots
+        path: emulator-31.png
+
+
   # download-e2e-results:
   #   runs-on: ubuntu-22.04
   #   needs:
