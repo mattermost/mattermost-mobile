@@ -296,27 +296,59 @@ jobs:
         try: ['0', '1', '2']
 
     steps:
-      - run: system_profiler SPHardwareDataType
-      - run: |
-          echo "hw.ramSize=4096" >> ~/.android/avd/android_emulator.avd/config.ini
-          echo "hw.cpu.ncore=2" >> ~/.android/avd/android_emulator.avd/config.ini
-      - run: |
+      - name: Debug info
+        run: |
+          echo "ANDROID_HOME: $ANDROID_HOME"
+          ls -R $ANDROID_HOME
+          ls -R ~/.android
+
+      - name: Set up Android SDK and create AVD
+        run: |
           echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-29;google_apis;x86_64'
           echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-29;google_apis;x86_64' --force --device "pixel_6"
-          
-          #echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-31;google_apis;x86_64'
-          #echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-31;google_apis;x86_64' --force --device "pixel_6"
-          echo "Emulator created successfully"
-          nohup $ANDROID_HOME/emulator/emulator -memory 4096 -avd android_emulator -skin 1080x1920 -no-window -noaudio -no-snapshot -netdelay none -netspeed full -no-audio -no-boot-anim -accel auto -gpu swiftshader_indirect -qemu -lcd-density 420 > /dev/null 2>&1 &
+  
+      - name: Configure AVD
+        run: |
+          echo "hw.ramSize=4096" >> ~/.android/avd/android_emulator.avd/config.ini
+          echo "hw.cpu.ncore=2" >> ~/.android/avd/android_emulator.avd/config.ini
+          echo "hw.gpu.enabled=true" >> ~/.android/avd/android_emulator.avd/config.ini
+
+      - name: Start Android Emulator
+        run: |
+          $ANDROID_HOME/emulator/emulator -avd android_emulator -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
           $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 5; done; input keyevent 82'
-          $ANDROID_HOME/platform-tools/adb devices
-          $ANDROID_HOME/platform-tools/adb shell input keyevent 82
+
+      - name: Disable animations
+        run: |
           $ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
           $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
           $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
-          sleep 120
+
+      - name: capture
+        run: |
           screencapture emulator-${{ matrix.os }}-${{ matrix.try }}.jpg
           $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-${{ matrix.os }}-${{ matrix.try }}.png
+
+      # - run: |
+      #     echo "hw.ramSize=4096" >> ~/.android/avd/android_emulator.avd/config.ini
+      #     echo "hw.cpu.ncore=2" >> ~/.android/avd/android_emulator.avd/config.ini
+      # - run: |
+      #     echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-29;google_apis;x86_64'
+      #     echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-29;google_apis;x86_64' --force --device "pixel_6"
+
+      #     #echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-31;google_apis;x86_64'
+      #     #echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-31;google_apis;x86_64' --force --device "pixel_6"
+      #     echo "Emulator created successfully"
+      #     nohup $ANDROID_HOME/emulator/emulator -memory 4096 -avd android_emulator -skin 1080x1920 -no-window -noaudio -no-snapshot -netdelay none -netspeed full -no-audio -no-boot-anim -accel auto -gpu swiftshader_indirect -qemu -lcd-density 420 > /dev/null 2>&1 &
+      #     $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 5; done; input keyevent 82'
+      #     $ANDROID_HOME/platform-tools/adb devices
+      #     $ANDROID_HOME/platform-tools/adb shell input keyevent 82
+      #     $ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
+      #     $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
+      #     $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
+      #     sleep 120
+      #     screencapture emulator-${{ matrix.os }}-${{ matrix.try }}.jpg
+      #     $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-${{ matrix.os }}-${{ matrix.try }}.png
       - uses: actions/upload-artifact@v3
         with:
           name: Android-Emulator-Screenshots
