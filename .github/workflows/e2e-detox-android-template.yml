@@ -237,7 +237,7 @@ jobs:
   #       path: detox/artifacts
 
   test:
-    runs-on: macos-12
+    runs-on: macos-latest
     strategy:
       fail-fast: false
     env:
@@ -292,22 +292,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['macos-12', 'macos-13']
+        os: ['macos-latest', 'macos-13']
         try: ['0', '1', '2']
 
     steps:
       - run: system_profiler SPHardwareDataType
       - run: |
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-31;google_apis;x86_64'
-          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-31;google_apis;x86_64' --force --device "pixel_6"
+          echo "hw.ramSize=4096" >> ~/.android/avd/android_emulator.avd/config.ini
+          echo "hw.cpu.ncore=2" >> ~/.android/avd/android_emulator.avd/config.ini
+      - run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-29;google_apis;x86_64'
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-29;google_apis;x86_64' --force --device "pixel_6"
+          
+          #echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-31;google_apis;x86_64'
+          #echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-31;google_apis;x86_64' --force --device "pixel_6"
           echo "Emulator created successfully"
-          nohup $ANDROID_HOME/emulator/emulator -memory 2048 -avd android_emulator -skin 1080x1920 -no-snapshot -netdelay none -netspeed full -no-audio -no-boot-anim -accel auto -gpu guest -qemu -lcd-density 420 > /dev/null 2>&1 &
-          $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done'
+          nohup $ANDROID_HOME/emulator/emulator -memory 4096 -avd android_emulator -skin 1080x1920 -no-window -noaudio -no-snapshot -netdelay none -netspeed full -no-audio -no-boot-anim -accel auto -gpu swiftshader_indirect -qemu -lcd-density 420 > /dev/null 2>&1 &
+          $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 5; done; input keyevent 82'
           $ANDROID_HOME/platform-tools/adb devices
-          #$ANDROID_HOME/platform-tools/adb shell input keyevent 82
-          #$ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
-          #$ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
-          #$ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
+          $ANDROID_HOME/platform-tools/adb shell input keyevent 82
+          $ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
+          $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
+          $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
           sleep 120
           screencapture emulator-${{ matrix.os }}-${{ matrix.try }}.jpg
           $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-${{ matrix.os }}-${{ matrix.try }}.png
