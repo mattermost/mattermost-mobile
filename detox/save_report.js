@@ -119,12 +119,12 @@ const saveReport = async () => {
         fs.mkdirSync(jestStareOutputDir, {recursive: true});
     }
 
-    // 'ios-results-*' is the path in CI where the parallel detox jobs save artifacts
-    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/ios-results*/jest-stare/${platform}-data*.json`]);
+    // "ios-results-*" or "android-results-*" is the path in CI where the parallel detox jobs save the artifacts
+    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`]);
     generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath);
 
     if (process.env.CI) {
-        // Delete folders starting with "iOS-results-" only in CI environment
+        // Delete folders starting with "ios-results-" or "android-results-" only in CI environment
         const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
         for (const entry of entries) {
             if (entry.isDirectory() && entry.name.startsWith(`${platform}-results-`)) {

@@ -50,9 +50,8 @@ export const apiAddUserToTeam = async (baseUrl: string, userId: string, teamId: 
  * @return {Object} returns {team} on success or {error, status} on error
  */
 export const apiCreateTeam = async (baseUrl: string, {type = 'O', prefix = 'team', team = null}: any = {}): Promise<any> => {
-    let response;
     try {
-        response = await client.post(
+       const response = await client.post(
             `${baseUrl}/api/v4/teams`,
             team || generateRandomTeam(type, prefix),
         );
