@@ -256,16 +256,14 @@ jobs:
         run: |
           echo "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/${{ env.ANDROID_BUILD_TOOLS_VERSION }}" >> $GITHUB_PATH
 
-      - name: Install Sdk
-        run: |
-          yes Y | sdkmanager --licenses
-          sdkmanager --install ${{ env.ANDROID_SDK_PACKAGES }}
+      - name: Accept Licenses
+        run: yes | sdkmanager --licenses
 
-      - name: Build emulator
+      - name: Build Emulator
         run: |
           echo "no" | avdmanager --verbose create avd --force -n ${{ env.EMULATOR_NAME }} --abi "${{ env.ANDROID_TARGET }}/${{ env.ANDROID_ARCH }}" -k "system-images;${{ env.ANDROID_TARGET }};google_apis;${{ env.ANDROID_ARCH }}"
 
-      - name: Launch emulator
+      - name: Launch Emulator
         run: |
           chmod +x ./start_emu_headless.sh
           EMULATOR_TIMEOUT=${{ env.EMULATOR_TIMEOUT }} EMULATOR_NAME=${{ env.EMULATOR_NAME }} ./start_emu_headless.sh
