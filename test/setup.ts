@@ -8,13 +8,12 @@ import * as ReactNative from 'react-native';
 import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
 import {v4 as uuidv4} from 'uuid';
 
+import 'react-native-gesture-handler/jestSetup';
+import '@testing-library/react-native/extend-expect';
+
 import {mockApiClient} from './mock_api_client';
 
 import type {RequestOptions} from '@mattermost/react-native-network-client';
-import type {ReadDirItem, StatResult} from 'react-native-fs';
-
-import 'react-native-gesture-handler/jestSetup';
-import '@testing-library/react-native/extend-expect';
 
 // @ts-expect-error Promise does not exists in global
 global.Promise = jest.requireActual('promise');
@@ -23,12 +22,45 @@ setGenerator(uuidv4);
 
 require('isomorphic-fetch');
 
-const WebViewMock = () => {
-    return null;
-};
+jest.mock('expo-application', () => {
+    return {
+        nativeApplicationVersion: '0.0.0',
+        nativeBuildVersion: '0',
+        applicationName: 'Mattermost',
+        applicationId: 'com.mattermost.rnbeta',
+    };
+});
 
-jest.mock('react-native-webview', () => ({
-    WebView: WebViewMock,
+jest.mock('expo-device', () => {
+    return {
+        deviceName: 'Device',
+        osName: 'Test',
+        osVersion: '0.0.0',
+        applicationId: 'com.mattermost.rnbeta',
+        isRootedExperimentalAsync: jest.fn().mockResolvedValue(false),
+    };
+});
+
+jest.mock('expo-file-system', () => ({
+    downloadAsync: jest.fn(() => Promise.resolve({md5: 'md5', uri: 'uri'})),
+    getInfoAsync: jest.fn(() => Promise.resolve({exists: true, md5: 'md5', uri: 'uri'})),
+    readAsStringAsync: jest.fn(() => Promise.resolve()),
+    writeAsStringAsync: jest.fn(() => Promise.resolve()),
+    deleteAsync: jest.fn(() => Promise.resolve()),
+    moveAsync: jest.fn(() => Promise.resolve()),
+    copyAsync: jest.fn(() => Promise.resolve()),
+    makeDirectoryAsync: jest.fn(() => Promise.resolve()),
+    readDirectoryAsync: jest.fn(() => Promise.resolve()),
+    createDownloadResumable: jest.fn(() => Promise.resolve()),
+    documentDirectory: 'file:///test-directory/',
+    cacheDirectory: 'file://test-cache-directory/',
+}));
+
+jest.mock('expo-web-browser', () => ({
+    openAuthSessionAsync: jest.fn().mockResolvedValue(({
+        type: 'success',
+        url: 'mmauthbeta://callback?MMAUTHTOKEN=123&MMCSRF=456',
+    })),
 }));
 
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
@@ -102,7 +134,7 @@ jest.doMock('react-native', () => {
         Appearance: {
             getColorScheme: jest.fn().mockReturnValue('light'),
         },
-        MattermostManaged: {
+        RNUtils: {
             getConstants: () => ({
                 appGroupIdentifier: 'group.mattermost.rnbeta',
                 appGroupSharedDirectory: {
@@ -110,13 +142,10 @@ jest.doMock('react-native', () => {
                     databasePath: '',
                 },
             }),
-        },
-        SplitView: {
             addListener: jest.fn(),
             removeListeners: jest.fn(),
-            isRunningInSplitView: jest.fn().mockReturnValue(() => ({isSplitView: false, isTablet: false})),
-        },
-        Notifications: {
+            isRunningInSplitView: jest.fn().mockReturnValue(() => ({isSplit: false, isTablet: false})),
+
             getDeliveredNotifications: jest.fn().mockResolvedValue([]),
             removeChannelNotifications: jest.fn().mockImplementation(),
             removeThreadNotifications: jest.fn().mockImplementation(),
@@ -202,61 +231,8 @@ jest.mock('react-native-vector-icons', () => {
     };
 });
 
-jest.mock('react-native-fs', () => {
-    const RNFS = {
-        CachesDirectoryPath: 'root/cache',
-        DocumentDirectoryPath: 'root/files',
-        exists: async () => {
-            return true;
-        },
-        unlink: async () => {
-            return true;
-        },
-        mkdir: async () => {
-            return true;
-        },
-        readDir: async (path: string): Promise<ReadDirItem[]> => {
-            return [{
-                ctime: undefined,
-                mtime: undefined,
-                name: 'testfile.test',
-                path,
-                size: 123,
-                isFile: () => true,
-                isDirectory: () => false,
-            }];
-        },
-        stat: async (path: string): Promise<StatResult> => ({
-            name: 'test name',
-            path,
-            size: 123,
-            mode: 600,
-            ctime: 0,
-            mtime: 0,
-            originalFilepath: path,
-            isFile: () => true,
-            isDirectory: () => false,
-        }),
-    };
-
-    return RNFS;
-});
-
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
-
-jest.mock('react-native-device-info', () => {
-    return {
-        getVersion: jest.fn(() => '0.0.0'),
-        getBuildNumber: jest.fn(() => '0'),
-        getModel: jest.fn(() => 'iPhone X'),
-        hasNotch: jest.fn(() => true),
-        isTablet: jest.fn(() => false),
-        getApplicationName: jest.fn(() => 'Mattermost'),
-        getSystemName: jest.fn(() => 'ios'),
-        getSystemVersion: jest.fn(() => '0.0.0'),
-    };
-});
 
 jest.mock('react-native-localize', () => ({
     getTimeZone: () => 'World/Somewhere',
@@ -369,6 +345,7 @@ jest.mock('@screens/navigation', () => ({
     dismissAllModalsAndPopToScreen: jest.fn(),
     dismissAllModalsAndPopToRoot: jest.fn(),
     dismissOverlay: jest.fn(() => Promise.resolve()),
+    dismissAllOverlays: jest.fn(() => Promise.resolve()),
 }));
 
 jest.mock('@mattermost/react-native-emm', () => ({

@@ -311,7 +311,7 @@ export const observeRecentCustomStatus = (database: Database): Observable<UserCu
     );
 };
 
-export const getWebSocketLastDisconnected = async (serverDatabase: Database) => {
+export const getLastFullSync = async (serverDatabase: Database) => {
     try {
         const websocketLastDisconnected = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.WEBSOCKET);
         return (parseInt(websocketLastDisconnected?.value || 0, 10) || 0);
@@ -320,16 +320,17 @@ export const getWebSocketLastDisconnected = async (serverDatabase: Database) => 
     }
 };
 
-export const observeWebsocketLastDisconnected = (database: Database) => {
-    return querySystemValue(database, SYSTEM_IDENTIFIERS.WEBSOCKET).observe().pipe(
-        switchMap((result) => (result.length ? result[0].observe() : of$({value: '0'}))),
-        switchMap((model) => of$(parseInt(model.value || 0, 10) || 0)),
-    );
+export const setLastFullSync = async (operator: ServerDataOperator, value: number, prepareRecordsOnly = false) => {
+    return operator.handleSystem({systems: [{
+        id: SYSTEM_IDENTIFIERS.WEBSOCKET,
+        value,
+    }],
+    prepareRecordsOnly});
 };
 
-export const resetWebSocketLastDisconnected = async (operator: ServerDataOperator, prepareRecordsOnly = false) => {
+export const resetLastFullSync = async (operator: ServerDataOperator, prepareRecordsOnly = false) => {
     const {database} = operator;
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
+    const lastDisconnectedAt = await getLastFullSync(database);
 
     if (lastDisconnectedAt) {
         return operator.handleSystem({systems: [{

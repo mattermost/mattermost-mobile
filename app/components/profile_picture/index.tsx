@@ -13,7 +13,7 @@ import Image from './image';
 import Status from './status';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {Source} from 'react-native-fast-image';
+import type {ImageSource} from 'expo-image';
 
 type ProfilePictureProps = {
     author?: UserModel | UserProfile;
@@ -25,7 +25,7 @@ type ProfilePictureProps = {
     containerStyle?: StyleProp<ViewStyle>;
     statusStyle?: StyleProp<ViewStyle>;
     testID?: string;
-    source?: Source | string;
+    source?: ImageSource | string;
     url?: string;
 };
 

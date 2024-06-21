@@ -6,7 +6,7 @@ import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {CallsCustomMessage} from '@calls/components/calls_custom_message/calls_custom_message';
-import {observeIsCallLimitRestricted} from '@calls/observers';
+import {observeEndCallDetails, observeIsCallLimitRestricted} from '@calls/observers';
 import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
 import {Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
@@ -52,6 +52,7 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
         limitRestrictedInfo: observeIsCallLimitRestricted(database, serverUrl, post.channelId),
         ccChannelId,
         joiningChannelId,
+        ...observeEndCallDetails(),
     };
 });
 

@@ -27,6 +27,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignSelf: 'center',
             bottom: -70,
             flexDirection: 'row',
+        },
+        shadow: {
             elevation: 4,
             shadowOpacity: 0.2,
             shadowOffset: {width: 0, height: 4},
@@ -110,7 +112,7 @@ const ScrollToEndView = ({
             <Animated.View style={[animatedStyle, styles.buttonStyle]}>
                 <Pressable
                     onPress={onPress}
-                    style={scrollButtonStyles}
+                    style={[scrollButtonStyles, styles.shadow]}
                 >
                     <CompassIcon
                         size={18}

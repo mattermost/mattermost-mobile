@@ -125,7 +125,7 @@ const ImagePreview = ({expandedLink, isReplyPost, layoutWidth, link, location, m
                             id={fileId}
                             imageUri={imageUrl}
                             onError={onError}
-                            resizeMode='contain'
+                            contentFit='contain'
                             style={[style.image, {width: dimensions.width, height: dimensions.height}]}
                         />
                     </Animated.View>

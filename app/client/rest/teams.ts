@@ -32,8 +32,6 @@ export interface ClientTeamsMix {
 
 const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     createTeam = async (team: Team) => {
-        this.analytics?.trackAPI('api_teams_create');
-
         return this.doFetch(
             `${this.getTeamsRoute()}`,
             {method: 'post', body: team},
@@ -41,8 +39,6 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     deleteTeam = async (teamId: string) => {
-        this.analytics?.trackAPI('api_teams_delete');
-
         return this.doFetch(
             `${this.getTeamRoute(teamId)}`,
             {method: 'delete'},
@@ -50,8 +46,6 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     updateTeam = async (team: Team) => {
-        this.analytics?.trackAPI('api_teams_update_name', {team_id: team.id});
-
         return this.doFetch(
             `${this.getTeamRoute(team.id)}`,
             {method: 'put', body: team},
@@ -59,8 +53,6 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     patchTeam = async (team: Partial<Team> & {id: string}) => {
-        this.analytics?.trackAPI('api_teams_patch_name', {team_id: team.id});
-
         return this.doFetch(
             `${this.getTeamRoute(team.id)}/patch`,
             {method: 'put', body: team},
@@ -82,8 +74,6 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getTeamByName = async (teamName: string) => {
-        this.analytics?.trackAPI('api_teams_get_team_by_name');
-
         return this.doFetch(
             this.getTeamNameRoute(teamName),
             {method: 'get'},
@@ -133,8 +123,6 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     addToTeam = async (teamId: string, userId: string) => {
-        this.analytics?.trackAPI('api_teams_invite_members', {team_id: teamId});
-
         const member = {user_id: userId, team_id: teamId};
         return this.doFetch(
             `${this.getTeamMembersRoute(teamId)}`,
@@ -143,8 +131,6 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     addUsersToTeamGracefully = (teamId: string, userIds: string[]) => {
-        this.analytics?.trackAPI('api_teams_batch_add_members', {team_id: teamId, count: userIds.length});
-
         const members: Array<{team_id: string; user_id: string}> = [];
         userIds.forEach((id) => members.push({team_id: teamId, user_id: id}));
 
@@ -155,8 +141,6 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     sendEmailInvitesToTeamGracefully = (teamId: string, emails: string[]) => {
-        this.analytics?.trackAPI('api_teams_invite_members', {team_id: teamId});
-
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/invite/email?graceful=true`,
             {method: 'post', body: emails},
@@ -172,8 +156,6 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     removeFromTeam = async (teamId: string, userId: string) => {
-        this.analytics?.trackAPI('api_teams_remove_members', {team_id: teamId});
-
         return this.doFetch(
             `${this.getTeamMemberRoute(teamId, userId)}`,
             {method: 'delete'},

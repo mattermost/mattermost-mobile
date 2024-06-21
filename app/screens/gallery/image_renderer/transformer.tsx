@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image, type ImageSource} from 'expo-image';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {StyleSheet} from 'react-native';
-import FastImage, {type Source} from 'react-native-fast-image';
 import {
     PanGestureHandler, type PanGestureHandlerGestureEvent, PinchGestureHandler, type PinchGestureHandlerGestureEvent,
     State, TapGestureHandler, type TapGestureHandlerGestureEvent,
@@ -53,7 +53,7 @@ const timingConfig: WithTimingConfig = {
 export interface RenderImageProps {
     width: number;
     height: number;
-    source: Source;
+    source: ImageSource;
     onLoad: () => void;
 }
 
@@ -73,7 +73,7 @@ export interface ImageTransformerProps extends ImageTransformerReusableProps {
     onStateChange?: (isActive: boolean) => void;
     outerGestureHandlerActive?: Animated.SharedValue<boolean>;
     outerGestureHandlerRefs?: Array<React.Ref<unknown>>;
-    source: Source | string;
+    source: ImageSource | string;
     targetDimensions: { width: number; height: number };
     width: number;
 }
@@ -541,7 +541,7 @@ const ImageTransformer = (
         );
     } else {
         element = (
-            <FastImage
+            <Image
                 onLoad={onLoadImageSuccess}
                 source={imageSource}
                 style={{width: targetWidth, height: targetHeight}}

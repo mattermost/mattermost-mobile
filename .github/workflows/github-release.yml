@@ -42,7 +42,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-ios-unsigned
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           path: Mattermost-unsigned.ipa
           name: Mattermost-unsigned.ipa
@@ -68,7 +68,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-android-unsigned-build
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           path: Mattermost-unsigned.apk
           name: Mattermost-unsigned.apk
@@ -82,14 +82,17 @@ jobs:
       - name: ci/checkout-repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: ruby/setup-ruby@22fdc77bf4148f810455b226c90fb81b5cbc00a7 # v1.171.0
+      - uses: ruby/setup-ruby@ff740bc00a01b3a50fffc55a1071b1060eeae9dc # v1.180.0
 
       - name: release/setup-fastlane-dependencies
         run: bundle install
         working-directory: ./fastlane
 
       - name: ci/download-artifacts
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+        with:
+          path: ${{ github.workspace }}
+          merge-multiple: true
 
       - name: release/create-github-release
         env:

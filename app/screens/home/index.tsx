@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {createBottomTabNavigator, type BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
-import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {autoUpdateTimezone} from '@actions/remote/user';
@@ -62,6 +62,17 @@ export default function HomeScreen(props: HomeProps) {
     const intl = useIntl();
     const appState = useAppState();
 
+    const handleFindChannels = () => {
+        if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS)) {
+            findChannels(
+                intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
+                theme,
+            );
+        }
+    };
+
+    useHardwareKeyboardEvents({onFindChannels: handleFindChannels});
+
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel' | 'Post' | 'Connection') => {
             notificationError(intl, value);
@@ -96,20 +107,6 @@ export default function HomeScreen(props: HomeProps) {
             leaveChannelListener.remove();
             archivedChannelListener.remove();
             crtToggledListener.remove();
-        };
-    }, [intl.locale]);
-
-    useEffect(() => {
-        const listener = HWKeyboardEvent.onHWKeyPressed((keyEvent: {pressedKey: string}) => {
-            if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS) && keyEvent.pressedKey === 'find-channels') {
-                findChannels(
-                    intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
-                    theme,
-                );
-            }
-        });
-        return () => {
-            listener.remove();
         };
     }, [intl.locale]);
 

@@ -1,15 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils, {type SplitViewResult} from '@mattermost/rnutils';
 import moment, {type Moment} from 'moment-timezone';
-import {NativeModules, Platform} from 'react-native';
+import {Platform} from 'react-native';
 
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
 import {STATUS_BAR_HEIGHT} from '@constants/view';
 
-const {SplitView} = NativeModules;
-const {isRunningInSplitView} = SplitView;
-const ShareModule: NativeShareExtension|undefined = Platform.select({android: NativeModules.MattermostShare});
+const {isRunningInSplitView} = RNUtils;
+const MattermostShare = Platform.select({
+    default: null,
+    android: require('@mattermost/rnshare').default,
+});
 
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than
 // the provided minimum version. A non-equal major version will ignore minor and dot
@@ -131,7 +134,7 @@ export function getRoundedTime(value: Moment) {
 
 export function isTablet() {
     const result: SplitViewResult = isRunningInSplitView();
-    return result.isTablet && !result.isSplitView;
+    return result.isTablet && !result.isSplit;
 }
 
 export const pluckUnique = (key: string) => (array: Array<{[key: string]: unknown}>) => Array.from(new Set(array.map((obj) => obj[key])));
@@ -154,7 +157,7 @@ export function hasTrailingSpaces(term: string) {
 export function isMainActivity() {
     return Platform.select({
         default: true,
-        android: ShareModule?.getCurrentActivityName() === 'MainActivity',
+        android: MattermostShare?.getCurrentActivityName() === 'MainActivity',
     });
 }
 

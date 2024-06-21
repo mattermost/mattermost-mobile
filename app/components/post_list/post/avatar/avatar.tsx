@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image} from 'expo-image';
 import React, {type ReactNode} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import CompassIcon from '@components/compass_icon';
@@ -50,7 +50,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
         if (overrideIconUrl) {
             const source = {uri: overrideIconUrl};
             iconComponent = (
-                <FastImage
+                <Image
                     source={source}
                     style={{
                         height: pictureSize,

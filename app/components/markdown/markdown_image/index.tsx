@@ -242,7 +242,7 @@ const MarkdownImage = ({
                             id={fileInfo.id!}
                             imageUri={fileInfo.uri}
                             onError={handleOnError}
-                            resizeMode='contain'
+                            contentFit='contain'
                             style={{width, height}}
                         />
                     </Animated.View>
@@ -262,7 +262,7 @@ const MarkdownImage = ({
                     id={fileInfo.id!}
                     imageUri={fileInfo.uri}
                     onError={handleOnError}
-                    resizeMode='contain'
+                    contentFit='contain'
                     style={{width, height}}
                 />
             </TouchableWithFeedback>

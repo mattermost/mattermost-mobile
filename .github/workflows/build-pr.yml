@@ -6,7 +6,7 @@ on:
       - labeled
 
 env:
-  NODE_VERSION: 18.7.0
+  NODE_VERSION: 20.13.1
   TERM: xterm
 
 jobs:

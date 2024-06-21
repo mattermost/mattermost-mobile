@@ -134,7 +134,7 @@ const File = ({
                         forwardRef={ref}
                         inViewPort={inViewPort}
                         isSingleImage={isSingleImage}
-                        resizeMode={'cover'}
+                        contentFit={'cover'}
                         wrapperWidth={wrapperWidth}
                         updateFileForGallery={updateFileForGallery}
                         index={index}
@@ -158,7 +158,7 @@ const File = ({
                         forwardRef={ref}
                         inViewPort={inViewPort}
                         isSingleImage={isSingleImage}
-                        resizeMode={'cover'}
+                        contentFit={'cover'}
                         wrapperWidth={wrapperWidth}
                     />
                     {Boolean(nonVisibleImagesCount) &&

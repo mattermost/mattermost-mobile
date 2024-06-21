@@ -15,7 +15,6 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues} from '@queries/servers/system';
-import {generateId} from '@utils/general';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
@@ -134,7 +133,23 @@ class TestHelper {
     };
 
     generateId = () => {
-        return generateId();
+        // implementation taken from http://stackoverflow.com/a/2117523
+        let id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+        id = id.replace(/[xy]/g, (c) => {
+            const r = Math.floor(Math.random() * 16);
+            let v;
+
+            if (c === 'x') {
+                v = r;
+            } else {
+                // eslint-disable-next-line no-mixed-operators
+                v = (r & 0x3) | 0x8;
+            }
+
+            return v.toString(16);
+        });
+
+        return id;
     };
 
     createClient = () => {
