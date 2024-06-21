@@ -69,7 +69,6 @@ const saveReport = async () => {
         WEBHOOK_URL,
         ZEPHYR_ENABLE,
         ZEPHYR_CYCLE_KEY,
-        REPORT_PATH,
     } = process.env;
 
     // Remove old generated reports
@@ -100,7 +99,7 @@ const saveReport = async () => {
     // Merge all XML reports into one single XML report
     const platform = process.env.IOS === 'true' ? 'ios' : 'android';
     const combinedFilePath = `${ARTIFACTS_DIR}/${platform}-combined.xml`;
-    await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/ios-results*/${platform}-junit*.xml`]);
+    await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/${platform}-results*/${platform}-junit*.xml`]);
     console.log(`Merged, check ${combinedFilePath}`);
 
     // Read XML from a file
@@ -128,12 +127,12 @@ const saveReport = async () => {
         // Delete folders starting with "iOS-results-" only in CI environment
         const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
         for (const entry of entries) {
-            if (entry.isDirectory() && entry.name.startsWith('ios-results-')) {
+            if (entry.isDirectory() && entry.name.startsWith(`${platform}-results-`)) {
                 fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
             }
         }
     }
-    const result = await saveArtifacts(REPORT_PATH);
+    const result = await saveArtifacts();
     if (result && result.success) {
         console.log('Successfully uploaded artifacts to S3:', result.reportLink);
     }

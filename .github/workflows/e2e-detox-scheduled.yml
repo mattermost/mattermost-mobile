@@ -52,6 +52,7 @@ jobs:
     with:
       run-ios-tests: true
       run-type: "MAIN"
+      record_tests_in_zephyr: 'true'
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
@@ -70,4 +71,3 @@ jobs:
           description: Completed with ${{ needs.run-ios-tests-on-main-scheduled.outputs.FAILURES }} failures
           status: ${{ needs.run-ios-tests-on-main-scheduled.outputs.STATUS }}
           target_url: ${{ needs.run-ios-tests-on-main-scheduled.outputs.TARGET_URL }}
-          record_tests_in_zephyr: true
