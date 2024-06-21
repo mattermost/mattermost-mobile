@@ -49,51 +49,51 @@ env:
   FAILURE_MESSAGE: "Something has failed"
   
 jobs:
-  update-initial-status:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.commit_sha }}
-          context: ${{ inputs.status_check_context }}
-          description: Detox tests for mattermost mobile app
-          status: pending
+  # update-initial-status:
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: mattermost/actions/delivery/update-commit-status@main
+  #       env:
+  #         GITHUB_TOKEN: ${{ github.token }}
+  #       with:
+  #         repository_full_name: ${{ github.repository }}
+  #         commit_sha: ${{ inputs.commit_sha }}
+  #         context: ${{ inputs.status_check_context }}
+  #         description: Detox tests for mattermost mobile app
+  #         status: pending
 
-  generate-specs:
-    needs: update-initial-status
-    runs-on: ubuntu-22.04
-    outputs:
-      specs: ${{ steps.generate-specs.outputs.specs }}
-      build_id: ${{ env.BUILD_ID }}
-      device_name: ${{ env.DEVICE_NAME }}
-      device_os_version: ${{ env.DEVICE_OS_VERSION }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  # generate-specs:
+  #   needs: update-initial-status
+  #   runs-on: ubuntu-22.04
+  #   outputs:
+  #     specs: ${{ steps.generate-specs.outputs.specs }}
+  #     build_id: ${{ env.BUILD_ID }}
+  #     device_name: ${{ env.DEVICE_NAME }}
+  #     device_os_version: ${{ env.DEVICE_OS_VERSION }}
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Set Build ID
-        id: resolve-device
-        run: |
-          cd detox
-          DEVICE_NAME=$(node -p "require('./.detoxrc').devices['android'].device.avdName")
-          DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['android'].device.api")
-          BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
+  #     - name: Set Build ID
+  #       id: resolve-device
+  #       run: |
+  #         cd detox
+  #         DEVICE_NAME=$(node -p "require('./.detoxrc').devices['android'].device.avdName")
+  #         DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['android'].device.api")
+  #         BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
 
-          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
-          echo "DEVICE_NAME=$(echo ${DEVICE_NAME})" >> $GITHUB_ENV
-          echo "DEVICE_OS_VERSION=$(echo ${DEVICE_OS_VERSION})" >> $GITHUB_ENV
+  #         echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
+  #         echo "DEVICE_NAME=$(echo ${DEVICE_NAME})" >> $GITHUB_ENV
+  #         echo "DEVICE_OS_VERSION=$(echo ${DEVICE_OS_VERSION})" >> $GITHUB_ENV
 
-      - name: Generate Test Specs
-        id: generate-specs
-        uses: ./.github/actions/generate-specs
-        with:
-          parallelism: 10
-          search_path: detox/e2e/test
-          device_name: ${{ env.DEVICE_NAME }}
-          device_os_version: ${{env.DEVICE_OS_VERSION}}
+  #     - name: Generate Test Specs
+  #       id: generate-specs
+  #       uses: ./.github/actions/generate-specs
+  #       with:
+  #         parallelism: 10
+  #         search_path: detox/e2e/test
+  #         device_name: ${{ env.DEVICE_NAME }}
+  #         device_os_version: ${{env.DEVICE_OS_VERSION}}
         
   # build-android-apk:
   #   needs: update-initial-status
@@ -237,52 +237,76 @@ jobs:
   #       path: detox/artifacts
 
   test:
+    runs-on: macos-12
+    strategy:
+      fail-fast: false
+    env:
+      ANDROID_BUILD_TOOLS_VERSION: "34.0.0"
+      ANDROID_SDK_PACKAGES: "platform-tools build-tools;34.0.0 system-images;android-31;google_apis;x86_64"
+      ANDROID_TARGET: "android-31"
+      ANDROID_ARCH: "x86_64"
+      EMULATOR_TIMEOUT: "600"
+      EMULATOR_NAME: "pixel_6"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.1.1
+
+      - name: Add avdmanager and sdkmanager to system PATH
+        run: |
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/${{ env.ANDROID_BUILD_TOOLS_VERSION }}" >> $GITHUB_PATH
+
+      - name: Install Sdk
+        run: |
+          yes Y | sdkmanager --licenses
+          sdkmanager --install ${{ env.ANDROID_SDK_PACKAGES }}
+
+      - name: Build emulator
+        run: |
+          echo "no" | avdmanager --verbose create avd --force -n ${{ env.EMULATOR_NAME }} --abi "${{ env.ANDROID_TARGET }}/${{ env.ANDROID_ARCH }}" -k "system-images;${{ env.ANDROID_TARGET }};google_apis;${{ env.ANDROID_ARCH }}"
+
+      - name: Launch emulator
+        run: |
+          chmod +x ./start_emu_headless.sh
+          EMULATOR_TIMEOUT=${{ env.EMULATOR_TIMEOUT }} EMULATOR_NAME=${{ env.EMULATOR_NAME }} ./start_emu_headless.sh
+
+          screencapture emulator-31-1.jpg
+          $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-31-1.png
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Android-Emulator-Screenshots
+          path: emulator-31-1.jpg
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Android-Emulator-Screenshots
+          path: emulator-31-1.png
+
+  test-snapshot:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: ['macos-12']
+        os: ['macos-12', 'macos-13']
         try: ['0', '1', '2']
 
     steps:
       - run: system_profiler SPHardwareDataType
       - run: |
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-30;google_apis;x86'
-          for (( i=0; i<2; i++ )); do
-              # create and start emulator with specific SDK
-              emulator_name='emulator'$i
-              echo -e $(date) "$debugTag Create AVD $emulator_name "
-              if [[ "`uname -m`" == "arm64" ]]; then
-                $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n $emulator_name -k "system-images;android-30;google_apis;arm64-v8a" -d pixel_6 --force
-                echo qq
-              else
-                echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n $emulator_name -k "system-images;android-30;google_apis;x86" -d pixel_6 --force
-              fi
-              echo -e $(date) "$debugTag Check hardware acceleration "
-              $ANDROID_HOME/emulator/emulator -accel-check
-              echo -e $(date) "$debugTag Boot AVD $emulator_name "
-              # wait for AVD boot finished
-              if [[ "`uname -m`" == "arm64" ]]; then
-                $ANDROID_HOME/emulator/emulator -avd $emulator_name -cores 2 -memory 2048 -accel on -noaudio -no-snapshot -no-boot-anim &
-              else
-                nohup $ANDROID_HOME/emulator/emulator -avd $emulator_name -cores 2 -memory 5120 -accel on -gpu swiftshader_indirect -noaudio -no-snapshot -no-boot-anim &
-              fi
-              echo -e $(date) "$debugTag Wait for AVD boot finished "
-              $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done'
-              
-              echo -e $(date) "$debugTag Emulator started"
-              
-              echo -e $(date) "Access emulator with adb"
-              "$ANDROID_HOME/platform-tools/adb" shell ls  2>/dev/null > ls.log
-              
-              echo -e $(date) "Stop emulator "
-              adb devices | grep emulator | cut -f1 | while read line; do adb -s $line emu kill; done
-              sleep 30
-            done
-            sleep 30
-          screencapture emulator-macos-13.jpg
-          $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-macos-13.png
-
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-31;google_apis;x86_64'
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-31;google_apis;x86_64' --force --device "pixel_6"
+          echo "Emulator created successfully"
+          nohup $ANDROID_HOME/emulator/emulator -memory 2048 -avd android_emulator -skin 1080x1920 -no-snapshot -netdelay none -netspeed full -no-audio -no-boot-anim -accel auto -gpu guest -qemu -lcd-density 420 > /dev/null 2>&1 &
+          $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done'
+          $ANDROID_HOME/platform-tools/adb devices
+          #$ANDROID_HOME/platform-tools/adb shell input keyevent 82
+          #$ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
+          #$ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
+          #$ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
+          sleep 120
+          screencapture emulator-${{ matrix.os }}-${{ matrix.try }}.jpg
+          $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-${{ matrix.os }}-${{ matrix.try }}.png
       - uses: actions/upload-artifact@v3
         with:
           name: Android-Emulator-Screenshots
@@ -292,91 +316,91 @@ jobs:
           name: Android-Emulator-Screenshots
           path: emulator-${{ matrix.os }}-${{ matrix.try }}.png
 
-  download-e2e-results:
-    runs-on: ubuntu-22.04
-    needs:
-      - generate-specs
-      # - e2e-android-on-mac
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  # download-e2e-results:
+  #   runs-on: ubuntu-22.04
+  #   needs:
+  #     - generate-specs
+  #     # - e2e-android-on-mac
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: ci/prepare-node-deps
-        uses: ./.github/actions/prepare-node-deps
+  #     - name: ci/prepare-node-deps
+  #       uses: ./.github/actions/prepare-node-deps
 
-      - name: Create artifacts directory
-        run: mkdir -p detox/artifacts/
+  #     - name: Create artifacts directory
+  #       run: mkdir -p detox/artifacts/
 
-      - name: Download All Android Artifacts
-        uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
-        with:
-          path: detox/artifacts/
-          pattern: android-results-*
+  #     - name: Download All Android Artifacts
+  #       uses:  actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+  #       with:
+  #         path: detox/artifacts/
+  #         pattern: android-results-*
 
-      - name: Save report Detox Dependencies
-        run: |
-          cd detox
-          npm ci
-          npm run e2e:save-report
-        env:
-          IOS: false
+  #     - name: Save report Detox Dependencies
+  #       run: |
+  #         cd detox
+  #         npm ci
+  #         npm run e2e:save-report
+  #       env:
+  #         IOS: false
 
-  update-final-status:
-    runs-on: ubuntu-22.04
-    needs:
-      - generate-specs
-      - download-e2e-results
-    steps:
-      - name: Set Target URL
-        id: set-url
-        run: |
-          s3Folder="${{ env.BUILD_ID }}-${{ env.COMMIT_HASH }}-${{ env.BRANCH }}"
-          s3Folder=$(echo "$s3Folder" | sed 's/\./-/g')
-          echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/android-report.html" >> $GITHUB_ENV
-        env:
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+  # update-final-status:
+  #   runs-on: ubuntu-22.04
+  #   needs:
+  #     - generate-specs
+  #     - download-e2e-results
+  #   steps:
+  #     - name: Set Target URL
+  #       id: set-url
+  #       run: |
+  #         s3Folder="${{ env.BUILD_ID }}-${{ env.COMMIT_HASH }}-${{ env.BRANCH }}"
+  #         s3Folder=$(echo "$s3Folder" | sed 's/\./-/g')
+  #         echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${s3Folder}/jest-stare/android-report.html" >> $GITHUB_ENV
+  #       env:
+  #         BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
 
-      - name: Determine Status
-        id: determine-status
-        run: |
-          if [[ ${{ needs.download-e2e-results.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
-            echo "status=failure" >> $GITHUB_ENV
-          else
-            echo "status=success" >> $GITHUB_ENV
-          fi
+  #     - name: Determine Status
+  #       id: determine-status
+  #       run: |
+  #         if [[ ${{ needs.download-e2e-results.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
+  #           echo "status=failure" >> $GITHUB_ENV
+  #         else
+  #           echo "status=success" >> $GITHUB_ENV
+  #         fi
 
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.commit_sha }}
-          context: ${{ inputs.status_check_context }}
-          description: |
-            Completed with ${{ needs.download-e2e-results.outputs.failures }} failures
-          status: ${{ env.status }}
-          target_url: ${{ env.TARGET_URL }}
+  #     - uses: mattermost/actions/delivery/update-commit-status@main
+  #       env:
+  #         GITHUB_TOKEN: ${{ github.token }}
+  #       with:
+  #         repository_full_name: ${{ github.repository }}
+  #         commit_sha: ${{ inputs.commit_sha }}
+  #         context: ${{ inputs.status_check_context }}
+  #         description: |
+  #           Completed with ${{ needs.download-e2e-results.outputs.failures }} failures
+  #         status: ${{ env.status }}
+  #         target_url: ${{ env.TARGET_URL }}
 
-  e2e-remove-label:
-    if: ${{ inputs.remove-pr-label }}
-    needs:
-      - download-e2e-results
-    runs-on: ubuntu-22.04
-    steps:
-      - name: e2e/remove-label-from-pr
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        continue-on-error: true # Label might have been removed manually
-        with:
-          script: |
-            const androidLabel = 'E2E Android tests for PR';
-            const labels = context.payload.pull_request.labels.map(label => label.name);
+  # e2e-remove-label:
+  #   if: ${{ inputs.remove-pr-label }}
+  #   needs:
+  #     - download-e2e-results
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - name: e2e/remove-label-from-pr
+  #       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+  #       continue-on-error: true # Label might have been removed manually
+  #       with:
+  #         script: |
+  #           const androidLabel = 'E2E Android tests for PR';
+  #           const labels = context.payload.pull_request.labels.map(label => label.name);
 
-            if (labels.includes(androidLabel)) {
-              github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: androidLabel,
-              });
-            }
+  #           if (labels.includes(androidLabel)) {
+  #             github.rest.issues.removeLabel({
+  #               issue_number: context.issue.number,
+  #               owner: context.repo.owner,
+  #               repo: context.repo.repo,
+  #               name: androidLabel,
+  #             });
+  #           }
         
