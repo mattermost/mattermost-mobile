@@ -259,6 +259,12 @@ jobs:
       - name: Accept Licenses
         run: yes | sdkmanager --licenses
 
+      - name: List Available Packages
+        run: sdkmanager --list
+
+      - name: Install System Image
+        run: sdkmanager "system-images;${{ env.ANDROID_TARGET }};google_apis;${{ env.ANDROID_ARCH }}"
+
       - name: Build Emulator
         run: |
           echo "no" | avdmanager --verbose create avd --force -n ${{ env.EMULATOR_NAME }} --abi "${{ env.ANDROID_TARGET }}/${{ env.ANDROID_ARCH }}" -k "system-images;${{ env.ANDROID_TARGET }};google_apis;${{ env.ANDROID_ARCH }}"
