@@ -292,7 +292,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['macos-latest', 'macos-13']
+        os: ['macos-13']
         try: ['0', '1', '2']
 
     steps:
@@ -377,7 +377,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '21'
+        java-version: '8'
 
     - name: Download Android Emulator Image
       run: |
