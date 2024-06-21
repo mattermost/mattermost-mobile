@@ -1,17 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter, NativeModules} from 'react-native';
+import RNUtils, {type SplitViewResult} from '@mattermost/rnutils';
+import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter} from 'react-native';
 import semver from 'semver';
 
 import {switchToChannelById} from '@actions/remote/channel';
-import LocalConfig from '@assets/config.json';
 import {Device, Events, Sso} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
-import * as analytics from '@managers/analytics';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {queryTeamDefaultChannel} from '@queries/servers/channel';
 import {getCommonSystemValues} from '@queries/servers/system';
@@ -22,15 +21,13 @@ import {getIntlShape} from '@utils/general';
 
 type LinkingCallbackArg = {url: string};
 
-const {SplitView} = NativeModules;
-const splitViewEmitter = new NativeEventEmitter(SplitView);
+const splitViewEmitter = new NativeEventEmitter(RNUtils);
 
 class GlobalEventHandler {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
 
     constructor() {
         DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
-        DeviceEventEmitter.addListener(Events.CONFIG_CHANGED, this.onServerConfigChanged);
         splitViewEmitter.addListener('SplitViewChanged', this.onSplitViewChanged);
         Linking.addEventListener('url', this.onDeepLink);
     }
@@ -38,17 +35,6 @@ class GlobalEventHandler {
     init = () => {
         this.JavascriptAndNativeErrorHandler = require('@utils/error_handling').default;
         this.JavascriptAndNativeErrorHandler?.initializeErrorHandling();
-    };
-
-    configureAnalytics = async (serverUrl: string, config?: ClientConfig) => {
-        if (serverUrl && config?.DiagnosticsEnabled === 'true' && config?.DiagnosticId && LocalConfig.RudderApiKey) {
-            let client = analytics.get(serverUrl);
-            if (!client) {
-                client = analytics.create(serverUrl);
-            }
-
-            await client.init(config);
-        }
     };
 
     onDeepLink = async (event: LinkingCallbackArg) => {
@@ -62,10 +48,6 @@ class GlobalEventHandler {
                 alertInvalidDeepLink(getIntlShape(DEFAULT_LOCALE));
             }
         }
-    };
-
-    onServerConfigChanged = ({serverUrl, config}: {serverUrl: string; config: ClientConfig}) => {
-        this.configureAnalytics(serverUrl, config);
     };
 
     onServerVersionChanged = async ({serverUrl, serverVersion}: {serverUrl: string; serverVersion?: string}) => {

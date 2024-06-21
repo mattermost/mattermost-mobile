@@ -9,7 +9,7 @@ on:
       - build-beta-sim-[0-9]+
 
 env:
-  NODE_VERSION: 18.7.0
+  NODE_VERSION: 20.13.1
   TERM: xterm
 
 jobs:

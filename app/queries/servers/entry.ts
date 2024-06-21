@@ -7,7 +7,7 @@ import DatabaseManager from '@database/manager';
 import {prepareCategoriesAndCategoriesChannels} from './categories';
 import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
 import {prepareMyPreferences} from './preference';
-import {resetWebSocketLastDisconnected} from './system';
+import {resetLastFullSync} from './system';
 import {prepareDeleteTeam, prepareMyTeams} from './team';
 import {prepareUsers} from './user';
 
@@ -103,7 +103,7 @@ export async function truncateCrtRelatedTables(serverUrl: string): Promise<{erro
                 ],
             });
         });
-        await resetWebSocketLastDisconnected(operator);
+        await resetLastFullSync(operator);
     } catch (error) {
         if (__DEV__) {
             throw error;

@@ -5,7 +5,7 @@ import {withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {observeCurrentSessionsDict} from '@calls/observers';
+import {observeCurrentSessionsDict, observeEndCallDetails} from '@calls/observers';
 import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
@@ -46,6 +46,7 @@ const enhanced = withObservables([], () => {
         sessionsDict: observeCurrentSessionsDict(),
         teammateNameDisplay,
         micPermissionsGranted,
+        ...observeEndCallDetails(),
     };
 });
 

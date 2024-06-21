@@ -4,7 +4,7 @@
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 
-import {leaveCall} from '@calls/actions';
+import {leaveCallConfirmation} from '@calls/actions/calls';
 import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
 import {useTryCallsFunction} from '@calls/hooks';
 import Loading from '@components/loading';
@@ -23,6 +23,9 @@ export interface Props {
     alreadyInCall: boolean;
     dismissChannelInfo: () => void;
     limitRestrictedInfo: LimitRestrictedInfo;
+    otherParticipants: boolean;
+    isAdmin: boolean;
+    isHost: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -53,6 +56,9 @@ const ChannelInfoStartButton = ({
     alreadyInCall,
     dismissChannelInfo,
     limitRestrictedInfo,
+    otherParticipants,
+    isAdmin,
+    isHost,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -66,8 +72,7 @@ const ChannelInfoStartButton = ({
 
     const toggleJoinLeave = useCallback(async () => {
         if (alreadyInCall) {
-            leaveCall();
-            dismissChannelInfo();
+            await leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, channelId, dismissChannelInfo);
         } else if (isLimitRestricted) {
             showLimitRestrictedAlert(limitRestrictedInfo, intl);
             dismissChannelInfo();
@@ -79,7 +84,7 @@ const ChannelInfoStartButton = ({
             setConnecting(false);
             dismissChannelInfo();
         }
-    }, [isLimitRestricted, alreadyInCall, dismissChannelInfo, intl, serverUrl, channelId, isACallInCurrentChannel]);
+    }, [isLimitRestricted, alreadyInCall, dismissChannelInfo, intl, serverUrl, channelId, isACallInCurrentChannel, otherParticipants]);
 
     const [tryJoin, msgPostfix] = useTryCallsFunction(toggleJoinLeave);
 

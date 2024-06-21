@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {requestReview} from 'expo-store-review';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableWithoutFeedback, View, Text, Alert, TouchableOpacity} from 'react-native';
-import InAppReview from 'react-native-in-app-review';
 import Animated, {runOnJS, SlideInDown, SlideOutDown} from 'react-native-reanimated';
 
 import {storeDontAskForReview, storeLastAskForReview} from '@actions/app/global';
@@ -120,8 +121,7 @@ const ReviewApp = ({
         close(async () => {
             await dismissOverlay(componentId);
             try {
-                // eslint-disable-next-line new-cap
-                await InAppReview.RequestInAppReview();
+                await requestReview();
             } catch (error) {
                 Alert.alert(
                     intl.formatMessage({id: 'rate.error.title', defaultMessage: 'Error'}),

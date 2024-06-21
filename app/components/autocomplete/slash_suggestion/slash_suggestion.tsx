@@ -13,7 +13,6 @@ import {
 
 import {fetchSuggestions} from '@actions/remote/command';
 import {useServerUrl} from '@context/server';
-import analytics from '@managers/analytics';
 import IntegrationsManager from '@managers/integrations_manager';
 
 import {AppCommandParser} from './app_command_parser/app_command_parser';
@@ -138,8 +137,6 @@ const SlashSuggestion = ({
     };
 
     const completeSuggestion = useCallback((command: string) => {
-        analytics.get(serverUrl)?.trackCommand('complete_suggestion', `/${command} `);
-
         // We are going to set a double / on iOS to prevent the auto correct from taking over and replacing it
         // with the wrong value, this is a hack but I could not found another way to solve it
         let completedDraft = `/${command} `;

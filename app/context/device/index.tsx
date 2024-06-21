@@ -1,18 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils, {type SplitViewResult} from '@mattermost/rnutils';
 import React, {createContext, useEffect, useState} from 'react';
-import {NativeEventEmitter, NativeModules} from 'react-native';
+import {NativeEventEmitter} from 'react-native';
 
 type Props = {
     children: React.ReactNode;
 }
 
-const {SplitView} = NativeModules;
-const {isRunningInSplitView} = SplitView;
-const emitter = new NativeEventEmitter(SplitView);
+const emitter = new NativeEventEmitter(RNUtils);
 
-export let info: SplitViewResult = isRunningInSplitView();
+export let info = RNUtils.isRunningInSplitView();
 
 export const DeviceContext = createContext(info);
 const {Provider} = DeviceContext;

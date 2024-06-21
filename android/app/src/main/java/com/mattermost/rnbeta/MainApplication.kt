@@ -1,151 +1,67 @@
 package com.mattermost.rnbeta
 
+
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
-
 import com.facebook.react.PackageList
 import com.facebook.react.ReactHost
+import com.facebook.react.ReactInstanceManager
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
-import com.facebook.react.TurboReactPackage
-import com.facebook.react.bridge.JSIModulePackage
-import com.facebook.react.bridge.JSIModuleSpec
-import com.facebook.react.bridge.JavaScriptContextHolder
-import com.facebook.react.bridge.NativeModule
-import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
-import com.facebook.react.flipper.ReactNativeFlipper
-import com.facebook.react.module.model.ReactModuleInfo
-import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.facebook.react.modules.network.OkHttpClientProvider
 import com.facebook.soloader.SoLoader
-
-import com.mattermost.helpers.RealPathUtil
 import com.mattermost.networkclient.RCTOkHttpClientFactory
-import com.mattermost.share.ShareModule
-
-import com.nozbe.watermelondb.jsi.WatermelonDBJSIPackage
-
+import com.mattermost.rnshare.helpers.RealPathUtil
+import com.nozbe.watermelondb.jsi.JSIInstaller
 import com.reactnativenavigation.NavigationApplication
-
 import com.wix.reactnativenotifications.RNNotificationsPackage
 import com.wix.reactnativenotifications.core.AppLaunchHelper
 import com.wix.reactnativenotifications.core.AppLifecycleFacade
 import com.wix.reactnativenotifications.core.JsIOHelper
 import com.wix.reactnativenotifications.core.notification.INotificationsApplication
 import com.wix.reactnativenotifications.core.notification.IPushNotification
-
+import expo.modules.ApplicationLifecycleDispatcher
+import expo.modules.ReactNativeHostWrapper
+import expo.modules.image.okhttp.ExpoImageOkHttpClientGlideModule
 import java.io.File
 
 class MainApplication : NavigationApplication(), INotificationsApplication {
-    var instance: MainApplication? = null
-    var sharedExtensionIsOpened = false
+    private var listenerAdded = false
 
     override val reactNativeHost: ReactNativeHost =
-        object : DefaultReactNativeHost(this) {
-            override fun getPackages(): List<ReactPackage> =
-                PackageList(this).packages.apply {
-                    // Packages that cannot be autolinked yet can be added manually here, for example:
-                    // add(MyReactNativePackage())
-                    add(RNNotificationsPackage(this@MainApplication))
-                    add(object : TurboReactPackage() {
-                        override fun getModule(
-                            name: String,
-                            reactContext: ReactApplicationContext
-                        ): NativeModule {
-                            return when (name) {
-                                "MattermostManaged" -> MattermostManagedModule.getInstance(
-                                    reactContext
-                                )
-                                "MattermostShare" -> ShareModule.getInstance(reactContext)
-                                "Notifications" -> NotificationsModule.getInstance(
-                                    instance,
-                                    reactContext
-                                )
-                                "SplitView" -> SplitViewModule.getInstance(
-                                    reactContext
-                                )
-                                else ->
-                                    throw IllegalArgumentException("Could not find module $name")
-                            }
-                        }
+        ReactNativeHostWrapper(this,
+            object : DefaultReactNativeHost(this) {
+                override fun getPackages(): List<ReactPackage> =
+                    PackageList(this).packages.apply {
+                        // Packages that cannot be autolinked yet can be added manually here, for example:
+                        // add(MyReactNativePackage())
+                        add(RNNotificationsPackage(this@MainApplication))
+                    }
 
-                        override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
-                            return ReactModuleInfoProvider {
-                                val map: MutableMap<String, ReactModuleInfo> = java.util.HashMap()
-                                map["MattermostManaged"] = ReactModuleInfo(
-                                    "MattermostManaged",
-                                    "com.mattermost.rnbeta.MattermostManagedModule",
-                                    false,
-                                    false,
-                                    false,
-                                    false
-                                )
-                                map["MattermostShare"] = ReactModuleInfo(
-                                    "MattermostShare",
-                                    "com.mattermost.share.ShareModule",
-                                    false,
-                                    false,
-                                    false,
-                                    false
-                                )
-                                map["Notifications"] = ReactModuleInfo(
-                                    "Notifications",
-                                    "com.mattermost.rnbeta.NotificationsModule",
-                                    false,
-                                    false,
-                                    false,
-                                    false
-                                )
-                                map["SplitView"] = ReactModuleInfo(
-                                    "SplitView",
-                                    "com.mattermost.rnbeta.SplitViewModule",
-                                    false,
-                                    false,
-                                    false,
-                                    false
-                                )
-                                map
-                            }
-                        }
-                    })
-                }
+                override fun getJSMainModuleName(): String = "index"
 
-            override fun getJSIModulePackage(): JSIModulePackage {
-                return JSIModulePackage { reactApplicationContext: ReactApplicationContext?, jsContext: JavaScriptContextHolder? ->
-                    val modules =
-                        mutableListOf<JSIModuleSpec<*>>()
-                    modules.addAll(
-                        WatermelonDBJSIPackage().getJSIModules(
-                            reactApplicationContext,
-                            jsContext
-                        )
-                    )
-                    modules
-                }
-            }
+                override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
 
-            override fun getJSMainModuleName(): String = "index"
-
-            override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
-
-            override val isNewArchEnabled: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
-            override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
-        }
+                override val isNewArchEnabled: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
+                override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
+            })
 
     override val reactHost: ReactHost
-        get() = getDefaultReactHost(this.applicationContext, reactNativeHost)
+        get() = getDefaultReactHost(applicationContext, reactNativeHost)
 
     override fun onCreate() {
         super.onCreate()
-        instance = this
-        val context: Context = applicationContext
 
         // Delete any previous temp files created by the app
-        val tempFolder = File(context.cacheDir, RealPathUtil.CACHE_DIR_NAME)
+        val tempFolder = File(applicationContext.cacheDir, RealPathUtil.CACHE_DIR_NAME)
         RealPathUtil.deleteTempFiles(tempFolder)
         Log.i("ReactNative", "Cleaning temp cache " + tempFolder.absolutePath)
 
@@ -157,13 +73,20 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
         // with a cookie jar defined in APIClientModule and an interceptor to intercept all
         // requests that originate from React Native's OKHttpClient
         OkHttpClientProvider.setOkHttpClientFactory(RCTOkHttpClientFactory())
+        ExpoImageOkHttpClientGlideModule.okHttpClient = RCTOkHttpClientFactory().createNewNetworkModuleClient()
 
         SoLoader.init(this, false)
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
             // If you opted-in for the New Architecture, we load the native entry point for this app.
-            load()
+            load(bridgelessEnabled = false)
         }
-        ReactNativeFlipper.initializeFlipper(this, reactNativeHost.reactInstanceManager)
+        ApplicationLifecycleDispatcher.onApplicationCreate(this)
+        registerJSIModules()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        ApplicationLifecycleDispatcher.onConfigurationChanged(this, newConfig)
     }
 
     override fun getPushNotification(
@@ -179,5 +102,39 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
             defaultAppLaunchHelper!!,
             JsIOHelper()
         )
+    }
+
+    @SuppressLint("VisibleForTests")
+    private fun runOnJSQueueThread(action: () -> Unit) {
+        reactNativeHost.reactInstanceManager.currentReactContext?.runOnJSQueueThread {
+            action()
+        } ?: UiThreadUtil.runOnUiThread {
+            reactNativeHost.reactInstanceManager.currentReactContext?.runOnJSQueueThread {
+                action()
+            }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun registerJSIModules() {
+        val reactInstanceManager = reactNativeHost.reactInstanceManager
+
+        if (!listenerAdded) {
+            listenerAdded = true
+            reactInstanceManager.addReactInstanceEventListener(object : ReactInstanceManager.ReactInstanceEventListener {
+                override fun onReactContextInitialized(context: ReactContext) {
+                    runOnJSQueueThread {
+                        registerWatermelonJSI(context)
+                    }
+                }
+            })
+        }
+    }
+
+    private fun registerWatermelonJSI(context: ReactContext) {
+        val holder = context.javaScriptContextHolder?.get()
+        if (holder != null) {
+            JSIInstaller.install(context, holder)
+        }
     }
 }

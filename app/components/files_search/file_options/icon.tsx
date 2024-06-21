@@ -28,7 +28,7 @@ const Icon = ({fileInfo}: Props) => {
                     <ImageFile
                         file={fileInfo}
                         inViewPort={true}
-                        resizeMode={'cover'}
+                        contentFit={'cover'}
                     />
                 </View>
             );
@@ -37,7 +37,7 @@ const Icon = ({fileInfo}: Props) => {
                 <View style={styles.imageVideo}>
                     <VideoFile
                         file={fileInfo}
-                        resizeMode={'cover'}
+                        contentFit={'cover'}
                         inViewPort={true}
                         index={0}
                         wrapperWidth={78}

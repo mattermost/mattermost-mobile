@@ -206,18 +206,6 @@ export type CallsVersion = {
     build?: string;
 };
 
-export type SubtitleTrack = {
-    title?: string | undefined;
-    language?: string | undefined;
-    type: 'application/x-subrip' | 'application/ttml+xml' | 'text/vtt';
-    uri: string;
-};
-
-export type SelectedSubtitleTrack = {
-    type: 'system' | 'disabled' | 'title' | 'language' | 'index';
-    value?: string | number | undefined;
-};
-
 export type LiveCaptionMobile = {
     captionId: string;
     sessionId: string;
@@ -248,4 +236,10 @@ export type HostControlsMsgData = {
 export type HostControlsLowerHandMsgData = HostControlsMsgData & {
     call_id: string;
     host_id: string;
+}
+
+export enum EndCallReturn {
+    Cancel,
+    LeaveCall,
+    EndCall,
 }
