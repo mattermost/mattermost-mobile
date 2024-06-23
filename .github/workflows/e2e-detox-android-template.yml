@@ -422,6 +422,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4.1.1
 
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
         with:
