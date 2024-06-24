@@ -39,8 +39,6 @@ const ClientIntegrations = <TBase extends Constructor<ClientBase>>(superclass: T
     };
 
     executeCommand = async (command: string, commandArgs = {}) => {
-        this.analytics?.trackAPI('api_integrations_used');
-
         return this.doFetch(
             `${this.getCommandsRoute()}/execute`,
             {method: 'post', body: {command, ...commandArgs}},
@@ -48,8 +46,6 @@ const ClientIntegrations = <TBase extends Constructor<ClientBase>>(superclass: T
     };
 
     addCommand = async (command: Command) => {
-        this.analytics?.trackAPI('api_integrations_created');
-
         return this.doFetch(
             `${this.getCommandsRoute()}`,
             {method: 'post', body: command},
@@ -57,7 +53,6 @@ const ClientIntegrations = <TBase extends Constructor<ClientBase>>(superclass: T
     };
 
     submitInteractiveDialog = async (data: DialogSubmission) => {
-        this.analytics?.trackAPI('api_interactive_messages_dialog_submitted');
         return this.doFetch(
             `${this.urlVersion}/actions/dialogs/submit`,
             {method: 'post', body: data},

@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Overlay} from '@rneui/base';
 import React, {useCallback, useMemo} from 'react';
-import {Overlay} from 'react-native-elements';
 
 import {ITEM_HEIGHT} from '@components/option_item';
 import {useTheme} from '@context/theme';

@@ -282,8 +282,6 @@
   "mobile.no_results_with_term.files": "Nema datoteka za „{term}”",
   "mobile.no_results_with_term.messages": "Ništa nije pronađeno za „{term}”",
   "mobile.oauth.failed_to_login": "Pokušaj prijave neuspio. Pokušaj ponovo.",
-  "mobile.oauth.failed_to_open_link": "Neuspjelo otvaranje poveznice. Pokušaj ponovo.",
-  "mobile.oauth.something_wrong": "Dogodila se greška",
   "mobile.oauth.something_wrong.okButton": "U redu",
   "mobile.oauth.switch_to_browser": "Preusmjeravamo te na tvog pružatelja usluge prijave",
   "mobile.oauth.switch_to_browser.title": "Preusmjeravanje …",

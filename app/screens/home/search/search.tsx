@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, type LayoutChangeEvent, Platform, StyleSheet, type ViewStyle, KeyboardAvoidingView, Keyboard} from 'react-native';
-import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -324,18 +324,15 @@ const SearchScreen = ({teamId, teams}: Props) => {
         }
     }, [isFocused]);
 
-    useEffect(() => {
-        const listener = HWKeyboardEvent.onHWKeyPressed((keyEvent: {pressedKey: string}) => {
-            const topScreen = NavigationStore.getVisibleScreen();
-            if (topScreen === Screens.HOME && isFocused && keyEvent.pressedKey === 'enter') {
-                searchRef.current?.blur();
-                onSubmit();
-            }
-        });
-        return () => {
-            listener.remove();
-        };
-    }, [onSubmit]);
+    const handleEnterPressed = () => {
+        const topScreen = NavigationStore.getVisibleScreen();
+        if (topScreen === Screens.HOME && isFocused) {
+            searchRef.current?.blur();
+            onSubmit();
+        }
+    };
+
+    useHardwareKeyboardEvents({onEnterPressed: handleEnterPressed});
 
     return (
         <FreezeScreen freeze={!isFocused}>

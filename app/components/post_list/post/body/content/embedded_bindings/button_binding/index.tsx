@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {Button} from '@rneui/base';
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import Button from 'react-native-button';
 import {map} from 'rxjs/operators';
 
 import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/remote/apps';
@@ -36,6 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const STATUS_COLORS = getStatusColors(theme);
     return {
         button: {
+            backgroundColor: theme.centerChannelBg,
             borderRadius: 4,
             borderColor: changeOpacity(STATUS_COLORS.default, 0.25),
             borderWidth: 2,
@@ -121,8 +122,8 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
 
     return (
         <Button
-            containerStyle={style.button}
-            disabledContainerStyle={style.buttonDisabled}
+            buttonStyle={style.button}
+            disabledStyle={style.buttonDisabled}
             onPress={onPress}
         >
             <ButtonBindingText

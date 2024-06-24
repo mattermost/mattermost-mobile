@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image} from 'expo-image';
 import React from 'react';
 import {View} from 'react-native';
-import FastImage from 'react-native-fast-image';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
@@ -55,7 +55,7 @@ const Avatar = ({author, theme}: Props) => {
     if (pictureUrl && serverUrl) {
         const imgSource = {uri: buildAbsoluteUrl(serverUrl, pictureUrl)};
         icon = (
-            <FastImage
+            <Image
                 key={pictureUrl}
                 style={style.image}
                 source={imgSource}

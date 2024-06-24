@@ -1,0 +1,19 @@
+{
+  "name": "@mattermost/rnshare",
+  "version": "0.0.0",
+  "description": "Mattermost Share extension for android",
+  "main": "src/index",
+  "codegenConfig": {
+    "name": "MattermostShareSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "platforms": ["android"],
+    "android": {
+      "javaPackageName": "com.mattermost.rnshare"
+    }
+  },
+  "author": "Mattermost, Inc.",
+  "license": "Apache 2.0",
+  "private": true,
+  "homepage": "#readme"
+}

@@ -7,7 +7,6 @@ import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, type Vi
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
 import {type ComponentEvent, Navigation} from 'react-native-navigation';
 import Animated, {
-    type AnimatedStyleProp,
     Extrapolation,
     FadeIn,
     interpolate,
@@ -142,7 +141,7 @@ const SnackBar = ({
         return [
             styles.mobile,
             isTablet && tabletStyle,
-        ] as AnimatedStyleProp<ViewStyle>;
+        ] as ViewStyle;
     }, [theme, barType]);
 
     const toastStyle = useMemo(() => {
@@ -163,6 +162,7 @@ const SnackBar = ({
 
     const animatedMotion = useAnimatedStyle(() => {
         return {
+
             opacity: interpolate(offset.value, [0, 100], [1, 0], Extrapolation.EXTEND),
             ...(isPanned.value && {
                 transform: [
@@ -170,7 +170,7 @@ const SnackBar = ({
                 ],
             }),
         };
-    }, [offset.value, isPanned.value]);
+    });
 
     const hideSnackBar = () => {
         if (mounted?.current) {
@@ -261,29 +261,32 @@ const SnackBar = ({
             <GestureDetector gesture={gesture}>
                 <Animated.View
                     style={animatedMotion}
-                    entering={FadeIn.duration(300)}
                 >
-                    <Toast
-                        animatedStyle={snackBarStyle}
-                        iconName={config.iconName}
-                        message={intl.formatMessage(
-                            {id: config.id, defaultMessage: config.defaultMessage},
-                            messageValues,
-                        )}
-                        style={toastStyle}
-                        textStyle={styles.text}
+                    <Animated.View
+                        entering={FadeIn.duration(300)}
                     >
-                        {config.canUndo && onAction && (
-                            <TouchableOpacity onPress={onUndoPressHandler}>
-                                <Text style={styles.undo}>
-                                    {intl.formatMessage({
-                                        id: 'snack.bar.undo',
-                                        defaultMessage: 'Undo',
-                                    })}
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                    </Toast>
+                        <Toast
+                            animatedStyle={snackBarStyle}
+                            iconName={config.iconName}
+                            message={intl.formatMessage(
+                                {id: config.id, defaultMessage: config.defaultMessage},
+                                messageValues,
+                            )}
+                            style={toastStyle}
+                            textStyle={styles.text}
+                        >
+                            {config.canUndo && onAction && (
+                                <TouchableOpacity onPress={onUndoPressHandler}>
+                                    <Text style={styles.undo}>
+                                        {intl.formatMessage({
+                                            id: 'snack.bar.undo',
+                                            defaultMessage: 'Undo',
+                                        })}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                        </Toast>
+                    </Animated.View>
                 </Animated.View>
             </GestureDetector>
         </GestureHandlerRootView>

@@ -3,40 +3,48 @@
 
 import React from 'react';
 
-import {Preferences, Screens} from '@constants';
-import LaunchType from '@constants/launch';
+import Preferences from '@constants/preferences';
 import {renderWithIntl} from '@test/intl-test-helper';
 
-import SSOLogin from './index';
-
-jest.mock('@screens/navigation', () => {
-    return {
-        getThemeFromState: () => 'light',
-    };
-});
+import SSOAuthentication from './sso_authentication';
 
 jest.mock('@utils/url', () => {
     return {
-        tryOpenURL: () => true,
+        tryOpenURL: () => null,
     };
 });
 
-describe('SSO', () => {
+describe('SSO with redirect url', () => {
     const baseProps = {
-        componentId: Screens.SSO,
-        license: {
-            IsLicensed: 'true',
-        },
-        ssoType: 'GITLAB',
+        customUrlScheme: 'mmauthbeta://',
+        doSSOLogin: jest.fn(),
+        intl: {},
+        loginError: '',
+        loginUrl: '',
+        serverUrl: 'http://localhost:8065',
+        setLoginError: jest.fn(),
         theme: Preferences.THEMES.denim,
-        serverUrl: 'https://locahost:8065',
-        serverDisplayName: 'Test Server',
-        launchType: LaunchType.Normal,
     };
 
-    test('implement with OS browser & redirect url from version 5.33', async () => {
-        const props = {...baseProps, config: {Version: '5.36.0'}};
-        const {getByTestId} = renderWithIntl(<SSOLogin {...props}/>);
-        expect(getByTestId('sso.redirect_url')).toBeTruthy();
+    test('should show message when user navigates to the page', () => {
+        const {getByTestId} = renderWithIntl(<SSOAuthentication {...baseProps}/>);
+        expect(getByTestId('mobile.oauth.switch_to_browser')).toBeDefined();
+    });
+
+    test('should show "try again" and hide default message when error text is displayed', () => {
+        const {getByTestId} = renderWithIntl(
+            <SSOAuthentication
+                {...baseProps}
+                loginError='some error'
+            />,
+        );
+        expect(getByTestId('mobile.oauth.try_again')).toBeDefined();
+        let browser;
+        try {
+            browser = getByTestId('mobile.oauth.switch_to_browser');
+        } catch (error) {
+            // do nothing
+        }
+        expect(browser).toBeUndefined();
     });
 });

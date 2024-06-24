@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteableTextInput, {type PastedFile, type PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
@@ -9,7 +10,6 @@ import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
     type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
 } from 'react-native';
-import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
@@ -220,7 +220,7 @@ export default function PostInput({
         addFiles(await extractFileInfo(files));
     }, [addFiles, intl]);
 
-    const handleHardwareEnterPress = useCallback((keyEvent: {pressedKey: string}) => {
+    const handleHardwareEnterPress = () => {
         const topScreen = NavigationStore.getVisibleScreen();
         let sourceScreen: AvailableScreens = Screens.CHANNEL;
         if (rootId) {
@@ -229,23 +229,29 @@ export default function PostInput({
             sourceScreen = Screens.HOME;
         }
         if (topScreen === sourceScreen) {
-            switch (keyEvent.pressedKey) {
-                case 'enter':
-                    sendMessage();
-                    break;
-                case 'shift-enter': {
-                    let newValue: string;
-                    updateValue((v) => {
-                        newValue = v.substring(0, cursorPosition) + '\n' + v.substring(cursorPosition);
-                        return newValue;
-                    });
-                    updateCursorPosition((pos) => pos + 1);
-                    propagateValue(newValue!);
-                    break;
-                }
-            }
+            sendMessage();
         }
-    }, [sendMessage, updateValue, cursorPosition, isTablet]);
+    };
+
+    const handleHardwareShiftEnter = () => {
+        const topScreen = NavigationStore.getVisibleScreen();
+        let sourceScreen: AvailableScreens = Screens.CHANNEL;
+        if (rootId) {
+            sourceScreen = Screens.THREAD;
+        } else if (isTablet) {
+            sourceScreen = Screens.HOME;
+        }
+
+        if (topScreen === sourceScreen) {
+            let newValue: string;
+            updateValue((v) => {
+                newValue = v.substring(0, cursorPosition) + '\n' + v.substring(cursorPosition);
+                return newValue;
+            });
+            updateCursorPosition((pos) => pos + 1);
+            propagateValue(newValue!);
+        }
+    };
 
     const onAppStateChange = useCallback((appState: AppStateStatus) => {
         if (appState !== 'active' && previousAppState.current === 'active') {
@@ -301,12 +307,10 @@ export default function PostInput({
         }
     }, [value]);
 
-    useEffect(() => {
-        const listener = HWKeyboardEvent.onHWKeyPressed(handleHardwareEnterPress);
-        return () => {
-            listener.remove();
-        };
-    }, [handleHardwareEnterPress]);
+    useHardwareKeyboardEvents({
+        onEnterPressed: handleHardwareEnterPress,
+        onShiftEnterPressed: handleHardwareShiftEnter,
+    });
 
     return (
         <PasteableTextInput
