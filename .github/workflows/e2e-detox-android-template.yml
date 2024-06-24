@@ -96,7 +96,7 @@ jobs:
   #         device_os_version: ${{env.DEVICE_OS_VERSION}}
 
   build:
-    runs-on: macos-latest
+    runs-on: macos-12
     timeout-minutes: 40
 
     steps:
@@ -118,7 +118,7 @@ jobs:
 
     - name: Download Android Emulator Image
       run: |
-        echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-29;google_apis;x86"
+        echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-31;google_apis;x86"
         echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd --force --name emu --device "Nexus 5X" -k 'system-images;android-29;google_apis;x86'
         $ANDROID_HOME/emulator/emulator -list-avds
 
