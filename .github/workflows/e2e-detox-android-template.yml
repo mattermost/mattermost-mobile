@@ -95,52 +95,75 @@ jobs:
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{env.DEVICE_OS_VERSION}}
 
-  build:
+  android-e2e:
+    name: Android
     runs-on: macos-latest
-    timeout-minutes: 40
-
+    needs:
+      - generate-specs
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-specs.outputs.specs)}}
     steps:
-    - name: Checkout
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-      with:
-        fetch-depth: 1
 
-    - name: Use specific Java version for sdkmanager to work
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Checkout Repository
+        uses: actions/checkout@v4.1.1
 
-    - name: Download Android Emulator Image
-      run: |
-        echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-29;google_apis;x86"
-        echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd --force --name emu --device "Nexus 5X" -k 'system-images;android-29;google_apis;x86'
-        $ANDROID_HOME/emulator/emulator -list-avds
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
 
-    - name: Android Emulator
-      timeout-minutes: 10
-      continue-on-error: true
-      run: |
-        echo "Starting emulator"
-        nohup $ANDROID_HOME/emulator/emulator -avd emu -no-audio -no-snapshot -no-window &
-        $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done; input keyevent 82'
-        $ANDROID_HOME/platform-tools/adb devices
-        echo "Emulator started"
+      - name: Configure JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          architecture: x86
 
-    - name: capture
-      run: |
-        screencapture emulator-31.jpg
-        $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-31.png
+      - name: Create destination path
+        run: mkdir -p android/app/build/outputs/apk
 
-    - uses: actions/upload-artifact@v3
-      with:
-        name: Android-Emulator-Screenshots
-        path: emulator-31.jpg
+      - name: Download artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -L -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/1578521977/zip \
+              --output android/app/build/outputs/apk/artifact.zip
 
-    - uses: actions/upload-artifact@v3
-      with:
-        name: Android-Emulator-Screenshots
-        path: emulator-31.png
+      - name: Unzip artifact
+        run: unzip android/app/build/outputs/apk/artifact.zip -d android/app/build/outputs/apk
+
+      - name: Cleanup
+        run: rm android/app/build/outputs/apk/artifact.zip
+
+      - name: Start React Native Metro Server
+        run: npm run start &
+
+      - name: Install Detox Dependencies
+        run: cd detox && npm i
+  
+      - name: Download Android Emulator Image
+        run: |
+          echo y | sudo $ANDROID_HOME/tools/bin/sdkmanager "system-images;android-28;google_apis;x86_64" > /dev/null
+          $ANDROID_HOME/tools/bin/avdmanager -s create avd -n emu -k "system-images;android-28;google_apis;x86_64" -c 512M -d "Nexus S" -f
+  
+      - name: Start Emulator
+        timeout-minutes: 15
+        run: |
+          export PATH=$PATH:$ANDROID_HOME/platform-tools
+          $ANDROID_HOME/emulator/emulator @emu -no-boot-anim &
+          adb wait-for-device; adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'; adb shell wm dismiss-keyguard
+
+      - name: Test
+        timeout-minutes: 15
+        run: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
+
+      - name: Upload Android Test Report
+        if: always()
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: android-results-${{ matrix.runId }}
+          path: detox/artifacts
 
   # download-e2e-results:
   #   runs-on: ubuntu-22.04
