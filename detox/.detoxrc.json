@@ -37,8 +37,8 @@
     "android": {
       "type": "android.emulator",
       "device": {
-        "avdName": "emu",
-        "api": "31"
+        "avdName": "android_emulator",
+        "api": "30"
       }
     }
   },

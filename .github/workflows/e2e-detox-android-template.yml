@@ -128,7 +128,7 @@ jobs:
         # Comment the if out to generate snapshots on branch for performance testing
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 31
+          api-level: 30
           force-avd-creation: false
           target: google_apis
           arch: x86_64
@@ -166,10 +166,10 @@ jobs:
         # Switch the if statements via comment if generating snapshots for performance testing
         # if: matrix.first-boot-delay != '0'
         env:
-          FIRST_BOOT_DELAY: 600
+          FIRST_BOOT_DELAY: 120
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 31
+          api-level: 30
           force-avd-creation: false
           target: google_apis
           arch: x86_64
@@ -196,7 +196,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         timeout-minutes: 30
         with:
-          api-level: 31
+          api-level: 30
           force-avd-creation: false
           target: google_apis
           arch: x86_64
@@ -206,7 +206,8 @@ jobs:
           script: |
             touch adb-log.txt
             $ANDROID_HOME/platform-tools/adb logcat '*:D' >> adb-log.txt &
-            adb emu screenrecord start --time-limit 1800 video.webm
+            $ANDROID_HOME/tools/emulator -list-avds
+            adb android_emulator screenrecord start --time-limit 1800 video.webm
             sleep 5
             cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
