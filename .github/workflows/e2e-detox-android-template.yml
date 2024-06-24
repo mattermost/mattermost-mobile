@@ -112,10 +112,9 @@ jobs:
         uses: ./.github/actions/prepare-node-deps
 
       - name: Configure JDK
-        uses: actions/setup-java@v4
+        uses: joschi/setup-jdk@v2
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          java-version: '8'
           architecture: x86
 
       - name: Create destination path

@@ -37,7 +37,7 @@
     "android": {
       "type": "android.emulator",
       "device": {
-        "avdName": "pixel_6",
+        "avdName": "emu",
         "api": "31"
       }
     }
