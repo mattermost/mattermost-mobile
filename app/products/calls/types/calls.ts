@@ -170,6 +170,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableTranscriptions: false,
     EnableLiveCaptions: false,
     HostControlsAllowed: false,
+    EnableAV1: false,
 };
 
 export type ApiResp = {
