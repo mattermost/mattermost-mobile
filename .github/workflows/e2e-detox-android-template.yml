@@ -97,13 +97,19 @@ jobs:
 
   android-e2e:
     name: Android
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     needs:
       - generate-specs
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-specs.outputs.specs)}}
     steps:
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
 
       - name: Checkout Repository
         uses: actions/checkout@v4.1.1
@@ -112,10 +118,29 @@ jobs:
         uses: ./.github/actions/prepare-node-deps
 
       - name: Configure JDK
-        uses: joschi/setup-jdk@v2
+        uses: actions/setup-java@v4
         with:
-          java-version: '8'
-          architecture: x86
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: AVD Boot and Snapshot Creation
+        # Only generate a snapshot for saving if we are on main branch with a cache miss
+        # Comment the if out to generate snapshots on branch for performance testing
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31
+          force-avd-creation: false
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          sdcard-path-or-size: 100M
+          disable-animations: true
+          # Give the emulator a little time to run and do first boot stuff before taking snapshot
+          script: |
+            touch adb-log.txt
+            $ANDROID_HOME/platform-tools/adb logcat '*:D' >> adb-log.txt &
+            adb logcat --clear
+            echo "Generated AVD snapshot for caching."
 
       - name: Create destination path
         run: mkdir -p android/app/build/outputs/apk
@@ -135,27 +160,55 @@ jobs:
       - name: Cleanup
         run: rm android/app/build/outputs/apk/artifact.zip
 
+        # This step is separate so pure install time may be calculated as a step
+      - name: Emulator Snapshot After Firstboot Warmup
+        # Only generate a snapshot for saving if we are on main branch with a cache miss
+        # Switch the if statements via comment if generating snapshots for performance testing
+        # if: matrix.first-boot-delay != '0'
+        env:
+          FIRST_BOOT_DELAY: 600
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31
+          force-avd-creation: false
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          sdcard-path-or-size: 100M
+          disable-animations: true
+          # Restart zygote to win a config race / Give emulator time to run and do first boot stuff before taking snapshot
+          script: |
+            touch adb-log.txt
+            $ANDROID_HOME/platform-tools/adb logcat '*:D' >> adb-log.txt &
+            $ANDROID_HOME/platform-tools/adb shell su root "setprop ctl.restart zygote"
+            sleep 10
+            sleep $FIRST_BOOT_DELAY
+            adb logcat --clear
+            echo "First boot warmup completed."
+
       - name: Start React Native Metro Server
         run: npm run start &
 
       - name: Install Detox Dependencies
         run: cd detox && npm i
-  
-      - name: Download Android Emulator Image
-        run: |
-          echo y | sudo $ANDROID_HOME/tools/bin/sdkmanager "system-images;android-28;google_apis;x86_64" > /dev/null
-          $ANDROID_HOME/tools/bin/avdmanager -s create avd -n emu -k "system-images;android-28;google_apis;x86_64" -c 512M -d "Nexus S" -f
-  
-      - name: Start Emulator
-        timeout-minutes: 15
-        run: |
-          export PATH=$PATH:$ANDROID_HOME/platform-tools
-          $ANDROID_HOME/emulator/emulator @emu -no-boot-anim &
-          adb wait-for-device; adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'; adb shell wm dismiss-keyguard
 
-      - name: Test
-        timeout-minutes: 15
-        run: cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
+      - name: Run Emulator Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 30
+        with:
+          api-level: 31
+          force-avd-creation: false
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          sdcard-path-or-size: 100M
+          disable-animations: true
+          script: |
+            touch adb-log.txt
+            $ANDROID_HOME/platform-tools/adb logcat '*:D' >> adb-log.txt &
+            adb emu screenrecord start --time-limit 1800 video.webm
+            sleep 5
+            cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
       - name: Upload Android Test Report
         if: always()
@@ -164,6 +217,25 @@ jobs:
           name: android-results-${{ matrix.runId }}
           path: detox/artifacts
 
+      - name: Compress Emulator Log
+        if: always()
+        run: gzip -9 adb-log.txt
+        shell: bash
+
+      - name: Upload Emulator Log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: emulator-adb_logs
+          path: adb-log.txt.gz
+
+      - name: Upload Emulator Screen Record
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: emulator-adb_video
+          path: video.webm
+  
   # download-e2e-results:
   #   runs-on: ubuntu-22.04
   #   needs:
