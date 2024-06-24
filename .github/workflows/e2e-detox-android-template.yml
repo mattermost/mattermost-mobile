@@ -96,7 +96,7 @@ jobs:
   #         device_os_version: ${{env.DEVICE_OS_VERSION}}
 
   build:
-    runs-on: macos-12
+    runs-on: macos-latest
     timeout-minutes: 40
 
     steps:
@@ -116,10 +116,21 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    - name: Download Jax
+      run: |
+        mkdir -p $ANDROID_HOME/tools/lib/jaxb
+        cd $ANDROID_HOME/tools/lib/jaxb
+        wget https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar
+        wget https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-core/2.3.0.1/jaxb-core-2.3.0.1.jar
+        wget https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.2/jaxb-impl-2.3.2.jar
+        wget https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
+
     - name: Download Android Emulator Image
       run: |
-        echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-31;google_apis;x86"
-        echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd --force --name emu --device "Nexus 5X" -k 'system-images;android-29;google_apis;x86'
+        echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --update
+        # echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-31;google_apis;x86_64"
+        echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-31;google_apis;x86_64"
+        echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd --force --name emu --device "Nexus 5X" -k 'system-images;android-31;google_apis;x86_64'
         $ANDROID_HOME/emulator/emulator -list-avds
 
     - name: Android Emulator
