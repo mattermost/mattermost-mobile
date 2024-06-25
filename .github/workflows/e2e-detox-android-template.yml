@@ -104,7 +104,7 @@ jobs:
         api-level: [31]
         # TODO: Let's not care about different APIs for now
         # api-level: [31, 32, 33, 34]
-        rn-version: ['latest', '0.72-stable', '0.71-stable', '0.70-stable']
+        rn-version: ['latest']
 
     steps:
       - uses: actions/checkout@v4
@@ -204,8 +204,8 @@ jobs:
             $ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
             $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
             $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
-            screencapture emulator-${{ matrix.api-level }}-${{ matrix.rn-version }}.jpg
-            $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-${{ matrix.api-level }}-${{ matrix.rn-version }}.png
+
+            $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-31.png
     
             sleep 5
             cd detox && npm run e2e:android-test -- detox/e2e/test/account/about.e2e.ts
@@ -213,11 +213,11 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: Android-Emulator-Screenshots
-          path: emulator-${{ matrix.api-level }}-${{ matrix.rn-version }}.jpg
+          path: emulator-31.jpg
       - uses: actions/upload-artifact@v3
         with:
           name: Android-Emulator-Screenshots
-          path: emulator-${{ matrix.api-level }}-${{ matrix.rn-version }}.png
+          path: emulator-31.png
 
   # download-e2e-results:
   #   runs-on: ubuntu-22.04
