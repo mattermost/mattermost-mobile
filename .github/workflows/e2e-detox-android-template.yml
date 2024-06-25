@@ -199,8 +199,6 @@ jobs:
           script: |
             touch adb-log.txt
             $ANDROID_HOME/platform-tools/adb logcat '*:D' >> adb-log.txt &
-            $ANDROID_HOME/tools/emulator -list-avds
-            adb emu screenrecord start --time-limit 1800 video.webm
             sleep 5
             cd detox && npm run e2e:android-test -- detox/e2e/test/account/about.e2e.ts
         
