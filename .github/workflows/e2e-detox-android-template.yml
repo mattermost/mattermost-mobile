@@ -199,9 +199,26 @@ jobs:
           script: |
             touch adb-log.txt
             $ANDROID_HOME/platform-tools/adb logcat '*:D' >> adb-log.txt &
+            $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 5; done; input keyevent 82'
+
+            $ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
+            $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
+            $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
+            screencapture emulator-${{ matrix.api-level }}-${{ matrix.rn-version }}.jpg
+            $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-${{ matrix.api-level }}-${{ matrix.rn-version }}.png
+    
             sleep 5
             cd detox && npm run e2e:android-test -- detox/e2e/test/account/about.e2e.ts
-        
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Android-Emulator-Screenshots
+          path: emulator-${{ matrix.api-level }}-${{ matrix.rn-version }}.jpg
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Android-Emulator-Screenshots
+          path: emulator-${{ matrix.api-level }}-${{ matrix.rn-version }}.png
+
   # download-e2e-results:
   #   runs-on: ubuntu-22.04
   #   needs:
