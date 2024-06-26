@@ -61,15 +61,15 @@ env:
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
   ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-  BRANCH: ${{ github.head_ref || github.ref_name }} 
-  COMMIT_HASH: ${{ github.sha }}
+  # BRANCH: ${{ github.head_ref || github.ref_name }} 
+  # COMMIT_HASH: ${{ github.sha }}
   DEVICE_NAME: ${{ inputs.ios_device_name }}
   DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
   HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}
   PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
-  SITE_1_URL: "https://mobile-e2e-site-1.test.mattermost.cloud"
+  SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
   SITE_2_URL: "https://mobile-e2e-site-2.test.mattermost.cloud"
   SITE_3_URL: "https://mobile-e2e-site-3.test.mattermost.cloud"
   ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
@@ -121,7 +121,7 @@ jobs:
   e2e-ios:
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     if: ${{ inputs.run-ios-tests }}
-    runs-on: macos-12
+    runs-on: macos-14
     continue-on-error: true
     timeout-minutes: 40
     env:
@@ -222,7 +222,7 @@ jobs:
           REPORT_PATH: ${{ steps.s3.outputs.path }}
           ## These are needed for the MM Webhook report
           COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
-          BRANCH: ${{ env.BRANCH }}
+          BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
 
       - name: Calculate failures
         id: summary
