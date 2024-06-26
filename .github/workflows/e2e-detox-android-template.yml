@@ -121,6 +121,8 @@ jobs:
         echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-29;google_apis;x86"
         echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd --force --name emu --device "Nexus 5X" -k 'system-images;android-29;google_apis;x86'
         $ANDROID_HOME/emulator/emulator -list-avds
+      env:
+        JAVA_OPTS: -XX:+IgnoreUnrecognizedVMOptions --add-modules java.xml.bind
 
     - name: Android Emulator
       timeout-minutes: 10
