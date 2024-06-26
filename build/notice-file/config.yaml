@@ -8,7 +8,12 @@ reviewers:
   - "enahum"
 search:
   - "package.json"
-dependencies: []
-devDependencies: []
+additionalDependencies: []
+includeDevDependencies: false
+ignoreDependencies:
+- "@mattermost/hardware-keyboard"
+- "@mattermost/rnshare"
+- "@mattermost/rnutils"
+- "@mattermost/keyboard-tracker"
 
 ...
