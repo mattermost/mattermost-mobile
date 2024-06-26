@@ -1141,14 +1141,14 @@ PODS:
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
-  - ReactNativeNavigation (7.39.1):
+  - ReactNativeNavigation (7.40.0):
     - HMSegmentedControl
     - React-Core
     - React-CoreModules
     - React-RCTImage
     - React-RCTText
-    - ReactNativeNavigation/Core (= 7.39.1)
-  - ReactNativeNavigation/Core (7.39.1):
+    - ReactNativeNavigation/Core (= 7.40.0)
+  - ReactNativeNavigation/Core (7.40.0):
     - HMSegmentedControl
     - React-Core
     - React-CoreModules
@@ -1614,7 +1614,7 @@ SPEC CHECKSUMS:
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   ReactNativeIncallManager: bfc9c67358cd524882a7c4116dcb311ac2293d4b
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
-  ReactNativeNavigation: 86a23855d2ccc74ad3e59bff1595c2d4b76ed8cc
+  ReactNativeNavigation: e62ba14d9cd44774dca6068b6559ec872e0e61a6
   RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
   RNDateTimePicker: 08f00a2c341bf96e4b30da15799fbdd4c5fa48a3
   RNDeviceInfo: 4f9c7cfd6b9db1b05eb919620a001cf35b536423
