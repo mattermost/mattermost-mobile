@@ -69,7 +69,6 @@ const saveReport = async () => {
         WEBHOOK_URL,
         ZEPHYR_ENABLE,
         ZEPHYR_CYCLE_KEY,
-        REPORT_PATH,
     } = process.env;
 
     // Remove old generated reports
@@ -100,7 +99,7 @@ const saveReport = async () => {
     // Merge all XML reports into one single XML report
     const platform = process.env.IOS === 'true' ? 'ios' : 'android';
     const combinedFilePath = `${ARTIFACTS_DIR}/${platform}-combined.xml`;
-    await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/ios-results*/${platform}-junit*.xml`]);
+    await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/${platform}-results*/${platform}-junit*.xml`]);
     console.log(`Merged, check ${combinedFilePath}`);
 
     // Read XML from a file
@@ -120,27 +119,27 @@ const saveReport = async () => {
         fs.mkdirSync(jestStareOutputDir, {recursive: true});
     }
 
-    // 'ios-results-*' is the path in CI where the parallel detox jobs save artifacts
-    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/ios-results*/jest-stare/${platform}-data*.json`]);
+    // "ios-results-*" or "android-results-*" is the path in CI where the parallel detox jobs save the artifacts
+    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`]);
     generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath);
 
     if (process.env.CI) {
-        // Delete folders starting with "iOS-results-" only in CI environment
+        // Delete folders starting with "ios-results-" or "android-results-" only in CI environment
         const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
         for (const entry of entries) {
-            if (entry.isDirectory() && entry.name.startsWith('ios-results-')) {
+            if (entry.isDirectory() && entry.name.startsWith(`${platform}-results-`)) {
                 fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
             }
         }
     }
-    const result = await saveArtifacts(REPORT_PATH);
+    const result = await saveArtifacts();
     if (result && result.success) {
         console.log('Successfully uploaded artifacts to S3:', result.reportLink);
     }
 
     // Create or use an existing test cycle
     let testCycle = {};
-    if (ZEPHYR_ENABLE === 'true') {
+    if (ZEPHYR_ENABLE === true) {
         const {start, end} = summary.stats;
         testCycle = ZEPHYR_CYCLE_KEY ? {key: ZEPHYR_CYCLE_KEY} : await createTestCycle(start, end);
     }
