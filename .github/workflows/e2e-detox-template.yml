@@ -154,7 +154,8 @@ jobs:
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
-  
+        continue-on-error: true
+
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
