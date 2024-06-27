@@ -137,6 +137,24 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
+
+      - name: Build iOS Simulator
+        env:
+          TAG: "${{ github.event.pull_request.head.sha }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
+
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-x86_64.app.zip
+  
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
@@ -176,6 +194,33 @@ jobs:
         with:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
+
+      - name: Print Coverage Summary
+        run: |
+          echo "Coverage Summary:"
+          cat ios/build/coverage_summary.txt
+
+      - name: Upload Detailed Coverage Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: ios/build/coverage_detailed.txt
+
+      - name: Calculate Total Coverage
+        run: |
+          TOTAL_COVERAGE=$(awk '/TOTAL/{print $NF}' ios/build/coverage_summary.txt | sed 's/%//')
+          echo "TOTAL_COVERAGE=$TOTAL_COVERAGE" >> $GITHUB_ENV
+          echo "Total coverage: $TOTAL_COVERAGE%"
+
+      - name: Check Coverage Threshold
+        run: |
+          THRESHOLD=70
+          if (( $(echo "$TOTAL_COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "Coverage is below threshold of $THRESHOLD%"
+            exit 1
+          else
+            echo "Coverage is at or above threshold of $THRESHOLD%"
+          fi
 
   generate-report:
     runs-on: ubuntu-22.04

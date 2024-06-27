@@ -651,24 +651,53 @@ platform :ios do
    
     # Need to add xcargs to only notification and share extensions
     xcargs = ENV['SENTRY_ENABLED'] == 'true' ? "SENTRY_DSN_IOS='#{ENV['SENTRY_DSN_IOS']}' SENTRY_ENABLED='#{ENV['SENTRY_ENABLED']}'" : ''
-
+    
+    # Add code coverage flags if not a release build
+    if config_mode != 'Release'
+      xcargs += " -enableCodeCoverage YES"
+      xcargs += " GCC_GENERATE_TEST_COVERAGE_FILES=YES"
+      xcargs += " GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES"
+    end
+  
     setup_code_signing
-
+  
     gym(
-        clean: true,
-        scheme: 'Mattermost',
-        configuration: config_mode,
-        workspace: './ios/Mattermost.xcworkspace',
-        export_method: method,
-        skip_profile_detection: true,
-        output_name: "#{app_name_sub}.ipa",
-        export_xcargs: "-allowProvisioningUpdates",
-        export_options: {
-            signingStyle: 'manual',
-            iCloudContainerEnvironment: 'Production'
-        },
-        xcargs: xcargs
+      clean: true,
+      scheme: 'Mattermost',
+      configuration: config_mode,
+      workspace: './ios/Mattermost.xcworkspace',
+      export_method: method,
+      skip_profile_detection: true,
+      output_name: "#{app_name_sub}.ipa",
+      export_xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        signingStyle: 'manual',
+        iCloudContainerEnvironment: 'Production'
+      },
+      xcargs: xcargs,
+      derived_data_path: "ios/build",
+      output_directory: "ios/build"
     )
+  
+    # Generate coverage report if not a release build
+    if config_mode != 'Release'
+      generate_coverage_report(app_name_sub)
+    end
+  end
+  
+  def generate_coverage_report(app_name)
+    UI.message("Generating code coverage report...")
+    profdata_file = Dir.glob("ios/build/Logs/Test/*.profdata").first
+    binary_file = "ios/build/Products/Debug-iphonesimulator/#{app_name}.app/#{app_name}"
+    
+    unless profdata_file && File.exist?(binary_file)
+      UI.error("Could not find necessary files for coverage report generation")
+      return
+    end
+  
+    sh "xcrun llvm-cov show -instr-profile=\"#{profdata_file}\" \"#{binary_file}\" > ios/build/coverage_detailed.txt"
+    sh "xcrun llvm-cov report -instr-profile=\"#{profdata_file}\" \"#{binary_file}\" > ios/build/coverage_summary.txt"
+    UI.success("Coverage reports generated at ios/build/coverage_detailed.txt and ios/build/coverage_summary.txt")
   end
 
   def build_ios_unsigned_or_simulator(more_xc_args:, rel_build_dir:, output_file:)
