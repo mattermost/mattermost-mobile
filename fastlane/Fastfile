@@ -692,6 +692,8 @@ platform :ios do
     
     unless profdata_file && File.exist?(binary_file)
       UI.error("Could not find necessary files for coverage report generation")
+      UI.error("profdata_file: #{profdata_file}")
+      UI.error("binary_file: #{binary_file}")
       return
     end
   

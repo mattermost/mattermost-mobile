@@ -42,12 +42,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 14"
+        default: "iPhone 15 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 17.0"
+        default: "iOS 17.2"
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -196,27 +196,44 @@ jobs:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
 
+      - name: Debug - List build directory contents
+        run: |
+          echo "Contents of ios/build:"
+          ls -R ios/build
+
       - name: Print Coverage Summary
         run: |
-          echo "Coverage Summary:"
-          cat ios/build/coverage_summary.txt
-
-      - name: Upload Detailed Coverage Report
+          if [ -f ios/build/coverage_summary.txt ]; then
+            echo "Coverage Summary:"
+            cat ios/build/coverage_summary.txt
+          else
+            echo "Coverage summary file not found. Checking for other coverage files..."
+            find ios/build -name "*coverage*"
+          fi
+  
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: coverage-report
-          path: ios/build/coverage_detailed.txt
-
+          name: ios-build
+          path: ios/build
+  
       - name: Calculate Total Coverage
         run: |
-          TOTAL_COVERAGE=$(awk '/TOTAL/{print $NF}' ios/build/coverage_summary.txt | sed 's/%//')
-          echo "TOTAL_COVERAGE=$TOTAL_COVERAGE" >> $GITHUB_ENV
-          echo "Total coverage: $TOTAL_COVERAGE%"
+          if [ -f ios/build/coverage_summary.txt ]; then
+            TOTAL_COVERAGE=$(awk '/TOTAL/{print $NF}' ios/build/coverage_summary.txt | sed 's/%//')
+            echo "TOTAL_COVERAGE=$TOTAL_COVERAGE" >> $GITHUB_ENV
+            echo "Total coverage: $TOTAL_COVERAGE%"
+          else
+            echo "Could not calculate total coverage - summary file not found"
+            echo "TOTAL_COVERAGE=0" >> $GITHUB_ENV
+          fi
 
       - name: Check Coverage Threshold
         run: |
-          THRESHOLD=70
-          if (( $(echo "$TOTAL_COVERAGE < $THRESHOLD" | bc -l) )); then
+          THRESHOLD=80
+          if [ -z "$TOTAL_COVERAGE" ]; then
+            echo "Total coverage not calculated. Skipping threshold check."
+          elif (( $(echo "$TOTAL_COVERAGE < $THRESHOLD" | bc -l) )); then
             echo "Coverage is below threshold of $THRESHOLD%"
             exit 1
           else
