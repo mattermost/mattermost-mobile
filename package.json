@@ -109,6 +109,7 @@
     "@babel/plugin-transform-flow-strip-types": "7.24.7",
     "@babel/plugin-transform-runtime": "7.24.7",
     "@babel/preset-env": "7.24.7",
+    "@babel/preset-react": "7.24.7",
     "@babel/preset-typescript": "7.24.7",
     "@babel/register": "7.24.6",
     "@babel/runtime": "7.24.7",
@@ -143,6 +144,7 @@
     "axios-cookiejar-support": "5.0.2",
     "babel-jest": "29.7.0",
     "babel-loader": "9.1.3",
+    "babel-plugin-istanbul": "6.1.1",
     "babel-plugin-module-resolver": "5.0.2",
     "detox": "20.20.1",
     "eslint": "8.57.0",
@@ -159,6 +161,7 @@
     "jetifier": "2.0.0",
     "mmjstool": "github:mattermost/mattermost-utilities#83b1b311972b8f5e750aae4019457a40abb5aa44",
     "nock": "13.5.4",
+    "nyc": "17.0.0",
     "patch-package": "8.0.0",
     "react-devtools-core": "5.2.0",
     "tough-cookie": "4.1.4",
@@ -178,6 +181,7 @@
     "clean": "./scripts/clean.sh",
     "e2e:android": "cd detox && npm run e2e:android-build && npm run e2e:android-test && cd ..",
     "e2e:ios": "cd detox && npm run e2e:ios-test && cd ..",
+    "test:e2e:coverage": "nyc --silent npm run e2e:ios",
     "fix": "npm run lint -- --fix",
     "i18n-clean-empty": "npm run mmjstool -- i18n clean-empty --mobile-dir .",
     "i18n-extract": "npm run mmjstool -- i18n extract-mobile",
@@ -229,5 +233,23 @@
         "expo-font"
       ]
     }
+  },
+  "nyc": {
+    "extension": [
+      ".js",
+      ".jsx",
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "**/*.e2e.ts",
+      "**/node_modules/**"
+    ],
+    "reporter": [
+      "text",
+      "lcov"
+    ],
+    "sourceMap": false,
+    "instrument": false
   }
 }
