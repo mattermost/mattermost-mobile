@@ -64,7 +64,10 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
     const animatedStyle = useShowMoreAnimatedStyle(height, maxHeight, open);
     const style = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
-    const textStyles = getMarkdownTextStyles(theme);
+    const textStyles = useMemo(() => {
+        const _textStyles = getMarkdownTextStyles(theme);
+        return {..._textStyles, link: {..._textStyles.link, fontFamily: 'Metropolis'}};
+    }, [theme]);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);
     const onPress = () => setOpen(!open);
