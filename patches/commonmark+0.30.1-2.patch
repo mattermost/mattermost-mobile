@@ -1,0 +1,26 @@
+diff --git a/node_modules/commonmark/dist/commonmark.js b/node_modules/commonmark/dist/commonmark.js
+index 376b127..502360f 100644
+--- a/node_modules/commonmark/dist/commonmark.js
++++ b/node_modules/commonmark/dist/commonmark.js
+@@ -13579,7 +13579,7 @@
+     };
+ 
+     // Attempt to parse an at mention
+-    var reAtMention = /^@([a-z][a-z0-9._-]*)/i;
++    var reAtMention = /^@([a-z0-9._-]+)/i;
+     var parseAtMention = function(block) {
+         if (this.brackets) {
+             // Don't perform autolinking while inside an explicit link
+diff --git a/node_modules/commonmark/lib/inlines.js b/node_modules/commonmark/lib/inlines.js
+index fdf7a7e..7940a11 100644
+--- a/node_modules/commonmark/lib/inlines.js
++++ b/node_modules/commonmark/lib/inlines.js
+@@ -946,7 +946,7 @@ var parseUrl = function(block) {
+ }
+ 
+ // Attempt to parse an at mention
+-var reAtMention = /^@([a-z][a-z0-9._-]*)/i;
++var reAtMention = /^@([a-z0-9._-]+)/i;
+ var parseAtMention = function(block) {
+     if (this.brackets) {
+         // Don't perform autolinking while inside an explicit link
