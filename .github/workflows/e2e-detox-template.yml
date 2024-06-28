@@ -177,7 +177,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage-report
-          path: coverage
+          path: detox/coverage
 
       - name: Upload iOS Test Report
         if: always()
