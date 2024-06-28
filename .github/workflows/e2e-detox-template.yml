@@ -165,8 +165,7 @@ jobs:
         run: |
           cd detox
           npm run detox:config-gen
-          cd ..
-          npm run test:e2e:coverage -- ${{ matrix.specs }}
+          npm run e2e:ios-test -- ${{ matrix.specs }}
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
