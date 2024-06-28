@@ -1,7 +1,13 @@
 {
-  "all": true,
-  "include": ["src/**/*.js"],
-  "reporter": ["html", "text", "lcov"],
-  "report-dir": "./coverage",
-  "extension": [".js", ".jsx"]
-}
+    "all": true,
+    "include": [
+      "../**/*.js",
+      "../**/*.jsx",
+      "../**/*.ts",
+      "../**/*.tsx"
+    ],
+    "reporter": ["html", "text", "lcov"],
+    "report-dir": "./coverage",
+    "temp-directory": "./.nyc_output",
+    "extension": [".js", ".jsx", ".ts", ".tsx"]
+  }
