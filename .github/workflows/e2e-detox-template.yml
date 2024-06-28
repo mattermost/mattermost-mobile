@@ -196,6 +196,16 @@ jobs:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
 
+      - name: Check for .profdata file
+        run: |
+          echo "Searching for .profdata file:"
+          find ios/build/Logs/Test -name "*.profdata"
+
+      - name: Check for binary file
+        run: |
+          echo "Searching for binary file:"
+          ls -l ios/build/Products/Debug-iphonesimulator/
+          
       - name: Debug - List build directory contents
         run: |
           echo "Contents of ios/build:"

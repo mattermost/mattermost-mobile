@@ -684,21 +684,28 @@ platform :ios do
       generate_coverage_report(app_name_sub)
     end
   end
-  
+
   def generate_coverage_report(app_name)
     UI.message("Generating code coverage report...")
     profdata_file = Dir.glob("ios/build/Logs/Test/*.profdata").first
     binary_file = "ios/build/Products/Debug-iphonesimulator/#{app_name}.app/#{app_name}"
+
+    UI.message("Profdata file: #{profdata_file}")
+    UI.message("Binary file: #{binary_file}")
     
     unless profdata_file && File.exist?(binary_file)
       UI.error("Could not find necessary files for coverage report generation")
-      UI.error("profdata_file: #{profdata_file}")
-      UI.error("binary_file: #{binary_file}")
+      UI.error("Profdata file exists: #{!profdata_file.nil?}")
+      UI.error("Binary file exists: #{File.exist?(binary_file)}")
       return
     end
-  
+    
+    UI.message("Generating detailed coverage report...")
     sh "xcrun llvm-cov show -instr-profile=\"#{profdata_file}\" \"#{binary_file}\" > ios/build/coverage_detailed.txt"
+
+    UI.message("Generating summary coverage report...")
     sh "xcrun llvm-cov report -instr-profile=\"#{profdata_file}\" \"#{binary_file}\" > ios/build/coverage_summary.txt"
+
     UI.success("Coverage reports generated at ios/build/coverage_detailed.txt and ios/build/coverage_summary.txt")
   end
 
