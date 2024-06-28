@@ -55,7 +55,6 @@ jobs:
       - build-ios-simulator
     with:
       run-ios-tests: true
-      run-android-tests: false
       run-type: "PR"
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
     secrets: inherit
@@ -99,11 +98,3 @@ jobs:
               });
             }
 
-            if (labels.includes(androidLabel)) {
-              github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: androidLabel,
-              });
-            }

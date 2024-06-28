@@ -2,7 +2,7 @@ name: Detox E2E Tests (Scheduled)
 
 on:
   schedule:
-    - cron: "0 0 * * *" # every day at midnight
+    - cron: "0 0 * * 4,5" # Wednesday and Thursday midnight
 
 jobs:
   update-initial-status:
@@ -51,8 +51,8 @@ jobs:
       - build-ios-simulator
     with:
       run-ios-tests: true
-      run-android-tests: false
       run-type: "MAIN"
+      record_tests_in_zephyr: 'true'
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
