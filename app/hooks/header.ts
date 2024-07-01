@@ -134,6 +134,8 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
 
     const hideHeader = useCallback((lock = false) => {
         if (lock) {
+            // by disabling scroll, this prevent the scrollValue from being updated needlessly as observed in iOS simulators
+            scrollEnabled.value = false;
             setLockValue(defaultHeight);
         }
 
@@ -155,7 +157,11 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
 
     const unlock = useCallback(() => {
         setLockValue(0);
-    }, []);
+        scrollEnabled.value = true;
+
+        // the scrollEnabled.value is not being updated to true in the onScroll handler, until we force the scroll using onSnap
+        onSnap?.(0);
+    }, [onSnap, scrollEnabled.value]);
 
     return {
         defaultHeight,
