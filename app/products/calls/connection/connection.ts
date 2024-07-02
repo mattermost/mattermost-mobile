@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RTCMonitor, RTCPeer} from '@mattermost/calls/lib';
+import {RTCMonitor, RTCPeer, parseRTCStats} from '@mattermost/calls/lib';
 import {deflate} from 'pako';
 import {DeviceEventEmitter, type EmitterSubscription, NativeEventEmitter, NativeModules, Platform} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
-import {mediaDevices, MediaStream, MediaStreamTrack, RTCPeerConnection} from 'react-native-webrtc';
+import {mediaDevices, MediaStream, MediaStreamTrack, registerGlobals} from 'react-native-webrtc';
 
 import {setPreferredAudioRoute, setSpeakerphoneOn} from '@calls/actions/calls';
 import {
@@ -79,6 +79,9 @@ export async function newConnection(
             logError('calls: unable to get media device:', err);
         }
     };
+
+    // Registering WebRTC globals (e.g. RTCPeerConnection)
+    registerGlobals();
 
     // getClient can throw an error, which will be handled by the caller.
     const client = NetworkManager.getClient(serverUrl);
@@ -207,6 +210,64 @@ export async function newConnection(
         }
     };
 
+    const collectICEStats = () => {
+        const start = Date.now();
+        const seenMap: {[key: string]: string} = {};
+
+        const gatherStats = async () => {
+            if (!peer) {
+                return;
+            }
+
+            try {
+                const stats = parseRTCStats(await peer.getStats()).iceStats;
+                for (const state of Object.keys(stats)) {
+                    for (const pair of stats[state]) {
+                        const seenState = seenMap[pair.id];
+                        seenMap[pair.id] = pair.state;
+
+                        if (seenState !== pair.state) {
+                            logDebug('calls: ice candidate pair stats', JSON.stringify(pair));
+                        }
+
+                        if (seenState === 'succeeded' || state !== 'succeeded') {
+                            continue;
+                        }
+
+                        if (!pair.local || !pair.remote) {
+                            continue;
+                        }
+
+                        ws.send('metric', {
+                            metric_name: 'client_ice_candidate_pair',
+                            data: JSON.stringify({
+                                state: pair.state,
+                                local: {
+                                    type: pair.local.candidateType,
+                                    protocol: pair.local.protocol,
+                                },
+                                remote: {
+                                    type: pair.remote.candidateType,
+                                    protocol: pair.remote.protocol,
+                                },
+                            }),
+                        });
+                    }
+                }
+            } catch (err) {
+                logError('failed to parse ICE stats', err);
+            }
+
+            // Repeat the check for at most 30 seconds.
+            if (Date.now() < start + 30000) {
+                // We check every two seconds.
+                setTimeout(gatherStats, 2000);
+            }
+        };
+
+        gatherStats();
+    };
+
     ws.on('error', (err: Error) => {
         logDebug('calls: ws error', err);
         if (err === wsReconnectionTimeoutErr) {
@@ -313,11 +374,9 @@ export async function newConnection(
         peer = new RTCPeer({
             iceServers: iceConfigs || [],
             logger,
-            webrtc: {
-                MediaStream,
-                RTCPeerConnection,
-            },
         });
+
+        collectICEStats();
 
         rtcMonitor = new RTCMonitor({
             peer,
