@@ -1070,6 +1070,7 @@
   "suggestion.mention.groups": "Group Mentions",
   "suggestion.mention.here": "Notifies everyone online in this channel",
   "suggestion.mention.morechannels": "Other Channels",
+  "suggestion.mention.nonmembers": "Not in Channel",
   "suggestion.mention.special": "Special Mentions",
   "suggestion.mention.users": "Users",
   "suggestion.search.direct": "Direct Messages",
