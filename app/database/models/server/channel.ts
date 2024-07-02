@@ -9,6 +9,7 @@ import {MM_TABLES} from '@constants/database';
 import type {Query, Relation} from '@nozbe/watermelondb';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModelInterface from '@typings/database/models/servers/channel';
+import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -21,6 +22,7 @@ import type UserModel from '@typings/database/models/servers/user';
 const {
     CATEGORY_CHANNEL,
     CHANNEL,
+    CHANNEL_BOOKMARK,
     CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
     DRAFT,
@@ -40,6 +42,9 @@ export default class ChannelModel extends Model implements ChannelModelInterface
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
+
+        /** A CHANNEL can be associated with multiple CHANNEL_BOOKMARK (relationship is 1:N) */
+        [CHANNEL_BOOKMARK]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated with multiple CHANNEL_MEMBERSHIP (relationship is 1:N) */
         [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'channel_id'},
@@ -108,6 +113,9 @@ export default class ChannelModel extends Model implements ChannelModelInterface
 
     /** drafts : All drafts for this channel */
     @children(DRAFT) drafts!: Query<DraftModel>;
+
+    /** bookmarks : All bookmarks for this channel */
+    @children(CHANNEL_BOOKMARK) bookmarks!: Query<ChannelBookmarkModel>;
 
     /** posts : All posts made in that channel */
     @children(POST) posts!: Query<PostModel>;

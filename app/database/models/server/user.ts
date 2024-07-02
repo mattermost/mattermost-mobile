@@ -20,6 +20,7 @@ import type {UserMentionKey, HighlightWithoutNotificationKey} from '@typings/glo
 
 const {
     CHANNEL,
+    CHANNEL_BOOKMARK,
     CHANNEL_MEMBERSHIP,
     POST,
     PREFERENCE,
@@ -42,6 +43,9 @@ export default class UserModel extends Model implements UserModelInterface {
 
         /** USER has a 1:N relationship with CHANNEL.  A user can create multiple channels */
         [CHANNEL]: {type: 'has_many', foreignKey: 'creator_id'},
+
+        /** USER has a 1:N relationship with CHANNEL_BOOKMARK.  A user can create multiple channels */
+        [CHANNEL_BOOKMARK]: {type: 'has_many', foreignKey: 'owner_id'},
 
         /** USER has a 1:N relationship with CHANNEL_MEMBERSHIP.  A user can be part of multiple channels */
         [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},

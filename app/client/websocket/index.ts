@@ -366,4 +366,8 @@ export default class WebSocketClient {
     public isConnected(): boolean {
         return this.conn?.readyState === WebSocketReadyState.OPEN;
     }
+
+    public getConnectionId(): string {
+        return this.connectionId;
+    }
 }

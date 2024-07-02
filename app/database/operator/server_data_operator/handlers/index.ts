@@ -3,9 +3,11 @@
 
 import {MM_TABLES} from '@constants/database';
 import BaseDataOperator from '@database/operator/base_data_operator';
+import {shouldUpdateFileRecord} from '@database/operator/server_data_operator/comparators/files';
 import {
     transformConfigRecord,
     transformCustomEmojiRecord,
+    transformFileRecord,
     transformRoleRecord,
     transformSystemRecord,
 } from '@database/operator/server_data_operator/transformers/general';
@@ -16,13 +18,14 @@ import {sanitizeReactions} from '../../utils/reaction';
 import {transformReactionRecord} from '../transformers/reaction';
 
 import type {Model} from '@nozbe/watermelondb';
-import type {HandleConfigArgs, HandleCustomEmojiArgs, HandleReactionsArgs, HandleRoleArgs, HandleSystemArgs, OperationArgs} from '@typings/database/database';
+import type {HandleConfigArgs, HandleCustomEmojiArgs, HandleFilesArgs, HandleReactionsArgs, HandleRoleArgs, HandleSystemArgs, OperationArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type FileModel from '@typings/database/models/servers/file';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SystemModel from '@typings/database/models/servers/system';
 
-const {SERVER: {CONFIG, CUSTOM_EMOJI, ROLE, SYSTEM, REACTION}} = MM_TABLES;
+const {SERVER: {CONFIG, CUSTOM_EMOJI, FILE, ROLE, SYSTEM, REACTION}} = MM_TABLES;
 
 export default class ServerDataOperatorBase extends BaseDataOperator {
     handleRole = async ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
@@ -149,6 +152,58 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
         }
 
         return batchRecords;
+    };
+
+    /**
+     * handleFiles: Handler responsible for the Create/Update operations occurring on the File table from the 'Server' schema
+     * @param {HandleFilesArgs} handleFiles
+     * @param {RawFile[]} handleFiles.files
+     * @param {boolean} handleFiles.prepareRecordsOnly
+     * @returns {Promise<FileModel[]>}
+     */
+    handleFiles = async ({files, prepareRecordsOnly}: HandleFilesArgs): Promise<FileModel[]> => {
+        if (!files?.length) {
+            logWarning(
+                'An empty or undefined "files" array has been passed to the handleFiles method',
+            );
+            return [];
+        }
+
+        const raws = files.reduce<{createOrUpdateFiles: FileInfo[]; deleteFiles: FileInfo[]}>((res, f) => {
+            if (f.delete_at) {
+                res.deleteFiles.push(f);
+            } else {
+                res.createOrUpdateFiles.push(f);
+            }
+
+            return res;
+        }, {createOrUpdateFiles: [], deleteFiles: []});
+
+        const processedFiles = (await this.processRecords<FileModel>({
+            createOrUpdateRawValues: raws.createOrUpdateFiles,
+            tableName: FILE,
+            fieldName: 'id',
+            deleteRawValues: raws.deleteFiles,
+            shouldUpdate: shouldUpdateFileRecord,
+        }));
+
+        const preparedFiles = await this.prepareRecords<FileModel>({
+            createRaws: processedFiles.createRaws,
+            updateRaws: processedFiles.updateRaws,
+            deleteRaws: processedFiles.deleteRaws,
+            transformer: transformFileRecord,
+            tableName: FILE,
+        });
+
+        if (prepareRecordsOnly) {
+            return preparedFiles;
+        }
+
+        if (preparedFiles?.length) {
+            await this.batchRecords(preparedFiles, 'handleFiles');
+        }
+
+        return preparedFiles;
     };
 
     /**

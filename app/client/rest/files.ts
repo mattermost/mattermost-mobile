@@ -11,13 +11,14 @@ export interface ClientFilesMix {
     getFileThumbnailUrl: (fileId: string, timestamp: number) => string;
     getFilePreviewUrl: (fileId: string, timestamp: number) => string;
     getFilePublicLink: (fileId: string) => Promise<{link: string}>;
-    uploadPostAttachment: (
-        file: FileInfo,
+    uploadAttachment: (
+        file: FileInfo | ExtractedFileInfo,
         channelId: string,
         onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
         onComplete: (response: ClientResponse) => void,
         onError: (response: ClientResponseError) => void,
         skipBytes?: number,
+        isBookmark?: boolean,
     ) => () => void;
     searchFiles: (teamId: string, terms: string) => Promise<FileSearchRequest>;
     searchFilesWithParams: (teamId: string, FileSearchParams: string) => Promise<FileSearchRequest>;
@@ -58,15 +59,19 @@ const ClientFiles = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    uploadPostAttachment = (
-        file: FileInfo,
+    uploadAttachment = (
+        file: FileInfo | ExtractedFileInfo,
         channelId: string,
         onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
         onComplete: (response: ClientResponse) => void,
         onError: (response: ClientResponseError) => void,
         skipBytes = 0,
+        isBookmark = false,
     ) => {
-        const url = this.getFilesRoute();
+        let url = this.getFilesRoute();
+        if (isBookmark) {
+            url = `${url}?bookmark=true`;
+        }
         const options: UploadRequestOptions = {
             skipBytes,
             method: 'POST',

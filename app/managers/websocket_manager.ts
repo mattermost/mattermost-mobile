@@ -9,7 +9,8 @@ import {distinctUntilChanged} from 'rxjs/operators';
 
 import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchStatusByIds} from '@actions/remote/user';
-import {handleEvent, handleFirstConnect, handleReconnect} from '@actions/websocket';
+import {handleFirstConnect, handleReconnect} from '@actions/websocket';
+import {handleWebSocketEvent} from '@actions/websocket/event';
 import WebSocketClient from '@client/websocket';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -84,7 +85,7 @@ class WebsocketManager {
         const client = new WebSocketClient(serverUrl, bearerToken);
 
         client.setFirstConnectCallback(() => this.onFirstConnect(serverUrl));
-        client.setEventCallback((evt: any) => handleEvent(serverUrl, evt));
+        client.setEventCallback((evt: WebSocketMessage) => handleWebSocketEvent(serverUrl, evt));
 
         //client.setMissedEventsCallback(() => {}) Nothing to do on missedEvents callback
         client.setReconnectCallback(() => this.onReconnect(serverUrl));

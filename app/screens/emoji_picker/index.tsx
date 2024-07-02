@@ -16,6 +16,8 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     componentId: AvailableScreens;
     onEmojiPress: (emoji: string) => void;
+    imageUrl?: string;
+    file?: ExtractedFileInfo;
     closeButtonId: string;
 };
 
@@ -25,7 +27,7 @@ const style = StyleSheet.create({
     },
 });
 
-const EmojiPickerScreen = ({closeButtonId, componentId, onEmojiPress}: Props) => {
+const EmojiPickerScreen = ({closeButtonId, componentId, file, imageUrl, onEmojiPress}: Props) => {
     const isTablet = useIsTablet();
 
     const handleEmojiPress = useCallback((emoji: string) => {
@@ -37,6 +39,8 @@ const EmojiPickerScreen = ({closeButtonId, componentId, onEmojiPress}: Props) =>
         return (
             <Picker
                 onEmojiPress={handleEmojiPress}
+                imageUrl={imageUrl}
+                file={file}
                 testID='emoji_picker'
             />
         );

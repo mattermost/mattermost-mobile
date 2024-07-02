@@ -78,6 +78,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CHANNEL:
             screen = withServerDatabase(require('@screens/channel').default);
             break;
+        case Screens.CHANNEL_BOOKMARK:
+            screen = withServerDatabase(require('@screens/channel_bookmark').default);
+            break;
         case Screens.CHANNEL_NOTIFICATION_PREFERENCES:
             screen = withServerDatabase(require('@screens/channel_notification_preferences').default);
             break;
@@ -128,6 +131,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.GALLERY:
             screen = withServerDatabase(require('@screens/gallery').default);
+            break;
+        case Screens.GENERIC_OVERLAY:
+            screen = withServerDatabase(require('@screens/overlay').default);
             break;
         case Screens.GLOBAL_THREADS:
             screen = withServerDatabase(require('@screens/global_threads').default);

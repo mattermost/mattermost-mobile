@@ -132,14 +132,16 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
 
     getChannel = async (channelId: string) => {
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}`,
+            this.getChannelRoute(channelId),
             {method: 'get'},
         );
     };
 
     getChannelByName = async (teamId: string, channelName: string, includeDeleted = false) => {
         return this.doFetch(
-            `${this.getTeamRoute(teamId)}/channels/name/${channelName}?include_deleted=${includeDeleted}`,
+            `${this.getTeamRoute(teamId)}/channels/name/${channelName}${buildQueryString({
+                include_deleted: includeDeleted,
+            })}`,
             {method: 'get'},
         );
     };
@@ -153,14 +155,20 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
 
     getChannels = async (teamId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
         return this.doFetch(
-            `${this.getTeamRoute(teamId)}/channels${buildQueryString({page, per_page: perPage})}`,
+            `${this.getTeamRoute(teamId)}/channels${buildQueryString({
+                page,
+                per_page: perPage,
+            })}`,
             {method: 'get'},
         );
     };
 
     getArchivedChannels = async (teamId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
         return this.doFetch(
-            `${this.getTeamRoute(teamId)}/channels/deleted${buildQueryString({page, per_page: perPage})}`,
+            `${this.getTeamRoute(teamId)}/channels/deleted${buildQueryString({
+                page,
+                per_page: perPage,
+            })}`,
             {method: 'get'},
         );
     };
@@ -172,11 +180,11 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    getMyChannels = async (teamId: string, includeDeleted = false, lastDeleteAt = 0) => {
+    getMyChannels = async (teamId: string, includeDeleted = false, since = 0) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/teams/${teamId}/channels${buildQueryString({
                 include_deleted: includeDeleted,
-                last_delete_at: lastDeleteAt,
+                last_delete_at: since,
             })}`,
             {method: 'get'},
         );
