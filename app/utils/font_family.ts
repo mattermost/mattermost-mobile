@@ -18,11 +18,11 @@ const setFontFamily = () => {
             fontSize: 16,
         },
     });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+
+    // @ts-expect-error renderer is not exposed to TS definition
     const oldRender = Text.render;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+
+    // @ts-expect-error renderer is not exposed to TS definition
     Text.render = function render(...args) {
         const origin = oldRender.call(this, ...args);
         return cloneElement(origin, {

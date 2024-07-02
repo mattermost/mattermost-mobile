@@ -2,5 +2,5 @@
 // See LICENSE.txt for license information.
 
 export function nonBreakingString(s: string) {
-    return s.replace(' ', '\xa0');
+    return s.replace(/ /g, '\xa0');
 }

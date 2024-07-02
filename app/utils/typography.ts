@@ -4,9 +4,9 @@
 import {StyleSheet, type TextStyle} from 'react-native';
 
 // type FontFamilies = 'OpenSans' | 'Metropolis';
-type FontTypes = 'Heading' | 'Body';
-type FontStyles = 'SemiBold' | 'Regular' | 'Light';
-type FontSizes = 25 | 50 | 75 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000 | 1200;
+export type FontTypes = 'Heading' | 'Body';
+export type FontStyles = 'SemiBold' | 'Regular' | 'Light';
+export type FontSizes = 25 | 50 | 75 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000 | 1200;
 
 const fontFamily = StyleSheet.create({
     OpenSans: {
