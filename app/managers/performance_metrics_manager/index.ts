@@ -48,7 +48,11 @@ class PerformanceMetricsManager {
         this.target = target;
     }
 
-    public finishLoad(location: Target, serverUrl: string, retries = 0) {
+    public finishLoad(location: Target, serverUrl: string) {
+        this.finishLoadWithRetries(location, serverUrl, 0);
+    }
+
+    private finishLoadWithRetries(location: Target, serverUrl: string, retries: number) {
         if (this.target !== location || this.hasRegisteredLoad) {
             return;
         }
@@ -65,7 +69,7 @@ class PerformanceMetricsManager {
             // There seems to be a race condition where in some scenarios, the mobile load
             // mark does not exist. We add this to avoid crashes related to this.
             if (retries < MAX_RETRIES) {
-                setTimeout(() => this.finishLoad(location, serverUrl, retries + 1), RETRY_TIME);
+                setTimeout(() => this.finishLoadWithRetries(location, serverUrl, retries + 1), RETRY_TIME);
                 return;
             }
             logWarning('We could not retrieve the mobile load metric');
