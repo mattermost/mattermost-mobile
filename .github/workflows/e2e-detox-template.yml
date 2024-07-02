@@ -42,12 +42,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 14"
+        default: "iPhone 15 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 17.0"
+        default: "iOS 17.2"
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -137,6 +137,25 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
+
+      - name: Build iOS Simulator
+        env:
+          TAG: "${{ github.event.pull_request.head.sha }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
+
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-x86_64.app.zip
+        continue-on-error: true
+
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
@@ -176,6 +195,60 @@ jobs:
         with:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
+
+      - name: Check for .profdata file
+        run: |
+          echo "Searching for .profdata file:"
+          find ios/build/Logs/Test -name "*.profdata"
+
+      - name: Check for binary file
+        run: |
+          echo "Searching for binary file:"
+          ls -l ios/build/Products/Debug-iphonesimulator/
+          
+      - name: Debug - List build directory contents
+        run: |
+          echo "Contents of ios/build:"
+          ls -R ios/build
+
+      - name: Print Coverage Summary
+        run: |
+          if [ -f ios/build/coverage_summary.txt ]; then
+            echo "Coverage Summary:"
+            cat ios/build/coverage_summary.txt
+          else
+            echo "Coverage summary file not found. Checking for other coverage files..."
+            find ios/build -name "*coverage*"
+          fi
+  
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ios-build
+          path: ios/build
+  
+      - name: Calculate Total Coverage
+        run: |
+          if [ -f ios/build/coverage_summary.txt ]; then
+            TOTAL_COVERAGE=$(awk '/TOTAL/{print $NF}' ios/build/coverage_summary.txt | sed 's/%//')
+            echo "TOTAL_COVERAGE=$TOTAL_COVERAGE" >> $GITHUB_ENV
+            echo "Total coverage: $TOTAL_COVERAGE%"
+          else
+            echo "Could not calculate total coverage - summary file not found"
+            echo "TOTAL_COVERAGE=0" >> $GITHUB_ENV
+          fi
+
+      - name: Check Coverage Threshold
+        run: |
+          THRESHOLD=80
+          if [ -z "$TOTAL_COVERAGE" ]; then
+            echo "Total coverage not calculated. Skipping threshold check."
+          elif (( $(echo "$TOTAL_COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "Coverage is below threshold of $THRESHOLD%"
+            exit 1
+          else
+            echo "Coverage is at or above threshold of $THRESHOLD%"
+          fi
 
   generate-report:
     runs-on: ubuntu-22.04
@@ -223,6 +296,9 @@ jobs:
           ## These are needed for the MM Webhook report
           COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
           BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
+
+      - name: Generate Coverage Report
+        run: bundle exec fastlane run generate_coverage_report app_name:Mattermost Beta
 
       - name: Calculate failures
         id: summary
