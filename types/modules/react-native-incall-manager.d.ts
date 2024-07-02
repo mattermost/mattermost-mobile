@@ -44,9 +44,9 @@ declare module 'react-native-incall-manager' {
             vibrate_pattern?: any[],
             ios_category?: string,
             seconds?: number
-        ): void;
+        ): Promise<void>;
 
-        stopRingtone(): void;
+        stopRingtone(): Promise<void>;
 
         startProximitySensor(): void;
 

@@ -49,10 +49,13 @@ export type IncomingCallNotification = {
 
 export type IncomingCalls = {
     incomingCalls: IncomingCallNotification[];
+    currentRingingCallId?: string;
+    callIdHasRung: Dictionary<boolean>;
 }
 
 export const DefaultIncomingCalls: IncomingCalls = {
     incomingCalls: [],
+    callIdHasRung: {},
 };
 
 export type Call = {

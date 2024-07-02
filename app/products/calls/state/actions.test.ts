@@ -60,12 +60,14 @@ import {
     DefaultGlobalCallsState,
     DefaultIncomingCalls,
     type GlobalCallsState,
+    type IncomingCalls,
 } from '@calls/types/calls';
 import {License} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 
 import type {CallJobState, LiveCaptionData} from '@mattermost/calls/lib/types';
+import type UserModel from '@typings/database/models/servers/user';
 
 jest.mock('@calls/alerts');
 
@@ -1339,11 +1341,12 @@ describe('useCallsState', () => {
         };
         const initialCurrentCallState: CurrentCall | null = null;
         const initialIncomingCalls = DefaultIncomingCalls;
-        const expectedIncomingCalls = {
+        const expectedIncomingCalls: IncomingCalls = {
+            ...DefaultIncomingCalls,
             incomingCalls: [{
                 callID: 'callDM',
                 callerID: 'user-5',
-                callerModel: {username: 'user-5'},
+                callerModel: {username: 'user-5'} as UserModel,
                 channelID: 'channel-private',
                 myUserId: 'myId',
                 serverUrl: 'server1',

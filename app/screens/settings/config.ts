@@ -86,6 +86,12 @@ export const NotificationsOptionConfig: Record<string, SettingConfigDetails> = {
         icon: 'cellphone',
         testID: 'notification_settings.push_notification',
     },
+    call_notification: {
+        defaultMessage: 'Call Notifications',
+        i18nId: t('notification_settings.calls'),
+        icon: 'phone-in-talk',
+        testID: 'notification_settings.call_notification',
+    },
     email: {
         defaultMessage: 'Email',
         i18nId: t('notification_settings.email'),

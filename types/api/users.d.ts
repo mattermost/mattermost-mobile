@@ -19,6 +19,10 @@ type UserNotifyProps = {
     user_id?: string;
     push_threads?: 'all' | 'mention';
     email_threads?: 'all' | 'mention';
+    calls_desktop_sound: 'true' | 'false';
+    calls_notification_sound: string;
+    calls_mobile_sound: 'true' | 'false' | '';
+    calls_mobile_notification_sound: string;
 };
 
 type UserProfile = {

@@ -255,7 +255,10 @@ class PushNotifications {
 
             this.processNotification(notification);
         }
-        completion({alert: false, sound: true, badge: true});
+
+        // Always play a sound, except when this is a foreground notification about a call
+        const sound = !(notification.foreground && isCallsStartedMessage(notification.payload));
+        completion({alert: false, sound, badge: true});
     };
 
     onRemoteNotificationsRegistered = async (event: Registered) => {
