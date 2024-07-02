@@ -5,16 +5,29 @@ import performance from 'react-native-performance';
 
 import {mockApiClient} from '@test/mock_api_client';
 import TestHelper from '@test/test_helper';
+import {logWarning} from '@utils/log';
 
 import NetworkManager from '../network_manager';
 
+import {testExports as batcherTestExports} from './performance_metrics_batcher';
 import {getBaseReportRequest} from './test_utils';
 
-import PerformanceMetricsManager from '.';
+import {testExports} from '.';
+
+const PerformanceMetricsManagerClass = testExports.PerformanceMetricsManager;
+const {
+    RETRY_TIME,
+    MAX_RETRIES,
+} = testExports;
+
+const {
+    INTERVAL_TIME,
+} = batcherTestExports;
 
 const TEST_EPOCH = 1577836800000;
 jest.mock('@utils/log', () => ({
-    logDebug: () => '',
+    logDebug: jest.fn(),
+    logWarning: jest.fn(),
 }));
 
 performance.timeOrigin = TEST_EPOCH;
@@ -22,11 +35,14 @@ performance.timeOrigin = TEST_EPOCH;
 describe('load metrics', () => {
     const serverUrl = 'http://www.someserverurl.com/';
     const expectedUrl = `${serverUrl}/api/v4/client_perf`;
+    let PerformanceMetricsManager = new PerformanceMetricsManagerClass();
 
-    const measure: PerformanceReportMeasure = {
-        metric: 'mobile_load',
-        timestamp: TEST_EPOCH + 61000,
-        value: 61000,
+    const getMeasure = (timestamp: number, value: number): PerformanceReportMeasure => {
+        return {
+            metric: 'mobile_load',
+            timestamp,
+            value,
+        };
     };
 
     beforeEach(async () => {
@@ -47,29 +63,69 @@ describe('load metrics', () => {
             'setImmediate',
             'setInterval',
         ]}).setSystemTime(new Date(TEST_EPOCH));
+        PerformanceMetricsManager = new PerformanceMetricsManagerClass();
     });
     afterEach(async () => {
         jest.useRealTimers();
         NetworkManager.invalidateClient(serverUrl);
         await TestHelper.tearDown();
+        performance.clearMarks();
     });
 
     it('only load on target', async () => {
         performance.mark('nativeLaunchStart');
+        const measure = getMeasure(TEST_EPOCH + INTERVAL_TIME, INTERVAL_TIME);
         const expectedRequest = getBaseReportRequest(measure.timestamp, measure.timestamp + 1);
         expectedRequest.body.histograms = [measure];
 
         PerformanceMetricsManager.setLoadTarget('CHANNEL');
         PerformanceMetricsManager.finishLoad('HOME', serverUrl);
         await TestHelper.tick();
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).not.toHaveBeenCalled();
         PerformanceMetricsManager.finishLoad('CHANNEL', serverUrl);
         await TestHelper.tick();
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl, expectedRequest);
+    });
+
+    it('retry if the mark is not yet present', async () => {
+        const measure = getMeasure(TEST_EPOCH + (RETRY_TIME * 2), RETRY_TIME);
+        const expectedRequest = getBaseReportRequest(measure.timestamp, measure.timestamp + 1);
+        expectedRequest.body.histograms = [measure];
+
+        PerformanceMetricsManager.setLoadTarget('CHANNEL');
+        PerformanceMetricsManager.finishLoad('CHANNEL', serverUrl);
+        await TestHelper.tick();
+        jest.advanceTimersByTime(RETRY_TIME);
+        await TestHelper.tick();
+        performance.mark('nativeLaunchStart');
+        await TestHelper.tick();
+        jest.advanceTimersByTime(RETRY_TIME);
+        await TestHelper.tick();
+        await TestHelper.tick();
+        jest.advanceTimersByTime(INTERVAL_TIME);
+        await TestHelper.tick();
+        expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl, expectedRequest);
+    });
+
+    it('fail graciously if no measure is set', async () => {
+        PerformanceMetricsManager.setLoadTarget('CHANNEL');
+        PerformanceMetricsManager.finishLoad('CHANNEL', serverUrl);
+        for (let i = 0; i < MAX_RETRIES; i++) {
+            // eslint-disable-next-line no-await-in-loop
+            await TestHelper.tick();
+            jest.advanceTimersByTime(MAX_RETRIES);
+            // eslint-disable-next-line no-await-in-loop
+            await TestHelper.tick();
+        }
+        await TestHelper.tick();
+        jest.advanceTimersByTime(INTERVAL_TIME);
+        await TestHelper.tick();
+        expect(mockApiClient.post).not.toHaveBeenCalled();
+        expect(logWarning).toHaveBeenCalled();
     });
 });
 
@@ -91,6 +147,8 @@ describe('other metrics', () => {
         timestamp: TEST_EPOCH + 150 + 50,
         value: 150,
     };
+
+    const PerformanceMetricsManager = new PerformanceMetricsManagerClass();
 
     beforeEach(async () => {
         NetworkManager.createClient(serverUrl1);
@@ -119,12 +177,13 @@ describe('other metrics', () => {
         NetworkManager.invalidateClient(serverUrl1);
         NetworkManager.invalidateClient(serverUrl2);
         await TestHelper.tearDown();
+        performance.clearMarks();
     });
 
     it('do not send metrics when we do not start them', async () => {
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl1);
 
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).not.toHaveBeenCalled();
     });
@@ -139,7 +198,7 @@ describe('other metrics', () => {
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl1);
         await TestHelper.tick();
 
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl1, expectedRequest);
     });
@@ -158,7 +217,7 @@ describe('other metrics', () => {
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl1);
         await TestHelper.tick();
 
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl1, expectedRequest);
     });
@@ -178,7 +237,7 @@ describe('other metrics', () => {
         PerformanceMetricsManager.endMetric('mobile_team_switch', serverUrl1);
         await TestHelper.tick();
 
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl1, expectedRequest);
     });
@@ -201,7 +260,7 @@ describe('other metrics', () => {
         PerformanceMetricsManager.endMetric('mobile_team_switch', serverUrl2);
         await TestHelper.tick();
 
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl1, expectedRequest1);
         expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl2, expectedRequest2);

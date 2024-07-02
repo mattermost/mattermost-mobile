@@ -5,7 +5,7 @@ import NetworkManager from '@managers/network_manager';
 import {mockApiClient} from '@test/mock_api_client';
 import TestHelper from '@test/test_helper';
 
-import Batcher from './performance_metrics_batcher';
+import Batcher, {testExports} from './performance_metrics_batcher';
 import {getBaseReportRequest} from './test_utils';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -13,6 +13,11 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 jest.mock('@utils/log', () => ({
     logDebug: () => '',
 }));
+
+const {
+    INTERVAL_TIME,
+    MAX_BATCH_SIZE,
+} = testExports;
 
 describe('perfromance metrics batcher', () => {
     const serverUrl = 'http://www.someserverurl.com';
@@ -82,7 +87,7 @@ describe('perfromance metrics batcher', () => {
         await TestHelper.tick();
         expect(mockApiClient.post).not.toHaveBeenCalled();
 
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl, expectedRequest);
     });
@@ -94,7 +99,7 @@ describe('perfromance metrics batcher', () => {
         expectedRequest.body.histograms = [measure1];
 
         batcher.addToBatch(measure1);
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl, expectedRequest);
     });
@@ -102,7 +107,7 @@ describe('perfromance metrics batcher', () => {
     it('send the batch directly after maximum batch size is reached', async () => {
         const batcher = new Batcher(serverUrl);
         const expectedRequest = getBaseReportRequest(measure1.timestamp, measure2.timestamp);
-        for (let i = 0; i < 99; i++) {
+        for (let i = 0; i < MAX_BATCH_SIZE - 1; i++) {
             batcher.addToBatch(measure1);
             expectedRequest.body.histograms.push(measure1);
         }
@@ -114,7 +119,7 @@ describe('perfromance metrics batcher', () => {
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl, expectedRequest);
 
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenCalledTimes(1);
     });
@@ -123,7 +128,7 @@ describe('perfromance metrics batcher', () => {
         await setMetricsConfig('false');
         const batcher = new Batcher(serverUrl);
         batcher.addToBatch(measure2);
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).not.toHaveBeenCalled();
     });
@@ -135,7 +140,7 @@ describe('perfromance metrics batcher', () => {
         batcher.forceSend();
         await TestHelper.tick();
         expect(mockApiClient.post).not.toHaveBeenCalled();
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).not.toHaveBeenCalled();
     });
@@ -146,13 +151,13 @@ describe('perfromance metrics batcher', () => {
         expectedRequest.body.histograms = [measure1];
 
         batcher.addToBatch(measure1);
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenLastCalledWith(expectedUrl, expectedRequest);
 
         expectedRequest = getBaseReportRequest(measure2.timestamp, measure2.timestamp + 1);
         expectedRequest.body.histograms = [];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < MAX_BATCH_SIZE; i++) {
             batcher.addToBatch(measure2);
             expectedRequest.body.histograms.push(measure2);
         }
@@ -163,7 +168,7 @@ describe('perfromance metrics batcher', () => {
         expectedRequest.body.histograms = [measure3];
 
         batcher.addToBatch(measure3);
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenLastCalledWith(expectedUrl, expectedRequest);
     });
@@ -182,13 +187,13 @@ describe('perfromance metrics batcher', () => {
         await TestHelper.tick();
         expect(mockApiClient.post).not.toHaveBeenCalled();
 
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl, expectedRequest);
 
         mockApiClient.post.mockClear();
 
-        jest.advanceTimersByTime(61000);
+        jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).not.toHaveBeenCalled();
     });
