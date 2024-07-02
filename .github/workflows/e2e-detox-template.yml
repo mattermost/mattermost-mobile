@@ -297,6 +297,9 @@ jobs:
           COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
           BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
 
+      - name: Generate Coverage Report
+        run: bundle exec fastlane run generate_coverage_report app_name:Mattermost Beta
+
       - name: Calculate failures
         id: summary
         run: |
