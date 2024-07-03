@@ -105,7 +105,7 @@ extension ShareExtension {
         
         if let serverUrl = data.serverUrl,
            let channelId = data.channelId {
-            Network.shared.createPost(
+            Network.default.createPost(
                 serverUrl: serverUrl,
                 channelId: channelId,
                 message: data.message,
