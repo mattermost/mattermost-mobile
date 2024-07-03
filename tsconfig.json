@@ -38,6 +38,7 @@
         "resolveJsonModule": true,
         "baseUrl": ".",
         "paths": {
+            "jet": ["src/index"],
             "@actions/*": ["app/actions/*"],
             "@app/*": ["app/*"],
             "@assets/*": ["dist/assets/*"],

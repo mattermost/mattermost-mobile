@@ -7,6 +7,14 @@ module.exports = {
         '@babel/preset-typescript',
     ],
     plugins: [
+        'istanbul',
+        {
+            cwd: '.',
+            instrument: true,
+            relativePath: true,
+            include: ['**/*.js', '**/*.ts', '**/*.tsx'],
+            useInlineSourceMaps: false,
+        },
         '@babel/plugin-transform-runtime',
         ['@babel/plugin-proposal-decorators', {legacy: true}],
         ['@babel/plugin-transform-flow-strip-types'],
