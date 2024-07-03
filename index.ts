@@ -2,39 +2,20 @@
 // See LICENSE.txt for license information.
 
 import TurboLogger from '@mattermost/react-native-turbo-log';
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-    JetConfig,
-    JetProvider,
-    ConnectionText,
-    StatusEmoji,
-    StatusText,
-} from 'jet';
 import {LogBox, Platform, UIManager} from 'react-native';
 import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
 import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 
+import App from './App';
 import {start} from './app/init/app';
 import setFontFamily from './app/utils/font_family';
 import {logInfo} from './app/utils/log';
-
-// Registering an error handler that always throw unhandled exceptions
-// This is to enable Jet to exit on uncaught errors
-const originalHandler = ErrorUtils.getGlobalHandler();
-ErrorUtils.setGlobalHandler((err, isFatal) => {
-    originalHandler(err, isFatal);
-    throw err;
-});
-
-/* eslint-disable @typescript-eslint/no-unused-vars */
-function loadTests(_: JetConfig) {
-    const tests = (require as any).context('./detox/e2e/test/', true, /\.e2e\.ts$/);
-    tests.keys().forEach(tests);
-}
+import {name as appName} from './app.json';
 
 declare const global: { HermesInternal: null | {} };
+const AppRegistry = require('react-native/Libraries/ReactNative/AppRegistry');
 
 // Add scaleY back to work around its removal in React Native 0.70.
 ViewReactNativeStyleAttributes.scaleY = true;
@@ -72,9 +53,12 @@ if (global.HermesInternal) {
     require('@formatjs/intl-listformat/polyfill-force');
 }
 
+if (Platform.OS === 'ios') {
+    AppRegistry.registerComponent(appName, () => App);
+}
+
 if (Platform.OS === 'android') {
     const ShareExtension = require('share_extension/index.tsx').default;
-    const AppRegistry = require('react-native/Libraries/ReactNative/AppRegistry');
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
     if (UIManager.setLayoutAnimationEnabledExperimental) {
         UIManager.setLayoutAnimationEnabledExperimental(true);
