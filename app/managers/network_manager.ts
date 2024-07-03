@@ -21,12 +21,15 @@ import ClientError from '@client/rest/error';
 import {CERTIFICATE_ERRORS} from '@constants/network';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import ManagedApp from '@init/managed_app';
+import {toMilliseconds} from '@utils/datetime';
 import {logDebug, logError} from '@utils/log';
 import {getCSRFFromCookie} from '@utils/security';
 
 const CLIENT_CERTIFICATE_IMPORT_ERROR_CODES = [-103, -104, -105, -108];
 const CLIENT_CERTIFICATE_MISSING_ERROR_CODE = -200;
 const SERVER_CERTIFICATE_INVALID = -299;
+const SERVER_TRUST_EVALUATION_FAILED = -298;
+let showingServerTrustAlert = false;
 
 class NetworkManager {
     private clients: Record<string, Client> = {};
@@ -135,6 +138,21 @@ class NetworkManager {
                     t('server.invalid.certificate.description'),
                     'The certificate for this server is invalid.\nYou might be connecting to a server that is pretending to be “{hostname}” which could put your confidential information at risk.',
                 ).replace('{hostname}', parsed.hostname),
+            );
+        } else if (SERVER_TRUST_EVALUATION_FAILED === event.errorCode && !showingServerTrustAlert) {
+            logDebug('Invalid SSL Pinning:', event.errorDescription);
+            showingServerTrustAlert = true;
+            Alert.alert(
+                getLocalizedMessage(DEFAULT_LOCALE, t('server.invalid.pinning.title'), 'Invalid SSL pinning certificate'),
+                event.errorDescription,
+                [{
+                    text: getLocalizedMessage(DEFAULT_LOCALE, t('server_upgrade.dismiss'), 'Dismiss'),
+                    onPress: () => {
+                        setTimeout(() => {
+                            showingServerTrustAlert = false;
+                        }, toMilliseconds({hours: 23}));
+                    },
+                }],
             );
         }
     };

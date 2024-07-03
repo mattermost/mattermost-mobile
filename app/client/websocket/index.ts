@@ -9,7 +9,7 @@ import DatabaseManager from '@database/manager';
 import {getConfigValue} from '@queries/servers/system';
 import {hasReliableWebsocket} from '@utils/config';
 import {toMilliseconds} from '@utils/datetime';
-import {logError, logInfo, logWarning} from '@utils/log';
+import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
 const MAX_WEBSOCKET_FAILS = 7;
 const WEBSOCKET_TIMEOUT = toMilliseconds({seconds: 30});
@@ -179,10 +179,16 @@ export default class WebSocketClient {
             this.connectFailCount = 0;
         });
 
-        this.conn!.onClose(() => {
+        this.conn!.onClose((ev) => {
             clearTimeout(this.connectionTimeout);
             this.conn = undefined;
             this.responseSequence = 1;
+
+            if (ev.message && typeof ev.message === 'object' && 'code' in ev.message && ev.message.code === 1015) {
+                // code 1015 means an error in the TLS handshake
+                logDebug('websocket did not connect', this.url, ev.message.reason);
+                return;
+            }
 
             // We skip the sync on first connect, since we are syncing along
             // the init logic. If the connection closes at any point after that,
