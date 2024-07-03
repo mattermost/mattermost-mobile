@@ -1,0 +1,335 @@
+diff --git a/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java b/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
+index 10cb1e5..ba5d918 100644
+--- a/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
++++ b/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
+@@ -1040,107 +1040,107 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+     }
+ 
+     @ReactMethod
+-    public void startRingtone(final String ringtoneUriType, final int seconds) {
+-        Thread thread = new Thread() {
+-            @Override
+-            public void run() {
++    public void startRingtone(final String ringtoneUriType, final int seconds, Promise promise) {
++        try {
++            Log.d(TAG, "startRingtone(): UriType=" + ringtoneUriType);
++            if (mRingtone != null) {
++                if (mRingtone.isPlaying()) {
++                    Log.d(TAG, "startRingtone(): is already playing");
++                    promise.reject("ringtone is already playing", "no error");
++                    return;
++                }
+                 try {
+-                    Looper.prepare();
+-
+-                    Log.d(TAG, "startRingtone(): UriType=" + ringtoneUriType);
+-                    if (mRingtone != null) {
+-                        if (mRingtone.isPlaying()) {
+-                            Log.d(TAG, "startRingtone(): is already playing");
+-                            return;
+-                        } else {
+-                            stopRingtone(); // --- use brandnew instance
+-                        }
+-                    }
++                    stopRingtone(); // ensure no ringtone is currently playing
++                } catch (Exception e) {
++                    promise.reject("stopRingtone() failed", e);
++                    return;
++                }
++            }
+ 
+-                    //if (!audioManager.isStreamMute(AudioManager.STREAM_RING)) {
+-                    //if (origRingerMode == AudioManager.RINGER_MODE_NORMAL) {
+-                    if (audioManager.getStreamVolume(AudioManager.STREAM_RING) == 0) {
+-                        Log.d(TAG, "startRingtone(): ringer is silent. leave without play.");
+-                        return;
+-                    }
++            if (audioManager.getStreamVolume(AudioManager.STREAM_RING) == 0) {
++                Log.d(TAG, "startRingtone(): ringer is silent. leave without play.");
++                promise.reject("ringer is silent. leave without playing", "no error");
++                return;
++            }
+ 
+-                    // --- there is no _DTMF_ option in startRingtone()
+-                    Uri ringtoneUri = getRingtoneUri(ringtoneUriType);
+-                    if (ringtoneUri == null) {
+-                        Log.d(TAG, "startRingtone(): no available media");
+-                        return;
+-                    }
++            // --- there is no _DTMF_ option in startRingtone()
++            Uri ringtoneUri = getRingtoneUri(ringtoneUriType);
++            if (ringtoneUri == null) {
++                Log.d(TAG, "startRingtone(): no available media");
++                promise.reject("no available media", "no error");
++                return;
++            }
+ 
+-                    if (audioManagerActivated) {
+-                        InCallManagerModule.this.stop();
+-                    }
++            if (audioManagerActivated) {
++                InCallManagerModule.this.stop();
++            }
+ 
+-                    wakeLockUtils.acquirePartialWakeLock();
++            wakeLockUtils.acquirePartialWakeLock();
+ 
+-                    storeOriginalAudioSetup();
+-                    Map data = new HashMap<String, Object>();
+-                    mRingtone = new myMediaPlayer();
++            storeOriginalAudioSetup();
++            Map data = new HashMap<String, Object>();
++            mRingtone = new myMediaPlayer();
+ 
+-                    data.put("name", "mRingtone");
+-                    data.put("sourceUri", ringtoneUri);
+-                    data.put("setLooping", true);
++            data.put("name", "mRingtone");
++            data.put("sourceUri", ringtoneUri);
++            data.put("setLooping", true);
+ 
+-                    //data.put("audioStream", AudioManager.STREAM_RING); // --- lagacy
+-                    data.put("audioUsage", AudioAttributes.USAGE_NOTIFICATION_RINGTONE); // --- USAGE_NOTIFICATION_COMMUNICATION_REQUEST?
+-                    data.put("audioContentType", AudioAttributes.CONTENT_TYPE_MUSIC);
++            //data.put("audioStream", AudioManager.STREAM_RING); // --- lagacy
++            data.put("audioUsage", AudioAttributes.USAGE_NOTIFICATION_RINGTONE); // --- USAGE_NOTIFICATION_COMMUNICATION_REQUEST?
++            data.put("audioContentType", AudioAttributes.CONTENT_TYPE_MUSIC);
+ 
+-                    setMediaPlayerEvents((MediaPlayer) mRingtone, "mRingtone");
++            setMediaPlayerEvents((MediaPlayer) mRingtone, "mRingtone");
+ 
+-                    mRingtone.startPlay(data);
++            mRingtone.startPlay(data);
+ 
+-                    if (seconds > 0) {
+-                        mRingtoneCountDownHandler = new Handler();
+-                        mRingtoneCountDownHandler.postDelayed(new Runnable() {
+-                            public void run() {
+-                                try {
+-                                    Log.d(TAG, String.format("mRingtoneCountDownHandler.stopRingtone() timeout after %d seconds", seconds));
+-                                    stopRingtone();
+-                                } catch(Exception e) {
+-                                    Log.d(TAG, "mRingtoneCountDownHandler.stopRingtone() failed.");
+-                                }
+-                            }
+-                        }, seconds * 1000);
++            if (seconds > 0) {
++                mRingtoneCountDownHandler = new Handler();
++                mRingtoneCountDownHandler.postDelayed(() -> {
++                    try {
++                        Log.d(TAG, String.format("mRingtoneCountDownHandler.stopRingtone() timeout after %d seconds", seconds));
++                        stopRingtone();
++                    } catch (Exception e) {
++                        Log.d(TAG, "mRingtoneCountDownHandler.stopRingtone() failed.");
+                     }
+-
+-                    Looper.loop();
+-                } catch(Exception e) {
+-                    wakeLockUtils.releasePartialWakeLock();
+-                    Log.e(TAG, "startRingtone() failed", e);
+-                }
++                }, seconds * 1000);
+             }
+-        };
++        } catch (Exception e) {
++            wakeLockUtils.releasePartialWakeLock();
++            Log.e(TAG, "startRingtone() failed", e);
++            promise.reject("startRingtone() failed", e);
++        }
+ 
+-        thread.start();
++        promise.resolve(null);
+     }
+ 
++
+     @ReactMethod
+-    public void stopRingtone() {
+-        Thread thread = new Thread() {
+-            @Override
+-            public void run() {
+-                try {
+-                    if (mRingtone != null) {
+-                        mRingtone.stopPlay();
+-                        mRingtone = null;
+-                        restoreOriginalAudioSetup();
+-                    }
+-                    if (mRingtoneCountDownHandler != null) {
+-                        mRingtoneCountDownHandler.removeCallbacksAndMessages(null);
+-                        mRingtoneCountDownHandler = null;
+-                    }
+-                } catch (Exception e) {
+-                    Log.d(TAG, "stopRingtone() failed");
+-                }
+-                wakeLockUtils.releasePartialWakeLock();
+-            }
+-        };
++    public void stopRingtone(Promise promise) {
++        try {
++            stopRingtone();
++        } catch (Exception e) {
++            promise.reject("stopRingtone() failed", e);
++        }
++        promise.resolve(null);
++    }
+ 
+-        thread.start();
++    private void stopRingtone() {
++        try {
++            if (mRingtone != null) {
++                mRingtone.stopPlay();
++                mRingtone = null;
++                restoreOriginalAudioSetup();
++            }
++            if (mRingtoneCountDownHandler != null) {
++                mRingtoneCountDownHandler.removeCallbacksAndMessages(null);
++                mRingtoneCountDownHandler = null;
++            }
++        } catch (Exception e) {
++            Log.d(TAG, "stopRingtone() failed");
++            wakeLockUtils.releasePartialWakeLock();
++            throw e;
++        }
++        wakeLockUtils.releasePartialWakeLock();
+     }
+ 
+     private void setMediaPlayerEvents(MediaPlayer mp, final String name) {
+@@ -1267,6 +1267,32 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+         return getAudioUri(type, fileBundle, fileBundleExt, fileSysWithExt, fileSysPath, "bundleBusytoneUri", "defaultBusytoneUri");
+     }
+ 
++    private Uri getRingtoneUriFromBundle(final String filename) {
++        if (audioUriMap.containsKey(filename)) {
++            Log.d(TAG, "getAudioUri() using: " + filename);
++            return audioUriMap.get(filename);
++        }
++
++        int res = 0;
++        ReactContext reactContext = getReactApplicationContext();
++        if (reactContext == null) {
++            Log.d(TAG, "getAudioUri() reactContext is null");
++        } else {
++            res = reactContext.getResources().getIdentifier(filename, "raw", mPackageName);
++        }
++
++        if (res <= 0) {
++            Log.d(TAG, String.format("getAudioUri() %s.%s not found in bundle.", filename, "mp3"));
++            audioUriMap.put(filename, null);
++            return null;
++        }
++
++        Uri uri = Uri.parse("android.resource://" + mPackageName + "/" + Integer.toString(res));
++        audioUriMap.put(filename, uri);
++        Log.d(TAG, "getAudioUri() using: " + filename);
++        return uri;
++    }
++
+     private Uri getAudioUri(final String _type, final String fileBundle, final String fileBundleExt, final String fileSysWithExt, final String fileSysPath, final String uriBundle, final String uriDefault) {
+         String type = _type;
+         if (type.equals("_BUNDLE_")) {
+@@ -1300,6 +1326,12 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+         final String target = fileSysPath + "/" + type;
+         Uri _uri = getSysFileUri(target);
+         if (_uri == null) {
++            Log.d(TAG, "getAudioUri() file not found in system, trying bundle");
++            _uri = getRingtoneUriFromBundle(type);
++            if (_uri != null) {
++                return _uri;
++            }
++
+             Log.d(TAG, "getAudioUri() using user default");
+             return getDefaultUserUri(uriDefault);
+         } else {
+diff --git a/node_modules/react-native-incall-manager/index.d.ts b/node_modules/react-native-incall-manager/index.d.ts
+index c8ebe9d..5f2ab9e 100644
+--- a/node_modules/react-native-incall-manager/index.d.ts
++++ b/node_modules/react-native-incall-manager/index.d.ts
+@@ -37,9 +37,9 @@ declare class InCallManager {
+     vibrate_pattern: number | number[],
+     ios_category: string,
+     seconds: number
+-  ): void;
++  ): Promise<void>;
+ 
+-  stopRingtone(): void;
++    stopRingtone(): Promise<void>;
+ 
+   startProximitySensor(): void;
+ 
+diff --git a/node_modules/react-native-incall-manager/index.js b/node_modules/react-native-incall-manager/index.js
+index ac5cafb..6887150 100644
+--- a/node_modules/react-native-incall-manager/index.js
++++ b/node_modules/react-native-incall-manager/index.js
+@@ -73,14 +73,14 @@ class InCallManager {
+         _InCallManager.setMicrophoneMute(enable);
+     }
+ 
+-    startRingtone(ringtone, vibrate_pattern, ios_category, seconds) {
++    async startRingtone(ringtone, vibrate_pattern, ios_category, seconds) {
+         ringtone = (typeof ringtone === 'string') ? ringtone : "_DEFAULT_";
+         this.vibrate = (Array.isArray(vibrate_pattern)) ? true : false;
+         ios_category = (ios_category === 'playback') ? 'playback' : "default";
+         seconds = (typeof seconds === 'number' && seconds > 0) ? parseInt(seconds) : -1; // --- android only, default looping
+ 
+         if (Platform.OS === 'android') {
+-            _InCallManager.startRingtone(ringtone, seconds);
++            await _InCallManager.startRingtone(ringtone, seconds);
+         } else {
+             _InCallManager.startRingtone(ringtone, ios_category);
+         }
+@@ -91,11 +91,11 @@ class InCallManager {
+         }
+     }
+ 
+-    stopRingtone() {
++    async stopRingtone() {
+         if (this.vibrate) {
+             Vibration.cancel();
+         }
+-        _InCallManager.stopRingtone();
++        await _InCallManager.stopRingtone();
+     }
+ 
+     startProximitySensor() {
+diff --git a/node_modules/react-native-incall-manager/ios/RNInCallManager/RNInCallManager.m b/node_modules/react-native-incall-manager/ios/RNInCallManager/RNInCallManager.m
+index 7c54f6e..f861a0f 100644
+--- a/node_modules/react-native-incall-manager/ios/RNInCallManager/RNInCallManager.m
++++ b/node_modules/react-native-incall-manager/ios/RNInCallManager/RNInCallManager.m
+@@ -1126,6 +1126,18 @@ - (NSURL *)getRingtoneUri:(NSString *)_type
+     return uri;
+ }
+ 
++
++- (NSURL *)getRingtoneUriFromBundle:(NSString *)filename
++{
++    NSString *fileBundleExt = @"mp3";
++    NSLog(@"RNInCallManager.getRingtoneUriFromBundle(): trying to get from bundle: %@.%@", filename, fileBundleExt);
++    NSURL *uriBundle = [[NSBundle mainBundle] URLForResource:filename withExtension:fileBundleExt];
++    if (uriBundle == nil) {
++        NSLog(@"RNInCallManager.getRingtoneUriFromBundle(): not found in bundle: %@.%@", filename, fileBundleExt);
++    }
++    return uriBundle;
++}
++
+ - (NSURL *)getAudioUri:(NSString *)_type
+             fileBundle:(NSString *)fileBundle
+          fileBundleExt:(NSString *)fileBundleExt
+@@ -1149,11 +1161,15 @@ - (NSURL *)getAudioUri:(NSString *)_type
+         }
+     }
+ 
+-    if (*uriDefault == nil) {
+-        NSString *target = [NSString stringWithFormat:@"%@/%@", fileSysPath, type];
+-        *uriDefault = [self getSysFileUri:target];
++    // --- Check file every time in case user deleted.
++    NSString *target = [NSString stringWithFormat:@"%@/%@", fileSysPath, type];
++    NSURL *uri = [self getSysFileUri:target];
++
++    if (uri == nil) {
++        uri = [self getRingtoneUriFromBundle:type];
+     }
+-    return *uriDefault;
++
++    return uri;
+ }
+ 
+ - (NSURL *)getSysFileUri:(NSString *)target
