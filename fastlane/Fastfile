@@ -644,30 +644,46 @@ platform :ios do
   end
 
   def build_ios
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name = ENV['APP_NAME'] || 'Mattermost Beta'
     app_name_sub = app_name.gsub(" ", "_")
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
     method = ENV['IOS_BUILD_EXPORT_METHOD'].nil? || ENV['IOS_BUILD_EXPORT_METHOD'].empty? ? 'ad-hoc' : ENV['IOS_BUILD_EXPORT_METHOD']
-   
-    # Need to add xcargs to only notification and share extensions
-    xcargs = ENV['SENTRY_ENABLED'] == 'true' ? "SENTRY_DSN_IOS='#{ENV['SENTRY_DSN_IOS']}' SENTRY_ENABLED='#{ENV['SENTRY_ENABLED']}'" : ''
-
+    
+    # Add code coverage flags
+    coverage_enabled = ENV['ENABLE_CODE_COVERAGE'] == 'true'
+    
+    xcargs = []
+    
+    # Add Sentry args if enabled
+    if ENV['SENTRY_ENABLED'] == 'true'
+      xcargs << "SENTRY_DSN_IOS='#{ENV['SENTRY_DSN_IOS']}' SENTRY_ENABLED='#{ENV['SENTRY_ENABLED']}'"
+    end
+    
+    # Add code coverage args if enabled
+    if coverage_enabled
+      xcargs << "GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES GCC_GENERATE_TEST_COVERAGE_FILES=YES"
+    end
+    
+    # Join all xcargs
+    xcargs = xcargs.join(' ')
+  
     setup_code_signing
-
     gym(
-        clean: true,
-        scheme: 'Mattermost',
-        configuration: config_mode,
-        workspace: './ios/Mattermost.xcworkspace',
-        export_method: method,
-        skip_profile_detection: true,
-        output_name: "#{app_name_sub}.ipa",
-        export_xcargs: "-allowProvisioningUpdates",
-        export_options: {
-            signingStyle: 'manual',
-            iCloudContainerEnvironment: 'Production'
-        },
-        xcargs: xcargs
+      clean: true,
+      scheme: 'Mattermost',
+      configuration: config_mode,
+      workspace: './ios/Mattermost.xcworkspace',
+      export_method: method,
+      skip_profile_detection: true,
+      output_name: "#{app_name_sub}.ipa",
+      export_xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        signingStyle: 'manual',
+        iCloudContainerEnvironment: 'Production'
+      },
+      xcargs: xcargs,
+      # Enable code coverage in Xcode's build settings
+      xcconfig: coverage_enabled ? { 'ENABLE_CODE_COVERAGE' => 'YES' } : nil
     )
   end
 

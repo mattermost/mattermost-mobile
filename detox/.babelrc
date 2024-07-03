@@ -1,10 +1,5 @@
 {
-    "presets": ["@babel/preset-env", "module:metro-react-native-babel-preset"],
-    "env": {
-        "test": {
-          "plugins": ["istanbul"]
-        }
-    },
+    "presets": ["@babel/preset-env"],
     "plugins": [
         "@babel/plugin-proposal-class-properties",
         "@babel/plugin-transform-runtime",
