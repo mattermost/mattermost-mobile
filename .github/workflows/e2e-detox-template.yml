@@ -170,18 +170,6 @@ jobs:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
 
-      - name: Collect Code Coverage
-        if: always()
-        run: |
-          xcrun xccov view --report --json mobile-artifacts/*.xcresult > coverage.json
-        
-      - name: Upload Code Coverage
-        if: always()
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-        with:
-          name: ios-coverage-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
-          path: coverage.json
-
       - name: Upload iOS Test Report
         if: always()
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
