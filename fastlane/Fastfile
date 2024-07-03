@@ -699,6 +699,7 @@ platform :android do
     end
     update_identifiers
     replace_assets
+    pinned_certificates
     link_sentry({:os_type => "android"})
     build_android
     move_android_to_root
@@ -812,6 +813,10 @@ platform :android do
       sh 'cp -R ../dist/assets/release/icons/android/* ../android/app/src/main/res/'
       sh 'cp -R ../dist/assets/release/splash_screen/android/* ../android/app/src/main/res/'
     end
+  end
+
+  lane :pinned_certificates do
+    sh 'cp ../assets/certs/* ../android/app/src/main/assets/certs'
   end
 
   lane :deploy do |options|
