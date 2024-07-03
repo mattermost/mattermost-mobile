@@ -3,6 +3,7 @@
 
 import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
+import jet from 'jet/platform/node';
 
 beforeAll(async () => {
     // Login as sysadmin and reset server configuration
@@ -20,4 +21,5 @@ beforeAll(async () => {
             photos: 'YES',
         },
     });
+    await jet.init();
 });

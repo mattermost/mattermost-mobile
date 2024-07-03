@@ -10,7 +10,9 @@ env.d.ts
 *.apk
 *.aab
 *.ipa
-
+ios/Mattermost/**
+MNEW/**
+mobile-artifacts/**
 */**/compass-icons.ttf
 
 # OSX
@@ -115,6 +117,3 @@ launch.json
 
 # Temporary files created by Metro to check the health of the file watcher
 .metro-health-check*
-
-libraries/**/**/build
-libraries/**/**/.build

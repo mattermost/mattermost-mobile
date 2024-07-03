@@ -5,6 +5,7 @@ module.exports = {
         ['@babel/preset-env', {targets: {node: 'current'}}],
         'module:@react-native/babel-preset',
         '@babel/preset-typescript',
+        'module:@react-native/babel-preset',
     ],
     plugins: [
         '@babel/plugin-transform-runtime',
@@ -48,6 +49,13 @@ module.exports = {
             allowUndefined: true,
         }],
         'react-native-reanimated/plugin',
+        ['istanbul', {
+            cwd: '..',
+            instrument: true,
+            relativePath: true,
+            include: ['app/**/*.{js,ts,jsx,tsx}'],
+            useInlineSourceMaps: false,
+        }],
     ],
     exclude: ['**/*.png', '**/*.jpg', '**/*.gif'],
 };
