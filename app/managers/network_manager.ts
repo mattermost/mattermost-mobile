@@ -10,7 +10,7 @@ import {
     type APIClientConfiguration,
 } from '@mattermost/react-native-network-client';
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
-import {deviceName, osName, osVersion} from 'expo-device';
+import {modelName, osName, osVersion} from 'expo-device';
 import {defineMessages, createIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 import urlParse from 'url-parse';
@@ -123,7 +123,7 @@ class NetworkManager {
     };
 
     private buildConfig = async () => {
-        const userAgent = `Mattermost Mobile/${nativeApplicationVersion}+${nativeBuildVersion} (${osName}; ${osVersion}; ${deviceName})`;
+        const userAgent = `Mattermost Mobile/${nativeApplicationVersion}+${nativeBuildVersion} (${osName}; ${osVersion}; ${modelName})`;
         const managedConfig = ManagedApp.enabled ? Emm.getManagedConfig<ManagedConfig>() : undefined;
         const headers: Record<string, string> = {
             [ClientConstants.HEADER_USER_AGENT]: userAgent,

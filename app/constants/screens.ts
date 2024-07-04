@@ -64,6 +64,7 @@ export const SETTINGS_NOTIFICATION_AUTO_RESPONDER = 'SettingsNotificationAutoRes
 export const SETTINGS_NOTIFICATION_EMAIL = 'SettingsNotificationEmail';
 export const SETTINGS_NOTIFICATION_MENTION = 'SettingsNotificationMention';
 export const SETTINGS_NOTIFICATION_PUSH = 'SettingsNotificationPush';
+export const SETTINGS_NOTIFICATION_CALL = 'SettingsNotificationCall';
 export const SHARE_FEEDBACK = 'ShareFeedback';
 export const SNACK_BAR = 'SnackBar';
 export const SSO = 'SSO';
@@ -139,6 +140,7 @@ export default {
     SETTINGS_NOTIFICATION_EMAIL,
     SETTINGS_NOTIFICATION_MENTION,
     SETTINGS_NOTIFICATION_PUSH,
+    SETTINGS_NOTIFICATION_CALL,
     SHARE_FEEDBACK,
     SNACK_BAR,
     SSO,
