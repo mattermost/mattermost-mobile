@@ -16,10 +16,11 @@ export function getDistanceBW2Points(point1: Record<string, any>, point2: Record
  */
 export function getNearestPoint(pivotPoint: {height: number; width: number}, points: never[], xAttr = 'x', yAttr = 'y') {
     let nearestPoint: Record<string, any> = {};
+    const pivot = {[xAttr]: pivotPoint.width, [yAttr]: pivotPoint.height};
     for (const point of points) {
         if (typeof nearestPoint[xAttr] === 'undefined' || typeof nearestPoint[yAttr] === 'undefined') {
             nearestPoint = point;
-        } else if (getDistanceBW2Points(point, pivotPoint, xAttr, yAttr) < getDistanceBW2Points(nearestPoint, pivotPoint, xAttr, yAttr)) {
+        } else if (getDistanceBW2Points(point, pivot, xAttr, yAttr) < getDistanceBW2Points(nearestPoint, pivot, xAttr, yAttr)) {
             // Check for bestImage
             nearestPoint = point;
         }
