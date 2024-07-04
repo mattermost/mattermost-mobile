@@ -224,6 +224,7 @@ const ServerForm = ({
                 onPress={onConnect}
                 testID={connectButtonTestId}
                 buttonStyle={styleButtonBackground}
+                disabledStyle={styleButtonBackground}
             >
                 {buttonIcon}
                 <FormattedText

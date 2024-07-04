@@ -274,6 +274,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
                 disabled={buttonDisabled}
                 onPress={onLogin}
                 buttonStyle={[styles.loginButton, styleButtonBackground]}
+                disabledStyle={[styles.loginButton, styleButtonBackground]}
                 testID={signinButtonTestId}
             >
                 {buttonIcon}
