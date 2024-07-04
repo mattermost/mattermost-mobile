@@ -103,9 +103,7 @@ class CustomPushNotification(
 
         when (type) {
             CustomPushNotificationHelper.PUSH_TYPE_MESSAGE, CustomPushNotificationHelper.PUSH_TYPE_SESSION -> {
-                val currentActivityName = try {
-                    mAppLifecycleFacade.runningReactContext.currentActivity?.componentName?.className ?: ""
-                } catch (e: Exception) { "" }
+                val currentActivityName =  mAppLifecycleFacade.runningReactContext.currentActivity?.componentName?.className ?: ""
 
                 if (!mAppLifecycleFacade.isAppVisible() || currentActivityName != "MainActivity") {
                     var createSummary = type == CustomPushNotificationHelper.PUSH_TYPE_MESSAGE

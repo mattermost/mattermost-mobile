@@ -184,17 +184,18 @@ export default class WebSocketClient {
             this.conn = undefined;
             this.responseSequence = 1;
 
-            if (ev.message && typeof ev.message === 'object' && 'code' in ev.message && ev.message.code === 1015) {
-                // code 1015 means an error in the TLS handshake
-                logDebug('websocket did not connect', this.url, ev.message.reason);
-                return;
-            }
-
             // We skip the sync on first connect, since we are syncing along
             // the init logic. If the connection closes at any point after that,
             // we don't want to skip the sync. If we keep the same connection and
             // reliable websockets are enabled this won't trigger a new sync.
             this.shouldSkipSync = false;
+
+            if (ev.message && typeof ev.message === 'object' && 'code' in ev.message && ev.message.code === 1015) {
+                // code 1015 means an error in the TLS handshake
+                logDebug('websocket did not connect', this.url, ev.message.reason);
+                this.closeCallback?.(this.connectFailCount);
+                return;
+            }
 
             if (this.connectFailCount === 0) {
                 logInfo('websocket closed', this.url);
