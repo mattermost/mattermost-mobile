@@ -15,6 +15,7 @@ import {
     switchToChannel,
     removeCurrentUserFromChannel,
     setChannelDeleteAt,
+    selectAllMyChannelIds,
 } from './channel';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -550,5 +551,53 @@ describe('setChannelDeleteAt', () => {
         expect(error).toBeUndefined();
         expect(models?.length).toBe(1); // Deleted channel
         expect(models![0].deleteAt).toBe(123);
+    });
+});
+
+describe('selectAllMyChannelIds', () => {
+    let operator: ServerDataOperator;
+    let spyNow: jest.SpyInstance;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        delete_at: 0,
+    } as Channel;
+    const channelMember: ChannelMembership = {
+        id: 'id',
+        channel_id: channelId,
+        msg_count: 0,
+    } as ChannelMembership;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        spyNow = jest.spyOn(Date, 'now').mockImplementation(() => now);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+        spyNow.mockRestore();
+    });
+
+    it('handle not found database', async () => {
+        const result = await selectAllMyChannelIds('foo');
+        expect(result.length).toBe(0);
+    });
+
+    it('handle no my channels', async () => {
+        const result = await selectAllMyChannelIds(serverUrl);
+        expect(result.length).toBe(0);
+    });
+
+    it('select my channels', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+
+        const result = await selectAllMyChannelIds(serverUrl);
+        expect(result.length).toBe(1); // My channel
+        expect(result[0]).toBe(channelId);
     });
 });
