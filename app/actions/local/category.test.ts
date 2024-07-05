@@ -99,7 +99,7 @@ describe('category crud', () => {
 
     let operator: ServerDataOperator;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
         await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
