@@ -39,6 +39,7 @@ export interface ClientUsersMix {
     getSessions: (userId: string) => Promise<Session[]>;
     checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
     attachDevice: (deviceId: string) => Promise<any>;
+    setIgnoreNotificationACK: (ignore: boolean) => Promise<{}>;
     searchUsers: (term: string, options: SearchUserOptions) => Promise<UserProfile[]>;
     getStatusesByIds: (userIds: string[]) => Promise<UserStatus[]>;
     getStatus: (userId: string) => Promise<UserStatus>;
@@ -329,6 +330,13 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return this.doFetch(
             `${this.getUsersRoute()}/sessions/device`,
             {method: 'put', body: {device_id: deviceId}},
+        );
+    };
+
+    setIgnoreNotificationACK = async (ignore: boolean) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/sessions/ignore_ack`,
+            {method: 'put', body: {ignore: ignore ? 'true' : 'false'}},
         );
     };
 

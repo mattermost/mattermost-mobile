@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {RESULTS, checkNotifications} from 'react-native-permissions';
+
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
@@ -22,12 +24,12 @@ import {getDeviceToken} from '@queries/app/global';
 import {getChannelById, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig, getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getLastFullSync, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getConfig, getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getLastFullSync, setCurrentTeamAndChannelId, getConfigValue} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import NavigationStore from '@store/navigation_store';
 import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
-import {isTablet} from '@utils/helpers';
+import {isMinimumServerVersion, isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
@@ -420,6 +422,24 @@ export const registerDeviceToken = async (serverUrl: string) => {
         const deviceToken = await getDeviceToken();
         if (deviceToken) {
             client.attachDevice(deviceToken);
+        }
+        return {};
+    } catch (error) {
+        logDebug('error on registerDeviceToken', getFullErrorMessage(error));
+        return {error};
+    }
+};
+
+export const setIgnoreNotificationACK = async (serverUrl: string) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const serverVersion = await getConfigValue(database, 'Version');
+
+        if (isMinimumServerVersion(serverVersion, 1, 2, 3)) {
+            const res = await checkNotifications();
+            const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
+            const client = NetworkManager.getClient(serverUrl);
+            client.setIgnoreNotificationACK(!granted);
         }
         return {};
     } catch (error) {
