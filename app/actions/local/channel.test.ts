@@ -19,8 +19,10 @@ import {
     setChannelDeleteAt,
     selectAllMyChannelIds,
     markChannelAsUnread,
+    resetMessageCount,
 } from './channel';
 
+import type {MyChannelModel} from '@app/database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 
@@ -657,5 +659,55 @@ describe('markChannelAsUnread', () => {
         expect(member?.lastViewedAt).toBe(122);
         expect(member?.messageCount).toBe(10);
         expect(member?.mentionsCount).toBe(1);
+    });
+});
+
+describe('resetMessageCount', () => {
+    let operator: ServerDataOperator;
+    let spyNow: jest.SpyInstance;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 10,
+        delete_at: 0,
+    } as Channel;
+    const channelMember: ChannelMembership = {
+        id: 'id',
+        channel_id: channelId,
+        msg_count: 10,
+    } as ChannelMembership;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        spyNow = jest.spyOn(Date, 'now').mockImplementation(() => now);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+        spyNow.mockRestore();
+    });
+
+    it('handle not found database', async () => {
+        const result = await resetMessageCount('foo', channelId);
+        expect((result as { error: unknown }).error).toBeDefined();
+    });
+
+    it('handle no member', async () => {
+        const result = await resetMessageCount(serverUrl, channelId);
+        expect((result as { error: unknown }).error).toBe('not a member');
+    });
+
+    it('mark channel as unread', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const member = await resetMessageCount(serverUrl, channelId);
+        expect((member as { error: unknown }).error).toBeUndefined();
+        expect(member).toBeDefined();
+        expect((member as MyChannelModel).messageCount).toBe(0);
     });
 });
