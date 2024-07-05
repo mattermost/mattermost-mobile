@@ -702,7 +702,7 @@ describe('resetMessageCount', () => {
         expect((result as { error: unknown }).error).toBe('not a member');
     });
 
-    it('mark channel as unread', async () => {
+    it('reset message count', async () => {
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
@@ -759,7 +759,7 @@ describe('storeMyChannelsForTeam', () => {
         expect(models!.length).toBe(0);
     });
 
-    it('mark channel as unread', async () => {
+    it('store my channels for team', async () => {
         await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
 
         const {models: prepModels, error: prepError} = await storeMyChannelsForTeam(serverUrl, teamId, [channel], [channelMember], true, false);
