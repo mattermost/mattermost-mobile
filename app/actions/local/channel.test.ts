@@ -25,9 +25,10 @@ import {
     updateChannelInfoFromChannel,
     updateLastPostAt,
     updateChannelsDisplayName,
+    showUnreadChannelsOnly,
 } from './channel';
 
-import type {ChannelModel, MyChannelModel} from '@app/database/models/server';
+import type {ChannelModel, MyChannelModel, SystemModel} from '@app/database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 
@@ -1003,5 +1004,52 @@ describe('updateChannelsDisplayName', () => {
         expect(models?.length).toBe(2);
         expect((models![0] as ChannelModel).displayName).toBe(user2.username);
         expect((models![1] as ChannelModel).displayName).toBe(`${user2.username}, ${user3.username}`);
+    });
+});
+
+describe('showUnreadChannelsOnly', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        delete_at: 0,
+    } as Channel;
+    const channelMember: ChannelMembership = {
+        id: 'id',
+        user_id: 'userid',
+        channel_id: channelId,
+        msg_count: 0,
+        roles: '',
+    } as ChannelMembership;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('handle not found database', async () => {
+        const result = await showUnreadChannelsOnly('foo', true);
+        expect((result as { error: unknown}).error).toBeTruthy();
+    });
+
+    it('show unread channels only', async () => {
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+
+        const result = await showUnreadChannelsOnly(serverUrl, true);
+        expect((result as { error: unknown}).error).toBeUndefined();
+        const models = (result as SystemModel[]);
+        expect(models).toBeDefined();
+        expect(models?.length).toBe(1);
+        expect(models![0].id).toBe(SYSTEM_IDENTIFIERS.ONLY_UNREADS);
+        expect(models![0].value).toBe(true);
     });
 });
