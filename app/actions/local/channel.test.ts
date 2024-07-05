@@ -14,6 +14,7 @@ import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@scr
 import {
     switchToChannel,
     removeCurrentUserFromChannel,
+    setChannelDeleteAt,
 } from './channel';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -504,5 +505,50 @@ describe('removeCurrentUserFromChannel', () => {
         expect(error).toBeUndefined();
         expect(member).toBeUndefined();
         expect(models?.length).toBe(2); // Deleted my channel and channel
+    });
+});
+
+describe('setChannelDeleteAt', () => {
+    let operator: ServerDataOperator;
+    let spyNow: jest.SpyInstance;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        delete_at: 0,
+    } as Channel;
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        spyNow = jest.spyOn(Date, 'now').mockImplementation(() => now);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+        spyNow.mockRestore();
+    });
+
+    it('handle not found database', async () => {
+        const {error} = await setChannelDeleteAt('foo', channelId, 0);
+        expect(error).toBeTruthy();
+    });
+
+    it('handle no channel', async () => {
+        const {models, error} = await setChannelDeleteAt(serverUrl, channelId, 0);
+        expect(error).toBeDefined();
+        expect(error).toBe(`channel with id ${channelId} not found`);
+        expect(models).toBeUndefined();
+    });
+
+    it('set channel delete at', async () => {
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const {models, error} = await setChannelDeleteAt(serverUrl, channelId, 123);
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(1); // Deleted channel
+        expect(models![0].deleteAt).toBe(123);
     });
 });
