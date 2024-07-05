@@ -22,6 +22,7 @@ import {
     resetMessageCount,
     storeMyChannelsForTeam,
     updateMyChannelFromWebsocket,
+    updateChannelInfoFromChannel,
 } from './channel';
 
 import type {MyChannelModel} from '@app/database/models/server';
@@ -817,5 +818,43 @@ describe('updateMyChannelFromWebsocket', () => {
         expect(error).toBeUndefined();
         expect(model).toBeDefined();
         expect(model?.roles).toBe('channel_user');
+    });
+});
+
+describe('updateChannelInfoFromChannel', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        delete_at: 0,
+    } as Channel;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('handle not found database', async () => {
+        const {model, error} = await updateChannelInfoFromChannel('foo', channel, false);
+        expect(model).toBeUndefined();
+        expect(error).toBeTruthy();
+    });
+
+    it('update channel info from channel', async () => {
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const {model, error} = await updateChannelInfoFromChannel(serverUrl, {...channel, header: 'newheader'}, false);
+        expect(error).toBeUndefined();
+        expect(model).toBeDefined();
+        expect(model?.length).toBe(1);
+        expect(model![0].header).toBe('newheader');
     });
 });
