@@ -24,9 +24,10 @@ import {
     updateMyChannelFromWebsocket,
     updateChannelInfoFromChannel,
     updateLastPostAt,
+    updateChannelsDisplayName,
 } from './channel';
 
-import type {MyChannelModel} from '@app/database/models/server';
+import type {ChannelModel, MyChannelModel} from '@app/database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 
@@ -909,5 +910,98 @@ describe('updateLastPostAt', () => {
         expect(error).toBeUndefined();
         expect(member).toBeDefined();
         expect(member?.lastPostAt).toBe(123);
+    });
+});
+
+describe('updateChannelsDisplayName', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const dmChannel: Channel = {
+        id: channelId,
+        name: 'userid__userid2',
+        display_name: '',
+        team_id: '',
+        total_msg_count: 0,
+        delete_at: 0,
+        type: 'D',
+    } as Channel;
+    const dmChannelMember: ChannelMembership = {
+        id: 'id',
+        user_id: 'userid',
+        channel_id: dmChannel.id,
+        msg_count: 0,
+        roles: '',
+    } as ChannelMembership;
+    const gmChannel: Channel = {
+        id: 'id2',
+        name: 'name',
+        display_name: '',
+        team_id: '',
+        total_msg_count: 0,
+        delete_at: 0,
+        type: 'G',
+    } as Channel;
+    const gmChannelMember: ChannelMembership = {
+        id: 'id',
+        user_id: 'userid',
+        channel_id: gmChannel.id,
+        msg_count: 0,
+        roles: '',
+    } as ChannelMembership;
+    const user: UserProfile = {
+        id: 'userid',
+        username: 'username',
+        roles: '',
+    } as UserProfile;
+    const user2: UserProfile = {
+        id: 'userid2',
+        username: 'username2',
+        first_name: 'first',
+        last_name: 'last',
+        roles: '',
+    } as UserProfile;
+    const user3: UserProfile = {
+        id: 'userid3',
+        username: 'username3',
+        first_name: 'first',
+        last_name: 'last',
+        roles: '',
+    } as UserProfile;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('handle not found database', async () => {
+        const {models, error} = await updateChannelsDisplayName('foo', [], [], false);
+        expect(models).toBeUndefined();
+        expect(error).toBeTruthy();
+    });
+
+    it('handle no currnet user', async () => {
+        const {models, error} = await updateChannelsDisplayName(serverUrl, [], [], false);
+        expect(models).toBeUndefined();
+        expect(error).toBeUndefined();
+    });
+
+    it('update channels display name', async () => {
+        const channelModels = await operator.handleChannel({channels: [dmChannel, gmChannel], prepareRecordsOnly: false});
+        await operator.handleUsers({users: [user, user2, user3], prepareRecordsOnly: false});
+        operator.handleChannelMembership({channelMemberships: [{...gmChannelMember, user_id: user2.id}, {...gmChannelMember, user_id: user3.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [dmChannel, gmChannel], myChannels: [dmChannelMember, gmChannelMember], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
+
+        const {models, error} = await updateChannelsDisplayName(serverUrl, channelModels, [user, user2], false);
+        expect(error).toBeUndefined();
+        expect(models).toBeDefined();
+        expect(models?.length).toBe(2);
+        expect((models![0] as ChannelModel).displayName).toBe(user2.username);
+        expect((models![1] as ChannelModel).displayName).toBe(`${user2.username}, ${user3.username}`);
     });
 });
