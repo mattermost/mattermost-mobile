@@ -456,7 +456,6 @@ describe('switchToChannel', () => {
 
 describe('removeCurrentUserFromChannel', () => {
     let operator: ServerDataOperator;
-    let spyNow: jest.SpyInstance;
     const serverUrl = 'baseHandler.test.com';
     const channelId = 'id1';
     const teamId = 'tId1';
@@ -476,12 +475,10 @@ describe('removeCurrentUserFromChannel', () => {
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-        spyNow = jest.spyOn(Date, 'now').mockImplementation(() => now);
     });
 
     afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
-        spyNow.mockRestore();
     });
 
     it('handle not found database', async () => {
@@ -523,7 +520,6 @@ describe('removeCurrentUserFromChannel', () => {
 
 describe('setChannelDeleteAt', () => {
     let operator: ServerDataOperator;
-    let spyNow: jest.SpyInstance;
     const serverUrl = 'baseHandler.test.com';
     const channelId = 'id1';
     const teamId = 'tId1';
@@ -536,12 +532,10 @@ describe('setChannelDeleteAt', () => {
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-        spyNow = jest.spyOn(Date, 'now').mockImplementation(() => now);
     });
 
     afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
-        spyNow.mockRestore();
     });
 
     it('handle not found database', async () => {
@@ -568,7 +562,6 @@ describe('setChannelDeleteAt', () => {
 
 describe('selectAllMyChannelIds', () => {
     let operator: ServerDataOperator;
-    let spyNow: jest.SpyInstance;
     const serverUrl = 'baseHandler.test.com';
     const channelId = 'id1';
     const teamId = 'tId1';
@@ -587,12 +580,10 @@ describe('selectAllMyChannelIds', () => {
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-        spyNow = jest.spyOn(Date, 'now').mockImplementation(() => now);
     });
 
     afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
-        spyNow.mockRestore();
     });
 
     it('handle not found database', async () => {
@@ -616,7 +607,6 @@ describe('selectAllMyChannelIds', () => {
 
 describe('markChannelAsUnread', () => {
     let operator: ServerDataOperator;
-    let spyNow: jest.SpyInstance;
     const serverUrl = 'baseHandler.test.com';
     const channelId = 'id1';
     const teamId = 'tId1';
@@ -635,12 +625,10 @@ describe('markChannelAsUnread', () => {
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-        spyNow = jest.spyOn(Date, 'now').mockImplementation(() => now);
     });
 
     afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
-        spyNow.mockRestore();
     });
 
     it('handle not found database', async () => {
@@ -671,7 +659,6 @@ describe('markChannelAsUnread', () => {
 
 describe('resetMessageCount', () => {
     let operator: ServerDataOperator;
-    let spyNow: jest.SpyInstance;
     const serverUrl = 'baseHandler.test.com';
     const channelId = 'id1';
     const teamId = 'tId1';
@@ -690,12 +677,10 @@ describe('resetMessageCount', () => {
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-        spyNow = jest.spyOn(Date, 'now').mockImplementation(() => now);
     });
 
     afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
-        spyNow.mockRestore();
     });
 
     it('handle not found database', async () => {
