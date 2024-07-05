@@ -23,6 +23,7 @@ import {
     storeMyChannelsForTeam,
     updateMyChannelFromWebsocket,
     updateChannelInfoFromChannel,
+    updateLastPostAt,
 } from './channel';
 
 import type {MyChannelModel} from '@app/database/models/server';
@@ -856,5 +857,57 @@ describe('updateChannelInfoFromChannel', () => {
         expect(model).toBeDefined();
         expect(model?.length).toBe(1);
         expect(model![0].header).toBe('newheader');
+    });
+});
+
+describe('updateLastPostAt', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        delete_at: 0,
+    } as Channel;
+    const channelMember: ChannelMembership = {
+        id: 'id',
+        user_id: 'userid',
+        channel_id: channelId,
+        msg_count: 0,
+        roles: '',
+    } as ChannelMembership;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('handle not found database', async () => {
+        const {member, error} = await updateLastPostAt('foo', channelId, 123, false);
+        expect(member).toBeUndefined();
+        expect(error).toBeTruthy();
+    });
+
+    it('handle no member', async () => {
+        const {member, error} = await updateLastPostAt(serverUrl, channelId, 123, false);
+        expect(error).toBeDefined();
+        expect(error).toBe('not a member');
+        expect(member).toBeUndefined();
+    });
+
+    it('update last post at', async () => {
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+
+        const {member, error} = await updateLastPostAt(serverUrl, channelId, 123, false);
+        expect(error).toBeUndefined();
+        expect(member).toBeDefined();
+        expect(member?.lastPostAt).toBe(123);
     });
 });
