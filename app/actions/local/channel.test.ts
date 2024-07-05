@@ -11,7 +11,10 @@ import {getCommonSystemValues, getTeamHistory} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 
-import {switchToChannel} from './channel';
+import {
+    switchToChannel,
+    removeCurrentUserFromChannel,
+} from './channel';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
@@ -434,5 +437,72 @@ describe('switchToChannel', () => {
         expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
         expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(1);
         expect(listenerCallback).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('removeCurrentUserFromChannel', () => {
+    let operator: ServerDataOperator;
+    let spyNow: jest.SpyInstance;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const team: Team = {
+        id: teamId,
+    } as Team;
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+    } as Channel;
+    const channelMember: ChannelMembership = {
+        id: 'id',
+        channel_id: channelId,
+        msg_count: 0,
+    } as ChannelMembership;
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        spyNow = jest.spyOn(Date, 'now').mockImplementation(() => now);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+        spyNow.mockRestore();
+    });
+
+    it('handle not found database', async () => {
+        const {error} = await removeCurrentUserFromChannel('foo', 'channelId');
+        expect(error).toBeTruthy();
+    });
+
+    it('handle no member', async () => {
+        const {models, error} = await removeCurrentUserFromChannel(serverUrl, 'channelId');
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(0);
+    });
+
+    it('handle no channel', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}], prepareRecordsOnly: false});
+
+        const {models, error} = await removeCurrentUserFromChannel(serverUrl, channelId);
+        expect(error).toBeTruthy();
+        expect(models).toBeUndefined();
+    });
+
+    it('remove user from current channel', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}], prepareRecordsOnly: false});
+
+        const {models, error} = await removeCurrentUserFromChannel(serverUrl, channelId);
+
+        const {member} = await queryDatabaseValues(operator.database, teamId, channelId);
+
+        expect(error).toBeUndefined();
+        expect(member).toBeUndefined();
+        expect(models?.length).toBe(2); // Deleted my channel and channel
     });
 });
