@@ -185,9 +185,6 @@ describe('addChannelToDefaultCategory', () => {
 
     let operator: ServerDataOperator;
 
-    beforeEach(async () => {
-    });
-
     it('base case', async () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
