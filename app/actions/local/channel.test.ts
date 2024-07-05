@@ -21,6 +21,7 @@ import {
     markChannelAsUnread,
     resetMessageCount,
     storeMyChannelsForTeam,
+    updateMyChannelFromWebsocket,
 } from './channel';
 
 import type {MyChannelModel} from '@app/database/models/server';
@@ -771,5 +772,50 @@ describe('storeMyChannelsForTeam', () => {
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models!.length).toBe(5);
+    });
+});
+
+describe('updateMyChannelFromWebsocket', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        delete_at: 0,
+    } as Channel;
+    const channelMember: ChannelMembership = {
+        id: 'id',
+        user_id: 'userid',
+        channel_id: channelId,
+        msg_count: 0,
+        roles: '',
+    } as ChannelMembership;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('handle not found database', async () => {
+        const {model, error} = await updateMyChannelFromWebsocket('foo', channelMember, false);
+        expect(model).toBeUndefined();
+        expect(error).toBeTruthy();
+    });
+
+    it('update my channel from websocket', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const {model, error} = await updateMyChannelFromWebsocket(serverUrl, {...channelMember, roles: 'channel_user'}, false);
+        expect(error).toBeUndefined();
+        expect(model).toBeDefined();
+        expect(model?.roles).toBe('channel_user');
     });
 });
