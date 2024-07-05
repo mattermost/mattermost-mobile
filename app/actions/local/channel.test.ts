@@ -20,6 +20,7 @@ import {
     selectAllMyChannelIds,
     markChannelAsUnread,
     resetMessageCount,
+    storeMyChannelsForTeam,
 } from './channel';
 
 import type {MyChannelModel} from '@app/database/models/server';
@@ -709,5 +710,66 @@ describe('resetMessageCount', () => {
         expect((member as { error: unknown }).error).toBeUndefined();
         expect(member).toBeDefined();
         expect((member as MyChannelModel).messageCount).toBe(0);
+    });
+});
+
+describe('storeMyChannelsForTeam', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const team: Team = {
+        id: teamId,
+    } as Team;
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        delete_at: 0,
+    } as Channel;
+    const channelMember: ChannelMembership = {
+        id: 'id',
+        user_id: 'userid',
+        channel_id: channelId,
+        msg_count: 0,
+    } as ChannelMembership;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('handle not found database', async () => {
+        const {models, error} = await storeMyChannelsForTeam('foo', teamId, [channel], [channelMember], false, false);
+        expect(models).toBeUndefined();
+        expect(error).toBeTruthy();
+    });
+
+    it('handle no member', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'userid'}], prepareRecordsOnly: false});
+
+        const {models, error} = await storeMyChannelsForTeam(serverUrl, teamId, [], [], false, false);
+        expect(error).toBeUndefined();
+        expect(models).toBeDefined();
+        expect(models!.length).toBe(0);
+    });
+
+    it('mark channel as unread', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+
+        const {models: prepModels, error: prepError} = await storeMyChannelsForTeam(serverUrl, teamId, [channel], [channelMember], true, false);
+        expect(prepError).toBeUndefined();
+        expect(prepModels).toBeDefined();
+        expect(prepModels!.length).toBe(5); // Channel, channel info, member, settings and my channel
+
+        const {models, error} = await storeMyChannelsForTeam(serverUrl, teamId, [channel], [channelMember], false, false);
+        expect(error).toBeUndefined();
+        expect(models).toBeDefined();
+        expect(models!.length).toBe(5);
     });
 });
