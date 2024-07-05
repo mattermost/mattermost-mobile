@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation} from '@constants';
@@ -16,6 +18,7 @@ import {
     removeCurrentUserFromChannel,
     setChannelDeleteAt,
     selectAllMyChannelIds,
+    markChannelAsUnread,
 } from './channel';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -599,5 +602,60 @@ describe('selectAllMyChannelIds', () => {
         const result = await selectAllMyChannelIds(serverUrl);
         expect(result.length).toBe(1); // My channel
         expect(result[0]).toBe(channelId);
+    });
+});
+
+describe('markChannelAsUnread', () => {
+    let operator: ServerDataOperator;
+    let spyNow: jest.SpyInstance;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        delete_at: 0,
+    } as Channel;
+    const channelMember: ChannelMembership = {
+        id: 'id',
+        channel_id: channelId,
+        msg_count: 0,
+    } as ChannelMembership;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        spyNow = jest.spyOn(Date, 'now').mockImplementation(() => now);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+        spyNow.mockRestore();
+    });
+
+    it('handle not found database', async () => {
+        const {member, error} = await markChannelAsUnread('foo', channelId, 10, 1, 123, false);
+        expect(error).toBeTruthy();
+        expect(member).toBeUndefined();
+    });
+
+    it('handle no member', async () => {
+        const {member, error} = await markChannelAsUnread(serverUrl, channelId, 10, 1, 123, false);
+        expect(error).toBe('not a member');
+        expect(member).toBeUndefined();
+    });
+
+    it('mark channel as unread', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const {member, error} = await markChannelAsUnread(serverUrl, channelId, 10, 1, 123, false);
+        expect(error).toBeUndefined();
+        expect(member).toBeDefined();
+        expect(member?.viewedAt).toBe(122);
+        expect(member?.lastViewedAt).toBe(122);
+        expect(member?.messageCount).toBe(10);
+        expect(member?.mentionsCount).toBe(1);
     });
 });
