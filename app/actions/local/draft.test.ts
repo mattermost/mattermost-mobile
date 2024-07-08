@@ -9,6 +9,7 @@ import {
     updateDraftFile,
     removeDraftFile,
     updateDraftMessage,
+    addFilesToDraft,
 } from './draft';
 
 import type {DraftModel} from '@app/database/models/server';
@@ -200,8 +201,61 @@ describe('updateDraftMessage', () => {
     it('update draft message, no file', async () => {
         await operator.handleDraft({drafts: [{channel_id: channel.id, files: [fileInfo], root_id: ''}], prepareRecordsOnly: false});
 
-        const result = await updateDraftMessage(serverUrl, channelId, '', '', false) as {draft: DraftModel; error: unknown};
+        const result = await updateDraftMessage(serverUrl, channelId, '', 'newmessage', false) as {draft: DraftModel; error: unknown};
         expect(result.error).toBeUndefined();
         expect(result.draft).toBeDefined();
+        expect(result.draft.message).toBe('newmessage');
+    });
+});
+
+describe('addFilesToDraft', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+    } as Channel;
+    const fileInfo: FileInfo = {
+        id: 'fileid',
+        clientId: 'clientid',
+        localPath: 'path1',
+    } as FileInfo;
+    const draft: Draft = {
+        channel_id: channel.id,
+        message: 'test',
+        root_id: '',
+    } as Draft;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('handle not found database', async () => {
+        const result = await addFilesToDraft('foo', channelId, '', [], false) as {draft: unknown; error: unknown};
+        expect(result.error).toBeDefined();
+        expect(result.draft).toBeUndefined();
+    });
+
+    it('add draft files, no draft', async () => {
+        const models = await addFilesToDraft(serverUrl, channelId, '', [fileInfo], false) as DraftModel[];
+        expect(models).toBeDefined();
+        expect(models?.length).toBe(1);
+    });
+
+    it('add draft files', async () => {
+        await operator.handleDraft({drafts: [draft], prepareRecordsOnly: false});
+
+        const result = await addFilesToDraft(serverUrl, channelId, '', [fileInfo], false) as {draft: DraftModel; error: unknown};
+        expect(result.error).toBeUndefined();
+        expect(result.draft).toBeDefined();
+        expect(result?.draft.files.length).toBe(1);
     });
 });
