@@ -10,6 +10,7 @@ import {
     removeDraftFile,
     updateDraftMessage,
     addFilesToDraft,
+    removeDraft,
 } from './draft';
 
 import type {DraftModel} from '@app/database/models/server';
@@ -257,5 +258,51 @@ describe('addFilesToDraft', () => {
         expect(result.error).toBeUndefined();
         expect(result.draft).toBeDefined();
         expect(result?.draft.files.length).toBe(1);
+    });
+});
+
+describe('removeDraft', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+    } as Channel;
+    const draft: Draft = {
+        channel_id: channel.id,
+        message: 'test',
+        root_id: '',
+    } as Draft;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('handle not found database', async () => {
+        const result = await removeDraft('foo', channelId, '');
+        expect(result.error).toBeDefined();
+        expect(result.draft).toBeUndefined();
+    });
+
+    it('handle no draft', async () => {
+        const result = await removeDraft(serverUrl, channelId, '');
+        expect(result.error).toBeUndefined();
+        expect(result.draft).toBeUndefined();
+    });
+
+    it('remove draft', async () => {
+        await operator.handleDraft({drafts: [draft], prepareRecordsOnly: false});
+
+        const result = await removeDraft(serverUrl, channelId, '');
+        expect(result.error).toBeUndefined();
+        expect(result.draft).toBeDefined();
     });
 });
