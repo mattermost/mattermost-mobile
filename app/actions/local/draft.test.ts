@@ -210,7 +210,7 @@ describe('updateDraftMessage', () => {
     });
 
     it('update draft message, no file', async () => {
-        await operator.handleDraft({drafts: [{channel_id: channel.id, files: [fileInfo], root_id: ''}], prepareRecordsOnly: false});
+        await operator.handleDraft({drafts: [{channel_id: channel.id, files: [], root_id: ''}], prepareRecordsOnly: false});
 
         const result = await updateDraftMessage(serverUrl, channelId, '', 'newmessage', false) as {draft: DraftModel; error: unknown};
         expect(result.error).toBeUndefined();
