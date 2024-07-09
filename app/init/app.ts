@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {CallsManager} from '@calls/calls_manager';
 import DatabaseManager from '@database/manager';
 import {getAllServerCredentials} from '@init/credentials';
 import {initialLaunch} from '@init/launch';
@@ -47,6 +48,7 @@ export async function initialize() {
         GlobalEventHandler.init();
         ManagedApp.init();
         SessionManager.init();
+        CallsManager.initialize();
     }
 }
 
