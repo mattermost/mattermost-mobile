@@ -31,6 +31,7 @@ type Props = {
     type?: ChannelType;
     canEnableDisableCalls: boolean;
     isCallsEnabledInChannel: boolean;
+    groupCallsAllowed: boolean;
     canManageMembers: boolean;
     isCRTEnabled: boolean;
     canManageSettings: boolean;
@@ -63,6 +64,7 @@ const ChannelInfo = ({
     type,
     canEnableDisableCalls,
     isCallsEnabledInChannel,
+    groupCallsAllowed,
     canManageMembers,
     canManageSettings,
     isGuestUser,
@@ -74,7 +76,10 @@ const ChannelInfo = ({
 
     // NOTE: isCallsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
     //   which comes from observeIsCallsEnabledInChannel
-    const callsAvailable = isCallsEnabledInChannel;
+    let callsAvailable = isCallsEnabledInChannel;
+    if (!groupCallsAllowed && type !== General.DM_CHANNEL) {
+        callsAvailable = false;
+    }
 
     const onPressed = useCallback(() => {
         return dismissModal({componentId});

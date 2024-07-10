@@ -99,6 +99,10 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         }),
     );
     const isCallsEnabledInChannel = observeIsCallsEnabledInChannel(database, serverUrl, observeCurrentChannelId(database));
+    const groupCallsAllowed = observeCallsConfig(serverUrl).pipe(
+        switchMap((config) => of$(config.GroupCallsAllowed)),
+        distinctUntilChanged(),
+    );
 
     const canManageMembers = currentUser.pipe(
         combineLatestWith(channelId),
@@ -125,6 +129,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         type,
         canEnableDisableCalls,
         isCallsEnabledInChannel,
+        groupCallsAllowed,
         canManageMembers,
         isCRTEnabled: observeIsCRTEnabled(database),
         canManageSettings,

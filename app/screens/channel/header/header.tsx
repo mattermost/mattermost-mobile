@@ -42,6 +42,7 @@ type ChannelProps = {
     searchTerm: string;
     teamId: string;
     callsEnabledInChannel: boolean;
+    groupCallsAllowed: boolean;
     isTabletView?: boolean;
 };
 
@@ -73,7 +74,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelHeader = ({
     channelId, channelType, componentId, customStatus, displayName,
     isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
-    searchTerm, teamId, callsEnabledInChannel, isTabletView,
+    searchTerm, teamId, callsEnabledInChannel, groupCallsAllowed, isTabletView,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -84,7 +85,10 @@ const ChannelHeader = ({
 
     // NOTE: callsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
     //   which ultimately comes from channel/index.tsx, and observeIsCallsEnabledInChannel
-    const callsAvailable = callsEnabledInChannel;
+    let callsAvailable = callsEnabledInChannel;
+    if (!groupCallsAllowed && channelType !== General.DM_CHANNEL) {
+        callsAvailable = false;
+    }
 
     const isDMorGM = isTypeDMorGM(channelType);
     const contextStyle = useMemo(() => ({
