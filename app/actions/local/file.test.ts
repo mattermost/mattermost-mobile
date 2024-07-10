@@ -1,0 +1,55 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import DatabaseManager from '@database/manager';
+
+import {
+    updateLocalFile,
+    updateLocalFilePath,
+} from './file';
+
+import type ServerDataOperator from '@database/operator/server_data_operator';
+import type FileModel from '@typings/database/models/servers/file';
+
+describe('updateLocalFiles', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const fileInfo: FileInfo = {
+        id: 'fileid',
+        clientId: 'clientid',
+        localPath: 'path1',
+    } as FileInfo;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('updateLocalFile - handle not found database', async () => {
+        const {error} = await updateLocalFile('foo', fileInfo) as {error: unknown};
+        expect(error).toBeTruthy();
+    });
+
+    it('updateLocalFile', async () => {
+        const models = await updateLocalFile(serverUrl, fileInfo) as FileModel[];
+        expect(models).toBeDefined();
+        expect(models.length).toBe(1);
+        expect(models![0].id).toBe('fileid');
+    });
+
+    it('updateLocalFilePath - handle not found database', async () => {
+        const {error} = await updateLocalFilePath('foo', fileInfo.id as string, 'newpath');
+        expect(error).toBeTruthy();
+    });
+
+    it('updateLocalFilePath', async () => {
+        await operator.handleFiles({files: [fileInfo], prepareRecordsOnly: false});
+
+        const {error} = await updateLocalFilePath(serverUrl, fileInfo.id as string, 'newpath');
+        expect(error).toBeUndefined();
+    });
+});
