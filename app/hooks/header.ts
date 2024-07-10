@@ -156,12 +156,9 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
     }, [largeHeight, defaultHeight]);
 
     const unlock = useCallback(() => {
-        setLockValue(0);
         scrollEnabled.value = true;
-
-        // the scrollEnabled.value is not being updated to true in the onScroll handler, until we force the scroll using onSnap
-        onSnap?.(0);
-    }, [onSnap, scrollEnabled.value]);
+        setLockValue(0);
+    }, []);
 
     return {
         defaultHeight,
