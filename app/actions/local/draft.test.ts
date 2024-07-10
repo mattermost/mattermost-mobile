@@ -17,36 +17,36 @@ import {
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type DraftModel from '@typings/database/models/servers/draft';
 
+let operator: ServerDataOperator;
+const serverUrl = 'baseHandler.test.com';
+const channelId = 'id1';
+const teamId = 'tId1';
+const channel: Channel = {
+    id: channelId,
+    team_id: teamId,
+    total_msg_count: 0,
+} as Channel;
+const fileInfo: FileInfo = {
+    id: 'fileid',
+    clientId: 'clientid',
+    localPath: 'path1',
+} as FileInfo;
+const draft: Draft = {
+    channel_id: channel.id,
+    message: 'test',
+    root_id: '',
+} as Draft;
+
+beforeEach(async () => {
+    await DatabaseManager.init([serverUrl]);
+    operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+});
+
+afterEach(async () => {
+    await DatabaseManager.destroyServerDatabase(serverUrl);
+});
+
 describe('updateDraftFile', () => {
-    let operator: ServerDataOperator;
-    const serverUrl = 'baseHandler.test.com';
-    const channelId = 'id1';
-    const teamId = 'tId1';
-    const channel: Channel = {
-        id: channelId,
-        team_id: teamId,
-        total_msg_count: 0,
-    } as Channel;
-    const fileInfo: FileInfo = {
-        id: 'fileid',
-        clientId: 'clientid',
-        localPath: 'path1',
-    } as FileInfo;
-    const draft: Draft = {
-        channel_id: channel.id,
-        message: 'test',
-        root_id: '',
-    } as Draft;
-
-    beforeEach(async () => {
-        await DatabaseManager.init([serverUrl]);
-        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     it('handle not found database', async () => {
         const {error} = await updateDraftFile('foo', channelId, '', fileInfo, false);
         expect(error).toBeTruthy();
@@ -78,35 +78,6 @@ describe('updateDraftFile', () => {
 });
 
 describe('removeDraftFile', () => {
-    let operator: ServerDataOperator;
-    const serverUrl = 'baseHandler.test.com';
-    const channelId = 'id1';
-    const teamId = 'tId1';
-    const channel: Channel = {
-        id: channelId,
-        team_id: teamId,
-        total_msg_count: 0,
-    } as Channel;
-    const fileInfo: FileInfo = {
-        id: 'fileid',
-        clientId: 'clientid',
-        localPath: 'path1',
-    } as FileInfo;
-    const draft: Draft = {
-        channel_id: channel.id,
-        message: 'test',
-        root_id: '',
-    } as Draft;
-
-    beforeEach(async () => {
-        await DatabaseManager.init([serverUrl]);
-        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     it('handle not found database', async () => {
         const {error} = await removeDraftFile('foo', channelId, '', '', false);
         expect(error).toBeTruthy();
@@ -144,35 +115,6 @@ describe('removeDraftFile', () => {
 });
 
 describe('updateDraftMessage', () => {
-    let operator: ServerDataOperator;
-    const serverUrl = 'baseHandler.test.com';
-    const channelId = 'id1';
-    const teamId = 'tId1';
-    const channel: Channel = {
-        id: channelId,
-        team_id: teamId,
-        total_msg_count: 0,
-    } as Channel;
-    const fileInfo: FileInfo = {
-        id: 'fileid',
-        clientId: 'clientid',
-        localPath: 'path1',
-    } as FileInfo;
-    const draft: Draft = {
-        channel_id: channel.id,
-        message: 'test',
-        root_id: '',
-    } as Draft;
-
-    beforeEach(async () => {
-        await DatabaseManager.init([serverUrl]);
-        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     it('handle not found database', async () => {
         const result = await updateDraftMessage('foo', channelId, '', 'newmessage', false) as {draft: unknown; error: unknown};
         expect(result.error).toBeDefined();
@@ -220,35 +162,6 @@ describe('updateDraftMessage', () => {
 });
 
 describe('addFilesToDraft', () => {
-    let operator: ServerDataOperator;
-    const serverUrl = 'baseHandler.test.com';
-    const channelId = 'id1';
-    const teamId = 'tId1';
-    const channel: Channel = {
-        id: channelId,
-        team_id: teamId,
-        total_msg_count: 0,
-    } as Channel;
-    const fileInfo: FileInfo = {
-        id: 'fileid',
-        clientId: 'clientid',
-        localPath: 'path1',
-    } as FileInfo;
-    const draft: Draft = {
-        channel_id: channel.id,
-        message: 'test',
-        root_id: '',
-    } as Draft;
-
-    beforeEach(async () => {
-        await DatabaseManager.init([serverUrl]);
-        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     it('handle not found database', async () => {
         const result = await addFilesToDraft('foo', channelId, '', [], false) as {draft: unknown; error: unknown};
         expect(result.error).toBeDefined();
@@ -272,30 +185,6 @@ describe('addFilesToDraft', () => {
 });
 
 describe('removeDraft', () => {
-    let operator: ServerDataOperator;
-    const serverUrl = 'baseHandler.test.com';
-    const channelId = 'id1';
-    const teamId = 'tId1';
-    const channel: Channel = {
-        id: channelId,
-        team_id: teamId,
-        total_msg_count: 0,
-    } as Channel;
-    const draft: Draft = {
-        channel_id: channel.id,
-        message: 'test',
-        root_id: '',
-    } as Draft;
-
-    beforeEach(async () => {
-        await DatabaseManager.init([serverUrl]);
-        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     it('handle not found database', async () => {
         const result = await removeDraft('foo', channelId, '');
         expect(result.error).toBeDefined();
@@ -318,35 +207,9 @@ describe('removeDraft', () => {
 });
 
 describe('updateDraftPriority', () => {
-    let operator: ServerDataOperator;
-    const serverUrl = 'baseHandler.test.com';
-    const channelId = 'id1';
-    const teamId = 'tId1';
-    const channel: Channel = {
-        id: channelId,
-        team_id: teamId,
-        total_msg_count: 0,
-    } as Channel;
-    const draft: Draft = {
-        channel_id: channel.id,
-        message: 'test',
-        root_id: '',
-        metadata: {
-            priority: {priority: 'important'},
-        },
-    } as Draft;
     const postPriority: PostPriority = {
         priority: 'urgent',
     } as PostPriority;
-
-    beforeEach(async () => {
-        await DatabaseManager.init([serverUrl]);
-        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
 
     it('handle not found database', async () => {
         const result = await updateDraftPriority('foo', channelId, '', postPriority) as {draft: unknown; error: unknown};
@@ -370,4 +233,3 @@ describe('updateDraftPriority', () => {
         expect(result.draft.metadata?.priority?.priority).toBe(postPriority.priority);
     });
 });
-
