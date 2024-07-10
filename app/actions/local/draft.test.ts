@@ -14,8 +14,8 @@ import {
     updateDraftPriority,
 } from './draft';
 
-import type {DraftModel} from '@app/database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type DraftModel from '@typings/database/models/servers/draft';
 
 describe('updateDraftFile', () => {
     let operator: ServerDataOperator;
