@@ -121,6 +121,11 @@ const UserItem = ({
     const shared = user ? isShared(user) : false;
     const deactivated = user ? isDeactivated(user) : false;
 
+    //Return null if user is deactivated preventing rendering them
+    if (deactivated) {
+        return null;
+    }
+
     const isCurrentUser = currentUserId === user?.id;
     const customStatus = getUserCustomStatus(user);
     const customStatusExpired = isCustomStatusExpired(user);
