@@ -380,11 +380,11 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
                 }
             }
 
-            return `${cacheDirectory}/${server}/${filename}-${fileIdPath}.${extension}`;
+            return `${cacheDirectory}${server}/${filename}-${fileIdPath}.${extension}`;
         } else if (file?.id && hasValidExtension) {
-            return `${cacheDirectory}/${server}/${fileIdPath}.${file.extension}`;
+            return `${cacheDirectory}${server}/${fileIdPath}.${file.extension}`;
         } else if (file?.id) {
-            return `${cacheDirectory}/${server}/${fileIdPath}`;
+            return `${cacheDirectory}${server}/${fileIdPath}`;
         }
     }
 
