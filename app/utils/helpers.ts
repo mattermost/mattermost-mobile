@@ -164,6 +164,10 @@ export function isMainActivity() {
     return true;
 }
 
+function localeCompare(a: string, b: string) {
+    return a.localeCompare(b);
+}
+
 export function areBothStringArraysEqual(a: string[], b: string[]) {
     if (a.length !== b.length) {
         return false;
@@ -173,8 +177,8 @@ export function areBothStringArraysEqual(a: string[], b: string[]) {
         return false;
     }
 
-    const aSorted = a.sort();
-    const bSorted = b.sort();
+    const aSorted = a.sort(localeCompare);
+    const bSorted = b.sort(localeCompare);
     const areBothEqual = aSorted.every((value, index) => value === bSorted[index]);
 
     return areBothEqual;
