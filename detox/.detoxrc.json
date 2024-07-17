@@ -37,8 +37,8 @@
     "android": {
       "type": "android.emulator",
       "device": {
-        "avdName": "pixel_6_pro",
-        "api": "30"
+        "avdName": "android_emulator",
+        "api": "29"
       }
     }
   },

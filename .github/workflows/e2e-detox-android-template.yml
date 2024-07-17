@@ -49,51 +49,51 @@ env:
   FAILURE_MESSAGE: "Something has failed"
   
 jobs:
-  # update-initial-status:
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     - uses: mattermost/actions/delivery/update-commit-status@main
-  #       env:
-  #         GITHUB_TOKEN: ${{ github.token }}
-  #       with:
-  #         repository_full_name: ${{ github.repository }}
-  #         commit_sha: ${{ inputs.commit_sha }}
-  #         context: ${{ inputs.status_check_context }}
-  #         description: Detox tests for mattermost mobile app
-  #         status: pending
+  update-initial-status:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: ${{ inputs.status_check_context }}
+          description: Detox tests for mattermost mobile app
+          status: pending
 
-  # generate-specs:
-  #   needs: update-initial-status
-  #   runs-on: ubuntu-22.04
-  #   outputs:
-  #     specs: ${{ steps.generate-specs.outputs.specs }}
-  #     build_id: ${{ env.BUILD_ID }}
-  #     device_name: ${{ env.DEVICE_NAME }}
-  #     device_os_version: ${{ env.DEVICE_OS_VERSION }}
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  generate-specs:
+    needs: update-initial-status
+    runs-on: ubuntu-22.04
+    outputs:
+      specs: ${{ steps.generate-specs.outputs.specs }}
+      build_id: ${{ env.BUILD_ID }}
+      device_name: ${{ env.DEVICE_NAME }}
+      device_os_version: ${{ env.DEVICE_OS_VERSION }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-  #     - name: Set Build ID
-  #       id: resolve-device
-  #       run: |
-  #         cd detox
-  #         DEVICE_NAME=$(node -p "require('./.detoxrc').devices['android'].device.avdName")
-  #         DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['android'].device.api")
-  #         BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
+      - name: Set Build ID
+        id: resolve-device
+        run: |
+          cd detox
+          DEVICE_NAME=$(node -p "require('./.detoxrc').devices['android'].device.avdName")
+          DEVICE_OS_VERSION=$(node -p "require('./.detoxrc').devices['android'].device.api")
+          BUILD_ID="${{ github.run_id }}-$DEVICE_NAME-$DEVICE_OS_VERSION"
 
-  #         echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
-  #         echo "DEVICE_NAME=$(echo ${DEVICE_NAME})" >> $GITHUB_ENV
-  #         echo "DEVICE_OS_VERSION=$(echo ${DEVICE_OS_VERSION})" >> $GITHUB_ENV
+          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> $GITHUB_ENV
+          echo "DEVICE_NAME=$(echo ${DEVICE_NAME})" >> $GITHUB_ENV
+          echo "DEVICE_OS_VERSION=$(echo ${DEVICE_OS_VERSION})" >> $GITHUB_ENV
 
-  #     - name: Generate Test Specs
-  #       id: generate-specs
-  #       uses: ./.github/actions/generate-specs
-  #       with:
-  #         parallelism: 10
-  #         search_path: detox/e2e/test
-  #         device_name: ${{ env.DEVICE_NAME }}
-  #         device_os_version: ${{env.DEVICE_OS_VERSION}}
+      - name: Generate Test Specs
+        id: generate-specs
+        uses: ./.github/actions/generate-specs
+        with:
+          parallelism: 10
+          search_path: detox/e2e/test
+          device_name: ${{ env.DEVICE_NAME }}
+          device_os_version: ${{env.DEVICE_OS_VERSION}}
         
   # build-android-apk:
   #   needs: update-initial-status
@@ -236,16 +236,14 @@ jobs:
   #       name: android-results-${{ matrix.runId }}
   #       path: detox/artifacts
 
-
   test-snapshot:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ['macos-13']
-        try: ['0', '1', '2']
-
+    runs-on: macos-13
+    continue-on-error: true
+    timeout-minutes: 40
+    needs:
+      - generate-specs
     steps:
+
       - name: Debug info
         run: |
           echo "ANDROID_HOME: $ANDROID_HOME"
@@ -276,36 +274,67 @@ jobs:
 
       - name: capture
         run: |
-          screencapture emulator-${{ matrix.os }}-${{ matrix.try }}.jpg
-          $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-capture-${{ matrix.os }}-${{ matrix.try }}.png
+          screencapture emulator-macos-13.jpg
+          $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-capture-macos-13.png
 
-      - run: |
-          echo "hw.ramSize=4096" >> ~/.android/avd/android_emulator.avd/config.ini
-          echo "hw.cpu.ncore=2" >> ~/.android/avd/android_emulator.avd/config.ini
-      - run: |
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-29;google_apis;x86_64'
-          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-29;google_apis;x86_64' --force --device "pixel_6"
-
-          echo "Emulator created successfully"
-          nohup $ANDROID_HOME/emulator/emulator -memory 4096 -avd android_emulator -skin 1080x1920 -no-window -noaudio -no-snapshot -netdelay none -netspeed full -no-audio -no-boot-anim -accel auto -gpu swiftshader_indirect -qemu -lcd-density 420 > /dev/null 2>&1 &
-          $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 5; done; input keyevent 82'
-          $ANDROID_HOME/platform-tools/adb devices
-          $ANDROID_HOME/platform-tools/adb shell input keyevent 82
-          $ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
-          $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
-          $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
-          sleep 120
-          screencapture emulator-${{ matrix.os }}-${{ matrix.try }}.jpg
-          $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-${{ matrix.os }}-${{ matrix.try }}.png
       - uses: actions/upload-artifact@v3
         with:
           name: Android-Emulator-Screenshots
-          path: emulator-${{ matrix.os }}-${{ matrix.try }}.jpg
+          path: emulator-macos-13.jpg
       - uses: actions/upload-artifact@v3
         with:
           name: Android-Emulator-Screenshots
-          path: emulator-${{ matrix.os }}-${{ matrix.try }}.png
+          path: emulator-capture-macos-13.png
 
+      - name: Checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Install Sharp CLI for faster image generation during prebuild
+        run: npm install --global sharp-cli
+
+      - name: Start React Native Metro Server
+        run: npm run start &
+
+      - name: Install Detox Dependencies
+        run: cd detox && npm i
+
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "adopt"
+          cache: "gradle"
+
+      - name: Create destination path
+        run: mkdir -p android/app/build/outputs/apk
+
+      - name: Download artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -L -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/1578521977/zip \
+              --output android/app/build/outputs/apk/artifact.zip
+      - name: Unzip artifact
+        run: unzip android/app/build/outputs/apk/artifact.zip -d android/app/build/outputs/apk
+      - name: Cleanup
+        run: rm android/app/build/outputs/apk/artifact.zip
+
+      - name: Run Android Detox E2E Tests on macOS
+        run: |
+          cd detox && npm run e2e:android-test -- about.e2e.ts
+
+      - name: Upload Android Test Report
+        if: always()
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: android-results-1
+          path: detox/artifacts
 
   # download-e2e-results:
   #   runs-on: ubuntu-22.04
