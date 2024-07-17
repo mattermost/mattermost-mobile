@@ -5,7 +5,9 @@ import DatabaseManager from '@database/manager';
 import {getMyTeamById, getTeamById, getTeamSearchHistoryById, prepareDeleteTeam, removeTeamFromTeamHistory} from '@queries/servers/team';
 import {logError} from '@utils/log';
 
-import {removeSearchFromTeamSearchHistory, removeUserFromTeam} from './team';
+import {queryTeamSearchHistoryByTeamId} from '../../queries/servers/team';
+
+import {addSearchToTeamSearchHistory, removeSearchFromTeamSearchHistory, removeUserFromTeam} from './team';
 
 jest.mock('@database/manager');
 jest.mock('@queries/servers/team');
@@ -115,7 +117,7 @@ describe('removeUserFromTeam', () => {
             {id: 'model2', _preparedState: 'markAsDeleted'},
         ];
         const systemModels = [
-            {id: 'systemModel1', _preparedState: 'update', value: [team.id]},
+            {id: 'systemModel1', _preparedState: 'update', value: []}, // Updated to reflect removal
         ];
 
         (getMyTeamById as jest.Mock).mockResolvedValue(myTeam);
@@ -129,11 +131,11 @@ describe('removeUserFromTeam', () => {
         expect(getTeamById).toHaveBeenCalledWith(database, myTeam.id);
         expect(prepareDeleteTeam).toHaveBeenCalledWith(team);
         expect(removeTeamFromTeamHistory).toHaveBeenCalledWith(operator, team.id, true);
-        expect(operator.batchRecords).toHaveBeenCalledWith([...preparedModels], 'removeUserFromTeam');
+        expect(operator.batchRecords).toHaveBeenCalledWith(preparedModels, 'removeUserFromTeam');
 
-        // Verify team id is present
+        // Verify team id is not present
         systemModels.forEach((model) => {
-            expect(model.value).toContain(team.id);
+            expect(model.value).not.toContain(team.id);
         });
 
         expect(result).toEqual({error: undefined});
@@ -163,7 +165,7 @@ describe('removeUserFromTeam', () => {
         expect(getTeamById).toHaveBeenCalledWith(database, myTeam.id);
         expect(prepareDeleteTeam).toHaveBeenCalledWith(team);
         expect(removeTeamFromTeamHistory).toHaveBeenCalledWith(operator, team.id, true);
-        expect(operator.batchRecords).toHaveBeenCalledWith([...preparedModels], 'removeUserFromTeam');
+        expect(operator.batchRecords).toHaveBeenCalledWith(preparedModels, 'removeUserFromTeam');
         expect(logError).toHaveBeenCalledWith('Failed removeUserFromTeam', writeError);
 
         // Verify team id is present
@@ -208,6 +210,138 @@ describe('removeUserFromTeam', () => {
 
         expect(getMyTeamById).toHaveBeenCalledWith(database, teamId);
         expect(logError).toHaveBeenCalledWith('Failed removeUserFromTeam', error);
+        expect(result).toEqual({error});
+    });
+});
+
+describe('addSearchToTeamSearchHistory', () => {
+    const terms = 'search terms';
+    const MAX_TEAM_SEARCHES = 15;
+
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        DatabaseManager.getServerDatabaseAndOperator = jest.fn();
+        (DatabaseManager.getServerDatabaseAndOperator as jest.Mock).mockReturnValue({
+            database,
+            operator,
+        });
+
+        operator.handleTeamSearchHistory = jest.fn();
+        operator.batchRecords = jest.fn();
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should add search to team search history successfully', async () => {
+        const newSearch = {
+            created_at: Date.now(),
+            display_term: terms,
+            term: terms,
+            team_id: teamId,
+        };
+        const searchModel = {id: 'searchModelId', _raw: {_changed: 'created_at'}};
+        (operator.handleTeamSearchHistory as jest.Mock).mockResolvedValue([searchModel]);
+
+        const result = await addSearchToTeamSearchHistory(serverUrl, teamId, terms);
+
+        expect(operator.handleTeamSearchHistory).toHaveBeenCalledWith({
+            teamSearchHistories: [newSearch],
+            prepareRecordsOnly: true,
+        });
+        expect(operator.batchRecords).toHaveBeenCalledWith([searchModel], 'addSearchToTeamHistory');
+        expect(result).toEqual({searchModel});
+    });
+
+    it('should delete the oldest entry if team search history exceeds the limit', async () => {
+        const newSearch = {
+            created_at: Date.now(),
+            display_term: terms,
+            term: terms,
+            team_id: teamId,
+        };
+        const searchModel = {id: 'searchModelId', _raw: {_changed: ''}};
+        const oldSearchModel = {id: 'oldSearchModelId', prepareDestroyPermanently: jest.fn().mockReturnValue(undefined)};
+        const teamSearchHistory = new Array(MAX_TEAM_SEARCHES + 1).fill(oldSearchModel);
+
+        (operator.handleTeamSearchHistory as jest.Mock).mockResolvedValue([searchModel]);
+        (queryTeamSearchHistoryByTeamId as jest.Mock).mockReturnValue({
+            fetch: jest.fn().mockResolvedValue(teamSearchHistory),
+        });
+
+        const result = await addSearchToTeamSearchHistory(serverUrl, teamId, terms);
+
+        expect(operator.handleTeamSearchHistory).toHaveBeenCalledWith({
+            teamSearchHistories: [newSearch],
+            prepareRecordsOnly: true,
+        });
+        expect(queryTeamSearchHistoryByTeamId).toHaveBeenCalledWith(database, teamId);
+        expect(oldSearchModel.prepareDestroyPermanently).toHaveBeenCalledTimes(1);
+        expect(operator.batchRecords).toHaveBeenCalledWith([searchModel], 'addSearchToTeamHistory');
+        expect(result).toEqual({searchModel});
+    });
+
+    it('should handle case when searchModel._raw._changed is "created_at"', async () => {
+        const newSearch = {
+            created_at: Date.now(),
+            display_term: terms,
+            term: terms,
+            team_id: teamId,
+        };
+        const searchModel = {id: 'searchModelId', _raw: {_changed: 'created_at'}};
+        (operator.handleTeamSearchHistory as jest.Mock).mockResolvedValue([searchModel]);
+
+        const result = await addSearchToTeamSearchHistory(serverUrl, teamId, terms);
+
+        expect(operator.handleTeamSearchHistory).toHaveBeenCalledWith({
+            teamSearchHistories: [newSearch],
+            prepareRecordsOnly: true,
+        });
+        expect(queryTeamSearchHistoryByTeamId).not.toHaveBeenCalled();
+        expect(operator.batchRecords).toHaveBeenCalledWith([searchModel], 'addSearchToTeamHistory');
+        expect(result).toEqual({searchModel});
+    });
+
+    it('should handle case when teamSearchHistory length is less than or equal to MAX_TEAM_SEARCHES', async () => {
+        const newSearch = {
+            created_at: Date.now(),
+            display_term: terms,
+            term: terms,
+            team_id: teamId,
+        };
+        const searchModel = {id: 'searchModelId', _raw: {_changed: ''}};
+        const teamSearchHistory = new Array(MAX_TEAM_SEARCHES).fill(searchModel);
+
+        (operator.handleTeamSearchHistory as jest.Mock).mockResolvedValue([searchModel]);
+        (queryTeamSearchHistoryByTeamId as jest.Mock).mockReturnValue({
+            fetch: jest.fn().mockResolvedValue(teamSearchHistory),
+        });
+
+        const result = await addSearchToTeamSearchHistory(serverUrl, teamId, terms);
+
+        expect(operator.handleTeamSearchHistory).toHaveBeenCalledWith({
+            teamSearchHistories: [newSearch],
+            prepareRecordsOnly: true,
+        });
+        expect(queryTeamSearchHistoryByTeamId).toHaveBeenCalledWith(database, teamId);
+        expect(operator.batchRecords).toHaveBeenCalledWith([searchModel], 'addSearchToTeamHistory');
+        expect(result).toEqual({searchModel});
+    });
+
+    it('should handle errors and log them', async () => {
+        const error = new Error('Test error');
+        (operator.handleTeamSearchHistory as jest.Mock).mockRejectedValue(error);
+
+        const result = await addSearchToTeamSearchHistory(serverUrl, teamId, terms);
+
+        expect(operator.handleTeamSearchHistory).toHaveBeenCalledWith({
+            teamSearchHistories: [{created_at: expect.any(Number), display_term: terms, term: terms, team_id: teamId}],
+            prepareRecordsOnly: true,
+        });
+        expect(logError).toHaveBeenCalledWith('Failed addSearchToTeamSearchHistory', error);
         expect(result).toEqual({error});
     });
 });
