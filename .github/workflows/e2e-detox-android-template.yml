@@ -272,20 +272,6 @@ jobs:
           $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
           $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
 
-      - name: capture
-        run: |
-          screencapture emulator-macos-13.jpg
-          $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-capture-macos-13.png
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: Android-Emulator-Screenshots
-          path: emulator-macos-13.jpg
-      - uses: actions/upload-artifact@v3
-        with:
-          name: Android-Emulator-Screenshots
-          path: emulator-capture-macos-13.png
-
       - name: Checkout
         uses: actions/checkout@v1
         with:
@@ -336,6 +322,19 @@ jobs:
           name: android-results-1
           path: detox/artifacts
 
+      - name: capture
+        run: |
+          screencapture emulator-macos-13.jpg
+          $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-capture-macos-13.png
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Android-Emulator-Screenshots
+          path: emulator-macos-13.jpg
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Android-Emulator-Screenshots
+          path: emulator-capture-macos-13.png
   # download-e2e-results:
   #   runs-on: ubuntu-22.04
   #   needs:
