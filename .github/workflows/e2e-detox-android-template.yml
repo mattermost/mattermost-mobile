@@ -340,7 +340,7 @@ jobs:
 
     services:
       xvfb:
-        image: tianon/xvfb
+        image: circleci/xvfb:latest
         options: --privileged
 
     steps:
