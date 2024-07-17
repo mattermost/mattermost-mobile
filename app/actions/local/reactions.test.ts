@@ -40,27 +40,28 @@ describe('addRecentReaction', () => {
     });
 
     it('should add new emoji to the beginning of the list', async () => {
+        (recentReactionsQueries.getRecentReactions as jest.Mock).mockResolvedValue([':water:']);
         const emojiNames = [':air:', ':fire:'];
         await addRecentReaction(serverUrl, emojiNames);
 
         expect(operator.handleSystem).toHaveBeenCalledWith({
             systems: [{
                 id: 'recentReactions',
-                value: JSON.stringify([':fire:', ':air:']),
+                value: JSON.stringify([':fire:', ':air:', ':water:']),
             }],
             prepareRecordsOnly: false,
         });
     });
 
     it('should move existing emoji to the beginning of the list', async () => {
-        (recentReactionsQueries.getRecentReactions as jest.Mock).mockResolvedValue([':fire:', 'water']);
+        (recentReactionsQueries.getRecentReactions as jest.Mock).mockResolvedValue([':water:', ':fire:']);
         const emojiNames = [':air:', ':fire:'];
         await addRecentReaction(serverUrl, emojiNames);
 
         expect(operator.handleSystem).toHaveBeenCalledWith({
             systems: [{
                 id: 'recentReactions',
-                value: JSON.stringify([':fire:', ':air:', 'water']),
+                value: JSON.stringify([':fire:', ':air:', ':water:']),
             }],
             prepareRecordsOnly: false,
         });
@@ -78,19 +79,36 @@ describe('addRecentReaction', () => {
     });
 
     it('should use getEmojiFirstAlias for each emoji', async () => {
+        (emojiHelpers.getEmojiFirstAlias as jest.Mock).mockImplementation((emoji) => {
+            if (emoji === ':air:') {
+                return ':wind:';
+            }
+            if (emoji === ':fire:') {
+                return ':flame:';
+            }
+            return emoji;
+        });
+
         const emojiNames = [':air:', ':fire:'];
         await addRecentReaction(serverUrl, emojiNames);
 
         expect(emojiHelpers.getEmojiFirstAlias).toHaveBeenCalledTimes(2);
         expect(emojiHelpers.getEmojiFirstAlias).toHaveBeenCalledWith(':air:');
         expect(emojiHelpers.getEmojiFirstAlias).toHaveBeenCalledWith(':fire:');
+        expect(operator.handleSystem).toHaveBeenCalledWith({
+            systems: [{
+                id: 'recentReactions',
+                value: JSON.stringify([':flame:', ':wind:']),
+            }],
+            prepareRecordsOnly: false,
+        });
     });
 
     it('should handle errors and log them', async () => {
-        const failedError = new Error('Test error');
-        (recentReactionsQueries.getRecentReactions as jest.Mock).mockRejectedValue(failedError);
+        const unregisteredServerUrl = 'unregistered.test.com';
+        const failedError = new Error(`${unregisteredServerUrl} database not found`);
 
-        const result = await addRecentReaction(serverUrl, [':air:']);
+        const result = await addRecentReaction(unregisteredServerUrl, [':air:']);
 
         expect(logUtils.logError).toHaveBeenCalledWith('Failed addRecentReaction', failedError);
         expect(result).toEqual({error: failedError});

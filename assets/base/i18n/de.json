@@ -1080,6 +1080,7 @@
   "suggestion.mention.groups": "Gruppenerwähnungen",
   "suggestion.mention.here": "Benachrichtigt jeden in diesem Kanal",
   "suggestion.mention.morechannels": "Andere Kanäle",
+  "suggestion.mention.nonmembers": "Nicht im Kanal",
   "suggestion.mention.special": "Spezielle Erwähnungen",
   "suggestion.mention.users": "Benutzer",
   "suggestion.search.direct": "Direktnachricht",
