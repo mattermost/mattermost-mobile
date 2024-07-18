@@ -76,7 +76,7 @@ describe('FilePickerUtil', () => {
         jest.clearAllMocks();
     });
 
-    test('should assing intl and uploadFiles correctly in the constructor', () => {
+    test('should assign intl and uploadFiles correctly in the constructor', () => {
         // @ts-expect-error intl is private
         expect(filePickerUtil.intl).toBe(intl);
 
