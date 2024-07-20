@@ -18,6 +18,7 @@ const MAX_WEBSOCKET_RETRY_TIME = toMilliseconds({minutes: 5});
 const DEFAULT_OPTIONS = {
     forceConnection: true,
 };
+const TLS_HANDSHARE_ERROR = 1015;
 
 export default class WebSocketClient {
     private conn?: WebSocketClientInterface;
@@ -190,8 +191,7 @@ export default class WebSocketClient {
             // reliable websockets are enabled this won't trigger a new sync.
             this.shouldSkipSync = false;
 
-            if (ev.message && typeof ev.message === 'object' && 'code' in ev.message && ev.message.code === 1015) {
-                // code 1015 means an error in the TLS handshake
+            if (ev.message && typeof ev.message === 'object' && 'code' in ev.message && ev.message.code === TLS_HANDSHARE_ERROR) {
                 logDebug('websocket did not connect', this.url, ev.message.reason);
                 this.closeCallback?.(this.connectFailCount);
                 return;

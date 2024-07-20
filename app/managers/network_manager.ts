@@ -37,11 +37,11 @@ const messages = defineMessages({
         id: 'server.invalid.certificate.title',
         defaultMessage: 'Invalid SSL certificate',
     },
-    invalidSSLDescription: {
+    invalidSslDescription: {
         id: 'server.invalid.certificate.description',
         defaultMessage: 'The certificate for this server is invalid.\nYou might be connecting to a server that is pretending to be “{hostname}” which could put your confidential information at risk.',
     },
-    invlidePinningTitle: {
+    invalidPinningTitle: {
         id: 'server.invalid.pinning.title',
         defaultMessage: 'Invalid pinned SSL certificate',
     },
@@ -154,13 +154,13 @@ class NetworkManager {
             const parsed = urlParse(event.serverUrl);
             Alert.alert(
                 this.intl.formatMessage(messages.invalidSslTitle),
-                this.intl.formatMessage(messages.invalidSSLDescription, {hostname: parsed.hostname}),
+                this.intl.formatMessage(messages.invalidSslDescription, {hostname: parsed.hostname}),
             );
         } else if (SERVER_TRUST_EVALUATION_FAILED === event.errorCode && !showingServerTrustAlert) {
             logDebug('Invalid SSL Pinning:', event.errorDescription);
             showingServerTrustAlert = true;
             Alert.alert(
-                this.intl.formatMessage(messages.invlidePinningTitle),
+                this.intl.formatMessage(messages.invalidPinningTitle),
                 event.errorDescription,
                 [{
                     text: this.intl.formatMessage({id: 'server_upgrade.dismiss', defaultMessage: 'Dismiss'}),

@@ -79,7 +79,7 @@ public class PushNotification: NSObject {
                        let fibonacciBackoffsInSeconds = self?.fibonacciBackoffsInSeconds,
                        let retryIndex = self?.retryIndex,
                        fibonacciBackoffsInSeconds.count > retryIndex {
-                        if nsError.code == -999 {
+                        if nsError.code == NSURLErrorCancelled {
                             completionHandler(nil)
                             return
                         }

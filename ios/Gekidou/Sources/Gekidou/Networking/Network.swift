@@ -38,35 +38,37 @@ public class Network: NSObject {
     }
     
     internal func loadPinnedCertificates() {
-        if let certsPath = Bundle.app.resourceURL?.appendingPathComponent("certs") {
-            let fileManager = FileManager.default
-            do {
-                let certsArray = try fileManager.contentsOfDirectory(at: certsPath, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
-                let certs = certsArray.filter{ $0.pathExtension == "crt" || $0.pathExtension == "cer"}
-                    for cert in certs {
-                        if let domain = URL(string: cert.absoluteString)?.deletingPathExtension().lastPathComponent,
-                           let certData = try? Data(contentsOf: cert),
-                           let certificate = SecCertificateCreateWithData(nil, certData as CFData){
-                            if certificates[domain] != nil {
-                                certificates[domain]?.append(certificate)
-                            } else {
-                                certificates[domain] = [certificate]
-                            }
-                            os_log("Gekidou: loaded certificate %{public}@ for domain %{public}@",
-                                   log: .default,
-                                   type: .info,
-                                   cert.lastPathComponent, domain
-                            )
+        guard let certsPath = Bundle.app.resourceURL?.appendingPathComponent("certs") else {
+            return
+        }
+        
+        let fileManager = FileManager.default
+        do {
+            let certsArray = try fileManager.contentsOfDirectory(at: certsPath, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+            let certs = certsArray.filter{ $0.pathExtension == "crt" || $0.pathExtension == "cer"}
+                for cert in certs {
+                    if let domain = URL(string: cert.absoluteString)?.deletingPathExtension().lastPathComponent,
+                       let certData = try? Data(contentsOf: cert),
+                       let certificate = SecCertificateCreateWithData(nil, certData as CFData){
+                        if certificates[domain] != nil {
+                            certificates[domain]?.append(certificate)
+                        } else {
+                            certificates[domain] = [certificate]
                         }
+                        os_log("Gekidou: loaded certificate %{public}@ for domain %{public}@",
+                               log: .default,
+                               type: .info,
+                               cert.lastPathComponent, domain
+                        )
                     }
-            } catch {
-                os_log(
-                    "Gekidou: Error loading pinned certificates -- %{public}@",
-                    log: .default,
-                    type: .error,
-                    String(describing: error)
-                )
-            }
+                }
+        } catch {
+            os_log(
+                "Gekidou: Error loading pinned certificates -- %{public}@",
+                log: .default,
+                type: .error,
+                String(describing: error)
+            )
         }
     }
     

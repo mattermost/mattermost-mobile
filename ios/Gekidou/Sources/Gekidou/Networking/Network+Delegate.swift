@@ -66,6 +66,11 @@ extension Network: URLSessionDelegate, URLSessionTaskDelegate {
             
             return (.useCredential, URLCredential(trust: trust), nil)
         } catch {
+            os_log("Gekidou: %{public}@",
+                   log: .default,
+                   type: .error,
+                   error.localizedDescription
+            )
             return (.cancelAuthenticationChallenge, nil, error as? NetworkError)
         }
     }
