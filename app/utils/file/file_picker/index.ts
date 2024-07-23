@@ -266,6 +266,8 @@ export default class FilePickerUtil {
                 if (newUri == null) {
                     return {doc: undefined};
                 }
+
+                uri = newUri;
             }
         }
 
