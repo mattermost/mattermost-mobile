@@ -1009,6 +1009,7 @@
   "server_upgrade.learn_more": "Learn More",
   "server.invalid.certificate.description": "The certificate for this server is invalid.\nYou might be connecting to a server that is pretending to be “{hostname}” which could put your confidential information at risk.",
   "server.invalid.certificate.title": "Invalid SSL certificate",
+  "server.invalid.pinning.title": "Invalid pinned SSL certificate",
   "server.logout.alert_description": "All associated data will be removed",
   "server.logout.alert_title": "Are you sure you want to log out of {displayName}?",
   "server.remove.alert_description": "This will remove it from your list of servers. All associated data will be removed",
