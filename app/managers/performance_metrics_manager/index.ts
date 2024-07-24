@@ -48,6 +48,10 @@ class PerformanceMetricsManager {
         this.target = target;
     }
 
+    public skipLoadMetric() {
+        this.hasRegisteredLoad = true;
+    }
+
     public finishLoad(location: Target, serverUrl: string) {
         this.finishLoadWithRetries(location, serverUrl, 0);
     }
