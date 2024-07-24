@@ -1004,6 +1004,7 @@
   "select_team.title": "Selecteer een team",
   "server.invalid.certificate.description": "Het certificaat voor deze server is ongeldig.\nMogelijks maak je verbinding met een server die zich voordoet als \"{hostname}\", waardoor je vertrouwelijke gegevens in gevaar kunnen komen.",
   "server.invalid.certificate.title": "Ongeldig SSL-certificaat",
+  "server.invalid.pinning.title": "Ongeldig vastgemaakt SSL-certificaat",
   "server.logout.alert_description": "Alle bijbehorende gegevens worden verwijderd",
   "server.logout.alert_title": "Weet je zeker dat je wilt uitloggen bij {displayName}?",
   "server.remove.alert_description": "Dit zal de server verwijderen uit jouw lijst van servers. Alle bijbehorende gegevens worden verwijderd",
