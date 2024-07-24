@@ -1004,6 +1004,7 @@
   "select_team.title": "Wybierz zespół",
   "server.invalid.certificate.description": "Certyfikat tego serwera jest nieprawidłowy.\nMożliwe, że łączysz się z serwerem podszywającym się pod \"{hostname}\", co może narazić Twoje poufne informacje na ryzyko.",
   "server.invalid.certificate.title": "Nieprawidłowy certyfikat SSL",
+  "server.invalid.pinning.title": "Nieprawidłowy przypięty certyfikat SSL",
   "server.logout.alert_description": "Wszystkie powiązane dane zostaną usunięte",
   "server.logout.alert_title": "Czy na pewno chcesz się wylogować z {displayName}?",
   "server.remove.alert_description": "Spowoduje to usunięcie z listy serwerów. Wszystkie powiązane dane zostaną usunięte",
