@@ -234,7 +234,8 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                         />
                         <Button
                             testID='forgot.password.button'
-                            buttonStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', email ? 'default' : 'disabled'), error ? styles.error : undefined]}
+                            buttonStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'default'), error ? styles.error : undefined]}
+                            disabledStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'disabled'), error ? styles.error : undefined]}
                             disabled={!email}
                             onPress={submitResetPassword}
                         >

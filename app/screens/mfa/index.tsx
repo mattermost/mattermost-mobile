@@ -236,7 +236,8 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
                             />
                             <Button
                                 testID='login_mfa.submit'
-                                buttonStyle={[styles.proceedButton, buttonBackgroundStyle(theme, 'lg', 'primary', token ? 'default' : 'disabled'), error ? styles.error : undefined]}
+                                buttonStyle={[styles.proceedButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'default'), error ? styles.error : undefined]}
+                                disabledStyle={[styles.proceedButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'disabled'), error ? styles.error : undefined]}
                                 disabled={!token}
                                 onPress={submit}
                             >

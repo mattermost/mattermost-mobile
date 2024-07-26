@@ -1,10 +1,8 @@
 package com.mattermost.rnshare.helpers
 
 import android.content.Context
-import android.database.Cursor
 import android.net.Uri
 import android.provider.DocumentsContract
-import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.text.TextUtils
 import android.util.Log
@@ -49,25 +47,10 @@ object RealPathUtil {
                         return null
                     }
                 }
-            } else if (isMediaDocument(uri)) {
+            }
+            else if (isMediaDocument(uri)) {
                 // MediaProvider
-                val docId = DocumentsContract.getDocumentId(uri)
-                val split = docId.split((":").toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                val type = split[0]
-                var contentUri: Uri? = null
-                when (type) {
-                    "image" -> {
-                        contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                    }
-                    "video" -> {
-                        contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-                    }
-                    "audio" -> {
-                        contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                    }
-                }
-                val selectionArgs = arrayOf(split[1])
-                return contentUri?.let { getDataColumn(context, it, selectionArgs) }
+                return getPathFromSavingTempFile(context, uri)
             }
         }
         if ("content".equals(uri.scheme, ignoreCase = true)) {
@@ -131,27 +114,6 @@ object RealPathUtil {
 
         val f = File(filename)
         return f.name
-    }
-
-    private fun getDataColumn(context:Context, uri:Uri, selectionArgs:Array<String>): String? {
-        var cursor: Cursor? = null
-        val column = "_data"
-        val selection = "_id=?"
-        val projection = arrayOf(column)
-        try
-        {
-            cursor = context.contentResolver.query(uri, projection, selection, selectionArgs, null)
-            if (cursor != null && cursor.moveToFirst()) {
-                val index = cursor.getColumnIndexOrThrow(column)
-                return cursor.getString(index)
-            }
-        }
-        finally
-        {
-            cursor?.close()
-        }
-
-        return null
     }
 
     private fun isExternalStorageDocument(uri:Uri):Boolean {

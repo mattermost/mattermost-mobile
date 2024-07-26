@@ -10,7 +10,7 @@ import type {Relation} from '@nozbe/watermelondb';
 import type FileModelInterface from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 
-const {FILE, POST} = MM_TABLES.SERVER;
+const {CHANNEL_BOOKMARK, FILE, POST} = MM_TABLES.SERVER;
 
 /**
  * The File model works in pair with the Post model.  It hosts information about the files attached to a Post
@@ -21,6 +21,9 @@ export default class FileModel extends Model implements FileModelInterface {
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
+
+        /** A CHANNEL_BOOKMARK has a 1:1 relationship with FILE. */
+        [CHANNEL_BOOKMARK]: {type: 'has_many', foreignKey: 'file_id'},
 
         /** A POST has a 1:N relationship with FILE. */
         [POST]: {type: 'belongs_to', key: 'post_id'},

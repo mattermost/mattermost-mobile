@@ -8,12 +8,6 @@ import {Platform} from 'react-native';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
 import {STATUS_BAR_HEIGHT} from '@constants/view';
 
-const {isRunningInSplitView} = RNUtils;
-const MattermostShare = Platform.select({
-    default: null,
-    android: require('@mattermost/rnshare').default,
-});
-
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than
 // the provided minimum version. A non-equal major version will ignore minor and dot
 // versions, and a non-equal minor version will ignore dot version.
@@ -76,6 +70,10 @@ export function buildQueryString(parameters: Dictionary<any>): string {
         }
     }
 
+    if (query.endsWith('&')) {
+        return query.slice(0, -1);
+    }
+
     return query;
 }
 
@@ -86,7 +84,10 @@ export function isEmail(email: string): boolean {
     // - followed by a single @ symbol
     // - followed by at least one character that is not a space, comma, or @ symbol
     // this prevents <Outlook Style> outlook.style@domain.com addresses and multiple comma-separated addresses from being accepted
-    return (/^[^ ,@]+@[^ ,@]+$/).test(email);
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const regexWithoutTLDN = /^[^\s@]+@[^\s@]+$/;
+
+    return regex.test(email) || regexWithoutTLDN.test(email);
 }
 
 export function identity<T>(arg: T): T {
@@ -133,7 +134,7 @@ export function getRoundedTime(value: Moment) {
 }
 
 export function isTablet() {
-    const result: SplitViewResult = isRunningInSplitView();
+    const result: SplitViewResult = RNUtils.isRunningInSplitView();
     return result.isTablet && !result.isSplit;
 }
 
@@ -155,10 +156,16 @@ export function hasTrailingSpaces(term: string) {
  * @returns boolean
  */
 export function isMainActivity() {
-    return Platform.select({
-        default: true,
-        android: MattermostShare?.getCurrentActivityName() === 'MainActivity',
-    });
+    if (Platform.OS === 'android') {
+        const MattermostShare = require('@mattermost/rnshare').default;
+        return MattermostShare?.getCurrentActivityName() === 'MainActivity';
+    }
+
+    return true;
+}
+
+function localeCompare(a: string, b: string) {
+    return a.localeCompare(b);
 }
 
 export function areBothStringArraysEqual(a: string[], b: string[]) {
@@ -170,8 +177,8 @@ export function areBothStringArraysEqual(a: string[], b: string[]) {
         return false;
     }
 
-    const aSorted = a.sort();
-    const bSorted = b.sort();
+    const aSorted = a.sort(localeCompare);
+    const bSorted = b.sort(localeCompare);
     const areBothEqual = aSorted.every((value, index) => value === bSorted[index]);
 
     return areBothEqual;

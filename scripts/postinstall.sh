@@ -35,3 +35,13 @@ if [ -z "$ASSETS" ]; then
 else
     echo "Generating app assets"
 fi
+
+SOUNDS="assets/sounds"
+if [ -z "$SOUNDS" ]; then
+    echo "Sound assets not found"
+    exit 1
+else
+    echo "Copying sound assets for bundling"
+    mkdir -p "android/app/src/main/res/raw/"
+    cp $SOUNDS/* "android/app/src/main/res/raw/"
+fi

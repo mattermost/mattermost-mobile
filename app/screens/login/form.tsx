@@ -274,6 +274,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
                 disabled={buttonDisabled}
                 onPress={onLogin}
                 buttonStyle={[styles.loginButton, styleButtonBackground]}
+                disabledStyle={[styles.loginButton, styleButtonBackground]}
                 testID={signinButtonTestId}
             >
                 {buttonIcon}
@@ -330,7 +331,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
                 disableFullscreenUI={true}
                 enablesReturnKeyAutomatically={true}
                 error={error}
-                keyboardType='default'
+                keyboardType={isPasswordVisible ? 'visible-password' : 'default'}
                 label={intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                 onChangeText={onPasswordChange}
                 onSubmitEditing={onLogin}

@@ -43,8 +43,6 @@
   "mobile.managed.exit": "Izhod",
   "mobile.markdown.code.plusMoreLines": "+{count, number} več {count, plural, one {line} drugih {lines}}",
   "mobile.oauth.failed_to_login": "Poskus prijave je neuspešen. Poskusi ponovno.",
-  "mobile.oauth.failed_to_open_link": "Odpiranje povezave ni uspelo. Poskusi ponovno.",
-  "mobile.oauth.something_wrong": "Nekaj je šlo narobe",
   "mobile.oauth.switch_to_browser": "Prosimo uporabite svoj brskalnik za dokončanje prijave.",
   "mobile.oauth.try_again": "Poskusi ponovno",
   "mobile.permission_denied_retry": "Nastavitve",

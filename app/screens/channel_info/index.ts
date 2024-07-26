@@ -9,8 +9,10 @@ import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannel} from '@queries/servers/channel';
+import {observeCanAddBookmarks} from '@queries/servers/channel_bookmark';
 import {observeCanManageChannelMembers, observeCanManageChannelSettings} from '@queries/servers/role';
 import {
+    observeConfigBooleanValue,
     observeConfigValue,
     observeCurrentChannelId,
     observeCurrentTeamId,
@@ -59,7 +61,8 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         switchMap(([uId, chId]) => observeUserIsChannelAdmin(database, uId, chId)),
         distinctUntilChanged(),
     );
-    const callsGAServer = observeConfigValue(database, 'Version').pipe(
+    const serverVersion = observeConfigValue(database, 'Version');
+    const callsGAServer = serverVersion.pipe(
         switchMap((v) => of$(isMinimumServerVersion(v || '', 7, 6))),
     );
     const dmOrGM = type.pipe(switchMap((t) => of$(isTypeDMorGM(t))));
@@ -117,17 +120,27 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         distinctUntilChanged(),
     );
 
-    const isConvertGMFeatureAvailable = observeConfigValue(database, 'Version').pipe(
+    const isConvertGMFeatureAvailable = serverVersion.pipe(
         switchMap((version) => of$(isMinimumServerVersion(version || '', 9, 1))),
+    );
+
+    const isBookmarksEnabled = observeConfigBooleanValue(database, 'FeatureFlagChannelBookmarks');
+
+    const canAddBookmarks = channelId.pipe(
+        switchMap((cId) => {
+            return observeCanAddBookmarks(database, cId);
+        }),
     );
 
     return {
         type,
         canEnableDisableCalls,
-        isCallsEnabledInChannel,
+        canAddBookmarks,
         canManageMembers,
-        isCRTEnabled: observeIsCRTEnabled(database),
         canManageSettings,
+        isBookmarksEnabled,
+        isCallsEnabledInChannel,
+        isCRTEnabled: observeIsCRTEnabled(database),
         isGuestUser,
         isConvertGMFeatureAvailable,
     };

@@ -6,7 +6,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {ActivityIndicator, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import fetchOpenGraph, {type OpenGraph} from '@share/open_graph';
+import {fetchOpenGraph, type OpenGraph} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
