@@ -8,6 +8,7 @@ const DeepLinkType = {
     Invalid: 'invalid',
     Permalink: 'permalink',
     Redirect: '_redirect',
+    Server: 'server',
 } as const;
 
 export default DeepLinkType;

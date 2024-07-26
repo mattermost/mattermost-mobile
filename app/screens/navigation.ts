@@ -267,7 +267,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    if (passProps.launchType === Launch.AddServer || passProps.launchType === Launch.AddServerFromDeepLink) {
+    if (!passProps.coldStart && (passProps.launchType === Launch.AddServer || passProps.launchType === Launch.AddServerFromDeepLink)) {
         dismissModal({componentId: Screens.SERVER});
         dismissModal({componentId: Screens.LOGIN});
         dismissModal({componentId: Screens.SSO});

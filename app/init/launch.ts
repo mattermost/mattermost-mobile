@@ -22,6 +22,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {getLaunchPropsFromDeepLink} from '@utils/deep_link';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
+import {removeProtocol} from '@utils/url';
 
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
@@ -80,8 +81,16 @@ const launchApp = async (props: LaunchProps) => {
                 const existingServer = DatabaseManager.searchUrl(extra.data!.serverUrl);
                 serverUrl = existingServer;
                 props.serverUrl = serverUrl || extra.data?.serverUrl;
-                if (!serverUrl) {
+                if (!serverUrl && extra.type !== DeepLink.Server) {
                     props.launchError = true;
+                }
+                if (extra.type === DeepLink.Server) {
+                    if (removeProtocol(serverUrl) === extra.data?.serverUrl) {
+                        props.extra = undefined;
+                        props.launchType = Launch.Normal;
+                    } else {
+                        serverUrl = await getActiveServerUrl();
+                    }
                 }
             }
             break;
