@@ -212,6 +212,49 @@ describe('removeUserFromTeam', () => {
         expect(logError).toHaveBeenCalledWith('Failed removeUserFromTeam', error);
         expect(result).toEqual({error});
     });
+
+    it('should handle when removeTeamFromTeamHistory returns undefined or empty array', async () => {
+        const myTeam = {id: 'myTeamId'};
+        const team = {id: 'teamId'};
+        const preparedModels = [
+            {id: 'model1', _preparedState: 'markAsDeleted'},
+            {id: 'model2', _preparedState: 'markAsDeleted'},
+        ];
+
+        (getMyTeamById as jest.Mock).mockResolvedValue(myTeam);
+        (getTeamById as jest.Mock).mockResolvedValue(team);
+        (prepareDeleteTeam as jest.Mock).mockResolvedValue(preparedModels);
+        (removeTeamFromTeamHistory as jest.Mock).mockResolvedValue(undefined);
+
+        const result = await removeUserFromTeam(serverUrl, teamId);
+
+        expect(getMyTeamById).toHaveBeenCalledWith(database, teamId);
+        expect(getTeamById).toHaveBeenCalledWith(database, myTeam.id);
+        expect(prepareDeleteTeam).toHaveBeenCalledWith(team);
+        expect(removeTeamFromTeamHistory).toHaveBeenCalledWith(operator, team.id, true);
+        expect(operator.batchRecords).toHaveBeenCalledWith(preparedModels, 'removeUserFromTeam');
+        expect(result).toEqual({error: undefined});
+    });
+
+    it('should handle when models length is 0', async () => {
+        const myTeam = {id: 'myTeamId'};
+        const team = {id: 'teamId'};
+        const models: never[] = [];
+
+        (getMyTeamById as jest.Mock).mockResolvedValue(myTeam);
+        (getTeamById as jest.Mock).mockResolvedValue(team);
+        (prepareDeleteTeam as jest.Mock).mockResolvedValue([]);
+        (removeTeamFromTeamHistory as jest.Mock).mockResolvedValue(models);
+
+        const result = await removeUserFromTeam(serverUrl, teamId);
+
+        expect(getMyTeamById).toHaveBeenCalledWith(database, teamId);
+        expect(getTeamById).toHaveBeenCalledWith(database, myTeam.id);
+        expect(prepareDeleteTeam).toHaveBeenCalledWith(team);
+        expect(removeTeamFromTeamHistory).toHaveBeenCalledWith(operator, team.id, true);
+        expect(operator.batchRecords).not.toHaveBeenCalled();
+        expect(result).toEqual({error: undefined});
+    });
 });
 
 describe('addSearchToTeamSearchHistory', () => {
