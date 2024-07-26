@@ -149,11 +149,11 @@ export const fetchOpenGraph = async (url: string, includeFavIcon = false): Promi
         // There is no else statement
         /* istanbul ignore else */
         if (metas) {
-            for (let meta of metas) {
-                meta = meta.replace(/\s*\/?>$/, ' />');
+            for (const m of metas) {
+                const meta = m.replace(/\s*\/?>$/, ' />');
                 const zname = meta.replace(/[\s\S]*(property|name)\s*=\s*([\s\S]+)/, '$2');
                 const name = (/^["']/).test(zname) ? zname.substr(1, zname.slice(1).indexOf(zname[0])) : zname.substr(0, zname.search(/[\s\t]/g));
-                const valid = Boolean(Object.keys(metaTags).filter((m: any) => metaTags[m].toLowerCase() === name.toLowerCase()).length);
+                const valid = Boolean(Object.keys(metaTags).filter((key: string) => metaTags[key].toLowerCase() === name.toLowerCase()).length);
 
                 // There is no else statement
                 /* istanbul ignore else */
