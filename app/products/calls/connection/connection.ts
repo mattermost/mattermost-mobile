@@ -19,7 +19,7 @@ import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
-import {getFullErrorMessage} from '@utils/errors';
+import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
@@ -86,6 +86,22 @@ export async function newConnection(
     // getClient can throw an error, which will be handled by the caller.
     const client = NetworkManager.getClient(serverUrl);
     const credentials = await getServerCredentials(serverUrl);
+
+    let config;
+    try {
+        config = await client.getCallsConfig();
+    } catch (err) {
+        throw new Error(`calls: fetching calls config: ${getFullErrorMessage(err)}`);
+    }
+
+    let av1Support = false;
+    if (config.EnableAV1 && !config.EnableSimulcast) {
+        try {
+            av1Support = Boolean(await RTCPeer.getVideoCodec('video/AV1'));
+        } catch (err) {
+            throw new Error(`calls: failed to check AV1 support: ${getErrorMessage(err)}`);
+        }
+    }
 
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
 
@@ -289,23 +305,18 @@ export async function newConnection(
             });
         } else {
             logDebug('calls: ws open, sending join msg');
+
             ws.send('join', {
                 channelID,
                 title,
                 threadID: rootId,
+                av1Support,
             });
         }
     });
 
     ws.on('join', async () => {
         logDebug('calls: join ack received, initializing connection');
-        let config;
-        try {
-            config = await client.getCallsConfig();
-        } catch (err) {
-            logError('calls: fetching calls config:', getFullErrorMessage(err));
-            return;
-        }
 
         const iceConfigs = getICEServersConfigs(config);
         if (config.NeedsTURNCredentials) {
