@@ -8,6 +8,7 @@ import {
     type EmojiData,
     type UserReactionData,
 } from '@mattermost/calls/lib/types';
+
 import type UserModel from '@typings/database/models/servers/user';
 
 export type GlobalCallsState = {
@@ -175,7 +176,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableLiveCaptions: false,
     HostControlsAllowed: false,
     EnableAV1: false,
-    TranscribeAPI: TranscribeAPI.WhisperCPP, // admin only
+    TranscribeAPI: TranscribeAPI.WhisperCPP,
 };
 
 export type ApiResp = {
