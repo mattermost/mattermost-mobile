@@ -818,7 +818,7 @@ platform :android do
   end
 
   lane :pinned_certificates do
-    sh 'cp ../assets/certs/* ../android/app/src/main/assets/certs'
+    sh 'cp -R ../assets/certs/ ../android/app/src/main/assets/certs'
   end
 
   lane :deploy do |options|
