@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {AppBindingLocations, AppCallResponseTypes, AppFieldTypes} from '@constants/apps';
 
 import {generateId} from './general';
 
-export function cleanBinding(binding: AppBinding, topLocation: string): AppBinding {
+export function cleanBinding(binding: AppBinding, topLocation: string): AppBinding|null {
     return cleanBindingRec(binding, topLocation, 0);
 }
 
-function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number): AppBinding {
+function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number): AppBinding|null {
     if (!binding) {
-        return binding;
+        return null;
     }
 
     const toRemove: number[] = [];
@@ -22,7 +23,7 @@ function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number
         }
 
         if (!b.label) {
-            b.label = b.location || '';
+            b.label = binding.label || b.location || '';
         }
 
         if (!b.location) {

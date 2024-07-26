@@ -4,6 +4,7 @@
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
 
 type AfterLoginArgs = {
@@ -15,6 +16,11 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
+    // There are cases where the target may be reset and a performance metric
+    // be added after login. This would be done with a wrong value, so we make
+    // sure we don't do this by skipping the load metric here.
+    PerformanceMetricsManager.skipLoadMetric();
 
     try {
         const clData = await fetchConfigAndLicense(serverUrl, false);

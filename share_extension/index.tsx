@@ -11,6 +11,7 @@ import {Appearance, BackHandler} from 'react-native';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {initialize} from '@init/app';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {extractStartLink, isValidUrl} from '@utils/url';
 
 import ChannelsScreen from './screens/channels';
@@ -62,6 +63,13 @@ const ShareExtension = () => {
     const files = useMemo(() => {
         return data?.filter((i) => !i.isString) || [];
     }, [data]);
+
+    useEffect(() => {
+        // Since the share functionality inits the app, the init mark gets set
+        // at this point. Therefore, any check on load times after this is done
+        // over the wrong value.
+        PerformanceMetricsManager.skipLoadMetric();
+    }, []);
 
     useEffect(() => {
         initialize().finally(async () => {

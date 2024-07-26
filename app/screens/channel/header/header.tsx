@@ -24,17 +24,21 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import ChannelHeaderBookmarks from './bookmarks';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
 import type {HeaderRightButton} from '@components/navigation_header/header';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type ChannelProps = {
+    canAddBookmarks: boolean;
     channelId: string;
     channelType: ChannelType;
     customStatus?: UserCustomStatus;
+    isBookmarksEnabled: boolean;
     isCustomStatusEnabled: boolean;
     isCustomStatusExpired: boolean;
+    hasBookmarks: boolean;
     componentId?: AvailableScreens;
     displayName: string;
     isOwnDirectMessage: boolean;
@@ -43,6 +47,7 @@ type ChannelProps = {
     teamId: string;
     callsEnabledInChannel: boolean;
     isTabletView?: boolean;
+    shouldRenderBookmarks: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -71,9 +76,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const ChannelHeader = ({
-    channelId, channelType, componentId, customStatus, displayName,
-    isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
-    searchTerm, teamId, callsEnabledInChannel, isTabletView,
+    canAddBookmarks, channelId, channelType, componentId, customStatus, displayName, hasBookmarks,
+    isBookmarksEnabled, isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
+    searchTerm, teamId, callsEnabledInChannel, isTabletView, shouldRenderBookmarks,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -244,6 +249,12 @@ const ChannelHeader = ({
             <View style={contextStyle}>
                 <RoundedHeaderContext/>
             </View>
+            {isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks &&
+            <ChannelHeaderBookmarks
+                canAddBookmarks={canAddBookmarks}
+                channelId={channelId}
+            />
+            }
         </>
     );
 };

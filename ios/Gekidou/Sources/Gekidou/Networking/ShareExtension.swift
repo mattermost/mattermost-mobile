@@ -54,6 +54,7 @@ public class ShareExtension: NSObject {
     private let fileMgr = FileManager.default
     private let preferences = Preferences.default
     public var completionHandler: (() -> Void)?
+    internal let lock = NSLock()
 
     public override init() {
         super.init()

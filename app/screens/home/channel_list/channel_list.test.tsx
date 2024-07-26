@@ -18,6 +18,12 @@ jest.mock('@react-navigation/native', () => ({
     useRoute: () => ({}),
 }));
 
+jest.mock('@react-native-camera-roll/camera-roll', () => ({
+    CameraRoll: {
+        save: jest.fn().mockResolvedValue('path'),
+    },
+}));
+
 function getBaseProps(): ComponentProps<typeof ChannelListScreen> {
     return {
         hasChannels: true,

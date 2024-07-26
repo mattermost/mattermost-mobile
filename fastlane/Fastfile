@@ -648,7 +648,7 @@ platform :ios do
     app_name_sub = app_name.gsub(" ", "_")
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
     method = ENV['IOS_BUILD_EXPORT_METHOD'].nil? || ENV['IOS_BUILD_EXPORT_METHOD'].empty? ? 'ad-hoc' : ENV['IOS_BUILD_EXPORT_METHOD']
-   
+
     # Need to add xcargs to only notification and share extensions
     xcargs = ENV['SENTRY_ENABLED'] == 'true' ? "SENTRY_DSN_IOS='#{ENV['SENTRY_DSN_IOS']}' SENTRY_ENABLED='#{ENV['SENTRY_ENABLED']}'" : ''
 
@@ -699,6 +699,7 @@ platform :android do
     end
     update_identifiers
     replace_assets
+    pinned_certificates
     link_sentry({:os_type => "android"})
     build_android
     move_android_to_root
@@ -812,6 +813,12 @@ platform :android do
       sh 'cp -R ../dist/assets/release/icons/android/* ../android/app/src/main/res/'
       sh 'cp -R ../dist/assets/release/splash_screen/android/* ../android/app/src/main/res/'
     end
+    sh 'mkdir -p ../android/app/src/main/res/raw/'
+    sh 'cp -R ../assets/sounds/* ../android/app/src/main/res/raw/'
+  end
+
+  lane :pinned_certificates do
+    sh 'cp ../assets/certs/* ../android/app/src/main/assets/certs'
   end
 
   lane :deploy do |options|
@@ -877,7 +884,7 @@ platform :android do
     if build_task.include?("assemble")
       apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
       json_path = lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
-  
+
       if json_path.nil? || json_path.empty?
         dir_name = File.dirname(apks.first)
         json_path = Dir.glob(File.join(dir_name, '*.json')).first

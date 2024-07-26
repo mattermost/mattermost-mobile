@@ -42,7 +42,7 @@ const SectionHeader = ({section}: Props) => {
             <FormattedText
                 style={styles.sectionTitle}
                 id={section.id}
-                defaultMessage={section.icon}
+                defaultMessage={section.defaultMessage}
             />
         </View>
     );

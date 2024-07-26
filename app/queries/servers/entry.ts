@@ -33,6 +33,7 @@ type PrepareModelsArgs = {
 }
 
 const {
+    CHANNEL_BOOKMARK,
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
@@ -100,6 +101,7 @@ export async function truncateCrtRelatedTables(serverUrl: string): Promise<{erro
                     [`DELETE FROM ${THREAD_PARTICIPANT}`, []],
                     [`DELETE FROM ${TEAM_THREADS_SYNC}`, []],
                     [`DELETE FROM ${MY_CHANNEL}`, []],
+                    [`DELETE FROM ${CHANNEL_BOOKMARK}`, []],
                 ],
             });
         });

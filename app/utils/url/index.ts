@@ -20,7 +20,7 @@ export function isValidUrl(url = '') {
 
 export function sanitizeUrl(url: string, useHttp = false) {
     let preUrl = urlParse(url, true);
-    let protocol = preUrl.protocol;
+    let protocol = useHttp ? 'http:' : preUrl.protocol;
 
     if (!preUrl.host || preUrl.protocol === 'file:') {
         preUrl = urlParse('https://' + stripTrailingSlashes(url), true);
@@ -35,6 +35,18 @@ export function sanitizeUrl(url: string, useHttp = false) {
     return stripTrailingSlashes(
         `${protocol}//${preUrl.host}${preUrl.pathname}`,
     );
+}
+
+export async function getUrlAfterRedirect(url: string, useHttp = false) {
+    const link = sanitizeUrl(url, useHttp);
+    try {
+        const result = await fetch(link, {
+            method: 'HEAD',
+        });
+        return {url: result.url};
+    } catch (error) {
+        return {error};
+    }
 }
 
 export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = false) {

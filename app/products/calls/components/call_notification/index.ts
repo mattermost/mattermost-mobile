@@ -9,8 +9,7 @@ import {observeAllActiveServers} from '@app/queries/app/servers';
 import {CallNotification} from '@calls/components/call_notification/call_notification';
 import DatabaseManager from '@database/manager';
 import {observeChannelMembers} from '@queries/servers/channel';
-import {observeCurrentUserId} from '@queries/servers/system';
-import {observeTeammateNameDisplay} from '@queries/servers/user';
+import {observeCurrentUser, observeTeammateNameDisplay} from '@queries/servers/user';
 
 import type {IncomingCallNotification} from '@calls/types/calls';
 
@@ -20,8 +19,15 @@ type OwnProps = {
 
 const enhanced = withObservables(['incomingCall'], ({incomingCall}: OwnProps) => {
     const database = of$(DatabaseManager.serverDatabases[incomingCall.serverUrl]?.database);
-    const currentUserId = database.pipe(
-        switchMap((db) => (db ? observeCurrentUserId(db) : of$(''))),
+    const currentUser = database.pipe(
+        switchMap((db) => (db ? observeCurrentUser(db) : of$(null))),
+    );
+    const currentUserId = currentUser.pipe(
+        switchMap((u) => of$(u?.id)),
+        distinctUntilChanged(),
+    );
+    const userStatus = currentUser.pipe(
+        switchMap((u) => of$(u?.status)),
         distinctUntilChanged(),
     );
     const teammateNameDisplay = database.pipe(
@@ -36,6 +42,7 @@ const enhanced = withObservables(['incomingCall'], ({incomingCall}: OwnProps) =>
     return {
         servers: observeAllActiveServers(),
         currentUserId,
+        userStatus,
         teammateNameDisplay,
         members,
     };

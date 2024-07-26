@@ -255,7 +255,7 @@ export default class FilePickerUtil {
     };
 
     private buildUri = async (doc: DocumentPickerResponse) => {
-        let uri: string = doc.uri;
+        let uri: string = doc.fileCopyUri || doc.uri;
 
         if (Platform.OS === 'android') {
             if (doc.fileCopyUri) {
@@ -266,11 +266,12 @@ export default class FilePickerUtil {
                 if (newUri == null) {
                     return {doc: undefined};
                 }
-            }
 
-            doc.uri = uri;
+                uri = newUri;
+            }
         }
 
+        doc.uri = uri;
         return {doc};
     };
 
@@ -323,10 +324,13 @@ export default class FilePickerUtil {
                 );
 
                 await this.prepareFileUpload(docs);
+                return {error: undefined};
             } catch (error) {
-                // Do nothing
+                return {error};
             }
         }
+
+        return {error: 'no permission'};
     };
 
     attachFileFromPhotoGallery = async (selectionLimit = 1) => {

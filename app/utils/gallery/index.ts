@@ -3,7 +3,7 @@
 
 import RNUtils from '@mattermost/rnutils';
 import React from 'react';
-import {DeviceEventEmitter, Keyboard, Platform} from 'react-native';
+import {DeviceEventEmitter, Image, Keyboard, Platform} from 'react-native';
 import {Navigation, type Options, type OptionsLayout} from 'react-native-navigation';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
@@ -176,4 +176,10 @@ export const workletNoopTrue = () => {
     'worklet';
 
     return true;
+};
+
+export const getImageSize = (uri: string) => {
+    return new Promise<{width: number; height: number}>((resolve, reject) => {
+        Image.getSize(uri, (width, height) => resolve({width, height}), reject);
+    });
 };
