@@ -1004,6 +1004,7 @@
   "select_team.title": "选择一个团队",
   "server.invalid.certificate.description": "此服务器的证书无效。\n您可能正在连接到一个假冒为 \"{hostname}\" 的服务器，这可能会危及您的机密信息。",
   "server.invalid.certificate.title": "无效的SSL证书",
+  "server.invalid.pinning.title": "无效的内嵌 SSL 证书",
   "server.logout.alert_description": "所以相关的数据都将被删除",
   "server.logout.alert_title": "您确定要登出{displayName}吗？",
   "server.remove.alert_description": "这将会从您的服务器列表中删除此项。所有关联的数据将会被删除",
