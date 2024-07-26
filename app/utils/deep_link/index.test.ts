@@ -142,6 +142,17 @@ describe('handleDeepLink', () => {
         expect(result).toEqual({error: false});
     });
 
+    it('should not display the new server modal if the server screen is on the stack but not as the visible screen', async () => {
+        (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://currentserver.com');
+        (DatabaseManager.searchUrl as jest.Mock).mockReturnValueOnce(null);
+
+        (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValueOnce(Screens.LOGIN);
+        (NavigationStore.getScreensInStack as jest.Mock).mockReturnValueOnce([Screens.SERVER, Screens.LOGIN]);
+        const result = await handleDeepLink('https://currentserver.com/team/channels/town-square', undefined, undefined, true);
+        expect(addNewServer).not.toHaveBeenCalled();
+        expect(result).toEqual({error: false});
+    });
+
     it('should switch to channel by name for Channel deep link', async () => {
         (DatabaseManager.searchUrl as jest.Mock).mockReturnValueOnce('https://existingserver.com');
         (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://existingserver.com');
