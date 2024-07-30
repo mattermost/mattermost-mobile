@@ -264,7 +264,14 @@ jobs:
       - name: Start Android Emulator
         run: |
           $ANDROID_HOME/emulator/emulator -avd android_emulator -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
-          $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 5; done; input keyevent 82'
+          # Wait for the emulator to boot with a timeout
+          for i in {1..30}; do
+            if $ANDROID_HOME/platform-tools/adb shell getprop sys.boot_completed | grep -m 1 '1'; then
+              break
+            fi
+            echo "Waiting for emulator to boot..."
+            sleep 5
+          done
 
       - name: Disable animations
         run: |
