@@ -253,17 +253,17 @@ jobs:
       - name: Set up Android SDK and create AVD
         run: |
           echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-30;google_apis;x86_64'
-          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-30;google_apis;x86_64' --force --device "android_emulator"
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n pixel_6 -k 'system-images;android-30;google_apis;x86_64' --force --device "pixel_6"
   
       - name: Configure AVD
         run: |
-          echo "hw.ramSize=4096" >> ~/.android/avd/android_emulator.avd/config.ini
-          echo "hw.cpu.ncore=2" >> ~/.android/avd/android_emulator.avd/config.ini
-          echo "hw.gpu.enabled=true" >> ~/.android/avd/android_emulator.avd/config.ini
+          echo "hw.ramSize=4096" >> ~/.android/avd/pixel_6.avd/config.ini
+          echo "hw.cpu.ncore=2" >> ~/.android/avd/pixel_6.avd/config.ini
+          echo "hw.gpu.enabled=true" >> ~/.android/avd/pixel_6.avd/config.ini
 
       - name: Start Android Emulator
         run: |
-          $ANDROID_HOME/emulator/emulator -avd android_emulator -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
+          $ANDROID_HOME/emulator/emulator -avd pixel_6 -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
           # Wait for the emulator to boot with a timeout
           for i in {1..30}; do
             if $ANDROID_HOME/platform-tools/adb shell getprop sys.boot_completed | grep -m 1 '1'; then
@@ -394,9 +394,16 @@ jobs:
             profile: default
             emulator-build: system-images;android-30;default;x86_64
 
+      - name: Create AVD if it doesn't exist
+        run: |
+          if [ ! -f "$HOME/.android/avd/pixel_6.avd/config.ini" ]; then
+            echo "Creating AVD..."
+            echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n pixel_6 -k 'system-images;android-30;google_apis;x86_64' --force --device "pixel_6"
+          fi
+
       - name: Start Android Emulator
         run: |
-            sudo $ANDROID_HOME/emulator/emulator -avd android_emulator -no-audio -no-window &
+            $ANDROID_HOME/emulator/emulator -avd pixel_6 -no-audio -no-window &
             sleep 30
             adb wait-for-device
             adb shell input keyevent 82
