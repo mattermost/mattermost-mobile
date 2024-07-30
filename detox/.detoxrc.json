@@ -37,7 +37,7 @@
     "android": {
       "type": "android.emulator",
       "device": {
-        "avdName": "android_emulator",
+        "avdName": "pixel_6",
         "api": "30"
       }
     }
