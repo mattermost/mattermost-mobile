@@ -397,8 +397,14 @@ jobs:
       - name: Create AVD if it doesn't exist
         run: |
           if [ ! -f "$HOME/.android/avd/pixel_6.avd/config.ini" ]; then
-            echo "Creating AVD..."
-            echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n pixel_6 -k 'system-images;android-30;google_apis;x86_64' --force --device "pixel_6"
+            echo "Checking for available system images..."
+            if $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list | grep -q "system-images;android-30;google_apis;x86_64"; then
+              echo "Creating AVD..."
+              echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n pixel_6 -k 'system-images;android-30;google_apis;x86_64' --force --device "pixel_6"
+            else
+              echo "Error: Required system image not found."
+              exit 1
+            fi
           fi
 
       - name: Start Android Emulator
