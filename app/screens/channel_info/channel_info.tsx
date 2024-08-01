@@ -8,6 +8,7 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ChannelActions from '@components/channel_actions';
 import ConvertToChannelLabel from '@components/channel_actions/convert_to_channel/convert_to_channel_label';
+import ChannelBookmarks from '@components/channel_bookmarks';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -25,18 +26,20 @@ import Title from './title';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
+    canAddBookmarks: boolean;
+    canEnableDisableCalls: boolean;
+    canManageSettings: boolean;
     channelId: string;
     closeButtonId: string;
     componentId: AvailableScreens;
-    type?: ChannelType;
-    canEnableDisableCalls: boolean;
+    isBookmarksEnabled: boolean;
     isCallsEnabledInChannel: boolean;
     groupCallsAllowed: boolean;
     canManageMembers: boolean;
-    isCRTEnabled: boolean;
-    canManageSettings: boolean;
-    isGuestUser: boolean;
     isConvertGMFeatureAvailable: boolean;
+    isCRTEnabled: boolean;
+    isGuestUser: boolean;
+    type?: ChannelType;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -57,18 +60,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const ChannelInfo = ({
-    isCRTEnabled,
+    canAddBookmarks,
+    canEnableDisableCalls,
+    canManageMembers,
+    canManageSettings,
     channelId,
     closeButtonId,
     componentId,
-    type,
-    canEnableDisableCalls,
+    isBookmarksEnabled,
     isCallsEnabledInChannel,
     groupCallsAllowed,
-    canManageMembers,
-    canManageSettings,
-    isGuestUser,
     isConvertGMFeatureAvailable,
+    isCRTEnabled,
+    isGuestUser,
+    type,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -106,6 +111,13 @@ const ChannelInfo = ({
                     channelId={channelId}
                     type={type}
                 />
+                {isBookmarksEnabled &&
+                    <ChannelBookmarks
+                        channelId={channelId}
+                        canAddBookmarks={canAddBookmarks}
+                        showInInfo={true}
+                    />
+                }
                 <ChannelActions
                     channelId={channelId}
                     inModal={true}

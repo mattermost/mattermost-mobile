@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -16,6 +18,12 @@ export const getFileById = async (database: Database, fileId: string) => {
     } catch {
         return undefined;
     }
+};
+
+export const observeFileById = (database: Database, id: string) => {
+    return database.get<FileModel>(FILE).query(Q.where('id', id), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
 };
 
 export const queryFilesForPost = (database: Database, postId: string) => {

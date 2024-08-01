@@ -61,8 +61,9 @@ extension ShareExtension: URLSessionDataDelegate {
           let uploadData = getUploadSessionData(id: id)
          else {
             os_log(
-                OSLogType.default,
                 "Mattermost BackgroundSession: didReceived failed to getUploadSessionData identifier=%{public}@",
+                log: .default,
+                type: .error,
                 session.configuration.identifier ?? "no identifier"
             )
             return
@@ -95,6 +96,8 @@ extension ShareExtension: URLSessionDataDelegate {
                     filename,
                     fileId
                 )
+                
+                postMessageIfUploadFinished(forSession: session)
             } else {
                 os_log(
                     OSLogType.default,
@@ -105,8 +108,9 @@ extension ShareExtension: URLSessionDataDelegate {
             }
         } catch {
             os_log(
-                OSLogType.default,
                 "Mattermost BackgroundSession: Failed to receive data identifier=%{public}@ error=%{public}",
+                log: .default,
+                type: .error,
                 id,
                 error.localizedDescription
             )
@@ -116,48 +120,22 @@ extension ShareExtension: URLSessionDataDelegate {
     }
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        if error == nil,
-           let id = session.configuration.identifier {
-            guard let data = getUploadSessionData(id: id)
-            else {
-                os_log(
-                    OSLogType.default,
-                    "Mattermost BackgroundSession: didCompleteWithError delegate failed to getUploadSessionData identifier=%{public}@",
-                    session.configuration.identifier ?? "no identifier"
-                )
-                return
-                
-            }
-            
-            let total = data.totalFiles
-            let count = data.fileIds.count
+        if error != nil {
             os_log(
-                OSLogType.default,
-                "Mattermost BackgroundSession: didCompleteWithError delegate for identifier=%{public}@ total files %{public}@ of %{public}@",
-                id,
-                "\(count)",
-                "\(total)"
-            )
-            if data.fileIds.count == data.totalFiles {
-                ProcessInfo().performExpiringActivity(
-                    withReason: "Need to post the message") {expires in
-                        os_log(
-                            OSLogType.default,
-                            "Mattermost BackgroundSession: posting message for identifier=%{public}@",
-                            id
-                        )
-                        self.postMessageForSession(withId: id)
-                        self.urlSessionDidFinishEvents(forBackgroundURLSession: session)
-                    }
-            }
-        } else if error != nil {
-            os_log(
-                OSLogType.default,
                 "Mattermost BackgroundSession: didCompleteWithError delegate failed identifier=%{public}@ with error %{public}@",
+                log: .default,
+                type: .error,
                 session.configuration.identifier ?? "no identifier",
                 error?.localizedDescription ?? "no error description available"
             )
+            return
         }
+        
+        os_log(
+            OSLogType.default,
+            "Mattermost BackgroundSession: didCompleteWithError delegate for identifier=%{public}@ after calling postMessageIfUploadFinished",
+            session.configuration.identifier ?? "no identifier"
+        )
     }
     
     
@@ -179,5 +157,46 @@ extension ShareExtension: URLSessionDataDelegate {
                     handler()
                 }
             })
+    }
+    
+    private func postMessageIfUploadFinished(forSession session: URLSession) {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard let id = session.configuration.identifier, let data = getUploadSessionData(id: id)
+        else {
+            os_log(
+                "Mattermost BackgroundSession: postMessageIfUploadFinished failed to getUploadSessionData identifier=%{public}@",
+                log: .default,
+                type: .error,
+                session.configuration.identifier ?? "no identifier"
+            )
+            return
+        }
+        
+        let total = data.totalFiles
+        let count = data.fileIds.count
+
+        if count == total {
+            os_log(
+                OSLogType.default,
+                "Mattermost BackgroundSession: posting message for identifier=%{public}@",
+                id
+            )
+
+            ProcessInfo().performExpiringActivity(
+                withReason: "Need to post the message") {expires in
+                    self.postMessageForSession(withId: id)
+                    self.urlSessionDidFinishEvents(forBackgroundURLSession: session)
+                }
+        } else {
+            os_log(
+                OSLogType.default,
+                "Mattermost BackgroundSession: finish uploading files %{public}@ of %{public}@ for identifier=%{public}@",
+                "\(count)",
+                "\(total)",
+                id
+            )
+        }
     }
 }

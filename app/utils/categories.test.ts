@@ -184,7 +184,7 @@ describe('Categories utils', () => {
         const channelModels = await db.operator.handleChannel({channels, prepareRecordsOnly: false});
         const myChannelModels = await db.operator.handleMyChannel({channels, myChannels, prepareRecordsOnly: false});
         return channelModels.map((channel, index) => {
-            const myChannel = myChannelModels[index];
+            const myChannel = myChannelModels[index] as MyChannelModel;
             return {
                 channel,
                 myChannel,
@@ -253,7 +253,7 @@ describe('Categories utils', () => {
 
         const models = await db.operator.handleMyChannel({channels, myChannels, isCRTEnabled: false, prepareRecordsOnly: false});
         expect(models).toHaveLength(1);
-        const myChannel = models[0];
+        const myChannel = models[0] as MyChannelModel;
         let isUnread = isUnreadChannel(myChannel);
         expect(isUnread).toBe(true);
         await db.database.write(async () => {
@@ -355,11 +355,11 @@ describe('Categories utils', () => {
         const myChannelModels = await db.operator.handleMyChannel({channels, myChannels, prepareRecordsOnly: false});
         const data: ChannelWithMyChannel[] = [{
             channel: channelModels[0],
-            myChannel: myChannelModels[0],
+            myChannel: myChannelModels[0] as MyChannelModel,
             sortOrder: 0,
         }, {
             channel: channelModels[1],
-            myChannel: myChannelModels[1],
+            myChannel: myChannelModels[1] as MyChannelModel,
             sortOrder: 1,
         }];
         let archived = filterArchivedChannels(data, '');
@@ -472,11 +472,11 @@ describe('Categories utils', () => {
         const myChannelModels = await db.operator.handleMyChannel({channels, myChannels, prepareRecordsOnly: false});
         const data: ChannelWithMyChannel[] = [{
             channel: channelModels[0],
-            myChannel: myChannelModels[0],
+            myChannel: myChannelModels[0] as MyChannelModel,
             sortOrder: 0,
         }, {
             channel: channelModels[1],
-            myChannel: myChannelModels[1],
+            myChannel: myChannelModels[1] as MyChannelModel,
             sortOrder: 0,
         }];
 

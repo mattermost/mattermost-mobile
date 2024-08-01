@@ -72,7 +72,6 @@ const Field = ({
 
     const formattedLabel = isOptional ? `${label} ${optionalText}` : label;
 
-    const textInputStyle = isDisabled ? style.disabledStyle : undefined;
     const subContainer = [style.viewContainer, {paddingHorizontal: isTablet ? 42 : 20}];
     const fieldInputTestId = isDisabled ? `${testID}.input.disabled` : `${testID}.input`;
 
@@ -97,7 +96,6 @@ const Field = ({
                 value={value}
                 ref={fieldRef}
                 onSubmitEditing={onSubmitEditing}
-                textInputStyle={textInputStyle}
                 {...props}
             />
         </View>

@@ -543,7 +543,7 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
         }
         case 'leave':
             if (getCurrentCall()?.channelId === channelId) {
-                await leaveCall();
+                leaveCall();
                 return {handled: true};
             }
             return {

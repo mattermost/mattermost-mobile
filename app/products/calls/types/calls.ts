@@ -176,8 +176,8 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableLiveCaptions: false,
     HostControlsAllowed: false,
     EnableAV1: false,
-    GroupCallsAllowed: true, // Set to true to keep backward compatibility with older servers.
     TranscribeAPI: TranscribeAPI.WhisperCPP,
+    GroupCallsAllowed: true, // Set to true to keep backward compatibility with older servers.
 };
 
 export type ApiResp = {

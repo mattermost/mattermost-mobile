@@ -40,9 +40,9 @@ describe('cleanBinding', () => {
         };
 
         const result = cleanBinding(binding, AppBindingLocations.COMMAND);
-        expect(result.bindings![0].app_id).toBe('test_app');
-        expect(result.bindings![0].label).toBeTruthy();
-        expect(result.bindings![0].location).toMatch(/location\/.+/);
+        expect(result!.bindings![0].app_id).toBe('test_app');
+        expect(result!.bindings![0].label).toBeTruthy();
+        expect(result!.bindings![0].location).toMatch(/location\/.+/);
     });
 
     it('should remove bindings without app_id', () => {
@@ -70,8 +70,8 @@ describe('cleanBinding', () => {
         };
 
         const result = cleanBinding(binding, AppBindingLocations.COMMAND);
-        expect(result.bindings).toHaveLength(1);
-        expect(result.bindings![0].app_id).toBe('sub_app');
+        expect(result!.bindings).toHaveLength(1);
+        expect(result!.bindings![0].app_id).toBe('sub_app');
     });
 
     it('should remove bindings with empty or whitespace labels', () => {
@@ -109,8 +109,8 @@ describe('cleanBinding', () => {
         };
 
         const result = cleanBinding(binding, AppBindingLocations.COMMAND);
-        expect(result.bindings).toHaveLength(1);
-        expect(result.bindings![0].label).toBe('valid_label');
+        expect(result!.bindings).toHaveLength(1);
+        expect(result!.bindings![0].label).toBe('valid_label');
     });
 
     it('should remove bindings with duplicate labels in COMMAND location', () => {
@@ -143,8 +143,8 @@ describe('cleanBinding', () => {
         };
 
         const result = cleanBinding(binding, AppBindingLocations.COMMAND);
-        expect(result.bindings).toHaveLength(1);
-        expect(result.bindings![0].app_id).toBe('sub_app1');
+        expect(result!.bindings).toHaveLength(1);
+        expect(result!.bindings![0].app_id).toBe('sub_app1');
     });
 
     it('should keep unique labels in IN_POST location', () => {
@@ -177,7 +177,7 @@ describe('cleanBinding', () => {
         };
 
         const result = cleanBinding(binding, AppBindingLocations.IN_POST);
-        expect(result.bindings).toHaveLength(2);
+        expect(result!.bindings).toHaveLength(2);
     });
 
     it('should remove invalid sub-bindings without form or submit', () => {
@@ -213,9 +213,9 @@ describe('cleanBinding', () => {
         };
 
         const result = cleanBinding(binding, AppBindingLocations.COMMAND);
-        expect(result.bindings).toHaveLength(2);
-        expect(result.bindings![0].label).toBe('sub_label2');
-        expect(result.bindings![1].label).toBe('sub_label3');
+        expect(result!.bindings).toHaveLength(2);
+        expect(result!.bindings![0].label).toBe('sub_label2');
+        expect(result!.bindings![1].label).toBe('sub_label3');
     });
 
     it('should handle forms correctly', () => {
@@ -238,8 +238,8 @@ describe('cleanBinding', () => {
         };
 
         const result = cleanBinding(binding, AppBindingLocations.COMMAND);
-        expect(result.bindings).toHaveLength(1);
-        expect(result.bindings![0].form).toBeTruthy();
+        expect(result!.bindings).toHaveLength(1);
+        expect(result!.bindings![0].form).toBeTruthy();
     });
 
     it('should handle submit calls correctly', () => {
@@ -260,8 +260,8 @@ describe('cleanBinding', () => {
         };
 
         const result = cleanBinding(binding, AppBindingLocations.COMMAND);
-        expect(result.bindings).toHaveLength(1);
-        expect(result.bindings![0].submit).toBeTruthy();
+        expect(result!.bindings).toHaveLength(1);
+        expect(result!.bindings![0].submit).toBeTruthy();
     });
 
     it('should recursively clean sub-bindings', () => {
@@ -296,9 +296,9 @@ describe('cleanBinding', () => {
         };
 
         const result = cleanBinding(binding, AppBindingLocations.COMMAND);
-        expect(result.bindings).toHaveLength(1);
-        expect(result.bindings![0].bindings).toHaveLength(1);
-        expect(result.bindings![0].bindings![0].label).toBe('sub_sub_label');
+        expect(result!.bindings).toHaveLength(1);
+        expect(result!.bindings![0].bindings).toHaveLength(1);
+        expect(result!.bindings![0].bindings![0].label).toBe('sub_sub_label');
     });
 
     it('should handle bindings without bindings, form, or submit', () => {
@@ -316,7 +316,7 @@ describe('cleanBinding', () => {
         };
 
         const result = cleanBinding(binding, AppBindingLocations.COMMAND);
-        expect(result.bindings).toHaveLength(0);
+        expect(result!.bindings).toHaveLength(0);
     });
 
     it('should handle multiple levels of nested bindings correctly', () => {
@@ -361,10 +361,10 @@ describe('cleanBinding', () => {
         };
 
         const result = cleanBinding(binding, AppBindingLocations.COMMAND);
-        expect(result.bindings).toHaveLength(2);
-        expect(result.bindings![0].bindings).toHaveLength(1);
-        expect(result.bindings![0].bindings![0].label).toBe('sub_sub_label');
-        expect(result.bindings![1].label).toBe('sub_label2');
+        expect(result!.bindings).toHaveLength(2);
+        expect(result!.bindings![0].bindings).toHaveLength(1);
+        expect(result!.bindings![0].bindings![0].label).toBe('sub_sub_label');
+        expect(result!.bindings![1].label).toBe('sub_label2');
     });
 });
 
