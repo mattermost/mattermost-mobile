@@ -6,6 +6,7 @@ import {ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
+import {getCallsConfig} from '@calls/state';
 import ChannelActions from '@components/channel_actions';
 import ConvertToChannelLabel from '@components/channel_actions/convert_to_channel/convert_to_channel_label';
 import ChannelBookmarks from '@components/channel_bookmarks';
@@ -79,9 +80,11 @@ const ChannelInfo = ({
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
+    const callsConfig = getCallsConfig(serverUrl);
+
     // NOTE: isCallsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
     //   which comes from observeIsCallsEnabledInChannel
-    let callsAvailable = isCallsEnabledInChannel;
+    let callsAvailable = callsConfig.pluginEnabled && isCallsEnabledInChannel;
     if (!groupCallsAllowed && type !== General.DM_CHANNEL) {
         callsAvailable = false;
     }

@@ -15,6 +15,7 @@ import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {General, Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
@@ -23,6 +24,7 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {getCallsConfig} from '@calls/state';
 
 import ChannelHeaderBookmarks from './bookmarks';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
@@ -87,10 +89,13 @@ const ChannelHeader = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const defaultHeight = useDefaultHeaderHeight();
+    const serverUrl = useServerUrl();
+
+    const callsConfig = getCallsConfig(serverUrl);
 
     // NOTE: callsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
     //   which ultimately comes from channel/index.tsx, and observeIsCallsEnabledInChannel
-    let callsAvailable = callsEnabledInChannel;
+    let callsAvailable = callsConfig.pluginEnabled && callsEnabledInChannel;
     if (!groupCallsAllowed && channelType !== General.DM_CHANNEL) {
         callsAvailable = false;
     }
