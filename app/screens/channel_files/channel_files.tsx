@@ -7,12 +7,14 @@ import {Platform, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {searchFiles} from '@actions/remote/search';
+import {getCurrentTeamId} from '@app/queries/servers/system';
 import FileResults from '@components/files_search/file_results';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
@@ -98,7 +100,18 @@ function ChannelFiles({
         const t = Date.now();
         lastSearchRequest.current = t;
         const searchParams = getSearchParams(channel.id, searchTerm, ftr);
-        const {files} = await searchFiles(serverUrl, channel.teamId, searchParams);
+        let files: FileInfo[] | undefined = [];
+        if (channel.teamId) {
+            const searchedFiles = await searchFiles(serverUrl, channel.teamId, searchParams);
+            files = searchedFiles.files;
+        } else {
+            // teamId can be empty for GMs and DMs, as do not store teamId for GMs and DMs in the database
+            // so we need to fetch the current teamId from the systems table
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const teamId = await getCurrentTeamId(database);
+            const searchedFiles = await searchFiles(serverUrl, teamId, searchParams);
+            files = searchedFiles.files;
+        }
         if (lastSearchRequest.current !== t) {
             return;
         }
