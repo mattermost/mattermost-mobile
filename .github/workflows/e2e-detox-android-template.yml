@@ -145,96 +145,96 @@ jobs:
   #         name: android-build-apk-${{ github.run_id }}
   #         path: "android/app/build/outputs/apk/**/app-*.apk"
 
-  # e2e-android-on-mac:
-  #   name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
-  #   continue-on-error: true
-  #   runs-on: macos-13
-  #   timeout-minutes: 40
-  #   needs:
-  #     - generate-specs
-  #     # - build-android-apk
-  #   strategy:
-  #     fail-fast: false
-  #     matrix: ${{fromJson(needs.generate-specs.outputs.specs)}}
-  #   steps:
-  #   - name: Checkout
-  #     uses: actions/checkout@v1
-  #     with:
-  #       fetch-depth: 1
+  e2e-android-on-mac:
+    name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    continue-on-error: true
+    runs-on: macos-13
+    timeout-minutes: 40
+    needs:
+      - generate-specs
+      # - build-android-apk
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-specs.outputs.specs)}}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
 
-  #   - name: ci/prepare-node-deps
-  #     uses: ./.github/actions/prepare-node-deps
+    - name: ci/prepare-node-deps
+      uses: ./.github/actions/prepare-node-deps
 
-  #   - name: Install Sharp CLI for faster image generation during prebuild
-  #     run: npm install --global sharp-cli
+    - name: Install Sharp CLI for faster image generation during prebuild
+      run: npm install --global sharp-cli
 
-  #   - name: Start React Native Metro Server
-  #     run: npm run start &
+    - name: Start React Native Metro Server
+      run: npm run start &
 
-  #   - name: Install Detox Dependencies
-  #     run: cd detox && npm i
+    - name: Install Detox Dependencies
+      run: cd detox && npm i
 
-  #   - name: Install Java
-  #     uses: actions/setup-java@v4
-  #     with:
-  #       java-version: "17"
-  #       distribution: "adopt"
-  #       cache: "gradle"
+    - name: Install Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: "17"
+        distribution: "adopt"
+        cache: "gradle"
 
-  #   - name: Create destination path
-  #     run: mkdir -p android/app/build/outputs/apk
+    - name: Create destination path
+      run: mkdir -p android/app/build/outputs/apk
 
-  #   - name: Download artifact
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     run: |
-  #       curl -L -H "Authorization: token $GITHUB_TOKEN" \
-  #           -H "Accept: application/vnd.github.v3+json" \
-  #           https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/1578521977/zip \
-  #           --output android/app/build/outputs/apk/artifact.zip
+    - name: Download artifact
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        curl -L -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/1578521977/zip \
+            --output android/app/build/outputs/apk/artifact.zip
 
-  #   - name: Unzip artifact
-  #     run: unzip android/app/build/outputs/apk/artifact.zip -d android/app/build/outputs/apk
+    - name: Unzip artifact
+      run: unzip android/app/build/outputs/apk/artifact.zip -d android/app/build/outputs/apk
 
-  #   - name: Cleanup
-  #     run: rm android/app/build/outputs/apk/artifact.zip
+    - name: Cleanup
+      run: rm android/app/build/outputs/apk/artifact.zip
 
-  #   - name: Launch Android Emulator
-  #     run: |
-  #       echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-31;google_apis;x86_64'
-  #       echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-31;google_apis;x86_64' --force --device "pixel_6"
-  #       echo "Emulator created successfully"
-  #       nohup $ANDROID_HOME/emulator/emulator -avd android_emulator -no-snapshot -netdelay none -netspeed full -no-audio -no-boot-anim -accel on -gpu swiftshader_indirect -qemu -m 4096 > /dev/null 2>&1 &
-  #       $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\''\r'\'') ]]; do sleep 1; done'
-  #       $ANDROID_HOME/platform-tools/adb devices
-  #       $ANDROID_HOME/platform-tools/adb shell input keyevent 82
-  #       $ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
-  #       $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
-  #       $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
-  #       sleep 60
-  #       screencapture emulator-macos-13.jpg
-  #       $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-macos-13.png
+    - name: Launch Android Emulator
+      run: |
+        echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-31;google_apis;x86_64'
+        echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n android_emulator -k 'system-images;android-31;google_apis;x86_64' --force --device "pixel_6"
+        echo "Emulator created successfully"
+        nohup $ANDROID_HOME/emulator/emulator -avd android_emulator -no-snapshot -netdelay none -netspeed full -no-audio -no-boot-anim -accel on -gpu swiftshader_indirect -qemu -m 4096 > /dev/null 2>&1 &
+        $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\''\r'\'') ]]; do sleep 1; done'
+        $ANDROID_HOME/platform-tools/adb devices
+        $ANDROID_HOME/platform-tools/adb shell input keyevent 82
+        $ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
+        $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
+        $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
+        sleep 60
+        screencapture emulator-macos-13.jpg
+        $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-macos-13.png
 
-  #   - uses: actions/upload-artifact@v3
-  #     with:
-  #       name: Android-Emulator-Screenshots
-  #       path: emulator-macos-13.jpg
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Android-Emulator-Screenshots
+        path: emulator-macos-13.jpg
   
-  #   - uses: actions/upload-artifact@v3
-  #     with:
-  #       name: Android-Emulator-Screenshots
-  #       path: emulator-macos-13.jpg.png
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Android-Emulator-Screenshots
+        path: emulator-macos-13.jpg.png
 
-  #   - name: Run Android Detox E2E Tests on macOS
-  #     run: |
-  #         cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
+    - name: Run Android Detox E2E Tests on macOS
+      run: |
+          cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
-  #   - name: Upload Android Test Report
-  #     if: always()
-  #     uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-  #     with:
-  #       name: android-results-${{ matrix.runId }}
-  #       path: detox/artifacts
+    - name: Upload Android Test Report
+      if: always()
+      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      with:
+        name: android-results-${{ matrix.runId }}
+        path: detox/artifacts
 
   test-snapshot:
     runs-on: macos-13
@@ -394,29 +394,48 @@ jobs:
             profile: default
             emulator-build: system-images;android-30;default;x86_64
 
-      - name: Create AVD if it doesn't exist
-        run: |
-          if [ ! -f "$HOME/.android/avd/pixel_6.avd/config.ini" ]; then
-            echo "Checking for available system images..."
-            if $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list | grep -q "system-images;android-30;google_apis;x86_64"; then
-              echo "Creating AVD..."
-              echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n pixel_6 -k 'system-images;android-30;google_apis;x86_64' --force --device "pixel_6"
-            else
-              echo "Error: Required system image not found."
-              exit 1
-            fi
-          fi
+      - name: Create AVD and generate snapshot for caching
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          # Use the slimmer aosp_atd images for working
+          # around "System UI isn't responding" ANR
+          # (Application Not Responding) error
+          #
+          # https://android-developers.googleblog.com/2021/10/whats-new-in-scalable-automated-testing.html#:~:text=Slimmer%20Emulator%20System%20Images
+          # https://github.com/ReactiveCircus/android-emulator-runner/issues/129
+          # https://github.com/upleveled/hotline-bling-codealong/pull/26#issuecomment-1094659722
+          target: aosp_atd
+          api-level: 30
+          arch: x86
+          ram-size: 4096M
+          channel: canary
+          profile: pixel
+          avd-name: Pixel_3a_API_30_AOSP
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-boot-timeout: 12000
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching"
 
-      - name: Start Android Emulator
-        run: |
-            $ANDROID_HOME/emulator/emulator -avd pixel_6 -no-audio -no-window &
-            sleep 30
-            adb wait-for-device
-            adb shell input keyevent 82
-
-      - name: Run Android Detox E2E Tests on macOS
-        run: |
-          cd detox && npm run e2e:android-test -- about.e2e.ts
+      - name: Start emulator and run Detox integration tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          target: aosp_atd
+          api-level: 30
+          arch: x86
+          ram-size: 4096M
+          channel: canary
+          profile: pixel
+          avd-name: Pixel_3a_API_30_AOSP
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-boot-timeout: 12000
+          disable-animations: true
+          script: cd detox && npm run e2e:android-test -- about.e2e.ts
+ 
+      # - name: Run Android Detox E2E Tests on macOS
+      #   run: |
+      #     cd detox && npm run e2e:android-test -- about.e2e.ts
 
       - name: Upload Android Test Report
         if: always()
