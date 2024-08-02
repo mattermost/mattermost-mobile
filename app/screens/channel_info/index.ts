@@ -43,6 +43,11 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         switchMap(([tId, uId]) => observeUserIsTeamAdmin(database, uId, tId)),
     );
 
+    const callsPluginEnabled = observeCallsConfig(serverUrl).pipe(
+        switchMap((config) => of$(config.pluginEnabled)),
+        distinctUntilChanged(),
+    );
+
     // callsDefaultEnabled means "live mode" post 7.6
     const callsDefaultEnabled = observeCallsConfig(serverUrl).pipe(
         switchMap((config) => of$(config.DefaultEnabled)),
@@ -66,8 +71,9 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         switchMap((v) => of$(isMinimumServerVersion(v || '', 7, 6))),
     );
     const dmOrGM = type.pipe(switchMap((t) => of$(isTypeDMorGM(t))));
-    const canEnableDisableCalls = combineLatest([callsDefaultEnabled, allowEnableCalls, systemAdmin, channelAdmin, callsGAServer, dmOrGM, isTeamAdmin]).pipe(
-        switchMap(([liveMode, allow, sysAdmin, chAdmin, gaServer, dmGM, tAdmin]) => {
+    const canEnableDisableCalls = combineLatest([callsPluginEnabled, callsDefaultEnabled, allowEnableCalls, systemAdmin, channelAdmin, callsGAServer, dmOrGM, isTeamAdmin]).pipe(
+        switchMap(([pluginEnabled, liveMode, allow, sysAdmin, chAdmin, gaServer, dmGM, tAdmin]) => {
+            // Always false if the plugin is not enabled.
             // if GA 7.6:
             //   allow (will always be true) and !liveMode = system admins can enable/disable
             //   allow (will always be true) and liveMode = channel, team, system admins, DM/GM participants can enable/disable
@@ -77,6 +83,10 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
             //   !allow and !liveMode = system admins can enable/disable -- can combine with below
             //   !allow and liveMode  = system admins can enable/disable -- can combine with above
             // Note: There are ways to 'simplify' the conditions below. Here we're preferring clarity.
+
+            if (!pluginEnabled) {
+                return of$(false);
+            }
 
             if (gaServer) {
                 if (allow && !liveMode) {
