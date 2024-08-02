@@ -275,8 +275,10 @@ export async function setLastServerVersionCheck(serverUrl: string, reset = false
             }],
             prepareRecordsOnly: false,
         });
+        return {error: undefined};
     } catch (error) {
         logError('setLastServerVersionCheck', error);
+        return {error};
     }
 }
 
@@ -290,8 +292,10 @@ export async function setGlobalThreadsTab(serverUrl: string, globalThreadsTab: G
             }],
             prepareRecordsOnly: false,
         });
+        return {error: undefined};
     } catch (error) {
         logError('setGlobalThreadsTab', error);
+        return {error};
     }
 }
 
@@ -299,7 +303,9 @@ export async function dismissAnnouncement(serverUrl: string, announcementText: s
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LAST_DISMISSED_BANNER, value: announcementText}], prepareRecordsOnly: false});
+        return {error: undefined};
     } catch (error) {
         logError('An error occurred while dismissing an announcement', error);
+        return {error};
     }
 }
