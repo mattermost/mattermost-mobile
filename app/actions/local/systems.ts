@@ -38,11 +38,12 @@ export async function storeConfigAndLicense(serverUrl: string, config: ClientCon
                 await operator.handleSystem({systems, prepareRecordsOnly: false});
             }
 
-            await storeConfig(serverUrl, config);
+            return await storeConfig(serverUrl, config);
         }
     } catch (error) {
         logError('An error occurred while saving config & license', error);
     }
+    return [];
 }
 
 export async function storeConfig(serverUrl: string, config: ClientConfig | undefined, prepareRecordsOnly = false) {
