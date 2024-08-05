@@ -9,7 +9,7 @@ import {
     TouchableOpacity,
     Text,
 } from 'react-native';
-import Video, {type OnLoadData, type OnProgressData} from 'react-native-video';
+import Video, {type OnLoadData, type OnProgressData, type VideoRef} from 'react-native-video';
 
 import {useTheme} from '@context/theme';
 import {useDownloadFileAndPreview} from '@hooks/files';
@@ -68,7 +68,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
     const [hasEnded, setHasEnded] = useState<boolean>(false);
     const [progress, setProgress] = useState<number>(0);
     const [timeInMinutes, setTimeInMinutes] = useState<string>('0:00');
-    const videoRef = useRef<Video>(null);
+    const videoRef = useRef<VideoRef>(null);
 
     useEffect(() => {
         if (hasEnded) {
@@ -153,7 +153,6 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
             <Video
                 ref={videoRef}
                 source={source}
-                audioOnly={true}
                 paused={hasPaused}
                 onLoad={onLoad}
                 onProgress={onProgress}
