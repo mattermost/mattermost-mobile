@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {getPosts} from '@actions/local/post';
+import {General} from '@app/constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
-import {getConfigValue} from '@queries/servers/system';
+import {getConfigValue, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
@@ -17,6 +18,7 @@ import {getUserTimezone} from '@utils/user';
 import {fetchPostAuthors, fetchMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
 
+import type {ChannelModel} from '@app/database/models/server';
 import type Model from '@nozbe/watermelondb/Model';
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -129,10 +131,15 @@ export const searchPosts = async (serverUrl: string, teamId: string, params: Pos
     }
 };
 
-export const searchFiles = async (serverUrl: string, teamId: string, params: FileSearchParams): Promise<{files?: FileInfo[]; channels?: string[]; error?: unknown}> => {
+export const searchFiles = async (serverUrl: string, teamId: string, params: FileSearchParams, channel?: ChannelModel): Promise<{files?: FileInfo[]; channels?: string[]; error?: unknown}> => {
     try {
+        let currentTeamId = teamId;
+        if (channel && (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL)) {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            currentTeamId = await getCurrentTeamId(database);
+        }
         const client = NetworkManager.getClient(serverUrl);
-        const result = await client.searchFiles(teamId, params.terms);
+        const result = await client.searchFiles(currentTeamId, params.terms);
         const files = result?.file_infos ? Object.values(result.file_infos) : [];
         const [allChannelIds, allPostIds] = files.reduce<[Set<string>, Set<string>]>((acc, f) => {
             if (f.channel_id) {
