@@ -1,9 +1,24 @@
 {
   "about.date": "تاريخ الاصدار:",
+  "about.enterpriseEditionLearn": "اعرف المزيد حول نسخة المؤسسات ",
+  "about.enterpriseEditionSt": "اتصلات حديثة من خلف جدار الحماية الخاص بك.",
   "about.enterpriseEditione1": "النسخة المؤسسية",
+  "about.teamEditionLearn": "انضم الى مجتمع ماترموست من خلال",
+  "about.teamEditionSt": "كل محادثات فريقك فى مكان واحد, بحث فورى وتستطيع الوصول له من اى مكان.",
   "about.teamEditiont0": "النسخة المحددة للفريق",
   "about.teamEditiont1": "النسخة المؤسسية",
   "account.logout": "تسجيل الخروج",
   "account.logout_from": "تسجيل الخروج من {serverName}",
-  "account.settings": "الاعدادات"
+  "account.settings": "الاعدادات",
+  "account.your_profile": "ملفك الشخصي",
+  "alert.channel_deleted.description": "تم أرشفة القناة {displayName}.",
+  "alert.channel_deleted.title": "قناة مؤرشفة",
+  "alert.push_proxy.button": "حسنا",
+  "alert.push_proxy_error.description": "بناء على اعدادات هذا السيرفر لا يمكن ارسال اشعارات عبر تطبيق الهاتف. تواصل مع مدير السيرفر للمزيد من المعلومات.",
+  "alert.push_proxy_error.title": "لا يمكن استقبال اشعارات من هذا الخادم",
+  "alert.push_proxy_unknown.description": "الخادم غير قادر على استقبال الاشعارات لسبب غير معروف. سيتم المحاولة مرة اخرى فالمرة القادمة التى تتصل بها بالخادم.",
+  "alert.push_proxy_unknown.title": "لا يمكن استلام اشعارات من الخادم",
+  "alert.removed_from_channel.description": "لقد تمت إذالتك من القناة {displayName}.",
+  "alert.removed_from_channel.title": "تمت إذالته من القناة",
+  "alert.removed_from_team.description": "تمت إذالتك من الفريق {displayName}."
 }
