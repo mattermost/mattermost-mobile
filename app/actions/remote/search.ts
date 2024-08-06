@@ -18,8 +18,8 @@ import {getUserTimezone} from '@utils/user';
 import {fetchPostAuthors, fetchMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
 
-import type {ChannelModel} from '@app/database/models/server';
 import type Model from '@nozbe/watermelondb/Model';
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 export async function fetchRecentMentions(serverUrl: string): Promise<PostSearchRequest> {
