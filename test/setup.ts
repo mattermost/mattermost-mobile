@@ -408,3 +408,10 @@ global.requestAnimationFrame = (callback) => {
 };
 
 global.performance.now = () => Date.now();
+
+console.error = () => {
+    // empty
+};
+console.warn = () => {
+    // empty
+};
