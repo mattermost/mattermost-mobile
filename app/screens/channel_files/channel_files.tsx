@@ -98,7 +98,7 @@ function ChannelFiles({
         const t = Date.now();
         lastSearchRequest.current = t;
         const searchParams = getSearchParams(channel.id, searchTerm, ftr);
-        const {files} = await searchFiles(serverUrl, channel.teamId, searchParams);
+        const {files} = await searchFiles(serverUrl, channel.teamId, searchParams, channel);
         if (lastSearchRequest.current !== t) {
             return;
         }
