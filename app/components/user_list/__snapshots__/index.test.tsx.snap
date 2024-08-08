@@ -444,6 +444,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
                 {
@@ -763,6 +764,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
                 {
@@ -1120,6 +1122,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
                 {
@@ -1338,6 +1341,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
                 {

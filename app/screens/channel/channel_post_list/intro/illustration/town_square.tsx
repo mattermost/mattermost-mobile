@@ -47,8 +47,6 @@ const TownSquareIllustration = ({theme}: Props) => (
             />
             <Mask
                 id='a'
-
-                // @ts-expect-error style not intrinsic
                 style={{
                     maskType: 'alpha',
                 }}
@@ -117,8 +115,6 @@ const TownSquareIllustration = ({theme}: Props) => (
             />
             <Mask
                 id='b'
-
-                // @ts-expect-error style not intrinsic
                 style={{
                     maskType: 'alpha',
                 }}
@@ -159,8 +155,6 @@ const TownSquareIllustration = ({theme}: Props) => (
             />
             <Mask
                 id='c'
-
-                // @ts-expect-error style not intrinsic
                 style={{
                     maskType: 'alpha',
                 }}

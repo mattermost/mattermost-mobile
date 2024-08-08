@@ -87,8 +87,6 @@ const PrivateChannelIllustration = ({theme}: Props) => (
             />
             <Mask
                 id='a'
-
-                // @ts-expect-error style not intrinsic
                 style={{
                     maskType: 'alpha',
                 }}
@@ -132,8 +130,6 @@ const PrivateChannelIllustration = ({theme}: Props) => (
             />
             <Mask
                 id='b'
-
-                // @ts-expect-error style not intrinsic
                 style={{
                     maskType: 'alpha',
                 }}

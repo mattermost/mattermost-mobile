@@ -11,6 +11,7 @@ exports[`AttachmentFooter it matches snapshot when both footer and footer_icon a
   }
 >
   <ViewManagerAdapter_ExpoImage
+    containerViewRef={"[React.ref]"}
     contentFit="cover"
     contentPosition={
       {

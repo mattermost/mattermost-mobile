@@ -104,8 +104,6 @@ const Inbox = (props: SvgProps) => (
             x={71}
             y={91}
             maskUnits='userSpaceOnUse'
-
-            // @ts-expect-error style not defined
             style={{
                 maskType: 'alpha',
             }}
@@ -144,8 +142,6 @@ const Inbox = (props: SvgProps) => (
             x={56}
             y={52}
             maskUnits='userSpaceOnUse'
-
-            // @ts-expect-error style not defined
             style={{
                 maskType: 'alpha',
             }}
