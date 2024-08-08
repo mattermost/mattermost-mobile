@@ -18,6 +18,8 @@ import {logError} from '@utils/log';
 import {deleteEntitiesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
 
+import {FileTypes} from './constants';
+
 import type {PastedFile} from '@mattermost/react-native-paste-input';
 import type FileModel from '@typings/database/models/servers/file';
 import type {IntlShape} from 'react-intl';
@@ -326,6 +328,52 @@ export function getFormattedFileSize(bytes: number): string {
 
     return `${bytes} B`;
 }
+export const getFormat = (ext: string) => {
+    if (Files.TEXT_TYPES.indexOf(ext) > -1) {
+        return FileTypes.TEXT;
+    }
+
+    if (Files.IMAGE_TYPES.indexOf(ext) > -1) {
+        return FileTypes.IMAGE;
+    }
+
+    if (Files.AUDIO_TYPES.indexOf(ext) > -1) {
+        return FileTypes.AUDIO;
+    }
+
+    if (Files.VIDEO_TYPES.indexOf(ext) > -1) {
+        return FileTypes.VIDEO;
+    }
+
+    if (Files.SPREADSHEET_TYPES.indexOf(ext) > -1) {
+        return FileTypes.SPREADSHEET;
+    }
+
+    if (Files.CODE_TYPES.indexOf(ext) > -1) {
+        return FileTypes.CODE;
+    }
+
+    if (Files.WORD_TYPES.indexOf(ext) > -1) {
+        return FileTypes.WORD;
+    }
+
+    if (Files.PRESENTATION_TYPES.indexOf(ext) > -1) {
+        return FileTypes.PRESENTATION;
+    }
+
+    if (Files.PDF_TYPES.indexOf(ext) > -1) {
+        return FileTypes.PDF;
+    }
+
+    if (Files.PATCH_TYPES.indexOf(ext) > -1) {
+        return FileTypes.PATCH;
+    }
+
+    if (Files.SVG_TYPES.indexOf(ext) > -1) {
+        return FileTypes.SVG;
+    }
+    return FileTypes.OTHER;
+};
 
 export function getFileType(file: FileInfo | ExtractedFileInfo): string {
     if (!file || !file.extension) {
