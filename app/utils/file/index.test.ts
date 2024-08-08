@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {getInfoAsync, deleteAsync} from 'expo-file-system';
-import {createIntl} from 'react-intl';
 import {Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
-import {getTranslations} from '@i18n';
+import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {urlSafeBase64Encode} from '@utils/security';
 
@@ -62,7 +61,7 @@ jest.mock('@utils/mattermost_managed', () => ({
 jest.mock('@utils/security', () => ({urlSafeBase64Encode: (url: string) => btoa(url)}));
 
 describe('Image utils', () => {
-    const intl = createIntl({locale: 'en', messages: getTranslations('en')});
+    const intl = getIntlShape();
     beforeEach(() => {
         jest.clearAllMocks();
     });

@@ -6,13 +6,13 @@ import {randomUUID} from 'expo-crypto';
 import {createIntl} from 'react-intl';
 import ReactNativeHapticFeedback, {HapticFeedbackTypes} from 'react-native-haptic-feedback';
 
-import {getTranslations} from '@i18n';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
-type SortByCreatAt = (Session | Channel | Team | Post) & {
+export type SortByCreatAt = (Session | Channel | Team | Post) & {
     create_at: number;
 }
 
-export function getIntlShape(locale = 'en') {
+export function getIntlShape(locale = DEFAULT_LOCALE) {
     return createIntl({
         locale,
         messages: getTranslations(locale),
