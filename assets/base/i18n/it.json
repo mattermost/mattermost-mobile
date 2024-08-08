@@ -376,6 +376,7 @@
   "invite.send_error": "Si è verificato un errore durante il tentativo di invio degli inviti. Controllare la connessione di rete e riprovare.",
   "invite.send_invite": "Inviare",
   "invite.shareLink": "Condividi il link",
+  "invite.summary.back": "Torna indietro",
   "invite.summary.done": "Fatto",
   "invite.summary.email_invite": "È stata inviata un'e-mail di invito",
   "invite.summary.error": "{invitationsCount, plural, one {Invitation} other {Invitations}} non è stato possibile inviarlo con successo.",
