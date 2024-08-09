@@ -486,6 +486,7 @@
   "mobile.calls_ended_at": "Ended at",
   "mobile.calls_error_message": "Error: {error}",
   "mobile.calls_error_title": "Error",
+  "mobile.calls_group_calls_not_available": "Calls are only available in DM channels.",
   "mobile.calls_headset": "Headset",
   "mobile.calls_hide_cc": "Hide live captions",
   "mobile.calls_host": "host",

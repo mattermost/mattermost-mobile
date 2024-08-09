@@ -5,6 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatestWith, distinctUntilChanged, of as of$, switchMap} from 'rxjs';
 
 import {observeCallStateInChannel, observeIsCallsEnabledInChannel} from '@calls/observers';
+import {observeCallsConfig} from '@calls/state';
 import {Preferences} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannel} from '@queries/servers/channel';
@@ -43,10 +44,16 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         }),
     );
 
+    const groupCallsAllowed = observeCallsConfig(serverUrl).pipe(
+        switchMap((config) => of$(config.GroupCallsAllowed)),
+        distinctUntilChanged(),
+    );
+
     return {
         channelId,
         ...observeCallStateInChannel(serverUrl, database, channelId),
         isCallsEnabledInChannel: observeIsCallsEnabledInChannel(database, serverUrl, channelId),
+        groupCallsAllowed,
         dismissedGMasDMNotice,
         channelType,
         currentUserId,
