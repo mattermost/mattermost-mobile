@@ -9,6 +9,7 @@ import {
     entry,
     handleEntryAfterLoadNavigation,
     registerDeviceToken,
+    setIgnoreNotificationACK,
 } from '@actions/remote/entry/common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
@@ -38,6 +39,7 @@ import {logDebug, logInfo} from '@utils/log';
 
 export async function handleFirstConnect(serverUrl: string) {
     registerDeviceToken(serverUrl);
+    setIgnoreNotificationACK(serverUrl);
     autoUpdateTimezone(serverUrl);
     return doReconnect(serverUrl);
 }
