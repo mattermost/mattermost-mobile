@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import Animated, {runOnJS, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -52,13 +52,13 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
     const animatedRef = useAnimatedRef<Animated.ScrollView>();
     const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
     const scrollValue = useSharedValue(0);
-    const lockValue = useSharedValue<number | null>(null);
+    const [lockValue, setLockValue] = useState<number>(0);
     const autoScroll = useSharedValue(false);
     const snapping = useSharedValue(false);
     const scrollEnabled = useSharedValue(true);
 
     const headerHeight = useDerivedValue(() => {
-        const value = -(scrollValue?.value || 0);
+        const value = -(scrollValue.value);
         const heightWithScroll = (isLargeTitle ? largeHeight : defaultHeight) + value;
         let height = Math.max(heightWithScroll, defaultHeight);
         if (value > insets.top) {
@@ -134,11 +134,13 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
 
     const hideHeader = useCallback((lock = false) => {
         if (lock) {
-            lockValue.value = defaultHeight;
+            // by disabling scroll, this prevent the scrollValue from being updated needlessly as observed in iOS simulators
+            scrollEnabled.value = false;
+            setLockValue(defaultHeight);
         }
 
         const offset = headerOffset;
-        if (animatedRef?.current && Math.abs((scrollValue?.value || 0)) <= insets.top) {
+        if (animatedRef?.current && Math.abs((scrollValue.value)) <= insets.top) {
             autoScroll.value = true;
             if ('scrollTo' in animatedRef.current) {
                 animatedRef.current.scrollTo({y: offset, animated: true});
@@ -154,7 +156,8 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
     }, [largeHeight, defaultHeight]);
 
     const unlock = useCallback(() => {
-        lockValue.value = null;
+        scrollEnabled.value = true;
+        setLockValue(0);
     }, []);
 
     return {
