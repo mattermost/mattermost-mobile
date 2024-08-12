@@ -118,9 +118,10 @@ describe('Notification Utils', () => {
 
     describe('emitNotificationError', () => {
         it('should emit notification error after 500ms', (done) => {
+            const spyEmit = jest.spyOn(DeviceEventEmitter, 'emit');
             emitNotificationError('Channel');
             setTimeout(() => {
-                expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.NOTIFICATION_ERROR, 'Channel');
+                expect(spyEmit).toHaveBeenCalledWith(Events.NOTIFICATION_ERROR, 'Channel');
                 done();
             }, 600); // wait a little longer than 500ms to ensure the timeout has executed
         });
