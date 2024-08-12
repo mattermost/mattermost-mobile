@@ -58,6 +58,7 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
       exclusive={true}
       handlerTag={1}
       handlerType="NativeViewGestureHandler"
+      innerRef={null}
       onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
@@ -90,6 +91,7 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
       exclusive={true}
       handlerTag={2}
       handlerType="NativeViewGestureHandler"
+      innerRef={null}
       onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
@@ -174,6 +176,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       exclusive={true}
       handlerTag={3}
       handlerType="NativeViewGestureHandler"
+      innerRef={null}
       onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
@@ -206,6 +209,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       exclusive={true}
       handlerTag={4}
       handlerType="NativeViewGestureHandler"
+      innerRef={null}
       onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
