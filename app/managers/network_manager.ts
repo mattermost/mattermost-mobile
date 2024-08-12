@@ -11,7 +11,7 @@ import {
 } from '@mattermost/react-native-network-client';
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {modelName, osName, osVersion} from 'expo-device';
-import {defineMessages, createIntl} from 'react-intl';
+import {defineMessages} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 import urlParse from 'url-parse';
 
@@ -20,9 +20,9 @@ import {Client} from '@client/rest';
 import * as ClientConstants from '@client/rest/constants';
 import ClientError from '@client/rest/error';
 import {CERTIFICATE_ERRORS} from '@constants/network';
-import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import ManagedApp from '@init/managed_app';
 import {toMilliseconds} from '@utils/datetime';
+import {getIntlShape} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
 import {getCSRFFromCookie} from '@utils/security';
 
@@ -50,10 +50,7 @@ const messages = defineMessages({
 class NetworkManager {
     private clients: Record<string, Client> = {};
 
-    private intl = createIntl({
-        locale: DEFAULT_LOCALE,
-        messages: getTranslations(DEFAULT_LOCALE),
-    });
+    private intl = getIntlShape();
 
     private DEFAULT_CONFIG: APIClientConfiguration = {
         headers: {

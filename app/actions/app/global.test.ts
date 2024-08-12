@@ -43,6 +43,10 @@ jest.mock('react-native-keychain', () => {
     };
 });
 
+jest.mock('@utils/log', () => ({
+    logError: jest.fn(),
+}));
+
 describe('/app/actions/app/global', () => {
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);

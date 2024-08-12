@@ -150,6 +150,8 @@ jest.doMock('react-native', () => {
             removeChannelNotifications: jest.fn().mockImplementation(),
             removeThreadNotifications: jest.fn().mockImplementation(),
             removeServerNotifications: jest.fn().mockImplementation(),
+
+            unlockOrientation: jest.fn(),
         },
         APIClient: {
             getConstants: () => ({

@@ -1,10 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {createIntl} from 'react-intl';
-
-import {DEFAULT_LOCALE, getTranslations} from '@i18n';
-
 import {
     isServerError,
     isErrorWithMessage,
@@ -14,6 +10,7 @@ import {
     isErrorWithUrl,
     getFullErrorMessage,
 } from './errors';
+import {getIntlShape} from './general';
 
 describe('Errors', () => {
     test('isServerError', () => {
@@ -53,8 +50,7 @@ describe('Errors', () => {
     });
 
     test('getFullErrorMessage', () => {
-        const locale = DEFAULT_LOCALE;
-        const intl = createIntl({locale, messages: getTranslations(locale)});
+        const intl = getIntlShape();
         expect(getFullErrorMessage('error', intl)).toBe('error');
         expect(getFullErrorMessage({details: 'more info', message: 'error message'}, intl)).toBe('error message; more info');
         expect(getFullErrorMessage({details: 'more info', message: 'error message'}, intl, 3)).toBe('error message; error message');

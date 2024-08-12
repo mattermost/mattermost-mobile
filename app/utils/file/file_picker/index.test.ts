@@ -5,16 +5,15 @@
 
 import RNUtils from '@mattermost/rnutils';
 import {applicationName} from 'expo-application';
-import {createIntl} from 'react-intl';
 import {Alert, Platform} from 'react-native';
 import DocumentPicker, {type DocumentPickerResponse} from 'react-native-document-picker';
 import {launchCamera, launchImageLibrary, type Asset, type ImagePickerResponse} from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
-import {getTranslations} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 import {extractFileInfo, lookupMimeType} from '@utils/file';
+import {getIntlShape} from '@utils/general';
 import {logWarning} from '@utils/log';
 
 import FilePickerUtil from '.';
@@ -46,7 +45,7 @@ jest.mock('@mattermost/rnutils', () => ({
 
 describe('FilePickerUtil', () => {
     const mockUploadFiles = jest.fn();
-    const intl = createIntl({locale: 'en', messages: getTranslations('en')});
+    const intl = getIntlShape();
     const originalSelect = Platform.select;
 
     let filePickerUtil: FilePickerUtil;
