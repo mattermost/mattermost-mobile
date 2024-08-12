@@ -76,6 +76,7 @@ jest.doMock('react-native', () => {
         InteractionManager: RNInteractionManager,
         NativeModules: RNNativeModules,
         Linking: RNLinking,
+        DeviceEventEmitter: RNDeviceEventEmitter,
     } = ReactNative;
 
     const Alert = {
@@ -86,6 +87,11 @@ jest.doMock('react-native', () => {
     const InteractionManager = {
         ...RNInteractionManager,
         runAfterInteractions: jest.fn((cb) => cb()),
+    };
+
+    const DeviceEventEmitter = {
+        ...RNDeviceEventEmitter,
+        emit: jest.fn(),
     };
 
     const NativeModules = {
@@ -215,6 +221,7 @@ jest.doMock('react-native', () => {
         InteractionManager,
         NativeModules,
         Linking,
+        DeviceEventEmitter,
     }, ReactNative);
 });
 
@@ -323,6 +330,7 @@ jest.mock('react-native-notifications', () => {
                 }),
                 setBadgeCount: jest.fn(),
             },
+            postLocalNotification: jest.fn((notification) => notification),
         },
     };
 });
