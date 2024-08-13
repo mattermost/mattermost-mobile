@@ -7,7 +7,7 @@ import {logError} from '@utils/log';
 
 import {queryTeamSearchHistoryByTeamId} from '../../queries/servers/team';
 
-import {addSearchToTeamSearchHistory, removeSearchFromTeamSearchHistory, removeUserFromTeam} from './team';
+import {addSearchToTeamSearchHistory, removeSearchFromTeamSearchHistory, removeUserFromTeam, MAX_TEAM_SEARCHES} from './team';
 
 jest.mock('@database/manager');
 jest.mock('@queries/servers/team');
@@ -54,13 +54,13 @@ describe('removeSearchFromTeamSearchHistory', () => {
     });
 
     it('should handle case when team search history is not found', async () => {
-        (getTeamSearchHistoryById as jest.Mock).mockResolvedValue(null);
+        (getTeamSearchHistoryById as jest.Mock).mockResolvedValue(undefined);
 
         const result = await removeSearchFromTeamSearchHistory(serverUrl, searchId);
 
         expect(getTeamSearchHistoryById).toHaveBeenCalledWith(database, searchId);
         expect(database.write).not.toHaveBeenCalled();
-        expect(result).toEqual({teamSearch: null});
+        expect(result).toEqual({teamSearch: undefined});
     });
 
     it('should handle errors and log them', async () => {
@@ -111,13 +111,13 @@ describe('removeUserFromTeam', () => {
 
     it('should remove user from team successfully', async () => {
         const myTeam = {id: 'myTeamId'};
-        const team = {id: 'teamId'};
+        const team = {id: 'myTeamId'};
         const preparedModels = [
             {id: 'model1', _preparedState: 'markAsDeleted'},
             {id: 'model2', _preparedState: 'markAsDeleted'},
         ];
         const systemModels = [
-            {id: 'systemModel1', _preparedState: 'update', value: []}, // Updated to reflect removal
+            {id: 'systemModel1', _preparedState: 'update', value: []},
         ];
 
         (getMyTeamById as jest.Mock).mockResolvedValue(myTeam);
@@ -137,6 +137,9 @@ describe('removeUserFromTeam', () => {
         systemModels.forEach((model) => {
             expect(model.value).not.toContain(team.id);
         });
+
+        // Check if preparedModels contain systemModels
+        expect(preparedModels).toEqual(expect.arrayContaining(systemModels));
 
         expect(result).toEqual({error: undefined});
     });
@@ -173,6 +176,9 @@ describe('removeUserFromTeam', () => {
             expect(model.value).toContain(team.id);
         });
 
+        // Check if preparedModels contain systemModels
+        expect(preparedModels).toEqual(expect.arrayContaining(systemModels));
+
         expect(result).toEqual({error: writeError});
     });
 
@@ -204,11 +210,13 @@ describe('removeUserFromTeam', () => {
 
     it('should handle errors and log them', async () => {
         const error = new Error('Test error');
-        (getMyTeamById as jest.Mock).mockRejectedValue(error);
+        (DatabaseManager.getServerDatabaseAndOperator as jest.Mock).mockImplementation(() => {
+            throw error;
+        });
 
         const result = await removeUserFromTeam(serverUrl, teamId);
 
-        expect(getMyTeamById).toHaveBeenCalledWith(database, teamId);
+        expect(DatabaseManager.getServerDatabaseAndOperator).toHaveBeenCalled();
         expect(logError).toHaveBeenCalledWith('Failed removeUserFromTeam', error);
         expect(result).toEqual({error});
     });
@@ -259,7 +267,6 @@ describe('removeUserFromTeam', () => {
 
 describe('addSearchToTeamSearchHistory', () => {
     const terms = 'search terms';
-    const MAX_TEAM_SEARCHES = 15;
 
     beforeEach(async () => {
         jest.clearAllMocks();
@@ -356,6 +363,7 @@ describe('addSearchToTeamSearchHistory', () => {
             team_id: teamId,
         };
         const searchModel = {id: 'searchModelId', _raw: {_changed: ''}};
+        const oldSearchModel = {id: 'oldSearchModelId', prepareDestroyPermanently: jest.fn().mockReturnValue(undefined)};
         const teamSearchHistory = new Array(MAX_TEAM_SEARCHES).fill(searchModel);
 
         (operator.handleTeamSearchHistory as jest.Mock).mockResolvedValue([searchModel]);
@@ -372,6 +380,7 @@ describe('addSearchToTeamSearchHistory', () => {
         expect(queryTeamSearchHistoryByTeamId).toHaveBeenCalledWith(database, teamId);
         expect(operator.batchRecords).toHaveBeenCalledWith([searchModel], 'addSearchToTeamHistory');
         expect(result).toEqual({searchModel});
+        expect(oldSearchModel.prepareDestroyPermanently).not.toHaveBeenCalled();
     });
 
     it('should handle errors and log them', async () => {
