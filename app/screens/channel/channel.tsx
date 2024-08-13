@@ -34,6 +34,7 @@ type ChannelProps = {
     showJoinCallBanner: boolean;
     isInACall: boolean;
     isCallsEnabledInChannel: boolean;
+    groupCallsAllowed: boolean;
     showIncomingCalls: boolean;
     isTabletView?: boolean;
     dismissedGMasDMNotice: PreferenceModel[];
@@ -58,6 +59,7 @@ const Channel = ({
     showJoinCallBanner,
     isInACall,
     isCallsEnabledInChannel,
+    groupCallsAllowed,
     showIncomingCalls,
     isTabletView,
     dismissedGMasDMNotice,
@@ -125,6 +127,7 @@ const Channel = ({
                     channelId={channelId}
                     componentId={componentId}
                     callsEnabledInChannel={isCallsEnabledInChannel}
+                    groupCallsAllowed={groupCallsAllowed}
                     isTabletView={isTabletView}
                     shouldRenderBookmarks={shouldRender}
                 />
