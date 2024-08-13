@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback} from 'react';
 import {Animated, Easing, type LayoutChangeEvent, type StyleProp, Text, type TextStyle, View} from 'react-native';
 
 interface Props {
@@ -36,14 +36,16 @@ const AnimatedNumber = ({
     const prevNumberersArr = Array.from(prevNumberString, Number);
 
     const [numberHeight, setNumberHeight] = React.useState(0);
-    const animations = useMemo(() => numberStringToDigitsArray.map((__, index) => {
-        if (typeof prevNumberersArr[index] !== 'number') {
-            return new Animated.Value(0);
-        }
+    const animations = React.useRef(
+        numberStringToDigitsArray.map((__, index) => {
+            if (typeof prevNumberersArr[index] !== 'number' || numberHeight === 0) {
+                return new Animated.Value(0);
+            }
 
-        const animationHeight = -1 * (numberHeight * prevNumberersArr[index]);
-        return new Animated.Value(animationHeight);
-    }), [numberStringToDigitsArray]);
+            const animationHeight = -1 * (numberHeight * prevNumberersArr[index]);
+            return new Animated.Value(animationHeight);
+        }),
+    ).current;
 
     const setButtonLayout = useCallback((e: LayoutChangeEvent) => {
         setNumberHeight(e.nativeEvent.layout.height);
