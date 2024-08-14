@@ -1004,6 +1004,7 @@
   "select_team.title": "チームを選択する",
   "server.invalid.certificate.description": "このサーバーの証明書は無効です。\n\"{hostname}\" を装ったサーバーに接続しようとしている可能性があり、機密情報が危険にさらされる可能性があります。",
   "server.invalid.certificate.title": "無効なSSL証明書",
+  "server.invalid.pinning.title": "不正なピン留めされたSSL証明書",
   "server.logout.alert_description": "関連するデータはすべて削除されます",
   "server.logout.alert_title": "本当に {displayName} からログアウトしますか?",
   "server.remove.alert_description": "これにより、サーバーのリストから削除されます。関連するデータはすべて削除されます",

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {match} from 'path-to-regexp';
-import {createIntl, type IntlShape} from 'react-intl';
+import {type IntlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 import urlParse from 'url-parse';
 
@@ -13,7 +13,7 @@ import DeepLinkType from '@app/constants/deep_linking';
 import {DeepLink, Launch, Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import {DEFAULT_LOCALE, t} from '@i18n';
 import WebsocketManager from '@managers/websocket_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
@@ -21,6 +21,7 @@ import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
+import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
 import {addNewServer} from '@utils/server';
@@ -68,10 +69,7 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
         const {database} = DatabaseManager.getServerDatabaseAndOperator(existingServerUrl);
         const currentUser = await getCurrentUser(database);
         const locale = currentUser?.locale || DEFAULT_LOCALE;
-        const intl = intlShape || createIntl({
-            locale,
-            messages: getTranslations(locale),
-        });
+        const intl = intlShape || getIntlShape(locale);
 
         switch (parsed.type) {
             case DeepLink.Channel: {
