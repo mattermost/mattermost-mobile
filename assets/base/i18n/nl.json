@@ -486,6 +486,7 @@
   "mobile.calls_ended_at": "Beëindigd op",
   "mobile.calls_error_message": "Fout: {error}",
   "mobile.calls_error_title": "Fout",
+  "mobile.calls_group_calls_not_available": "Gesprekken zijn alleen beschikbaar in DM-kanalen.",
   "mobile.calls_headset": "Hoofdtelefoon",
   "mobile.calls_hide_cc": "Live ondertiteling verbergen",
   "mobile.calls_host": "gastheer",
