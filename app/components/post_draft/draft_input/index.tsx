@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {General} from '@constants';
@@ -14,6 +14,7 @@ import {useTheme} from '@context/theme';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import CustomEmojiPicker from '../custom_emoji_picker';
 import PostInput from '../post_input';
 import QuickActions from '../quick_actions';
 import SendAction from '../send_action';
@@ -133,6 +134,7 @@ export default function DraftInput({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
+    const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
@@ -142,6 +144,11 @@ export default function DraftInput({
     const focus = useCallback(() => {
         inputRef.current?.focus();
     }, []);
+
+    const handleOpenEmojiPicker = () => {
+        Keyboard.dismiss();
+        setOpenEmojiPicker(true);
+    };
 
     // Render
     const postInputTestID = `${testID}.post.input`;
@@ -215,6 +222,7 @@ export default function DraftInput({
                         sendMessage={handleSendMessage}
                         inputRef={inputRef}
                         setIsFocused={setIsFocused}
+                        setOpenEmojiPicker={setOpenEmojiPicker}
                     />
                     <Uploads
                         currentUserId={currentUserId}
@@ -234,6 +242,7 @@ export default function DraftInput({
                             updatePostPriority={updatePostPriority}
                             canShowPostPriority={canShowPostPriority}
                             focus={focus}
+                            handleOpenEmojiPicker={handleOpenEmojiPicker}
                         />
                         <SendAction
                             testID={sendActionTestID}
@@ -241,6 +250,7 @@ export default function DraftInput({
                             sendMessage={handleSendMessage}
                         />
                     </View>
+                    {openEmojiPicker && <CustomEmojiPicker/>}
                 </ScrollView>
             </SafeAreaView>
         </>

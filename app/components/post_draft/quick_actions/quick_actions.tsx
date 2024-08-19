@@ -5,6 +5,7 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import AttachmentOptions from './attachment_options';
+import EmojiQuickAction from './emojii_quick_action';
 import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
 
@@ -23,6 +24,7 @@ type Props = {
     postPriority: PostPriority;
     updatePostPriority: (postPriority: PostPriority) => void;
     focus: () => void;
+    handleOpenEmojiPicker: () => void;
 }
 
 const style = StyleSheet.create({
@@ -48,6 +50,7 @@ export default function QuickActions({
     postPriority,
     updatePostPriority,
     focus,
+    handleOpenEmojiPicker,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
@@ -83,6 +86,7 @@ export default function QuickActions({
                 updateValue={updateValue}
                 focus={focus}
             />
+            <EmojiQuickAction handleOpenEmojiPicker={handleOpenEmojiPicker}/>
             {isPostPriorityEnabled && canShowPostPriority && (
                 <PostPriorityAction
                     testID={postPriorityActionTestID}
