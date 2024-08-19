@@ -4,12 +4,25 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import EmojiPicker from './emoji_picker';
+
 type Props = {
+    onEmojiPress: (emoji: string) => void;
 }
 
-const CustomEmojiPicker: React.FC<Props> = () => {
+const CustomEmojiPicker: React.FC<Props> = ({
+    onEmojiPress,
+}) => {
+    const handleEmojiPress = React.useCallback((emoji: string) => {
+        onEmojiPress(emoji);
+    }, []);
     return (
-        <View style={{height: 300}}/>);
+        <View style={{height: 300, padding: 8}}>
+            <EmojiPicker
+                onEmojiPress={handleEmojiPress}
+                testID='custom_emoji_picker'
+            />
+        </View>);
 };
 
 export default CustomEmojiPicker;

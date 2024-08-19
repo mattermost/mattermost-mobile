@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetSectionList} from '@gorhom/bottom-sheet';
 import {Image} from 'expo-image';
 import {chunk} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
@@ -9,6 +8,9 @@ import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEve
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
+import EmojiCategoryBar from '@app/screens/emoji_picker/picker/emoji_category_bar';
+import SectionFooter from '@app/screens/emoji_picker/picker/sections/section_footer';
+import SectionHeader, {SECTION_HEADER_HEIGHT} from '@app/screens/emoji_picker/picker/sections/section_header';
 import FileIcon from '@components/files/file_icon';
 import TouchableEmoji from '@components/touchable_emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -18,11 +20,6 @@ import {useIsTablet} from '@hooks/device';
 import {setEmojiCategoryBarIcons, setEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
 import {CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
 import {fillEmoji} from '@utils/emoji/helpers';
-
-import EmojiCategoryBar from '../emoji_category_bar';
-
-import SectionFooter from './section_footer';
-import SectionHeader, {SECTION_HEADER_HEIGHT} from './section_header';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
@@ -58,7 +55,7 @@ const getItemLayout = sectionListGetItemLayout({
 
 const styles = StyleSheet.create(({
     flex: {flex: 1},
-    contentContainerStyle: {paddingBottom: 50},
+    contentContainerStyle: {paddingBottom: 50, paddingLeft: 8, paddingRight: 8},
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -275,7 +272,10 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
         }, 350);
     };
 
-    const renderSectionHeader = useCallback(({section}: {section: SectionListData<EmojiAlias[], EmojiSection>}) => {
+    const renderSectionHeader = useCallback(({section}: {
+        // eslint-disable-next-line react/no-unused-prop-types
+        section: SectionListData<EmojiAlias[], EmojiSection>;
+    }) => {
         return (
             <SectionHeader section={section}/>
         );
@@ -311,7 +311,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
         );
     }, []);
 
-    const List = useMemo(() => (isTablet ? SectionList : BottomSheetSectionList), [isTablet]);
+    const List = useMemo(() => (isTablet ? SectionList : SectionList), [isTablet]);
 
     useEffect(() => {
         if (selectedIndex != null) {
@@ -322,8 +322,6 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
     return (
         <View style={styles.flex}>
             <List
-
-                // @ts-expect-error bottom sheet definition
                 getItemLayout={getItemLayout}
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='always'
@@ -340,9 +338,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
                 showsVerticalScrollIndicator={false}
                 testID='emoji_picker.emoji_sections.section_list'
             />
-            {isTablet &&
             <EmojiCategoryBar/>
-            }
         </View>
     );
 };

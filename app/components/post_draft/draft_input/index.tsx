@@ -140,6 +140,12 @@ export default function DraftInput({
         updatePostInputTop(e.nativeEvent.layout.height);
     }, []);
 
+    const handleEmojiPress = useCallback((emoji: string) => {
+        updateValue((v) => {
+            return `${v} :${emoji}:`;
+        });
+    }, []);
+
     const inputRef = useRef<PasteInputRef>();
     const focus = useCallback(() => {
         inputRef.current?.focus();
@@ -250,9 +256,11 @@ export default function DraftInput({
                             sendMessage={handleSendMessage}
                         />
                     </View>
-                    {openEmojiPicker && <CustomEmojiPicker/>}
                 </ScrollView>
             </SafeAreaView>
+            <View>
+                {openEmojiPicker && <CustomEmojiPicker onEmojiPress={handleEmojiPress}/>}
+            </View>
         </>
     );
 }
