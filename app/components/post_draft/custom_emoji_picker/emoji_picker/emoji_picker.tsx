@@ -26,6 +26,8 @@ type Props = {
     testID?: string;
     focus?: () => void;
     deleteCharFromCurrentCursorPosition: () => void;
+    isEmojiSearchFocused: boolean;
+    setIsEmojiSearchFocused: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const styles = StyleSheet.create({
@@ -44,6 +46,8 @@ const EmojiPicker: React.FC<Props> = ({
     testID = '',
     focus,
     deleteCharFromCurrentCursorPosition,
+    isEmojiSearchFocused,
+    setIsEmojiSearchFocused,
 }) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -73,20 +77,20 @@ const EmojiPicker: React.FC<Props> = ({
                 onEmojiPress={onEmojiPress}
             />
         );
-    } else {
-        EmojiList = (
-            <EmojiSections
-                customEmojis={customEmojis}
-                customEmojisEnabled={customEmojisEnabled}
-                imageUrl={imageUrl}
-                file={file}
-                onEmojiPress={onEmojiPress}
-                recentEmojis={recentEmojis}
-                focus={focus}
-                deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
-            />
-        );
     }
+
+    const EmojiSection = (
+        <EmojiSections
+            customEmojis={customEmojis}
+            customEmojisEnabled={customEmojisEnabled}
+            imageUrl={imageUrl}
+            file={file}
+            onEmojiPress={onEmojiPress}
+            recentEmojis={recentEmojis}
+            focus={focus}
+            deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
+        />
+    );
 
     return (
         <View
@@ -101,9 +105,11 @@ const EmojiPicker: React.FC<Props> = ({
                     onChangeText={onChangeSearchTerm}
                     testID={`${testID}.search_bar`}
                     value={searchTerm}
+                    setIsEmojiSearchFocused={setIsEmojiSearchFocused}
                 />
             </View>
-            {EmojiList}
+            {!isEmojiSearchFocused && EmojiSection}
+            {isEmojiSearchFocused && EmojiList}
         </View>
     );
 };

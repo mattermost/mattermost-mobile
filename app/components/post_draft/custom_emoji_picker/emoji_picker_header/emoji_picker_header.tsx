@@ -11,6 +11,7 @@ import SkinToneSelector from '@app/screens/emoji_picker/picker/header/skintone_s
 
 type Props = SearchProps & {
     skinTone: string;
+    setIsEmojiSearchFocused: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const styles = StyleSheet.create({
@@ -23,6 +24,7 @@ const styles = StyleSheet.create({
 
 const EmojiPickerHeader: React.FC<Props> = ({
     skinTone,
+    setIsEmojiSearchFocused,
     ...props
 }) => {
     const containerWidth = useSharedValue(0);
@@ -37,10 +39,12 @@ const EmojiPickerHeader: React.FC<Props> = ({
     }, [skinTone]);
 
     const onBlur = React.useCallback(() => {
+        setIsEmojiSearchFocused(false);
         isSearching.value = false;
     }, []);
 
     const onFocus = React.useCallback(() => {
+        setIsEmojiSearchFocused(true);
         isSearching.value = true;
     }, []);
 

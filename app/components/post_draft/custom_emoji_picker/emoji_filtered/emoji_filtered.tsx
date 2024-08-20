@@ -3,11 +3,13 @@
 
 import Fuse from 'fuse.js';
 import React from 'react';
-import {FlatList, StyleSheet, View, type ListRenderItemInfo} from 'react-native';
+import {useIntl} from 'react-intl';
+import {FlatList, Text, View, type ListRenderItemInfo} from 'react-native';
 
-import NoResultsWithTerm from '@app/components/no_results_with_term';
+import {useTheme} from '@app/context/theme';
 import EmojiItem from '@app/screens/emoji_picker/picker/filtered/emoji_item';
 import {getEmojis, searchEmojis} from '@app/utils/emoji/helpers';
+import {makeStyleSheetFromTheme} from '@app/utils/theme';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
@@ -18,12 +20,19 @@ type Props = {
     onEmojiPress: (emojiName: string) => void;
 };
 
-const style = StyleSheet.create({
-    noResultContainer: {
-        flexGrow: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        noResultContainer: {
+            marginTop: 10,
+            flex: 1, // Take up the full available space
+            alignItems: 'center', // Center horizontally
+            justifyContent: 'center', // Center vertically
+        },
+        noResultText: {
+            color: theme.centerChannelColor,
+            opacity: 0.72,
+        },
+    };
 });
 
 const EmojiFiltered: React.FC<Props> = ({
@@ -33,6 +42,9 @@ const EmojiFiltered: React.FC<Props> = ({
     onEmojiPress,
 }) => {
     const emojis = React.useMemo(() => getEmojis(skinTone, customEmojis), [skinTone, customEmojis]);
+    const intl = useIntl();
+    const theme = useTheme();
+    const style = getStyleSheet(theme);
 
     const fuse = React.useMemo(() => {
         const options = {findAllMatches: true, ignoreLocation: true, includeMatches: true, shouldSort: false, includeScore: true};
@@ -52,7 +64,12 @@ const EmojiFiltered: React.FC<Props> = ({
     const renderEmpty = React.useCallback(() => {
         return (
             <View style={style.noResultContainer}>
-                <NoResultsWithTerm term={searchTerm}/>
+                <Text style={style.noResultText}>
+                    {intl.formatMessage({
+                        id: 'custom_emoji_picker.search.no_results',
+                        defaultMessage: 'No results',
+                    })}
+                </Text>
             </View>
         );
     }, [searchTerm]);
@@ -62,6 +79,7 @@ const EmojiFiltered: React.FC<Props> = ({
             <EmojiItem
                 onEmojiPress={onEmojiPress}
                 name={item}
+                shouldShowName={false}
             />
         );
     }, []);
@@ -76,6 +94,7 @@ const EmojiFiltered: React.FC<Props> = ({
             ListEmptyComponent={renderEmpty}
             renderItem={renderItem}
             removeClippedSubviews={false}
+            horizontal={data.length !== 0}
         />
     );
 };

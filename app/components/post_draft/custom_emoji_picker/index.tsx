@@ -17,16 +17,20 @@ const CustomEmojiPicker: React.FC<Props> = ({
     focus,
     deleteCharFromCurrentCursorPosition,
 }) => {
+    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = React.useState(false);
+
     const handleEmojiPress = (emoji: string) => {
         onEmojiPress(emoji);
     };
     return (
-        <View style={{height: 300, padding: 8}}>
+        <View style={{height: isEmojiSearchFocused ? 100 : 300, padding: 8}}>
             <EmojiPicker
                 onEmojiPress={handleEmojiPress}
                 testID='custom_emoji_picker'
                 focus={focus}
                 deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
+                setIsEmojiSearchFocused={setIsEmojiSearchFocused}
+                isEmojiSearchFocused={isEmojiSearchFocused}
             />
         </View>);
 };

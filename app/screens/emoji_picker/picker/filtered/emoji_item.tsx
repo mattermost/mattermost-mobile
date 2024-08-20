@@ -11,6 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 type TouchableEmojiProps = {
     name: string;
     onEmojiPress: (emojiName: string) => void;
+    shouldShowName?: boolean;
 }
 
 const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -37,7 +38,11 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const EmojiTouchable = ({name, onEmojiPress}: TouchableEmojiProps) => {
+const EmojiTouchable = ({
+    name,
+    onEmojiPress,
+    shouldShowName = true,
+}: TouchableEmojiProps) => {
     const theme = useTheme();
     const style = getStyleSheetFromTheme(theme);
 
@@ -55,7 +60,7 @@ const EmojiTouchable = ({name, onEmojiPress}: TouchableEmojiProps) => {
                     size={20}
                 />
             </View>
-            <Text style={style.emojiText}>{`:${name}:`}</Text>
+            {shouldShowName && <Text style={style.emojiText}>{`:${name}:`}</Text>}
         </TouchableOpacity>
     );
 };
