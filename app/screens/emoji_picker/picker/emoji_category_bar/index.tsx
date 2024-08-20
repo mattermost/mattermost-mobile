@@ -6,6 +6,7 @@ import React, {useCallback} from 'react';
 import {View, ScrollView} from 'react-native';
 
 import CompassIcon from '@app/components/compass_icon';
+import {useIsTablet} from '@app/hooks/device';
 import {useTheme} from '@context/theme';
 import {selectEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -24,14 +25,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    categoryBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
     keyboardControls: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 40,
     },
     category: {
-        flex: 1,
         flexDirection: 'row',
         overflow: 'hidden',
     },
@@ -53,6 +58,7 @@ const EmojiCategoryBar = ({
     deleteCharFromCurrentCursorPosition,
 }: Props) => {
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
     const {currentIndex, icons} = useEmojiCategoryBar();
 
@@ -86,7 +92,7 @@ const EmojiCategoryBar = ({
             testID='emoji_picker.category_bar'
         >
             {focus && deleteCharFromCurrentCursorPosition &&
-            <>
+            <View style={styles.categoryBar}>
                 <View style={styles.keyboardControls}>
                     <CompassIcon
                         name={'emoticon-outline'}
@@ -100,15 +106,20 @@ const EmojiCategoryBar = ({
                         width={1}
                         style={{marginHorizontal: 8}}
                     />
-                </View><View style={styles.category}>
-                    <ScrollView
-                        horizontal={true}
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.scrollView}
-                    >
-                        {iconCatergories}
-                    </ScrollView>
-                </View><View style={styles.keyboardControls}>
+                </View>
+                <View style={{...styles.category, flex: isTablet ? 0 : 1}}>
+                    {!isTablet &&
+                        <ScrollView
+                            horizontal={true}
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={styles.scrollView}
+                        >
+                            {iconCatergories}
+                        </ScrollView>
+                    }
+                    {isTablet && iconCatergories}
+                </View>
+                <View style={styles.keyboardControls}>
                     <Divider
                         orientation='vertical'
                         color={changeOpacity(theme.centerChannelColor, 0.08)}
@@ -122,7 +133,7 @@ const EmojiCategoryBar = ({
                         onPress={() => deleteCharFromCurrentCursorPosition()}
                     />
                 </View>
-            </>}
+            </View>}
             {
                 !focus &&
                 <View style={styles.category}>
