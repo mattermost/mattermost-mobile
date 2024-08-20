@@ -25,6 +25,7 @@ type Props = {
     recentEmojis: string[];
     testID?: string;
     focus?: () => void;
+    deleteCharFromCurrentCursorPosition: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -42,6 +43,7 @@ const EmojiPicker: React.FC<Props> = ({
     onEmojiPress,
     testID = '',
     focus,
+    deleteCharFromCurrentCursorPosition,
 }) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -81,6 +83,7 @@ const EmojiPicker: React.FC<Props> = ({
                 onEmojiPress={onEmojiPress}
                 recentEmojis={recentEmojis}
                 focus={focus}
+                deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
             />
         );
     }

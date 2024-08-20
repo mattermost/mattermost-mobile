@@ -44,9 +44,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     onSelect?: (index: number | undefined) => void;
     focus?: () => void;
+    deleteCharFromCurrentCursorPosition: () => void;
 }
 
-const EmojiCategoryBar = ({onSelect, focus}: Props) => {
+const EmojiCategoryBar = ({
+    onSelect,
+    focus,
+    deleteCharFromCurrentCursorPosition,
+}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const {currentIndex, icons} = useEmojiCategoryBar();
@@ -114,7 +119,7 @@ const EmojiCategoryBar = ({onSelect, focus}: Props) => {
                         name={'emoticon-outline'}
                         size={20}
                         color={changeOpacity(theme.centerChannelColor, 0.56)}
-                        onPress={() => focus()}
+                        onPress={() => deleteCharFromCurrentCursorPosition()}
                     />
                 </View>
             </>}

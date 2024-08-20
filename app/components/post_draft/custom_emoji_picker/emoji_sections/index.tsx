@@ -79,6 +79,7 @@ type Props = {
     onEmojiPress: (emoji: string) => void;
     recentEmojis: string[];
     focus?: () => void;
+    deleteCharFromCurrentCursorPosition: () => void;
 }
 
 type ImageEmojiProps = {
@@ -141,6 +142,7 @@ const EmojiSections: React.FC<Props> = ({
     onEmojiPress,
     recentEmojis,
     focus,
+    deleteCharFromCurrentCursorPosition,
 }) => {
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
@@ -347,7 +349,10 @@ const EmojiSections: React.FC<Props> = ({
                 showsVerticalScrollIndicator={false}
                 testID='emoji_picker.emoji_sections.section_list'
             />
-            <EmojiCategoryBar focus={focus}/>
+            <EmojiCategoryBar
+                focus={focus}
+                deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
+            />
         </View>
     );
 };

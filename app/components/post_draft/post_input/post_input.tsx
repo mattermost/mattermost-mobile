@@ -154,7 +154,6 @@ export default function PostInput({
 
     const onFocus = useCallback(() => {
         setIsFocused(true);
-        setOpenEmojiPicker(false);
     }, [setIsFocused]);
 
     const checkMessageLength = useCallback((newValue: string) => {

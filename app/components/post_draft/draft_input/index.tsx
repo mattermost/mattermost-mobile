@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -141,15 +141,22 @@ export default function DraftInput({
         updatePostInputTop(e.nativeEvent.layout.height);
     }, []);
 
-    const handleEmojiPress = useCallback((emojiName: string) => {
+    // To keep track of cursor position and to retrieve the latest value of cursor position
+    const cursorPositionRef = useRef(cursorPosition);
+    useEffect(() => {
+        cursorPositionRef.current = cursorPosition;
+    }, [cursorPosition]);
+
+    const handleEmojiPress = (emojiName: string) => {
         updateValue((v) => {
             const name = emojiName.trim();
+            const currentCursorPosition = cursorPositionRef.current;
             let unicode;
             const imageUrl = '';
             if (EmojiIndicesByAlias.get(name)) {
                 const emoji = Emojis[EmojiIndicesByAlias.get(name)!];
                 if (emoji.category === 'custom') {
-                    return `${v} :${emojiName}:`;
+                    return `${v.slice(0, currentCursorPosition)} :${emojiName}: ${v.slice(currentCursorPosition)}`;
                 }
                 unicode = emoji.image;
                 if (unicode && !imageUrl) {
@@ -158,21 +165,35 @@ export default function DraftInput({
                     const code = codeArray.reduce((acc: string, c: string) => {
                         return acc + String.fromCodePoint(parseInt(c, 16));
                     }, '');
-                    return `${v}${code}`;
+                    return v.slice(0, currentCursorPosition) + code + v.slice(currentCursorPosition);
                 }
             }
-            return `${v} :${emojiName}:`;
+            return `${v.slice(0, currentCursorPosition)} :${emojiName}: ${v.slice(currentCursorPosition)}`;
         });
-    }, []);
+    };
 
     const inputRef = useRef<PasteInputRef>();
+
     const focus = useCallback(() => {
+        setOpenEmojiPicker(false);
+        inputRef.current?.setNativeProps({
+            showSoftInputOnFocus: true,
+        });
         inputRef.current?.focus();
     }, []);
 
     const handleOpenEmojiPicker = () => {
-        Keyboard.dismiss();
         setOpenEmojiPicker(true);
+        inputRef.current?.setNativeProps({
+            showSoftInputOnFocus: false,
+        });
+        Keyboard.dismiss();
+        inputRef.current?.focus();
+    };
+
+    const deleteCharFromCurrentCursorPosition = () => {
+        // eslint-disable-next-line no-console
+        console.log('deleteCharFromCurrentCursorPosition');
     };
 
     // Render
@@ -279,10 +300,11 @@ export default function DraftInput({
             </SafeAreaView>
             <View>
                 {openEmojiPicker &&
-                <CustomEmojiPicker
-                    onEmojiPress={handleEmojiPress}
-                    focus={focus}
-                />
+                    <CustomEmojiPicker
+                        onEmojiPress={handleEmojiPress}
+                        focus={focus}
+                        deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
+                    />
                 }
             </View>
         </>

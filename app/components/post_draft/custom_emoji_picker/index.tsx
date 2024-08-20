@@ -9,21 +9,24 @@ import EmojiPicker from './emoji_picker';
 type Props = {
     onEmojiPress: (emoji: string) => void;
     focus?: () => void;
+    deleteCharFromCurrentCursorPosition: () => void;
 }
 
 const CustomEmojiPicker: React.FC<Props> = ({
     onEmojiPress,
     focus,
+    deleteCharFromCurrentCursorPosition,
 }) => {
-    const handleEmojiPress = React.useCallback((emoji: string) => {
+    const handleEmojiPress = (emoji: string) => {
         onEmojiPress(emoji);
-    }, []);
+    };
     return (
         <View style={{height: 300, padding: 8}}>
             <EmojiPicker
                 onEmojiPress={handleEmojiPress}
                 testID='custom_emoji_picker'
                 focus={focus}
+                deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
             />
         </View>);
 };
