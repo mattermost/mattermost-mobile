@@ -44,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     onSelect?: (index: number | undefined) => void;
     focus?: () => void;
-    deleteCharFromCurrentCursorPosition: () => void;
+    deleteCharFromCurrentCursorPosition?: () => void;
 }
 
 const EmojiCategoryBar = ({
@@ -85,7 +85,7 @@ const EmojiCategoryBar = ({
             style={styles.container}
             testID='emoji_picker.category_bar'
         >
-            {focus &&
+            {focus && deleteCharFromCurrentCursorPosition &&
             <>
                 <View style={styles.keyboardControls}>
                     <CompassIcon
