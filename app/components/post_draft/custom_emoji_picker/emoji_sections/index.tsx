@@ -78,6 +78,7 @@ type Props = {
     file?: ExtractedFileInfo;
     onEmojiPress: (emoji: string) => void;
     recentEmojis: string[];
+    focus?: () => void;
 }
 
 type ImageEmojiProps = {
@@ -132,7 +133,15 @@ export const ImageEmoji = ({file, imageUrl, onEmojiPress, path}: ImageEmojiProps
     );
 };
 
-const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress, recentEmojis}: Props) => {
+const EmojiSections: React.FC<Props> = ({
+    customEmojis,
+    customEmojisEnabled,
+    file,
+    imageUrl,
+    onEmojiPress,
+    recentEmojis,
+    focus,
+}) => {
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const {currentIndex, selectedIndex} = useEmojiCategoryBar();
@@ -338,7 +347,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
                 showsVerticalScrollIndicator={false}
                 testID='emoji_picker.emoji_sections.section_list'
             />
-            <EmojiCategoryBar/>
+            <EmojiCategoryBar focus={focus}/>
         </View>
     );
 };

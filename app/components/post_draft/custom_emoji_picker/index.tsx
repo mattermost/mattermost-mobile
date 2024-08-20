@@ -8,10 +8,12 @@ import EmojiPicker from './emoji_picker';
 
 type Props = {
     onEmojiPress: (emoji: string) => void;
+    focus?: () => void;
 }
 
 const CustomEmojiPicker: React.FC<Props> = ({
     onEmojiPress,
+    focus,
 }) => {
     const handleEmojiPress = React.useCallback((emoji: string) => {
         onEmojiPress(emoji);
@@ -21,6 +23,7 @@ const CustomEmojiPicker: React.FC<Props> = ({
             <EmojiPicker
                 onEmojiPress={handleEmojiPress}
                 testID='custom_emoji_picker'
+                focus={focus}
             />
         </View>);
 };

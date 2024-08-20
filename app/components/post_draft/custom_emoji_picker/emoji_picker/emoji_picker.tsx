@@ -24,6 +24,7 @@ type Props = {
     file?: ExtractedFileInfo;
     recentEmojis: string[];
     testID?: string;
+    focus?: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -40,6 +41,7 @@ const EmojiPicker: React.FC<Props> = ({
     customEmojis,
     onEmojiPress,
     testID = '',
+    focus,
 }) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -78,6 +80,7 @@ const EmojiPicker: React.FC<Props> = ({
                 file={file}
                 onEmojiPress={onEmojiPress}
                 recentEmojis={recentEmojis}
+                focus={focus}
             />
         );
     }

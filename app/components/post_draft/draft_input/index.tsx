@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {EmojiIndicesByAlias, Emojis} from '@app/utils/emoji';
 import {General} from '@constants';
 import {MENTIONS_REGEX} from '@constants/autocomplete';
 import {PostPriorityType} from '@constants/post';
@@ -140,9 +141,27 @@ export default function DraftInput({
         updatePostInputTop(e.nativeEvent.layout.height);
     }, []);
 
-    const handleEmojiPress = useCallback((emoji: string) => {
+    const handleEmojiPress = useCallback((emojiName: string) => {
         updateValue((v) => {
-            return `${v} :${emoji}:`;
+            const name = emojiName.trim();
+            let unicode;
+            const imageUrl = '';
+            if (EmojiIndicesByAlias.get(name)) {
+                const emoji = Emojis[EmojiIndicesByAlias.get(name)!];
+                if (emoji.category === 'custom') {
+                    return `${v} :${emojiName}:`;
+                }
+                unicode = emoji.image;
+                if (unicode && !imageUrl) {
+                    const codeArray = unicode.split('-');
+                    // eslint-disable-next-line max-nested-callbacks
+                    const code = codeArray.reduce((acc: string, c: string) => {
+                        return acc + String.fromCodePoint(parseInt(c, 16));
+                    }, '');
+                    return `${v}${code}`;
+                }
+            }
+            return `${v} :${emojiName}:`;
         });
     }, []);
 
@@ -259,7 +278,12 @@ export default function DraftInput({
                 </ScrollView>
             </SafeAreaView>
             <View>
-                {openEmojiPicker && <CustomEmojiPicker onEmojiPress={handleEmojiPress}/>}
+                {openEmojiPicker &&
+                <CustomEmojiPicker
+                    onEmojiPress={handleEmojiPress}
+                    focus={focus}
+                />
+                }
             </View>
         </>
     );
