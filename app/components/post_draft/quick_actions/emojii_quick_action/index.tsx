@@ -13,29 +13,35 @@ type Props = {
     testID?: string;
     disabled?: boolean;
     handleOpenEmojiPicker: () => void;
+    isEmojiPickerOpen: boolean;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        disabled: {
-            tintColor: changeOpacity(theme.centerChannelColor, 0.16),
-        },
-        icon: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 10,
-        },
-    };
-});
+const getStyleSheet = (theme: Theme, isEmojiPickerOpen: boolean) => {
+    return makeStyleSheetFromTheme(() => {
+        return {
+            disabled: {
+                tintColor: changeOpacity(theme.centerChannelColor, 0.16),
+            },
+            icon: {
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 10,
+                backgroundColor: isEmojiPickerOpen ? changeOpacity(theme.buttonBg, 0.08) : 'transparent',
+                borderRadius: 4,
+            },
+        };
+    })(theme);
+};
 
 const EmojiQuickAction: React.FC<Props> = ({
     testID,
     disabled,
     handleOpenEmojiPicker,
+    isEmojiPickerOpen,
 }) => {
     const theme = useTheme();
-    const style = getStyleSheet(theme);
-    const iconColor = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
+    const style = getStyleSheet(theme, isEmojiPickerOpen);
+    const iconColor = isEmojiPickerOpen ? changeOpacity(theme.buttonBg, 1) : changeOpacity(theme.centerChannelColor, 0.64);
     const actionTestID = disabled ? `${testID}.disabled` : testID;
 
     return (

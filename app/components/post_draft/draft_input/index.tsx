@@ -136,7 +136,7 @@ export default function DraftInput({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
+    const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
@@ -176,7 +176,7 @@ export default function DraftInput({
     const inputRef = useRef<PasteInputRef>();
 
     const focus = useCallback(() => {
-        setOpenEmojiPicker(false);
+        setIsEmojiPickerOpen(false);
         inputRef.current?.setNativeProps({
             showSoftInputOnFocus: true,
         });
@@ -184,7 +184,7 @@ export default function DraftInput({
     }, []);
 
     const handleOpenEmojiPicker = () => {
-        setOpenEmojiPicker(true);
+        setIsEmojiPickerOpen(true);
         inputRef.current?.setNativeProps({
             showSoftInputOnFocus: false,
         });
@@ -194,25 +194,15 @@ export default function DraftInput({
 
     const deleteCharFromCurrentCursorPosition = () => {
         const currentCursorPosition = cursorPositionRef.current;
-
         if (currentCursorPosition === 0) {
-            return; // Nothing to delete if the cursor is at the start
+            return;
         }
-
         const splitter = new GraphemeSplitter();
-
-        // Split the value into grapheme clusters
         const valueBeforeCursor = value.slice(0, currentCursorPosition);
         const clusters = splitter.splitGraphemes(valueBeforeCursor);
-
-        // Remove the last grapheme cluster (could be a single character or complex emoji)
         clusters.pop();
-
-        // Rejoin the clusters and update the value
         const updatedValue = clusters.join('') + value.slice(currentCursorPosition);
         updateValue(updatedValue);
-
-        // Update the cursor position
         updateCursorPosition(clusters.join('').length);
     };
 
@@ -288,7 +278,7 @@ export default function DraftInput({
                         sendMessage={handleSendMessage}
                         inputRef={inputRef}
                         setIsFocused={setIsFocused}
-                        setOpenEmojiPicker={setOpenEmojiPicker}
+                        setIsEmojiPickerOpen={setIsEmojiPickerOpen}
                     />
                     <Uploads
                         currentUserId={currentUserId}
@@ -309,6 +299,7 @@ export default function DraftInput({
                             canShowPostPriority={canShowPostPriority}
                             focus={focus}
                             handleOpenEmojiPicker={handleOpenEmojiPicker}
+                            isEmojiPickerOpen={isEmojiPickerOpen}
                         />
                         <SendAction
                             testID={sendActionTestID}
@@ -319,7 +310,7 @@ export default function DraftInput({
                 </ScrollView>
             </SafeAreaView>
             <View>
-                {openEmojiPicker &&
+                {isEmojiPickerOpen &&
                     <CustomEmojiPicker
                         onEmojiPress={handleEmojiPress}
                         focus={focus}

@@ -25,6 +25,7 @@ type Props = {
     updatePostPriority: (postPriority: PostPriority) => void;
     focus: () => void;
     handleOpenEmojiPicker: () => void;
+    isEmojiPickerOpen: boolean;
 }
 
 const style = StyleSheet.create({
@@ -51,6 +52,7 @@ export default function QuickActions({
     updatePostPriority,
     focus,
     handleOpenEmojiPicker,
+    isEmojiPickerOpen,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
@@ -86,7 +88,10 @@ export default function QuickActions({
                 updateValue={updateValue}
                 focus={focus}
             />
-            <EmojiQuickAction handleOpenEmojiPicker={handleOpenEmojiPicker}/>
+            <EmojiQuickAction
+                handleOpenEmojiPicker={handleOpenEmojiPicker}
+                isEmojiPickerOpen={isEmojiPickerOpen}
+            />
             {isPostPriorityEnabled && canShowPostPriority && (
                 <PostPriorityAction
                     testID={postPriorityActionTestID}
