@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import GraphemeSplitter from 'grapheme-splitter';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard} from 'react-native';
@@ -192,8 +193,27 @@ export default function DraftInput({
     };
 
     const deleteCharFromCurrentCursorPosition = () => {
-        // eslint-disable-next-line no-console
-        console.log('deleteCharFromCurrentCursorPosition');
+        const currentCursorPosition = cursorPositionRef.current;
+
+        if (currentCursorPosition === 0) {
+            return; // Nothing to delete if the cursor is at the start
+        }
+
+        const splitter = new GraphemeSplitter();
+
+        // Split the value into grapheme clusters
+        const valueBeforeCursor = value.slice(0, currentCursorPosition);
+        const clusters = splitter.splitGraphemes(valueBeforeCursor);
+
+        // Remove the last grapheme cluster (could be a single character or complex emoji)
+        clusters.pop();
+
+        // Rejoin the clusters and update the value
+        const updatedValue = clusters.join('') + value.slice(currentCursorPosition);
+        updateValue(updatedValue);
+
+        // Update the cursor position
+        updateCursorPosition(clusters.join('').length);
     };
 
     // Render

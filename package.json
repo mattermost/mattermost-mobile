@@ -58,6 +58,7 @@
     "expo-video-thumbnails": "8.0.0",
     "expo-web-browser": "13.0.3",
     "fuse.js": "7.0.0",
+    "grapheme-splitter": "1.0.4",
     "html-entities": "2.5.2",
     "mime-db": "1.53.0",
     "moment-timezone": "0.5.45",
