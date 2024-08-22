@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect} from 'react';
+import {useCallback, useEffect} from 'react';
 import {NativeEventEmitter, NativeModules, Platform} from 'react-native';
 
 const LINKING_ERROR =
@@ -37,7 +37,7 @@ type Events = {
 }
 
 export function useHardwareKeyboardEvents(events: Events) {
-    const handleEvent = (e: Event) => {
+    const handleEvent = useCallback((e: Event) => {
         switch (e.action) {
             case 'enter':
                 events.onEnterPressed?.();
@@ -49,11 +49,11 @@ export function useHardwareKeyboardEvents(events: Events) {
                 events.onFindChannels?.();
                 break;
         }
-    };
+    }, [events]);
 
     useEffect(() => {
         const listener = emitter.addListener('mmHardwareKeyboardEvent', handleEvent);
 
         return () => listener.remove();
-    }, []);
+    }, [handleEvent]);
 }
