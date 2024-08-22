@@ -95,7 +95,7 @@ const EmojiCategoryBar = ({
             <View style={styles.categoryBar}>
                 <View style={styles.keyboardControls}>
                     <CompassIcon
-                        name={'emoticon-outline'}
+                        name={'keyboard-outline'}
                         size={20}
                         color={changeOpacity(theme.centerChannelColor, 0.56)}
                         onPress={() => focus()}
@@ -127,7 +127,7 @@ const EmojiCategoryBar = ({
                         style={{marginHorizontal: 8}}
                     />
                     <CompassIcon
-                        name={'emoticon-outline'}
+                        name={'backspace-outline'}
                         size={20}
                         color={changeOpacity(theme.centerChannelColor, 0.56)}
                         onPress={() => deleteCharFromCurrentCursorPosition()}
