@@ -4,7 +4,7 @@
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {createBottomTabNavigator, type BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {enableFreeze, enableScreens} from 'react-native-screens';
@@ -62,16 +62,17 @@ export default function HomeScreen(props: HomeProps) {
     const intl = useIntl();
     const appState = useAppState();
 
-    const handleFindChannels = () => {
+    const handleFindChannels = useCallback(() => {
         if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS)) {
             findChannels(
                 intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
                 theme,
             );
         }
-    };
+    }, [intl, theme]);
 
-    useHardwareKeyboardEvents({onFindChannels: handleFindChannels});
+    const events = useMemo(() => ({onFindChannels: handleFindChannels}), [handleFindChannels]);
+    useHardwareKeyboardEvents(events);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel' | 'Post' | 'Connection') => {
