@@ -14,7 +14,7 @@ import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
-import {Screens, Launch} from '@constants';
+import {Screens, Launch, DeepLink} from '@constants';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
@@ -136,7 +136,7 @@ const Server = ({
             // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
             handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
         }
-    }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName]);
+    }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
 
     useEffect(() => {
         if (url && displayName) {
@@ -208,6 +208,12 @@ const Server = ({
         if (redirectSSO) {
             // @ts-expect-error ssoType not in definition
             passProps.ssoType = enabledSSOs[0];
+        }
+
+        // if deeplink is of type server removing the deeplink info on new login
+        if (extra?.type === DeepLink.Server) {
+            passProps.extra = undefined;
+            passProps.launchType = Launch.Normal;
         }
 
         goToScreen(screen, '', passProps, loginAnimationOptions());

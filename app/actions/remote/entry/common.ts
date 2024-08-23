@@ -440,7 +440,7 @@ export const setExtraSessionProps = async (serverUrl: string) => {
             const res = await checkNotifications();
             const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
             const client = NetworkManager.getClient(serverUrl);
-            client.setExtraSessionProps(granted, nativeApplicationVersion);
+            client.setExtraSessionProps(!granted, nativeApplicationVersion);
         }
         return {};
     } catch (error) {

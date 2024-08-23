@@ -333,10 +333,10 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    setExtraSessionProps = async (notificationsEnabled: boolean, version: string | null) => {
+    setExtraSessionProps = async (deviceNotificationDisabled: boolean, version: string | null) => {
         return this.doFetch(
             `${this.getUsersRoute()}/sessions/device/extra`,
-            {method: 'put', body: {notificationsEnabled: notificationsEnabled ? 'true' : 'false', version: version || ''}},
+            {method: 'put', body: {deviceNotificationDisabled: deviceNotificationDisabled ? 'true' : 'false', mobileVersion: version || ''}},
         );
     };
 

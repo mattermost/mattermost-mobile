@@ -135,7 +135,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             bottomSheet({
                 closeButtonId,
                 renderContent,
-                footerComponent: AddServerButton,
+                footerComponent: isTablet ? undefined : AddServerButton,
                 snapPoints,
                 theme,
                 title: intl.formatMessage({id: 'your.servers', defaultMessage: 'Your servers'}),

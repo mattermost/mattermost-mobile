@@ -108,6 +108,10 @@ export function isHostControlsAllowed(config: CallsConfigState) {
     return Boolean(config.HostControlsAllowed);
 }
 
+export function areGroupCallsAllowed(config: CallsConfigState) {
+    return Boolean(config.GroupCallsAllowed);
+}
+
 export function isCallsCustomMessage(post: PostModel | Post): boolean {
     return Boolean(post.type && post.type === Post.POST_TYPES.CUSTOM_CALLS);
 }

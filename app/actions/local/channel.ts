@@ -139,15 +139,17 @@ export async function setChannelDeleteAt(serverUrl: string, channelId: string, d
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const channel = await getChannelById(database, channelId);
         if (!channel) {
-            return;
+            return {error: `channel with id ${channelId} not found`};
         }
 
         const model = channel.prepareUpdate((c) => {
             c.deleteAt = deleteAt;
         });
         await operator.batchRecords([model], 'setChannelDeleteAt');
+        return {models: [model]};
     } catch (error) {
         logError('FAILED TO BATCH CHANGES FOR CHANNEL DELETE AT', error);
+        return {error};
     }
 }
 

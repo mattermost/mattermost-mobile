@@ -15,6 +15,7 @@ module.exports = {
     collectCoverageFrom: ['app/**/*.{js,jsx,ts,tsx}'],
     coverageReporters: ['lcov', 'text-summary'],
     testPathIgnorePatterns: ['/node_modules/'],
+    coveragePathIgnorePatterns: ['/node_modules/', '/components/', '/screens/'],
     transformIgnorePatterns: [
         'node_modules/(?!' +
         '(@react-native|react-native)|' +

@@ -5,13 +5,13 @@ import {AppBindingLocations, AppCallResponseTypes, AppFieldTypes} from '@constan
 
 import {generateId} from './general';
 
-export function cleanBinding(binding: AppBinding, topLocation: string): AppBinding {
+export function cleanBinding(binding: AppBinding, topLocation: string): AppBinding|null {
     return cleanBindingRec(binding, topLocation, 0);
 }
 
-function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number): AppBinding {
+function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number): AppBinding|null {
     if (!binding) {
-        return binding;
+        return null;
     }
 
     const toRemove: number[] = [];

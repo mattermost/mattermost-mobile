@@ -1,0 +1,57 @@
+diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
+index 071907c..e5c39f5 100644
+--- a/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
++++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
+@@ -70,8 +70,16 @@ data class GlideUrlWrapper(val glideUrl: GlideUrl) {
+ 
+ @GlideModule
+ class ExpoImageOkHttpClientGlideModule : LibraryGlideModule() {
++  companion object {
++    var okHttpClient: OkHttpClient? = null
++  }
++
+   override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
+-    val client = OkHttpClient()
++    val client = if (okHttpClient != null) {
++      okHttpClient!!
++    } else {
++      OkHttpClient()
++    }
+     // We don't use the `GlideUrl` directly but we want to replace the default okhttp loader anyway
+     // to make sure that the app will use only one client.
+     registry.replace(GlideUrl::class.java, InputStream::class.java, OkHttpUrlLoader.Factory(client))
+diff --git a/node_modules/expo-image/ios/ExpoImage.podspec b/node_modules/expo-image/ios/ExpoImage.podspec
+index de8bc65..564397d 100644
+--- a/node_modules/expo-image/ios/ExpoImage.podspec
++++ b/node_modules/expo-image/ios/ExpoImage.podspec
+@@ -18,9 +18,7 @@ Pod::Spec.new do |s|
+   s.dependency 'ExpoModulesCore'
+   s.dependency 'SDWebImage', '~> 5.19.1'
+   s.dependency 'SDWebImageWebPCoder', '~> 0.14.6'
+-  s.dependency 'SDWebImageAVIFCoder', '~> 0.11.0'
+   s.dependency 'SDWebImageSVGCoder', '~> 1.7.0'
+-  s.dependency 'libavif/libdav1d'
+ 
+   # Swift/Objective-C compatibility
+   s.pod_target_xcconfig = {
+diff --git a/node_modules/expo-image/ios/ImageModule.swift b/node_modules/expo-image/ios/ImageModule.swift
+index e4b7fca..5057b0a 100644
+--- a/node_modules/expo-image/ios/ImageModule.swift
++++ b/node_modules/expo-image/ios/ImageModule.swift
+@@ -3,7 +3,6 @@
+ import ExpoModulesCore
+ import SDWebImage
+ import SDWebImageWebPCoder
+-import SDWebImageAVIFCoder
+ import SDWebImageSVGCoder
+ 
+ public final class ImageModule: Module {
+@@ -193,7 +192,7 @@ public final class ImageModule: Module {
+       // This coder is much slower, but it's the only one that works in iOS 13
+       SDImageCodersManager.shared.addCoder(SDImageWebPCoder.shared)
+     }
+-    SDImageCodersManager.shared.addCoder(SDImageAVIFCoder.shared)
++
+     SDImageCodersManager.shared.addCoder(SDImageSVGCoder.shared)
+     SDImageCodersManager.shared.addCoder(SDImageHEICCoder.shared)
+   }

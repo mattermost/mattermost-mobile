@@ -42,5 +42,6 @@ if [ -z "$SOUNDS" ]; then
     exit 1
 else
     echo "Copying sound assets for bundling"
+    mkdir -p "android/app/src/main/res/raw/"
     cp $SOUNDS/* "android/app/src/main/res/raw/"
 fi

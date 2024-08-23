@@ -183,6 +183,7 @@ const EditServerForm = ({
             <Button
                 containerStyle={styles.connectButton}
                 buttonStyle={styleButtonBackground}
+                disabledStyle={styleButtonBackground}
                 disabled={buttonDisabled}
                 onPress={onUpdate}
                 testID={saveButtonTestId}

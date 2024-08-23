@@ -38,11 +38,12 @@ export async function storeConfigAndLicense(serverUrl: string, config: ClientCon
                 await operator.handleSystem({systems, prepareRecordsOnly: false});
             }
 
-            await storeConfig(serverUrl, config);
+            return await storeConfig(serverUrl, config);
         }
     } catch (error) {
         logError('An error occurred while saving config & license', error);
     }
+    return [];
 }
 
 export async function storeConfig(serverUrl: string, config: ClientConfig | undefined, prepareRecordsOnly = false) {
@@ -274,8 +275,10 @@ export async function setLastServerVersionCheck(serverUrl: string, reset = false
             }],
             prepareRecordsOnly: false,
         });
+        return {error: undefined};
     } catch (error) {
         logError('setLastServerVersionCheck', error);
+        return {error};
     }
 }
 
@@ -289,8 +292,10 @@ export async function setGlobalThreadsTab(serverUrl: string, globalThreadsTab: G
             }],
             prepareRecordsOnly: false,
         });
+        return {error: undefined};
     } catch (error) {
         logError('setGlobalThreadsTab', error);
+        return {error};
     }
 }
 
@@ -298,7 +303,9 @@ export async function dismissAnnouncement(serverUrl: string, announcementText: s
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LAST_DISMISSED_BANNER, value: announcementText}], prepareRecordsOnly: false});
+        return {error: undefined};
     } catch (error) {
         logError('An error occurred while dismissing an announcement', error);
+        return {error};
     }
 }

@@ -9,7 +9,7 @@ import DatabaseManager from '@database/manager';
 import {getConfigValue} from '@queries/servers/system';
 import {hasReliableWebsocket} from '@utils/config';
 import {toMilliseconds} from '@utils/datetime';
-import {logError, logInfo, logWarning} from '@utils/log';
+import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
 const MAX_WEBSOCKET_FAILS = 7;
 const WEBSOCKET_TIMEOUT = toMilliseconds({seconds: 30});
@@ -18,6 +18,7 @@ const MAX_WEBSOCKET_RETRY_TIME = toMilliseconds({minutes: 5});
 const DEFAULT_OPTIONS = {
     forceConnection: true,
 };
+const TLS_HANDSHARE_ERROR = 1015;
 
 export default class WebSocketClient {
     private conn?: WebSocketClientInterface;
@@ -179,7 +180,7 @@ export default class WebSocketClient {
             this.connectFailCount = 0;
         });
 
-        this.conn!.onClose(() => {
+        this.conn!.onClose((ev) => {
             clearTimeout(this.connectionTimeout);
             this.conn = undefined;
             this.responseSequence = 1;
@@ -189,6 +190,12 @@ export default class WebSocketClient {
             // we don't want to skip the sync. If we keep the same connection and
             // reliable websockets are enabled this won't trigger a new sync.
             this.shouldSkipSync = false;
+
+            if (ev.message && typeof ev.message === 'object' && 'code' in ev.message && ev.message.code === TLS_HANDSHARE_ERROR) {
+                logDebug('websocket did not connect', this.url, ev.message.reason);
+                this.closeCallback?.(this.connectFailCount);
+                return;
+            }
 
             if (this.connectFailCount === 0) {
                 logInfo('websocket closed', this.url);
@@ -365,5 +372,9 @@ export default class WebSocketClient {
 
     public isConnected(): boolean {
         return this.conn?.readyState === WebSocketReadyState.OPEN;
+    }
+
+    public getConnectionId(): string {
+        return this.connectionId;
     }
 }
