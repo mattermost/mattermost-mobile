@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {nativeApplicationVersion} from 'expo-application';
 import {RESULTS, checkNotifications} from 'react-native-permissions';
 
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
@@ -430,7 +431,7 @@ export const registerDeviceToken = async (serverUrl: string) => {
     }
 };
 
-export const setIgnoreNotificationACK = async (serverUrl: string) => {
+export const setExtraSessionProps = async (serverUrl: string) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const serverVersion = await getConfigValue(database, 'Version');
@@ -439,7 +440,7 @@ export const setIgnoreNotificationACK = async (serverUrl: string) => {
             const res = await checkNotifications();
             const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
             const client = NetworkManager.getClient(serverUrl);
-            client.setIgnoreNotificationACK(!granted);
+            client.setExtraSessionProps(granted, nativeApplicationVersion);
         }
         return {};
     } catch (error) {

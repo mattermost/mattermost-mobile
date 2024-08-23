@@ -9,7 +9,7 @@ import {
     entry,
     handleEntryAfterLoadNavigation,
     registerDeviceToken,
-    setIgnoreNotificationACK,
+    setExtraSessionProps,
 } from '@actions/remote/entry/common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
@@ -119,7 +119,7 @@ import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent}
 
 export async function handleFirstConnect(serverUrl: string) {
     registerDeviceToken(serverUrl);
-    setIgnoreNotificationACK(serverUrl);
+    setExtraSessionProps(serverUrl);
     autoUpdateTimezone(serverUrl);
     return doReconnect(serverUrl);
 }
