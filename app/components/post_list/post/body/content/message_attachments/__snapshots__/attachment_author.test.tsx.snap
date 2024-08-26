@@ -10,6 +10,7 @@ exports[`AttachmentAuthor it matches snapshot when both name and icon are provid
   }
 >
   <ViewManagerAdapter_ExpoImage
+    containerViewRef={"[React.ref]"}
     contentFit="cover"
     contentPosition={
       {
@@ -71,6 +72,7 @@ exports[`AttachmentAuthor it matches snapshot when only icon is provided 1`] = `
   }
 >
   <ViewManagerAdapter_ExpoImage
+    containerViewRef={"[React.ref]"}
     contentFit="cover"
     contentPosition={
       {

@@ -324,15 +324,16 @@ const SearchScreen = ({teamId, teams}: Props) => {
         }
     }, [isFocused]);
 
-    const handleEnterPressed = () => {
+    const handleEnterPressed = useCallback(() => {
         const topScreen = NavigationStore.getVisibleScreen();
         if (topScreen === Screens.HOME && isFocused) {
             searchRef.current?.blur();
             onSubmit();
         }
-    };
+    }, [isFocused, onSubmit]);
 
-    useHardwareKeyboardEvents({onEnterPressed: handleEnterPressed});
+    const events = useMemo(() => ({onEnterPressed: handleEnterPressed}), [handleEnterPressed]);
+    useHardwareKeyboardEvents(events);
 
     return (
         <FreezeScreen freeze={!isFocused}>

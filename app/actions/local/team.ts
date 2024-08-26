@@ -7,6 +7,8 @@ import {logError} from '@utils/log';
 
 import type Model from '@nozbe/watermelondb/Model';
 
+export const MAX_TEAM_SEARCHES = 15;
+
 export async function removeUserFromTeam(serverUrl: string, teamId: string) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -34,7 +36,6 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
 }
 
 export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: string, terms: string) {
-    const MAX_TEAM_SEARCHES = 15;
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const newSearch: TeamSearchHistory = {
