@@ -335,6 +335,7 @@ export default function PostInput({
             underlineColorAndroid='transparent'
             textContentType='none'
             value={value}
+            autoCapitalize='sentences'
         />
     );
 }
