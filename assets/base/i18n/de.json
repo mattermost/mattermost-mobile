@@ -486,6 +486,7 @@
   "mobile.calls_ended_at": "Beendet am",
   "mobile.calls_error_message": "Fehler: {error}",
   "mobile.calls_error_title": "Fehler",
+  "mobile.calls_group_calls_not_available": "Anrufe sind nur in Direktnachrichten möglich.",
   "mobile.calls_headset": "Kopfhörer",
   "mobile.calls_hide_cc": "Live-Untertitel ausblenden",
   "mobile.calls_host": "Gastgeber",
