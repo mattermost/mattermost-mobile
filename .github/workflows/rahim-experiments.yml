@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - test-random-github-action-experiments
-  pull_request:
-    branches:
-      - main
 
 jobs:
 
