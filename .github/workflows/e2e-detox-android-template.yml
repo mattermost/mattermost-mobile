@@ -229,7 +229,6 @@ jobs:
 
     - name: Run Android Detox E2E Tests on macOS
       run: |
-          adb shell am start -W -n com.mattermost.rnbeta/com.mattermost.rnbeta.MainActivity
           cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
 
     - name: Upload Android Test Report
