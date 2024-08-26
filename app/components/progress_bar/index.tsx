@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle, StyleSheet, PanResponder} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -40,44 +40,50 @@ const styles = StyleSheet.create({
 
 const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarProps) => {
     const theme = useTheme();
-    const [width, setWidth] = useState(0);
+    const widthValue = useSharedValue(0);
+    const progressValue = useSharedValue(progress);
 
     const panResponder = useRef(PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onPanResponderGrant: (evt) => {
-            const seekPosition = evt.nativeEvent.locationX / width;
+            if (widthValue.value <= 0) {
+                return;
+            }
+            const seekPosition = evt.nativeEvent.locationX / widthValue.value;
             onSeek?.(seekPosition);
         },
         onPanResponderMove: (evt) => {
-            const seekPosition = evt.nativeEvent.locationX / width;
+            if (widthValue.value <= 0) {
+                return;
+            }
+            const seekPosition = evt.nativeEvent.locationX / widthValue.value;
             onSeek?.(seekPosition);
         },
     })).current;
 
-    const progressValue = useSharedValue(progress);
-
     const progressAnimatedStyle = useAnimatedStyle(() => {
         return {
             transform: [
-                {translateX: withTiming(((progressValue.value * 0.5) - 0.5) * width, {duration: 200})},
+                {translateX: withTiming(((progressValue.value * 0.5) - 0.5) * widthValue.value, {duration: 200})},
                 {scaleX: withTiming(progressValue.value ? progressValue.value : 0.0001, {duration: 200})},
             ],
+            width: widthValue.value,
         };
-    }, [width]);
+    });
 
     const cursorAnimatedStyle = useAnimatedStyle(() => {
         const cursorWidth = 15;
         return {
-            left: withTiming((progressValue.value * width) - (cursorWidth / 2), {duration: 200}),
+            left: withTiming((progressValue.value * widthValue.value) - (cursorWidth / 2), {duration: 200}),
         };
-    }, [width]);
+    });
 
     useEffect(() => {
         progressValue.value = progress;
     }, [progress]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        setWidth(e.nativeEvent.layout.width);
+        widthValue.value = e.nativeEvent.layout.width;
     }, []);
 
     return (
@@ -100,7 +106,6 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
                         styles.progressBar,
                         {
                             backgroundColor: color,
-                            width,
                         },
                         progressAnimatedStyle,
                     ]}
