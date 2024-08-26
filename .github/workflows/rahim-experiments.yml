@@ -24,12 +24,13 @@ jobs:
           mitmdump & sleep 5 ; kill $!
 
           # kill it just in case
+          sleep 5
           pkill -9 "mitmdump"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: artifacts-${{ github.run_id }}
-          path: ./.mitmproxy/
+          path: /.mitmproxy/
 
 
