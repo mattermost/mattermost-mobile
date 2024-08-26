@@ -14,24 +14,37 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Install mitmproxy
-        run: |
-          brew install mitmproxy
-          mitmproxy --version
+      # - name: Install mitmproxy
+      #   run: |
+      #     brew install mitmproxy
+      #     mitmproxy --version
 
-      - name: Start mitmproxy via mitmdump and kill it
-        run: |
-          set +e
-          mitmdump & sleep 5;
+      # - name: Start mitmproxy via mitmdump and kill it
+      #   run: |
+      #     set +e
+      #     mitmdump & sleep 5;
 
-          ./scripts/kill-mitmdump.sh
-          sleep 3;
+      #     ./scripts/kill-mitmdump.sh
+      #     sleep 3;
+
+      # - name: throttle bandwidth down
+      #   run: |
+      #     echo "dummynet in from community.mattermost.com to ! 127.0.0.1 pipe 1
+      #     dummynet out from ! 127.0.0.1 to community.mattermost.com pipe 2" | sudo pfctl -f -
+      #     # pipe 1 is download, below is 3.3Mb/s with 1000ms latency
+      #     dnctl pipe 1 config bw 3300Kbit/s delay 1000ms
+      #     # pipe 2 is upload, below is 3.3Mb/s with 1000ms latency
+      #     dnctl pipe 2 config bw 3300Kbit/s delay 1000ms
+      #     pfctl -E
+
           
+      # - name: Upload Artifacts
+      #   uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      #   with:
+      #     name: artifacts-${{ github.run_id }}
+      #     path: ~/.mitmproxy/
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-        with:
-          name: artifacts-${{ github.run_id }}
-          path: ~/.mitmproxy/
+      name: networksetup list all
+      run: networksetup -listallnetworkservices
 
 
