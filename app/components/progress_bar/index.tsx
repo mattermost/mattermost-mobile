@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle, StyleSheet} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle, StyleSheet, PanResponder} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';
@@ -13,6 +13,7 @@ type ProgressBarProps = {
     progress: number;
     withCursor?: boolean;
     style?: StyleProp<ViewStyle>;
+    onSeek?: (position: number) => void;
 }
 
 const styles = StyleSheet.create({
@@ -37,9 +38,21 @@ const styles = StyleSheet.create({
     },
 });
 
-const ProgressBar = ({color, progress, withCursor, style}: ProgressBarProps) => {
+const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarProps) => {
     const theme = useTheme();
     const [width, setWidth] = useState(0);
+
+    const panResponder = useRef(PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPanResponderGrant: (evt) => {
+            const seekPosition = evt.nativeEvent.locationX / width;
+            onSeek?.(seekPosition);
+        },
+        onPanResponderMove: (evt) => {
+            const seekPosition = evt.nativeEvent.locationX / width;
+            onSeek?.(seekPosition);
+        },
+    })).current;
 
     const progressValue = useSharedValue(progress);
 
@@ -68,7 +81,10 @@ const ProgressBar = ({color, progress, withCursor, style}: ProgressBarProps) => 
     }, []);
 
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            {...panResponder.panHandlers}
+        >
             <View
                 onLayout={onLayout}
                 style={[
