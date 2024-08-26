@@ -43,18 +43,18 @@ jobs:
           sudo dnctl pipe 1 config bw 3300Kbit/s delay 1000ms
           # pipe 2 is upload, below is 3.3Mb/s with 1000ms latency
           sudo dnctl pipe 2 config bw 3300Kbit/s delay 1000ms
-          pfctl -E
+          sudo pfctl -E
 
       - name: test curl 2
         run: |
           curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://community.mattermost.com
 
           
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-        with:
-          name: artifacts-${{ github.run_id }}
-          path: ~/.mitmproxy/
+      # - name: Upload Artifacts
+      #   uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      #   with:
+      #     name: artifacts-${{ github.run_id }}
+      #     path: ~/.mitmproxy/
 
 
 
