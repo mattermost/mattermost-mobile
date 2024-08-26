@@ -40,9 +40,9 @@ jobs:
           echo "dummynet in from community.mattermost.com to ! 127.0.0.1 pipe 1
           dummynet out from ! 127.0.0.1 to community.mattermost.com pipe 2" | sudo pfctl -f -
           # pipe 1 is download, below is 3.3Mb/s with 1000ms latency
-          dnctl pipe 1 config bw 3300Kbit/s delay 1000ms
+          sudo dnctl pipe 1 config bw 3300Kbit/s delay 1000ms
           # pipe 2 is upload, below is 3.3Mb/s with 1000ms latency
-          dnctl pipe 2 config bw 3300Kbit/s delay 1000ms
+          sudo dnctl pipe 2 config bw 3300Kbit/s delay 1000ms
           pfctl -E
 
       - name: test curl 2
