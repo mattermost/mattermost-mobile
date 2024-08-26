@@ -57,7 +57,7 @@ const EmojiTouchable = ({
                 <Emoji
                     emojiName={name}
                     textStyle={style.emoji}
-                    size={20}
+                    size={26}
                 />
             </View>
             {shouldShowName && <Text style={style.emojiText}>{`:${name}:`}</Text>}

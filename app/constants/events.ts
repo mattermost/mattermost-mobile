@@ -28,6 +28,7 @@ export default keyMirror({
     POST_LIST_SCROLL_TO_BOTTOM: null,
     SWIPEABLE: null,
     ITEM_IN_VIEWPORT: null,
+    CLOSE_EMOJI_PICKER: null,
     SEND_TO_POST_DRAFT: null,
     CRT_TOGGLED: null,
     JOIN_CALL_BAR_VISIBLE: null,

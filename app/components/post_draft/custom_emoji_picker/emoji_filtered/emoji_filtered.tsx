@@ -22,11 +22,16 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
+        container: {
+            flex: 1,
+        },
+        listContainer: {
+            flexGrow: 1,
+            justifyContent: 'center',
+        },
         noResultContainer: {
-            marginTop: 10,
-            flex: 1, // Take up the full available space
-            alignItems: 'center', // Center horizontally
-            justifyContent: 'center', // Center vertically
+            height: 40,
+            margin: 10,
         },
         noResultText: {
             color: theme.centerChannelColor,
@@ -38,7 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const EmojiFiltered: React.FC<Props> = ({
     customEmojis,
     skinTone,
-    searchTerm,
+    searchTerm = '',
     onEmojiPress,
 }) => {
     const emojis = React.useMemo(() => getEmojis(skinTone, customEmojis), [skinTone, customEmojis]);
@@ -53,7 +58,7 @@ const EmojiFiltered: React.FC<Props> = ({
 
     const data = React.useMemo(() => {
         if (!searchTerm) {
-            return [];
+            return emojis;
         }
 
         return searchEmojis(fuse, searchTerm);
@@ -85,17 +90,22 @@ const EmojiFiltered: React.FC<Props> = ({
     }, []);
 
     return (
-        <FlatList
-            data={data}
-            initialNumToRender={30}
-            keyboardDismissMode='interactive'
-            keyboardShouldPersistTaps='always'
-            keyExtractor={keyExtractor}
-            ListEmptyComponent={renderEmpty}
-            renderItem={renderItem}
-            removeClippedSubviews={false}
-            horizontal={data.length !== 0}
-        />
+        <View style={style.container}>
+            <FlatList
+                data={data}
+                initialNumToRender={30}
+                keyboardDismissMode='interactive'
+                keyboardShouldPersistTaps='always'
+                keyExtractor={keyExtractor}
+                ListEmptyComponent={renderEmpty}
+                renderItem={renderItem}
+                removeClippedSubviews={false}
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={style.listContainer}
+            />
+        </View>
     );
 };
 

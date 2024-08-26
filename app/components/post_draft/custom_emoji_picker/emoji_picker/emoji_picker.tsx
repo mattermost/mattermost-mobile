@@ -66,18 +66,16 @@ const EmojiPicker: React.FC<Props> = ({
         }
     }, 500);
 
-    let EmojiList: React.ReactNode = null;
-    const term = searchTerm?.replace(/^:|:$/g, '').trim();
+    // let EmojiList: React.ReactNode = null;
+    const term = searchTerm?.replace(/^:|:$/g, '').trim() || '';
 
-    if (term) {
-        EmojiList = (
-            <EmojiFiltered
-                customEmojis={customEmojis}
-                searchTerm={term}
-                onEmojiPress={onEmojiPress}
-            />
-        );
-    }
+    const EmojiList = (
+        <EmojiFiltered
+            customEmojis={customEmojis}
+            searchTerm={term}
+            onEmojiPress={onEmojiPress}
+        />
+    );
 
     const EmojiSection = (
         <EmojiSections

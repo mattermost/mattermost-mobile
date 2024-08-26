@@ -76,7 +76,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             }),
         },
         inputContainer: {
-            flex: 1,
             flexDirection: 'column',
         },
         inputContentContainer: {
@@ -87,9 +86,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             }),
         },
         inputWrapper: {
-            alignItems: 'flex-end',
-            flexDirection: 'row',
-            justifyContent: 'center',
+            flexDirection: 'column',
             paddingBottom: 2,
             backgroundColor: theme.centerChannelBg,
             borderWidth: 1,
@@ -308,16 +305,14 @@ export default function DraftInput({
                         />
                     </View>
                 </ScrollView>
-            </SafeAreaView>
-            <View>
                 {isEmojiPickerOpen &&
-                    <CustomEmojiPicker
-                        onEmojiPress={handleEmojiPress}
-                        focus={focus}
-                        deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
-                    />
+                <CustomEmojiPicker
+                    onEmojiPress={handleEmojiPress}
+                    focus={focus}
+                    deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
+                />
                 }
-            </View>
+            </SafeAreaView>
         </>
     );
 }
