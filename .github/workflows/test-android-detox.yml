@@ -50,17 +50,28 @@ jobs:
       - name: Download and set up Android SDK
         uses: android-actions/setup-android@v2
         with:
-            api-level: 30
+            api-level: 31
             target: default
             arch: x86_64
             profile: default
-            emulator-build: system-images;android-30;default;x86_64
+            emulator-build: system-images;android-31;default;x86_64
+
+      - name: Accept Android SDK Licenses
+        run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+
+      - name: Install Android Emulator
+        run: |
+          sdkmanager "system-images;android-31;google_apis;x86_64"
+          avdmanager create avd -n pixel_6 -k "system-images;android-31;google_apis;x86_64" -d "pixel" --force
 
       - name: Start Android Emulator
         run: |
-            sudo $ANDROID_HOME/emulator/emulator -avd test -no-audio -no-window &
-            adb wait-for-device
-            adb shell input keyevent 82
+          nohup $ANDROID_SDK_ROOT/emulator/emulator -avd pixel_6 -no-snapshot -no-window -no-audio -gpu swiftshader_indirect -netdelay none -netspeed full -qemu -m 8192 > /dev/null 2>&1 &
+          $ANDROID_SDK_ROOT/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d "\r") ]]; do sleep 1; done'
+          $ANDROID_SDK_ROOT/platform-tools/adb shell settings put global window_animation_scale 0
+          $ANDROID_SDK_ROOT/platform-tools/adb shell settings put global transition_animation_scale 0
+          $ANDROID_SDK_ROOT/platform-tools/adb shell settings put global animator_duration_scale 0
+          sleep 60
 
       - name: Run Android Detox E2E Tests on macOS
         run: |
