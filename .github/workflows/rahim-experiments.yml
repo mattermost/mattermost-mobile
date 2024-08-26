@@ -19,11 +19,14 @@ jobs:
           brew install mitmproxy
           mitmproxy --version
 
-      - name: Start mitmproxy via mitmdump
+      - name: Start mitmproxy via mitmdump and kill it
         run: |
           set +e
-          mitmdump & sleep 5 ; kill $!
-          sleep 5
+          mitmdump & sleep 5;
+
+          ./scripts/kill-mitmdump.sh
+          sleep 3;
+          
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
