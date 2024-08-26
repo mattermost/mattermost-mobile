@@ -280,6 +280,7 @@ describe('addSearchToTeamSearchHistory', () => {
 
         operator.handleTeamSearchHistory = jest.fn();
         operator.batchRecords = jest.fn();
+        jest.spyOn(Date, 'now').mockImplementation(() => 1724657520366);
     });
 
     afterEach(async () => {
