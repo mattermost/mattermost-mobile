@@ -21,10 +21,11 @@ jobs:
 
       - name: Start mitmproxy via mitmdump
         run: |
+          set +e
           mitmdump & sleep 5 ; kill $!
 
           # kill it just in case
-          sleep 5
+          sleep 2
           pkill -9 "mitmdump"
 
       - name: Upload Artifacts
