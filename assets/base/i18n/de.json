@@ -703,6 +703,8 @@
   "mobile.no_results_with_term.messages": "Keine Treffer für \"{term}\" gefunden",
   "mobile.oauth.failed_to_login": "Dein Anmeldeversuch ist fehlgeschlagen. Bitte nochmal versuchen.",
   "mobile.oauth.something_wrong.okButton": "OK",
+  "mobile.oauth.success.description": "Melde jetzt an, nur einen Moment...",
+  "mobile.oauth.success.title": "Authentifizierung erfolgreich",
   "mobile.oauth.switch_to_browser": "Du wirst zu deinem Login-Anbieter weitergeleitet",
   "mobile.oauth.switch_to_browser.error_title": "Fehler bei der Anmeldung",
   "mobile.oauth.switch_to_browser.title": "Weiterleitung...",
