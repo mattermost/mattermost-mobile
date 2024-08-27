@@ -703,6 +703,8 @@
   "mobile.no_results.spelling": "Check the spelling or try another search.",
   "mobile.oauth.failed_to_login": "Your login attempt failed. Please try again.",
   "mobile.oauth.something_wrong.okButton": "OK",
+  "mobile.oauth.success.description": "Signing in now, just a moment...",
+  "mobile.oauth.success.title": "Authentication successful",
   "mobile.oauth.switch_to_browser": "You are being redirected to your login provider",
   "mobile.oauth.switch_to_browser.error_title": "Sign in error",
   "mobile.oauth.switch_to_browser.title": "Redirecting...",
