@@ -57,7 +57,7 @@ jobs:
           networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
           networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
 
-          mitmdump --allow-hosts 'community.mattermost.com' --ignore-hosts 'localhost' -s ./scripts/mitmproxy-flow-parsing.py &
+          mitmdump --allow-hosts 'community.mattermost.com' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmproxy-flow-parsing.py &
 
 
       - name: test curl 2
@@ -77,4 +77,4 @@ jobs:
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: artifacts-${{ github.run_id }}
-          path: ./scripts/flow-output.csv
+          path: /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/flow-output.csv
