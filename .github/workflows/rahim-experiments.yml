@@ -78,7 +78,3 @@ jobs:
         with:
           name: artifacts-${{ github.run_id }}
           path: ./scripts/flow-output.csv
-
-
-
-
