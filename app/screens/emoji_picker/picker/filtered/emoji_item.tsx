@@ -6,7 +6,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 
 import Emoji from '@components/emoji';
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type TouchableEmojiProps = {
     name: string;
@@ -21,8 +21,6 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: 8,
-            borderBottomWidth: 1,
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
             overflow: 'hidden',
         },
         emojiContainer: {
@@ -57,7 +55,7 @@ const EmojiTouchable = ({
                 <Emoji
                     emojiName={name}
                     textStyle={style.emoji}
-                    size={26}
+                    size={32}
                 />
             </View>
             {shouldShowName && <Text style={style.emojiText}>{`:${name}:`}</Text>}
