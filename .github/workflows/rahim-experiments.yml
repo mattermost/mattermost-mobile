@@ -31,6 +31,8 @@ jobs:
         run: |
           sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
 
+          xcrun simctl keychain booted add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
+
 
       # - name: networksetup list all
       #   run: |
@@ -81,4 +83,4 @@ jobs:
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: artifacts-${{ github.run_id }}
-          path: /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
+          path: ~/flow-output.csv
