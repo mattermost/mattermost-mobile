@@ -34,7 +34,7 @@ jobs:
         run: |
           sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
 
-          xcrun simctl getenv "iPhone 14" IOS_SIMULATOR_UDID >> ${GITHUB_OUTPUT}
+          xcrun simctl getenv "iPhone 14" SIMULATOR_UDID >> ${GITHUB_OUTPUT}
 
           echo "The github simulator UDID is: " + ${{steps.install_certificate.IOS_SIMULATOR_UDID}}
 
