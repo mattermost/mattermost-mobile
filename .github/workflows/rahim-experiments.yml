@@ -57,7 +57,7 @@ jobs:
           networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
           networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
 
-          mitmdump --allow-hosts 'community.mattermost.com' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmproxy-flow-parsing.py &
+          mitmdump --allow-hosts 'community.mattermost.com' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py &
 
 
       - name: test curl 2
