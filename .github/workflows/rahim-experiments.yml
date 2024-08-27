@@ -36,9 +36,9 @@ jobs:
 
           echo "IOS_SIMULATOR_UDID="$(xcrun simctl getenv "iPhone 15" SIMULATOR_UDID) >> ${GITHUB_OUTPUT}
 
-          echo "The github simulator UDID is: " + ${{steps.install_certificate.IOS_SIMULATOR_UDID}}
+          echo "The github simulator UDID is: " + ${{steps.install_certificate.outputs.IOS_SIMULATOR_UDID}}
 
-          xcrun simctl keychain ${{steps.install_certificate.IOS_SIMULATOR_UDID}} add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
+          xcrun simctl keychain ${{steps.install_certificate.outputs.IOS_SIMULATOR_UDID}} add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
 
 
       # - name: networksetup list all
