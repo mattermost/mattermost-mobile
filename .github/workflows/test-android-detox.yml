@@ -49,6 +49,16 @@ jobs:
       - name: Cleanup
         run: rm android/app/build/outputs/apk/artifact.zip
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 31
+          target: default
+          arch: x86_64
+
+      - name: Accept Android SDK Licenses
+        run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+
       - name: Create AVD
         run : |
           cd detox
