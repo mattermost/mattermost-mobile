@@ -10,8 +10,6 @@ jobs:
 
   install-mitmproxy:
     runs-on: macos-14
-    outputs:
-      IOS_SIMULATOR_UDID: ${{ steps.install_certificate.outputs.IOS_SIMULATOR_UDID }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -34,11 +32,7 @@ jobs:
         run: |
           sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
 
-          echo "IOS_SIMULATOR_UDID="$(xcrun simctl getenv "iPhone 15" SIMULATOR_UDID) >> ${GITHUB_OUTPUT}
-
-          echo "The github simulator UDID is: " + ${{steps.install_certificate.outputs.IOS_SIMULATOR_UDID}}
-
-          xcrun simctl keychain ${{steps.install_certificate.outputs.IOS_SIMULATOR_UDID}} add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
+          xcrun simctl keychain $(xcrun simctl getenv "iPhone 15" SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
 
 
       # - name: networksetup list all
