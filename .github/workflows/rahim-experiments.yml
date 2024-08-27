@@ -36,7 +36,9 @@ jobs:
 
           xcrun simctl boot "iPhone 14"
 
-          xcrun simctl keychain $(xcrun simctl getenv "iPhone 14" SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
+          xcrun simctl getenv booted SIMULATOR_UDID
+
+          xcrun simctl keychain $(xcrun simctl getenv booted SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
 
           exit 1
 
