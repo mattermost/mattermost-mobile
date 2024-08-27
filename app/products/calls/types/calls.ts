@@ -149,6 +149,7 @@ export type CallsConnection = {
 
 export type CallsConfigState = CallsConfig & {
     AllowEnableCalls: boolean;
+    GroupCallsAllowed: boolean;
     pluginEnabled: boolean;
     version: CallsVersion;
     last_retrieved_at: number;
