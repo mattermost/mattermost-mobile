@@ -6,44 +6,17 @@ on:
       - test-random-github-action-experiments
 
 jobs:
-  update-initial-status:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ github.event.pull_request.head.sha }}
-          context: e2e/detox-tests
-          description: Detox tests for mattermost mobile app have started (low bandwidth) ...
-          status: pending
+
 
   run-ios-tests-on-pr:
     name: iOS Mobile Tests on PR
     uses: ./.github/workflows/e2e-detox-template-experiment.yml
-    needs:
-      - update-initial-status
     with:
       run-ios-tests: true
       run-type: "PR"
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
     secrets: inherit
 
-  update-final-status:
-    runs-on: ubuntu-22.04
-    needs:
-      - run-ios-tests-on-pr
-    steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ github.event.pull_request.head.sha }}
-          context: e2e/detox-tests
-          description: Completed with ${{ needs.run-ios-tests-on-pr.outputs.FAILURES }} failures
-          status: ${{ needs.run-ios-tests-on-pr.outputs.STATUS }}
-          target_url: ${{ needs.run-ios-tests-on-pr.outputs.TARGET_URL }}
+
 
 
