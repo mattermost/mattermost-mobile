@@ -37,8 +37,8 @@
     "android": {
       "type": "android.emulator",
       "device": {
-        "avdName": "pixel_6",
-        "api": "30"
+        "avdName": "detox_pixel_4_xl_api_31",
+        "api": "31"
       }
     }
   },
