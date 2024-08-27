@@ -27,6 +27,10 @@ jobs:
           ./scripts/kill-mitmdump.sh
           sleep 3;
 
+      - name: install certificate
+        run: |
+          sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
+
 
       # - name: networksetup list all
       #   run: |
