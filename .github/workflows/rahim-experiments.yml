@@ -14,20 +14,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: install certificate
-        id: "install_certificate"
-        run: |
-          sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
-
-          xcrun simctl list devices "iPhone 14"
-
-          xcrun simctl boot "iPhone 14"
-
-          xcrun simctl keychain $(xcrun simctl getenv "iPhone 14" SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
-
-          exit 1
-
-
       - name: Install mitmproxy
         run: |
           brew install mitmproxy
@@ -41,7 +27,18 @@ jobs:
           ./scripts/kill-mitmdump.sh
           sleep 3;
 
+      - name: install certificate
+        id: "install_certificate"
+        run: |
+          sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
 
+          xcrun simctl list devices "iPhone 14"
+
+          xcrun simctl boot "iPhone 14"
+
+          xcrun simctl keychain $(xcrun simctl getenv "iPhone 14" SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
+
+          exit 1
 
 
       # - name: networksetup list all
