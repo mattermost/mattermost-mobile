@@ -32,7 +32,7 @@ jobs:
         run: |
           sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
 
-          xcrun simctl keychain $(xcrun simctl getenv "iPhone 15" SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
+          xcrun simctl keychain $(xcrun simctl getenv "iPhone 14" SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
 
 
       # - name: networksetup list all
