@@ -201,23 +201,23 @@ jobs:
 
     - name: Launch Android Emulator
       run: |
-        echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-31;google_apis;x86_64'
-        echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n pixel_6 -k 'system-images;android-31;google_apis;x86_64' --force --device "pixel_6"
-        echo "Emulator created successfully"
-        nohup $ANDROID_HOME/emulator/emulator -avd pixel_6 -no-snapshot -netdelay none -netspeed full -no-audio -no-boot-anim -accel on -gpu swiftshader_indirect -no-window -qemu -m 8192 > /dev/null 2>&1 &
+        # echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-31;google_apis;x86_64'
+        # echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n pixel_6 -k 'system-images;android-31;google_apis;x86_64' --force --device "pixel_6"
+        # echo "Emulator created successfully"
+        # nohup $ANDROID_HOME/emulator/emulator -avd pixel_6 -no-snapshot -netdelay none -netspeed full -no-audio -no-boot-anim -accel on -gpu swiftshader_indirect -no-window -qemu -m 8192 > /dev/null 2>&1 &
 
-        $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\''\r'\'') ]]; do sleep 1; done'
+        # $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\''\r'\'') ]]; do sleep 1; done'
         echo "Devices list"
-        $ANDROID_HOME/platform-tools/adb devices
-        $ANDROID_HOME/platform-tools/adb shell input keyevent 82
-        $ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
-        $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
-        $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
-        sleep 120
+        # $ANDROID_HOME/platform-tools/adb devices
+        # $ANDROID_HOME/platform-tools/adb shell input keyevent 82
+        # $ANDROID_HOME/platform-tools/adb shell settings put global window_animation_scale 0
+        # $ANDROID_HOME/platform-tools/adb shell settings put global transition_animation_scale 0
+        # $ANDROID_HOME/platform-tools/adb shell settings put global animator_duration_scale 0
+        # sleep 120
         echo "Taking screenshot"
 
-        screencapture emulator-macos-13.jpg
-        $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-macos-13.png
+        # screencapture emulator-macos-13.jpg
+        # $ANDROID_HOME/platform-tools/adb exec-out screencap -p > emulator-macos-13.png
 
         echo "Done launching screenshot"
 
@@ -230,6 +230,11 @@ jobs:
       with:
         name: Android-Emulator-Screenshots
         path: emulator-macos-13.png
+
+    - name: Create AVD
+      run : |
+        cd detox
+        npm run e2e:android-create-emulator
 
     - name: Run Android Detox E2E Tests on macOS
       run: |
