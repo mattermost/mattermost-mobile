@@ -28,14 +28,15 @@ jobs:
           sleep 3;
 
       - name: install certificate
+        id: "install_certificate"
         run: |
           sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
 
           xcrun simctl getenv "iPhone 14" SIMULATOR_UDID >> $GITHUB_SIMULATOR_UDID
 
-          echo "The github simulator UDID is: " + ${{GITHUB_SIMULATOR_UDID}}
+          echo "The github simulator UDID is: " + ${{steps.install_certificate.GITHUB_SIMULATOR_UDID}}
 
-          xcrun simctl keychain ${{GITHUB_SIMULATOR_UDID}} add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
+          xcrun simctl keychain ${{steps.install_certificate.GITHUB_SIMULATOR_UDID}} add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
 
 
       # - name: networksetup list all
