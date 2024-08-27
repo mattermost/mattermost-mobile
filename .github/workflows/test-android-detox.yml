@@ -59,6 +59,13 @@ jobs:
       - name: Accept Android SDK Licenses
         run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
 
+      - name: Install SDK Tools
+        run: |
+          yes | sdkmanager --install "emulator" "platform-tools" "platforms;android-31" "system-images;android-31;default;x86_64" "build-tools;31.0.0"
+      
+      - name: Set up Android SDK path
+        run: echo "$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH" >> $GITHUB_PATH
+      
       - name: Create AVD
         run : |
           cd detox
