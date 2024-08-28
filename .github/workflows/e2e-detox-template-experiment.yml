@@ -194,7 +194,7 @@ jobs:
           dummynet out from ! 127.0.0.1 to mobile-e2e-site-1.test.mattermost.cloud pipe 2" | sudo pfctl -f -
           
           # pipe 1 is download, below is 3.3Mb/s with 1000ms latency
-          sudo dnctl pipe 1 config bw 3.300Kbit/s delay 1000ms
+          sudo dnctl pipe 1 config bw 3300Kbit/s delay 1000ms
           
           # pipe 2 is upload, below is 3.3Mb/s with 1000ms latency
           sudo dnctl pipe 2 config bw 3300Kbit/s delay 1000ms
