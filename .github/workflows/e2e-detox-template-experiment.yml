@@ -149,6 +149,7 @@ jobs:
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
           name: ios-build-simulator-10565193233
+          github-token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
           path: mobile-artifacts
 
       - name: Unzip iOS Simulator Build
@@ -244,7 +245,7 @@ jobs:
           name: artifacts-${{ github.run_id }}
           path: /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
 
-          
+
 
       - name: Upload iOS Test Report
         if: always()
