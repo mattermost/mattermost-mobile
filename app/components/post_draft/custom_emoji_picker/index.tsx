@@ -35,15 +35,17 @@ const CustomEmojiPicker: React.FC<Props> = ({
 
     useEffect(() => {
         const closeEmojiPicker = DeviceEventEmitter.addListener(Events.CLOSE_EMOJI_PICKER, () => {
-            height.value = withTiming(0, {
-                duration: 100,
-                easing: Easing.inOut(Easing.ease),
-            // eslint-disable-next-line max-nested-callbacks
-            }, (finished) => {
-                if (finished) {
-                    runOnJS(setIsEmojiPickerOpen)(false);
-                }
-            });
+            if (!isEmojiSearchFocused) {
+                height.value = withTiming(0, {
+                    duration: 300,
+                    easing: Easing.inOut(Easing.ease),
+                    // eslint-disable-next-line max-nested-callbacks
+                }, (finished) => {
+                    if (finished) {
+                        runOnJS(setIsEmojiPickerOpen)(false);
+                    }
+                });
+            }
         });
 
         return () => {

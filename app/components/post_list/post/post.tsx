@@ -3,11 +3,12 @@
 
 import React, {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
+import {Keyboard, Platform, type StyleProp, View, type ViewStyle, TouchableHighlight, DeviceEventEmitter} from 'react-native';
 
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import {Events} from '@app/constants';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
 import {isCallsCustomMessage} from '@calls/utils';
 import SystemAvatar from '@components/system_avatar';
@@ -202,6 +203,7 @@ const Post = ({
 
         if (post) {
             Keyboard.dismiss();
+            DeviceEventEmitter.emit(Events.CLOSE_EMOJI_PICKER);
 
             setTimeout(handlePostPress, 300);
         }
