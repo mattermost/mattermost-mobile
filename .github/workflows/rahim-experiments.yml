@@ -87,10 +87,14 @@ jobs:
 
       - name: reset network settings
         run: |
+          ./scripts/kill-mitmdump.sh
+
           networksetup -setwebproxystate Ethernet "off"
           networksetup -setsecurewebproxystate Ethernet "off"
 
           sudo pfctl -d
+
+          sleep 3;
 
           
       - name: Upload Artifacts
