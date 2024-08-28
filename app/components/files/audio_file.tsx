@@ -8,6 +8,7 @@ import {
     View,
     TouchableOpacity,
     Text,
+    TouchableWithoutFeedback,
 } from 'react-native';
 import Video, {type OnLoadData, type OnProgressData, type VideoRef} from 'react-native-video';
 
@@ -149,48 +150,54 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
     }
 
     return (
-        <View style={style.audioFileWrapper}>
-            <TouchableOpacity
-                style={style.playButton}
-                onPress={onPlayPress}
-            >
-                <CompassIcon
-                    name={hasPaused ? 'play' : 'pause'}
-                    size={24}
-                    style={style.playIcon}
-                />
-            </TouchableOpacity>
+        <TouchableWithoutFeedback
+            onPress={(e) => {
+                e.stopPropagation();
+            }}
+        >
+            <View style={style.audioFileWrapper}>
+                <TouchableOpacity
+                    style={style.playButton}
+                    onPress={onPlayPress}
+                >
+                    <CompassIcon
+                        name={hasPaused ? 'play' : 'pause'}
+                        size={24}
+                        style={style.playIcon}
+                    />
+                </TouchableOpacity>
 
-            <Video
-                ref={videoRef}
-                source={source}
-                paused={hasPaused}
-                onLoad={onLoad}
-                onProgress={onProgress}
-                onError={onError}
-                onEnd={onEnd}
-            />
-
-            <View style={style.progressBar}>
-                <ProgressBar
-                    progress={progress}
-                    color={theme.buttonBg}
-                    withCursor={true}
-                    onSeek={onSeek}
+                <Video
+                    ref={videoRef}
+                    source={source}
+                    paused={hasPaused}
+                    onLoad={onLoad}
+                    onProgress={onProgress}
+                    onError={onError}
+                    onEnd={onEnd}
                 />
+
+                <View style={style.progressBar}>
+                    <ProgressBar
+                        progress={progress}
+                        color={theme.buttonBg}
+                        withCursor={true}
+                        onSeek={onSeek}
+                    />
+                </View>
+
+                <Text style={style.timerText}>{timeInMinutes}</Text>
+
+                <TouchableOpacity
+                    onPress={onDownloadPress}
+                >
+                    <CompassIcon
+                        name='download-outline'
+                        size={24}
+                    />
+                </TouchableOpacity>
             </View>
-
-            <Text style={style.timerText}>{timeInMinutes}</Text>
-
-            <TouchableOpacity
-                onPress={onDownloadPress}
-            >
-                <CompassIcon
-                    name='download-outline'
-                    size={24}
-                />
-            </TouchableOpacity>
-        </View>
+        </TouchableWithoutFeedback>
     );
 };
 
