@@ -323,6 +323,7 @@ jest.mock('react-native-notifications', () => {
                 }),
                 setBadgeCount: jest.fn(),
             },
+            postLocalNotification: jest.fn((notification) => notification),
         },
     };
 });
