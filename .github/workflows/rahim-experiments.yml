@@ -81,7 +81,7 @@ jobs:
 
       - name: test
         run: |
-          curl --proxy 127.0.0.1:8080 --ca-cert ~/.mitmproxy/mitmproxy-ca-cert.pem https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true
+          curl --proxy 127.0.0.1:8080 --cacert ~/.mitmproxy/mitmproxy-ca-cert.pem https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true
           curl --proxy 127.0.0.1:8080 https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true
 
 
