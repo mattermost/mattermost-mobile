@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState, type RefObject} from 'react';
 import {useIntl} from 'react-intl';
 
 import {addFilesToDraft, removeDraft} from '@actions/local/draft';
@@ -10,6 +10,8 @@ import DraftUploadManager from '@managers/draft_upload_manager';
 import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
 
 import SendHandler from '../send_handler';
+
+import type {KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
 
 type Props = {
     testID?: string;
@@ -26,6 +28,7 @@ type Props = {
     updateValue: React.Dispatch<React.SetStateAction<string>>;
     value: string;
     setIsFocused: (isFocused: boolean) => void;
+    keyboardTracker: RefObject<KeyboardTrackingViewRef>;
 }
 
 const emptyFileList: FileInfo[] = [];
@@ -51,6 +54,7 @@ export default function DraftHandler(props: Props) {
         updateValue,
         value,
         setIsFocused,
+        keyboardTracker,
     } = props;
 
     const serverUrl = useServerUrl();
@@ -150,6 +154,7 @@ export default function DraftHandler(props: Props) {
             updatePostInputTop={updatePostInputTop}
             updateValue={updateValue}
             setIsFocused={setIsFocused}
+            keyboardTracker={keyboardTracker}
         />
     );
 }

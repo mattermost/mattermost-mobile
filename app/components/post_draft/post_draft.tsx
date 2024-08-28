@@ -117,6 +117,7 @@ function PostDraft({
             updateValue={setValue}
             value={value}
             setIsFocused={setIsFocused}
+            keyboardTracker={keyboardTracker}
         />
     );
 

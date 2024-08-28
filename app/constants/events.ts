@@ -29,6 +29,8 @@ export default keyMirror({
     SWIPEABLE: null,
     ITEM_IN_VIEWPORT: null,
     CLOSE_EMOJI_PICKER: null,
+    OPEN_EMOJI_PICKER_TO_FULL_LENGTH: null,
+    DRAG_EMOJI_PICKER: null,
     SEND_TO_POST_DRAFT: null,
     CRT_TOGGLED: null,
     JOIN_CALL_BAR_VISIBLE: null,
