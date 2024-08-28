@@ -151,6 +151,7 @@ jobs:
           name: ios-build-simulator-10565193233
           github-token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
           path: mobile-artifacts
+          run-id: 10565193233
 
       - name: Unzip iOS Simulator Build
         run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
