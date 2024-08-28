@@ -9,23 +9,26 @@ on:
 jobs:
 
 
-  install-mitmproxy:
+  rahim-experimenting:
     runs-on: macos-14
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Install mitmproxy
+      - name: Install mitmproxy & pm2 (process manager)
         run: |
           brew install mitmproxy
-          mitmproxy --version
+
+          # install pm2
+          npm i -g pm2
 
       - name: Start mitmproxy via mitmdump and kill it
         run: |
           set +e
-          mitmdump & sleep 5;
+          pm2 start mitmdump -- --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
+          sleep 5
 
-          ./scripts/kill-mitmdump.sh
+          pm2 stop mitmdump
           sleep 3;
 
       - name: install certificate
@@ -72,8 +75,9 @@ jobs:
           networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
           networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
 
-          mitmdump --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py &
+          # mitmdump --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
 
+          pm2 start mitmdump
 
       - name: test curl 2
         run: |
@@ -87,8 +91,8 @@ jobs:
 
       - name: reset network settings
         run: |
-          ./scripts/kill-mitmdump.sh
-
+          pm2 stop mitmdump
+          
           networksetup -setwebproxystate Ethernet "off"
           networksetup -setsecurewebproxystate Ethernet "off"
 
