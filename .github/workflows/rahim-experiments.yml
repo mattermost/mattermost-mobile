@@ -3,7 +3,8 @@ name: Random Github Action Experiments
 on:
   push:
     branches:
-      - test-random-github-action-experiments-disabled-for-now
+      - test-random-github-action-experiments
+      # - test-random-github-action-experiments-disabled-for-now
 
 jobs:
 
@@ -27,30 +28,30 @@ jobs:
           ./scripts/kill-mitmdump.sh
           sleep 3;
 
-      - name: install certificate
-        id: "install_certificate"
-        run: |
+      # - name: install certificate
+      #   id: "install_certificate"
+      #   run: |
           sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
 
-          # xcrun simctl list devices "iPhone 14"
+      #     # xcrun simctl list devices "iPhone 14"
 
-          xcrun simctl boot "iPhone 14"
+      #     xcrun simctl boot "iPhone 14"
 
-          # xcrun simctl getenv booted SIMULATOR_UDID
+      #     # xcrun simctl getenv booted SIMULATOR_UDID
 
-          # must boot first before adding root cert, add 5 mins to the process
-          xcrun simctl keychain $(xcrun simctl getenv booted SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
+      #     # must boot first before adding root cert, add 5 mins to the process
+      #     xcrun simctl keychain $(xcrun simctl getenv booted SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
 
 
-      # - name: networksetup list all
-      #   run: |
-      #     networksetup -listallnetworkservices
+      - name: networksetup list all
+        run: |
+          networksetup -listallnetworkservices
       # response:
       # Ethernet
 
       - name: test curl 1
         run: |
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud
+          curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true
 
       - name: throttle bandwidth down
         run: |
@@ -76,7 +77,12 @@ jobs:
 
       - name: test curl 2
         run: |
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud
+          curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true
+
+      - name: test
+        run: |
+          curl --proxy 127.0.0.1:8080 --ca-cert ~/.mitmproxy/mitmproxy-ca-cert.pem https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true
+          curl --proxy 127.0.0.1:8080 https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true
 
 
       - name: reset network settings
