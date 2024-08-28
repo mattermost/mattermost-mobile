@@ -68,6 +68,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
     const [hasEnded, setHasEnded] = useState<boolean>(false);
     const [progress, setProgress] = useState<number>(0);
     const [timeInMinutes, setTimeInMinutes] = useState<string>('0:00');
+    const [duration, setDuration] = useState<number>(0);
     const videoRef = useRef<VideoRef>(null);
 
     useEffect(() => {
@@ -109,6 +110,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
 
     const onLoad = (loadData: OnLoadData) => {
         loadTimeInMinutes(loadData.duration);
+        setDuration(loadData.duration);
     };
 
     const onProgress = (progressData: OnProgressData) => {
@@ -126,6 +128,15 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
 
     const onError = () => {
         setHasError(true);
+    };
+
+    const onSeek = (seekPosition: number) => {
+        if (videoRef.current && duration > 0) {
+            const newTime = seekPosition * duration;
+            videoRef.current.seek(newTime);
+            setProgress(seekPosition);
+            loadTimeInMinutes(newTime);
+        }
     };
 
     if (hasError) {
@@ -165,6 +176,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
                     progress={progress}
                     color={theme.buttonBg}
                     withCursor={true}
+                    onSeek={onSeek}
                 />
             </View>
 

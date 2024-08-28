@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef} from 'react';
-import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle, StyleSheet, PanResponder} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import React, {useCallback, useEffect} from 'react';
+import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle, StyleSheet} from 'react-native';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import Animated, {runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
@@ -20,6 +21,7 @@ const styles = StyleSheet.create({
     container: {
         position: 'relative',
         justifyContent: 'center',
+        paddingVertical: 10,
     },
     progressBarContainer: {
         height: 4,
@@ -43,23 +45,14 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
     const widthValue = useSharedValue(0);
     const progressValue = useSharedValue(progress);
 
-    const panResponder = useRef(PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onPanResponderGrant: (evt) => {
-            if (widthValue.value <= 0) {
-                return;
+    // eslint-disable-next-line new-cap
+    const gesture = Gesture.Tap().
+        onBegin((e) => {
+            if (onSeek) {
+                const seekPosition = e.x / widthValue.value;
+                runOnJS(onSeek)(seekPosition);
             }
-            const seekPosition = evt.nativeEvent.locationX / widthValue.value;
-            onSeek?.(seekPosition);
-        },
-        onPanResponderMove: (evt) => {
-            if (widthValue.value <= 0) {
-                return;
-            }
-            const seekPosition = evt.nativeEvent.locationX / widthValue.value;
-            onSeek?.(seekPosition);
-        },
-    })).current;
+        });
 
     const progressAnimatedStyle = useAnimatedStyle(() => {
         return {
@@ -87,32 +80,33 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
     }, []);
 
     return (
-        <View
-            style={styles.container}
-            {...panResponder.panHandlers}
-        >
+        <GestureDetector gesture={gesture}>
             <View
-                onLayout={onLayout}
-                style={[
-                    styles.progressBarContainer,
-                    {
-                        backgroundColor: withCursor ? changeOpacity(theme.centerChannelColor, 0.2) : 'rgba(255, 255, 255, 0.16)',
-                    },
-                    style,
-                ]}
+                onTouchStart={(e) => e.stopPropagation}
+                style={styles.container}
             >
-                <Animated.View
+                <View
+                    onLayout={onLayout}
                     style={[
-                        styles.progressBar,
+                        styles.progressBarContainer,
                         {
-                            backgroundColor: color,
+                            backgroundColor: withCursor ? changeOpacity(theme.centerChannelColor, 0.2) : 'rgba(255, 255, 255, 0.16)',
                         },
-                        progressAnimatedStyle,
+                        style,
                     ]}
-                />
-            </View>
+                >
+                    <Animated.View
+                        style={[
+                            styles.progressBar,
+                            {
+                                backgroundColor: color,
+                            },
+                            progressAnimatedStyle,
+                        ]}
+                    />
+                </View>
 
-            {withCursor &&
+                {withCursor &&
                 <Animated.View
                     style={[
                         styles.cursor,
@@ -122,7 +116,8 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
                         cursorAnimatedStyle,
                     ]}
                 />}
-        </View>
+            </View>
+        </GestureDetector>
     );
 };
 
