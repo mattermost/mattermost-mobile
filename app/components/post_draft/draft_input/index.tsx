@@ -184,14 +184,19 @@ export default function DraftInput({
         inputRef.current?.focus();
     }, []);
 
-    const handleOpenEmojiPicker = () => {
-        setIsEmojiPickerOpen(true);
-        inputRef.current?.setNativeProps({
-            showSoftInputOnFocus: false,
-        });
-        Keyboard.dismiss();
-        keyboardTracker.current?.pauseTracking(channelId);
-        inputRef.current?.focus();
+    const handleToggleEmojiPicker = () => {
+        if (!isEmojiPickerOpen) {
+            setIsEmojiPickerOpen(true);
+            inputRef.current?.setNativeProps({
+                showSoftInputOnFocus: false,
+            });
+            Keyboard.dismiss();
+            keyboardTracker.current?.pauseTracking(channelId);
+            inputRef.current?.focus();
+            return;
+        }
+        setIsEmojiPickerOpen(false);
+        focus();
     };
 
     const deleteCharFromCurrentCursorPosition = () => {
@@ -300,7 +305,7 @@ export default function DraftInput({
                             updatePostPriority={updatePostPriority}
                             canShowPostPriority={canShowPostPriority}
                             focus={focus}
-                            handleOpenEmojiPicker={handleOpenEmojiPicker}
+                            handleToggleEmojiPicker={handleToggleEmojiPicker}
                             isEmojiPickerOpen={isEmojiPickerOpen}
                         />
                         <SendAction

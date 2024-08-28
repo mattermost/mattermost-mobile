@@ -12,7 +12,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 type Props = {
     testID?: string;
     disabled?: boolean;
-    handleOpenEmojiPicker: () => void;
+    handleToggleEmojiPicker: () => void;
     isEmojiPickerOpen: boolean;
 }
 
@@ -36,7 +36,7 @@ const getStyleSheet = (theme: Theme, isEmojiPickerOpen: boolean) => {
 const EmojiQuickAction: React.FC<Props> = ({
     testID,
     disabled,
-    handleOpenEmojiPicker,
+    handleToggleEmojiPicker,
     isEmojiPickerOpen,
 }) => {
     const theme = useTheme();
@@ -48,7 +48,7 @@ const EmojiQuickAction: React.FC<Props> = ({
         <Pressable
             testID={actionTestID}
             style={style.icon}
-            onPress={handleOpenEmojiPicker}
+            onPress={handleToggleEmojiPicker}
         >
             <CompassIcon
                 name='emoticon-happy-outline'
