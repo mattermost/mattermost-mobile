@@ -103,7 +103,7 @@ const EmojiFiltered: React.FC<Props> = ({
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={style.listContainer}
+                contentContainerStyle={data.length === 0 && style.listContainer}
             />
         </View>
     );

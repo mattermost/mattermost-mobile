@@ -23,7 +23,7 @@ const CustomEmojiPicker: React.FC<Props> = ({
         onEmojiPress(emoji);
     };
     return (
-        <View style={{height: isEmojiSearchFocused ? 100 : 300, padding: 8}}>
+        <View style={{height: isEmojiSearchFocused ? 105 : 300, padding: 8}}>
             <EmojiPicker
                 onEmojiPress={handleEmojiPress}
                 testID='custom_emoji_picker'
