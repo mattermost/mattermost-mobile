@@ -5,8 +5,8 @@
 
 import {createIntl} from 'react-intl';
 
-import {DeepLink} from '@app/constants';
-import {SYSTEM_IDENTIFIERS} from '@app/constants/database';
+import {DeepLink} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 
