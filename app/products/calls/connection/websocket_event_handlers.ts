@@ -250,5 +250,13 @@ export const handleCallState = (serverUrl: string, msg: WebSocketMessage<CallSta
     const call = createCallAndAddToIds(msg.data.channel_id, callState);
 
     setCallForChannel(serverUrl, msg.data.channel_id, call);
+
+    if (callState.recording) {
+        setRecordingState(serverUrl, msg.data.channel_id, callState.recording);
+    }
+
+    if (callState.live_captions) {
+        setCaptioningState(serverUrl, msg.data.channel_id, callState.live_captions);
+    }
 };
 

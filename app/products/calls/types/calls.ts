@@ -174,6 +174,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableTranscriptions: false,
     EnableLiveCaptions: false,
     HostControlsAllowed: false,
+    GroupCallsAllowed: true, // Set to true to keep backward compatibility with older servers.
 };
 
 export type ApiResp = {
