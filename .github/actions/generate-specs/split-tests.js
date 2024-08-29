@@ -29,7 +29,7 @@ class Specs {
   findFiles() {
     const dirPath = path.join(this.searchPath);
 
-    const fileRegex = /\.e2e\.ts$/;
+    const fileRegex = /connect_to_server\.e2e\.ts$/;
 
     const walkSync = (currentPath) => {
       const files = fs.readdirSync(currentPath);

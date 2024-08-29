@@ -113,8 +113,8 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 10
-          search_path: detox/e2e/test/server_login/connect_to_server.e2e.ts
+          parallelism: 1
+          search_path: detox/e2e/test/server_login/
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
