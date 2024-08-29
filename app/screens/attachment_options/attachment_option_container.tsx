@@ -9,6 +9,7 @@ import PhotoAttachment from '@app/components/post_draft/quick_actions/camera_qui
 import VideoAttachment from '@app/components/post_draft/quick_actions/camera_quick_action/video_attacment';
 import FileQuickAction from '@app/components/post_draft/quick_actions/file_quick_action';
 import ImageQuickAction from '@app/components/post_draft/quick_actions/image_quick_action';
+import {useIsTablet} from '@app/hooks/device';
 import {typography} from '@app/utils/typography';
 
 import type {AttachmentOptionsProps} from '@app/components/post_draft/quick_actions/attachment_options/attachment_options.types';
@@ -29,6 +30,7 @@ const AttachmentOptionContainer: React.FC<AttachmentOptionsProps> = ({
     onUploadFiles,
     maxFilesReached,
 }) => {
+    const isTablet = useIsTablet();
     const uploadProps = {
         disabled: !canUploadFiles,
         fileCount,
@@ -44,9 +46,9 @@ const AttachmentOptionContainer: React.FC<AttachmentOptionsProps> = ({
     const {formatMessage} = useIntl();
     return (
         <View>
-            <Text style={styles.header}>{formatMessage(
+            {!isTablet && <Text style={styles.header}>{formatMessage(
                 {id: 'attachment_option.header', defaultMessage: 'Files and media'},
-            )}</Text>
+            )}</Text>}
             <View>
                 <ImageQuickAction
                     testID={imageActionTestID}

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Pressable} from 'react-native';
+import {Keyboard, Pressable} from 'react-native';
 
 import CompassIcon from '@app/components/compass_icon';
 import {Screens} from '@app/constants';
@@ -45,11 +45,12 @@ const AttachmentOptions: React.FC<AttachmentOptionsProps> = (
     const {formatMessage} = useIntl();
 
     const handleOpenButtonSheet = () => {
+        Keyboard.dismiss();
         openAsBottomSheet({
             closeButtonId: 'close-add-reaction',
             screen: Screens.QUICK_ACTIONS,
             theme,
-            title: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+            title: formatMessage({id: 'attachment_option.header', defaultMessage: 'Files and media'}),
             props: {
                 onUploadFiles,
                 maxFilesReached,
