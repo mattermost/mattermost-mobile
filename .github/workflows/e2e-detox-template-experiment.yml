@@ -193,16 +193,16 @@ jobs:
 
       - name: throttle bandwidth down
         run: |
-          dnctl -q flush
-          dnctl -q pipe flush
-          pfctl -f /etc/pf.conf
-          pfctl -E
+          sudo dnctl -q flush
+          sudo dnctl -q pipe flush
+          sudo pfctl -f /etc/pf.conf
+          sudo pfctl -E
 
-          pfctl -d
-          dnctl -q flush
-          dnctl -q pipe flush
-          dnctl pipe 1 config delay 0ms noerror
-          dnctl pipe 2 config delay 0ms noerror
+          sudo pfctl -d
+          sudo dnctl -q flush
+          sudo dnctl -q pipe flush
+          sudo dnctl pipe 1 config delay 0ms noerror
+          sudo dnctl pipe 2 config delay 0ms noerror
 
           echo "dummynet in from mobile-e2e-site-1.test.mattermost.cloud to any pipe 1
           dummynet out from any to mobile-e2e-site-1.test.mattermost.cloud pipe 2" | sudo pfctl -f -
