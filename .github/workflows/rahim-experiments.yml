@@ -3,8 +3,8 @@ name: Random Github Action Experiments
 on:
   push:
     branches:
-      # - test-random-github-action-experiments
-      - test-random-github-action-experiments-disabled-for-now
+      - test-random-github-action-experiments
+      # - test-random-github-action-experiments-disabled-for-now
 
 jobs:
 
@@ -49,6 +49,8 @@ jobs:
       - name: networksetup list all
         run: |
           networksetup -listallnetworkservices
+          networksetup -getwebproxy Ethernet
+          networksetup -getsecurewebproxy Ethernet
       # response:
       # Ethernet
 
@@ -74,6 +76,9 @@ jobs:
         run: |
           networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
           networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
+
+          networksetup -getwebproxy Ethernet
+          networksetup -getsecurewebproxy Ethernet
 
           # mitmdump --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
 
