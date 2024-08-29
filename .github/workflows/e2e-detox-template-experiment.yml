@@ -114,7 +114,7 @@ jobs:
         uses: ./.github/actions/generate-specs
         with:
           parallelism: 1
-          search_path: detox/e2e/test/server_login/
+          search_path: detox/e2e/test/server_login
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
