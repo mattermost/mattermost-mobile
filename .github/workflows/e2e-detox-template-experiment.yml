@@ -230,9 +230,13 @@ jobs:
 
           pm2 start mitmdump
 
+          sleep 5;
+          
+
       - name: test curl after (also see if it goes into mitmdump)
         run: |
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud
+          # this should goes into mitmdump output
+          open -a "Google Chrome" https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=123
 
 
       - name: Run Detox E2E Tests
