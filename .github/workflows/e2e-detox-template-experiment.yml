@@ -114,7 +114,7 @@ jobs:
         uses: ./.github/actions/generate-specs
         with:
           parallelism: 10
-          search_path: detox/e2e/test/server_login
+          search_path: detox/e2e/test/server_login/connect_to_server.e2e.ts
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
@@ -215,10 +215,6 @@ jobs:
           
           sudo pfctl -E
 
-      - name: test curl after
-        run: |
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud
-
 
       - name: Start React Native Metro Server
         run: npm run start &
@@ -233,6 +229,10 @@ jobs:
           networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
 
           pm2 start mitmdump
+
+      - name: test curl after (also see if it goes into mitmdump)
+        run: |
+          curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud
 
 
       - name: Run Detox E2E Tests
