@@ -3,8 +3,8 @@ name: Random Github Action Experiments
 on:
   push:
     branches:
-      - test-random-github-action-experiments
-      # - test-random-github-action-experiments-disabled-for-now
+      # - test-random-github-action-experiments
+      - test-random-github-action-experiments-disabled-for-now
 
 jobs:
 

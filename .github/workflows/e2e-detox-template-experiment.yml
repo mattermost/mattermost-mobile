@@ -156,40 +156,54 @@ jobs:
       - name: Unzip iOS Simulator Build
         run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
 
+      - name: Install mitmproxy & pm2 (process manager)
+        run: |
+          brew install mitmproxy
 
+          # install pm2
+          npm i -g pm2
 
-      # - name: Install mitmproxy
-      #   run: |
-      #     brew install mitmproxy
-      #     mitmproxy --version
+      - name: Start mitmproxy via mitmdump and kill it (to get .mitmproxy folder)
+        run: |
+          set +e
+          pm2 start mitmdump -- --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
+          sleep 5
 
-      # - name: Start mitmproxy via mitmdump and kill it
-      #   run: |
-      #     set +e
-      #     mitmdump & sleep 5;
+          pm2 stop mitmdump
+          sleep 3;
 
-      #     ./scripts/kill-mitmdump.sh
-      #     sleep 3;
+      - name: install certificate
+        run: |
+          sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
 
-      # - name: install certificate
-      #   run: |
-      #     sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
+          # xcrun simctl list devices "iPhone 14"
 
-      #     # xcrun simctl list devices "iPhone 14"
+          xcrun simctl boot "iPhone 14"
 
-      #     xcrun simctl boot "iPhone 14"
+          # xcrun simctl getenv booted SIMULATOR_UDID
 
-      #     # xcrun simctl getenv booted SIMULATOR_UDID
+          # must boot first before adding root cert, add 5 mins to the process
+          xcrun simctl keychain $(xcrun simctl getenv booted SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
 
-      #     # must boot first before adding root cert, add 5 mins to the process
-      #     xcrun simctl keychain $(xcrun simctl getenv booted SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
 
       - name: test curl before
         run: |
           curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud
 
+
       - name: throttle bandwidth down
         run: |
+          dnctl -q flush
+          dnctl -q pipe flush
+          pfctl -f /etc/pf.conf
+          pfctl -E
+
+          pfctl -d
+          dnctl -q flush
+          dnctl -q pipe flush
+          dnctl pipe 1 config delay 0ms noerror
+          dnctl pipe 2 config delay 0ms noerror
+
           echo "dummynet in from mobile-e2e-site-1.test.mattermost.cloud to any pipe 1
           dummynet out from any to mobile-e2e-site-1.test.mattermost.cloud pipe 2" | sudo pfctl -f -
           
@@ -205,21 +219,21 @@ jobs:
         run: |
           curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud
 
-      # - name: start mitmdump
-      #   run: |
-      #     networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
-      #     networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
-
-      #     mitmdump --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts '127.0.0.1' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py &
-
-
-
 
       - name: Start React Native Metro Server
         run: npm run start &
 
       - name: Install Detox Dependencies
         run: cd detox && npm i
+
+
+      - name: start mitmdump
+        run: |
+          networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
+          networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
+
+          pm2 start mitmdump
+
 
       - name: Run Detox E2E Tests
         continue-on-error: true # Label might have been removed manually
@@ -232,12 +246,13 @@ jobs:
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
 
 
-      # - name: reset network settings
-      #   run: |
-      #     networksetup -setwebproxystate Ethernet "off"
-      #     networksetup -setsecurewebproxystate Ethernet "off"
+      - name: reset network settings
+        run: |
+          networksetup -setwebproxystate Ethernet "off"
+          networksetup -setsecurewebproxystate Ethernet "off"
 
-      #     sudo pfctl -d
+          sudo pfctl -d
+          pm2 stop mitmdump
 
           
       - name: Upload mitmdump Flow Output
