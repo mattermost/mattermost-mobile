@@ -18,6 +18,7 @@ jobs:
       - name: Install mitmproxy & pm2 (process manager)
         run: |
           brew install mitmproxy
+          brew install wget
 
           # install pm2
           npm i -g pm2
@@ -86,7 +87,7 @@ jobs:
 
       - name: test curl 2
         run: |
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true
+          wget -d https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true
 
       - name: test
         run: |
