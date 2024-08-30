@@ -24,7 +24,7 @@ jobs:
 
       - name:
         run: |
-          echo ${{ steps.the-devices.outputs.devices }}[0].name
+          echo ${{ steps.the-devices.outputs.devices }}."com.apple.CoreSimulator.SimRuntime.iOS-16-4"
 
           exit 1
 
