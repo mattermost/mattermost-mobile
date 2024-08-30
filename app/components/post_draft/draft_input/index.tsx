@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import GraphemeSplitter from 'grapheme-splitter';
-import React, {useCallback, useEffect, useMemo, useRef, useState, type RefObject} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -26,7 +26,6 @@ import Uploads from '../uploads';
 import Header from './header';
 
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
-import type {KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
 
 type Props = {
     testID?: string;
@@ -60,7 +59,6 @@ type Props = {
     addFiles: (files: FileInfo[]) => void;
     updatePostInputTop: (top: number) => void;
     setIsFocused: (isFocused: boolean) => void;
-    keyboardTracker: RefObject<KeyboardTrackingViewRef>;
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
@@ -131,7 +129,6 @@ export default function DraftInput({
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
     setIsFocused,
-    keyboardTracker,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -180,7 +177,6 @@ export default function DraftInput({
         inputRef.current?.setNativeProps({
             showSoftInputOnFocus: true,
         });
-        keyboardTracker.current?.resumeTracking(channelId);
         inputRef.current?.focus();
     }, []);
 
@@ -191,7 +187,6 @@ export default function DraftInput({
                 showSoftInputOnFocus: false,
             });
             Keyboard.dismiss();
-            keyboardTracker.current?.pauseTracking(channelId);
             inputRef.current?.focus();
             return;
         }
@@ -316,14 +311,12 @@ export default function DraftInput({
                     </View>
                 </ScrollView>
                 {isEmojiPickerOpen &&
-                <CustomEmojiPicker
-                    onEmojiPress={handleEmojiPress}
-                    focus={focus}
-                    deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
-                    setIsEmojiPickerOpen={setIsEmojiPickerOpen}
-                    keyboardTracker={keyboardTracker}
-                    channelId={channelId}
-                />
+                    <CustomEmojiPicker
+                        onEmojiPress={handleEmojiPress}
+                        focus={focus}
+                        deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
+                        setIsEmojiPickerOpen={setIsEmojiPickerOpen}
+                    />
                 }
             </SafeAreaView>
         </>

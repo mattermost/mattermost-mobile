@@ -24,6 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
+            paddingVertical: 4,
         },
         listContainer: {
             flexGrow: 1,

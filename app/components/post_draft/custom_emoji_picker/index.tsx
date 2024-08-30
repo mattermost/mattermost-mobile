@@ -6,19 +6,27 @@ import {DeviceEventEmitter} from 'react-native';
 import Animated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {Events} from '@app/constants';
+import {useTheme} from '@app/context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 
 import EmojiPicker from './emoji_picker';
-
-import type {KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
 
 type Props = {
     onEmojiPress: (emoji: string) => void;
     focus?: () => void;
     deleteCharFromCurrentCursorPosition: () => void;
     setIsEmojiPickerOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    keyboardTracker: React.RefObject<KeyboardTrackingViewRef>;
-    channelId: string;
 }
+
+const getStyleSheets = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            marginTop: 9,
+            borderTopWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
+        },
+    };
+});
 
 const EMOJI_PICKER_HEIGHT = 300;
 
@@ -27,11 +35,12 @@ const CustomEmojiPicker: React.FC<Props> = ({
     focus,
     deleteCharFromCurrentCursorPosition,
     setIsEmojiPickerOpen,
-    keyboardTracker,
-    channelId,
 }) => {
+    const theme = useTheme();
     const height = useSharedValue(EMOJI_PICKER_HEIGHT);
     const [isEmojiSearchFocused, setIsEmojiSearchFocused] = React.useState(false);
+
+    const styles = getStyleSheets(theme);
 
     useEffect(() => {
         const closeEmojiPicker = DeviceEventEmitter.addListener(Events.CLOSE_EMOJI_PICKER, () => {
@@ -56,10 +65,8 @@ const CustomEmojiPicker: React.FC<Props> = ({
     useEffect(() => {
         if (isEmojiSearchFocused) {
             height.value = withTiming(100, {duration: 0});
-            keyboardTracker.current?.resumeTracking(channelId);
         } else {
             height.value = withTiming(EMOJI_PICKER_HEIGHT, {duration: 0});
-            keyboardTracker.current?.pauseTracking(channelId);
         }
     }, [isEmojiSearchFocused]);
 
@@ -73,7 +80,7 @@ const CustomEmojiPicker: React.FC<Props> = ({
         onEmojiPress(emoji);
     };
     return (
-        <Animated.View style={[animatedStyle]}>
+        <Animated.View style={[styles.container, animatedStyle]}>
             <EmojiPicker
                 onEmojiPress={handleEmojiPress}
                 testID='custom_emoji_picker'

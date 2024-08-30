@@ -4,13 +4,15 @@
 import {Image} from 'expo-image';
 import {chunk} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, SectionList, type SectionListData, StyleSheet, View} from 'react-native';
+import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, SectionList, type SectionListData, View} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
+import {useTheme} from '@app/context/theme';
 import EmojiCategoryBar from '@app/screens/emoji_picker/picker/emoji_category_bar';
 import SectionFooter from '@app/screens/emoji_picker/picker/sections/section_footer';
 import SectionHeader, {SECTION_HEADER_HEIGHT} from '@app/screens/emoji_picker/picker/sections/section_header';
+import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import FileIcon from '@components/files/file_icon';
 import TouchableEmoji from '@components/touchable_emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -53,23 +55,32 @@ const getItemLayout = sectionListGetItemLayout({
     },
 });
 
-const styles = StyleSheet.create(({
-    flex: {flex: 1},
-    contentContainerStyle: {paddingBottom: 50, paddingLeft: 8, paddingRight: 8},
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: EMOJI_ROW_MARGIN,
-    },
-    emoji: {
-        height: EMOJI_SIZE,
-        width: EMOJI_SIZE,
-    },
-    imageEmoji: {
-        width: 28,
-        height: 28,
-    },
-}));
+const getStylesSheets = makeStyleSheetFromTheme((theme) => {
+    return {
+        flex: {
+            marginTop: 12,
+            flex: 1,
+            borderTopWidth: 1,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+        },
+        contentContainerStyle: {
+            paddingHorizontal: 8,
+        },
+        row: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginBottom: EMOJI_ROW_MARGIN,
+        },
+        emoji: {
+            height: EMOJI_SIZE,
+            width: EMOJI_SIZE,
+        },
+        imageEmoji: {
+            width: 28,
+            height: 28,
+        },
+    };
+});
 
 type Props = {
     customEmojis: CustomEmojiModel[];
@@ -106,9 +117,12 @@ const emptyEmoji: EmojiAlias = {
 };
 
 export const ImageEmoji = ({file, imageUrl, onEmojiPress, path}: ImageEmojiProps) => {
+    const theme = useTheme();
     const onPress = useCallback(() => {
         onEmojiPress('');
     }, [onEmojiPress]);
+
+    const styles = getStylesSheets(theme);
 
     return (
         <View style={styles.row}>
@@ -146,6 +160,7 @@ const EmojiSections: React.FC<Props> = ({
 }) => {
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
+    const theme = useTheme();
     const {currentIndex, selectedIndex} = useEmojiCategoryBar();
     const list = useRef<SectionList<EmojiSection>>(null);
     const categoryIndex = useRef(currentIndex);
@@ -154,6 +169,8 @@ const EmojiSections: React.FC<Props> = ({
     const [loadedAllCustomEmojis, setLoadedAllCustomEmojis] = useState(false);
     const offset = useRef(0);
     const manualScroll = useRef(false);
+
+    const styles = getStylesSheets(theme);
 
     const sections: EmojiSection[] = useMemo(() => {
         const emojisPerRow = isTablet ? EMOJIS_PER_ROW_TABLET : EMOJIS_PER_ROW;

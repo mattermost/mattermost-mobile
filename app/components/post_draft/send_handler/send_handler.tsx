@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState, type RefObject} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
@@ -26,7 +26,6 @@ import {confirmOutOfOfficeDisabled} from '@utils/user';
 import DraftInput from '../draft_input';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import type {KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
 
 type Props = {
     testID?: string;
@@ -59,7 +58,6 @@ type Props = {
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
     postPriority: PostPriority;
-    keyboardTracker: RefObject<KeyboardTrackingViewRef>;
 }
 
 export const INITIAL_PRIORITY = {
@@ -95,7 +93,6 @@ export default function SendHandler({
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
     postPriority,
-    keyboardTracker,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -295,7 +292,6 @@ export default function SendHandler({
             persistentNotificationInterval={persistentNotificationInterval}
             persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
             setIsFocused={setIsFocused}
-            keyboardTracker={keyboardTracker}
         />
     );
 }

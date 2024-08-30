@@ -18,7 +18,8 @@ const styles = StyleSheet.create({
     flex: {flex: 1},
     row: {
         flexDirection: 'row',
-        padding: 8,
+        paddingHorizontal: 12,
+        paddingTop: 12,
     },
 });
 

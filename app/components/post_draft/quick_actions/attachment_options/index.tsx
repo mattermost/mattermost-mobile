@@ -17,14 +17,17 @@ import type {AttachmentOptionsProps} from './attachment_options.types';
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         iconContainer: {
+            display: 'flex',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             borderRadius: 20,
-            marginRight: 4,
+            alignItems: 'center',
+            alignSelf: 'center',
+            justifyContent: 'center',
+            width: 40,
+            height: 40,
         },
         icon: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 10,
+            alignSelf: 'center',
         },
     };
 });

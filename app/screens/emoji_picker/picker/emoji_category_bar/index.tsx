@@ -3,7 +3,7 @@
 
 import {Divider} from '@rneui/base';
 import React, {useCallback} from 'react';
-import {View, ScrollView} from 'react-native';
+import {View, ScrollView, Pressable} from 'react-native';
 
 import CompassIcon from '@app/components/compass_icon';
 import {useIsTablet} from '@app/hooks/device';
@@ -17,7 +17,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         justifyContent: 'space-between',
         backgroundColor: theme.centerChannelBg,
-        height: 55,
         paddingHorizontal: 12,
         paddingTop: 11,
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -35,6 +34,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        gap: 5,
+    },
+    actionIcons: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 32,
+        height: 32,
     },
     category: {
         flexDirection: 'row',
@@ -94,17 +101,20 @@ const EmojiCategoryBar = ({
             {focus && deleteCharFromCurrentCursorPosition &&
             <View style={styles.categoryBar}>
                 <View style={styles.keyboardControls}>
-                    <CompassIcon
-                        name={'keyboard-outline'}
-                        size={20}
-                        color={changeOpacity(theme.centerChannelColor, 0.56)}
+                    <Pressable
                         onPress={() => focus()}
-                    />
+                        style={styles.actionIcons}
+                    >
+                        <CompassIcon
+                            name={'keyboard-outline'}
+                            size={20}
+                            color={changeOpacity(theme.centerChannelColor, 0.56)}
+                        />
+                    </Pressable>
                     <Divider
                         orientation='vertical'
                         color={changeOpacity(theme.centerChannelColor, 0.08)}
                         width={1}
-                        style={{marginHorizontal: 8}}
                     />
                 </View>
                 <View style={{...styles.category, flex: isTablet ? 0 : 1}}>
@@ -124,14 +134,17 @@ const EmojiCategoryBar = ({
                         orientation='vertical'
                         color={changeOpacity(theme.centerChannelColor, 0.08)}
                         width={1}
-                        style={{marginHorizontal: 8}}
                     />
-                    <CompassIcon
-                        name={'backspace-outline'}
-                        size={20}
-                        color={changeOpacity(theme.centerChannelColor, 0.56)}
+                    <Pressable
                         onPress={() => deleteCharFromCurrentCursorPosition()}
-                    />
+                        style={styles.actionIcons}
+                    >
+                        <CompassIcon
+                            name={'backspace-outline'}
+                            size={20}
+                            color={changeOpacity(theme.centerChannelColor, 0.56)}
+                        />
+                    </Pressable>
                 </View>
             </View>}
             {
