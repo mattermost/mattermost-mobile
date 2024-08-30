@@ -172,25 +172,29 @@ jobs:
           pm2 stop mitmdump
           sleep 3;
 
+      - name: Get simulator UDID
+        id: get-simulator-udid
+        run: |
+          simulator_udid=$(xcrun simctl list devices "iPhone 14" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-17-0"[0]["udid"]')
+          echo "simulator_udid="$(echo $simulator_udid) >> ${GITHUB_OUTPUT}
+
       - name: install certificate
         run: |
           sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
 
-          # xcrun simctl list devices "iPhone 14"
-
-          xcrun simctl boot "iPhone 14"
+          xcrun simctl boot ${{ steps.get-simulator-udid.outputs.simulator_udid }}
 
           # xcrun simctl getenv booted SIMULATOR_UDID
 
           # must boot first before adding root cert, add 5 mins to the process
-          xcrun simctl keychain $(xcrun simctl getenv booted SIMULATOR_UDID) add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
+          xcrun simctl keychain booted add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
 
           sleep 5;
 
 
       - name: show me booted simulators
         run: |
-          xcrun simctl list devices "iPhone 14"
+          xcrun simctl list devices booted
 
 
       - name: test curl before

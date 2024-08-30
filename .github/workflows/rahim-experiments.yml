@@ -3,8 +3,8 @@ name: Random Github Action Experiments
 on:
   push:
     branches:
-      - test-random-github-action-experiments
-      # - test-random-github-action-experiments-disabled-for-now
+      # - test-random-github-action-experiments
+      - test-random-github-action-experiments-disabled-for-now
 
 jobs:
 
@@ -19,7 +19,6 @@ jobs:
         id: the-devices
         run: |
           simulator_udid=$(xcrun simctl list devices "iPhone 14" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-17-0"[0]["udid"]')
-          echo $simulator_udid
           echo "simulator_udid="$(echo $simulator_udid) >> ${GITHUB_OUTPUT}
           
           # echo "devices"=$(xcrun simctl list devices "iPhone 14" -j)  >> "$GITHUB_OUTPUT"
