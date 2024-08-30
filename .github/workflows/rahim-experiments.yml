@@ -11,8 +11,6 @@ jobs:
 
   rahim-experimenting:
     runs-on: macos-14
-    outputs:
-      simulator_udid: ${{ steps.the-devices.outputs.simulator_udid }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -20,7 +18,9 @@ jobs:
       - name: get devices into an output
         id: the-devices
         run: |
-          echo "simulator_udid="$(xcrun simctl list devices "iPhone 14" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-17-0"[0]["udid"]') >> ${GITHUB_OUTPUT}
+          simulator_udid=$(xcrun simctl list devices "iPhone 14" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-17-0"[0]["udid"]')
+          echo $simulator_udid
+          echo "simulator_udid="$simulator_udid >> ${GITHUB_OUTPUT}
           
           # echo "devices"=$(xcrun simctl list devices "iPhone 14" -j)  >> "$GITHUB_OUTPUT"
           echo ${{ steps.the-devices.outputs.simulator_udid }}
