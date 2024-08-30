@@ -166,7 +166,7 @@ jobs:
       - name: Start mitmproxy via mitmdump and kill it (to get .mitmproxy folder)
         run: |
           set +e
-          pm2 start mitmdump -- --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
+          pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
           sleep 5
 
           pm2 stop mitmdump
@@ -237,14 +237,23 @@ jobs:
           sudo pfctl -E
 
 
-      - name: start mitmdump
+      - name: restart mitmdump
+        run: |
+          pm2 list
+          pm2 restart mitmdump
+
+          sleep 15;
+
+      - name: start proxy
         run: |
           networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
           networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
 
-          pm2 start mitmdump
+          sleep 5;
 
-          sleep 15;
+          networksetup -getwebproxy Ethernet
+          networksetup -getsecurewebproxy Ethernet
+
 
       - name: test curl after
         run: |
@@ -288,7 +297,9 @@ jobs:
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: ios-mitmdump-flow-output-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
-          path: /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
+          path: |
+            /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
+            /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log
 
 
 
