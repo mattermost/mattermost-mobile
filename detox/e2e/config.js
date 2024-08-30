@@ -8,7 +8,7 @@ module.exports = {
     setupFilesAfterEnv: ['./test/setup.ts'],
     maxWorkers: 1,
     testSequencer: './custom_sequencer.js',
-    testTimeout: 360000,
+    testTimeout: 120000,
     rootDir: '.',
     testMatch: ['<rootDir>/test/**/*.e2e.ts'],
     transform: {
