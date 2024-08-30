@@ -17,7 +17,7 @@ jobs:
 
       - name: get devices into an output
         id: the-devices
-        run: 
+        run: |
           xcrun simctl list devices "iPhone 14" -j | jq '.devices'
           
           # echo "devices"=$(xcrun simctl list devices "iPhone 14" -j)  >> "$GITHUB_OUTPUT"
