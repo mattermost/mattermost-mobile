@@ -3,17 +3,31 @@ name: Random Github Action Experiments
 on:
   push:
     branches:
-      # - test-random-github-action-experiments
-      - test-random-github-action-experiments-disabled-for-now
+      - test-random-github-action-experiments
+      # - test-random-github-action-experiments-disabled-for-now
 
 jobs:
 
 
   rahim-experimenting:
     runs-on: macos-14
+    outputs:
+      devices: ${{ steps.the-devicess.outputs.devices }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: get devices into an output
+        id: the-devices
+        run: 
+          devices=$(xcrun simctl list devices \"iPhone 14\" -j)
+          echo "::set-output name=devices::$devices"
+
+      - name:
+        run: |
+          echo "devices: ${{ steps.the-devices.outputs.devices }}"
+
+          exit 1
 
       - name: Install mitmproxy & pm2 (process manager)
         run: |
