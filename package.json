@@ -140,7 +140,7 @@
     "@types/uuid": "10.0.0",
     "@typescript-eslint/eslint-plugin": "7.13.1",
     "@typescript-eslint/parser": "7.13.1",
-    "axios": "1.7.3",
+    "axios": "1.7.5",
     "axios-cookiejar-support": "5.0.2",
     "babel-jest": "29.7.0",
     "babel-loader": "9.1.3",
