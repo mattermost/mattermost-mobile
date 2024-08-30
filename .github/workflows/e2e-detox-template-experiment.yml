@@ -167,16 +167,19 @@ jobs:
         run: |
           set +e
           pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
-          sleep 5
-
-          pm2 stop mitmdump
-          sleep 3;
 
       - name: Get simulator UDID
         id: get-simulator-udid
         run: |
           simulator_udid=$(xcrun simctl list devices "iPhone 14" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-17-4"[0]["udid"]')
           echo "simulator_udid="$(echo $simulator_udid) >> ${GITHUB_OUTPUT}
+
+      - name: Stop mitmdump (which should produce the .mitmproy folder)
+        run: |
+          pm2 stop mitmdump
+
+          # we need to wait for mitmdump to stop so it'll produce the .mitmproxy folder  
+          sleep 5; 
 
       - name: install certificate
         run: |
@@ -193,8 +196,7 @@ jobs:
 
 
       - name: show me booted simulators
-        run: |
-          xcrun simctl list devices booted
+        run: xcrun simctl list devices booted | grep "booted"
 
 
 
@@ -236,6 +238,15 @@ jobs:
           
           sudo pfctl -E
 
+          sleep 5;
+
+
+      - name: test curl after throttling
+        run: |
+          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=134'
+
+          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=134'
+
 
       - name: restart mitmdump
         run: |
@@ -243,6 +254,14 @@ jobs:
           pm2 restart mitmdump
 
           sleep 15;
+
+
+      - name: test curl after mitmdump restart
+        run: |
+          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=919'
+
+          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=919'
+
 
       - name: start proxy
         run: |
@@ -254,14 +273,18 @@ jobs:
           networksetup -getwebproxy Ethernet
           networksetup -getsecurewebproxy Ethernet
 
-
-      - name: test curl after
+      - name: test curl after starting proxy
         run: |
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=134'
+          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=777'
 
-      - name: test curl after
+          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=777'
+
+      - name: test curl and direct it into proxy
         run: |
+          curl --proxy "127.0.0.1:8080" -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=012'
+
           curl --proxy "127.0.0.1:8080" -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=012'
+
 
       - name: use chrome to visit target site after (also see if it goes into mitmdump)
         run: |
