@@ -20,7 +20,7 @@ jobs:
       - name: get devices into an output
         id: the-devices
         run: 
-          devices=$(xcrun simctl list devices \"iPhone 14\" -j)
+          devices=$(xcrun simctl list devices "iPhone 14" -j)
           echo "::set-output name=devices::$devices"
 
       - name:
