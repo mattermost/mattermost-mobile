@@ -67,7 +67,7 @@ const MINUTE = 60 * 1000;
 
 export const timeouts = {
     HALF_SEC: SECOND / 2,
-    ONE_SEC: SECOND,
+    ONE_SEC: SECOND * 2,
     TWO_SEC: SECOND * 2,
     FOUR_SEC: SECOND * 4,
     TEN_SEC: SECOND * 10,
