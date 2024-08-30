@@ -23,6 +23,9 @@ jobs:
           echo "simulator_udid="$(echo $simulator_udid) >> ${GITHUB_OUTPUT}
           
           # echo "devices"=$(xcrun simctl list devices "iPhone 14" -j)  >> "$GITHUB_OUTPUT"
+
+      - name: print device
+        run: |
           echo "${{ steps.the-devices.outputs.simulator_udid }}"
 
           exit 1
