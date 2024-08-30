@@ -196,7 +196,7 @@ jobs:
 
 
       - name: show me booted simulators
-        run: xcrun simctl list devices booted | grep "booted"
+        run: xcrun simctl list devices booted
 
 
 
