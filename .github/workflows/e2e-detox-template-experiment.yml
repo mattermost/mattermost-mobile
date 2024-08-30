@@ -209,7 +209,7 @@ jobs:
 
       - name: test curl before
         run: |
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&def-123
+          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&def-123'
 
 
       - name: throttle bandwidth down
@@ -248,7 +248,7 @@ jobs:
           
       - name: test curl after
         run: |
-          curl --proxy "127.0.0.1:8080" -o /dev/null -s -w 'Total: %{time_total}s\n'  https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=012
+          curl --proxy "127.0.0.1:8080" -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=012'
 
       - name: use chrome to visit target site after (also see if it goes into mitmdump)
         run: |
