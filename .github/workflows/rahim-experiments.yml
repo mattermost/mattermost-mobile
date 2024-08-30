@@ -20,11 +20,11 @@ jobs:
       - name: get devices into an output
         id: the-devices
         run: 
-          echo "devices=${{ fromJSON(" $(xcrun simctl list devices "iPhone 14" -j) ") }}" >> "$GITHUB_OUTPUT"
+          echo "devices="$(xcrun simctl list devices "iPhone 14" -j) >> "$GITHUB_OUTPUT"
 
       - name:
         run: |
-          echo "devices: ${{ steps.the-devices.outputs.devices }}"
+          echo "devices=${{ fromJSON(steps.the-devices.outputs.devices) }}"
 
           exit 1
 
