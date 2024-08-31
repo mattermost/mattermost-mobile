@@ -703,6 +703,8 @@
   "mobile.no_results_with_term.messages": "Не найдено совпадений для \"{term}\"",
   "mobile.oauth.failed_to_login": "Ваша попытка входа не удалась. Пожалуйста, попробуйте ещё раз.",
   "mobile.oauth.something_wrong.okButton": "ОК",
+  "mobile.oauth.success.description": "Входим в систему, один момент...",
+  "mobile.oauth.success.title": "Аутентификация успешна",
   "mobile.oauth.switch_to_browser": "Вы перенаправляетесь к поставщику услуг входа в систему",
   "mobile.oauth.switch_to_browser.error_title": "Ошибка при входе",
   "mobile.oauth.switch_to_browser.title": "Перенаправление...",
