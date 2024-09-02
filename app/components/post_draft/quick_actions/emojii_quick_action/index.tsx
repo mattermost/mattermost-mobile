@@ -13,7 +13,7 @@ type Props = {
     testID?: string;
     disabled?: boolean;
     handleToggleEmojiPicker: () => void;
-    isEmojiPickerOpen: boolean;
+    isEmojiPickerFocused: boolean;
 }
 
 const getStyleSheet = (theme: Theme, isEmojiPickerOpen: boolean) => {
@@ -37,11 +37,11 @@ const EmojiQuickAction: React.FC<Props> = ({
     testID,
     disabled,
     handleToggleEmojiPicker,
-    isEmojiPickerOpen,
+    isEmojiPickerFocused,
 }) => {
     const theme = useTheme();
-    const style = getStyleSheet(theme, isEmojiPickerOpen);
-    const iconColor = isEmojiPickerOpen ? changeOpacity(theme.buttonBg, 1) : changeOpacity(theme.centerChannelColor, 0.64);
+    const style = getStyleSheet(theme, isEmojiPickerFocused);
+    const iconColor = isEmojiPickerFocused ? changeOpacity(theme.buttonBg, 1) : changeOpacity(theme.centerChannelColor, 0.64);
     const actionTestID = disabled ? `${testID}.disabled` : testID;
 
     return (

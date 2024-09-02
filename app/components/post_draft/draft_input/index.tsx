@@ -26,6 +26,7 @@ import Uploads from '../uploads';
 import Header from './header';
 
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
+import type {KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
 
 type Props = {
     testID?: string;
@@ -59,6 +60,8 @@ type Props = {
     addFiles: (files: FileInfo[]) => void;
     updatePostInputTop: (top: number) => void;
     setIsFocused: (isFocused: boolean) => void;
+    keyboardTracker: React.RefObject<KeyboardTrackingViewRef>;
+    scrollViewNativeID: string | undefined;
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
@@ -129,11 +132,14 @@ export default function DraftInput({
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
     setIsFocused,
+    keyboardTracker,
+    scrollViewNativeID,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+    const [isEmojiPickerFocused, setIsEmojiPickerFocused] = useState(false);
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
@@ -173,7 +179,6 @@ export default function DraftInput({
     const inputRef = useRef<PasteInputRef>();
 
     const focus = useCallback(() => {
-        setIsEmojiPickerOpen(false);
         inputRef.current?.setNativeProps({
             showSoftInputOnFocus: true,
         });
@@ -183,15 +188,30 @@ export default function DraftInput({
     const handleToggleEmojiPicker = () => {
         if (!isEmojiPickerOpen) {
             setIsEmojiPickerOpen(true);
+            setIsEmojiPickerFocused(true);
             inputRef.current?.setNativeProps({
                 showSoftInputOnFocus: false,
             });
             Keyboard.dismiss();
-            inputRef.current?.focus();
+            keyboardTracker.current?.pauseTracking(scrollViewNativeID || channelId);
             return;
         }
-        setIsEmojiPickerOpen(false);
-        focus();
+        if (Platform.OS === 'android' && isEmojiPickerFocused) {
+            setIsEmojiPickerFocused(false);
+            setIsEmojiPickerOpen(false);
+            focus();
+            return;
+        }
+        if (Platform.OS === 'ios' && Keyboard.isVisible()) {
+            inputRef.current?.setNativeProps({
+                showSoftInputOnFocus: false,
+            });
+            Keyboard.dismiss();
+            setIsEmojiPickerFocused(true);
+        } else {
+            setIsEmojiPickerFocused(false);
+            focus();
+        }
     };
 
     const deleteCharFromCurrentCursorPosition = () => {
@@ -301,7 +321,7 @@ export default function DraftInput({
                             canShowPostPriority={canShowPostPriority}
                             focus={focus}
                             handleToggleEmojiPicker={handleToggleEmojiPicker}
-                            isEmojiPickerOpen={isEmojiPickerOpen}
+                            isEmojiPickerFocused={isEmojiPickerFocused}
                         />
                         <SendAction
                             testID={sendActionTestID}
@@ -316,6 +336,7 @@ export default function DraftInput({
                         focus={focus}
                         deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
                         setIsEmojiPickerOpen={setIsEmojiPickerOpen}
+                        setIsEmojiPickerFocused={setIsEmojiPickerFocused}
                     />
                 }
             </SafeAreaView>

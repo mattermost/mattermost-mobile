@@ -16,6 +16,7 @@ type Props = {
     focus?: () => void;
     deleteCharFromCurrentCursorPosition: () => void;
     setIsEmojiPickerOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setIsEmojiPickerFocused: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const getStyleSheets = makeStyleSheetFromTheme((theme) => {
@@ -35,6 +36,7 @@ const CustomEmojiPicker: React.FC<Props> = ({
     focus,
     deleteCharFromCurrentCursorPosition,
     setIsEmojiPickerOpen,
+    setIsEmojiPickerFocused,
 }) => {
     const theme = useTheme();
     const height = useSharedValue(EMOJI_PICKER_HEIGHT);
@@ -52,6 +54,7 @@ const CustomEmojiPicker: React.FC<Props> = ({
                 }, (finished) => {
                     if (finished) {
                         runOnJS(setIsEmojiPickerOpen)(false);
+                        runOnJS(setIsEmojiPickerFocused)(false);
                     }
                 });
             }

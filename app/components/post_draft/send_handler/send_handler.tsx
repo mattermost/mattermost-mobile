@@ -26,6 +26,7 @@ import {confirmOutOfOfficeDisabled} from '@utils/user';
 import DraftInput from '../draft_input';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type {KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
 
 type Props = {
     testID?: string;
@@ -58,6 +59,8 @@ type Props = {
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
     postPriority: PostPriority;
+    keyboardTracker: React.RefObject<KeyboardTrackingViewRef>;
+    scrollViewNativeID: string | undefined;
 }
 
 export const INITIAL_PRIORITY = {
@@ -93,6 +96,8 @@ export default function SendHandler({
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
     postPriority,
+    keyboardTracker,
+    scrollViewNativeID,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -292,6 +297,8 @@ export default function SendHandler({
             persistentNotificationInterval={persistentNotificationInterval}
             persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
             setIsFocused={setIsFocused}
+            keyboardTracker={keyboardTracker}
+            scrollViewNativeID={scrollViewNativeID}
         />
     );
 }
