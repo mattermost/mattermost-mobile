@@ -454,7 +454,7 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
 
         const isCRTEnabled = await getIsCRTEnabled(database);
         const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled);
-        const result = await processPostsFetched(data);
+        const result = processPostsFetched(data);
         if (!fetchOnly) {
             const models = await operator.handlePosts({
                 ...result,

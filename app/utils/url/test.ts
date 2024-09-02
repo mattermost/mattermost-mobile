@@ -437,7 +437,8 @@ describe('UrlUtils', () => {
             const onError = jest.fn();
             const onSuccess = jest.fn();
 
-            await UrlUtils.tryOpenURL(url, onError, onSuccess);
+            UrlUtils.tryOpenURL(url, onError, onSuccess);
+            await TestHelper.wait(100);
             expect(onError).not.toHaveBeenCalled();
             expect(onSuccess).toHaveBeenCalledTimes(1);
         });

@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {match} from 'path-to-regexp';
-import {createIntl, type IntlShape} from 'react-intl';
+import {type IntlShape} from 'react-intl';
+import {Navigation} from 'react-native-navigation';
 import urlParse from 'url-parse';
 
 import {makeDirectChannel, switchToChannelByName} from '@actions/remote/channel';
@@ -12,7 +13,7 @@ import DeepLinkType from '@app/constants/deep_linking';
 import {DeepLink, Launch, Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import {DEFAULT_LOCALE, t} from '@i18n';
 import WebsocketManager from '@managers/websocket_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
@@ -20,6 +21,7 @@ import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
+import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
 import {addNewServer} from '@utils/server';
@@ -36,9 +38,9 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 const deepLinkScreens: AvailableScreens[] = [Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD];
 
-export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape, location?: string) {
+export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape, location?: string, asServer = false) {
     try {
-        const parsed = parseDeepLink(deepLinkUrl);
+        const parsed = parseDeepLink(deepLinkUrl, asServer);
         if (parsed.type === DeepLink.Invalid || !parsed.data || !parsed.data.serverUrl) {
             return {error: true};
         }
@@ -49,7 +51,11 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
         // After checking the server for http & https then we add it
         if (!existingServerUrl) {
             const theme = EphemeralStore.theme || getDefaultThemeByAppearance();
-            addNewServer(theme, parsed.data.serverUrl, undefined, parsed);
+            if (NavigationStore.getVisibleScreen() === Screens.SERVER) {
+                Navigation.updateProps(Screens.SERVER, {serverUrl: parsed.data.serverUrl});
+            } else if (!NavigationStore.getScreensInStack().includes(Screens.SERVER)) {
+                addNewServer(theme, parsed.data.serverUrl, undefined, parsed);
+            }
             return {error: false};
         }
 
@@ -63,10 +69,7 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
         const {database} = DatabaseManager.getServerDatabaseAndOperator(existingServerUrl);
         const currentUser = await getCurrentUser(database);
         const locale = currentUser?.locale || DEFAULT_LOCALE;
-        const intl = intlShape || createIntl({
-            locale,
-            messages: getTranslations(locale),
-        });
+        const intl = intlShape || getIntlShape(locale);
 
         switch (parsed.type) {
             case DeepLink.Channel: {
@@ -135,7 +138,49 @@ type PermalinkPathParams = {
 const PERMALINK_PATH = `:serverUrl(.*)/:teamName(${TEAM_NAME_PATH_PATTERN})/pl/:postId(${ID_PATH_PATTERN})`;
 export const matchPermalinkDeeplink = match<PermalinkPathParams>(PERMALINK_PATH);
 
-export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
+type ServerPathParams = {
+    serverUrl: string;
+    path: string;
+}
+
+export const matchServerDeepLink = match<ServerPathParams>(':serverUrl(.*)/:path(.*)', {decode: decodeURIComponent});
+const reservedWords = ['login', 'signup', 'admin_console'];
+
+export function extractServerUrl(url: string) {
+    const deepLinkUrl = decodeURIComponent(url).replace(/\.{2,}/g, '').replace(/\/+/g, '/');
+
+    const pattern = new RegExp(
+
+        // Match the domain, IP address, or localhost
+        '^([a-zA-Z0-9.-]+|localhost|\\d{1,3}(?:\\.\\d{1,3}){3})' +
+
+        // Match optional port
+        '(?::(\\d+))?' +
+
+        // Match path segments
+        '(?:/([a-zA-Z0-9-/_]+))?/?$',
+    );
+
+    if (!pattern.test(deepLinkUrl)) {
+        return null;
+    }
+
+    const matched = matchServerDeepLink(deepLinkUrl);
+
+    if (matched) {
+        const {path} = matched.params;
+        const segments = path.split('/');
+
+        if (segments.length > 0 && reservedWords.includes(segments[segments.length - 1])) {
+            return matched.params.serverUrl;
+        }
+        return path ? `${matched.params.serverUrl}/${path}` : matched.params.serverUrl;
+    }
+
+    return deepLinkUrl;
+}
+
+export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWithData {
     try {
         const url = removeProtocol(deepLinkUrl);
 
@@ -160,6 +205,13 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
         if (permalinkMatch) {
             const {params: {serverUrl, teamName, postId}} = permalinkMatch;
             return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl, teamName, postId}};
+        }
+
+        if (asServer) {
+            const serverMatch = extractServerUrl(url);
+            if (serverMatch) {
+                return {type: DeepLink.Server, url: deepLinkUrl, data: {serverUrl: serverMatch}};
+            }
         }
     } catch (err) {
         // do nothing just return invalid deeplink
@@ -196,7 +248,7 @@ export function matchDeepLink(url: string, serverURL?: string, siteURL?: string)
 }
 
 export const getLaunchPropsFromDeepLink = (deepLinkUrl: string, coldStart = false): LaunchProps => {
-    const parsed = parseDeepLink(deepLinkUrl);
+    const parsed = parseDeepLink(deepLinkUrl, coldStart);
     const launchProps: LaunchProps = {
         launchType: Launch.DeepLink,
         coldStart,
@@ -205,6 +257,7 @@ export const getLaunchPropsFromDeepLink = (deepLinkUrl: string, coldStart = fals
     switch (parsed.type) {
         case DeepLink.Invalid:
             launchProps.launchError = true;
+            launchProps.extra = parsed;
             break;
         default: {
             launchProps.extra = parsed;

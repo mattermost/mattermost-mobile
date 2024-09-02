@@ -2,23 +2,25 @@
 // See LICENSE.txt for license information.
 
 import {createIntl} from 'react-intl';
+import {Navigation} from 'react-native-navigation';
 
 import {makeDirectChannel, switchToChannelByName} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchUsersByUsernames} from '@actions/remote/user';
-import {DeepLink, Launch, Preferences} from '@constants';
+import {DeepLink, Launch, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import WebsocketManager from '@managers/websocket_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {queryUsersByUsername} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
 import {logError} from '@utils/log';
 import {addNewServer} from '@utils/server';
 
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '../draft';
 
-import {alertInvalidDeepLink, getLaunchPropsFromDeepLink, handleDeepLink} from '.';
+import {alertInvalidDeepLink, extractServerUrl, getLaunchPropsFromDeepLink, handleDeepLink} from '.';
 
 jest.mock('@actions/remote/user', () => ({
     fetchUsersByUsernames: jest.fn(),
@@ -51,6 +53,7 @@ jest.mock('@store/navigation_store', () => ({
     getVisibleScreen: jest.fn(() => 'HOME'),
     hasModalsOpened: jest.fn(() => false),
     waitUntilScreenHasLoaded: jest.fn(),
+    getScreensInStack: jest.fn().mockReturnValue([]),
 }));
 
 jest.mock('@utils/server', () => ({
@@ -77,6 +80,19 @@ jest.mock('@i18n', () => ({
     getTranslations: jest.fn(() => ({})),
     t: jest.fn((id) => id),
 }));
+
+describe('extractServerUrl', () => {
+    it('should extract the sanitized server url', () => {
+        expect(extractServerUrl('example.com:8080//path/to///login')).toEqual('example.com:8080/path/to');
+        expect(extractServerUrl('localhost:3000/signup')).toEqual('localhost:3000');
+        expect(extractServerUrl('192.168.0.1/admin_console')).toEqual('192.168.0.1');
+        expect(extractServerUrl('example.com/path//to/resource')).toEqual('example.com/path/to/resource');
+        expect(extractServerUrl('my.local.network/.../resource/admin_console')).toEqual('my.local.network/resource');
+        expect(extractServerUrl('my.local.network//ad-1/channels/%252f%252e.town-square')).toEqual(null);
+        expect(extractServerUrl('example.com:8080')).toEqual('example.com:8080');
+        expect(extractServerUrl('example.com:8080/')).toEqual('example.com:8080');
+    });
+});
 
 describe('handleDeepLink', () => {
     const intl = createIntl({locale: 'en', messages: {}});
@@ -112,6 +128,28 @@ describe('handleDeepLink', () => {
         expect(dismissAllModalsAndPopToRoot).toHaveBeenCalled();
         expect(DatabaseManager.setActiveServerDatabase).toHaveBeenCalledWith('https://existingserver.com');
         expect(WebsocketManager.initializeClient).toHaveBeenCalledWith('https://existingserver.com');
+        expect(result).toEqual({error: false});
+    });
+
+    it('should update the server url in the server url screen', async () => {
+        (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://currentserver.com');
+        (DatabaseManager.searchUrl as jest.Mock).mockReturnValueOnce(null);
+
+        (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValueOnce(Screens.SERVER);
+        const result = await handleDeepLink('https://currentserver.com/team/channels/town-square', undefined, undefined, true);
+        const spyOnUpdateProps = jest.spyOn(Navigation, 'updateProps');
+        expect(spyOnUpdateProps).toHaveBeenCalledWith(Screens.SERVER, {serverUrl: 'currentserver.com'});
+        expect(result).toEqual({error: false});
+    });
+
+    it('should not display the new server modal if the server screen is on the stack but not as the visible screen', async () => {
+        (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://currentserver.com');
+        (DatabaseManager.searchUrl as jest.Mock).mockReturnValueOnce(null);
+
+        (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValueOnce(Screens.LOGIN);
+        (NavigationStore.getScreensInStack as jest.Mock).mockReturnValueOnce([Screens.SERVER, Screens.LOGIN]);
+        const result = await handleDeepLink('https://currentserver.com/team/channels/town-square', undefined, undefined, true);
+        expect(addNewServer).not.toHaveBeenCalled();
         expect(result).toEqual({error: false});
     });
 
@@ -187,6 +225,10 @@ describe('getLaunchPropsFromDeepLink', () => {
             launchType: Launch.DeepLink,
             coldStart: false,
             launchError: true,
+            extra: {
+                type: DeepLink.Invalid,
+                url: 'invalid-url',
+            },
         });
     });
 
@@ -201,6 +243,23 @@ describe('getLaunchPropsFromDeepLink', () => {
             url: 'https://existingserver.com/team/channels/town-square',
         };
         const result = getLaunchPropsFromDeepLink('https://existingserver.com/team/channels/town-square', true);
+
+        expect(result).toEqual({
+            launchType: Launch.DeepLink,
+            coldStart: true,
+            extra: extraData,
+        });
+    });
+
+    it('should return launch props with extra data to add a new server when opened from cold start', () => {
+        const extraData = {
+            type: DeepLink.Server,
+            data: {
+                serverUrl: 'existingserver.com',
+            },
+            url: 'https://existingserver.com/login',
+        };
+        const result = getLaunchPropsFromDeepLink('https://existingserver.com/login', true);
 
         expect(result).toEqual({
             launchType: Launch.DeepLink,

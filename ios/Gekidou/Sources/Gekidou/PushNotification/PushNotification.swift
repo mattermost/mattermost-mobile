@@ -34,7 +34,7 @@ public class PushNotification: NSObject {
                         "Mattermost Notifications: process receipt response for serverUrl %{public}@ does not contain data",
                         ackNotification.serverUrl
                     )
-                    completionHandler(notification)
+                    completionHandler(nil)
                     return
                 }
                 notification.userInfo["server_url"] = ackNotification.serverUrl
@@ -75,9 +75,14 @@ public class PushNotification: NSObject {
                 url, withMethod: "POST", withBody: jsonData,
                 andHeaders: headers, forServerUrl: ackNotification.serverUrl) {[weak self] data, response, error in
                     if error != nil && ackNotification.isIdLoaded,
+                       let nsError = error as? NSError,
                        let fibonacciBackoffsInSeconds = self?.fibonacciBackoffsInSeconds,
                        let retryIndex = self?.retryIndex,
                        fibonacciBackoffsInSeconds.count > retryIndex {
+                        if nsError.code == NSURLErrorCancelled {
+                            completionHandler(nil)
+                            return
+                        }
                         let backoffInSeconds = fibonacciBackoffsInSeconds[retryIndex]
                         self?.retryIndex += 1
 

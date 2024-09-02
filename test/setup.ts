@@ -150,6 +150,8 @@ jest.doMock('react-native', () => {
             removeChannelNotifications: jest.fn().mockImplementation(),
             removeThreadNotifications: jest.fn().mockImplementation(),
             removeServerNotifications: jest.fn().mockImplementation(),
+
+            unlockOrientation: jest.fn(),
         },
         APIClient: {
             getConstants: () => ({
@@ -289,6 +291,7 @@ jest.mock('react-native-navigation', () => {
             mergeOptions: jest.fn(),
             showOverlay: jest.fn(),
             dismissOverlay: jest.fn(),
+            updateProps: jest.fn(),
         },
     };
 });
@@ -320,6 +323,7 @@ jest.mock('react-native-notifications', () => {
                 }),
                 setBadgeCount: jest.fn(),
             },
+            postLocalNotification: jest.fn((notification) => notification),
         },
     };
 });

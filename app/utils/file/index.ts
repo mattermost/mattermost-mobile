@@ -327,7 +327,7 @@ export function getFormattedFileSize(bytes: number): string {
     return `${bytes} B`;
 }
 
-export function getFileType(file: FileInfo): string {
+export function getFileType(file: FileInfo | ExtractedFileInfo): string {
     if (!file || !file.extension) {
         return 'other';
     }
@@ -380,11 +380,11 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
                 }
             }
 
-            return `${cacheDirectory}/${server}/${filename}-${fileIdPath}.${extension}`;
+            return `${cacheDirectory}${server}/${filename}-${fileIdPath}.${extension}`;
         } else if (file?.id && hasValidExtension) {
-            return `${cacheDirectory}/${server}/${fileIdPath}.${file.extension}`;
+            return `${cacheDirectory}${server}/${fileIdPath}.${file.extension}`;
         } else if (file?.id) {
-            return `${cacheDirectory}/${server}/${fileIdPath}`;
+            return `${cacheDirectory}${server}/${fileIdPath}`;
         }
     }
 

@@ -43,7 +43,7 @@ class GlobalEventHandler {
         }
 
         if (event.url) {
-            const {error} = await handleDeepLink(event.url);
+            const {error} = await handleDeepLink(event.url, undefined, undefined, true);
             if (error) {
                 alertInvalidDeepLink(getIntlShape(DEFAULT_LOCALE));
             }
