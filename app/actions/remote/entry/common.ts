@@ -436,7 +436,7 @@ export const setExtraSessionProps = async (serverUrl: string) => {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const serverVersion = await getConfigValue(database, 'Version');
 
-        if (isMinimumServerVersion(serverVersion, 1, 2, 3)) {
+        if (isMinimumServerVersion(serverVersion, 10, 1, 0)) {
             const res = await checkNotifications();
             const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
             const client = NetworkManager.getClient(serverUrl);
