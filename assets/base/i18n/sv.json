@@ -703,6 +703,8 @@
   "mobile.no_results_with_term.messages": "Inga träffar hittades för “{term}”",
   "mobile.oauth.failed_to_login": "Inloggningen misslyckades. Försök igen.",
   "mobile.oauth.something_wrong.okButton": "OK",
+  "mobile.oauth.success.description": "Inloggning pågår, ett ögonblick...",
+  "mobile.oauth.success.title": "Autentiseringen lyckades",
   "mobile.oauth.switch_to_browser": "Du omdirigeras till din inloggningsleverantör",
   "mobile.oauth.switch_to_browser.error_title": "Fel vid inloggning",
   "mobile.oauth.switch_to_browser.title": "Omdirigeras...",

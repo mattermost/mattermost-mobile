@@ -424,7 +424,7 @@
   "settings.about.server.version": "Verzija servera: {version} (izgradnja {buildNumber}",
   "settings.about.server.version.noBuild": "Verzija servera: {version}",
   "settings.about.server.version.title": "Verzija servera:",
-  "settings.about.server.version.value": "{version} (izgradnja {number})",
+  "settings.about.server.version.value": "{version} (izgradnja {buildNumber})",
   "settings.advanced.cancel": "Odustani",
   "settings.advanced.delete": "Izbriši",
   "settings.advanced.delete_data": "Izbriši lokalne datoteke",
