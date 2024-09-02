@@ -486,6 +486,7 @@
   "mobile.calls_ended_at": "Zakończone",
   "mobile.calls_error_message": "Błąd: {error}",
   "mobile.calls_error_title": "Błąd",
+  "mobile.calls_group_calls_not_available": "Połączenia są dostępne tylko w kanałach DM.",
   "mobile.calls_headset": "Zestaw słuchawkowy",
   "mobile.calls_hide_cc": "Ukryj napisy na żywo",
   "mobile.calls_host": "host",

@@ -486,6 +486,7 @@
   "mobile.calls_ended_at": "Окончен в",
   "mobile.calls_error_message": "Ошибка: {error}",
   "mobile.calls_error_title": "Ошибка",
+  "mobile.calls_group_calls_not_available": "Звонки доступны только в приватных каналах (DM).",
   "mobile.calls_headset": "Гарнитура",
   "mobile.calls_hide_cc": "Скрыть живые титры",
   "mobile.calls_host": "хост",

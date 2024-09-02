@@ -10,6 +10,7 @@ import {Linking, Platform, Text, View, type EventSubscription} from 'react-nativ
 import urlParse from 'url-parse';
 
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import {Sso} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -59,6 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
     const [error, setError] = useState<string>('');
+    const [loginSuccess, setLoginSuccess] = useState(false);
     const style = getStyleSheet(theme);
     const intl = useIntl();
     let customUrlScheme = Sso.REDIRECT_URL_SCHEME;
@@ -68,6 +70,7 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLogi
 
     const redirectUrl = customUrlScheme + 'callback';
     const init = async (resetErrors = true) => {
+        setLoginSuccess(false);
         if (resetErrors !== false) {
             setError('');
             setLoginError('');
@@ -87,6 +90,7 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLogi
             const bearerToken = resultUrl.query?.MMAUTHTOKEN;
             const csrfToken = resultUrl.query?.MMCSRF;
             if (bearerToken && csrfToken) {
+                setLoginSuccess(true);
                 doSSOLogin(bearerToken, csrfToken);
             }
         } else if (Platform.OS === 'ios' || result.type === 'dismiss') {
@@ -110,6 +114,7 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLogi
                     const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
                     const csrfToken = parsedUrl.query?.MMCSRF;
                     if (bearerToken && csrfToken) {
+                        setLoginSuccess(true);
                         doSSOLogin(bearerToken, csrfToken);
                     } else {
                         setError(
@@ -135,50 +140,75 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLogi
         };
     }, []);
 
+    let content;
+    if (loginSuccess) {
+        content = (
+            <View style={style.infoContainer}>
+                <Loading/>
+                <FormattedText
+                    id='mobile.oauth.success.title'
+                    testID='mobile.oauth.success.title'
+                    defaultMessage='Authentication successful'
+                    style={style.infoTitle}
+                />
+                <FormattedText
+                    id='mobile.oauth.success.description'
+                    testID='mobile.oauth.success.description'
+                    defaultMessage='Signing in now, just a moment...'
+                    style={style.infoText}
+                />
+            </View>
+        );
+    } else if (loginError || error) {
+        content = (
+            <View style={style.infoContainer}>
+                <FormattedText
+                    id='mobile.oauth.switch_to_browser.error_title'
+                    testID='mobile.oauth.switch_to_browser.error_title'
+                    defaultMessage='Sign in error'
+                    style={style.infoTitle}
+                />
+                <Text style={style.errorText}>
+                    {`${loginError || error}.`}
+                </Text>
+                <Button
+                    buttonStyle={[style.button, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
+                    testID='mobile.oauth.try_again'
+                    onPress={() => init()}
+                >
+                    <FormattedText
+                        id='mobile.oauth.try_again'
+                        defaultMessage='Try again'
+                        style={buttonTextStyle(theme, 'lg', 'primary', 'default')}
+                    />
+                </Button>
+            </View>
+        );
+    } else {
+        content = (
+            <View style={style.infoContainer}>
+                <FormattedText
+                    id='mobile.oauth.switch_to_browser.title'
+                    testID='mobile.oauth.switch_to_browser.title'
+                    defaultMessage='Redirecting...'
+                    style={style.infoTitle}
+                />
+                <FormattedText
+                    id='mobile.oauth.switch_to_browser'
+                    testID='mobile.oauth.switch_to_browser'
+                    defaultMessage='You are being redirected to your login provider'
+                    style={style.infoText}
+                />
+            </View>
+        );
+    }
+
     return (
         <View
             style={style.container}
             testID='sso.redirect_url'
         >
-            {loginError || error ? (
-                <View style={style.infoContainer}>
-                    <FormattedText
-                        id='mobile.oauth.switch_to_browser.error_title'
-                        testID='mobile.oauth.switch_to_browser.error_title'
-                        defaultMessage='Sign in error'
-                        style={style.infoTitle}
-                    />
-                    <Text style={style.errorText}>
-                        {`${loginError || error}.`}
-                    </Text>
-                    <Button
-                        buttonStyle={[style.button, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
-                        testID='mobile.oauth.try_again'
-                        onPress={() => init()}
-                    >
-                        <FormattedText
-                            id='mobile.oauth.try_again'
-                            defaultMessage='Try again'
-                            style={buttonTextStyle(theme, 'lg', 'primary', 'default')}
-                        />
-                    </Button>
-                </View>
-            ) : (
-                <View style={style.infoContainer}>
-                    <FormattedText
-                        id='mobile.oauth.switch_to_browser.title'
-                        testID='mobile.oauth.switch_to_browser.title'
-                        defaultMessage='Redirecting...'
-                        style={style.infoTitle}
-                    />
-                    <FormattedText
-                        id='mobile.oauth.switch_to_browser'
-                        testID='mobile.oauth.switch_to_browser'
-                        defaultMessage='You are being redirected to your login provider'
-                        style={style.infoText}
-                    />
-                </View>
-            )}
+            {content}
         </View>
     );
 };
