@@ -703,6 +703,8 @@
   "mobile.no_results_with_term.messages": "Nie znaleziono dopasowań dla \"{term}\"",
   "mobile.oauth.failed_to_login": "Twoja próba logowania nie powiodła się. Proszę spróbować ponownie.",
   "mobile.oauth.something_wrong.okButton": "OK",
+  "mobile.oauth.success.description": "Trwa logowanie, chwileczkę...",
+  "mobile.oauth.success.title": "Uwierzytelnianie powiodło się",
   "mobile.oauth.switch_to_browser": "Zostaniesz przekierowany do swojego dostawcy usług logowania",
   "mobile.oauth.switch_to_browser.error_title": "Błąd w podpisie",
   "mobile.oauth.switch_to_browser.title": "Przekierowanie...",
