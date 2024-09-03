@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
-import {DeviceEventEmitter, Keyboard} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 import Animated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {Events} from '@app/constants';
@@ -19,7 +19,6 @@ type Props = {
     channelId: string;
     keyboardTracker: React.RefObject<KeyboardTrackingViewRef>;
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
-    isEmojiPickerFocused: boolean;
     onEmojiPress: (emoji: string) => void;
     handleToggleEmojiPicker: () => void;
     deleteCharFromCurrentCursorPosition: () => void;
@@ -44,7 +43,6 @@ const CustomEmojiPicker: React.FC<Props> = ({
     channelId,
     keyboardTracker,
     inputRef,
-    isEmojiPickerFocused,
     onEmojiPress,
     handleToggleEmojiPicker,
     deleteCharFromCurrentCursorPosition,
@@ -89,17 +87,9 @@ const CustomEmojiPicker: React.FC<Props> = ({
         height.value = withTiming(EMOJI_PICKER_HEIGHT, {duration: 0});
     }, [isEmojiSearchFocused]);
 
-    useEffect(() => {
-        if (!isEmojiPickerFocused && isEmojiSearchFocused) {
-            setIsEmojiPickerFocused(false);
-            setIsEmojiPickerFocused(true);
-            Keyboard.dismiss();
-        }
-    }, [isEmojiPickerFocused]);
-
     const animatedStyle = useAnimatedStyle(() => {
         return {
-            height: height.value, // Bind the derived height value
+            height: height.value,
         };
     });
 

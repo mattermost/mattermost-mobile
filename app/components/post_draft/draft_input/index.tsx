@@ -355,7 +355,6 @@ export default function DraftInput({
                         handleToggleEmojiPicker={handleToggleEmojiPicker}
                         deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
                         setIsEmojiPickerOpen={setIsEmojiPickerOpen}
-                        isEmojiPickerFocused={isEmojiPickerFocused}
                         setIsEmojiPickerFocused={setIsEmojiPickerFocused}
                     />
                 }
