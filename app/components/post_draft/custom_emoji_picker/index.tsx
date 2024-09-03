@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
-import {DeviceEventEmitter} from 'react-native';
+import {DeviceEventEmitter, Platform} from 'react-native';
 import Animated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {Events} from '@app/constants';
@@ -80,11 +80,13 @@ const CustomEmojiPicker: React.FC<Props> = ({
 
     useEffect(() => {
         if (isEmojiSearchFocused) {
-            height.value = withTiming(400, {duration: 0});
-            return;
+            // Ensure proper height handling based on platform
+            const targetHeight = Platform.OS === 'ios' ? 400 : 100;
+            height.value = withTiming(targetHeight, {duration: 0});
+        } else {
+            keyboardTracker.current?.pauseTracking(scrollViewNativeID || channelId);
+            height.value = withTiming(EMOJI_PICKER_HEIGHT, {duration: 0});
         }
-        keyboardTracker.current?.pauseTracking(scrollViewNativeID || channelId);
-        height.value = withTiming(EMOJI_PICKER_HEIGHT, {duration: 0});
     }, [isEmojiSearchFocused]);
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -96,6 +98,7 @@ const CustomEmojiPicker: React.FC<Props> = ({
     const handleEmojiPress = (emoji: string) => {
         onEmojiPress(emoji);
     };
+
     return (
         <Animated.View style={[styles.container, animatedStyle]}>
             <EmojiPicker
