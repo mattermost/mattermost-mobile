@@ -179,37 +179,52 @@ export default function DraftInput({
     const inputRef = useRef<PasteInputRef>();
 
     const focus = useCallback(() => {
-        inputRef.current?.setNativeProps({
-            showSoftInputOnFocus: true,
-        });
         inputRef.current?.focus();
     }, []);
 
     const handleToggleEmojiPicker = () => {
         if (!isEmojiPickerOpen) {
+            Keyboard.dismiss();
             setIsEmojiPickerOpen(true);
             setIsEmojiPickerFocused(true);
             inputRef.current?.setNativeProps({
                 showSoftInputOnFocus: false,
             });
-            Keyboard.dismiss();
+
+            // To make sure the state is updated before focusing
+            setTimeout(() => {
+                focus();
+            }, 0);
             keyboardTracker.current?.pauseTracking(scrollViewNativeID || channelId);
             return;
         }
         if (Platform.OS === 'android' && isEmojiPickerFocused) {
             setIsEmojiPickerFocused(false);
             setIsEmojiPickerOpen(false);
-            focus();
+            inputRef.current?.setNativeProps({
+                showSoftInputOnFocus: true,
+            });
+
+            inputRef.current?.blur();
+
+            // To make sure the state is updated before focusing
+            setTimeout(() => {
+                focus();
+            }, 0);
             return;
         }
-        if (Platform.OS === 'ios' && Keyboard.isVisible()) {
+        if (Platform.OS === 'ios' && !isEmojiPickerFocused) {
+            Keyboard.dismiss();
             inputRef.current?.setNativeProps({
                 showSoftInputOnFocus: false,
             });
-            Keyboard.dismiss();
+            inputRef.current?.focus();
             setIsEmojiPickerFocused(true);
         } else {
             setIsEmojiPickerFocused(false);
+            inputRef.current?.setNativeProps({
+                showSoftInputOnFocus: true,
+            });
             focus();
         }
     };
@@ -332,10 +347,15 @@ export default function DraftInput({
                 </ScrollView>
                 {isEmojiPickerOpen &&
                     <CustomEmojiPicker
+                        scrollViewNativeID={scrollViewNativeID}
+                        channelId={channelId}
+                        keyboardTracker={keyboardTracker}
+                        inputRef={inputRef}
                         onEmojiPress={handleEmojiPress}
                         focus={focus}
                         deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
                         setIsEmojiPickerOpen={setIsEmojiPickerOpen}
+                        isEmojiPickerFocused={isEmojiPickerFocused}
                         setIsEmojiPickerFocused={setIsEmojiPickerFocused}
                     />
                 }

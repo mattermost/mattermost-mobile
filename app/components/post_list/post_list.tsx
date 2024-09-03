@@ -181,6 +181,7 @@ const PostList = ({
             setLastPostId(posts[0]?.id);
         }
         setShowScrollToEndBtn(y > CONTENT_OFFSET_THRESHOLD);
+        DeviceEventEmitter.emit(Events.CLOSE_EMOJI_PICKER);
     }, [posts[0]?.id]);
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {

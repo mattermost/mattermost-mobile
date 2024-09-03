@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
-import {DeviceEventEmitter} from 'react-native';
+import {DeviceEventEmitter, Keyboard} from 'react-native';
 import Animated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {Events} from '@app/constants';
@@ -11,7 +11,15 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 
 import EmojiPicker from './emoji_picker';
 
+import type {PasteInputRef} from '@mattermost/react-native-paste-input';
+import type {KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
+
 type Props = {
+    scrollViewNativeID: string | undefined;
+    channelId: string;
+    keyboardTracker: React.RefObject<KeyboardTrackingViewRef>;
+    inputRef: React.MutableRefObject<PasteInputRef | undefined>;
+    isEmojiPickerFocused: boolean;
     onEmojiPress: (emoji: string) => void;
     focus?: () => void;
     deleteCharFromCurrentCursorPosition: () => void;
@@ -32,6 +40,11 @@ const getStyleSheets = makeStyleSheetFromTheme((theme) => {
 const EMOJI_PICKER_HEIGHT = 300;
 
 const CustomEmojiPicker: React.FC<Props> = ({
+    scrollViewNativeID,
+    channelId,
+    keyboardTracker,
+    inputRef,
+    isEmojiPickerFocused,
     onEmojiPress,
     focus,
     deleteCharFromCurrentCursorPosition,
@@ -46,18 +59,20 @@ const CustomEmojiPicker: React.FC<Props> = ({
 
     useEffect(() => {
         const closeEmojiPicker = DeviceEventEmitter.addListener(Events.CLOSE_EMOJI_PICKER, () => {
-            if (!isEmojiSearchFocused) {
-                height.value = withTiming(0, {
-                    duration: 300,
-                    easing: Easing.inOut(Easing.ease),
-                    // eslint-disable-next-line max-nested-callbacks
-                }, (finished) => {
-                    if (finished) {
-                        runOnJS(setIsEmojiPickerOpen)(false);
-                        runOnJS(setIsEmojiPickerFocused)(false);
-                    }
-                });
-            }
+            keyboardTracker.current?.resumeTracking(scrollViewNativeID || channelId);
+            inputRef.current?.setNativeProps({
+                showSoftInputOnFocus: true,
+            });
+            height.value = withTiming(0, {
+                duration: 0,
+                easing: Easing.inOut(Easing.ease),
+                // eslint-disable-next-line max-nested-callbacks
+            }, (finished) => {
+                if (finished) {
+                    runOnJS(setIsEmojiPickerOpen)(false);
+                    runOnJS(setIsEmojiPickerFocused)(false);
+                }
+            });
         });
 
         return () => {
@@ -67,11 +82,20 @@ const CustomEmojiPicker: React.FC<Props> = ({
 
     useEffect(() => {
         if (isEmojiSearchFocused) {
-            height.value = withTiming(100, {duration: 0});
-        } else {
-            height.value = withTiming(EMOJI_PICKER_HEIGHT, {duration: 0});
+            height.value = withTiming(400, {duration: 0});
+            return;
         }
+        keyboardTracker.current?.pauseTracking(scrollViewNativeID || channelId);
+        height.value = withTiming(EMOJI_PICKER_HEIGHT, {duration: 0});
     }, [isEmojiSearchFocused]);
+
+    useEffect(() => {
+        if (!isEmojiPickerFocused && isEmojiSearchFocused) {
+            setIsEmojiPickerFocused(false);
+            setIsEmojiPickerFocused(true);
+            Keyboard.dismiss();
+        }
+    }, [isEmojiPickerFocused]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
