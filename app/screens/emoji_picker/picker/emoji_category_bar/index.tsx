@@ -65,14 +65,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     onSelect?: (index: number | undefined) => void;
-    focus?: () => void;
+    handleToggleEmojiPicker?: () => void;
     deleteCharFromCurrentCursorPosition?: () => void;
     isEmojiPicker?: boolean;
 }
 
 const EmojiCategoryBar = ({
     onSelect,
-    focus,
+    handleToggleEmojiPicker,
     deleteCharFromCurrentCursorPosition,
     isEmojiPicker = false,
 }: Props) => {
@@ -112,11 +112,11 @@ const EmojiCategoryBar = ({
                     style={styles.container}
                     testID='emoji_picker.category_bar'
                 >
-                    {focus && deleteCharFromCurrentCursorPosition &&
+                    {handleToggleEmojiPicker && deleteCharFromCurrentCursorPosition &&
                     <View style={styles.categoryBar}>
                         <View style={styles.keyboardControls}>
                             <Pressable
-                                onPress={() => focus()}
+                                onPress={() => handleToggleEmojiPicker()}
                                 style={styles.actionIcons}
                             >
                                 <CompassIcon

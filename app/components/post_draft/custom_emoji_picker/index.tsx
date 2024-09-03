@@ -21,7 +21,7 @@ type Props = {
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
     isEmojiPickerFocused: boolean;
     onEmojiPress: (emoji: string) => void;
-    focus?: () => void;
+    handleToggleEmojiPicker: () => void;
     deleteCharFromCurrentCursorPosition: () => void;
     setIsEmojiPickerOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsEmojiPickerFocused: React.Dispatch<React.SetStateAction<boolean>>;
@@ -46,7 +46,7 @@ const CustomEmojiPicker: React.FC<Props> = ({
     inputRef,
     isEmojiPickerFocused,
     onEmojiPress,
-    focus,
+    handleToggleEmojiPicker,
     deleteCharFromCurrentCursorPosition,
     setIsEmojiPickerOpen,
     setIsEmojiPickerFocused,
@@ -111,7 +111,7 @@ const CustomEmojiPicker: React.FC<Props> = ({
             <EmojiPicker
                 onEmojiPress={handleEmojiPress}
                 testID='custom_emoji_picker'
-                focus={focus}
+                handleToggleEmojiPicker={handleToggleEmojiPicker}
                 deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
                 setIsEmojiSearchFocused={setIsEmojiSearchFocused}
                 isEmojiSearchFocused={isEmojiSearchFocused}

@@ -24,7 +24,7 @@ type Props = {
     file?: ExtractedFileInfo;
     recentEmojis: string[];
     testID?: string;
-    focus?: () => void;
+    handleToggleEmojiPicker: () => void;
     deleteCharFromCurrentCursorPosition: () => void;
     isEmojiSearchFocused: boolean;
     setIsEmojiSearchFocused: React.Dispatch<React.SetStateAction<boolean>>;
@@ -44,7 +44,7 @@ const EmojiPicker: React.FC<Props> = ({
     customEmojis,
     onEmojiPress,
     testID = '',
-    focus,
+    handleToggleEmojiPicker,
     deleteCharFromCurrentCursorPosition,
     isEmojiSearchFocused,
     setIsEmojiSearchFocused,
@@ -85,7 +85,7 @@ const EmojiPicker: React.FC<Props> = ({
             file={file}
             onEmojiPress={onEmojiPress}
             recentEmojis={recentEmojis}
-            focus={focus}
+            handleToggleEmojiPicker={handleToggleEmojiPicker}
             deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
         />
     );

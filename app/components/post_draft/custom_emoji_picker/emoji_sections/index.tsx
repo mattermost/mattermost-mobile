@@ -89,7 +89,7 @@ type Props = {
     file?: ExtractedFileInfo;
     onEmojiPress: (emoji: string) => void;
     recentEmojis: string[];
-    focus?: () => void;
+    handleToggleEmojiPicker: () => void;
     deleteCharFromCurrentCursorPosition: () => void;
 }
 
@@ -155,7 +155,7 @@ const EmojiSections: React.FC<Props> = ({
     imageUrl,
     onEmojiPress,
     recentEmojis,
-    focus,
+    handleToggleEmojiPicker,
     deleteCharFromCurrentCursorPosition,
 }) => {
     const serverUrl = useServerUrl();
@@ -367,7 +367,7 @@ const EmojiSections: React.FC<Props> = ({
                 testID='emoji_picker.emoji_sections.section_list'
             />
             <EmojiCategoryBar
-                focus={focus}
+                handleToggleEmojiPicker={handleToggleEmojiPicker}
                 deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
                 isEmojiPicker={true}
             />
