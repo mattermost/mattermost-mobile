@@ -5,9 +5,10 @@ import React
     @objc public weak var delegate: RNUtilsDelegate? = nil
     
     deinit {
-        NotificationCenter.default.removeObserver(self,
-           name: NSNotification.Name.RCTUserInterfaceStyleDidChange,
-           object: nil)
+        DispatchQueue.main.async {
+            guard let w = UIApplication.shared.delegate?.window, let window = w else { return }
+            window.removeObserver(self, forKeyPath: "frame")
+        }
     }
     
     func getSharedDirectory() -> URL? {
@@ -31,15 +32,22 @@ import React
     }
     
     @objc public func captureEvents() {
-            NotificationCenter.default.addObserver(self,
-               selector: #selector(isSplitView), name: NSNotification.Name.RCTUserInterfaceStyleDidChange,
-               object: nil)
+        DispatchQueue.main.async {
+            guard let w = UIApplication.shared.delegate?.window, let window = w else { return }
+            window.addObserver(self, forKeyPath: "frame", options: .new, context: nil)
+        }
+    }
+    
+    override public func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "frame" {
+            isSplitView()
+        }
     }
     
     @objc func isSplitView() {
         if UIDevice.current.userInterfaceIdiom == .pad {
             delegate?.sendEvent(name: "SplitViewChanged", result: [
-                "isSplitView": !isRunningInFullScreen(),
+                "isSplit": !isRunningInFullScreen(),
                 "isTablet": UIDevice.current.userInterfaceIdiom == .pad,
             ])
         }
