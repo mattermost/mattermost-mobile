@@ -3,11 +3,11 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet} from 'react-native';
+import {DeviceEventEmitter, Keyboard, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -41,6 +41,7 @@ export default function PostPriorityAction({
 
     const onPress = useCallback(() => {
         Keyboard.dismiss();
+        DeviceEventEmitter.emit(Events.CLOSE_EMOJI_PICKER);
 
         const title = isTablet ? intl.formatMessage({id: 'post_priority.picker.title', defaultMessage: 'Message priority'}) : '';
 
