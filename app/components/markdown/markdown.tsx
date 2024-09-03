@@ -487,6 +487,23 @@ const Markdown = ({
         return <MarkdownTableRow {...args}/>;
     };
 
+    // Transform function to allow **TEXTn** Bold. n = space/spaces.
+    const transformBoldText = (text: string) => {
+        const REGEX = /\*\*(\S.*?\S?)\s*\*\*/;
+        const parts = text.split(REGEX);
+        return parts.map((part, i) => {
+            if (i % 2 === 0) {
+                return part;
+            }
+            return (
+                <Text
+                    key={text}
+                    style={style.bold}
+                >{part.trim()}</Text>
+            );
+        });
+    };
+
     const renderText = ({context, literal}: MarkdownBaseRenderer) => {
         const selectable = (managedConfig.copyAndPasteProtection !== 'true') && context.includes('table_cell');
         if (context.indexOf('image') !== -1) {
@@ -513,13 +530,15 @@ const Markdown = ({
             styles = concatStyles(styles, {backgroundColor: theme.mentionHighlightBg});
         }
 
+        const transformedText = transformBoldText(literal);
+
         return (
             <Text
                 testID='markdown_text'
                 style={styles}
                 selectable={selectable}
             >
-                {literal}
+                {transformedText}
             </Text>
         );
     };
