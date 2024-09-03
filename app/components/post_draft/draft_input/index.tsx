@@ -7,6 +7,7 @@ import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {useIsTablet} from '@app/hooks/device';
 import {EmojiIndicesByAlias, Emojis} from '@app/utils/emoji';
 import {General} from '@constants';
 import {MENTIONS_REGEX} from '@constants/autocomplete';
@@ -138,6 +139,7 @@ export default function DraftInput({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const [isEmojiPickerFocused, setIsEmojiPickerFocused] = useState(false);
 
@@ -195,7 +197,9 @@ export default function DraftInput({
             setTimeout(() => {
                 focus();
             }, 0);
-            keyboardTracker.current?.pauseTracking(scrollViewNativeID || channelId);
+            if (!isTablet) {
+                keyboardTracker.current?.pauseTracking(scrollViewNativeID || channelId);
+            }
             return;
         }
         if (Platform.OS === 'android' && isEmojiPickerFocused) {
@@ -222,6 +226,9 @@ export default function DraftInput({
             setIsEmojiPickerFocused(true);
         } else {
             setIsEmojiPickerFocused(false);
+            if (isTablet) {
+                setIsEmojiPickerOpen(false);
+            }
             inputRef.current?.setNativeProps({
                 showSoftInputOnFocus: true,
             });

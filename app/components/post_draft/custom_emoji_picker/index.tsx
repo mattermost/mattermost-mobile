@@ -7,6 +7,7 @@ import Animated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming}
 
 import {Events} from '@app/constants';
 import {useTheme} from '@app/context/theme';
+import {useIsTablet} from '@app/hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 
 import EmojiPicker from './emoji_picker';
@@ -36,7 +37,7 @@ const getStyleSheets = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const EMOJI_PICKER_HEIGHT = 300;
+const EMOJI_PICKER_HEIGHT = 301;
 
 const CustomEmojiPicker: React.FC<Props> = ({
     scrollViewNativeID,
@@ -50,6 +51,7 @@ const CustomEmojiPicker: React.FC<Props> = ({
     setIsEmojiPickerFocused,
 }) => {
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const height = useSharedValue(EMOJI_PICKER_HEIGHT);
     const [isEmojiSearchFocused, setIsEmojiSearchFocused] = React.useState(false);
 
@@ -57,13 +59,15 @@ const CustomEmojiPicker: React.FC<Props> = ({
 
     useEffect(() => {
         const closeEmojiPicker = DeviceEventEmitter.addListener(Events.CLOSE_EMOJI_PICKER, () => {
-            keyboardTracker.current?.resumeTracking(scrollViewNativeID || channelId);
+            if (!isTablet) {
+                keyboardTracker.current?.resumeTracking(scrollViewNativeID || channelId);
+            }
             inputRef.current?.setNativeProps({
                 showSoftInputOnFocus: true,
             });
             height.value = withTiming(0, {
                 duration: 0,
-                easing: Easing.inOut(Easing.ease),
+                easing: Easing.linear,
                 // eslint-disable-next-line max-nested-callbacks
             }, (finished) => {
                 if (finished) {
@@ -81,10 +85,15 @@ const CustomEmojiPicker: React.FC<Props> = ({
     useEffect(() => {
         if (isEmojiSearchFocused) {
             // Ensure proper height handling based on platform
-            const targetHeight = Platform.OS === 'ios' ? 400 : 100;
+            let targetHeight = Platform.OS === 'ios' ? 400 : 100;
+            if (isTablet) {
+                targetHeight = 100;
+            }
             height.value = withTiming(targetHeight, {duration: 0});
         } else {
-            keyboardTracker.current?.pauseTracking(scrollViewNativeID || channelId);
+            if (!isTablet) {
+                keyboardTracker.current?.pauseTracking(scrollViewNativeID || channelId);
+            }
             height.value = withTiming(EMOJI_PICKER_HEIGHT, {duration: 0});
         }
     }, [isEmojiSearchFocused]);
