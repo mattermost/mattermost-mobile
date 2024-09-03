@@ -369,6 +369,7 @@ const EmojiSections: React.FC<Props> = ({
             <EmojiCategoryBar
                 focus={focus}
                 deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
+                isEmojiPicker={true}
             />
         </View>
     );

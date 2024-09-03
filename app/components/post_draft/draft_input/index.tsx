@@ -352,7 +352,7 @@ export default function DraftInput({
                         keyboardTracker={keyboardTracker}
                         inputRef={inputRef}
                         onEmojiPress={handleEmojiPress}
-                        focus={focus}
+                        focus={handleToggleEmojiPicker}
                         deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
                         setIsEmojiPickerOpen={setIsEmojiPickerOpen}
                         isEmojiPickerFocused={isEmojiPickerFocused}
