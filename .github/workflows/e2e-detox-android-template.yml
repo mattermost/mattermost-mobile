@@ -202,7 +202,7 @@ jobs:
         rm -rf $HOME/android-sdk/temp-cmdline-tools
 
         # Accept licenses and install SDK components
-        yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-30"
+        yes | sdkmanager --licenses
 
     - name: Set up Android SDK environment
       run: |
