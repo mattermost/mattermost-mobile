@@ -181,6 +181,35 @@ jobs:
         distribution: "adopt"
         cache: "gradle"
 
+    - name: Download and Install Android SDK
+      run: |
+        # Create a directory for Android SDK
+        mkdir -p $HOME/android-sdk
+        
+        # Download the SDK tools
+        curl https://dl.google.com/android/repository/commandlinetools-mac-8092744_latest.zip -o commandlinetools.zip
+        
+        # Unzip the SDK tools
+        unzip commandlinetools.zip -d $HOME/android-sdk
+        
+        # Move commandline-tools to the right location
+        mkdir -p $HOME/android-sdk/cmdline-tools
+        mv $HOME/android-sdk/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+        
+        # Accept licenses and install SDK components
+        yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-30"
+
+        # Set environment variables for Android SDK
+    - name: Set up Android SDK environment
+      run: |
+        echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "PATH=$PATH:$HOME/android-sdk/platform-tools:$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_ENV
+      
+        # Example usage of sdkmanager
+    - name: Use sdkmanager to list installed packages
+      run: |
+        sdkmanager --list
+
     - name: Create destination path
       run: mkdir -p android/app/build/outputs/apk
 
