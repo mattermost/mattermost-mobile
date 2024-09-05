@@ -46,13 +46,25 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
     const progressValue = useSharedValue(progress);
 
     // eslint-disable-next-line new-cap
-    const gesture = Gesture.Tap().
-        onBegin((e) => {
+    const panGesture = Gesture.Pan().
+        onChange((e) => {
             if (onSeek) {
                 const seekPosition = e.x / widthValue.value;
                 runOnJS(onSeek)(seekPosition);
             }
         });
+
+    // eslint-disable-next-line new-cap
+    const tapGesture = Gesture.Tap().
+        onEnd((e) => {
+            if (onSeek) {
+                const seekPosition = e.x / widthValue.value;
+                runOnJS(onSeek)(seekPosition);
+            }
+        });
+
+    // eslint-disable-next-line new-cap
+    const composedGestures = Gesture.Race(tapGesture, panGesture);
 
     const progressAnimatedStyle = useAnimatedStyle(() => {
         return {
@@ -80,7 +92,7 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
     }, []);
 
     return (
-        <GestureDetector gesture={gesture}>
+        <GestureDetector gesture={composedGestures}>
             <View
                 onTouchStart={(e) => e.stopPropagation}
                 style={styles.container}
