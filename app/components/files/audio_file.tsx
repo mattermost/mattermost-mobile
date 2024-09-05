@@ -51,6 +51,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     playIcon: {
         color: theme.buttonBg,
     },
+    downloadIcon: {
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+    },
     progressBar: {
         flex: 1,
     },
@@ -194,6 +197,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
                     <CompassIcon
                         name='download-outline'
                         size={24}
+                        style={style.downloadIcon}
                     />
                 </TouchableOpacity>
             </View>
