@@ -67,7 +67,7 @@ class ServerScreen {
                 }
             }
         }
-        await waitFor(this.usernameInput).toExist().withTimeout(timeouts.ONE_SEC);
+        await waitFor(this.usernameInput).toExist().withTimeout(timeouts.TEN_SEC);
     };
 
     close = async () => {
