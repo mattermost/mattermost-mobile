@@ -211,9 +211,22 @@ jobs:
         echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
         echo "PATH=$PATH:$HOME/android-sdk/platform-tools:$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_ENV
 
-    - name: Use sdkmanager to list installed packages
+    - name: Set up Android SDK root
+      run: echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+
+    - name: Install Android system image
+      run: sdkmanager "system-images;android-31;google_apis;x86_64"
+
+    - name: Create Android Emulator
+      run: echo "no" | avdmanager create avd -n detox_pixel_4_xl_api_31 -k "system-images;android-31;google_apis;x86_64"
+
+    - name: Run Android emulator
+      run: nohup $ANDROID_SDK_ROOT/emulator/emulator -avd detox_pixel_4_xl_api_31 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose &
+
+    - name: Wait for emulator to be ready
       run: |
-        sdkmanager --list
+        adb wait-for-device
+        adb shell input keyevent 82
 
     - name: Create destination path
       run: mkdir -p android/app/build/outputs/apk
@@ -242,10 +255,10 @@ jobs:
     - name: Cleanup
       run: rm android/app/build/outputs/apk/artifact.zip
 
-    - name: Create AVD
-      run : |
-        cd detox
-        npm run e2e:android-create-emulator
+    # - name: Create AVD
+    #   run : |
+    #     cd detox
+    #     npm run e2e:android-create-emulator
 
     - name: Run Android Detox E2E Tests on macOS
       run: |

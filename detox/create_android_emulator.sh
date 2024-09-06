@@ -30,7 +30,7 @@ fi
 SYSTEM_IMAGE="system-images;android-${SDK_VERSION};google_apis;${CPU_ARCH_FAMILY}"
 
 # Install the system image if it's not already installed
-sdkmanager --install "emulator" "platform-tools" "$SYSTEM_IMAGE"
+sdkmanager --install "platform-tools" "$SYSTEM_IMAGE"
 
 # Create virtual device in a relative "detox_pixel_4_xl_api_${SDK_VERSION}" folder
 avdmanager create avd -n $NAME -k "$SYSTEM_IMAGE" -p $NAME -d 'pixel'
