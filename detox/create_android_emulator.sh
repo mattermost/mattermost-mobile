@@ -47,3 +47,17 @@ sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-im
 sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${NAME}/pixel_4_xl_skin|g" $NAME/config.ini
 
 echo "Android virtual device successfully created: ${NAME}"
+
+# Start the emulator
+nohup emulator -avd $NAME -no-audio -no-boot-anim -gpu auto > /dev/null 2>&1 &
+sleep 10
+
+# Wait for the emulator to boot
+BOOT_STATUS=$(adb shell getprop sys.boot_completed)
+while [[ "$BOOT_STATUS" != "1" ]]; do
+    echo "Waiting for emulator to boot..."
+    sleep 5
+    BOOT_STATUS=$(adb shell getprop sys.boot_completed)
+done
+
+echo "Emulator booted successfully!"
