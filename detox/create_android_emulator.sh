@@ -45,6 +45,7 @@ sed -i -e "s|abi.type = change_type|abi.type = ${CPU_ARCH_FAMILY}|g" $NAME/confi
 sed -i -e "s|hw.cpu.arch = change_cpu_arch|hw.cpu.arch = ${CPU_ARCH}|g" $NAME/config.ini
 sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/google_apis/${CPU_ARCH_FAMILY}/|g" $NAME/config.ini
 sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${NAME}/pixel_4_xl_skin|g" $NAME/config.ini
+
 echo "Android virtual device successfully created: ${NAME}"
 
 # Start the emulator
@@ -53,19 +54,19 @@ sleep 10
 
 # Wait for the emulator to be detected by adb
 echo "Waiting for the emulator to be detected by adb..."
-adb_devices=$(adb devices | grep "emulator" | wc -l)
+adb_devices=$(adb devices | grep emulator | wc -l | xargs)  # Trim spaces using 'xargs'
 while [[ "$adb_devices" -eq "0" ]]; do
     echo "Waiting for adb to detect the emulator..."
     sleep 5
-    adb_devices=$(adb devices | grep "emulator" | wc -l)
+    adb_devices=$(adb devices | grep emulator | wc -l | xargs)  # Trim spaces using 'xargs'
 done
 
 # Wait for the emulator to boot
-BOOT_STATUS=$(adb shell getprop sys.boot_completed)
+BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')  # Strip any extra characters
 while [[ "$BOOT_STATUS" != "1" ]]; do
     echo "Waiting for emulator to boot..."
     sleep 5
-    BOOT_STATUS=$(adb shell getprop sys.boot_completed)
+    BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')  # Strip any extra characters
 done
 
 echo "Emulator booted successfully!"
