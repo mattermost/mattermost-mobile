@@ -223,10 +223,24 @@ jobs:
     - name: Run Android emulator
       run: nohup $ANDROID_SDK_ROOT/emulator/emulator -avd detox_pixel_4_xl_api_31 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose &
 
-    - name: Wait for emulator to be ready
+    - name: Wait for emulator to start
       run: |
-        adb wait-for-device
-        adb shell input keyevent 82
+        echo "Waiting for emulator to start..."
+        for i in {1..12}; do
+          if adb devices | grep emulator; then
+            echo "Emulator is up and running!"
+            break
+          else
+            echo "Waiting for emulator..."
+            sleep 10
+          fi
+        done
+
+    - name: List running processes
+      run: ps aux | grep emulator
+
+    - name: Delay before proceeding
+      run: sleep 30
 
     - name: Create destination path
       run: mkdir -p android/app/build/outputs/apk
