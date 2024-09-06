@@ -30,7 +30,8 @@ fi
 SYSTEM_IMAGE="system-images;android-${SDK_VERSION};google_apis;${CPU_ARCH_FAMILY}"
 
 # Install the system image if it's not already installed
-sdkmanager --install "$SYSTEM_IMAGE"
+sdkmanager --install "emulator" "platform-tools" "$SYSTEM_IMAGE"
+sdkmanager --licenses
 
 # Create virtual device in a relative "detox_pixel_4_xl_api_${SDK_VERSION}" folder
 avdmanager create avd -n $NAME -k "$SYSTEM_IMAGE" -p $NAME -d 'pixel'
@@ -49,7 +50,9 @@ sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(p
 echo "Android virtual device successfully created: ${NAME}"
 
 # Start the emulator in the background with verbose logging
-nohup emulator -avd $NAME -no-audio -no-boot-anim -gpu auto -verbose > emulator.log 2>&1 &
+# nohup emulator -avd $NAME -no-audio -no-boot-anim -gpu auto -verbose > emulator.log 2>&1 &
+nohup emulator -avd $NAME -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
+
 sleep 30
 
 # Output the logs for debugging
