@@ -322,7 +322,6 @@ export default function DraftInput({
                         sendMessage={handleSendMessage}
                         inputRef={inputRef}
                         setIsFocused={setIsFocused}
-                        setIsEmojiPickerOpen={setIsEmojiPickerOpen}
                     />
                     <Uploads
                         currentUserId={currentUserId}

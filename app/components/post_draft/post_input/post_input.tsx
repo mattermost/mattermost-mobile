@@ -43,7 +43,6 @@ type Props = {
     sendMessage: () => void;
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
     setIsFocused: (isFocused: boolean) => void;
-    setIsEmojiPickerOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const showPasteFilesErrorDialog = (intl: IntlShape) => {
@@ -115,7 +114,6 @@ export default function PostInput({
     sendMessage,
     inputRef,
     setIsFocused,
-    setIsEmojiPickerOpen,
 }: Props) {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -144,7 +142,6 @@ export default function PostInput({
 
     const handleAndroidKeyboardShow = () => {
         onFocus();
-        setIsEmojiPickerOpen(false);
     };
 
     const onBlur = useCallback(() => {
