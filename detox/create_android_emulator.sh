@@ -48,25 +48,30 @@ sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(p
 
 echo "Android virtual device successfully created: ${NAME}"
 
-# Start the emulator
+# Start the emulator in the background
 nohup emulator -avd $NAME -no-audio -no-boot-anim -gpu auto > /dev/null 2>&1 &
-sleep 10
+sleep 30
 
-# Wait for the emulator to be detected by adb
+# Wait for adb to detect the emulator
 echo "Waiting for the emulator to be detected by adb..."
 adb_devices=$(adb devices | grep emulator | wc -l | xargs)  # Trim spaces using 'xargs'
+
+# Retry until the emulator is detected
 while [[ "$adb_devices" -eq "0" ]]; do
     echo "Waiting for adb to detect the emulator..."
     sleep 5
-    adb_devices=$(adb devices | grep emulator | wc -l | xargs)  # Trim spaces using 'xargs'
+    adb devices  # This will force adb to list the devices again
+    adb_devices=$(adb devices | grep emulator | wc -l | xargs)  # Update adb_devices after retrying
 done
 
-# Wait for the emulator to boot
+echo "Emulator detected by adb."
+
+# Wait for the emulator to fully boot
 BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')  # Strip any extra characters
 while [[ "$BOOT_STATUS" != "1" ]]; do
-    echo "Waiting for emulator to boot..."
+    echo "Waiting for the emulator to boot..."
     sleep 5
-    BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')  # Strip any extra characters
+    BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')  # Retry boot check
 done
 
 echo "Emulator booted successfully!"
