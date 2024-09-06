@@ -48,9 +48,15 @@ sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(p
 
 echo "Android virtual device successfully created: ${NAME}"
 
-# Start the emulator in the background
-nohup emulator -avd $NAME -no-audio -no-boot-anim -gpu auto > /dev/null 2>&1 &
+# Start the emulator in the background with verbose logging
+nohup emulator -avd $NAME -no-audio -no-boot-anim -gpu auto -verbose > emulator.log 2>&1 &
 sleep 30
+
+# Output the logs for debugging
+cat emulator.log
+
+# Start adb server
+adb start-server
 
 # Wait for adb to detect the emulator
 echo "Waiting for the emulator to be detected by adb..."
