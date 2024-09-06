@@ -31,7 +31,6 @@ SYSTEM_IMAGE="system-images;android-${SDK_VERSION};google_apis;${CPU_ARCH_FAMILY
 
 # Install the system image if it's not already installed
 sdkmanager --install "emulator" "platform-tools" "$SYSTEM_IMAGE"
-sdkmanager --licenses
 
 # Create virtual device in a relative "detox_pixel_4_xl_api_${SDK_VERSION}" folder
 avdmanager create avd -n $NAME -k "$SYSTEM_IMAGE" -p $NAME -d 'pixel'
@@ -49,13 +48,11 @@ sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(p
 
 echo "Android virtual device successfully created: ${NAME}"
 
-# Start the emulator in the background with verbose logging
-# nohup emulator -avd $NAME -no-audio -no-boot-anim -gpu auto -verbose > emulator.log 2>&1 &
+# Start the emulator in headless mode and log output
 nohup emulator -avd $NAME -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
+sleep 30  # Adjust based on emulator startup time
 
-sleep 30
-
-# Output the logs for debugging
+# Output the emulator logs for debugging
 cat emulator.log
 
 # Start adb server
@@ -63,24 +60,25 @@ adb start-server
 
 # Wait for adb to detect the emulator
 echo "Waiting for the emulator to be detected by adb..."
-adb_devices=$(adb devices | grep emulator | wc -l | xargs)  # Trim spaces using 'xargs'
+adb_devices=$(adb devices | grep emulator | wc -l | xargs)
 
 # Retry until the emulator is detected
 while [[ "$adb_devices" -eq "0" ]]; do
     echo "Waiting for adb to detect the emulator..."
-    sleep 5
-    adb devices  # This will force adb to list the devices again
-    adb_devices=$(adb devices | grep emulator | wc -l | xargs)  # Update adb_devices after retrying
+    sleep 10  # Increased wait time for adb to detect the device
+    adb start-server  # Ensure adb server is running
+    adb devices  # List devices
+    adb_devices=$(adb devices | grep emulator | wc -l | xargs)
 done
 
 echo "Emulator detected by adb."
 
 # Wait for the emulator to fully boot
-BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')  # Strip any extra characters
+BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')
 while [[ "$BOOT_STATUS" != "1" ]]; do
     echo "Waiting for the emulator to boot..."
     sleep 5
-    BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')  # Retry boot check
+    BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')
 done
 
 echo "Emulator booted successfully!"

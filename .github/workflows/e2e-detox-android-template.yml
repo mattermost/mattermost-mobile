@@ -203,7 +203,6 @@ jobs:
 
         # Accept licenses and install SDK components
         yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$HOME/android-sdk
-        yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-31"
 
         echo "PATH=$PATH:$HOME/android-sdk/emulator" >> $GITHUB_ENV
 
