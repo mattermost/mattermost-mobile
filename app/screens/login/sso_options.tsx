@@ -46,7 +46,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                 sso.imageSrc = require('@assets/images/Icon_Google.png');
                 break;
             case Sso.OFFICE365:
-                sso.text = formatMessage({id: 'mobile.login_options.office3651', defaultMessage: 'Entra ID'});
+                sso.text = formatMessage({id: 'mobile.login_options.entraid', defaultMessage: 'Entra ID'});
                 sso.imageSrc = require('@assets/images/Icon_EntraID.png');
                 break;
             case Sso.OPENID:
