@@ -237,6 +237,9 @@ jobs:
     - name: Unzip artifact
       run: unzip android/app/build/outputs/apk/artifact.zip -d android/app/build/outputs/apk
 
+    - name: List unzipped files
+      run: ls -la android/app/build/outputs/apk
+    
     - name: Cleanup
       run: rm android/app/build/outputs/apk/artifact.zip
 
@@ -247,7 +250,8 @@ jobs:
 
     - name: Run Android Detox E2E Tests on macOS
       run: |
-          cd detox && npm run e2e:android-test -- ${{ matrix.specs }}
+        cd detox
+        npm run e2e:android-test -- ${{ matrix.specs }}
 
     - name: Upload Android Test Report
       if: always()
