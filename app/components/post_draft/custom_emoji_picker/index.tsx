@@ -2,23 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
-import {DeviceEventEmitter, Platform} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 import Animated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {Events} from '@app/constants';
 import {useTheme} from '@app/context/theme';
-import {useIsTablet} from '@app/hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 
 import EmojiPicker from './emoji_picker';
 
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
-import type {KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
 
 type Props = {
-    scrollViewNativeID: string | undefined;
-    channelId: string;
-    keyboardTracker: React.RefObject<KeyboardTrackingViewRef>;
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
     onEmojiPress: (emoji: string) => void;
     handleToggleEmojiPicker: () => void;
@@ -40,9 +35,6 @@ const getStyleSheets = makeStyleSheetFromTheme((theme) => {
 const EMOJI_PICKER_HEIGHT = 301;
 
 const CustomEmojiPicker: React.FC<Props> = ({
-    scrollViewNativeID,
-    channelId,
-    keyboardTracker,
     inputRef,
     onEmojiPress,
     handleToggleEmojiPicker,
@@ -51,7 +43,6 @@ const CustomEmojiPicker: React.FC<Props> = ({
     setIsEmojiPickerFocused,
 }) => {
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const height = useSharedValue(EMOJI_PICKER_HEIGHT);
     const [isEmojiSearchFocused, setIsEmojiSearchFocused] = React.useState(false);
 
@@ -59,9 +50,6 @@ const CustomEmojiPicker: React.FC<Props> = ({
 
     useEffect(() => {
         const closeEmojiPicker = DeviceEventEmitter.addListener(Events.CLOSE_EMOJI_PICKER, () => {
-            if (!isTablet) {
-                keyboardTracker.current?.resumeTracking(scrollViewNativeID || channelId);
-            }
             inputRef.current?.setNativeProps({
                 showSoftInputOnFocus: true,
             });
@@ -82,22 +70,6 @@ const CustomEmojiPicker: React.FC<Props> = ({
         };
     }, []);
 
-    useEffect(() => {
-        if (isEmojiSearchFocused) {
-            // Ensure proper height handling based on platform
-            let targetHeight = Platform.OS === 'ios' ? 400 : 100;
-            if (isTablet) {
-                targetHeight = 100;
-            }
-            height.value = withTiming(targetHeight, {duration: 0});
-        } else {
-            if (!isTablet) {
-                keyboardTracker.current?.pauseTracking(scrollViewNativeID || channelId);
-            }
-            height.value = withTiming(EMOJI_PICKER_HEIGHT, {duration: 0});
-        }
-    }, [isEmojiSearchFocused]);
-
     const animatedStyle = useAnimatedStyle(() => {
         return {
             height: height.value,
@@ -117,6 +89,7 @@ const CustomEmojiPicker: React.FC<Props> = ({
                 deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
                 setIsEmojiSearchFocused={setIsEmojiSearchFocused}
                 isEmojiSearchFocused={isEmojiSearchFocused}
+                emojiPickerHeight={height}
             />
         </Animated.View>);
 };

@@ -11,8 +11,6 @@ import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/fil
 
 import SendHandler from '../send_handler';
 
-import type {KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
-
 type Props = {
     testID?: string;
     channelId: string;
@@ -28,8 +26,6 @@ type Props = {
     updateValue: React.Dispatch<React.SetStateAction<string>>;
     value: string;
     setIsFocused: (isFocused: boolean) => void;
-    keyboardTracker: React.RefObject<KeyboardTrackingViewRef>;
-    scrollViewNativeID: string | undefined;
 }
 
 const emptyFileList: FileInfo[] = [];
@@ -55,8 +51,6 @@ export default function DraftHandler(props: Props) {
         updateValue,
         value,
         setIsFocused,
-        keyboardTracker,
-        scrollViewNativeID,
     } = props;
 
     const serverUrl = useServerUrl();
@@ -156,8 +150,6 @@ export default function DraftHandler(props: Props) {
             updatePostInputTop={updatePostInputTop}
             updateValue={updateValue}
             setIsFocused={setIsFocused}
-            keyboardTracker={keyboardTracker}
-            scrollViewNativeID={scrollViewNativeID}
         />
     );
 }

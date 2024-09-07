@@ -7,7 +7,6 @@ import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {useIsTablet} from '@app/hooks/device';
 import {EmojiIndicesByAlias, Emojis} from '@app/utils/emoji';
 import {General} from '@constants';
 import {MENTIONS_REGEX} from '@constants/autocomplete';
@@ -27,7 +26,6 @@ import Uploads from '../uploads';
 import Header from './header';
 
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
-import type {KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
 
 type Props = {
     testID?: string;
@@ -61,8 +59,6 @@ type Props = {
     addFiles: (files: FileInfo[]) => void;
     updatePostInputTop: (top: number) => void;
     setIsFocused: (isFocused: boolean) => void;
-    keyboardTracker: React.RefObject<KeyboardTrackingViewRef>;
-    scrollViewNativeID: string | undefined;
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
@@ -133,13 +129,10 @@ export default function DraftInput({
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
     setIsFocused,
-    keyboardTracker,
-    scrollViewNativeID,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const [isEmojiPickerFocused, setIsEmojiPickerFocused] = useState(false);
 
@@ -197,9 +190,6 @@ export default function DraftInput({
             setTimeout(() => {
                 focus();
             }, 0);
-            if (!isTablet) {
-                keyboardTracker.current?.pauseTracking(scrollViewNativeID || channelId);
-            }
             return;
         }
         if (Platform.OS === 'android' && isEmojiPickerFocused) {
@@ -217,23 +207,12 @@ export default function DraftInput({
             }, 0);
             return;
         }
-        if (Platform.OS === 'ios' && !isEmojiPickerFocused) {
-            Keyboard.dismiss();
-            inputRef.current?.setNativeProps({
-                showSoftInputOnFocus: false,
-            });
-            inputRef.current?.focus();
-            setIsEmojiPickerFocused(true);
-        } else {
-            setIsEmojiPickerFocused(false);
-            if (isTablet) {
-                setIsEmojiPickerOpen(false);
-            }
-            inputRef.current?.setNativeProps({
-                showSoftInputOnFocus: true,
-            });
-            focus();
-        }
+        setIsEmojiPickerFocused(false);
+        setIsEmojiPickerOpen(false);
+        inputRef.current?.setNativeProps({
+            showSoftInputOnFocus: true,
+        });
+        focus();
     };
 
     const deleteCharFromCurrentCursorPosition = () => {
@@ -353,9 +332,6 @@ export default function DraftInput({
                 </ScrollView>
                 {isEmojiPickerOpen &&
                     <CustomEmojiPicker
-                        scrollViewNativeID={scrollViewNativeID}
-                        channelId={channelId}
-                        keyboardTracker={keyboardTracker}
                         inputRef={inputRef}
                         onEmojiPress={handleEmojiPress}
                         handleToggleEmojiPicker={handleToggleEmojiPicker}

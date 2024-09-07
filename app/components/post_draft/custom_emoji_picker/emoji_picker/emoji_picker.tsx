@@ -15,6 +15,7 @@ import EmojiPickerHeader from '../emoji_picker_header';
 import EmojiSections from '../emoji_sections';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type {SharedValue} from 'react-native-reanimated';
 
 type Props = {
     customEmojis: CustomEmojiModel[];
@@ -28,6 +29,7 @@ type Props = {
     deleteCharFromCurrentCursorPosition: () => void;
     isEmojiSearchFocused: boolean;
     setIsEmojiSearchFocused: React.Dispatch<React.SetStateAction<boolean>>;
+    emojiPickerHeight: SharedValue<number>;
 }
 
 const styles = StyleSheet.create({
@@ -48,6 +50,7 @@ const EmojiPicker: React.FC<Props> = ({
     deleteCharFromCurrentCursorPosition,
     isEmojiSearchFocused,
     setIsEmojiSearchFocused,
+    emojiPickerHeight,
 }) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -66,7 +69,6 @@ const EmojiPicker: React.FC<Props> = ({
         }
     }, 500);
 
-    // let EmojiList: React.ReactNode = null;
     const term = searchTerm?.replace(/^:|:$/g, '').trim() || '';
 
     const EmojiList = (
@@ -104,6 +106,7 @@ const EmojiPicker: React.FC<Props> = ({
                     testID={`${testID}.search_bar`}
                     value={searchTerm}
                     setIsEmojiSearchFocused={setIsEmojiSearchFocused}
+                    emojiPickerHeight={emojiPickerHeight}
                 />
             </View>
             {!isEmojiSearchFocused && EmojiSection}
