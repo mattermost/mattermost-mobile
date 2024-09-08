@@ -181,82 +181,82 @@ jobs:
         distribution: "adopt"
         cache: "gradle"
 
-    - name: Download and Install Android SDK
-      run: |
-        # Create a directory for Android SDK
-        mkdir -p $HOME/android-sdk
+    # - name: Download and Install Android SDK
+    #   run: |
+    #     # Create a directory for Android SDK
+    #     mkdir -p $HOME/android-sdk
 
-        # Download the SDK tools
-        curl https://dl.google.com/android/repository/commandlinetools-mac-8092744_latest.zip -o commandlinetools.zip
+    #     # Download the SDK tools
+    #     curl https://dl.google.com/android/repository/commandlinetools-mac-8092744_latest.zip -o commandlinetools.zip
 
-        # Unzip the SDK tools into a temp directory
-        unzip commandlinetools.zip -d $HOME/android-sdk/temp-cmdline-tools
+    #     # Unzip the SDK tools into a temp directory
+    #     unzip commandlinetools.zip -d $HOME/android-sdk/temp-cmdline-tools
 
-        # Create the final directory for cmdline-tools
-        mkdir -p $HOME/android-sdk/cmdline-tools/latest
+    #     # Create the final directory for cmdline-tools
+    #     mkdir -p $HOME/android-sdk/cmdline-tools/latest
 
-        # Move the extracted files to the 'latest' directory
-        mv $HOME/android-sdk/temp-cmdline-tools/cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest
+    #     # Move the extracted files to the 'latest' directory
+    #     mv $HOME/android-sdk/temp-cmdline-tools/cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest
 
-        # Clean up the temp directory
-        rm -rf $HOME/android-sdk/temp-cmdline-tools
+    #     # Clean up the temp directory
+    #     rm -rf $HOME/android-sdk/temp-cmdline-tools
 
-        # Accept licenses and install SDK components
-        yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$HOME/android-sdk
+    #     # Accept licenses and install SDK components
+    #     yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$HOME/android-sdk
 
-    - name: Set up Android SDK environment
-      run: |
-        echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
-        echo "PATH=$PATH:$HOME/android-sdk/platform-tools:$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/emulator" >> $GITHUB_ENV
+    # - name: Set up Android SDK environment
+    #   run: |
+    #     echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+    #     echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+    #     echo "PATH=$PATH:$HOME/android-sdk/platform-tools:$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/emulator" >> $GITHUB_ENV
 
-    - name: Install Android system image
-      run: |
-        $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "system-images;android-31;google_apis;x86_64"
-        $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
-        $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --update
+    # - name: Install Android system image
+    #   run: |
+    #     $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "system-images;android-31;google_apis;x86_64"
+    #     $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
+    #     $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --update
 
-    - name: Create Android Emulator
-      run: echo "no" | $HOME/android-sdk/cmdline-tools/latest/bin/avdmanager create avd -n detox_pixel_4_xl_api_31 -k "system-images;android-31;google_apis;x86_64"
+    # - name: Create Android Emulator
+    #   run: echo "no" | $HOME/android-sdk/cmdline-tools/latest/bin/avdmanager create avd -n detox_pixel_4_xl_api_31 -k "system-images;android-31;google_apis;x86_64"
 
-    - name: Run Android emulator
-      run: nohup $HOME/android-sdk/emulator/emulator -avd detox_pixel_4_xl_api_31 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose &
+    # - name: Run Android emulator
+    #   run: nohup $HOME/android-sdk/emulator/emulator -avd detox_pixel_4_xl_api_31 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose &
 
-    - name: Wait for emulator to start
-      run: |
-        echo "Waiting for emulator to start..."
-        for i in {1..12}; do
-          if adb devices | grep emulator; then
-            echo "Emulator is up and running!"
-            break
-          else
-            echo "Waiting for emulator..."
-            sleep 10
-          fi
-        done
+    # - name: Wait for emulator to start
+    #   run: |
+    #     echo "Waiting for emulator to start..."
+    #     for i in {1..12}; do
+    #       if adb devices | grep emulator; then
+    #         echo "Emulator is up and running!"
+    #         break
+    #       else
+    #         echo "Waiting for emulator..."
+    #         sleep 10
+    #       fi
+    #     done
 
-    - name: List platform-tools directory
-      run: ls -l $HOME/android-sdk/platform-tools
+    # - name: List platform-tools directory
+    #   run: ls -l $HOME/android-sdk/platform-tools
 
-    - name: Verify SDK Path
-      run: echo $ANDROID_SDK_ROOT
+    # - name: Verify SDK Path
+    #   run: echo $ANDROID_SDK_ROOT
 
-    - name: Install Android platform-tools
-      run: |
-        sdkmanager --install "platform-tools"
-        sdkmanager "platform-tools"
+    # - name: Install Android platform-tools
+    #   run: |
+    #     sdkmanager --install "platform-tools"
+    #     sdkmanager "platform-tools"
 
-    - name: Update Android SDK tools
-      run: sdkmanager --update
+    # - name: Update Android SDK tools
+    #   run: sdkmanager --update
 
-    - name: Check adb executable
-      run: which adb
+    # - name: Check adb executable
+    #   run: which adb
         
-    - name: List running processes
-      run: ps aux | grep emulator
+    # - name: List running processes
+    #   run: ps aux | grep emulator
 
-    - name: Delay before proceeding
-      run: sleep 30
+    # - name: Delay before proceeding
+    #   run: sleep 30
 
     - name: Create destination path
       run: mkdir -p android/app/build/outputs/apk
@@ -285,10 +285,10 @@ jobs:
     - name: Cleanup
       run: rm android/app/build/outputs/apk/artifact.zip
 
-    # - name: Create AVD
-    #   run : |
-    #     cd detox
-    #     npm run e2e:android-create-emulator
+    - name: Create AVD
+      run : |
+        cd detox
+        npm run e2e:android-create-emulator
 
     - name: Run Android Detox E2E Tests on macOS
       run: |

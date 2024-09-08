@@ -27,7 +27,7 @@ else
     CPU_ARCH_FAMILY=x86_64
     CPU_ARCH=x86_64
 fi
-SYSTEM_IMAGE="system-images;android-${SDK_VERSION};google_apis;${CPU_ARCH_FAMILY}"
+SYSTEM_IMAGE="system-images;android-${SDK_VERSION};default;${CPU_ARCH_FAMILY}"
 
 # Install the system image if it's not already installed
 sdkmanager --install "$SYSTEM_IMAGE"
