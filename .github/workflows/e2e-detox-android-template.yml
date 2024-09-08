@@ -246,7 +246,9 @@ jobs:
       run: echo $ANDROID_SDK_ROOT
 
     - name: Install Android platform-tools
-      run: sdkmanager "platform-tools"
+      run: |
+        sdkmanager --install "platform-tools"
+        sdkmanager "platform-tools"
 
     - name: Update Android SDK tools
       run: sdkmanager --update
