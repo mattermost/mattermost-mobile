@@ -276,7 +276,9 @@ jobs:
       run: ls -la android/app/build/outputs/apk
     
     - name: Cleanup
-      run: rm android/app/build/outputs/apk/artifact.zip
+      run: |
+        find android/app/build -type f
+        rm android/app/build/outputs/apk/artifact.zip
 
     - name: Run Android Detox E2E Tests on macOS
       run: |
