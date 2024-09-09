@@ -246,6 +246,22 @@ jobs:
       run: |
         echo "Waiting for emulator to boot"
         adb wait-for-device
+        boot_completed=""
+        # Poll emulator status until fully booted
+        while [ -z "$boot_completed" ]; do
+          boot_completed=$(adb shell getprop sys.boot_completed 2>&1 | tr -d '\r')
+          if [ "$boot_completed" == "1" ]; then
+            echo "Emulator booted successfully!"
+          else
+            echo "Waiting for boot to complete..."
+            sleep 5
+          fi
+        done
+        echo "Emulator ready!"
+
+    - name: Unlock the screen
+      run: |
+        echo "Unlocking the emulator screen"
         adb shell input keyevent 82
 
     # - name: Install Android system image
