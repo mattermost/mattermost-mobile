@@ -661,7 +661,6 @@
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "アカウントにログインする",
   "mobile.login_options.none": "まだアカウントにログインできません。少なくとも一つのログインオプションが設定されている必要があります。システム管理者に問い合わせてください。",
-  "mobile.login_options.office365": "Office 365",
   "mobile.login_options.openid": "Open ID",
   "mobile.login_options.saml": "SAML",
   "mobile.login_options.select_option": "以下からログイン方法を選択してください。",
