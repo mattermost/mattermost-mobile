@@ -51,42 +51,38 @@ sed -i '' -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = 
 
 echo "Android virtual device successfully created: ${NAME}"
 
-# echo "*****************************************"
-# which emulator
-# echo "*****************************************"
+# Start the emulator in headless mode and log output
+nohup emulator -avd $NAME -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
 
-# # Start the emulator in headless mode and log output
-# nohup emulator -avd $NAME -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
+sleep 30  # Adjust based on emulator startup time
 
-# sleep 30  # Adjust based on emulator startup time
+# Output the emulator logs for debugging
+cat emulator.log
 
-# # Output the emulator logs for debugging
-# cat emulator.log
+# Start adb server
+adb start-server
 
-# # Start adb server
-# adb start-server
+# Wait for adb to detect the emulator
+echo "Waiting for the emulator to be detected by adb..."
+adb_devices=$(adb devices | grep emulator | wc -l | xargs)
 
-# # Wait for adb to detect the emulator
-# echo "Waiting for the emulator to be detected by adb..."
-# adb_devices=$(adb devices | grep emulator | wc -l | xargs)
+# Retry until the emulator is detected
+while [[ "$adb_devices" -eq "0" ]]; do
+    echo "Waiting for adb to detect the emulator..."
+    sleep 10  # Increased wait time for adb to detect the device
+    adb start-server  # Ensure adb server is running
+    adb devices  # List devices
+    adb_devices=$(adb devices | grep emulator | wc -l | xargs)
+done
 
-# # Retry until the emulator is detected
-# while [[ "$adb_devices" -eq "0" ]]; do
-#     echo "Waiting for adb to detect the emulator..."
-#     sleep 10  # Increased wait time for adb to detect the device
-#     adb start-server  # Ensure adb server is running
-#     adb devices  # List devices
-#     adb_devices=$(adb devices | grep emulator | wc -l | xargs)
-# done
+echo "Emulator detected by adb."
 
-# echo "Emulator detected by adb."
+# Wait for the emulator to fully boot
+BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')
+while [[ "$BOOT_STATUS" != "1" ]]; do
+    echo "Waiting for the emulator to boot..."
+    sleep 5
+    BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')
+done
 
-# # Wait for the emulator to fully boot
-# BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')
-# while [[ "$BOOT_STATUS" != "1" ]]; do
-#     echo "Waiting for the emulator to boot..."
-#     sleep 5
-#     BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')
-# done
-
-# echo "Emulator booted successfully!"
+echo "Emulator booted successfully!"
