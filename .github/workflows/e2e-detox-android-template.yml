@@ -202,7 +202,8 @@ jobs:
 
     - name: Set up Android SDK environment
       run: |
-        echo "SDK_MANAGER_PATH=/usr/local/lib/android/tools/bin/sdkmanager" >> $GITHUB_ENV
+        brew install sdkmanager
+        which sdkmanager
 
     #     # Set the correct SDK root paths
     #     ANDROID_HOME=$HOME/android-sdk
