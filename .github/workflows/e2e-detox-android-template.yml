@@ -205,7 +205,7 @@ jobs:
         echo $ANDROID_HOME
         echo $ANDROID_SDK_ROOT
         find $ANDROID_HOME -name sdkmanager
-
+        echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH" >> $GITHUB_ENV
 
     #     # Set the correct SDK root paths
     #     ANDROID_HOME=$HOME/android-sdk
