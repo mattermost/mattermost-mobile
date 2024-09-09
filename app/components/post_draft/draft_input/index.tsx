@@ -332,12 +332,9 @@ export default function DraftInput({
                 </ScrollView>
                 {isEmojiPickerOpen &&
                     <CustomEmojiPicker
-                        inputRef={inputRef}
                         onEmojiPress={handleEmojiPress}
                         handleToggleEmojiPicker={handleToggleEmojiPicker}
                         deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
-                        setIsEmojiPickerOpen={setIsEmojiPickerOpen}
-                        setIsEmojiPickerFocused={setIsEmojiPickerFocused}
                     />
                 }
             </SafeAreaView>
