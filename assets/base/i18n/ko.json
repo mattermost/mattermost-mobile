@@ -580,7 +580,6 @@
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "계정에 로그인",
   "mobile.login_options.none": "아직 계정에 로그인할 수 없습니다. 하나 이상의 로그인 옵션을 구성해야 합니다. 시스템 관리자에게 도움을 요청하세요.",
-  "mobile.login_options.office365": "Office 365",
   "mobile.login_options.openid": "ID 열기",
   "mobile.login_options.saml": "SAML",
   "mobile.login_options.select_option": "아래에서 로그인 옵션을 선택합니다.",

@@ -257,7 +257,6 @@
   "mobile.login_options.gitlab": "GitLab",
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "Prijavi se na svoj račun",
-  "mobile.login_options.office365": "Office 365",
   "mobile.login_options.saml": "SAML",
   "mobile.login_options.separator_text": "ili se prijavi s",
   "mobile.manage_members.admin": "Administrator",

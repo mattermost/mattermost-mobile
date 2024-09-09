@@ -555,7 +555,6 @@
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "Увійдіть до свого облікового запису",
   "mobile.login_options.none": "Ви ще не можете увійти до свого облікового запису. Необхідно налаштувати принаймні один варіант входу. Зверніться за допомогою до системного адміністратора.",
-  "mobile.login_options.office365": "Office 365",
   "mobile.login_options.openid": "Відкритий ідентифікатор",
   "mobile.login_options.saml": "SAML",
   "mobile.login_options.select_option": "Виберіть варіант входу нижче.",
