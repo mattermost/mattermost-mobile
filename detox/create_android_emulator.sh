@@ -12,25 +12,25 @@ NAME="detox_pixel_4_xl_api_${SDK_VERSION}"
 
 # Check if the AVD already exists
 if emulator -list-avds | grep -q $NAME; then
-    echo "'${NAME}' Android virtual device already exists. Deleting it now..."
-    avdmanager delete avd -n $NAME
-    echo "'${NAME}' has been deleted."
+  echo "'${NAME}' Android virtual device already exists. Deleting it now..."
+  avdmanager delete avd -n $NAME
+  echo "'${NAME}' has been deleted."
 fi
 
 # Define the correct CPU architecture and system image path
 CPU_ARCH_FAMILY=''
 CPU_ARCH=''
 if [[ $(uname -p) == 'arm' ]]; then
-    CPU_ARCH_FAMILY=arm64-v8a
-    CPU_ARCH=arm64
+  CPU_ARCH_FAMILY=arm64-v8a
+  CPU_ARCH=arm64
 else
-    CPU_ARCH_FAMILY=x86_64
-    CPU_ARCH=x86_64
+  CPU_ARCH_FAMILY=x86_64
+  CPU_ARCH=x86_64
 fi
+
 SYSTEM_IMAGE="system-images;android-${SDK_VERSION};default;${CPU_ARCH_FAMILY}"
 
 # Install the system image if it's not already installed
-
 sdkmanager --install "platforms;android-${SDK_VERSION}"
 sdkmanager --install "$SYSTEM_IMAGE"
 sdkmanager --install "platform-tools"
@@ -41,14 +41,13 @@ avdmanager create avd -n $NAME -k "$SYSTEM_IMAGE" -p $NAME -d 'pixel'
 
 # Copy predefined config and skin
 mkdir -p android_emulator/
-
 cp -r android_emulator/ $NAME/
-sed -i -e "s|AvdId = change_avd_id|AvdId = ${NAME}|g" $NAME/config.ini
-sed -i -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 4 XL API ${SDK_VERSION}|g" $NAME/config.ini
-sed -i -e "s|abi.type = change_type|abi.type = ${CPU_ARCH_FAMILY}|g" $NAME/config.ini
-sed -i -e "s|hw.cpu.arch = change_cpu_arch|hw.cpu.arch = ${CPU_ARCH}|g" $NAME/config.ini
-sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${CPU_ARCH_FAMILY}/|g" $NAME/config.ini
-sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${NAME}/pixel_4_xl_skin|g" $NAME/config.ini
+sed -i '' -e "s|AvdId = change_avd_id|AvdId = ${NAME}|g" $NAME/config.ini
+sed -i '' -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 4 XL API ${SDK_VERSION}|g" $NAME/config.ini
+sed -i '' -e "s|abi.type = change_type|abi.type = ${CPU_ARCH_FAMILY}|g" $NAME/config.ini
+sed -i '' -e "s|hw.cpu.arch = change_cpu_arch|hw.cpu.arch = ${CPU_ARCH}|g" $NAME/config.ini
+sed -i '' -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${CPU_ARCH_FAMILY}/|g" $NAME/config.ini
+sed -i '' -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${NAME}/pixel_4_xl_skin|g" $NAME/config.ini
 
 echo "Android virtual device successfully created: ${NAME}"
 

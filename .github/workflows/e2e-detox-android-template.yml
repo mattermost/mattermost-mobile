@@ -202,7 +202,6 @@ jobs:
 
     - name: Set up Android SDK environment
       run: |
-        brew install sdkmanager
         which sdkmanager
 
     #     # Set the correct SDK root paths
