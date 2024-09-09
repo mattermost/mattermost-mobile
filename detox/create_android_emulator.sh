@@ -30,7 +30,10 @@ fi
 SYSTEM_IMAGE="system-images;android-${SDK_VERSION};default;${CPU_ARCH_FAMILY}"
 
 # Install the system image if it's not already installed
+sdkmanager --install "platforms;android-${SDK_VERSION}"
 sdkmanager --install "$SYSTEM_IMAGE"
+sdkmanager --install "platform-tools"
+sdkmanager --install "emulator"
 
 # Create virtual device in a relative "detox_pixel_4_xl_api_${SDK_VERSION}" folder
 avdmanager create avd -n $NAME -k "$SYSTEM_IMAGE" -p $NAME -d 'pixel'
@@ -53,7 +56,9 @@ which emulator
 echo "*****************************************"
 
 # Start the emulator in headless mode and log output
-nohup emulator -avd $NAME -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
+# nohup emulator -avd $NAME -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
+nohup emulator -avd detox_pixel_4_xl_api_31 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose -sdk_root $ANDROID_SDK_ROOT &
+
 sleep 30  # Adjust based on emulator startup time
 
 # Output the emulator logs for debugging
