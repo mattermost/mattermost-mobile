@@ -77,9 +77,24 @@ echo "Emulator detected by adb."
 
 echo 'Waiting for the emulator to boot...'
 boot_completed=false
-while [ "$boot_completed" != "1" ]; do
-  sleep 5
-  boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-  echo "Boot status: $boot_completed"
+max_attempts=30
+attempt=0
+
+while [ "$boot_completed" != "1" ] && [ $attempt -lt $max_attempts ]; do
+    boot_completed=$(adb shell getprop sys.boot_completed 2>&1 | tr -d '\r')
+    if [ $? -ne 0 ] || [ -z "$boot_completed" ]; then
+        echo "ADB not responding or device not found. Retrying..."
+        sleep 10
+    elif [ "$boot_completed" != "1" ]; then
+        echo "Waiting for device to boot... Attempt $((attempt+1))/$max_attempts"
+        sleep 10
+    fi
+    attempt=$((attempt+1))
 done
-echo 'Emulator fully booted.'
+
+if [ "$boot_completed" = "1" ]; then
+    echo "Device booted successfully!"
+else
+    echo "Device boot timed out or failed."
+    exit 1
+fi
