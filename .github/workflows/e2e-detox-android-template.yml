@@ -230,10 +230,10 @@ jobs:
       run: |
         echo "Installing Android SDK components"
         $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install emulator
-        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "system-images;android-28;default;x86_64"
-        "yes" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "system-images;android-31;default;x86_64"
 
-        $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n detox_pixel_4_xl_api_31 -d pixel --package "system-images;android-28;default;x86_64"
+        $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n detox_pixel_4_xl_api_31 -d pixel --package "system-images;android-31;default;x86_64"
 
         nohup emulator -avd detox_pixel_4_xl_api_31 -no-snapshot -no-window -noaudio -gpu swiftshader_indirect &
 
