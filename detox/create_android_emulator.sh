@@ -93,8 +93,8 @@ done
 
 echo "Device booted successfully!"
 
-# Optional: Install your app
-echo "Installing app..."
-adb install path/to/your/app.apk
+# # Optional: Install your app
+# echo "Installing app..."
+# adb install path/to/your/app.apk
 
 echo "Setup complete. Ready for testing."
