@@ -703,6 +703,8 @@
   "mobile.no_results_with_term.messages": "Geen resultaten gevonden voor \"{term}\"",
   "mobile.oauth.failed_to_login": "Jouw aanmeldingspoging is mislukt. Probeer het opnieuw.",
   "mobile.oauth.something_wrong.okButton": "OK",
+  "mobile.oauth.success.description": "Bezig met aanmelden, even geduld...",
+  "mobile.oauth.success.title": "Authenticatie geslaagd",
   "mobile.oauth.switch_to_browser": "Je wordt doorverwezen naar jouw aanmeldingsprovider",
   "mobile.oauth.switch_to_browser.error_title": "Fout bij aanmelden",
   "mobile.oauth.switch_to_browser.title": "Omleiden...",
