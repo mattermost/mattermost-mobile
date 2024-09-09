@@ -221,11 +221,33 @@ jobs:
     #     echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
     #     echo "PATH=$PATH" >> $GITHUB_ENV
 
-    - name: Create AVD
-      run : |
-        cd detox
-        npm run e2e:android-create-emulator
-  
+    # - name: Create AVD
+    #   run : |
+    #     cd detox
+    #     npm run e2e:android-create-emulator
+
+    - name: Install Android SDK and dependencies
+      run: |
+        echo "Installing Android SDK components"
+        sdkmanager --install 'platform-tools' 'platforms;android-31' 'build-tools;31.0.0' 'system-images;android-31;google_apis;x86_64' 'emulator'
+        sdkmanager --licenses
+
+    - name: Create Android Emulator
+      run: |
+        echo "Creating Android emulator"
+        avdmanager create avd --name test_emulator --package 'system-images;android-31;google_apis;x86_64' --device "pixel_3"
+
+    - name: Start Android Emulator
+      run: |
+        echo "Starting Android emulator"
+        nohup emulator -avd test_emulator -no-snapshot -no-window -noaudio -gpu swiftshader_indirect &
+
+    - name: Wait for Android Emulator to boot
+      run: |
+        echo "Waiting for emulator to boot"
+        adb wait-for-device
+        adb shell input keyevent 82
+
     # - name: Install Android system image
     #   run: |
     #     $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "system-images;android-31;default;x86_64"
