@@ -50,9 +50,9 @@ sed -i '' -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = 
 echo "Android virtual device successfully created: ${NAME}"
 
 # Start the emulator in headless mode and log output
-nohup emulator -avd $NAME -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
+nohup emulator -avd $NAME -gpu swiftshader_indirect -verbose -cores 4 -memory 4096 > emulator.log 2>&1 &
 
-sleep 180  # Adjust based on emulator startup time
+sleep 60  # Adjust based on emulator startup time
 
 # Output the emulator logs for debugging
 cat emulator.log
