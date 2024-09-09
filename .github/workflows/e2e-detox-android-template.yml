@@ -229,18 +229,26 @@ jobs:
     - name: Install Android SDK and dependencies
       run: |
         echo "Installing Android SDK components"
-        sdkmanager --install 'platform-tools' 'platforms;android-31' 'build-tools;31.0.0' 'system-images;android-31;default;x86_64' 'emulator'
-        sdkmanager --licenses
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install emulator
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "system-images;android-28;default;x86_64"
+        "yes" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    - name: Create Android Emulator
-      run: |
-        echo "Creating Android emulator"
-        avdmanager create avd --name detox_pixel_4_xl_api_31 --package 'system-images;android-31;default;x86_64' --device "pixel_3"
+        $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n detox_pixel_4_xl_api_31 -d pixel --package "system-images;android-28;default;x86_64"
 
-    - name: Start Android Emulator
-      run: |
-        echo "Starting Android emulator"
         nohup emulator -avd detox_pixel_4_xl_api_31 -no-snapshot -no-window -noaudio -gpu swiftshader_indirect &
+
+        # sdkmanager --install 'platform-tools' 'platforms;android-31' 'build-tools;31.0.0' 'system-images;android-31;default;x86_64' 'emulator'
+        # sdkmanager --licenses
+# *********************************************************
+    # - name: Create Android Emulator
+    #   run: |
+    #     echo "Creating Android emulator"
+    #     avdmanager create avd --name detox_pixel_4_xl_api_31 --package 'system-images;android-31;default;x86_64' --device "pixel_3"
+
+    # - name: Start Android Emulator
+    #   run: |
+    #     echo "Starting Android emulator"
+    #     nohup emulator -avd detox_pixel_4_xl_api_31 -no-snapshot -no-window -noaudio -gpu swiftshader_indirect &
 
     - name: Wait for Android Emulator to boot
       run: |
@@ -263,7 +271,7 @@ jobs:
       run: |
         echo "Unlocking the emulator screen"
         adb shell input keyevent 82
-
+# *********************************************************
     # - name: Install Android system image
     #   run: |
     #     $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "system-images;android-31;default;x86_64"
