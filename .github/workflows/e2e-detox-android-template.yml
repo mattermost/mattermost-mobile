@@ -200,8 +200,10 @@ jobs:
     #     # Install Platform tools
     #     $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platform-tools"
 
-    # - name: Set up Android SDK environment
-    #   run: |
+    - name: Set up Android SDK environment
+      run: |
+        echo "SDK_MANAGER_PATH=/usr/local/lib/android/tools/bin/sdkmanager" >> $GITHUB_ENV
+
     #     # Set the correct SDK root paths
     #     ANDROID_HOME=$HOME/android-sdk
     #     ANDROID_SDK_ROOT=$HOME/android-sdk
@@ -219,7 +221,6 @@ jobs:
 
     - name: Create AVD
       run : |
-        echo "SDK_MANAGER_PATH=/usr/local/lib/android/tools/bin/sdkmanager" >> $GITHUB_ENV
         cd detox
         npm run e2e:android-create-emulator
   
