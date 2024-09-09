@@ -174,55 +174,48 @@ jobs:
     - name: Install Detox Dependencies
       run: cd detox && npm i
 
-    - name: Install Java
-      uses: actions/setup-java@v4
-      with:
-        java-version: "17"
-        distribution: "adopt"
-        cache: "gradle"
+    # - name: Download and Install Android SDK
+    #   run: |
+    #     # Create a directory for Android SDK
+    #     mkdir -p $HOME/android-sdk
 
-    - name: Download and Install Android SDK
-      run: |
-        # Create a directory for Android SDK
-        mkdir -p $HOME/android-sdk
+    #     # Download the SDK tools
+    #     curl https://dl.google.com/android/repository/commandlinetools-mac-8092744_latest.zip -o commandlinetools.zip
 
-        # Download the SDK tools
-        curl https://dl.google.com/android/repository/commandlinetools-mac-8092744_latest.zip -o commandlinetools.zip
+    #     # Unzip the SDK tools into a temp directory
+    #     unzip commandlinetools.zip -d $HOME/android-sdk/temp-cmdline-tools
 
-        # Unzip the SDK tools into a temp directory
-        unzip commandlinetools.zip -d $HOME/android-sdk/temp-cmdline-tools
+    #     # Create the final directory for cmdline-tools
+    #     mkdir -p $HOME/android-sdk/cmdline-tools/latest
 
-        # Create the final directory for cmdline-tools
-        mkdir -p $HOME/android-sdk/cmdline-tools/latest
+    #     # Move the extracted files to the 'latest' directory
+    #     mv $HOME/android-sdk/temp-cmdline-tools/cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest
 
-        # Move the extracted files to the 'latest' directory
-        mv $HOME/android-sdk/temp-cmdline-tools/cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest
+    #     # Clean up the temp directory
+    #     rm -rf $HOME/android-sdk/temp-cmdline-tools
 
-        # Clean up the temp directory
-        rm -rf $HOME/android-sdk/temp-cmdline-tools
+    #     # Accept licenses and install SDK components
+    #     yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$HOME/android-sdk
 
-        # Accept licenses and install SDK components
-        yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$HOME/android-sdk
+    #     # Install Platform tools
+    #     $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platform-tools"
 
-        # Install Platform tools
-        $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platform-tools"
+    # - name: Set up Android SDK environment
+    #   run: |
+    #     # Set the correct SDK root paths
+    #     ANDROID_HOME=$HOME/android-sdk
+    #     ANDROID_SDK_ROOT=$HOME/android-sdk
+    #     PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
 
-    - name: Set up Android SDK environment
-      run: |
-        # Set the correct SDK root paths
-        ANDROID_HOME=$HOME/android-sdk
-        ANDROID_SDK_ROOT=$HOME/android-sdk
-        PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+    #     # Log the current paths for debugging
+    #     echo "ANDROID_HOME: $ANDROID_HOME"
+    #     echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+    #     echo "PATH: $PATH"
 
-        # Log the current paths for debugging
-        echo "ANDROID_HOME: $ANDROID_HOME"
-        echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
-        echo "PATH: $PATH"
-
-        # Export the environment variables to $GITHUB_ENV
-        echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-        echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-        echo "PATH=$PATH" >> $GITHUB_ENV
+    #     # Export the environment variables to $GITHUB_ENV
+    #     echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+    #     echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+    #     echo "PATH=$PATH" >> $GITHUB_ENV
 
     - name: Create AVD
       run : |
