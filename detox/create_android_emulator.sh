@@ -30,8 +30,8 @@ fi
 SYSTEM_IMAGE="system-images;android-${SDK_VERSION};default;${CPU_ARCH_FAMILY}"
 
 # Install the system image if it's not already installed
-$HOME/android-sdk/sdkmanager --install "$SYSTEM_IMAGE"
-$HOME/android-sdk/sdkmanager --install "platform-tools"
+$HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "$SYSTEM_IMAGE"
+$HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platform-tools"
 
 # Create virtual device in a relative "detox_pixel_4_xl_api_${SDK_VERSION}" folder
 avdmanager create avd -n $NAME -k "$SYSTEM_IMAGE" -p $NAME -d 'pixel'
