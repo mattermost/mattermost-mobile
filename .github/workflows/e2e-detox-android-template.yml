@@ -202,13 +202,16 @@ jobs:
         rm -rf $HOME/android-sdk/temp-cmdline-tools
 
         # Accept licenses and install SDK components
-        # yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$HOME/android-sdk
+        yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$HOME/android-sdk
 
-    # - name: Set up Android SDK environment
-    #   run: |
-    #     echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-    #     echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
-    #     echo "PATH=$PATH:$HOME/android-sdk/platform-tools:$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/emulator" >> $GITHUB_ENV
+        # Install Platform tools
+        $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platform-tools"
+
+    - name: Set up Android SDK environment
+      run: |
+        echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "PATH=$PATH:$HOME/android-sdk/platform-tools:$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/emulator" >> $GITHUB_ENV
 
     # - name: Install Android system image
     #   run: |
