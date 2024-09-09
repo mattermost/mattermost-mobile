@@ -209,10 +209,26 @@ jobs:
 
     - name: Set up Android SDK environment
       run: |
-        echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
-        echo "PATH=$PATH:$HOME/android-sdk/platform-tools:$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/emulator" >> $GITHUB_ENV
+        # Set the correct SDK root paths
+        ANDROID_HOME=$HOME/android-sdk
+        ANDROID_SDK_ROOT=$HOME/android-sdk
+        PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
 
+        # Log the current paths for debugging
+        echo "ANDROID_HOME: $ANDROID_HOME"
+        echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+        echo "PATH: $PATH"
+
+        # Export the environment variables to $GITHUB_ENV
+        echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+        echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+        echo "PATH=$PATH" >> $GITHUB_ENV
+
+    - name: Create AVD
+      run : |
+        cd detox
+        npm run e2e:android-create-emulator
+  
     # - name: Install Android system image
     #   run: |
     #     $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "system-images;android-31;default;x86_64"
@@ -237,18 +253,6 @@ jobs:
     #         sleep 10
     #       fi
     #     done
-
-    # - name: List platform-tools directory
-    #   run: ls -l $HOME/android-sdk/platform-tools
-
-    # - name: Verify SDK Path
-    #   run: echo $ANDROID_SDK_ROOT
-        
-    - name: List running processes
-      run: ps aux | grep emulator
-
-    - name: Delay before proceeding
-      run: sleep 30
 
     - name: Create destination path
       run: mkdir -p android/app/build/outputs/apk
@@ -276,11 +280,6 @@ jobs:
     
     - name: Cleanup
       run: rm android/app/build/outputs/apk/artifact.zip
-
-    - name: Create AVD
-      run : |
-        cd detox
-        npm run e2e:android-create-emulator
 
     - name: Run Android Detox E2E Tests on macOS
       run: |
