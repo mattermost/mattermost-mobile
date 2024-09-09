@@ -219,6 +219,7 @@ jobs:
 
     - name: Create AVD
       run : |
+        echo "SDK_MANAGER_PATH="/usr/local/lib/android/tools/bin/sdkmanager" >> $GITHUB_ENV
         cd detox
         npm run e2e:android-create-emulator
   
