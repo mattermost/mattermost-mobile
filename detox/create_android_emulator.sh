@@ -50,7 +50,7 @@ sed -i '' -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = 
 echo "Android virtual device successfully created: ${NAME}"
 
 # Start the emulator in headless mode and log output
-nohup emulator -avd $NAME -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
+nohup emulator -avd $NAME -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
 
 sleep 30  # Adjust based on emulator startup time
 
@@ -75,12 +75,11 @@ done
 
 echo "Emulator detected by adb."
 
-# Wait for the emulator to fully boot
-BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')
-while [[ "$BOOT_STATUS" != "1" ]]; do
-    echo "Waiting for the emulator to boot..."
-    sleep 5
-    BOOT_STATUS=$(adb shell getprop sys.boot_completed | tr -d '\r')
+echo 'Waiting for the emulator to boot...'
+boot_completed=false
+while [ "$boot_completed" != "1" ]; do
+  sleep 5
+  boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+  echo "Boot status: $boot_completed"
 done
-
-echo "Emulator booted successfully!"
+echo 'Emulator fully booted.'
