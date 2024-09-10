@@ -657,6 +657,7 @@
   "mobile.link.error.title": "Fehler",
   "mobile.login_options.cant_heading": "Kann mich nicht anmelden",
   "mobile.login_options.enter_credentials": "Gib unten deine Anmeldedaten ein.",
+  "mobile.login_options.entraid": "Entra ID",
   "mobile.login_options.gitlab": "GitLab",
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "Bei deinem Konto anmelden",
