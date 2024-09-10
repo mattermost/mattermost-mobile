@@ -657,6 +657,7 @@
   "mobile.link.error.title": "Ошибка",
   "mobile.login_options.cant_heading": "Не могу войти в систему",
   "mobile.login_options.enter_credentials": "Введите свои данные для входа в систему ниже.",
+  "mobile.login_options.entraid": "Идентификатор Entra",
   "mobile.login_options.gitlab": "GitLab",
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "Войдите в свою учетную запись",
