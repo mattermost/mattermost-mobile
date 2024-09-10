@@ -116,7 +116,7 @@
   "channel_bookmark.edit_option": "Düzenle",
   "channel_bookmark.share_option": "Paylaş",
   "channel_bookmark_add.link": "Bağlantı",
-  "channel_bookmark_add.link.input.description": "Bir gönderi, dosya ya da dış bağlantı ekleyin",
+  "channel_bookmark_add.link.input.description": "Bir gönderi ya da dosyaya bir bağlantı ya da herhangi bir dış bağlantı ekleyin",
   "channel_bookmark_add.link.invalid": "Lütfen geçerli bir bağlantı yazın",
   "channel_files.empty.paragraph": "Bu kanala eklenmiş dosyalar burada görüntülenir.",
   "channel_files.empty.title": "Henüz bir dosya yok",
