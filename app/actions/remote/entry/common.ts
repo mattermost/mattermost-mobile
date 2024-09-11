@@ -416,35 +416,25 @@ async function restDeferredAppEntryActions(
     }, FETCH_MISSING_DM_TIMEOUT);
 }
 
-export const registerDeviceToken = async (serverUrl: string) => {
-    try {
-        const client = NetworkManager.getClient(serverUrl);
-
-        const deviceToken = await getDeviceToken();
-        if (deviceToken) {
-            client.attachDevice(deviceToken);
-        }
-        return {};
-    } catch (error) {
-        logDebug('error on registerDeviceToken', getFullErrorMessage(error));
-        return {error};
-    }
-};
-
 export const setExtraSessionProps = async (serverUrl: string) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const serverVersion = await getConfigValue(database, 'Version');
+        const deviceToken = await getDeviceToken();
 
-        if (isMinimumServerVersion(serverVersion, 10, 1, 0)) {
+        // For new servers, we want to send all the information.
+        // For old servers, we only want to send the information when there
+        // is a device token. Sending the rest of the information should not
+        // create any issue.
+        if (isMinimumServerVersion(serverVersion, 10, 1, 0) || deviceToken) {
             const res = await checkNotifications();
             const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
             const client = NetworkManager.getClient(serverUrl);
-            client.setExtraSessionProps(!granted, nativeApplicationVersion);
+            client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion);
         }
         return {};
     } catch (error) {
-        logDebug('error on registerDeviceToken', getFullErrorMessage(error));
+        logDebug('error on setExtraSessionProps', getFullErrorMessage(error));
         return {error};
     }
 };
