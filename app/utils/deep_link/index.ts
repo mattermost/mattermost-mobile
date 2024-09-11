@@ -25,13 +25,12 @@ import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
 import {addNewServer} from '@utils/server';
+import {removeProtocol, stripTrailingSlashes} from '@utils/url';
 import {
     TEAM_NAME_PATH_PATTERN,
     IDENTIFIER_PATH_PATTERN,
     ID_PATH_PATTERN,
 } from '@utils/url/path';
-
-import {removeProtocol} from '../url';
 
 import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -121,29 +120,30 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
 
 type ChannelPathParams = {
     hostname: string;
-    serverUrl: string;
+    serverUrl: string[];
     teamName: string;
     path: 'channels' | 'messages';
     identifier: string;
 };
 
-const CHANNEL_PATH = `:serverUrl(.*)/:teamName(${TEAM_NAME_PATH_PATTERN})/:path(channels|messages)/:identifier(${IDENTIFIER_PATH_PATTERN})`;
+const CHANNEL_PATH = '*serverUrl/:teamName/:path/:identifier';
 export const matchChannelDeeplink = match<ChannelPathParams>(CHANNEL_PATH);
 
 type PermalinkPathParams = {
-    serverUrl: string;
+    serverUrl: string[];
     teamName: string;
     postId: string;
 };
-const PERMALINK_PATH = `:serverUrl(.*)/:teamName(${TEAM_NAME_PATH_PATTERN})/pl/:postId(${ID_PATH_PATTERN})`;
+const PERMALINK_PATH = '*serverUrl/:teamName/pl/:postId';
 export const matchPermalinkDeeplink = match<PermalinkPathParams>(PERMALINK_PATH);
 
 type ServerPathParams = {
     serverUrl: string;
     path: string;
+    subpath?: string[];
 }
 
-export const matchServerDeepLink = match<ServerPathParams>(':serverUrl(.*)/:path(.*)', {decode: decodeURIComponent});
+export const matchServerDeepLink = match<ServerPathParams>(':serverUrl/{:path}{/*subpath}', {decode: decodeURIComponent});
 const reservedWords = ['login', 'signup', 'admin_console'];
 
 export function extractServerUrl(url: string) {
@@ -168,16 +168,45 @@ export function extractServerUrl(url: string) {
     const matched = matchServerDeepLink(deepLinkUrl);
 
     if (matched) {
-        const {path} = matched.params;
-        const segments = path.split('/');
+        const {path, subpath} = matched.params;
 
-        if (segments.length > 0 && reservedWords.includes(segments[segments.length - 1])) {
-            return matched.params.serverUrl;
+        let extra = '';
+
+        if (!path || reservedWords.includes(path)) {
+            return stripTrailingSlashes(matched.params.serverUrl);
         }
-        return path ? `${matched.params.serverUrl}/${path}` : matched.params.serverUrl;
+
+        if (subpath && subpath.length > 0) {
+            if (reservedWords.includes(subpath[subpath.length - 1])) {
+                subpath.pop();
+            }
+
+            extra = subpath.join('/');
+        }
+
+        if (extra) {
+            return stripTrailingSlashes(`${matched.params.serverUrl}/${path}/${extra}`);
+        }
+
+        return stripTrailingSlashes(`${matched.params.serverUrl}/${path}`);
     }
 
     return deepLinkUrl;
+}
+
+function isValidTeamName(teamName: string): boolean {
+    const regex = new RegExp(`^${TEAM_NAME_PATH_PATTERN}$`);
+    return regex.test(teamName);
+}
+
+function isValidIdentifierPathPattern(id: string): boolean {
+    const regex = new RegExp(`^${IDENTIFIER_PATH_PATTERN}$`);
+    return regex.test(id);
+}
+
+function isValidPostId(id: string): boolean {
+    const regex = new RegExp(`^${ID_PATH_PATTERN}$`);
+    return regex.test(id);
 }
 
 export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWithData {
@@ -185,26 +214,26 @@ export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWi
         const url = removeProtocol(deepLinkUrl);
 
         const channelMatch = matchChannelDeeplink(url);
-        if (channelMatch) {
+        if (channelMatch && isValidTeamName(channelMatch.params.teamName) && isValidIdentifierPathPattern(channelMatch.params.identifier)) {
             const {params: {serverUrl, teamName, path, identifier}} = channelMatch;
 
             if (path === 'channels') {
-                return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl, teamName, channelName: identifier}};
+                return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), teamName, channelName: identifier}};
             }
 
             if (path === 'messages') {
                 if (identifier.startsWith('@')) {
-                    return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl, teamName, userName: identifier.substring(1)}};
+                    return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), teamName, userName: identifier.substring(1)}};
                 }
 
-                return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl, teamName, channelName: identifier}};
+                return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), teamName, channelName: identifier}};
             }
         }
 
         const permalinkMatch = matchPermalinkDeeplink(url);
-        if (permalinkMatch) {
+        if (permalinkMatch && isValidTeamName(permalinkMatch.params.teamName) && isValidPostId(permalinkMatch.params.postId)) {
             const {params: {serverUrl, teamName, postId}} = permalinkMatch;
-            return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl, teamName, postId}};
+            return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), teamName, postId}};
         }
 
         if (asServer) {
