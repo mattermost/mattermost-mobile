@@ -6,6 +6,7 @@ import {Button} from '@rneui/base';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl, type IntlShape} from 'react-intl';
 import {Alert, StyleSheet} from 'react-native';
+import Animated from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ITEM_HEIGHT} from '@components/option_item';
@@ -149,20 +150,19 @@ const ChannelBookmark = ({
     }
 
     return (
-        <Button
-            containerStyle={styles.container}
-            buttonStyle={styles.button}
-            onPress={onGestureEvent}
-            onLongPress={handleLongPress}
-
-            // @ts-expect-error ref not present in TS def
-            ref={ref}
-        >
-            <BookmarkDetails
-                bookmark={bookmark}
-                file={file}
-            />
-        </Button>
+        <Animated.View ref={ref}>
+            <Button
+                containerStyle={styles.container}
+                buttonStyle={styles.button}
+                onPress={onGestureEvent}
+                onLongPress={handleLongPress}
+            >
+                <BookmarkDetails
+                    bookmark={bookmark}
+                    file={file}
+                />
+            </Button>
+        </Animated.View>
     );
 };
 

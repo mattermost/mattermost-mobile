@@ -120,7 +120,7 @@ const GalleryViewer = ({
         }
 
         return (<ImageRenderer {...props}/>);
-    }, [items]);
+    }, [items, width, height]);
 
     return (
         <Pager

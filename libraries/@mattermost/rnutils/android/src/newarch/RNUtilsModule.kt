@@ -27,6 +27,8 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
 
     override fun isRunningInSplitView(): WritableMap? = implementation.isRunningInSplitView()
 
+    override fun getWindowDimensions(): WritableMap? = implementation.getWindowDimensions()
+
     override fun unlockOrientation() {
         implementation.unlockOrientation()
     }

@@ -22,6 +22,11 @@ import React
         return sharedDirectory.appendingPathComponent("databases").path
     }
     
+    func getWindowSize() -> (CGSize?, CGSize?) {
+        guard let w = UIApplication.shared.delegate?.window, let window = w else { return (nil, nil) }
+        return (window.screen.bounds.size, window.frame.size)
+    }
+    
     func isRunningInFullScreen() -> Bool {
         guard let w = UIApplication.shared.delegate?.window, let window = w else { return false }
         let screenSize = window.screen.bounds.size.width
@@ -30,16 +35,37 @@ import React
         return shouldBeConsideredFullScreen
     }
     
-    @objc public func captureEvents() {
-            NotificationCenter.default.addObserver(self,
-               selector: #selector(isSplitView), name: NSNotification.Name.RCTUserInterfaceStyleDidChange,
-               object: nil)
+    func isRunningInFullScreen(screen: CGSize?, frame: CGSize?) -> Bool {
+        guard let screenSize = screen?.width,
+              let frameSize = frame?.width else {return false}
+        let shouldBeConsideredFullScreen = frameSize >= (screenSize * 0.6)
+        return shouldBeConsideredFullScreen
     }
     
-    @objc func isSplitView() {
+    @objc public func captureEvents() {
+        DispatchQueue.main.async {
+            guard let w = UIApplication.shared.delegate?.window, let window = w else { return }
+            window.addObserver(self, forKeyPath: "frame", options: .new, context: nil)
+        }
+    }
+    
+    override public func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "frame" {
+            let (screen, frame) = getWindowSize()
+            guard let screen = screen, let frame = frame else {return}
+            isSplitView(screen: screen, frame: frame)
+            
+            delegate?.sendEvent(name: "DimensionsChanged", result: [
+                "width": frame.width,
+                "height": frame.height
+            ])
+        }
+    }
+    
+    @objc func isSplitView(screen: CGSize, frame: CGSize) {
         if UIDevice.current.userInterfaceIdiom == .pad {
             delegate?.sendEvent(name: "SplitViewChanged", result: [
-                "isSplitView": !isRunningInFullScreen(),
+                "isSplit": !isRunningInFullScreen(screen: screen, frame: frame),
                 "isTablet": UIDevice.current.userInterfaceIdiom == .pad,
             ])
         }
@@ -201,6 +227,28 @@ import React
               "isSplit": !shouldBeConsideredFullScreen,
               "isTablet": UIDevice.current.userInterfaceIdiom == .pad,
             ]
+    }
+    
+    @objc public func getWindowDimensions() -> Dictionary<String, Any> {
+        let queue = DispatchQueue.main
+            let group = DispatchGroup()
+            var dimensions = [
+                "width": 0.0,
+                "height": 0.0
+            ]
+            group.enter()
+            queue.async(group: group) { [weak self] in
+                if let (_, frame) = self?.getWindowSize(),
+                   let frame = frame {
+                    dimensions = [
+                        "width": frame.width,
+                        "height": frame.height
+                    ]
+                }
+              group.leave()
+            }
+            group.wait()
+            return dimensions
     }
     
     @objc public func unlockOrientation() {
