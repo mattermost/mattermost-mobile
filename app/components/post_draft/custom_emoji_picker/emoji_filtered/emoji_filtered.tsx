@@ -78,11 +78,7 @@ const EmojiFiltered: React.FC<Props> = ({
                 </Text>
             </View>
         );
-    }, [
-        searchTerm,
-        style,
-        intl,
-    ]);
+    }, [style, intl]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<string>) => {
         return (

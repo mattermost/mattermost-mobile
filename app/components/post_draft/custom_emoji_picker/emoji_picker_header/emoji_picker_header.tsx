@@ -45,23 +45,17 @@ const EmojiPickerHeader: React.FC<Props> = ({
         emojiPickerHeight.value = withTiming(300, {duration: 0});
         setIsEmojiSearchFocused(false);
         isSearching.value = false;
-    }, [
-        emojiPickerHeight,
-        setIsEmojiSearchFocused,
-    ]);
+    }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused]);
 
     const onFocus = useCallback(() => {
         emojiPickerHeight.value = withTiming(100, {duration: 0});
         setIsEmojiSearchFocused(true);
         isSearching.value = true;
-    }, [
-        emojiPickerHeight,
-        setIsEmojiSearchFocused,
-    ]);
+    }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         containerWidth.value = e.nativeEvent.layout.width;
-    }, []);
+    }, [containerWidth]);
 
     return (
         <View

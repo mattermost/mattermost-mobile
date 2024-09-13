@@ -58,16 +58,16 @@ const EmojiPicker: React.FC<Props> = ({
 
     const onCancelSearch = useCallback(() => setSearchTerm(undefined), []);
 
-    const onChangeSearchTerm = useCallback((text: string) => {
-        setSearchTerm(text);
-        searchCustom(text.replace(/^:|:$/g, '').trim());
-    }, []);
-
     const searchCustom = debounce((text: string) => {
         if (text && text.length > 1) {
             searchCustomEmojis(serverUrl, text);
         }
     }, 500);
+
+    const onChangeSearchTerm = useCallback((text: string) => {
+        setSearchTerm(text);
+        searchCustom(text.replace(/^:|:$/g, '').trim());
+    }, [searchCustom]);
 
     const term = searchTerm?.replace(/^:|:$/g, '').trim() || '';
 

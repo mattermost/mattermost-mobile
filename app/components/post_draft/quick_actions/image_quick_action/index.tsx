@@ -59,7 +59,7 @@ export default function ImageQuickAction({
             onUploadFiles);
 
         picker.attachFileFromPhotoGallery(maxFileCount - fileCount);
-    }, [onUploadFiles, fileCount, maxFileCount]);
+    }, [maxFilesReached, intl, onUploadFiles, maxFileCount, fileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

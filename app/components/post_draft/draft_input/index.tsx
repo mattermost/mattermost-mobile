@@ -145,9 +145,12 @@ export default function DraftInput({
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
-    }, []);
+    }, [updatePostInputTop]);
 
-    // To keep track of cursor position and to retrieve the latest value of cursor position
+    // Use useRef to track and always retrieve the latest cursor position without triggering re-renders.
+    // This approach is used to improve performance, as the child component was re-rendering frequently
+    // due to isEmojiPress being added to the callback's dependency array.
+    // Further investigation may be needed to optimize this behavior.
     const cursorPositionRef = useRef(cursorPosition);
     useEffect(() => {
         cursorPositionRef.current = cursorPosition;
@@ -238,11 +241,7 @@ export default function DraftInput({
             showSoftInputOnFocus: true,
         });
         focus();
-    }, [
-        focus,
-        isEmojiPickerFocused,
-        isEmojiPickerOpen,
-    ]);
+    }, [focus, height, isEmojiPickerFocused, isEmojiPickerOpen]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -295,7 +294,7 @@ export default function DraftInput({
         } else {
             sendMessage();
         }
-    }, [serverUrl, mentionsList, persistentNotificationsEnabled, persistentNotificationMaxRecipients, sendMessage, value, channelType]);
+    }, [persistentNotificationsEnabled, serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType]);
 
     const sendActionDisabled = !canSend || noMentionsError;
 
