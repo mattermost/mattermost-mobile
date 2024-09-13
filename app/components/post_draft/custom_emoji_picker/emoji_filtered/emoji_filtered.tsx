@@ -63,7 +63,7 @@ const EmojiFiltered: React.FC<Props> = ({
         }
 
         return searchEmojis(fuse, searchTerm);
-    }, [fuse, searchTerm]);
+    }, [emojis, fuse, searchTerm]);
 
     const keyExtractor = (item: string) => item;
 
