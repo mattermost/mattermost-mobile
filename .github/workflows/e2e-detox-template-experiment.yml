@@ -320,8 +320,8 @@ jobs:
       #     curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=134'
 
       # for now, I don't want to do any detoxing.
-      - name: quickly exit
-        run: exit 1
+      # - name: quickly exit
+      #   run: exit 1
 
 
       - name: restart mitmdump
