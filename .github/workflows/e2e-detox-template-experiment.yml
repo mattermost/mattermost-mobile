@@ -156,6 +156,14 @@ jobs:
       - name: Unzip iOS Simulator Build
         run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
 
+      - name: delete the zip file and trash (to free up space)
+        run: |
+          rm -rf mobile-artifacts/*.zip
+          sudo rm -rf ~/.Trash/*
+
+      - name: check disk space
+        run: df -h
+
       - name: Install mitmproxy & pm2 (process manager)
         run: |
           brew install mitmproxy
@@ -230,11 +238,6 @@ jobs:
 
           sleep 2;
 
-
-      - name: check disk space if failure
-        if: failure()
-        run: df -h
-
       - name: test curl after throttling
         run: |
           curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=134'
@@ -275,6 +278,9 @@ jobs:
           sudo pfctl -E
 
           sleep 2;
+
+      - name: quickly exit
+        run: exit 1
 
 
       - name: test curl after throttling (2)
