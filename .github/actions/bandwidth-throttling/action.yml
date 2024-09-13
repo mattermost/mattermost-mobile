@@ -23,7 +23,7 @@ runs:
         
         sudo pfctl -E
 
-        sleep 2;
+        sleep 5;
 
     - name: test curl after throttling
       run: |
