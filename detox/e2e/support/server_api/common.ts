@@ -12,7 +12,7 @@ export const getCookiesFromConfig = (config: AxiosRequestConfig<any>) => {
     let mmAuthToken = '';
     let mmUserId = '';
     let mmCsrf = '';
-    config.jar?.toJSON().cookies.forEach((cookie: any) => {
+    config.jar?.toJSON()?.cookies.forEach((cookie: any) => {
         if (cookie.key === 'MMAUTHTOKEN') {
             mmAuthToken = cookie.value;
         } else if (cookie.key === 'MMUSERID') {
