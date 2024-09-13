@@ -5,6 +5,7 @@ runs:
   using: composite
   steps:
     - name: throttle bandwidth down
+      shell: bash
       run: |
 
         # echo "dummynet in from mobile-e2e-site-1.test.mattermost.cloud to any pipe 1
@@ -26,6 +27,7 @@ runs:
         sleep 5;
 
     - name: test curl after throttling
+      shell: bash
       run: |
         curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=134'
 
