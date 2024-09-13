@@ -164,6 +164,17 @@ jobs:
       - name: check disk space
         run: df -h
 
+      
+      - name: Throttle Bandwidth 1
+        id: throttle-bandwidth-1
+        uses: ./.github/actions/bandwidth-throttling
+
+      - name: Throttle Bandwidth 2
+        if: failure()
+        id: throttle-bandwidth-2
+        uses: ./.github/actions/bandwidth-throttling
+
+
       - name: Install mitmproxy & pm2 (process manager)
         run: |
           brew install mitmproxy
@@ -216,15 +227,6 @@ jobs:
         run: |
           curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&def-123'
 
-      
-      - name: Throttle Bandwidth 1
-        id: throttle-bandwidth-1
-        uses: ./.github/actions/bandwidth-throttling
-
-      - name: Throttle Bandwidth 2
-        if: failure()
-        id: throttle-bandwidth-2
-        uses: ./.github/actions/bandwidth-throttling
 
       # - name: throttle bandwidth down
       #   run: |
@@ -311,9 +313,9 @@ jobs:
 
       - name: test curl after mitmdump restart
         run: |
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=919'
+          curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=919'
 
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=919'
+          curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=919'
 
 
       - name: start proxy
@@ -328,15 +330,15 @@ jobs:
 
       - name: test curl after starting proxy
         run: |
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=777'
+          curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=777'
 
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=777'
+          curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=777'
 
       - name: test curl and direct it into proxy
         run: |
-          curl --proxy "127.0.0.1:8080" -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=012'
+          curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=012'
 
-          curl --proxy "127.0.0.1:8080" -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=012'
+          curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=012'
 
 
       - name: use chrome to visit target site after (also see if it goes into mitmdump)
