@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
@@ -54,11 +54,11 @@ const EmojiPicker: React.FC<Props> = ({
 }) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const [searchTerm, setSearchTerm] = React.useState<string|undefined>();
+    const [searchTerm, setSearchTerm] = useState<string|undefined>();
 
-    const onCancelSearch = React.useCallback(() => setSearchTerm(undefined), []);
+    const onCancelSearch = useCallback(() => setSearchTerm(undefined), []);
 
-    const onChangeSearchTerm = React.useCallback((text: string) => {
+    const onChangeSearchTerm = useCallback((text: string) => {
         setSearchTerm(text);
         searchCustom(text.replace(/^:|:$/g, '').trim());
     }, []);

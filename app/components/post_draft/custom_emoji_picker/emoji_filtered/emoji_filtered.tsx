@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Fuse from 'fuse.js';
-import React from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, Text, View, type ListRenderItemInfo} from 'react-native';
 
@@ -47,17 +47,17 @@ const EmojiFiltered: React.FC<Props> = ({
     searchTerm = '',
     onEmojiPress,
 }) => {
-    const emojis = React.useMemo(() => getEmojis(skinTone, customEmojis), [skinTone, customEmojis]);
+    const emojis = useMemo(() => getEmojis(skinTone, customEmojis), [skinTone, customEmojis]);
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const fuse = React.useMemo(() => {
+    const fuse = useMemo(() => {
         const options = {findAllMatches: true, ignoreLocation: true, includeMatches: true, shouldSort: false, includeScore: true};
         return new Fuse(emojis, options);
     }, [emojis]);
 
-    const data = React.useMemo(() => {
+    const data = useMemo(() => {
         if (!searchTerm) {
             return emojis;
         }
@@ -65,9 +65,9 @@ const EmojiFiltered: React.FC<Props> = ({
         return searchEmojis(fuse, searchTerm);
     }, [fuse, searchTerm]);
 
-    const keyExtractor = React.useCallback((item: string) => item, []);
+    const keyExtractor = (item: string) => item;
 
-    const renderEmpty = React.useCallback(() => {
+    const renderEmpty = useCallback(() => {
         return (
             <View style={style.noResultContainer}>
                 <Text style={style.noResultText}>
@@ -78,9 +78,13 @@ const EmojiFiltered: React.FC<Props> = ({
                 </Text>
             </View>
         );
-    }, [searchTerm]);
+    }, [
+        searchTerm,
+        style,
+        intl,
+    ]);
 
-    const renderItem = React.useCallback(({item}: ListRenderItemInfo<string>) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<string>) => {
         return (
             <EmojiItem
                 onEmojiPress={onEmojiPress}
@@ -88,7 +92,9 @@ const EmojiFiltered: React.FC<Props> = ({
                 shouldShowName={false}
             />
         );
-    }, []);
+    }, [
+        onEmojiPress,
+    ]);
 
     return (
         <View style={style.container}>

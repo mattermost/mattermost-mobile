@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {StyleSheet, View, type LayoutChangeEvent} from 'react-native';
 import {useSharedValue, withTiming, type SharedValue} from 'react-native-reanimated';
 
@@ -33,7 +33,7 @@ const EmojiPickerHeader: React.FC<Props> = ({
     const containerWidth = useSharedValue(0);
     const isSearching = useSharedValue(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const req = requestAnimationFrame(() => {
             setEmojiSkinTone(skinTone);
         });
@@ -41,19 +41,25 @@ const EmojiPickerHeader: React.FC<Props> = ({
         return () => cancelAnimationFrame(req);
     }, [skinTone]);
 
-    const onBlur = React.useCallback(() => {
+    const onBlur = useCallback(() => {
         emojiPickerHeight.value = withTiming(300, {duration: 0});
         setIsEmojiSearchFocused(false);
         isSearching.value = false;
-    }, []);
+    }, [
+        emojiPickerHeight,
+        setIsEmojiSearchFocused,
+    ]);
 
-    const onFocus = React.useCallback(() => {
+    const onFocus = useCallback(() => {
         emojiPickerHeight.value = withTiming(100, {duration: 0});
         setIsEmojiSearchFocused(true);
         isSearching.value = true;
-    }, []);
+    }, [
+        emojiPickerHeight,
+        setIsEmojiSearchFocused,
+    ]);
 
-    const onLayout = React.useCallback((e: LayoutChangeEvent) => {
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
         containerWidth.value = e.nativeEvent.layout.width;
     }, []);
 
