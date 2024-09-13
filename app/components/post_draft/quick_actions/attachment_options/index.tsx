@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Pressable} from 'react-native';
 
@@ -47,7 +47,7 @@ const AttachmentOptions: React.FC<AttachmentOptionsProps> = (
     const style = getStyleSheet(theme);
     const {formatMessage} = useIntl();
 
-    const handleOpenButtonSheet = () => {
+    const handleOpenButtonSheet = useCallback(() => {
         Keyboard.dismiss();
         openAsBottomSheet({
             closeButtonId: 'close-add-reaction',
@@ -63,7 +63,16 @@ const AttachmentOptions: React.FC<AttachmentOptionsProps> = (
                 maxFileCount,
             },
         });
-    };
+    }, [
+        onUploadFiles,
+        maxFilesReached,
+        canUploadFiles,
+        testID,
+        fileCount,
+        maxFileCount,
+        theme,
+        formatMessage,
+    ]);
 
     return (
         <Pressable

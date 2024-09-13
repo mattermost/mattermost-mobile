@@ -146,21 +146,19 @@ export default function DraftInput({
         cursorPositionRef.current = cursorPosition;
     }, [cursorPosition]);
 
-    const handleEmojiPress = (emojiName: string) => {
+    const handleEmojiPress = useCallback((emojiName: string) => {
         updateValue((v) => {
             const name = emojiName.trim();
             const currentCursorPosition = cursorPositionRef.current;
             let unicode;
-            const imageUrl = '';
             if (EmojiIndicesByAlias.get(name)) {
                 const emoji = Emojis[EmojiIndicesByAlias.get(name)!];
                 if (emoji.category === 'custom') {
                     return `${v.slice(0, currentCursorPosition)} :${emojiName}: ${v.slice(currentCursorPosition)}`;
                 }
                 unicode = emoji.image;
-                if (unicode && !imageUrl) {
-                    const codeArray = unicode.split('-');
-                    // eslint-disable-next-line max-nested-callbacks
+                if (unicode) {
+                    const codeArray = unicode.split('-'); // eslint-disable-next-line max-nested-callbacks
                     const code = codeArray.reduce((acc: string, c: string) => {
                         return acc + String.fromCodePoint(parseInt(c, 16));
                     }, '');
@@ -169,7 +167,7 @@ export default function DraftInput({
             }
             return `${v.slice(0, currentCursorPosition)} :${emojiName}: ${v.slice(currentCursorPosition)}`;
         });
-    };
+    }, [updateValue]);
 
     const inputRef = useRef<PasteInputRef>();
 
@@ -177,7 +175,7 @@ export default function DraftInput({
         inputRef.current?.focus();
     }, []);
 
-    const handleToggleEmojiPicker = () => {
+    const handleToggleEmojiPicker = useCallback(() => {
         if (!isEmojiPickerOpen) {
             Keyboard.dismiss();
             setIsEmojiPickerOpen(true);
@@ -213,9 +211,13 @@ export default function DraftInput({
             showSoftInputOnFocus: true,
         });
         focus();
-    };
+    }, [
+        focus,
+        isEmojiPickerFocused,
+        isEmojiPickerOpen,
+    ]);
 
-    const deleteCharFromCurrentCursorPosition = () => {
+    const deleteCharFromCurrentCursorPosition = useCallback(() => {
         const currentCursorPosition = cursorPositionRef.current;
         if (currentCursorPosition === 0) {
             return;
@@ -227,7 +229,11 @@ export default function DraftInput({
         const updatedValue = clusters.join('') + value.slice(currentCursorPosition);
         updateValue(updatedValue);
         updateCursorPosition(clusters.join('').length);
-    };
+    }, [
+        updateCursorPosition,
+        value,
+        updateValue,
+    ]);
 
     // Render
     const postInputTestID = `${testID}.post.input`;

@@ -43,25 +43,16 @@ const PhotoAttachment: React.FC<QuickActionAttachmentProps> = ({
     const theme = useTheme();
     const style = getStyle(theme);
 
-    const handleButtonPress = useCallback((options: CameraOptions) => {
-        const picker = new FilePickerUtil(intl,
-            onUploadFiles);
-
-        picker.attachFileFromCamera(options);
-    }, [intl, onUploadFiles]);
-
-    const onPhoto = async () => {
+    const onPress = useCallback(preventDoubleTap(async () => {
+        await dismissBottomSheet();
+        const picker = new FilePickerUtil(intl, onUploadFiles);
         const options: CameraOptions = {
             quality: 0.8,
             mediaType: 'photo',
             saveToPhotos: true,
         };
-
-        await dismissBottomSheet();
-        handleButtonPress(options);
-    };
-
-    const onPress = useCallback(preventDoubleTap(onPhoto, 500), []);
+        picker.attachFileFromCamera(options);
+    }, 500), [intl, onUploadFiles]);
 
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
 

@@ -42,14 +42,7 @@ const VideoAttachment: React.FC<QuickActionAttachmentProps> = ({
     const theme = useTheme();
     const style = getStyle(theme);
 
-    const handleButtonPress = useCallback((options: CameraOptions) => {
-        const picker = new FilePickerUtil(intl,
-            onUploadFiles);
-
-        picker.attachFileFromCamera(options);
-    }, [intl, onUploadFiles]);
-
-    const onPhoto = async () => {
+    const onPhoto = useCallback(async () => {
         const options: CameraOptions = {
             quality: 0.8,
             mediaType: 'photo',
@@ -57,8 +50,10 @@ const VideoAttachment: React.FC<QuickActionAttachmentProps> = ({
         };
 
         await dismissBottomSheet();
-        handleButtonPress(options);
-    };
+        const picker = new FilePickerUtil(intl, onUploadFiles);
+
+        picker.attachFileFromCamera(options);
+    }, [intl, onUploadFiles]);
 
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
 

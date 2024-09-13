@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {StyleSheet} from 'react-native';
 
 import BottomSheet from '@screens/bottom_sheet';
@@ -32,7 +32,7 @@ const AttachmentOptionsScreen: React.FC<Props> = ({
     maxFilesReached,
     testID,
 }) => {
-    const renderComponent = () => {
+    const renderComponent = useCallback(() => {
         return (
             <AttachmentOptionContainer
                 onUploadFiles={onUploadFiles}
@@ -42,7 +42,14 @@ const AttachmentOptionsScreen: React.FC<Props> = ({
                 testID={testID}
                 maxFilesReached={maxFilesReached}
             />);
-    };
+    }, [
+        onUploadFiles,
+        canUploadFiles,
+        fileCount,
+        maxFileCount,
+        testID,
+        maxFilesReached,
+    ]);
 
     return (
         <BottomSheet
