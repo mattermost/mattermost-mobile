@@ -137,6 +137,19 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      - name: Throttle Bandwidth 1
+        id: throttle-bandwidth-1
+        uses: ./.github/actions/bandwidth-throttling
+
+      - name: Throttle Bandwidth 2
+        if: failure()
+        id: throttle-bandwidth-2
+        uses: ./.github/actions/bandwidth-throttling
+
+      # for now, I don't want to do any detoxing.
+      - name: quickly exit
+        run: exit 1
+
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
