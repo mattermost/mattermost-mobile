@@ -5,6 +5,7 @@ import GraphemeSplitter from 'grapheme-splitter';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard} from 'react-native';
+import Animated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {EmojiIndicesByAlias, Emojis} from '@app/utils/emoji';
@@ -62,6 +63,7 @@ type Props = {
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
+const EMOJI_PICKER_HEIGHT = 301;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -101,6 +103,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 ios: 3,
                 android: 10,
             }),
+        },
+        customEmojiPickerContainer: {
+            marginTop: 9,
+            borderTopWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
     };
 });
@@ -175,11 +182,20 @@ export default function DraftInput({
         inputRef.current?.focus();
     }, []);
 
+    const height = useSharedValue(EMOJI_PICKER_HEIGHT);
+
     const handleToggleEmojiPicker = useCallback(() => {
         if (!isEmojiPickerOpen) {
+            height.value = withTiming(EMOJI_PICKER_HEIGHT, {
+                duration: 0,
+                easing: Easing.out(Easing.cubic),
+            }, (finised) => {
+                if (finised) {
+                    runOnJS(setIsEmojiPickerOpen)(true);
+                    runOnJS(setIsEmojiPickerFocused)(true);
+                }
+            });
             Keyboard.dismiss();
-            setIsEmojiPickerOpen(true);
-            setIsEmojiPickerFocused(true);
             inputRef.current?.setNativeProps({
                 showSoftInputOnFocus: false,
             });
@@ -205,8 +221,19 @@ export default function DraftInput({
             }, 0);
             return;
         }
-        setIsEmojiPickerFocused(false);
-        setIsEmojiPickerOpen(false);
+        setTimeout(() => {
+            height.value = withTiming(0, {
+                duration: 100,
+                easing: Easing.in(Easing.cubic),
+            },
+            // eslint-disable-next-line max-nested-callbacks
+            (finished) => {
+                if (finished) {
+                    runOnJS(setIsEmojiPickerFocused)(false);
+                    runOnJS(setIsEmojiPickerOpen)(false);
+                }
+            });
+        }, 20);
         inputRef.current?.setNativeProps({
             showSoftInputOnFocus: true,
         });
@@ -216,6 +243,12 @@ export default function DraftInput({
         isEmojiPickerFocused,
         isEmojiPickerOpen,
     ]);
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            height: height.value,
+        };
+    });
 
     const deleteCharFromCurrentCursorPosition = useCallback(() => {
         const currentCursorPosition = cursorPositionRef.current;
@@ -337,11 +370,14 @@ export default function DraftInput({
                     </View>
                 </ScrollView>
                 {isEmojiPickerOpen &&
-                    <CustomEmojiPicker
-                        onEmojiPress={handleEmojiPress}
-                        handleToggleEmojiPicker={handleToggleEmojiPicker}
-                        deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
-                    />
+                    <Animated.View style={[style.customEmojiPickerContainer, animatedStyle]}>
+                        <CustomEmojiPicker
+                            height={height}
+                            onEmojiPress={handleEmojiPress}
+                            handleToggleEmojiPicker={handleToggleEmojiPicker}
+                            deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
+                        />
+                    </Animated.View>
                 }
             </SafeAreaView>
         </>
