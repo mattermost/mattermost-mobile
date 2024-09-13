@@ -235,9 +235,11 @@ jobs:
 
       - name: test curl after throttling
         run: |
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=134'
+          set +e
 
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=134'
+          curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=134'
+
+          curl -o /dev/null -s -m 20 -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=134'
 
 
       - name: remove network throttling due to failure
