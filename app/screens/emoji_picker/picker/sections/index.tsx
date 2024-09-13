@@ -74,6 +74,12 @@ const styles = StyleSheet.create(({
     },
 }));
 
+const emojiPickerStyles = StyleSheet.create({
+    contentContainerStyle: {
+        paddingHorizontal: 8,
+    },
+});
+
 type Props = {
     customEmojis: CustomEmojiModel[];
     customEmojisEnabled: boolean;
@@ -81,6 +87,9 @@ type Props = {
     file?: ExtractedFileInfo;
     onEmojiPress: (emoji: string) => void;
     recentEmojis: string[];
+    handleToggleEmojiPicker?: () => void;
+    deleteCharFromCurrentCursorPosition?: () => void;
+    isEmojiPicker?: boolean;
 }
 
 type ImageEmojiProps = {
@@ -135,7 +144,17 @@ export const ImageEmoji = ({file, imageUrl, onEmojiPress, path}: ImageEmojiProps
     );
 };
 
-const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress, recentEmojis}: Props) => {
+const EmojiSections = ({
+    customEmojis,
+    customEmojisEnabled,
+    file,
+    imageUrl,
+    onEmojiPress,
+    recentEmojis,
+    handleToggleEmojiPicker,
+    deleteCharFromCurrentCursorPosition,
+    isEmojiPicker = false,
+}: Props) => {
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const {currentIndex, selectedIndex} = useEmojiCategoryBar();
@@ -275,6 +294,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
         }, 350);
     };
 
+    // eslint-disable-next-line react/no-unused-prop-types
     const renderSectionHeader = useCallback(({section}: {section: SectionListData<EmojiAlias[], EmojiSection>}) => {
         return (
             <SectionHeader section={section}/>
@@ -311,7 +331,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
         );
     }, []);
 
-    const List = useMemo(() => (isTablet ? SectionList : BottomSheetSectionList), [isTablet]);
+    const List = useMemo(() => (isTablet || isEmojiPicker ? SectionList : BottomSheetSectionList), [isTablet]);
 
     useEffect(() => {
         if (selectedIndex != null) {
@@ -335,13 +355,17 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
                 renderItem={renderItem}
                 renderSectionHeader={renderSectionHeader}
                 sections={sections}
-                contentContainerStyle={styles.contentContainerStyle}
+                contentContainerStyle={isEmojiPicker ? emojiPickerStyles.contentContainerStyle : styles.contentContainerStyle}
                 stickySectionHeadersEnabled={true}
                 showsVerticalScrollIndicator={false}
                 testID='emoji_picker.emoji_sections.section_list'
             />
-            {isTablet &&
-            <EmojiCategoryBar/>
+            {(isTablet || isEmojiPicker) &&
+                <EmojiCategoryBar
+                    handleToggleEmojiPicker={handleToggleEmojiPicker}
+                    deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
+                    isEmojiPicker={true}
+                />
             }
         </View>
     );

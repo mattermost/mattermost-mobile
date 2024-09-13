@@ -8,11 +8,11 @@ import {searchCustomEmojis} from '@actions/remote/custom_emoji';
 import {useServerUrl} from '@app/context/server';
 import {useTheme} from '@app/context/theme';
 import {debounce} from '@app/helpers/api/general';
+import EmojiSections from '@app/screens/emoji_picker/picker/sections';
 import {getKeyboardAppearanceFromTheme} from '@app/utils/theme';
 
 import EmojiFiltered from '../emoji_filtered';
 import EmojiPickerHeader from '../emoji_picker_header';
-import EmojiSections from '../emoji_sections';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type {SharedValue} from 'react-native-reanimated';
@@ -89,6 +89,7 @@ const EmojiPicker: React.FC<Props> = ({
             recentEmojis={recentEmojis}
             handleToggleEmojiPicker={handleToggleEmojiPicker}
             deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
+            isEmojiPicker={true}
         />
     );
 
