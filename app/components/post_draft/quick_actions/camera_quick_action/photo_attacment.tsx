@@ -13,6 +13,7 @@ import {dismissBottomSheet} from '@app/screens/navigation';
 import FilePickerUtil from '@app/utils/file/file_picker';
 import {preventDoubleTap} from '@app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
+import {typography} from '@app/utils/typography';
 
 import type {QuickActionAttachmentProps} from '@typings/components/post_draft_quick_action';
 import type {CameraOptions} from 'react-native-image-picker';
@@ -20,9 +21,7 @@ import type {CameraOptions} from 'react-native-image-picker';
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
         color: theme.centerChannelColor,
-        fontSize: 16,
-        fontWeight: 400,
-        lineHeight: 24,
+        ...typography('Body', 200),
     },
     container: {
         display: 'flex',

@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text} from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
@@ -18,9 +19,7 @@ import type {QuickActionAttachmentProps} from '@typings/components/post_draft_qu
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
         color: theme.centerChannelColor,
-        fontSize: 16,
-        fontWeight: 400,
-        lineHeight: 24,
+        ...typography('Body', 200),
     },
     container: {
         display: 'flex',
