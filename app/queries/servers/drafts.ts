@@ -5,8 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
-
-import type DraftModel from '@typings/database/models/servers/draft';
+import DraftModel from '@typings/database/models/servers/draft';
 
 const {SERVER: {DRAFT}} = MM_TABLES;
 
@@ -30,3 +29,7 @@ export const queryDraft = (database: Database, channelId: string, rootId = '') =
 export function observeFirstDraft(v: DraftModel[]) {
     return v[0]?.observe() || of$(undefined);
 }
+
+export const observeAllDrafts = (database: Database) => {
+    return database.collections.get<DraftModel>(DRAFT).query();
+};
