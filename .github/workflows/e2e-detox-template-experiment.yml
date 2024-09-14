@@ -167,11 +167,13 @@ jobs:
       
       - name: Throttle Bandwidth 1
         id: throttle-bandwidth-1
+        continue-on-error: true
         uses: ./.github/actions/bandwidth-throttling
 
 
       - name: remove network throttling due to failure
-        if: failure()
+        id: reset-throttle-1
+        if: steps.throttle-bandwidth-1.outcome != 'success'
         run: |
 
           sudo pfctl -d
@@ -191,7 +193,7 @@ jobs:
 
 
       - name: Throttle Bandwidth 2
-        if: failure()
+        if: steps.reset-throttle-1.outcome != 'success'
         id: throttle-bandwidth-2
         uses: ./.github/actions/bandwidth-throttling
 
