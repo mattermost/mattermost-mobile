@@ -302,7 +302,7 @@ jobs:
 
 
       - name: reset network settings
-        if: {{ steps.install-mitmproxy-pm2.outcome == 'success' || failure() }}
+        if: ${{ steps.install-mitmproxy-pm2.outcome == 'success' || failure() }}
         run: |
           networksetup -setwebproxystate Ethernet "off"
           networksetup -setsecurewebproxystate Ethernet "off"
