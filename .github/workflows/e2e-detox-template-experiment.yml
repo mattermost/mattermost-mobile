@@ -164,6 +164,8 @@ jobs:
       - name: check disk space
         run: df -h
 
+        
+
       
       - name: Throttle Bandwidth 1
         id: throttle-bandwidth-1
@@ -172,7 +174,6 @@ jobs:
 
 
       - name: remove network throttling due to failure
-        id: reset-throttle-1
         if: steps.throttle-bandwidth-1.outcome != 'success'
         continue-on-error: true
         run: |
@@ -181,16 +182,16 @@ jobs:
 
           sleep 2;
 
-          sudo dnctl -q flush
-          sudo dnctl -q pipe flush
-          sudo pfctl -f /etc/pf.conf
-          sudo pfctl -E
+          # sudo dnctl -q flush
+          # sudo dnctl -q pipe flush
+          # sudo pfctl -f /etc/pf.conf
+          # sudo pfctl -E
 
-          sleep 2;
+          # sleep 2;
 
-          sudo pfctl -d
-          sudo dnctl -q flush
-          sudo dnctl -q pipe flush
+          # sudo pfctl -d
+          # sudo dnctl -q flush
+          # sudo dnctl -q pipe flush
 
 
       - name: Throttle Bandwidth 2
@@ -200,15 +201,14 @@ jobs:
 
 
       - name: Install mitmproxy & pm2 (process manager)
+        id: install-mitmproxy-pm2
         run: |
           brew install mitmproxy
 
-          # install pm2
           npm i -g pm2
 
       - name: Start mitmproxy via mitmdump and kill it (to get .mitmproxy folder)
         run: |
-          set +e
           pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
 
       - name: Get simulator UDID
@@ -384,7 +384,7 @@ jobs:
 
 
       - name: reset network settings
-        if: always()
+        if: steps.install-mitmproxy-pm2.outcome == 'success'
         run: |
           networksetup -setwebproxystate Ethernet "off"
           networksetup -setsecurewebproxystate Ethernet "off"
