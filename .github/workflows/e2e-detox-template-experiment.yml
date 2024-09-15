@@ -181,6 +181,28 @@ jobs:
         run: |
           pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
 
+      - name: Throttle Bandwidth 1
+        id: throttle-bandwidth-1
+        continue-on-error: true
+        uses: ./.github/actions/bandwidth-throttling
+
+
+      - name: remove network throttling due to failure
+        if: steps.throttle-bandwidth-1.outcome != 'success'
+        continue-on-error: true
+        run: |
+
+          sudo pfctl -d
+
+          sleep 2;
+
+
+      - name: Throttle Bandwidth 2
+        if: steps.throttle-bandwidth-1.outcome != 'success'
+        id: throttle-bandwidth-2
+        uses: ./.github/actions/bandwidth-throttling
+        
+
       - name: Get simulator UDID
         id: get-simulator-udid
         run: |
@@ -223,26 +245,7 @@ jobs:
 
 
 
-      - name: Throttle Bandwidth 1
-        id: throttle-bandwidth-1
-        continue-on-error: true
-        uses: ./.github/actions/bandwidth-throttling
 
-
-      - name: remove network throttling due to failure
-        if: steps.throttle-bandwidth-1.outcome != 'success'
-        continue-on-error: true
-        run: |
-
-          sudo pfctl -d
-
-          sleep 2;
-
-
-      - name: Throttle Bandwidth 2
-        if: steps.throttle-bandwidth-1.outcome != 'success'
-        id: throttle-bandwidth-2
-        uses: ./.github/actions/bandwidth-throttling
 
 
       - name: restart mitmdump
