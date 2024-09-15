@@ -167,37 +167,7 @@ jobs:
         
 
       
-      - name: Throttle Bandwidth 1
-        id: throttle-bandwidth-1
-        continue-on-error: true
-        uses: ./.github/actions/bandwidth-throttling
 
-
-      - name: remove network throttling due to failure
-        if: steps.throttle-bandwidth-1.outcome != 'success'
-        continue-on-error: true
-        run: |
-
-          sudo pfctl -d
-
-          sleep 2;
-
-          # sudo dnctl -q flush
-          # sudo dnctl -q pipe flush
-          # sudo pfctl -f /etc/pf.conf
-          # sudo pfctl -E
-
-          # sleep 2;
-
-          # sudo pfctl -d
-          # sudo dnctl -q flush
-          # sudo dnctl -q pipe flush
-
-
-      - name: Throttle Bandwidth 2
-        if: steps.throttle-bandwidth-1.outcome != 'success'
-        id: throttle-bandwidth-2
-        uses: ./.github/actions/bandwidth-throttling
 
 
       - name: Install mitmproxy & pm2 (process manager)
@@ -325,6 +295,40 @@ jobs:
       # for now, I don't want to do any detoxing.
       # - name: quickly exit
       #   run: exit 1
+
+
+      - name: Throttle Bandwidth 1
+        id: throttle-bandwidth-1
+        continue-on-error: true
+        uses: ./.github/actions/bandwidth-throttling
+
+
+      - name: remove network throttling due to failure
+        if: steps.throttle-bandwidth-1.outcome != 'success'
+        continue-on-error: true
+        run: |
+
+          sudo pfctl -d
+
+          sleep 2;
+
+          # sudo dnctl -q flush
+          # sudo dnctl -q pipe flush
+          # sudo pfctl -f /etc/pf.conf
+          # sudo pfctl -E
+
+          # sleep 2;
+
+          # sudo pfctl -d
+          # sudo dnctl -q flush
+          # sudo dnctl -q pipe flush
+
+
+      - name: Throttle Bandwidth 2
+        if: steps.throttle-bandwidth-1.outcome != 'success'
+        id: throttle-bandwidth-2
+        uses: ./.github/actions/bandwidth-throttling
+        
 
 
       - name: restart mitmdump
