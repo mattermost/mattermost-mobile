@@ -165,6 +165,10 @@ jobs:
         run: df -h
       
 
+      - name: remove protocol from SITE_1_URL
+        id: remove-protocol
+        run: |
+          echo "SITE_1_HOST=${{ env.SITE_1_URL }}" | sed -e 's/^http:\/\///g' -e 's/^https:\/\///g' >> $GITHUB_ENV
 
 
       - name: Install mitmproxy & pm2 (process manager)
@@ -176,7 +180,7 @@ jobs:
 
       - name: Start mitmproxy via mitmdump and kill it (to get .mitmproxy folder)
         run: |
-          pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
+          pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts '${{ env.SITE_1_HOST }}' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
 
 
       - name: Throttle Bandwidth 1
@@ -184,7 +188,7 @@ jobs:
         continue-on-error: true
         uses: ./.github/actions/bandwidth-throttling
         with: 
-          test_server_url: ${{ env.SITE_1_URL }}
+          test_server_url: ${{ env.SITE_1_HOST }}
           download_speed: "3300"
           upload_speed: "3300"
           latency: "500"
@@ -195,7 +199,7 @@ jobs:
         id: throttle-bandwidth-2
         uses: ./.github/actions/bandwidth-throttling
         with: 
-          test_server_url: ${{ env.SITE_1_URL }}
+          test_server_url: ${{ env.SITE_1_HOST }}
           download_speed: "3300"
           upload_speed: "3300"
           latency: "500"
@@ -240,7 +244,7 @@ jobs:
 
       - name: test curl before
         run: |
-          curl -o /dev/null -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&def-123'
+          curl -o /dev/null -s -w 'Total: %{time_total}s\n' '${{ env.SITE_1_URL }}/api/v4/system/ping?get_server_status=true&def-123'
 
 
 
@@ -260,7 +264,7 @@ jobs:
         run: |
           curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=919'
 
-          curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=919'
+          curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ env.SITE_1_URL }}/api/v4/system/ping?get_server_status=true&abc=919'
 
 
       - name: start proxy
@@ -277,13 +281,13 @@ jobs:
         run: |
           curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=777'
 
-          curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=777'
+          curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ env.SITE_1_URL }}/api/v4/system/ping?get_server_status=true&abc=777'
 
       - name: test curl and direct it into proxy
         run: |
           curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=012'
 
-          curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=012'
+          curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ env.SITE_1_URL }}/api/v4/system/ping?get_server_status=true&abc=012'
 
 
 
