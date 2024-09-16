@@ -168,7 +168,7 @@ jobs:
       - name: remove protocol from SITE_1_URL
         id: remove-protocol
         run: |
-          echo "SITE_1_HOST=${{ env.SITE_1_URL }}" | sed -e 's/^http:\/\///g' -e 's/^https:\/\///g' >> $GITHUB_ENV
+          echo "SITE_1_HOST=${{ env.SITE_1_URL }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> $GITHUB_ENV
 
 
       - name: Install mitmproxy & pm2 (process manager)
