@@ -248,6 +248,9 @@ export default function DraftInput({
             if (isEmojiPickerOpen) {
                 setIsEmojiPickerFocused(false);
                 setIsEmojiPickerOpen(false);
+                inputRef.current?.setNativeProps({
+                    showSoftInputOnFocus: true,
+                });
             }
         });
 
