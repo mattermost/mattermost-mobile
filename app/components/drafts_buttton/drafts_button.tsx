@@ -21,8 +21,7 @@ import CompassIcon from '../compass_icon';
 type DraftListProps = {
     currentChannelId: string;
     shouldHighlighActive?: boolean;
-    files: FileInfo[][];
-    messages: string[];
+    draftsCount: number;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -45,8 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const DraftsButton: React.FC<DraftListProps> = ({
     currentChannelId,
     shouldHighlighActive = false,
-    files,
-    messages,
+    draftsCount,
 }) => {
     const theme = useTheme();
     const styles = getChannelItemStyleSheet(theme);
@@ -56,6 +54,7 @@ const DraftsButton: React.FC<DraftListProps> = ({
     const handlePress = () => {
         return null;
     };
+
     const isActive = isTablet && shouldHighlighActive && !currentChannelId;
 
     const [containerStyle, iconStyle, textStyle, badgeStyle] = useMemo(() => {
@@ -87,7 +86,7 @@ const DraftsButton: React.FC<DraftListProps> = ({
         return [container, icon, text, badge];
     }, [customStyles, isActive, styles]);
 
-    if (!files.length && !messages.length) {
+    if (!draftsCount) {
         return null;
     }
 
@@ -107,9 +106,9 @@ const DraftsButton: React.FC<DraftListProps> = ({
                     style={textStyle}
                 />
                 <Badge
-                    value={messages.length}
+                    value={draftsCount}
                     style={badgeStyle}
-                    visible={messages.length > 0}
+                    visible={draftsCount > 0}
                 />
             </View>
         </TouchableOpacity>

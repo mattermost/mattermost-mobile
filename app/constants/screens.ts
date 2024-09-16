@@ -28,6 +28,7 @@ export const EMOJI_PICKER = 'EmojiPicker';
 export const FIND_CHANNELS = 'FindChannels';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const GALLERY = 'Gallery';
+export const GLOBAL_DRAFTS = 'GlobalDrafts';
 export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
@@ -107,6 +108,7 @@ export default {
     FIND_CHANNELS,
     FORGOT_PASSWORD,
     GALLERY,
+    GLOBAL_DRAFTS,
     GLOBAL_THREADS,
     HOME,
     INTEGRATION_SELECTOR,
