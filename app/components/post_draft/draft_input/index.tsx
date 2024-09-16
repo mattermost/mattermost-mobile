@@ -4,12 +4,12 @@
 import GraphemeSplitter from 'grapheme-splitter';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard} from 'react-native';
+import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard, DeviceEventEmitter} from 'react-native';
 import Animated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {EmojiIndicesByAlias, Emojis} from '@app/utils/emoji';
-import {General} from '@constants';
+import {Events, General} from '@constants';
 import {MENTIONS_REGEX} from '@constants/autocomplete';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
@@ -242,6 +242,19 @@ export default function DraftInput({
         });
         focus();
     }, [focus, height, isEmojiPickerFocused, isEmojiPickerOpen]);
+
+    useEffect(() => {
+        const closeEmojiPickerEvent = DeviceEventEmitter.addListener(Events.CLOSE_EMOJI_PICKER, () => {
+            if (isEmojiPickerOpen) {
+                setIsEmojiPickerFocused(false);
+                setIsEmojiPickerOpen(false);
+            }
+        });
+
+        return () => {
+            closeEmojiPickerEvent.remove();
+        };
+    }, [isEmojiPickerOpen]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {

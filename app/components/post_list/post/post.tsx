@@ -223,6 +223,7 @@ const Post = ({
         }
 
         Keyboard.dismiss();
+        DeviceEventEmitter.emit(Events.CLOSE_EMOJI_PICKER);
         const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
