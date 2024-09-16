@@ -29,6 +29,7 @@ runs:
   steps:
 
       - name: delete the zip file and trash (to free up space)
+        shell: bash
         run: |
           rm -rf mobile-artifacts/*.zip
           sudo rm -rf ~/.Trash/*
@@ -39,12 +40,14 @@ runs:
 
       - name: remove protocol from SITE_1_URL
         id: remove-protocol
+        shell: bash
         run: |
           echo "SITE_1_HOST=${{ env.SITE_1_URL }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> $GITHUB_ENV
 
 
       - name: Install mitmproxy & pm2 (process manager)
         id: install-mitmproxy-pm2
+        shell: bash
         run: |
           brew install mitmproxy
 
@@ -80,11 +83,13 @@ runs:
 
       - name: Get simulator UDID
         id: get-simulator-udid
+        shell: bash
         run: |
           simulator_udid=$(xcrun simctl list devices "iPhone 14" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-17-4"[0]["udid"]')
           echo "simulator_udid="$(echo $simulator_udid) >> ${GITHUB_OUTPUT}
 
       - name: Stop mitmdump (which should produce the .mitmproy folder)
+        shell: bash
         run: |
           pm2 stop mitmdump
 
@@ -92,6 +97,7 @@ runs:
           sleep 5; 
 
       - name: install certificate
+        shell: bash
         run: |
           sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
 
@@ -104,4 +110,5 @@ runs:
 
 
       - name: show me booted simulators
+        shell: bash
         run: xcrun simctl list devices booted | grep Booted
