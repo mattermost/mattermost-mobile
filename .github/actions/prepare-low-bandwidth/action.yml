@@ -1,0 +1,107 @@
+name: prepare-low-bandwidth
+description: prepare any workflow for low bandwidth testing
+
+inputs:
+  test_server_url:
+    description: The URL of the test server
+    required: true
+  download_speed:
+    description: The download speed limit (in Kbit/s)
+    required: false
+    default: "3300"
+  upload_speed:
+    description: The upload speed limit (in Kbit/s)
+    required: false
+    default: "3300"
+  latency:
+    description: The latency (in ms) each way
+    required: false
+    default: "500"
+  disable:
+    description: Disable throttling
+    required: false
+    default: "false"
+
+
+
+runs:
+  using: composite
+  steps:
+
+      - name: delete the zip file and trash (to free up space)
+        run: |
+          rm -rf mobile-artifacts/*.zip
+          sudo rm -rf ~/.Trash/*
+
+      - name: check disk space
+        run: df -h
+      
+
+      - name: remove protocol from SITE_1_URL
+        id: remove-protocol
+        run: |
+          echo "SITE_1_HOST=${{ env.SITE_1_URL }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> $GITHUB_ENV
+
+
+      - name: Install mitmproxy & pm2 (process manager)
+        id: install-mitmproxy-pm2
+        run: |
+          brew install mitmproxy
+
+          npm i -g pm2
+
+      - name: Start mitmproxy via mitmdump and kill it (to get .mitmproxy folder)
+        run: |
+          pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts '${{ env.SITE_1_HOST }}' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
+
+
+      - name: Throttle Bandwidth 1
+        id: throttle-bandwidth-1
+        continue-on-error: true
+        uses: ./.github/actions/bandwidth-throttling
+        with: 
+          test_server_url: ${{ env.SITE_1_HOST }}
+          download_speed: "3300"
+          upload_speed: "3300"
+          latency: "500"
+
+
+      - name: Throttle Bandwidth 2
+        if: steps.throttle-bandwidth-1.outcome != 'success'
+        id: throttle-bandwidth-2
+        uses: ./.github/actions/bandwidth-throttling
+        with: 
+          test_server_url: ${{ env.SITE_1_HOST }}
+          download_speed: ${{ inputs.download_speed}}
+          upload_speed: "3300"
+          latency: "500"
+          disable: "true"
+
+
+      - name: Get simulator UDID
+        id: get-simulator-udid
+        run: |
+          simulator_udid=$(xcrun simctl list devices "iPhone 14" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-17-4"[0]["udid"]')
+          echo "simulator_udid="$(echo $simulator_udid) >> ${GITHUB_OUTPUT}
+
+      - name: Stop mitmdump (which should produce the .mitmproy folder)
+        run: |
+          pm2 stop mitmdump
+
+          # we need to wait for mitmdump to stop so it'll produce the .mitmproxy folder  
+          sleep 5; 
+
+      - name: install certificate
+        run: |
+          sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
+
+          # must boot first before adding root cert
+          xcrun simctl boot ${{ steps.get-simulator-udid.outputs.simulator_udid }}
+
+          xcrun simctl keychain booted add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
+
+          sleep 5;
+
+
+      - name: show me booted simulators
+        run: xcrun simctl list devices booted | grep Booted
