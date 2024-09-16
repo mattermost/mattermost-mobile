@@ -7,16 +7,7 @@ runs:
     - name: throttle bandwidth down
       shell: bash
       run: |
-        sudo dnctl -q flush
-        sudo dnctl -q pipe flush
-        sudo pfctl -f /etc/pf.conf
-        sudo pfctl -E
 
-        sleep 2;
-
-        sudo pfctl -d
-        sudo dnctl -q flush
-        sudo dnctl -q pipe flush
 
         # echo "dummynet in from mobile-e2e-site-1.test.mattermost.cloud to ! 127.0.0.1 pipe 1
         # dummynet out from ! 127.0.0.1 to mobile-e2e-site-1.test.mattermost.cloud pipe 2" | sudo pfctl -f -

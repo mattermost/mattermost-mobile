@@ -164,6 +164,20 @@ jobs:
       - name: check disk space
         run: df -h
 
+
+      - name: set up pfctl and dfctl for bandwidth throttling
+        run: |
+          sudo dnctl -q flush
+          sudo dnctl -q pipe flush
+          sudo pfctl -f /etc/pf.conf
+          sudo pfctl -E
+
+          sleep 2;
+
+          sudo pfctl -d
+          sudo dnctl -q flush
+          sudo dnctl -q pipe flush
+
         
 
       
@@ -181,27 +195,8 @@ jobs:
         run: |
           pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts 'mobile-e2e-site-1.test.mattermost.cloud' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
 
-      - name: Throttle Bandwidth 1
-        id: throttle-bandwidth-1
-        continue-on-error: true
-        uses: ./.github/actions/bandwidth-throttling
 
 
-      - name: remove network throttling due to failure
-        if: steps.throttle-bandwidth-1.outcome != 'success'
-        continue-on-error: true
-        run: |
-
-          sudo pfctl -d
-
-          sleep 2;
-
-
-      - name: Throttle Bandwidth 2
-        if: steps.throttle-bandwidth-1.outcome != 'success'
-        id: throttle-bandwidth-2
-        uses: ./.github/actions/bandwidth-throttling
-        
 
       - name: Get simulator UDID
         id: get-simulator-udid
@@ -245,6 +240,26 @@ jobs:
 
 
 
+      - name: Throttle Bandwidth 1
+        id: throttle-bandwidth-1
+        continue-on-error: true
+        uses: ./.github/actions/bandwidth-throttling
+
+
+      - name: remove network throttling due to failure
+        if: steps.throttle-bandwidth-1.outcome != 'success'
+        continue-on-error: true
+        run: |
+
+          sudo pfctl -d
+
+          sleep 2;
+
+
+      - name: Throttle Bandwidth 2
+        if: steps.throttle-bandwidth-1.outcome != 'success'
+        id: throttle-bandwidth-2
+        uses: ./.github/actions/bandwidth-throttling
 
 
 
@@ -285,12 +300,6 @@ jobs:
 
           curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=012'
 
-
-      # - name: use chrome to visit target site after (also see if it goes into mitmdump)
-      #   run: |
-
-      #     # this should goes into mitmdump output
-      #     open -a "Google Chrome" https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=123
 
 
       - name: Run Detox E2E Tests
