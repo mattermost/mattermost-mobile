@@ -61,7 +61,7 @@ runs:
         # pipe 2 is upload
         sudo dnctl pipe 2 config bw 3300Kbit/s delay ${{ inputs.latency }}ms
 
-        sleep 3;
+        sleep 5;
         
         sudo pfctl -E
 

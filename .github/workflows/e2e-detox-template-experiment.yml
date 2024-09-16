@@ -183,7 +183,7 @@ jobs:
           networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
           networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
 
-          sleep 2;
+          sleep 5;
 
           networksetup -getwebproxy Ethernet
           networksetup -getsecurewebproxy Ethernet
@@ -192,6 +192,10 @@ jobs:
         run: |
           curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ env.SITE_1_URL }}/api/v4/system/ping?get_server_status=true'
 
+
+
+      - name: Kill (tmp)
+        run: exit 1
 
 
       - name: Run Detox E2E Tests
