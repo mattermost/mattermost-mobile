@@ -157,17 +157,20 @@ jobs:
         run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
 
       - name: Prepare Low Bandwidth Environment
+        if: failure()
         uses: ./.github/actions/prepare-low-bandwidth
         with:
           test_server_url: ${{ env.SITE_1_URL }}
           device_name: ${{ env.DEVICE_NAME }}
-
 
       - name: Start React Native Metro Server
         run: npm run start &
 
       - name: Install Detox Dependencies
         run: cd detox && npm i
+
+      - name: kill
+        run: exit 1
 
       - name: Run Detox E2E Tests
         continue-on-error: true # Label might have been removed manually
