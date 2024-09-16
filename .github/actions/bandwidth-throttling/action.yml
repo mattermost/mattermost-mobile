@@ -1,25 +1,62 @@
 name: bandwidth-throttling
 description: Action to throttle the bandwidth on MacOS runner
 
+inputs:
+  test_server_url:
+    description: The path to look for from within the directory
+    required: true
+  download_speed:
+    description: The download speed limit (in Kbit/s)
+    required: false
+    default: "3300"
+  upload_speed:
+    description: The download speed limit (in Kbit/s)
+    required: false
+    default: "3300"
+  latency:
+    description: The latency (in ms) each way
+    required: false
+    default: "500"
+  disable:
+    description: Disable throttling
+    required: false
+    default: "false"
+
 runs:
   using: composite
   steps:
+    - name: disable first
+      if: ${{ inputs.disable == 'true' }}
+      run: |
+        sudo pfctl -d
+        sleep 2;
+
+
     - name: throttle bandwidth down
       shell: bash
       run: |
+        # reset pf and dnctl
+        sudo dnctl -q flush
+        sudo dnctl -q pipe flush
+        sudo pfctl -f /etc/pf.conf
+        sudo pfctl -E
+
+        sleep 2;
+
+        sudo pfctl -d
+        sudo dnctl -q flush
+        sudo dnctl -q pipe flush
 
 
-        # echo "dummynet in from mobile-e2e-site-1.test.mattermost.cloud to ! 127.0.0.1 pipe 1
-        # dummynet out from ! 127.0.0.1 to mobile-e2e-site-1.test.mattermost.cloud pipe 2" | sudo pfctl -f -
 
-        echo "dummynet in from mobile-e2e-site-1.test.mattermost.cloud to ! 127.0.0.1 pipe 1
-        dummynet out from ! 127.0.0.1 to mobile-e2e-site-1.test.mattermost.cloud pipe 2" | sudo pfctl -f -
+        echo "dummynet in from ${{ inputs.test_server_url }} to ! 127.0.0.1 pipe 1
+        dummynet out from ! 127.0.0.1 to ${{ inputs.test_server_url }} pipe 2" | sudo pfctl -f -
         
-        # pipe 1 is download, below is 3.3Mb/s with average of 500ms latency
-        sudo dnctl pipe 1 config bw 3300Kbit/s delay 500ms
+        # pipe 1 is download
+        sudo dnctl pipe 1 config bw ${{ input.download_speed }}Kbit/s delay ${{ inputs.latency }}ms
         
-        # pipe 2 is upload, below is 3.3Mb/s with 500ms latency
-        sudo dnctl pipe 2 config bw 3300Kbit/s delay 500ms
+        # pipe 2 is upload
+        sudo dnctl pipe 2 config bw 3300Kbit/s delay ${{ inputs.latency }}ms
 
         sleep 3;
         
@@ -30,6 +67,6 @@ runs:
     - name: test curl after throttling
       shell: bash
       run: |
-        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true&abc=134'
+        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true'
 
-        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://mobile-e2e-site-1.test.mattermost.cloud/api/v4/system/ping?get_server_status=true&abc=134'
+        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ inputs.test_server_url }}/api/v4/system/ping?get_server_status=true'
