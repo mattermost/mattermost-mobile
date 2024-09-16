@@ -27,8 +27,10 @@ runs:
   steps:
     - name: disable first
       if: ${{ inputs.disable == 'true' }}
+      shell: bash
       run: |
         sudo pfctl -d
+
         sleep 2;
 
 
