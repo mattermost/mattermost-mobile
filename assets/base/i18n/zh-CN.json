@@ -657,6 +657,7 @@
   "mobile.link.error.title": "错误",
   "mobile.login_options.cant_heading": "无法登录",
   "mobile.login_options.enter_credentials": "请在下方输入您登录的信息。",
+  "mobile.login_options.entraid": "Entra ID",
   "mobile.login_options.gitlab": "GitLab",
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "登录您的账户",

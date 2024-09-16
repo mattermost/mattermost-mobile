@@ -657,6 +657,7 @@
   "mobile.link.error.title": "Fout",
   "mobile.login_options.cant_heading": "Kan niet aanmelden",
   "mobile.login_options.enter_credentials": "Vul hieronder jouw aanmeldgegevens in.",
+  "mobile.login_options.entraid": "Entra ID",
   "mobile.login_options.gitlab": "Gitlab",
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "Aanmelden op jouw account",
