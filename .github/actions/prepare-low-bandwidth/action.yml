@@ -35,8 +35,8 @@ runs:
           sudo rm -rf ~/.Trash/*
 
       - name: check disk space
+        shell: bash
         run: df -h
-      
 
       - name: remove protocol from SITE_1_URL
         id: remove-protocol
@@ -54,6 +54,7 @@ runs:
           npm i -g pm2
 
       - name: Start mitmproxy via mitmdump and kill it (to get .mitmproxy folder)
+        shell: bash
         run: |
           pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts '${{ env.SITE_1_HOST }}' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
 
