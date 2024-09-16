@@ -72,6 +72,10 @@ RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(isRunningInSplitView, NSDictionary*, isSpl
     return [wrapper isRunningInSplitView];
 }
 
+RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(getWindowDimensions, NSDictionary*, windowDimensions) {
+    return [wrapper getWindowDimensions];
+}
+
 RCT_REMAP_METHOD(unlockOrientation, unlock) {
     [wrapper unlockOrientation];
 }
@@ -158,6 +162,9 @@ RCT_EXPORT_METHOD(saveFile:(NSString *)filePath
     return [wrapper isRunningInSplitView];
 }
 
+- (NSDictionary *)getWindowDimensions {
+    return [wrapper getWindowDimensions];
+}
 
 - (void)lockPortrait {
     [wrapper lockOrientation];

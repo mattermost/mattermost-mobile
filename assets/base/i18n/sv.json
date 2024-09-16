@@ -661,7 +661,6 @@
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "Logga in på ditt konto",
   "mobile.login_options.none": "Du kan inte logga in på ditt konto ännu. Minst ett inloggningsalternativ måste vara konfigurerat. Kontakta din systemadministratör för att få hjälp.",
-  "mobile.login_options.office365": "Office 365",
   "mobile.login_options.openid": "Open ID",
   "mobile.login_options.saml": "SAML",
   "mobile.login_options.select_option": "Välj ett inloggningsalternativ nedan.",

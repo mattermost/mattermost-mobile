@@ -1,13 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils, {type WindowDimensions} from '@mattermost/rnutils';
 import React, {type RefObject, useEffect, useRef, useState, useContext} from 'react';
-import {AppState, DeviceEventEmitter, Keyboard, Platform, useWindowDimensions, View} from 'react-native';
+import {AppState, DeviceEventEmitter, Keyboard, NativeEventEmitter, Platform, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {DeviceContext} from '@context/device';
 
 import type {KeyboardTrackingViewRef, KeyboardWillShowEventData} from '@mattermost/keyboard-tracker';
+
+const utilsEmitter = new NativeEventEmitter(RNUtils);
 
 export function useSplitView() {
     const {isSplit} = React.useContext(DeviceContext);
@@ -26,6 +29,20 @@ export function useAppState() {
     }, [appState]);
 
     return appState;
+}
+
+export function useWindowDimensions() {
+    const [dimensions, setDimensions] = useState(RNUtils.getWindowDimensions());
+
+    useEffect(() => {
+        const listener = utilsEmitter.addListener('DimensionsChanged', (window: WindowDimensions) => {
+            setDimensions(window);
+        });
+
+        return () => listener.remove();
+    }, []);
+
+    return dimensions;
 }
 
 export function useIsTablet() {

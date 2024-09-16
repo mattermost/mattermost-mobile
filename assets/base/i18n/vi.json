@@ -579,7 +579,6 @@
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "Đăng nhập vào tài khoản của bạn",
   "mobile.login_options.none": "Bạn chưa thể đăng nhập vào tài khoản của mình. Ít nhất một tùy chọn đăng nhập phải được cấu hình. Liên hệ với Quản trị viên hệ thống của bạn để được hỗ trợ.",
-  "mobile.login_options.office365": "Office 365",
   "mobile.login_options.openid": "Open ID",
   "mobile.login_options.saml": "SAML",
   "mobile.login_options.select_option": "Chọn một tùy chọn đăng nhập bên dưới.",
