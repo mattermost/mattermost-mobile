@@ -34,7 +34,6 @@ runs:
 
         sleep 2;
 
-
     - name: throttle bandwidth down
       shell: bash
       run: |
@@ -51,7 +50,6 @@ runs:
         sudo dnctl -q pipe flush
 
 
-
         echo "dummynet in from ${{ inputs.test_server_url }} to ! 127.0.0.1 pipe 1
         dummynet out from ! 127.0.0.1 to ${{ inputs.test_server_url }} pipe 2" | sudo pfctl -f -
         
@@ -59,7 +57,7 @@ runs:
         sudo dnctl pipe 1 config bw ${{ inputs.download_speed }}Kbit/s delay ${{ inputs.latency }}ms
         
         # pipe 2 is upload
-        sudo dnctl pipe 2 config bw 3300Kbit/s delay ${{ inputs.latency }}ms
+        sudo dnctl pipe 2 config bw ${{ inputs.upload_speed }}Kbit/s delay ${{ inputs.latency }}ms
 
         sleep 5;
         
@@ -69,7 +67,4 @@ runs:
 
     - name: test curl after throttling
       shell: bash
-      run: |
-        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://community.mattermost.com/api/v4/system/ping?get_server_status=true'
-
-        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ inputs.test_server_url }}/api/v4/system/ping?get_server_status=true'
+      run: curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ inputs.test_server_url }}/api/v4/system/ping?get_server_status=true'

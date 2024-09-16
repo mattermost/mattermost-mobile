@@ -156,7 +156,6 @@ jobs:
       - name: Unzip iOS Simulator Build
         run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
 
-
       - name: Prepare Low Bandwidth Environment
         uses: ./.github/actions/prepare-low-bandwidth
         with:
@@ -170,34 +169,6 @@ jobs:
       - name: Install Detox Dependencies
         run: cd detox && npm i
 
-
-      - name: restart mitmdump
-        run: |
-          pm2 list
-          pm2 restart mitmdump
-
-          sleep 5;
-
-      - name: start proxy
-        run: |
-          networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
-          networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
-
-          sleep 5;
-
-          networksetup -getwebproxy Ethernet
-          networksetup -getsecurewebproxy Ethernet
-
-      - name: test curl and direct it into proxy
-        run: |
-          curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ env.SITE_1_URL }}/api/v4/system/ping?get_server_status=true'
-
-
-
-      - name: Kill (tmp)
-        run: exit 1
-
-
       - name: Run Detox E2E Tests
         continue-on-error: true # Label might have been removed manually
         run: |
@@ -207,7 +178,6 @@ jobs:
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
-
 
       - name: reset network settings
         if: ${{ steps.install-mitmproxy-pm2.outcome == 'success' || failure() }}
