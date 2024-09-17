@@ -69,6 +69,10 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
         return SplitView.isRunningInSplitView()
     }
 
+    fun getWindowDimensions(): WritableMap? {
+        return SplitView.getWindowDimensions()
+    }
+
     fun unlockOrientation() {}
 
     fun lockPortrait() {}

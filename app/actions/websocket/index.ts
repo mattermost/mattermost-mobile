@@ -8,7 +8,7 @@ import {
     deferredAppEntryActions,
     entry,
     handleEntryAfterLoadNavigation,
-    registerDeviceToken,
+    setExtraSessionProps,
 } from '@actions/remote/entry/common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
@@ -37,7 +37,7 @@ import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 
 export async function handleFirstConnect(serverUrl: string) {
-    registerDeviceToken(serverUrl);
+    setExtraSessionProps(serverUrl);
     autoUpdateTimezone(serverUrl);
     return doReconnect(serverUrl);
 }
