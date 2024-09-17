@@ -221,24 +221,24 @@ jobs:
     #     echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
     #     echo "PATH=$PATH" >> $GITHUB_ENV
 
-    # - name: Create AVD
-    #   run : |
-    #     cd detox
-    #     npm run e2e:android-create-emulator
+    - name: Create AVD
+      run : |
+        cd detox
+        npm run e2e:android-create-emulator
 
-    - name: Install Android SDK and dependencies
-      run: |
-        echo "Installing Android SDK components"
-        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install emulator
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "system-images;android-31;default;x86_64"
+    # - name: Install Android SDK and dependencies
+    #   run: |
+    #     echo "Installing Android SDK components"
+    #     $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install emulator
+    #     yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+    #     $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "system-images;android-31;default;x86_64"
 
-        $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n detox_pixel_4_xl_api_31 -d pixel --package "system-images;android-31;default;x86_64"
+    #     $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n detox_pixel_4_xl_api_31 -d pixel --package "system-images;android-31;default;x86_64"
 
-        nohup emulator -avd detox_pixel_4_xl_api_31 -no-snapshot -no-window -noaudio -gpu swiftshader_indirect &
+    #     nohup emulator -avd detox_pixel_4_xl_api_31 -no-snapshot -no-window -noaudio -gpu swiftshader_indirect &
 
-        # sdkmanager --install 'platform-tools' 'platforms;android-31' 'build-tools;31.0.0' 'system-images;android-31;default;x86_64' 'emulator'
-        # sdkmanager --licenses
+    #     # sdkmanager --install 'platform-tools' 'platforms;android-31' 'build-tools;31.0.0' 'system-images;android-31;default;x86_64' 'emulator'
+    #     # sdkmanager --licenses
 # *********************************************************
     # - name: Create Android Emulator
     #   run: |
@@ -250,27 +250,27 @@ jobs:
     #     echo "Starting Android emulator"
     #     nohup emulator -avd detox_pixel_4_xl_api_31 -no-snapshot -no-window -noaudio -gpu swiftshader_indirect &
 
-    - name: Wait for Android Emulator to boot
-      run: |
-        echo "Waiting for emulator to boot"
-        adb wait-for-device
-        boot_completed=""
-        # Poll emulator status until fully booted
-        while [ -z "$boot_completed" ]; do
-          boot_completed=$(adb shell getprop sys.boot_completed 2>&1 | tr -d '\r')
-          if [ "$boot_completed" == "1" ]; then
-            echo "Emulator booted successfully!"
-          else
-            echo "Waiting for boot to complete..."
-            sleep 5
-          fi
-        done
-        echo "Emulator ready!"
+    # - name: Wait for Android Emulator to boot
+    #   run: |
+    #     echo "Waiting for emulator to boot"
+    #     adb wait-for-device
+    #     boot_completed=""
+    #     # Poll emulator status until fully booted
+    #     while [ -z "$boot_completed" ]; do
+    #       boot_completed=$(adb shell getprop sys.boot_completed 2>&1 | tr -d '\r')
+    #       if [ "$boot_completed" == "1" ]; then
+    #         echo "Emulator booted successfully!"
+    #       else
+    #         echo "Waiting for boot to complete..."
+    #         sleep 5
+    #       fi
+    #     done
+    #     echo "Emulator ready!"
 
-    - name: Unlock the screen
-      run: |
-        echo "Unlocking the emulator screen"
-        adb shell input keyevent 82
+    # - name: Unlock the screen
+    #   run: |
+    #     echo "Unlocking the emulator screen"
+    #     adb shell input keyevent 82
 # *********************************************************
     # - name: Install Android system image
     #   run: |
