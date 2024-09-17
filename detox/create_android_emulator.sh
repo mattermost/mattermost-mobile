@@ -50,6 +50,8 @@ set -o pipefail
 SDK_VERSION=31
 NAME="detox_pixel_4_xl_api_${SDK_VERSION}"
 
+yes | sdkmanager --licenses
+
 # Check if the AVD already exists
 if emulator -list-avds | grep -q $NAME; then
   echo "'${NAME}' Android virtual device already exists. Deleting it now..."
@@ -71,7 +73,6 @@ fi
 SYSTEM_IMAGE="system-images;android-${SDK_VERSION};google_apis;${CPU_ARCH_FAMILY}"
 
 # Install the system image if it's not already installed
-yes | sdkmanager --licenses
 sdkmanager --install "platforms;android-${SDK_VERSION}"
 sdkmanager --install "$SYSTEM_IMAGE"
 
