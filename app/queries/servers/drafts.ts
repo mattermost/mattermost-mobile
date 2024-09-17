@@ -44,9 +44,12 @@ export const observeAllDrafts = (database: Database, teamId: string) => {
 export const observeDraftCount = (database: Database, teamId: string) => {
     return database.collections.get<DraftModel>(DRAFT).query(
         Q.on(CHANNEL,
-            Q.or(
-                Q.where('team_id', teamId), // Channels associated with the given team
-                Q.where('type', 'D'), // Channels of type 'D'
+            Q.and(
+                Q.or(
+                    Q.where('team_id', teamId), // Channels associated with the given team
+                    Q.where('type', 'D'), // Channels of type 'D'
+                ),
+                Q.where('delete_at', 0), // Ensure the channel is not deleted
             ),
         ),
     ).observe(). // Observe the query results
