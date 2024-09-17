@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {StyleSheet, View, type LayoutChangeEvent} from 'react-native';
-import {useSharedValue, withTiming, type SharedValue} from 'react-native-reanimated';
+import {Easing, useSharedValue, withTiming, type SharedValue} from 'react-native-reanimated';
 
 import SearchBar, {type SearchProps} from '@app/components/search';
 import {setEmojiSkinTone} from '@app/hooks/emoji_category_bar';
@@ -48,7 +48,7 @@ const EmojiPickerHeader: React.FC<Props> = ({
     }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused]);
 
     const onFocus = useCallback(() => {
-        emojiPickerHeight.value = withTiming(100, {duration: 0});
+        emojiPickerHeight.value = withTiming(100, {duration: 0, easing: Easing.linear});
         setIsEmojiSearchFocused(true);
         isSearching.value = true;
     }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused]);

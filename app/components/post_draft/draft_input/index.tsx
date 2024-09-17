@@ -186,6 +186,7 @@ export default function DraftInput({
     }, []);
 
     const height = useSharedValue(EMOJI_PICKER_HEIGHT);
+    const preventClosingEmojiPickerOnBlur = useRef(false);
 
     const handleToggleEmojiPicker = useCallback(() => {
         if (!isEmojiPickerOpen) {
@@ -198,10 +199,18 @@ export default function DraftInput({
                     runOnJS(setIsEmojiPickerFocused)(true);
                 }
             });
-            Keyboard.dismiss();
             inputRef.current?.setNativeProps({
                 showSoftInputOnFocus: false,
             });
+
+            // OnBlur should close the emoji picker, however Keyboard.dismiss() also calls onBlur method
+            // so to prevent closing on emoji picker setting a flag to true
+            preventClosingEmojiPickerOnBlur.current = true;
+            Keyboard.dismiss();
+            setTimeout(() => {
+                // Setting a flag to false after 300ms to allow the emoji picker to close on blur.
+                preventClosingEmojiPickerOnBlur.current = false;
+            }, 300);
 
             // To make sure the state is updated before focusing
             setTimeout(() => {
@@ -224,19 +233,14 @@ export default function DraftInput({
             }, 0);
             return;
         }
+        height.value = withTiming(0, {
+            duration: 80,
+            easing: Easing.in(Easing.cubic),
+        });
         setTimeout(() => {
-            height.value = withTiming(0, {
-                duration: 100,
-                easing: Easing.in(Easing.cubic),
-            },
-            // eslint-disable-next-line max-nested-callbacks
-            (finished) => {
-                if (finished) {
-                    runOnJS(setIsEmojiPickerFocused)(false);
-                    runOnJS(setIsEmojiPickerOpen)(false);
-                }
-            });
-        }, 20);
+            setIsEmojiPickerFocused(false);
+            setIsEmojiPickerOpen(false);
+        }, 0);
         inputRef.current?.setNativeProps({
             showSoftInputOnFocus: true,
         });
@@ -246,6 +250,10 @@ export default function DraftInput({
     useEffect(() => {
         const closeEmojiPickerEvent = DeviceEventEmitter.addListener(Events.CLOSE_EMOJI_PICKER, () => {
             if (isEmojiPickerOpen) {
+                height.value = withTiming(0, {
+                    duration: 80,
+                    easing: Easing.in(Easing.cubic),
+                });
                 setIsEmojiPickerFocused(false);
                 setIsEmojiPickerOpen(false);
                 inputRef.current?.setNativeProps({
@@ -357,6 +365,7 @@ export default function DraftInput({
                         setIsFocused={setIsFocused}
                         isEmojiPickerFocused={isEmojiPickerFocused}
                         handleToggleEmojiPicker={handleToggleEmojiPicker}
+                        preventClosingEmojiPickerOnBlur={preventClosingEmojiPickerOnBlur}
                     />
                     <Uploads
                         currentUserId={currentUserId}
