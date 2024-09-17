@@ -54,7 +54,6 @@ export type MarkdownImageRenderer = {
         width?: number;
         height?: number;
     };
-    isInsideLink?: boolean;
 }
 
 export type MarkdownLatexRenderer = MarkdownBaseRenderer & {

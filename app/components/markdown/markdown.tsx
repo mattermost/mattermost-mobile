@@ -352,10 +352,12 @@ const Markdown = ({
         return rendered;
     };
 
-    const renderImage = ({linkDestination, context, src, size, isInsideLink = false}: MarkdownImageRenderer) => {
+    const renderImage = ({linkDestination, context, src, size}: MarkdownImageRenderer) => {
         if (!imagesMetadata || isUnsafeLinksPost) {
             return null;
         }
+
+        const isInsideLink = context.indexOf('link') !== -1;
 
         const isImageDisabled = (disableGallery ?? Boolean(!location)) || isInsideLink;
 
@@ -405,24 +407,17 @@ const Markdown = ({
         );
     };
 
-    const renderLink = ({children, href}: {children: any; href: string}) => {
+    const renderLink = ({children, href}: {children: ReactElement; href: string}) => {
         if (isUnsafeLinksPost) {
             return renderText({context: [], literal: href});
         }
-
-        const childrenWithLinkFlag = React.Children.map(children, (child) => {
-            if (React.isValidElement(child)) {
-                return React.cloneElement(child as ReactElement<any>, {isInsideLink: true});
-            }
-            return child;
-        });
 
         return (
             <MarkdownLink
                 href={href}
                 onLinkLongPress={onLinkLongPress}
             >
-                {childrenWithLinkFlag}
+                {children}
             </MarkdownLink>
         );
     };
