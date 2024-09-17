@@ -157,7 +157,6 @@ jobs:
         run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
 
       - name: Prepare Low Bandwidth Environment
-        if: failure()
         uses: ./.github/actions/prepare-low-bandwidth
         with:
           test_server_url: ${{ env.SITE_1_URL }}
@@ -183,7 +182,7 @@ jobs:
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
 
       - name: reset network settings
-        if: ${{ steps.install-mitmproxy-pm2.outcome == 'success' || failure() }}
+        if: ${{ steps.install-mitmproxy-pm2x.outcome == 'success' || failure() }}
         run: |
           networksetup -setwebproxystate Ethernet "off"
           networksetup -setsecurewebproxystate Ethernet "off"
