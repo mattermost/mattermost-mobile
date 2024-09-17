@@ -141,7 +141,6 @@ export default function DraftInput({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
-    const [isEmojiPickerFocused, setIsEmojiPickerFocused] = useState(false);
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
@@ -196,7 +195,6 @@ export default function DraftInput({
             }, (finised) => {
                 if (finised) {
                     runOnJS(setIsEmojiPickerOpen)(true);
-                    runOnJS(setIsEmojiPickerFocused)(true);
                 }
             });
             inputRef.current?.setNativeProps({
@@ -218,8 +216,7 @@ export default function DraftInput({
             }, 0);
             return;
         }
-        if (Platform.OS === 'android' && isEmojiPickerFocused) {
-            setIsEmojiPickerFocused(false);
+        if (Platform.OS === 'android' && isEmojiPickerOpen) {
             setIsEmojiPickerOpen(false);
             inputRef.current?.setNativeProps({
                 showSoftInputOnFocus: true,
@@ -238,14 +235,13 @@ export default function DraftInput({
             easing: Easing.in(Easing.cubic),
         });
         setTimeout(() => {
-            setIsEmojiPickerFocused(false);
             setIsEmojiPickerOpen(false);
         }, 0);
         inputRef.current?.setNativeProps({
             showSoftInputOnFocus: true,
         });
         focus();
-    }, [focus, height, isEmojiPickerFocused, isEmojiPickerOpen]);
+    }, [focus, height, isEmojiPickerOpen]);
 
     useEffect(() => {
         const closeEmojiPickerEvent = DeviceEventEmitter.addListener(Events.CLOSE_EMOJI_PICKER, () => {
@@ -254,7 +250,6 @@ export default function DraftInput({
                     duration: 80,
                     easing: Easing.in(Easing.cubic),
                 });
-                setIsEmojiPickerFocused(false);
                 setIsEmojiPickerOpen(false);
                 inputRef.current?.setNativeProps({
                     showSoftInputOnFocus: true,
@@ -363,7 +358,7 @@ export default function DraftInput({
                         sendMessage={handleSendMessage}
                         inputRef={inputRef}
                         setIsFocused={setIsFocused}
-                        isEmojiPickerFocused={isEmojiPickerFocused}
+                        isEmojiPickerOpen={isEmojiPickerOpen}
                         handleToggleEmojiPicker={handleToggleEmojiPicker}
                         preventClosingEmojiPickerOnBlur={preventClosingEmojiPickerOnBlur}
                     />
@@ -386,7 +381,7 @@ export default function DraftInput({
                             canShowPostPriority={canShowPostPriority}
                             focus={focus}
                             handleToggleEmojiPicker={handleToggleEmojiPicker}
-                            isEmojiPickerFocused={isEmojiPickerFocused}
+                            isEmojiPickerOpen={isEmojiPickerOpen}
                         />
                         <SendAction
                             testID={sendActionTestID}

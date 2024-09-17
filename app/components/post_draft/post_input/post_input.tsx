@@ -43,7 +43,7 @@ type Props = {
     sendMessage: () => void;
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
     setIsFocused: (isFocused: boolean) => void;
-    isEmojiPickerFocused: boolean;
+    isEmojiPickerOpen: boolean;
     handleToggleEmojiPicker: () => void;
     preventClosingEmojiPickerOnBlur: React.MutableRefObject<boolean>;
 }
@@ -117,7 +117,7 @@ export default function PostInput({
     sendMessage,
     inputRef,
     setIsFocused,
-    isEmojiPickerFocused,
+    isEmojiPickerOpen,
     handleToggleEmojiPicker,
     preventClosingEmojiPickerOnBlur,
 }: Props) {
@@ -163,12 +163,12 @@ export default function PostInput({
     }, [setIsFocused]);
 
     const onPressIn = useCallback(() => {
-        if (isEmojiPickerFocused) {
+        if (isEmojiPickerOpen) {
             onFocus();
             handleToggleEmojiPicker();
         }
     }, [
-        isEmojiPickerFocused,
+        isEmojiPickerOpen,
         handleToggleEmojiPicker,
     ]);
 
