@@ -1,6 +1,9 @@
 name: Detox E2E Tests PR
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       # - test-random-github-action-experiments-disabled
