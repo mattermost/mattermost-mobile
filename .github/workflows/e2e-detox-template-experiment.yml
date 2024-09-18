@@ -164,7 +164,7 @@ jobs:
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth
         uses: ./.github/actions/prepare-low-bandwidth
-        if: ${{ inputs.low_bandwidth_mode == "true" }}
+        if: inputs.low_bandwidth_mode == "true"
         with:
           test_server_url: ${{ env.SITE_1_URL }}
           device_name: ${{ env.DEVICE_NAME }}
