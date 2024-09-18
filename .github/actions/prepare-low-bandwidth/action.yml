@@ -42,19 +42,6 @@ runs:
         run: |
           echo "SITE_1_HOST=${{ env.SITE_1_URL }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> $GITHUB_ENV
 
-      - name: Install mitmproxy & pm2 (process manager)
-        id: install-mitmproxy-pm2
-        shell: bash
-        run: |
-          brew install mitmproxy
-
-          npm i -g pm2
-
-      - name: Start mitmproxy via mitmdump and kill it (to get .mitmproxy folder)
-        shell: bash
-        run: |
-          pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts '${{ env.SITE_1_HOST }}' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
-
       - name: Throttle Bandwidth 1
         id: throttle-bandwidth-1
         continue-on-error: true
@@ -76,6 +63,14 @@ runs:
           latency: ${{ inputs.latency }}
           disable: "true"
 
+      - name: Install mitmproxy & pm2 (process manager)
+        id: install-mitmproxy-pm2
+        shell: bash
+        run: |
+          brew install mitmproxy
+
+          npm i -g pm2
+
       - name: Get simulator UDID
         id: get-simulator-udid
         shell: bash
@@ -83,13 +78,29 @@ runs:
           simulator_udid=$(xcrun simctl list devices "${{ inputs.device_name }}" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-17-4"[0]["udid"]')
           echo "simulator_udid="$(echo $simulator_udid) >> ${GITHUB_OUTPUT}
 
-      - name: Stop mitmdump (which should produce the .mitmproy folder)
+      - name: show me booted simulators
+        shell: bash
+        run: xcrun simctl list devices booted | grep Booted
+
+      - name: Start mitmproxy via mitmdump and kill it (to get .mitmproxy folder)
         shell: bash
         run: |
+          pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts '${{ env.SITE_1_HOST }}' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
+
+          sleep 5;
+
           pm2 stop mitmdump
 
           # we need to wait for mitmdump to stop so it'll produce the .mitmproxy folder  
           sleep 5;
+
+      # - name: Stop mitmdump (which should produce the .mitmproy folder)
+      #   shell: bash
+      #   run: |
+      #     pm2 stop mitmdump
+
+      #     # we need to wait for mitmdump to stop so it'll produce the .mitmproxy folder  
+      #     sleep 5;
 
       - name: install certificate
         shell: bash
@@ -103,9 +114,7 @@ runs:
 
           sleep 5;
 
-      - name: show me booted simulators
-        shell: bash
-        run: xcrun simctl list devices booted | grep Booted
+
 
       # - name: restart mitmdump
       #   shell: bash
