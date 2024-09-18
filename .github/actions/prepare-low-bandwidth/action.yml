@@ -40,14 +40,14 @@ runs:
         id: remove-protocol
         shell: bash
         run: |
-          echo "SITE_1_HOST=${{ env.SITE_1_URL }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> $GITHUB_ENV
+          echo "SITE_1_HOST=${{ env.SITE_1_URL }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> ${GITHUB_OUTPUT}
 
       - name: Throttle Bandwidth 1
         id: throttle-bandwidth-1
         continue-on-error: true
         uses: ./.github/actions/bandwidth-throttling
         with: 
-          test_server_url: ${{ env.SITE_1_HOST }}
+          test_server_host: ${{ steps.remove-protocol.outputs.SITE_1_HOST }}
           download_speed: ${{ inputs.download_speed }}
           upload_speed: ${{ inputs.upload_speed }}
           latency: ${{ inputs.latency }}
@@ -57,7 +57,7 @@ runs:
         id: throttle-bandwidth-2
         uses: ./.github/actions/bandwidth-throttling
         with: 
-          test_server_url: ${{ env.SITE_1_HOST }}
+          test_server_host: ${{ steps.remove-protocol.outputs.SITE_1_HOST }}
           download_speed: ${{ inputs.download_speed}}
           upload_speed: ${{ inputs.upload_speed }}
           latency: ${{ inputs.latency }}
@@ -74,7 +74,7 @@ runs:
       - name: Start mitmproxy via mitmdump and stop it (to get .mitmproxy folder)
         shell: bash
         run: |
-          pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts '${{ env.SITE_1_HOST }}' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
+          pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts '${{ steps.remove-protocol.outputs.SITE_1_HOST }}' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
 
           sleep 5;
 

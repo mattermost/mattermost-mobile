@@ -2,8 +2,8 @@ name: bandwidth-throttling
 description: Action to throttle the bandwidth on MacOS runner
 
 inputs:
-  test_server_url:
-    description: The path to look for from within the directory
+  test_server_host:
+    description: The host of the test server, no protocol
     required: true
   download_speed:
     description: The download speed limit (in Kbit/s)
