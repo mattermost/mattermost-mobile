@@ -16,6 +16,7 @@ jobs:
       run-ios-tests: true
       run-type: "PR"
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
+      low_bandwidth: true
     secrets: inherit
 
 

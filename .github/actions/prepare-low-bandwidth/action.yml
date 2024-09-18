@@ -1,4 +1,4 @@
-name: prepare-low-bandwidth (MacOS & iOS Simulators only)
+name: Prepare Low Bandwidth Environment (MacOS & iOS Simulators only)
 description: prepare any workflow for low bandwidth testing
 
 inputs:
@@ -20,11 +20,6 @@ inputs:
     description: The latency (in ms) each way
     required: false
     default: "500"
-  disable:
-    description: Disable throttling
-    required: false
-    default: "false"
-
 
 
 runs:
