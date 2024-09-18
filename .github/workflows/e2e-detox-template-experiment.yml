@@ -205,6 +205,9 @@ jobs:
 
           curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ env.SITE_1_URL }}/api/v4/system/ping?get_server_status=true'
 
+      - name: exit
+        run: exit 1
+
       - name: Run Detox E2E Tests
         continue-on-error: true # Label might have been removed manually
         run: |
