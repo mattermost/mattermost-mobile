@@ -308,8 +308,8 @@ function generateTestReport(summary, isUploadedToS3, reportLink, environment, te
 function generateTitle() {
     const {
         BRANCH,
-        DETOX_AWS_S3_BUCKET,
         COMMIT_HASH,
+        DETOX_AWS_S3_BUCKET,
         IOS,
         PULL_REQUEST,
         RELEASE_BUILD_NUMBER,
@@ -324,7 +324,7 @@ function generateTitle() {
     const appExtension = IOS === 'true' ? 'ipa' : 'apk';
     const appFileName = `Mattermost_Beta.${appExtension}`;
     const appBuildType = 'mattermost-mobile-beta';
-    const s3Folder = `${platform.toLocaleLowerCase()}/${REPORT_PATH}`.replace(/\./g, '-');
+    const s3Folder = `${platform.toLocaleLowerCase()}/${REPORT_PATH}`;
     const appFilePath = IOS === 'true' ? 'Mattermost-simulator-x86_64.app.zip' : 'android/app/build/outputs/apk/release/app-release.apk';
     let buildLink = '';
     let releaseDate = '';

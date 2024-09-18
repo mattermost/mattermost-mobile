@@ -14,6 +14,7 @@ type EmojiSection = {
     icon: string;
     id: string;
     key: string;
+    renderItem?: ({item}: ListRenderItemInfo<EmojiAlias[]>) => JSX.Element;
 }
 
 type CategoryTranslation = {

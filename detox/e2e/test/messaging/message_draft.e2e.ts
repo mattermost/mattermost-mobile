@@ -146,7 +146,7 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4781_4 - should be able to create a message draft from reply thread -- KNOWN ISSUE: MM-50298', async () => {
+    it('MM-T4781_4 - should be able to create a message draft from reply thread', async () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);

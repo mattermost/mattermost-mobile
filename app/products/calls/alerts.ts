@@ -310,7 +310,7 @@ export const recordingAlert = (isHost: boolean, transcriptionsEnabled: boolean, 
                 defaultMessage: 'Leave',
             }),
             onPress: async () => {
-                await leaveCall();
+                leaveCall();
             },
             style: 'destructive',
         },

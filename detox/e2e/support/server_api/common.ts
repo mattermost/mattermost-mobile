@@ -12,7 +12,7 @@ export const getCookiesFromConfig = (config: AxiosRequestConfig<any>) => {
     let mmAuthToken = '';
     let mmUserId = '';
     let mmCsrf = '';
-    config.jar?.toJSON().cookies.forEach((cookie: any) => {
+    config.jar?.toJSON()?.cookies.forEach((cookie: any) => {
         if (cookie.key === 'MMAUTHTOKEN') {
             mmAuthToken = cookie.value;
         } else if (cookie.key === 'MMUSERID') {
@@ -32,7 +32,7 @@ export const getCookiesFromConfig = (config: AxiosRequestConfig<any>) => {
 export const getResponseFromError = (err: any) => {
     const {response} = err;
     if (!response) {
-        const message = `No response from server at "${err.config.baseURL}".
+        const message = `No response from server at "${err}".
 If testing against a server other than the default local instance, you may set the server URL via "SITE_URL" environment variable.
 `;
 

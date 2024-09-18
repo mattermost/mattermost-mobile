@@ -3,7 +3,7 @@
 
 import {type TurboModule, TurboModuleRegistry} from 'react-native';
 
-import type {Int32, UnsafeObject} from 'react-native/Libraries/Types/CodegenTypes';
+import type {Double, Int32, UnsafeObject} from 'react-native/Libraries/Types/CodegenTypes';
 
 export type SplitView = Readonly<{
   isSplit: boolean;
@@ -36,6 +36,11 @@ type Constants = Readonly<{
   }>;
 }>
 
+export type WindowDimensionsChanged = Readonly<{
+  width: Double;
+  height: Double;
+}>
+
 export interface Spec extends TurboModule {
     readonly getConstants: () => Constants;
 
@@ -45,6 +50,7 @@ export interface Spec extends TurboModule {
     getRealFilePath: (filePath: string) => Promise<string>;
     saveFile: (filePath: string) => Promise<string>;
 
+    getWindowDimensions: () => WindowDimensionsChanged;
     isRunningInSplitView: () => SplitView;
     unlockOrientation: () => void;
     lockPortrait: () => void;

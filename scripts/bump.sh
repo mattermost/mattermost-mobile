@@ -6,7 +6,7 @@ cd "$(dirname "$0")"/..
 log () { echo "[$(date +%Y-%m-%dT%H:%M:%S%Z)]" "$@"; }
 
 : "${BRANCH_TO_BUILD:=main}"
-: "${PR_REVIEWERS:=mattermost/core-build-engineers}"
+: "${PR_REVIEWERS:=mattermost/core-build-engineers,amyblais}"
 : "${BUMP_BUILD_NUMBER:=}"    # You can optionally specify the BUILD_NUMBER variable for selecting the next build number
                               # If you don't, then the Fastlane action will pick the next build number automatically
 : "${BUMP_VERSION_NUMBER:=}"  # If enabled, you must populate the VERSION_NUMBER variable as well

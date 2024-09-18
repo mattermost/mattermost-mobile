@@ -3,12 +3,12 @@
 
 import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useWindowDimensions, Platform} from 'react-native';
+import {Platform} from 'react-native';
 
 import {CaptionsEnabledContext} from '@calls/context';
 import {hasCaptions} from '@calls/utils';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
 import {dismissOverlay, setScreensOrientation} from '@screens/navigation';
 import {freezeOtherScreens} from '@utils/gallery';
@@ -35,7 +35,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const [captionsEnabled, setCaptionsEnabled] = useState<boolean[]>(new Array(items.length).fill(true));
     const [captionsAvailable, setCaptionsAvailable] = useState<boolean[]>([]);
     const {setControlsHidden, headerStyles, footerStyles} = useGalleryControls();
-    const dimensions = useMemo(() => ({width: dim.width, height: dim.height}), [dim.width]);
+    const dimensions = useMemo(() => ({width: dim.width, height: dim.height}), [dim]);
     const galleryRef = useRef<GalleryRef>(null);
 
     useEffect(() => {

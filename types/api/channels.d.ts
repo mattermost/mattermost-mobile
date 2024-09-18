@@ -134,3 +134,32 @@ type ChannelMemberCountByGroup = {
 };
 
 type ChannelMemberCountsByGroup = Record<string, ChannelMemberCountByGroup>;
+
+type ChannelBookmarkType = 'link' | 'file';
+
+type ChannelBookmark = {
+    id: string;
+    create_at: number;
+    update_at: number;
+    delete_at: number;
+    channel_id: string;
+    owner_id: string;
+    file_id?: string;
+    display_name: string;
+    sort_order: number;
+    link_url?: string;
+    image_url?: string;
+    emoji?: string;
+    type: ChannelBookmarkType;
+    original_id?: string;
+    parent_id?: string;
+}
+
+type ChannelBookmarkWithFileInfo = ChannelBookmark & {
+    file?: FileInfo;
+}
+
+type UpdateChannelBookmarkResponse = {
+    updated: ChannelBookmarkWithFileInfo;
+    deleted?: ChannelBookmarkWithFileInfo;
+}

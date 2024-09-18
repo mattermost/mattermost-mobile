@@ -269,6 +269,10 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             "locale": "",
             "nickname": "",
             "notify_props": {
+              "calls_desktop_sound": "true",
+              "calls_mobile_notification_sound": "",
+              "calls_mobile_sound": "",
+              "calls_notification_sound": "Calm",
               "channel": "true",
               "comments": "never",
               "desktop": "mention",
@@ -440,6 +444,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
                 {
@@ -584,6 +589,10 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             "locale": "",
             "nickname": "",
             "notify_props": {
+              "calls_desktop_sound": "true",
+              "calls_mobile_notification_sound": "",
+              "calls_mobile_sound": "",
+              "calls_notification_sound": "Calm",
               "channel": "true",
               "comments": "never",
               "desktop": "mention",
@@ -755,6 +764,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
                 {
@@ -899,6 +909,10 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             "locale": "",
             "nickname": "",
             "notify_props": {
+              "calls_desktop_sound": "true",
+              "calls_mobile_notification_sound": "",
+              "calls_mobile_sound": "",
+              "calls_notification_sound": "Calm",
               "channel": "true",
               "comments": "never",
               "desktop": "mention",
@@ -933,6 +947,10 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             "locale": "",
             "nickname": "",
             "notify_props": {
+              "calls_desktop_sound": "true",
+              "calls_mobile_notification_sound": "",
+              "calls_mobile_sound": "",
+              "calls_notification_sound": "Calm",
               "channel": "true",
               "comments": "never",
               "desktop": "mention",
@@ -1104,6 +1122,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
                 {
@@ -1322,6 +1341,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
                 {

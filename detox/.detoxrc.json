@@ -30,8 +30,8 @@
     "ios.simulator": {
       "type": "ios.simulator",
       "device": {
-        "type": "iPhone 15 Pro",
-        "os": "iOS 17.4"
+        "type": "__DEVICE_TYPE__",
+        "os": "__DEVICE_OS__"
       }
     },
     "android.emulator": {

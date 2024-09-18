@@ -52,8 +52,8 @@ jobs:
       - build-ios-simulator
     with:
       run-ios-tests: true
-      run-android-tests: false
       run-type: "RELEASE"
+      record_tests_in_zephyr: 'true'
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 

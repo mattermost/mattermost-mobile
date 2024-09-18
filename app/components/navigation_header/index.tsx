@@ -24,7 +24,7 @@ type Props = SearchProps & {
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
     scrollValue?: Animated.SharedValue<number>;
-    lockValue?: Animated.SharedValue<number | null>;
+    lockValue?: number;
     hideHeader?: () => void;
     showBackButton?: boolean;
     subtitle?: string;
@@ -61,32 +61,28 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
     const styles = getStyleSheet(theme);
 
     const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
+
+    const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
+
     const containerHeight = useAnimatedStyle(() => {
-        const value = -(scrollValue?.value || 0);
-        const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + value;
-        const height = lockValue?.value ? lockValue.value : calculatedHeight;
+        const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) - minScrollValue.value;
+        const height = lockValue || calculatedHeight;
         return {
             height: Math.max(height, defaultHeight),
             minHeight: defaultHeight,
             maxHeight: largeHeight + MAX_OVERSCROLL,
         };
-    });
-
-    const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
+    }, [defaultHeight, largeHeight, lockValue, isLargeTitle]);
 
     const translateY = useDerivedValue(() => (
-        lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, headerOffset)
-    ), [lockValue, minScrollValue, headerOffset]);
+        lockValue ? -lockValue : Math.min(-minScrollValue.value, headerOffset)
+    ), [lockValue, headerOffset]);
 
     const searchTopStyle = useAnimatedStyle(() => {
         const margin = clamp(-minScrollValue.value, -headerOffset, headerOffset);
-        const marginTop = (lockValue?.value ? -lockValue?.value : margin) - SEARCH_INPUT_HEIGHT - SEARCH_INPUT_MARGIN;
+        const marginTop = (lockValue ? -lockValue : margin) - SEARCH_INPUT_HEIGHT - SEARCH_INPUT_MARGIN;
         return {marginTop};
-    }, [lockValue, headerOffset, scrollValue]);
-
-    const heightOffset = useDerivedValue(() => (
-        lockValue?.value ? lockValue.value : headerOffset
-    ), [lockValue, headerOffset]);
+    }, [lockValue, headerOffset]);
 
     return (
         <Animated.View style={[styles.container, containerHeight]}>
@@ -94,12 +90,11 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
                 defaultHeight={defaultHeight}
                 hasSearch={hasSearch}
                 isLargeTitle={isLargeTitle}
-                heightOffset={heightOffset.value}
+                heightOffset={lockValue || headerOffset}
                 leftComponent={leftComponent}
                 onBackPress={onBackPress}
                 onTitlePress={onTitlePress}
                 rightButtons={rightButtons}
-                lockValue={lockValue}
                 scrollValue={scrollValue}
                 showBackButton={showBackButton}
                 subtitle={subtitle}
@@ -109,7 +104,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
             />
             {isLargeTitle &&
                 <NavigationHeaderLargeTitle
-                    heightOffset={heightOffset.value}
+                    heightOffset={lockValue || headerOffset}
                     hasSearch={hasSearch}
                     subtitle={subtitle}
                     theme={theme}

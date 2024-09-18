@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
+import {shouldUpdateFileRecord} from '@database/operator/server_data_operator/comparators/files';
 import {
     transformConfigRecord,
     transformCustomEmojiRecord,
@@ -9,7 +10,7 @@ import {
     transformSystemRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 
-import type ServerDataOperator from '..';
+import type ServerDataOperator from '@database/operator/server_data_operator/index';
 
 describe('*** DataOperator: Base Handlers tests ***', () => {
     let operator: ServerDataOperator;
@@ -118,6 +119,59 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             prepareRecordsOnly: false,
             deleteRawValues: configsToDelete,
         }, 'handleConfigs');
+    });
+
+    it('=> HandleFiles: should write to the FILE table', async () => {
+        expect.assertions(1);
+
+        const spyOnprocessRecords = jest.spyOn(operator, 'processRecords');
+
+        const files = [{
+            id: 'f1oxe5rtepfs7n3zifb4sso7po',
+            user_id: '89ertha8xpfsumpucqppy5knao',
+            post_id: 'a7ebyw883trm884p1qcgt8yw4a',
+            create_at: 1608270920357,
+            update_at: 1608270920357,
+            delete_at: 0,
+            name: '4qtwrg.jpg',
+            extension: 'jpg',
+            size: 89208,
+            mime_type: 'image/jpeg',
+            width: 500,
+            height: 656,
+            has_preview_image: true,
+            mini_preview:
+                '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
+        }, {
+            id: 'f1oxe5rtepfs7n3zifb4sso7po',
+            user_id: 'bookmark',
+            create_at: 1608270920357,
+            update_at: 1608270920357,
+            delete_at: 1608270920357,
+            name: '4qtwrg.jpg',
+            extension: 'jpg',
+            size: 89208,
+            mime_type: 'image/jpeg',
+            width: 500,
+            height: 656,
+            has_preview_image: true,
+            mini_preview:
+                '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
+        },
+        ];
+
+        await operator.handleFiles({
+            files,
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnprocessRecords).toHaveBeenCalledWith({
+            fieldName: 'id',
+            createOrUpdateRawValues: files.filter((f) => !f.delete_at),
+            deleteRawValues: files.filter((f) => f.delete_at),
+            tableName: 'File',
+            shouldUpdate: shouldUpdateFileRecord,
+        });
     });
 
     it('=> No table name: should not call execute if tableName is invalid', async () => {

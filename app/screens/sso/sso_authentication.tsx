@@ -1,23 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button} from '@rneui/base';
 import {openAuthSessionAsync} from 'expo-web-browser';
 import qs from 'querystringify';
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Linking, Platform, Text, View, type EventSubscription} from 'react-native';
+import {Linking, Platform, StyleSheet, View, type EventSubscription} from 'react-native';
 import urlParse from 'url-parse';
 
-import FormattedText from '@components/formatted_text';
 import {Sso} from '@constants';
 import NetworkManager from '@managers/network_manager';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isBetaApp} from '@utils/general';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
-interface SSOWithRedirectURLProps {
+import AuthError from './components/auth_error';
+import AuthRedirect from './components/auth_redirect';
+import AuthSuccess from './components/auth_success';
+
+interface SSOAuthenticationProps {
     doSSOLogin: (bearerToken: string, csrfToken: string) => void;
     loginError: string;
     loginUrl: string;
@@ -26,40 +25,16 @@ interface SSOWithRedirectURLProps {
     theme: Theme;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        button: {
-            marginTop: 25,
-        },
-        container: {
-            flex: 1,
-            paddingHorizontal: 24,
-        },
-        errorText: {
-            color: changeOpacity(theme.centerChannelColor, 0.72),
-            textAlign: 'center',
-            ...typography('Body', 200, 'Regular'),
-        },
-        infoContainer: {
-            alignItems: 'center',
-            flex: 1,
-            justifyContent: 'center',
-        },
-        infoText: {
-            color: changeOpacity(theme.centerChannelColor, 0.72),
-            ...typography('Body', 100, 'Regular'),
-        },
-        infoTitle: {
-            color: theme.centerChannelColor,
-            marginBottom: 4,
-            ...typography('Heading', 700),
-        },
-    };
+const style = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingHorizontal: 24,
+    },
 });
 
-const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
+const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLoginError, theme}: SSOAuthenticationProps) => {
     const [error, setError] = useState<string>('');
-    const style = getStyleSheet(theme);
+    const [loginSuccess, setLoginSuccess] = useState(false);
     const intl = useIntl();
     let customUrlScheme = Sso.REDIRECT_URL_SCHEME;
     if (isBetaApp) {
@@ -68,6 +43,7 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLogi
 
     const redirectUrl = customUrlScheme + 'callback';
     const init = async (resetErrors = true) => {
+        setLoginSuccess(false);
         if (resetErrors !== false) {
             setError('');
             setLoginError('');
@@ -81,12 +57,13 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLogi
         };
         parsedUrl.set('query', qs.stringify(query));
         const url = parsedUrl.toString();
-        const result = await openAuthSessionAsync(url, null, {preferEphemeralSession: true});
+        const result = await openAuthSessionAsync(url, null, {preferEphemeralSession: true, createTask: false});
         if ('url' in result && result.url) {
             const resultUrl = urlParse(result.url, true);
             const bearerToken = resultUrl.query?.MMAUTHTOKEN;
             const csrfToken = resultUrl.query?.MMCSRF;
             if (bearerToken && csrfToken) {
+                setLoginSuccess(true);
                 doSSOLogin(bearerToken, csrfToken);
             }
         } else if (Platform.OS === 'ios' || result.type === 'dismiss') {
@@ -110,6 +87,7 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLogi
                     const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
                     const csrfToken = parsedUrl.query?.MMCSRF;
                     if (bearerToken && csrfToken) {
+                        setLoginSuccess(true);
                         doSSOLogin(bearerToken, csrfToken);
                     } else {
                         setError(
@@ -135,50 +113,27 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLogi
         };
     }, []);
 
+    let content;
+    if (loginSuccess) {
+        content = (<AuthSuccess theme={theme}/>);
+    } else if (loginError || error) {
+        content = (
+            <AuthError
+                error={loginError || error}
+                retry={init}
+                theme={theme}
+            />
+        );
+    } else {
+        content = (<AuthRedirect theme={theme}/>);
+    }
+
     return (
         <View
             style={style.container}
             testID='sso.redirect_url'
         >
-            {loginError || error ? (
-                <View style={style.infoContainer}>
-                    <FormattedText
-                        id='mobile.oauth.switch_to_browser.error_title'
-                        testID='mobile.oauth.switch_to_browser.error_title'
-                        defaultMessage='Sign in error'
-                        style={style.infoTitle}
-                    />
-                    <Text style={style.errorText}>
-                        {`${loginError || error}.`}
-                    </Text>
-                    <Button
-                        buttonStyle={[style.button, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
-                        testID='mobile.oauth.try_again'
-                        onPress={() => init()}
-                    >
-                        <FormattedText
-                            id='mobile.oauth.try_again'
-                            defaultMessage='Try again'
-                            style={buttonTextStyle(theme, 'lg', 'primary', 'default')}
-                        />
-                    </Button>
-                </View>
-            ) : (
-                <View style={style.infoContainer}>
-                    <FormattedText
-                        id='mobile.oauth.switch_to_browser.title'
-                        testID='mobile.oauth.switch_to_browser.title'
-                        defaultMessage='Redirecting...'
-                        style={style.infoTitle}
-                    />
-                    <FormattedText
-                        id='mobile.oauth.switch_to_browser'
-                        testID='mobile.oauth.switch_to_browser'
-                        defaultMessage='You are being redirected to your login provider'
-                        style={style.infoText}
-                    />
-                </View>
-            )}
+            {content}
         </View>
     );
 };

@@ -34,12 +34,14 @@ type ChannelProps = {
     showJoinCallBanner: boolean;
     isInACall: boolean;
     isCallsEnabledInChannel: boolean;
+    groupCallsAllowed: boolean;
     showIncomingCalls: boolean;
     isTabletView?: boolean;
     dismissedGMasDMNotice: PreferenceModel[];
     currentUserId: string;
     channelType: ChannelType;
     hasGMasDMFeature: boolean;
+    includeBookmarkBar?: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -57,12 +59,14 @@ const Channel = ({
     showJoinCallBanner,
     isInACall,
     isCallsEnabledInChannel,
+    groupCallsAllowed,
     showIncomingCalls,
     isTabletView,
     dismissedGMasDMNotice,
     channelType,
     currentUserId,
     hasGMasDMFeature,
+    includeBookmarkBar,
 }: ChannelProps) => {
     useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
@@ -123,7 +127,9 @@ const Channel = ({
                     channelId={channelId}
                     componentId={componentId}
                     callsEnabledInChannel={isCallsEnabledInChannel}
+                    groupCallsAllowed={groupCallsAllowed}
                     isTabletView={isTabletView}
+                    shouldRenderBookmarks={shouldRender}
                 />
                 {shouldRender &&
                 <>
@@ -145,12 +151,13 @@ const Channel = ({
                     />
                 </>
                 }
-                {showFloatingCallContainer &&
+                {showFloatingCallContainer && shouldRender &&
                     <FloatingCallContainer
                         channelId={channelId}
                         showJoinCallBanner={showJoinCallBanner}
                         showIncomingCalls={showIncomingCalls}
                         isInACall={isInACall}
+                        includeBookmarkBar={includeBookmarkBar}
                     />
                 }
             </SafeAreaView>

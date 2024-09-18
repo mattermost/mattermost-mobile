@@ -21,11 +21,15 @@ const styles = StyleSheet.create({
     captionContainer: {
         display: 'flex',
         height: 400,
-        bottom: -352, // 48-400, to place the bottoms at the same place
+        bottom: 400 - 48, // to place the bottoms at the same place
         gap: 8,
         alignItems: 'center',
         flexDirection: 'column-reverse',
         overflow: 'hidden',
+
+        // needed so that events (e.g., long press on participants)
+        // still work when the captions overlay is rendered on top
+        pointerEvents: 'none',
     },
     caption: {
         paddingTop: 1,

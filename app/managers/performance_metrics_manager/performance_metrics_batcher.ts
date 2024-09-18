@@ -100,4 +100,8 @@ class Batcher {
     }
 }
 
+export const testExports = {
+    MAX_BATCH_SIZE,
+    INTERVAL_TIME,
+};
 export default Batcher;

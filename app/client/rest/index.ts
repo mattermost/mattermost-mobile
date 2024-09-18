@@ -8,6 +8,7 @@ import mix from '@utils/mix';
 import ClientApps, {type ClientAppsMix} from './apps';
 import ClientBase from './base';
 import ClientCategories, {type ClientCategoriesMix} from './categories';
+import ClientChannelBookmarks, {type ClientChannelBookmarksMix} from './channel_bookmark';
 import ClientChannels, {type ClientChannelsMix} from './channels';
 import {DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE, HEADER_X_VERSION_ID} from './constants';
 import ClientEmojis, {type ClientEmojisMix} from './emojis';
@@ -29,6 +30,7 @@ interface Client extends ClientBase,
     ClientAppsMix,
     ClientCategoriesMix,
     ClientChannelsMix,
+    ClientChannelBookmarksMix,
     ClientEmojisMix,
     ClientFilesMix,
     ClientGeneralMix,
@@ -49,6 +51,7 @@ class Client extends mix(ClientBase).with(
     ClientApps,
     ClientCategories,
     ClientChannels,
+    ClientChannelBookmarks,
     ClientEmojis,
     ClientFiles,
     ClientGeneral,

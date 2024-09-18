@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os.log
 
 public typealias ResponseHandler = (_ data: Data?, _ response: URLResponse?, _ error: Error?) -> Void
 
@@ -13,11 +14,14 @@ public class Network: NSObject {
     internal var session: URLSession?
     internal let queue = OperationQueue()
     internal let urlVersion = "/api/v4"
+    internal var certificates: [String: [SecCertificate]] = [:]
 
     @objc public static let `default` = Network()
     
     override private init() {
         super.init()
+        
+        loadPinnedCertificates()
         
         queue.maxConcurrentOperationCount = 1
         
@@ -31,6 +35,41 @@ public class Network: NSObject {
             delegate: self,
             delegateQueue: nil
         )
+    }
+    
+    internal func loadPinnedCertificates() {
+        guard let certsPath = Bundle.app.resourceURL?.appendingPathComponent("certs") else {
+            return
+        }
+        
+        let fileManager = FileManager.default
+        do {
+            let certsArray = try fileManager.contentsOfDirectory(at: certsPath, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+            let certs = certsArray.filter{ $0.pathExtension == "crt" || $0.pathExtension == "cer"}
+                for cert in certs {
+                    if let domain = URL(string: cert.absoluteString)?.deletingPathExtension().lastPathComponent,
+                       let certData = try? Data(contentsOf: cert),
+                       let certificate = SecCertificateCreateWithData(nil, certData as CFData){
+                        if certificates[domain] != nil {
+                            certificates[domain]?.append(certificate)
+                        } else {
+                            certificates[domain] = [certificate]
+                        }
+                        os_log("Gekidou: loaded certificate %{public}@ for domain %{public}@",
+                               log: .default,
+                               type: .info,
+                               cert.lastPathComponent, domain
+                        )
+                    }
+                }
+        } catch {
+            os_log(
+                "Gekidou: Error loading pinned certificates -- %{public}@",
+                log: .default,
+                type: .error,
+                String(describing: error)
+            )
+        }
     }
     
     internal func buildApiUrl(_ serverUrl: String, _ endpoint: String) -> URL {
