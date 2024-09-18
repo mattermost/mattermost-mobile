@@ -91,8 +91,6 @@ runs:
           # we need to wait for mitmdump to stop so it'll produce the .mitmproxy folder  
           sleep 5;
 
-          pm2 start mitmdump
-
       - name: install certificate
         shell: bash
         run: |
@@ -116,20 +114,20 @@ runs:
 
       #     sleep 5;
 
-      - name: start proxy
-        shell: bash
-        run: |
-          networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
-          networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
+      # - name: start proxy
+      #   shell: bash
+      #   run: |
+      #     networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
+      #     networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
 
-          sleep 5;
+      #     sleep 5;
 
-          networksetup -getwebproxy Ethernet
-          networksetup -getsecurewebproxy Ethernet
+      #     networksetup -getwebproxy Ethernet
+      #     networksetup -getsecurewebproxy Ethernet
 
-      - name: test curl and direct it into proxy
-        shell: bash
-        run: |
-          curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ env.SITE_1_HOST }}/api/v4/system/ping?get_server_status=true'
+      # - name: test curl and direct it into proxy
+      #   shell: bash
+      #   run: |
+      #     curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ env.SITE_1_HOST }}/api/v4/system/ping?get_server_status=true'
 
-          curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ env.SITE_1_HOST }}/api/v4/system/ping?get_server_status=true'
+      #     curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ env.SITE_1_HOST }}/api/v4/system/ping?get_server_status=true'

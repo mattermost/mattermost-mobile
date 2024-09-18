@@ -68,4 +68,4 @@ runs:
     - name: test curl after throttling
       shell: bash
       run: |
-        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ inputs.test_server_url }}/api/v4/system/ping?get_server_status=true'
+        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://${{ inputs.test_server_url }}/api/v4/system/ping?get_server_status=true'
