@@ -702,6 +702,8 @@
   "mobile.no_results_with_term.files": "Brak plików pasujących do \"{term}\"",
   "mobile.no_results_with_term.messages": "Nie znaleziono dopasowań dla \"{term}\"",
   "mobile.oauth.failed_to_login": "Twoja próba logowania nie powiodła się. Proszę spróbować ponownie.",
+  "mobile.oauth.failed_to_open_link": "Nie udało się otworzyć linku. Spróbuj ponownie.",
+  "mobile.oauth.failed_to_open_link_no_browser": "Nie udało się otworzyć łącza. Sprawdź, czy na urządzeniu zainstalowana jest przeglądarka.",
   "mobile.oauth.something_wrong.okButton": "OK",
   "mobile.oauth.success.description": "Trwa logowanie, chwileczkę...",
   "mobile.oauth.success.title": "Uwierzytelnianie powiodło się",
