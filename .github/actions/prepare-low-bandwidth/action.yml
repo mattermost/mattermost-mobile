@@ -40,7 +40,7 @@ runs:
         id: remove-protocol
         shell: bash
         run: |
-          echo "SITE_1_HOST=${{ env.SITE_1_URL }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> ${GITHUB_OUTPUT}
+          echo "SITE_1_HOST=${{ inputs.test_server_url }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> ${GITHUB_OUTPUT}
 
       - name: Throttle Bandwidth 1
         id: throttle-bandwidth-1

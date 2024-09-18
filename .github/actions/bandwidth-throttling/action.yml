@@ -50,8 +50,8 @@ runs:
         sudo dnctl -q pipe flush
 
 
-        echo "dummynet in from ${{ inputs.test_server_url }} to ! 127.0.0.1 pipe 1
-        dummynet out from ! 127.0.0.1 to ${{ inputs.test_server_url }} pipe 2" | sudo pfctl -f -
+        echo "dummynet in from ${{ inputs.test_server_host }} to ! 127.0.0.1 pipe 1
+        dummynet out from ! 127.0.0.1 to ${{ inputs.test_server_host }} pipe 2" | sudo pfctl -f -
         
         # pipe 1 is download
         sudo dnctl pipe 1 config bw ${{ inputs.download_speed }}Kbit/s delay ${{ inputs.latency }}ms
@@ -68,4 +68,4 @@ runs:
     - name: test curl after throttling
       shell: bash
       run: |
-        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://${{ inputs.test_server_url }}/api/v4/system/ping?get_server_status=true'
+        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' 'https://${{ inputs.test_server_host }}/api/v4/system/ping?get_server_status=true'
