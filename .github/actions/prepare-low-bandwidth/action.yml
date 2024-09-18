@@ -89,7 +89,9 @@ runs:
           pm2 stop mitmdump
 
           # we need to wait for mitmdump to stop so it'll produce the .mitmproxy folder  
-          sleep 5; 
+          sleep 5;
+
+          pm2 start mitmdump
 
       - name: install certificate
         shell: bash
@@ -107,12 +109,12 @@ runs:
         shell: bash
         run: xcrun simctl list devices booted | grep Booted
 
-      - name: restart mitmdump
-        shell: bash
-        run: |
-          pm2 restart mitmdump
+      # - name: restart mitmdump
+      #   shell: bash
+      #   run: |
+      #     pm2 restart mitmdump
 
-          sleep 5;
+      #     sleep 5;
 
       - name: start proxy
         shell: bash
