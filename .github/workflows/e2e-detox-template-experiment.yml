@@ -184,10 +184,7 @@ jobs:
         id: start-proxy
         uses: ./.github/actions/start-proxy
         with:
-          test_server_host: ${{ env.SITE_1_URL }}
-
-      - name: exit
-        run: exit 1
+          test_server_url: ${{ env.SITE_1_URL }}
 
       - name: Run Detox E2E Tests
         continue-on-error: true # Label might have been removed manually
@@ -200,7 +197,7 @@ jobs:
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
 
       - name: reset network settings
-        if: ${{ steps.install-mitmproxy-pm2.outcome == 'success' || failure() }}
+        if: ${{ inputs.low_bandwidth_mode || failure() }}
         run: |
           networksetup -setwebproxystate Ethernet "off"
           networksetup -setsecurewebproxystate Ethernet "off"

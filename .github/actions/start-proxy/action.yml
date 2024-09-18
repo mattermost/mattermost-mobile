@@ -2,18 +2,13 @@ name: Start Proxy
 description: Action to throttle the bandwidth on MacOS runner
 
 inputs:
-  test_server_host:
+  test_server_url:
     description: The host of the test server, no protocol
     required: true
 
 runs:
   using: composite
   steps:
-    - name: remove protocol from SITE_1_URL
-      id: remove-protocol
-      shell: bash
-      run: |
-        echo "SITE_1_HOST=${{ inputs.test_server_host }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> ${GITHUB_OUTPUT}
 
     - name: restart mitmdump
       shell: bash
@@ -36,6 +31,6 @@ runs:
     - name: test curl and direct it into proxy
       shell: bash
       run: |
-        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ steps.remove-protocol.outputs.SITE_1_HOST }}/api/v4/system/ping?get_server_status=true'
+        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ inputs.test_server_url }}/api/v4/system/ping?get_server_status=true'
 
-        curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ steps.remove-protocol.outputs.SITE_1_HOST }}/api/v4/system/ping?get_server_status=true'
+        curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ inputs.test_server_url }}/api/v4/system/ping?get_server_status=true'
