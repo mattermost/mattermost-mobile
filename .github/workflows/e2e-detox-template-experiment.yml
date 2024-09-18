@@ -164,7 +164,7 @@ jobs:
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth
         uses: ./.github/actions/prepare-low-bandwidth
-        if: ${{ inputs.low_bandwidth_mode == 'true' }}
+        if: ${{ inputs.low_bandwidth_mode }}
         with:
           test_server_url: ${{ env.SITE_1_URL }}
           device_name: ${{ env.DEVICE_NAME }}
@@ -184,7 +184,7 @@ jobs:
         run: |
           cd detox
           npm run detox:config-gen
-          npm run e2e:ios-test -- ${{ matrix.specs }}
+          {{ env.TESTING }} npm run e2e:ios-test -- ${{ matrix.specs }}
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
