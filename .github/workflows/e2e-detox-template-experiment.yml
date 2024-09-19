@@ -48,6 +48,11 @@ on:
         required: false
         type: string
         default: "iOS 17.0"
+      low_bandwidth_mode:
+        description: "Enable low bandwidth mode"
+        required: false
+        type: boolean
+        default: false
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -79,7 +84,6 @@ env:
   TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
   WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
   FAILURE_MESSAGE: "Something has failed"
-  LOW_BANDWIDTH_ENV_PREPEND: ""
 
 jobs:
   generate-specs:
