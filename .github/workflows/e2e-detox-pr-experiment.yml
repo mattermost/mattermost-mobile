@@ -51,7 +51,7 @@ jobs:
 
   run-ios-tests-on-pr:
     name: iOS Mobile Tests on PR
-    uses: ./.github/workflows/e2e-detox-template-experiment.yml
+    uses: ./.github/workflows/e2e-detox-template.yml
     needs:
       - build-ios-simulator
     with:
