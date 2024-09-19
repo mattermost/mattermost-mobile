@@ -27,7 +27,7 @@ runs:
   steps:
       - name: Update environment variable to be used in main workflow
         shell: bash
-        run: echo "LOW_BANDWIDTH_ENV_PREPEND=\"LOW_BANDWIDTH_MODE=true\"" >> $GITHUB_ENV
+        run: echo "LOW_BANDWIDTH_ENV_PREPEND=LOW_BANDWIDTH_MODE=true " >> $GITHUB_ENV
 
       - name: delete the zip file and trash (to free up space)
         shell: bash
