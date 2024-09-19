@@ -151,22 +151,22 @@ jobs:
           brew tap wix/brew
           brew install applesimutils
 
-      - name: Download iOS Simulator Build
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
-        with:
-          name: ios-build-simulator-${{ github.run_id }}
-          path: mobile-artifacts
-
-      - name: Unzip iOS Simulator Build
-        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
-
       # - name: Download iOS Simulator Build
       #   uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
       #   with:
-      #     name: ios-build-simulator-10565193233
-      #     github-token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+      #     name: ios-build-simulator-${{ github.run_id }}
       #     path: mobile-artifacts
-      #     run-id: 10565193233
+
+      - name: Download iOS Simulator Build
+        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        with:
+          name: ios-build-simulator-10565193233
+          github-token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+          path: mobile-artifacts
+          run-id: 10565193233
+
+      - name: Unzip iOS Simulator Build
+        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
 
       - name: Unzip iOS Simulator Build
         run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
