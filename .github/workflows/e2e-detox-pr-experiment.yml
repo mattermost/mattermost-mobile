@@ -6,8 +6,8 @@ on:
       - main
   push:
     branches:
-      # - test-random-github-action-experiments-disabled
-      - test-random-github-action-experiments
+      - test-random-github-action-experiments-disabled
+      #- test-random-github-action-experiments
 
 jobs:
   update-initial-status:

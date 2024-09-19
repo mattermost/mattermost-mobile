@@ -1,3 +1,5 @@
+# Can be used to run Detox E2E tests on pull requests for the Mattermost mobile app with low bandwidth
+# by using 'E2E iOS tests for PR (LBW 1)' instead.
 name: Detox E2E Tests PR
 
 on:
@@ -57,6 +59,7 @@ jobs:
       run-ios-tests: true
       run-type: "PR"
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
+      low_bandwidth_mode: ${{ contains(github.event.pull_request.labels.*.name, '(LBW 1)') && true || false }}
     secrets: inherit
 
   update-final-status:
