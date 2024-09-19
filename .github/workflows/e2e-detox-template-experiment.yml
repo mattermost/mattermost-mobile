@@ -48,11 +48,6 @@ on:
         required: false
         type: string
         default: "iOS 17.0"
-      low_bandwidth_mode:
-        description: "Enable low bandwidth mode"
-        required: false
-        type: boolean
-        default: false
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -201,10 +196,11 @@ jobs:
         run: |
           cd detox
           npm run detox:config-gen
-          ${{ env.LOW_BANDWIDTH_ENV_PREPEND }} npm run e2e:ios-test -- ${{ matrix.specs }}
+          npm run e2e:ios-test -- ${{ matrix.specs }}
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
+          LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
 
       - name: reset network settings
         if: ${{ inputs.low_bandwidth_mode || failure() }}
