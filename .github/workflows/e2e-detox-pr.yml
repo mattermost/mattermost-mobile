@@ -10,14 +10,6 @@ on:
       - labeled
 
 jobs:
-  check-label:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Check for E2E iOS tests label
-        id: check-label
-        run: |
-          echo "${{ contains(join(github.event.pull_request.labels.*.name, ','), 'E2E iOS tests for PR') }}"
-
   update-initial-status:
     runs-on: ubuntu-22.04
     if: contains(join(github.event.pull_request.labels.*.name, ','), 'E2E iOS tests for PR')
@@ -67,7 +59,7 @@ jobs:
       run-ios-tests: true
       run-type: "PR"
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
-      low_bandwidth_mode: ${{ contains(github.event.pull_request.labels.*.name, '(LBW 1)') && true || false }}
+      low_bandwidth_mode: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'LBW') && true || false }}
     secrets: inherit
 
   update-final-status:
