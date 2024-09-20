@@ -1,9 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
+import {Navigation, Screens} from '@app/constants';
+import {goToScreen} from '@app/screens/navigation';
+import {isTablet} from '@app/utils/helpers';
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
 import {logError} from '@utils/log';
+
+export const switchToGlobalDrafts = async () => {
+    const isTablelDevice = isTablet();
+    if (isTablelDevice) {
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS);
+    } else {
+        goToScreen(Screens.GLOBAL_DRAFTS, '', {}, {topBar: {visible: false}});
+    }
+};
 
 export async function updateDraftFile(serverUrl: string, channelId: string, rootId: string, file: FileInfo, prepareRecordsOnly = false) {
     try {

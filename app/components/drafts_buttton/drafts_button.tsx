@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {TouchableOpacity, View} from 'react-native';
 
+import {switchToGlobalDrafts} from '@actions/local/draft';
 import {HOME_PADDING} from '@app/constants/view';
 import {useTheme} from '@app/context/theme';
 import {useIsTablet} from '@app/hooks/device';
+import {preventDoubleTap} from '@app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import Badge from '@components/badge';
 import {
@@ -51,9 +53,9 @@ const DraftsButton: React.FC<DraftListProps> = ({
     const customStyles = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
-    const handlePress = () => {
-        return null;
-    };
+    const handlePress = useCallback(preventDoubleTap(() => {
+        switchToGlobalDrafts();
+    }), []);
 
     const isActive = isTablet && shouldHighlighActive && !currentChannelId;
 

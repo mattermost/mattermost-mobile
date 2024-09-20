@@ -135,6 +135,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.GENERIC_OVERLAY:
             screen = withServerDatabase(require('@screens/overlay').default);
             break;
+        case Screens.GLOBAL_DRAFTS:
+            screen = withServerDatabase(require('@screens/global_drafts').default);
+            break;
         case Screens.GLOBAL_THREADS:
             screen = withServerDatabase(require('@screens/global_threads').default);
             break;

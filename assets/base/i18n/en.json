@@ -304,6 +304,7 @@
   "display_settings.timezone": "Timezone",
   "display_settings.tz.auto": "Auto",
   "display_settings.tz.manual": "Manual",
+  "drafts": "Drafts",
   "download.error": "Unable to download the file. Try again later",
   "edit_post.editPost": "Edit the post...",
   "edit_post.save": "Save",
