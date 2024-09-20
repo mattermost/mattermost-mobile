@@ -17,10 +17,11 @@ jobs:
         id: check-label
         run: |
           echo "${{ toJson(github.event.pull_request.labels.*.name) }}"
+          echo "${{ contains(join(github.event.pull_request.labels.*.name, ','), 'E2E iOS tests for PR') }}"
 
   update-initial-status:
     runs-on: ubuntu-22.04
-    if: contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR')
+    if: contains(join(github.event.pull_request.labels.*.name, ','), 'E2E iOS tests for PR')
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
