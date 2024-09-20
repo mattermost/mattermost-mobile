@@ -3,6 +3,7 @@ import Foundation
 extension RNUtilsWrapper {
     enum Event: String, CaseIterable {
         case SplitViewChanged
+        case DimensionsChanged
     }
     
     @objc

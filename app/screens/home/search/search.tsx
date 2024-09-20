@@ -126,9 +126,13 @@ const SearchScreen = ({teamId, teams}: Props) => {
         scrollRef.current?.scrollToOffset({offset, animated});
     };
 
+    const onSnapWithTimeout = useCallback((offset: number, animated = true) => {
+        // wait until the keyboard is completely dismissed before scrolling to where the header should be
+        setTimeout(() => onSnap(offset, animated), 100);
+    }, [onSnap]);
+
     const {
         headerHeight,
-        headerOffset,
         hideHeader,
         lockValue,
         onScroll,
@@ -156,7 +160,6 @@ const SearchScreen = ({teamId, teams}: Props) => {
     const handleCancelSearch = useCallback(() => {
         cancelRef.current = true;
         resetToInitial();
-        onSnap(0);
     }, [resetToInitial]);
 
     const handleTextChange = useCallback((newValue: string) => {
@@ -204,7 +207,10 @@ const SearchScreen = ({teamId, teams}: Props) => {
 
     const onBlur = useCallback(() => {
         setSearchIsFocused(false);
-    }, []);
+        if (!cancelRef.current && !clearRef.current) {
+            onSnapWithTimeout(0);
+        }
+    }, [onSnapWithTimeout]);
 
     const onFocus = useCallback(() => {
         setSearchIsFocused(true);
@@ -281,7 +287,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
     }, [isFocused, stateIndex]);
 
     const headerTopStyle = useAnimatedStyle(() => ({
-        top: lockValue.value ? lockValue.value : headerHeight.value,
+        top: lockValue || headerHeight.value,
         zIndex: lastSearchedValue ? 10 : 0,
     }), [headerHeight, lastSearchedValue, lockValue]);
 
@@ -304,15 +310,15 @@ const SearchScreen = ({teamId, teams}: Props) => {
     const onFlatLayout = useCallback(() => {
         if (clearRef.current || cancelRef.current) {
             unlock();
+            onSnapWithTimeout(0);
         }
+
         if (clearRef.current) {
-            onSnap(headerOffset, false);
             clearRef.current = false;
         } else if (cancelRef.current) {
-            onSnap(0);
             cancelRef.current = false;
         }
-    }, [headerOffset, scrollRef]);
+    }, [unlock, onSnapWithTimeout]);
 
     useDidUpdate(() => {
         if (isFocused) {
@@ -407,7 +413,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                             posts={posts}
                             matches={matches}
                             fileInfos={fileInfos}
-                            scrollPaddingTop={lockValue.value}
+                            scrollPaddingTop={lockValue}
                             fileChannelIds={fileChannelIds}
                         />
                         }

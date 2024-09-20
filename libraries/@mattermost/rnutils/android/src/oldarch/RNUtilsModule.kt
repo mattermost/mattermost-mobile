@@ -39,6 +39,11 @@ class RNUtilsModule(context: ReactApplicationContext) :
         return implementation.isRunningInSplitView()
     }
 
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getWindowDimensions(): WritableMap? {
+        return implementation.getWindowDimensions()
+    }
+
     @ReactMethod
     fun unlockOrientation() {
         implementation.unlockOrientation()

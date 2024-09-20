@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {NativeModules, Platform} from 'react-native';
 
-import type {Spec, SplitView} from './NativeRNUtils';
+import type {Spec, SplitView, WindowDimensionsChanged} from './NativeRNUtils';
 
 const LINKING_ERROR =
   'The package \'@mattermost/rnutils\' doesn\'t seem to be linked. Make sure: \n\n' +
@@ -25,6 +25,8 @@ const RNUtils = RNUtilsModule || new Proxy(
 );
 
 export type SplitViewResult = SplitView;
+
+export type WindowDimensions = WindowDimensionsChanged;
 
 export default RNUtils;
 
