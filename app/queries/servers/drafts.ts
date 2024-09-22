@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {of as of$, map} from 'rxjs';
+import {of as of$} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 import DraftModel from '@typings/database/models/servers/draft';
@@ -30,30 +30,25 @@ export function observeFirstDraft(v: DraftModel[]) {
     return v[0]?.observe() || of$(undefined);
 }
 
-export const observeAllDrafts = (database: Database, teamId: string) => {
-    return database.collections.get<DraftModel>(DRAFT).query(
-        Q.on(CHANNEL,
-            Q.or(
-                Q.where('team_id', teamId),
-                Q.where('type', 'D'),
-            ),
-        ),
-    );
-};
-
-export const observeDraftCount = (database: Database, teamId: string) => {
+export const queryAllDrafts = (database: Database, teamId: string) => {
     return database.collections.get<DraftModel>(DRAFT).query(
         Q.on(CHANNEL,
             Q.and(
                 Q.or(
                     Q.where('team_id', teamId), // Channels associated with the given team
                     Q.where('type', 'D'), // Channels of type 'D'
+                    Q.where('type', 'G'), // Channels of type 'D'
                 ),
                 Q.where('delete_at', 0), // Ensure the channel is not deleted
             ),
         ),
-    ).observe(). // Observe the query results
-        pipe(
-            map((drafts) => drafts.length), // Map the array of drafts to their count
-        );
+    );
+};
+
+export const observeAllDrafts = (database: Database, teamId: string) => {
+    return queryAllDrafts(database, teamId).observeWithColumns(['messages', 'files', 'metadata']);
+};
+
+export const observeDraftCount = (database: Database, teamId: string) => {
+    return queryAllDrafts(database, teamId).observeCount();
 };

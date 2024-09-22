@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, Text, View} from 'react-native';
+import {Keyboard, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import NavigationHeader from '@app/components/navigation_header';
@@ -16,6 +16,8 @@ import {useTeamSwitch} from '@app/hooks/team_switch';
 import {edges} from '@app/screens/global_threads/global_threads';
 
 import {popTopScreen} from '../navigation';
+
+import GlobalDraftsList from './components/global_drafts_list';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -82,7 +84,7 @@ const GlobalDrafts = ({componentId}: Props) => {
             </View>
             {!switchingTeam &&
             <View style={containerStyle}>
-                <Text>{'Global Drafts'}</Text>
+                <GlobalDraftsList/>
             </View>
             }
         </SafeAreaView>
