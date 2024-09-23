@@ -260,7 +260,7 @@ export default function DraftInput({
         return () => {
             closeEmojiPickerEvent.remove();
         };
-    }, []);
+    }, [isEmojiPickerOpen]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
