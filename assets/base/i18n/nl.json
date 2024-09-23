@@ -702,6 +702,8 @@
   "mobile.no_results_with_term.files": "Geen bestanden die overeenkomen met \"{term}\"",
   "mobile.no_results_with_term.messages": "Geen resultaten gevonden voor \"{term}\"",
   "mobile.oauth.failed_to_login": "Jouw aanmeldingspoging is mislukt. Probeer het opnieuw.",
+  "mobile.oauth.failed_to_open_link": "De link kon niet worden geopend. Probeer het opnieuw.",
+  "mobile.oauth.failed_to_open_link_no_browser": "De link kon niet worden geopend. Controleer of er een browser is geïnstalleerd op het apparaat.",
   "mobile.oauth.something_wrong.okButton": "OK",
   "mobile.oauth.success.description": "Bezig met aanmelden, even geduld...",
   "mobile.oauth.success.title": "Authenticatie geslaagd",
