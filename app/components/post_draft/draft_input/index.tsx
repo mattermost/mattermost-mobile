@@ -167,7 +167,8 @@ export default function DraftInput({
                 }
                 unicode = emoji.image;
                 if (unicode) {
-                    const codeArray = unicode.split('-'); // eslint-disable-next-line max-nested-callbacks
+                    const codeArray = unicode.split('-');
+                    // eslint-disable-next-line max-nested-callbacks
                     const code = codeArray.reduce((acc: string, c: string) => {
                         return acc + String.fromCodePoint(parseInt(c, 16));
                     }, '');
