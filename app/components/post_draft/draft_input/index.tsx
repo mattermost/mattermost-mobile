@@ -4,7 +4,7 @@
 import GraphemeSplitter from 'grapheme-splitter';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard, DeviceEventEmitter} from 'react-native';
+import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard, DeviceEventEmitter, BackHandler, type NativeEventSubscription} from 'react-native';
 import Animated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -273,6 +273,23 @@ export default function DraftInput({
             preventClosingEmojiPickerOnBlur.current = true;
         }
     }, [isEmojiSearchFocused]);
+
+    useEffect(() => {
+        let backHandler: NativeEventSubscription | undefined;
+
+        if (Platform.OS === 'android') {
+            const backAction = () => {
+                setIsEmojiPickerOpen(false);
+                setIsEmojiSearchFocused(false);
+                return true;
+            };
+
+            backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+        }
+        return () => {
+            backHandler?.remove();
+        };
+    }, []);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
