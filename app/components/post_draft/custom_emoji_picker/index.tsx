@@ -11,15 +11,18 @@ type Props = {
     onEmojiPress: (emoji: string) => void;
     handleToggleEmojiPicker: () => void;
     deleteCharFromCurrentCursorPosition: () => void;
+    setIsEmojiSearchFocused: React.Dispatch<React.SetStateAction<boolean>>;
+    isEmojiSearchFocused: boolean;
 }
 
 const CustomEmojiPicker: React.FC<Props> = ({
     height,
+    isEmojiSearchFocused,
     onEmojiPress,
     handleToggleEmojiPicker,
+    setIsEmojiSearchFocused,
     deleteCharFromCurrentCursorPosition,
 }) => {
-    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = React.useState(false);
     const handleEmojiPress = (emoji: string) => {
         onEmojiPress(emoji);
     };
