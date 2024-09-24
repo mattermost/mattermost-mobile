@@ -2,7 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View, Text} from 'react-native';
+import {View} from 'react-native';
+
+import DraftPost from '@app/components/draft_post/';
 
 import type DraftModel from '@typings/database/models/servers/draft';
 
@@ -10,10 +12,18 @@ type Props = {
     allDrafts: DraftModel[];
 }
 
-const GlobalDraftsList: React.FC<Props> = () => {
+const GlobalDraftsList: React.FC<Props> = ({allDrafts}) => {
     return (
         <View>
-            <Text>{'Global Draft List'}</Text>
+            {allDrafts.map((draft) => {
+                return (
+                    <DraftPost
+                        key={draft.id}
+                        channelId={draft.channelId}
+                        draft={draft}
+                    />
+                );
+            })}
         </View>);
 };
 
