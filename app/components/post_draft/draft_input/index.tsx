@@ -8,8 +8,9 @@ import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard, DeviceEven
 import Animated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {popTopScreen} from '@app/screens/navigation';
 import {EmojiIndicesByAlias, Emojis} from '@app/utils/emoji';
-import {Events, General} from '@constants';
+import {Events, General, Screens} from '@constants';
 import {MENTIONS_REGEX} from '@constants/autocomplete';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
@@ -279,9 +280,13 @@ export default function DraftInput({
 
         if (Platform.OS === 'android') {
             const backAction = () => {
-                setIsEmojiPickerOpen(false);
-                setIsEmojiSearchFocused(false);
-                return true;
+                if (isEmojiPickerOpen) {
+                    setIsEmojiPickerOpen(false);
+                    setIsEmojiSearchFocused(false);
+                    return true;
+                }
+                popTopScreen(Screens.CHANNEL);
+                return false;
             };
 
             backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
@@ -289,7 +294,7 @@ export default function DraftInput({
         return () => {
             backHandler?.remove();
         };
-    }, []);
+    }, [isEmojiPickerOpen]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
