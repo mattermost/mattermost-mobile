@@ -10,7 +10,7 @@ inputs:
     required: false
     default: "3300"
   upload_speed:
-    description: The download speed limit (in Kbit/s)
+    description: The upload speed limit (in Kbit/s)
     required: false
     default: "3300"
   latency:
