@@ -63,11 +63,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         width: '100%',
     },
-    leftButtonWrapper: {
+    leftButton: {
         flex: 1,
         marginRight: 5,
     },
-    rightButtonWrapper: {
+    rightButton: {
         flex: 1,
         marginLeft: 5,
     },
@@ -198,23 +198,21 @@ const ReviewApp = ({
                                 {intl.formatMessage({id: 'rate.subtitle', defaultMessage: 'Let us know what you think.'})}
                             </Text>
                             <View style={styles.buttonsWrapper}>
-                                <View style={styles.leftButtonWrapper}>
-                                    <Button
-                                        theme={theme}
-                                        size={'lg'}
-                                        emphasis={'tertiary'}
-                                        onPress={onPressNeedsWork}
-                                        text={intl.formatMessage({id: 'rate.button.needs_work', defaultMessage: 'Needs work'})}
-                                    />
-                                </View>
-                                <View style={styles.rightButtonWrapper}>
-                                    <Button
-                                        theme={theme}
-                                        size={'lg'}
-                                        onPress={onPressYes}
-                                        text={intl.formatMessage({id: 'rate.button.yes', defaultMessage: 'Love it!'})}
-                                    />
-                                </View>
+                                <Button
+                                    theme={theme}
+                                    size={'lg'}
+                                    emphasis={'tertiary'}
+                                    onPress={onPressNeedsWork}
+                                    text={intl.formatMessage({id: 'rate.button.needs_work', defaultMessage: 'Needs work'})}
+                                    buttonContainerStyle={styles.leftButton}
+                                />
+                                <Button
+                                    theme={theme}
+                                    size={'lg'}
+                                    onPress={onPressYes}
+                                    text={intl.formatMessage({id: 'rate.button.yes', defaultMessage: 'Love it!'})}
+                                    buttonContainerStyle={styles.rightButton}
+                                />
                             </View>
                             {hasAskedBefore && (
                                 <TouchableWithoutFeedback
