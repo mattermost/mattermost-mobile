@@ -22,7 +22,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'space-between',
         backgroundColor: theme.centerChannelBg,
         paddingHorizontal: 12,
-        paddingTop: 11,
+        paddingVertical: 10,
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.08),
         borderTopWidth: 1,
         flexDirection: 'row',
@@ -73,7 +73,7 @@ const EmojiPickerCategoryBar: React.FC<Props> = ({
 
     return (
         <View
-            style={styles.container}
+            style={[styles.container]}
             testID='emoji_picker.category_bar'
         >
             {handleToggleEmojiPicker && deleteCharFromCurrentCursorPosition &&
