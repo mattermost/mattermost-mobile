@@ -280,6 +280,10 @@ export default function DraftInput({
 
         if (Platform.OS === 'android') {
             const backAction = () => {
+                inputRef.current?.setNativeProps({
+                    showSoftInputOnFocus: true,
+                });
+                inputRef.current?.blur();
                 if (isEmojiPickerOpen) {
                     setIsEmojiPickerOpen(false);
                     setIsEmojiSearchFocused(false);
