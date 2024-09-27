@@ -157,6 +157,7 @@ const ChannelHeader = ({
         // When calls is enabled, we need space to move the "Copy Link" from a button to an option
         const items = callsAvailable && !isDMorGM ? 3 : 2;
         const height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
+        DeviceEventEmitter.emit(Events.CLOSE_EMOJI_PICKER);
 
         const renderContent = () => {
             return (

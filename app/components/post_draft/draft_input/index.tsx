@@ -4,7 +4,7 @@
 import GraphemeSplitter from 'grapheme-splitter';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, Platform, ScrollView, View, Keyboard, DeviceEventEmitter, BackHandler, type NativeEventSubscription} from 'react-native';
+import {type LayoutChangeEvent, Platform, ScrollView, View, DeviceEventEmitter, BackHandler, type NativeEventSubscription} from 'react-native';
 import Animated, {Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -188,7 +188,6 @@ export default function DraftInput({
     }, []);
 
     const height = useSharedValue(EMOJI_PICKER_HEIGHT);
-    const preventClosingEmojiPickerOnBlur = useRef(false);
 
     const handleToggleEmojiPicker = useCallback(() => {
         if (!isEmojiPickerOpen) {
@@ -200,28 +199,12 @@ export default function DraftInput({
                     runOnJS(setIsEmojiPickerOpen)(true);
                 }
             });
-            inputRef.current?.setNativeProps({
-                showSoftInputOnFocus: false,
-            });
-
-            // OnBlur should close the emoji picker, however Keyboard.dismiss() also calls onBlur method
-            // so to prevent closing on emoji picker setting a flag to true
-            preventClosingEmojiPickerOnBlur.current = true;
-            setIsEmojiSearchFocused(false);
-            Keyboard.dismiss();
-            setTimeout(() => {
-                // Setting a flag to false after 300ms to allow the emoji picker to close on blur.
-                preventClosingEmojiPickerOnBlur.current = false;
-            }, 300);
-
-            // To make sure the state is updated before focusing
-            setTimeout(() => {
-                focus();
-            }, 0);
+            inputRef.current?.blur();
             return;
         }
         if (Platform.OS === 'android' && isEmojiPickerOpen) {
             setIsEmojiPickerOpen(false);
+            setIsEmojiSearchFocused(false);
             inputRef.current?.setNativeProps({
                 showSoftInputOnFocus: true,
             });
@@ -240,6 +223,7 @@ export default function DraftInput({
         });
         setTimeout(() => {
             setIsEmojiPickerOpen(false);
+            setIsEmojiSearchFocused(false);
         }, 0);
         inputRef.current?.setNativeProps({
             showSoftInputOnFocus: true,
@@ -249,42 +233,30 @@ export default function DraftInput({
 
     useEffect(() => {
         const closeEmojiPickerEvent = DeviceEventEmitter.addListener(Events.CLOSE_EMOJI_PICKER, () => {
-            // eslint-disable-next-line max-nested-callbacks
-            setTimeout(() => {
-                if (isEmojiPickerOpen && !preventClosingEmojiPickerOnBlur.current) {
-                    height.value = withTiming(0, {
-                        duration: 80,
-                        easing: Easing.in(Easing.cubic),
-                    });
-                    setIsEmojiPickerOpen(false);
-                    inputRef.current?.setNativeProps({
-                        showSoftInputOnFocus: true,
-                    });
-                }
-            }, 100);
+            if (isEmojiPickerOpen || isEmojiSearchFocused) {
+                height.value = withTiming(0, {
+                    duration: 80,
+                    easing: Easing.in(Easing.cubic),
+                });
+                setIsEmojiPickerOpen(false);
+                setIsEmojiSearchFocused(false);
+                inputRef.current?.setNativeProps({
+                    showSoftInputOnFocus: true,
+                });
+            }
         });
 
         return () => {
             closeEmojiPickerEvent.remove();
         };
-    }, [isEmojiPickerOpen]);
-
-    useEffect(() => {
-        if (isEmojiSearchFocused) {
-            preventClosingEmojiPickerOnBlur.current = true;
-        }
-    }, [isEmojiSearchFocused]);
+    }, [isEmojiPickerOpen, isEmojiSearchFocused, height]);
 
     useEffect(() => {
         let backHandler: NativeEventSubscription | undefined;
 
         if (Platform.OS === 'android') {
             const backAction = () => {
-                inputRef.current?.setNativeProps({
-                    showSoftInputOnFocus: true,
-                });
-                inputRef.current?.blur();
-                if (isEmojiPickerOpen) {
+                if (isEmojiPickerOpen || isEmojiSearchFocused) {
                     setIsEmojiPickerOpen(false);
                     setIsEmojiSearchFocused(false);
                     return true;
@@ -298,7 +270,7 @@ export default function DraftInput({
         return () => {
             backHandler?.remove();
         };
-    }, [isEmojiPickerOpen]);
+    }, [isEmojiPickerOpen, isEmojiSearchFocused]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -398,7 +370,6 @@ export default function DraftInput({
                         setIsFocused={setIsFocused}
                         isEmojiPickerOpen={isEmojiPickerOpen}
                         handleToggleEmojiPicker={handleToggleEmojiPicker}
-                        preventClosingEmojiPickerOnBlur={preventClosingEmojiPickerOnBlur}
                     />
                     <Uploads
                         currentUserId={currentUserId}
