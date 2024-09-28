@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-nested-callbacks */
 
 import GraphemeSplitter from 'grapheme-splitter';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
@@ -161,6 +162,12 @@ export default function DraftInput({
         updateValue((v) => {
             const name = emojiName.trim();
             const currentCursorPosition = cursorPositionRef.current;
+
+            // Cursor position is not updated by default on Android, so we need to update it manually
+            if (Platform.OS === 'android') {
+                // Updating curso position by 2 to account for the added emoji as emoji takes 2 characters
+                updateCursorPosition((prev) => prev + 2);
+            }
             let unicode;
             if (EmojiIndicesByAlias.get(name)) {
                 const emoji = Emojis[EmojiIndicesByAlias.get(name)!];
@@ -170,7 +177,6 @@ export default function DraftInput({
                 unicode = emoji.image;
                 if (unicode) {
                     const codeArray = unicode.split('-');
-                    // eslint-disable-next-line max-nested-callbacks
                     const code = codeArray.reduce((acc: string, c: string) => {
                         return acc + String.fromCodePoint(parseInt(c, 16));
                     }, '');
@@ -179,7 +185,7 @@ export default function DraftInput({
             }
             return `${v.slice(0, currentCursorPosition)} :${emojiName}: ${v.slice(currentCursorPosition)}`;
         });
-    }, [updateValue]);
+    }, [updateValue, cursorPositionRef.current]);
 
     const inputRef = useRef<PasteInputRef>();
 
@@ -205,16 +211,8 @@ export default function DraftInput({
         if (Platform.OS === 'android' && isEmojiPickerOpen) {
             setIsEmojiPickerOpen(false);
             setIsEmojiSearchFocused(false);
-            inputRef.current?.setNativeProps({
-                showSoftInputOnFocus: true,
-            });
-
             inputRef.current?.blur();
-
-            // To make sure the state is updated before focusing
-            setTimeout(() => {
-                focus();
-            }, 0);
+            focus();
             return;
         }
         height.value = withTiming(0, {
@@ -225,9 +223,6 @@ export default function DraftInput({
             setIsEmojiPickerOpen(false);
             setIsEmojiSearchFocused(false);
         }, 0);
-        inputRef.current?.setNativeProps({
-            showSoftInputOnFocus: true,
-        });
         focus();
     }, [focus, height, isEmojiPickerOpen]);
 
