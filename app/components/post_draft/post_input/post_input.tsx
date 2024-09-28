@@ -149,9 +149,6 @@ export default function PostInput({
     };
 
     const onBlur = useCallback(() => {
-        // if (!preventClosingEmojiPickerOnBlur.current) {
-        //     DeviceEventEmitter.emit(Events.CLOSE_EMOJI_PICKER);
-        // }
         updateDraftMessage(serverUrl, channelId, rootId, value);
         setIsFocused(false);
     }, [channelId, rootId, value, setIsFocused]);
