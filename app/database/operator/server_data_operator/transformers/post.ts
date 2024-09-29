@@ -112,6 +112,7 @@ export const transformDraftRecord = ({action, database, value}: TransformerArgs)
         draft.channelId = raw?.channel_id ?? '';
         draft.files = raw?.files ?? emptyFileInfo;
         draft.metadata = raw?.metadata ?? emptyPostMetadata;
+        draft.updateAt = raw.update_at;
     };
 
     return prepareBaseRecord({
