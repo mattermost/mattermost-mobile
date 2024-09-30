@@ -37,7 +37,7 @@ const AnimatedNumber = ({
 
     const [numberHeight, setNumberHeight] = React.useState(0);
     const animationRef = React.useRef<Animated.Value[] | null>(null);
-    if (animationRef.current === null) {
+    if (animationRef.current === null || animationRef.current.length !== numberStringToDigitsArray.length) {
         animationRef.current = numberStringToDigitsArray.map((__, index) => {
             if (typeof prevNumberersArr[index] !== 'number' || numberHeight === 0) {
                 return new Animated.Value(0);
