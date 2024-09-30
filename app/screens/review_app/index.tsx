@@ -63,6 +63,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         width: '100%',
     },
+    leftButton: {
+        flex: 1,
+        marginRight: 5,
+    },
+    rightButton: {
+        flex: 1,
+        marginLeft: 5,
+    },
     close: {
         justifyContent: 'center',
         height: 44,
@@ -82,14 +90,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.72),
         marginBottom: 24,
         textAlign: 'center',
-    },
-    leftButton: {
-        flex: 1,
-        marginRight: 5,
-    },
-    rightButton: {
-        flex: 1,
-        marginLeft: 5,
     },
     dontAsk: {
         ...typography('Body', 75, 'SemiBold'),
@@ -204,14 +204,14 @@ const ReviewApp = ({
                                     emphasis={'tertiary'}
                                     onPress={onPressNeedsWork}
                                     text={intl.formatMessage({id: 'rate.button.needs_work', defaultMessage: 'Needs work'})}
-                                    backgroundStyle={styles.leftButton}
+                                    buttonContainerStyle={styles.leftButton}
                                 />
                                 <Button
                                     theme={theme}
                                     size={'lg'}
                                     onPress={onPressYes}
                                     text={intl.formatMessage({id: 'rate.button.yes', defaultMessage: 'Love it!'})}
-                                    backgroundStyle={styles.rightButton}
+                                    buttonContainerStyle={styles.rightButton}
                                 />
                             </View>
                             {hasAskedBefore && (
