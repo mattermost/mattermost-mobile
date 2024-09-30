@@ -36,34 +36,37 @@ const AnimatedNumber = ({
     const prevNumberersArr = Array.from(prevNumberString, Number);
 
     const [numberHeight, setNumberHeight] = React.useState(0);
-    const animations = React.useRef(
-        numberStringToDigitsArray.map((__, index) => {
+    const animationRef = React.useRef<Animated.Value[] | null>(null);
+    if (animationRef.current === null) {
+        animationRef.current = numberStringToDigitsArray.map((__, index) => {
             if (typeof prevNumberersArr[index] !== 'number' || numberHeight === 0) {
                 return new Animated.Value(0);
             }
 
             const animationHeight = -1 * (numberHeight * prevNumberersArr[index]);
             return new Animated.Value(animationHeight);
-        }),
-    ).current;
+        });
+    }
 
     const setButtonLayout = useCallback((e: LayoutChangeEvent) => {
         setNumberHeight(e.nativeEvent.layout.height);
     }, []);
 
     React.useEffect(() => {
-        animations.forEach((animation, index) => {
-            Animated.timing(animation, {
-                toValue: -1 * (numberHeight * numberStringToDigitsArray[index]),
-                duration: animationDuration || 1400,
-                useNativeDriver: true,
-                easing: easing || Easing.elastic(1.2),
-            }).start();
-        });
+        if (animationRef.current) {
+            animationRef.current.forEach((animation, index) => {
+                Animated.timing(animation, {
+                    toValue: -1 * (numberHeight * numberStringToDigitsArray[index]),
+                    duration: animationDuration || 1400,
+                    useNativeDriver: true,
+                    easing: easing || Easing.elastic(1.2),
+                }).start();
+            });
+        }
     }, [animateToNumber, animationDuration, fontStyle, numberHeight]);
 
     const getTranslateY = (index: number) => {
-        return animations[index];
+        return animationRef.current![index];
     };
 
     return (
