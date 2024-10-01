@@ -34,15 +34,13 @@ const AnimatedNumber = ({
 
     const [numberHeight, setNumberHeight] = React.useState(0);
     const animations = useMemo(() => {
+        if (numberHeight === 0) {
+            return [];
+        }
         const numberStringToDigitsArray = Array.from(animateToNumberString, Number);
         const prevNumberersArr = Array.from(prevNumberString, Number);
 
         return numberStringToDigitsArray.map((digit, index) => {
-            // Check if the previous number is not a number or height is uninitialized
-            if (typeof prevNumberersArr[index] !== 'number' || numberHeight === 0) {
-                return new Animated.Value(0);
-            }
-
             // Skip animation if the current and previous digits are the same
             if (prevNumberersArr[index] === digit) {
                 return new Animated.Value(-1 * (numberHeight * digit));
