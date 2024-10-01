@@ -73,8 +73,7 @@ const AnimatedNumber = ({
                     )}
                     {Array.from(animateToNumberString, Number).map((_, index) => (
                         <View
-                            // eslint-disable-next-line react/no-array-index-key
-                            key={index}
+                            key={`${index.toString()}`}
                             style={{height: numberHeight, overflow: 'hidden'}}
                         >
                             <Animated.View
@@ -86,9 +85,9 @@ const AnimatedNumber = ({
                                     ],
                                 }}
                             >
-                                {NUMBERS.map((number) => (
+                                {NUMBERS.map((number, i) => (
                                     <View
-                                        key={number}
+                                        key={`${i.toString()}`}
                                         style={{flexDirection: 'row'}}
                                     >
                                         <Text style={[fontStyle, {height: numberHeight}]}>
