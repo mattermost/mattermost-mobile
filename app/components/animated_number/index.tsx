@@ -71,7 +71,7 @@ const AnimatedNumber = ({
                     {animateToNumber < 0 && (
                         <Text style={[fontStyle, {height: numberHeight}]}>{'-'}</Text>
                     )}
-                    {Array.from(animateToNumberString, Number).map((digit, index) => (
+                    {Array.from(animateToNumberString, Number).map((_, index) => (
                         <View
                             // eslint-disable-next-line react/no-array-index-key
                             key={index}
@@ -86,13 +86,13 @@ const AnimatedNumber = ({
                                     ],
                                 }}
                             >
-                                {NUMBERS.map((num) => (
+                                {NUMBERS.map((number) => (
                                     <View
-                                        key={`${num}`}
+                                        key={number}
                                         style={{flexDirection: 'row'}}
                                     >
                                         <Text style={[fontStyle, {height: numberHeight}]}>
-                                            {num}
+                                            {number}
                                         </Text>
                                     </View>
                                 ))}
