@@ -34,31 +34,34 @@ const AnimatedNumber = ({
 
     const [numberHeight, setNumberHeight] = React.useState(0);
     const animations = useMemo(() => {
-        if (numberHeight === 0) {
-            return [];
-        }
         const numberStringToDigitsArray = Array.from(animateToNumberString, Number);
         const prevNumberersArr = Array.from(prevNumberString, Number);
 
+        if (numberHeight === 0) {
+            return numberStringToDigitsArray.map(() => new Animated.Value(0));
+        }
+
         return numberStringToDigitsArray.map((digit, index) => {
-            // Skip animation if the current and previous digits are the same
-            if (prevNumberersArr[index] === digit) {
+            const previousDigit = prevNumberersArr[index] ?? 0;
+
+            if (previousDigit === digit && prevNumberersArr.length === numberStringToDigitsArray.length) {
+                // skipping any animation by just returning the current "position"
                 return new Animated.Value(-1 * (numberHeight * digit));
             }
 
-            const prevHeight = -1 * (numberHeight * (prevNumberersArr[index] || 0));
+            const prevHeight = -1 * (numberHeight * previousDigit);
             const animation = new Animated.Value(prevHeight);
 
             Animated.timing(animation, {
                 toValue: -1 * (numberHeight * digit),
-                duration: animationDuration,
+                duration: animationDuration || 1400,
                 useNativeDriver: true,
                 easing: Easing.elastic(easing),
             }).start();
 
             return animation;
         });
-    }, [animateToNumberString, prevNumber, numberHeight, animationDuration, easing]);
+    }, [animateToNumberString, prevNumberString, numberHeight, animationDuration, easing]);
 
     const setButtonLayout = useCallback((e: LayoutChangeEvent) => {
         setNumberHeight(e.nativeEvent.layout.height);
