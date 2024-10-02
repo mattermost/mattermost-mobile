@@ -702,6 +702,8 @@
   "mobile.no_results_with_term.files": "\"{term}\"没有匹配的文件",
   "mobile.no_results_with_term.messages": "\"{term}\"没有匹配的发现",
   "mobile.oauth.failed_to_login": "登入失败。请重试。",
+  "mobile.oauth.failed_to_open_link": "链接打开失败。请重试。",
+  "mobile.oauth.failed_to_open_link_no_browser": "链接打开失败。请确认设备上已安装浏览器。",
   "mobile.oauth.something_wrong.okButton": "好的",
   "mobile.oauth.success.description": "正在登录，请稍候…",
   "mobile.oauth.success.title": "验证成功",
