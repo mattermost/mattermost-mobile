@@ -118,6 +118,9 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
     };
 
     const onProgress = (progressData: OnProgressData) => {
+        if (hasPaused) {
+            return;
+        }
         const {currentTime, playableDuration} = progressData;
         setProgress(currentTime / playableDuration);
         loadTimeInMinutes(currentTime);
