@@ -40,6 +40,9 @@ const styles = StyleSheet.create({
     },
 });
 
+const START_CURSOR_VALUE = 0;
+const END_CURSOR_VALUE = 1;
+
 const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarProps) => {
     const theme = useTheme();
     const widthValue = useSharedValue(0);
@@ -49,8 +52,8 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
     const panGesture = Gesture.Pan().
         onChange((e) => {
             if (onSeek) {
-                const seekPosition = e.x / widthValue.value;
-                runOnJS(onSeek)(seekPosition);
+                const clampedSeekPosition = Math.max(START_CURSOR_VALUE, Math.min(END_CURSOR_VALUE, e.x / widthValue.value));
+                runOnJS(onSeek)(clampedSeekPosition);
             }
         });
 
@@ -58,8 +61,8 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
     const tapGesture = Gesture.Tap().
         onEnd((e) => {
             if (onSeek) {
-                const seekPosition = e.x / widthValue.value;
-                runOnJS(onSeek)(seekPosition);
+                const clampedSeekPosition = Math.max(START_CURSOR_VALUE, Math.min(END_CURSOR_VALUE, e.x / widthValue.value));
+                runOnJS(onSeek)(clampedSeekPosition);
             }
         });
 
