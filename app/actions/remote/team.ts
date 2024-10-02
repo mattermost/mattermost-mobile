@@ -383,14 +383,14 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string, user
 export async function handleTeamChange(serverUrl: string, teamId: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
-        return;
+        return {error: 'no database'};
     }
     const {database} = operator;
 
     const currentTeamId = await getCurrentTeamId(database);
 
     if (currentTeamId === teamId) {
-        return;
+        return {};
     }
 
     let channelId = '';
@@ -400,7 +400,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
         if (channelId) {
             await switchToChannelById(serverUrl, channelId, teamId);
             DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
-            return;
+            return {};
         }
     }
 
@@ -421,6 +421,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
 
     // Fetch Groups + GroupTeams
     fetchGroupsForTeamIfConstrained(serverUrl, teamId);
+    return {};
 }
 
 export async function handleKickFromTeam(serverUrl: string, teamId: string) {
@@ -428,7 +429,7 @@ export async function handleKickFromTeam(serverUrl: string, teamId: string) {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentTeamId = await getCurrentTeamId(database);
         if (currentTeamId !== teamId) {
-            return;
+            return {};
         }
 
         const currentServer = await getActiveServerUrl();
@@ -444,9 +445,12 @@ export async function handleKickFromTeam(serverUrl: string, teamId: string) {
             await handleTeamChange(serverUrl, teamToJumpTo);
         }
 
+        return {};
+
         // Resetting to team select handled by the home screen
     } catch (error) {
         logDebug('Failed to kick user from team', error);
+        return {error};
     }
 }
 
