@@ -2,8 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {switchMap, of} from 'rxjs';
 
-import {observeChannel} from '@app/queries/servers/channel';
+import {observeChannel, observeChannelMembers} from '@app/queries/servers/channel';
+import {observeUser} from '@app/queries/servers/user';
 
 import DraftPost from './draft_post';
 
@@ -14,8 +16,29 @@ type Props = {
 } & WithDatabaseArgs;
 
 const enhance = withObservables(['channelId'], ({channelId, database}: Props) => {
+    const channel = observeChannel(database, channelId);
+    const sendToUser = channel.pipe(
+        switchMap((channelData) => {
+            if (channelData?.type === 'D') {
+                // Fetch the channel member for direct message channels
+                return observeChannelMembers(database, channelId).pipe(
+                    // eslint-disable-next-line max-nested-callbacks
+                    switchMap((members) => {
+                        if (members.length > 0) {
+                            const userId = members[0]?.userId;
+                            return observeUser(database, userId);
+                        }
+                        return of(undefined);
+                    }),
+                );
+            }
+            return of(undefined);
+        }),
+    );
+
     return {
-        channel: observeChannel(database, channelId),
+        channel,
+        sendToUser,
     };
 });
 
