@@ -181,6 +181,12 @@ lane :configure do
     json['ShowOnboarding'] = true
   end
 
+  # Configure the auth schemes
+  auth_scheme = ENV['APP_AUTH_SCHEME'].to_s.empty? ? 'mmauth' : ENV['APP_AUTH_SCHEME']
+  auth_scheme_dev = ENV['APP_AUTH_SCHEME_BETA'].to_s.empty? ? 'mmauthbeta' : ENV['APP_AUTH_SCHEME_BETA']
+  json["AuthUrlScheme"] = auth_scheme.end_with?('://') ? auth_scheme : "#{auth_scheme}://"
+  json["AuthUrlSchemeDev"] = auth_scheme_dev.end_with?('://') ? auth_scheme_dev : "#{auth_scheme_dev}://"
+
   # Save the config.json file
   save_json_as_file('../dist/assets/config.json', json)
 
@@ -473,7 +479,8 @@ platform :ios do
 
     # Set the deep link prefix
     app_scheme = ENV['APP_SCHEME'] || 'mattermost'
-    app_auth_scheme = ENV['BETA_BUILD'] == 'true' ? 'mmauthbeta' : 'mmauth'
+    app_auth_scheme = get_auth_scheme
+    UI.success "Update auth scheme to #{app_auth_scheme} #{ENV['BETA_BUILD']} authScheme #{ENV['APP_AUTH_SCHEME']} beta #{ENV['APP_AUTH_SCHEME_BETA']}"
     update_info_plist(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
@@ -748,13 +755,14 @@ platform :android do
       new_string: "scheme=\'#{app_scheme}\'"
     )
 
-    if ENV['BETA_BUILD'] != 'true'
-      find_replace_string(
-          path_to_file: "./android/app/src/main/AndroidManifest.xml",
-          old_string: 'scheme="mmauthbeta"',
-          new_string: 'scheme="mmauth"',
-      )
-    end
+    
+    app_auth_scheme = get_auth_scheme
+
+    find_replace_string(
+        path_to_file: "./android/app/src/main/AndroidManifest.xml",
+        old_string: 'scheme="mmauthbeta"',
+        new_string: "scheme=\"#{app_auth_scheme}\"",
+    )
 
     helpers_dir = './android/app/src/main/java/com/mattermost/helpers/'
     beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
@@ -918,6 +926,14 @@ platform :android do
       sh "mv #{aab} #{new_aab_path}"
       UI.message("AAB PATH \"#{new_aab_path}\"")
     end
+  end
+end
+
+def get_auth_scheme
+  if ENV['BETA_BUILD'] == 'true'
+    ENV['APP_AUTH_SCHEME_BETA'].to_s.empty? ? 'mmauthbeta' : ENV['APP_AUTH_SCHEME_BETA']
+  else
+    ENV['APP_AUTH_SCHEME'].to_s.empty? ? 'mmauth' : ENV['APP_AUTH_SCHEME']
   end
 end
 
