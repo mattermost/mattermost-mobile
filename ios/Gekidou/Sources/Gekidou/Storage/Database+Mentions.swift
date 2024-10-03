@@ -41,10 +41,10 @@ extension Database {
     
     public func resetMyChannelMentions(_ serverUrl: String, _ channelId: String) throws {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let idCol = Expression<String>("id")
-            let mentionsCol = Expression<Int>("mentions_count")
-            let msgCol = Expression<Int>("message_count")
-            let isUnreadCol = Expression<Bool>("is_unread")
+            let idCol = SQLite.Expression<String>("id")
+            let mentionsCol = SQLite.Expression<Int>("mentions_count")
+            let msgCol = SQLite.Expression<Int>("message_count")
+            let isUnreadCol = SQLite.Expression<Bool>("is_unread")
             if hasMyChannel(db, channelId: channelId) {
                 let updateQuery = myChannelTable
                     .where(idCol == channelId)
@@ -59,9 +59,9 @@ extension Database {
     
     public func resetThreadMentions(_ serverUrl: String, _ rootId: String) throws {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let idCol = Expression<String>("id")
-            let mentionsCol = Expression<Int>("unread_mentions")
-            let msgCol = Expression<Int>("unread_replies")
+            let idCol = SQLite.Expression<String>("id")
+            let mentionsCol = SQLite.Expression<Int>("unread_mentions")
+            let msgCol = SQLite.Expression<Int>("unread_replies")
             if hasThread(db, threadId: rootId) {
                 let updateQuery = threadTable
                     .where(idCol == rootId)

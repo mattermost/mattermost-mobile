@@ -3,7 +3,7 @@ import SQLite
 
 extension Database {
     public func hasThread(_ db: Connection, threadId: String) -> Bool {
-        let idCol = Expression<String>("id")
+        let idCol = SQLite.Expression<String>("id")
         let query = threadTable.where(idCol == threadId)
         if let _ = try? db.pluck(query) {
             return true
@@ -13,7 +13,7 @@ extension Database {
     }
     
     public func getTeamThreadSync(_ db: Connection, teamId: String) -> Row? {
-        let idCol = Expression<String>("id")
+        let idCol = SQLite.Expression<String>("id")
         let query = teamThreadsSyncTable.where(idCol == teamId)
         return try? db.pluck(query)
     }
@@ -21,7 +21,7 @@ extension Database {
     public func handleThreads(_ db: Connection, _ threads: [PostThread], forTeamId teamId: String) throws {
         var teamIds = [String]()
         if teamId.isEmpty {
-            let idCol = Expression<String>("id")
+            let idCol = SQLite.Expression<String>("id")
             if let myTeams = try? db.prepare(myTeamTable.select(idCol)) {
                 if let ids = try? myTeams.map({ try $0.get(idCol) }) {
                     teamIds.append(contentsOf: ids)
@@ -55,13 +55,13 @@ extension Database {
     }
     
     private func insertThread(_ db: Connection, _ thread: PostThread) throws {
-        let id = Expression<String>("id")
-        let isFollowing = Expression<Bool>("is_following")
-        let lastViewedAt = Expression<Double>("last_viewed_at")
-        let lastReplyAt = Expression<Double>("last_reply_at")
-        let unreadReplies = Expression<Int>("unread_replies")
-        let unreadMentions = Expression<Int>("unread_mentions")
-        let replyCount = Expression<Int>("reply_count")
+        let id = SQLite.Expression<String>("id")
+        let isFollowing = SQLite.Expression<Bool>("is_following")
+        let lastViewedAt = SQLite.Expression<Double>("last_viewed_at")
+        let lastReplyAt = SQLite.Expression<Double>("last_reply_at")
+        let unreadReplies = SQLite.Expression<Int>("unread_replies")
+        let unreadMentions = SQLite.Expression<Int>("unread_mentions")
+        let replyCount = SQLite.Expression<Int>("reply_count")
         
         let setter: [Setter] = [
             id <- thread.id,
@@ -77,13 +77,13 @@ extension Database {
     }
     
     private func updateThread(_ db: Connection, _ thread: PostThread) throws {
-        let id = Expression<String>("id")
-        let isFollowing = Expression<Bool>("is_following")
-        let lastViewedAt = Expression<Double>("last_viewed_at")
-        let lastReplyAt = Expression<Double>("last_reply_at")
-        let unreadReplies = Expression<Int>("unread_replies")
-        let unreadMentions = Expression<Int>("unread_mentions")
-        let replyCount = Expression<Int>("reply_count")
+        let id = SQLite.Expression<String>("id")
+        let isFollowing = SQLite.Expression<Bool>("is_following")
+        let lastViewedAt = SQLite.Expression<Double>("last_viewed_at")
+        let lastReplyAt = SQLite.Expression<Double>("last_reply_at")
+        let unreadReplies = SQLite.Expression<Int>("unread_replies")
+        let unreadMentions = SQLite.Expression<Int>("unread_mentions")
+        let replyCount = SQLite.Expression<Int>("reply_count")
         
         let setter: [Setter] = [
             isFollowing <- thread.isFollowing,
@@ -98,7 +98,7 @@ extension Database {
     }
     
     private func syncParticipants(_ db: Connection, _ thread: PostThread) throws {
-        let threadIdCol = Expression<String>("thread_id")
+        let threadIdCol = SQLite.Expression<String>("thread_id")
         let deletePreviousThreadParticipants = threadParticipantTable.where(threadIdCol == thread.id).delete()
         try db.run(deletePreviousThreadParticipants)
         
@@ -109,9 +109,9 @@ extension Database {
     }
     
     private func handleThreadInTeam(_ db: Connection, _ thread: PostThread, forTeamId teamId: String) throws {
-        let idCol = Expression<String>("id")
-        let threadIdCol = Expression<String>("thread_id")
-        let teamIdCol = Expression<String>("team_id")
+        let idCol = SQLite.Expression<String>("id")
+        let threadIdCol = SQLite.Expression<String>("thread_id")
+        let teamIdCol = SQLite.Expression<String>("team_id")
         let existing = try? db.pluck(threadsInTeamTable.where(threadIdCol == thread.id && teamIdCol == teamId))
         if existing == nil {
             let setter: [Setter] = [
@@ -138,9 +138,9 @@ extension Database {
     }
     
     private func insertTeamThreadSync(_ db: Connection, forTeamId teamId: String, starting earliest: Double, ending latest: Double) throws {
-        let idCol = Expression<String>("id")
-        let earliestCol = Expression<Double>("earliest")
-        let latestCol = Expression<Double>("latest")
+        let idCol = SQLite.Expression<String>("id")
+        let earliestCol = SQLite.Expression<Double>("earliest")
+        let latestCol = SQLite.Expression<Double>("latest")
         
         let setter: [Setter] = [
             idCol <- teamId,
@@ -152,9 +152,9 @@ extension Database {
     }
     
     private func updateTeamThreadSync(_ db: Connection, forTeamId teamId: String, starting earliest: Double, ending latest: Double, currentRow existing: Row) throws {
-        let idCol = Expression<String>("id")
-        let earliestCol = Expression<Double>("earliest")
-        let latestCol = Expression<Double>("latest")
+        let idCol = SQLite.Expression<String>("id")
+        let earliestCol = SQLite.Expression<Double>("earliest")
+        let latestCol = SQLite.Expression<Double>("latest")
 
         let existingEarliest = (try? existing.get(earliestCol)) ?? 0
         let storeEarliest = min(earliest, existingEarliest)
@@ -171,9 +171,9 @@ extension Database {
     private func createThreadParticipantSetters(from thread: PostThread) -> [[Setter]] {
         var participantSetters = [[Setter]]()
 
-        let id = Expression<String>("id")
-        let userId = Expression<String>("user_id")
-        let threadId = Expression<String>("thread_id")
+        let id = SQLite.Expression<String>("id")
+        let userId = SQLite.Expression<String>("user_id")
+        let threadId = SQLite.Expression<String>("thread_id")
         
         for p in thread.participants {
             var participantSetter = [Setter]()

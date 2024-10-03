@@ -4,9 +4,9 @@ import SQLite
 extension Database {
     public func queryCategoryId(inTeamId teamId: String, type: String, forServerUrl serverUrl: String) -> String? {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let idCol = Expression<String>("id")
-            let teamIdCol = Expression<String>("team_id")
-            let typeCol = Expression<String>("type")
+            let idCol = SQLite.Expression<String>("id")
+            let teamIdCol = SQLite.Expression<String>("team_id")
+            let typeCol = SQLite.Expression<String>("type")
             let query = categoryTable.where(teamIdCol == teamId && typeCol == type)
             if let result = try? db.pluck(query) {
                 return try? result.get(idCol)
@@ -18,9 +18,9 @@ extension Database {
     
     public func queryCategoryChannelId(inCategoryId categoryId: String, channelId: String, forServerUrl serverUrl: String) -> String? {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let idCol = Expression<String>("id")
-            let categoryIdCol = Expression<String>("category_id")
-            let channelIdCol = Expression<String>("channel_id")
+            let idCol = SQLite.Expression<String>("id")
+            let categoryIdCol = SQLite.Expression<String>("category_id")
+            let channelIdCol = SQLite.Expression<String>("channel_id")
             let query = categoryChannelTable.where(categoryIdCol == categoryId && channelIdCol == channelId)
             if let result = try? db.pluck(query) {
                 return try? result.get(idCol)
@@ -38,7 +38,7 @@ extension Database {
     }
     
     public func insertChannelToDefaultCategory(_ db: Connection, _ categoryChannels: [CategoryChannel]) throws {
-        let categoryId = Expression<String>("category_id")
+        let categoryId = SQLite.Expression<String>("category_id")
         for cc in categoryChannels {
             let count = (try? db.scalar(categoryChannelTable.where(categoryId == cc.categoryId).count)) ?? 0
             let setter = createCategoryChannelsSetter(from: cc, index: count > 0 ? count + 1 : 0)
@@ -47,14 +47,14 @@ extension Database {
     }
     
     private func createCategoriesSetter(from categories: [Category]) -> [[Setter]] {
-        let id = Expression<String>("id")
-        let collapsed = Expression<Bool>("collapsed")
-        let displayName = Expression<String>("display_name")
-        let muted = Expression<Bool>("muted")
-        let sortOrder = Expression<Int>("sort_order")
-        let sorting = Expression<String>("sorting")
-        let teamId = Expression<String>("team_id")
-        let type = Expression<String>("type")
+        let id = SQLite.Expression<String>("id")
+        let collapsed = SQLite.Expression<Bool>("collapsed")
+        let displayName = SQLite.Expression<String>("display_name")
+        let muted = SQLite.Expression<Bool>("muted")
+        let sortOrder = SQLite.Expression<Int>("sort_order")
+        let sorting = SQLite.Expression<String>("sorting")
+        let teamId = SQLite.Expression<String>("team_id")
+        let type = SQLite.Expression<String>("type")
         
         var setters = [[Setter]]()
         for category in categories {
@@ -74,10 +74,10 @@ extension Database {
     }
     
     private func createCategoryChannelsSetter(from categories: [Category]) -> [[Setter]] {
-        let id = Expression<String>("id")
-        let categoryId = Expression<String>("category_id")
-        let channelId = Expression<String>("channel_id")
-        let sortOrder = Expression<Int>("sort_order")
+        let id = SQLite.Expression<String>("id")
+        let categoryId = SQLite.Expression<String>("category_id")
+        let channelId = SQLite.Expression<String>("channel_id")
+        let sortOrder = SQLite.Expression<Int>("sort_order")
         
         var setters = [[Setter]]()
         for category in categories {
@@ -95,10 +95,10 @@ extension Database {
     }
     
     private func createCategoryChannelsSetter(from categoryChannel: CategoryChannel, index: Int = 0) -> [Setter] {
-        let id = Expression<String>("id")
-        let categoryId = Expression<String>("category_id")
-        let channelId = Expression<String>("channel_id")
-        let sortOrder = Expression<Int>("sort_order")
+        let id = SQLite.Expression<String>("id")
+        let categoryId = SQLite.Expression<String>("category_id")
+        let channelId = SQLite.Expression<String>("channel_id")
+        let sortOrder = SQLite.Expression<Int>("sort_order")
         
         var setter = [Setter]()
         setter.append(id <- categoryChannel.id)

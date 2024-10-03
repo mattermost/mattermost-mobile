@@ -76,11 +76,11 @@ RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(getWindowDimensions, NSDictionary*, window
     return [wrapper getWindowDimensions];
 }
 
-RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(getHasRegisteredLoad) {
-    return [wrapper isRunningInSplitView];
+RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(getHasRegisteredLoad, NSDictionary*, getLoad) {
+    return [wrapper getHasRegisteredLoad];
 }
 
-RCT_REMAP_METHOD(setHasRegisteredLoad) {
+RCT_REMAP_METHOD(setHasRegisteredLoad, setLoad) {
     [wrapper setHasRegisteredLoad];
 }
 
@@ -174,12 +174,12 @@ RCT_EXPORT_METHOD(saveFile:(NSString *)filePath
     return [wrapper getWindowDimensions];
 }
 
-- (Bool)getHasRegisteredLoad {
-    return [wrapper getHasRegisteredLoad]
+- (NSDictionary *)getHasRegisteredLoad {
+    return [wrapper getHasRegisteredLoad];
 }
 
 - (void)setHasRegisteredLoad {
-    [wrapper setHasRegisteredLoad]
+    [wrapper setHasRegisteredLoad];
 }
 
 - (void)lockPortrait {
