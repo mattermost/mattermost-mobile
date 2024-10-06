@@ -22,6 +22,7 @@ type Props = {
     createAt: number | string | Date;
     isMilitaryTime: boolean;
     theme: Theme;
+    isEphemeral?: boolean;
     user?: UserModel;
 }
 
@@ -39,18 +40,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         header: {
             flex: 1,
             flexDirection: 'row',
+            marginTop: 10,
+        },
+        timeContainer: {
+            flex: 1,
+            marginTop: 5,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 5,
         },
         time: {
             color: theme.centerChannelColor,
-            marginTop: 5,
             opacity: 0.5,
-            flex: 1,
             ...typography('Body', 75, 'Regular'),
         },
     };
 });
 
-const SystemHeader = ({isMilitaryTime, createAt, theme, user}: Props) => {
+const SystemHeader = ({isMilitaryTime, createAt, theme, user, isEphemeral}: Props) => {
     const styles = getStyleSheet(theme);
     const userTimezone = getUserTimezone(user);
 
@@ -64,13 +71,23 @@ const SystemHeader = ({isMilitaryTime, createAt, theme, user}: Props) => {
                     testID='post_header.display_name'
                 />
             </View>
-            <FormattedTime
-                timezone={userTimezone!}
-                isMilitaryTime={isMilitaryTime}
-                value={createAt}
-                style={styles.time}
-                testID='post_header.date_time'
-            />
+            <View style={styles.timeContainer}>
+                <FormattedTime
+                    timezone={userTimezone!}
+                    isMilitaryTime={isMilitaryTime}
+                    value={createAt}
+                    style={styles.time}
+                    testID='post_header.date_time'
+                />
+                {isEphemeral && (
+                    <FormattedText
+                        id='post_header.visible_message'
+                        defaultMessage='(Only visible to you)'
+                        style={styles.time}
+                        testID='post_header.visible_message'
+                    />
+                )}
+            </View>
         </View>
     );
 };
