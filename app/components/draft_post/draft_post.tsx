@@ -14,7 +14,6 @@ type Props = {
     channel: ChannelModel;
     sendToUser?: UserModel;
     draft: DraftModel;
-    currentUser: UserModel;
 }
 
 const style = StyleSheet.create({
@@ -27,8 +26,6 @@ const style = StyleSheet.create({
 const DraftPost: React.FC<Props> = ({
     channel,
     draft,
-
-    // currentUser,
     sendToUser,
 }) => {
     // const post: Post = {
@@ -57,13 +54,11 @@ const DraftPost: React.FC<Props> = ({
 
     return (
         <View style={style.container}>
-            {/* <Text>{channel.displayName}</Text>
-            <Text>{channel.type}</Text>
-            <Text>{draft.rootId ? 'In Thread' : 'Channel'}</Text>
-            */}
             <ChannelInfo
                 channel={channel}
                 sendToUser={sendToUser}
+                rootId={draft.rootId}
+                testID='draft_post.channel_info'
             />
             <Text>{draft.message}</Text>
         </View>

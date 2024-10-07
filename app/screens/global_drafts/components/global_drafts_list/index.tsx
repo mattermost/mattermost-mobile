@@ -7,7 +7,6 @@ import React from 'react';
 
 import {observeAllDrafts} from '@app/queries/servers/drafts';
 import {observeCurrentTeamId} from '@app/queries/servers/system';
-import {observeCurrentUser} from '@app/queries/servers/user';
 
 import GlobalDraftsList from './global_drafts_list';
 
@@ -23,11 +22,9 @@ type Props = {
 
 const enhanced = withObservables(['teamId'], ({database, teamId}: Props) => {
     const allDrafts = observeAllDrafts(database, teamId);
-    const currentUser = observeCurrentUser(database);
 
     return {
         allDrafts,
-        currentUser,
     };
 });
 

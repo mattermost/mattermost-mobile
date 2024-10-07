@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {type ReactNode} from 'react';
 import {Text, View} from 'react-native';
 
 import {General} from '@app/constants';
@@ -65,43 +65,64 @@ const ChannelInfo: React.FC<Props> = ({
     channel,
     sendToUser,
     updateAt = 'Yesterday',
-
-    // rootId,
-    // testID,
+    rootId,
+    testID,
 }) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isChannelTypeDM = channel.type === General.DM_CHANNEL;
 
+    let headerComponent: ReactNode = null;
+    const profileComponent = sendToUser ? <Avatar author={sendToUser}/> : (
+        <CompassIcon
+            color={changeOpacity(theme.centerChannelColor, 0.64)}
+            name='globe'
+            size={18}
+        />);
+
+    if (rootId) {
+        headerComponent = (
+            <View style={style.channelInfo}>
+                <FormattedText
+                    id='channel_info.thread_in'
+                    defaultMessage={'Thread in:'}
+                    style={style.displayName}
+                />
+                {profileComponent}
+            </View>
+        );
+    } else if (isChannelTypeDM) {
+        headerComponent = (
+            <View style={style.channelInfo}>
+                <FormattedText
+                    id='channel_info.to'
+                    defaultMessage={'To:'}
+                    style={style.displayName}
+                />
+                {profileComponent}
+            </View>
+        );
+    } else {
+        headerComponent = (
+            <View style={style.channelInfo}>
+                <FormattedText
+                    id='channel_info.in'
+                    defaultMessage={'In:'}
+                    style={style.displayName}
+                />
+                {profileComponent}
+            </View>
+        );
+    }
+
     return (
 
-        <View style={style.container}>
+        <View
+            style={style.container}
+            testID={testID}
+        >
             <View style={style.infoContainer}>
-                {!isChannelTypeDM &&
-                <View style={style.channelInfo}>
-                    <FormattedText
-                        id='channel_info.in'
-                        defaultMessage={'In:'}
-                        style={style.displayName}
-                    />
-                    <CompassIcon
-                        color={changeOpacity(theme.centerChannelColor, 0.64)}
-                        name='globe'
-                        size={18}
-                    />
-                </View>}
-                {isChannelTypeDM &&
-                <View style={style.channelInfo}>
-                    <FormattedText
-                        id='channel_info.to'
-                        defaultMessage={'To:'}
-                        style={style.displayName}
-                    />
-                    {sendToUser &&
-                    <Avatar
-                        author={sendToUser}
-                    />}
-                </View>}
+                {headerComponent}
                 <Text style={style.displayName}>
                     {channel.displayName}
                 </Text>
