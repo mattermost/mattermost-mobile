@@ -7,7 +7,7 @@ import {switchMap, of} from 'rxjs';
 import {observeChannel, observeChannelMembers} from '@app/queries/servers/channel';
 import {observeUser} from '@app/queries/servers/user';
 
-import DraftPost from './draft_post';
+import Drafts from './drafts';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -42,4 +42,4 @@ const enhance = withObservables(['channelId'], ({channelId, database}: Props) =>
     };
 });
 
-export default withDatabase(enhance(DraftPost));
+export default withDatabase(enhance(Drafts));

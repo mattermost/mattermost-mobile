@@ -4,7 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import DraftPost from '@app/components/draft_post/';
+import Drafts from '@app/components/drafts';
 
 import type DraftModel from '@typings/database/models/servers/draft';
 
@@ -19,7 +19,7 @@ const GlobalDraftsList: React.FC<Props> = ({
         <View>
             {allDrafts.map((draft) => {
                 return (
-                    <DraftPost
+                    <Drafts
                         key={draft.id}
                         channelId={draft.channelId}
                         draft={draft}

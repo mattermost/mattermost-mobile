@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
-import ChannelInfo from '../channel_info';
+import ChannelInfo from '@app/components/channel_info';
+import DraftPost from '@app/components/drafts/draft_post';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -23,7 +24,7 @@ const style = StyleSheet.create({
     },
 });
 
-const DraftPost: React.FC<Props> = ({
+const Drafts: React.FC<Props> = ({
     channel,
     draft,
     sendToUser,
@@ -60,9 +61,9 @@ const DraftPost: React.FC<Props> = ({
                 rootId={draft.rootId}
                 testID='draft_post.channel_info'
             />
-            <Text>{draft.message}</Text>
+            <DraftPost/>
         </View>
     );
 };
 
-export default DraftPost;
+export default Drafts;
