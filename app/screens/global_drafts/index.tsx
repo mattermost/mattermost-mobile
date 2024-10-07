@@ -84,7 +84,9 @@ const GlobalDrafts = ({componentId}: Props) => {
             </View>
             {!switchingTeam &&
             <View style={containerStyle}>
-                <GlobalDraftsList/>
+                <GlobalDraftsList
+                    location={Screens.GLOBAL_DRAFTS}
+                />
             </View>
             }
         </SafeAreaView>

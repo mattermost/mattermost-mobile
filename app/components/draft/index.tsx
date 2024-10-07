@@ -7,7 +7,7 @@ import {switchMap, of} from 'rxjs';
 import {observeChannel, observeChannelMembers} from '@app/queries/servers/channel';
 import {observeUser} from '@app/queries/servers/user';
 
-import Drafts from './drafts';
+import Drafts from './draft';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
