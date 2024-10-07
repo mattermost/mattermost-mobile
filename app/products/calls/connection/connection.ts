@@ -311,6 +311,7 @@ export async function newConnection(
                 title,
                 threadID: rootId,
                 av1Support,
+                dcSignaling: config.EnableDCSignaling,
             });
         }
     });
@@ -385,6 +386,7 @@ export async function newConnection(
         peer = new RTCPeer({
             iceServers: iceConfigs || [],
             logger,
+            dcSignaling: config.EnableDCSignaling,
         });
 
         collectICEStats();
@@ -410,7 +412,6 @@ export async function newConnection(
         peer.on('answer', sdpHandler);
 
         peer.on('candidate', (candidate) => {
-            logDebug(`calls: local candidate: ${JSON.stringify(candidate)}`);
             ws.send('ice', {
                 data: JSON.stringify(candidate),
             });
@@ -447,9 +448,6 @@ export async function newConnection(
         const msg = JSON.parse(data);
         if (!msg) {
             return;
-        }
-        if (msg.type !== 'ping') {
-            logDebug('calls: remote signal', data);
         }
         if (msg.type === 'answer' || msg.type === 'candidate' || msg.type === 'offer') {
             peer?.signal(data);
