@@ -18,6 +18,7 @@ import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
 import {logWarning} from '@utils/log';
 
 import SSOAuthentication from './sso_authentication';
+import SSOAuthenticationWithExternalBrowser from './sso_authentication_with_external_browser';
 
 import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -155,14 +156,28 @@ const SSO = ({
         theme,
     };
 
+    let authentication;
+    if (config.MobileExternalBrowser === 'true') {
+        authentication = (
+            <SSOAuthenticationWithExternalBrowser
+                {...props}
+                serverUrl={serverUrl!}
+            />
+        );
+    } else {
+        authentication = (
+            <SSOAuthentication
+                {...props}
+                serverUrl={serverUrl!}
+            />
+        );
+    }
+
     return (
         <View style={styles.flex}>
             <Background theme={theme}/>
             <AnimatedSafeArea style={[styles.flex, transform]}>
-                <SSOAuthentication
-                    {...props}
-                    serverUrl={serverUrl!}
-                />
+                {authentication}
             </AnimatedSafeArea>
         </View>
     );
