@@ -2,7 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {DeviceEventEmitter} from 'react-native';
 
+import {Events} from '@app/constants';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
@@ -45,17 +47,14 @@ export default function InputQuickAction({
             }
             return '/';
         });
+        DeviceEventEmitter.emit(Events.CLOSE_EMOJI_PICKER);
         focus();
     }, [inputType]);
 
-    const actionTestID = disabled ?
-        `${testID}.disabled` :
-        testID;
+    const actionTestID = disabled ? `${testID}.disabled` : testID;
     const style = getStyleSheet(theme);
     const iconName = inputType === 'at' ? inputType : 'slash-forward-box-outline';
-    const iconColor = disabled ?
-        changeOpacity(theme.centerChannelColor, 0.16) :
-        changeOpacity(theme.centerChannelColor, 0.64);
+    const iconColor = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
 
     return (
         <TouchableWithFeedback

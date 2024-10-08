@@ -43,6 +43,8 @@ type Props = {
     sendMessage: () => void;
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
     setIsFocused: (isFocused: boolean) => void;
+    isEmojiPickerOpen: boolean;
+    handleToggleEmojiPicker: () => void;
 }
 
 const showPasteFilesErrorDialog = (intl: IntlShape) => {
@@ -114,6 +116,8 @@ export default function PostInput({
     sendMessage,
     inputRef,
     setIsFocused,
+    isEmojiPickerOpen,
+    handleToggleEmojiPicker,
 }: Props) {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -152,6 +156,16 @@ export default function PostInput({
     const onFocus = useCallback(() => {
         setIsFocused(true);
     }, [setIsFocused]);
+
+    const onPressIn = useCallback(() => {
+        if (isEmojiPickerOpen) {
+            onFocus();
+            handleToggleEmojiPicker();
+        }
+    }, [
+        isEmojiPickerOpen,
+        handleToggleEmojiPicker,
+    ]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -324,6 +338,7 @@ export default function PostInput({
             onChangeText={handleTextChange}
             onFocus={onFocus}
             onPaste={onPaste}
+            onPressIn={onPressIn}
             onSelectionChange={handlePostDraftSelectionChanged}
             placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}

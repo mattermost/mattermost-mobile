@@ -3,14 +3,14 @@
 
 import {type KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import {type LayoutChangeEvent, StyleSheet, View, TouchableWithoutFeedback, DeviceEventEmitter} from 'react-native';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
@@ -114,6 +114,10 @@ const Channel = ({
 
     const showFloatingCallContainer = showJoinCallBanner || isInACall || showIncomingCalls;
 
+    const dispatchEmojiPickerCloseEvent = () => {
+        DeviceEventEmitter.emit(Events.CLOSE_EMOJI_PICKER);
+    };
+
     return (
         <FreezeScreen>
             <SafeAreaView
@@ -133,12 +137,18 @@ const Channel = ({
                 />
                 {shouldRender &&
                 <>
-                    <View style={[styles.flex, {marginTop}]}>
-                        <ChannelPostList
-                            channelId={channelId}
-                            nativeID={channelId}
-                        />
-                    </View>
+                    <TouchableWithoutFeedback
+                        onPress={dispatchEmojiPickerCloseEvent}
+                        delayPressIn={0}
+                    >
+                        <View style={[styles.flex, {marginTop}]}>
+
+                            <ChannelPostList
+                                channelId={channelId}
+                                nativeID={channelId}
+                            />
+                        </View>
+                    </TouchableWithoutFeedback>
                     <PostDraft
                         channelId={channelId}
                         keyboardTracker={postDraftRef}

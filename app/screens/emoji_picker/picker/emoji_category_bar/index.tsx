@@ -8,10 +8,11 @@ import {useTheme} from '@context/theme';
 import {selectEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import EmojiPickerCategoryBar from './emoji_picker_category_bar';
 import EmojiCategoryBarIcon from './icon';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
+    catergoryContainer: {
         justifyContent: 'space-between',
         backgroundColor: theme.centerChannelBg,
         height: 55,
@@ -25,9 +26,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     onSelect?: (index: number | undefined) => void;
+    handleToggleEmojiPicker?: () => void;
+    deleteCharFromCurrentCursorPosition?: () => void;
+    isEmojiPicker?: boolean;
 }
 
-const EmojiCategoryBar = ({onSelect}: Props) => {
+const EmojiCategoryBar = ({
+    onSelect,
+    handleToggleEmojiPicker,
+    deleteCharFromCurrentCursorPosition,
+    isEmojiPicker = false,
+}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const {currentIndex, icons} = useEmojiCategoryBar();
@@ -45,22 +54,32 @@ const EmojiCategoryBar = ({onSelect}: Props) => {
         return null;
     }
 
+    const iconCatergories = icons.map((icon, index) => (
+        <EmojiCategoryBarIcon
+            currentIndex={currentIndex}
+            key={icon.key}
+            icon={icon.icon}
+            index={index}
+            scrollToIndex={scrollToIndex}
+            theme={theme}
+        />
+    ));
+
     return (
-        <View
-            style={styles.container}
-            testID='emoji_picker.category_bar'
-        >
-            {icons.map((icon, index) => (
-                <EmojiCategoryBarIcon
-                    currentIndex={currentIndex}
-                    key={icon.key}
-                    icon={icon.icon}
-                    index={index}
-                    scrollToIndex={scrollToIndex}
-                    theme={theme}
-                />
-            ))}
-        </View>
+        <>
+            <EmojiPickerCategoryBar
+                isEmojiPicker={isEmojiPicker}
+                handleToggleEmojiPicker={handleToggleEmojiPicker}
+                deleteCharFromCurrentCursorPosition={deleteCharFromCurrentCursorPosition}
+                iconCatergories={iconCatergories}
+            />
+            {
+                !isEmojiPicker &&
+                <View style={styles.catergoryContainer}>
+                    {iconCatergories}
+                </View>
+            }
+        </>
     );
 };
 

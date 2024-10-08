@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, Text, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {getCallsConfig} from '@calls/state';
@@ -14,7 +14,7 @@ import NavigationHeader from '@components/navigation_header';
 import {ITEM_HEIGHT} from '@components/option_item';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {General, Screens} from '@constants';
+import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -132,6 +132,7 @@ const ChannelHeader = ({
                 break;
         }
 
+        DeviceEventEmitter.emit(Events.CLOSE_EMOJI_PICKER);
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
         const closeButtonId = 'close-channel-info';
 
@@ -156,6 +157,7 @@ const ChannelHeader = ({
         // When calls is enabled, we need space to move the "Copy Link" from a button to an option
         const items = callsAvailable && !isDMorGM ? 3 : 2;
         const height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
+        DeviceEventEmitter.emit(Events.CLOSE_EMOJI_PICKER);
 
         const renderContent = () => {
             return (

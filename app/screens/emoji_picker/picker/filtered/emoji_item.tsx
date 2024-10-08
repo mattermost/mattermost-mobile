@@ -6,11 +6,12 @@ import {Text, TouchableOpacity, View} from 'react-native';
 
 import Emoji from '@components/emoji';
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type TouchableEmojiProps = {
     name: string;
     onEmojiPress: (emojiName: string) => void;
+    shouldShowName?: boolean;
 }
 
 const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -20,8 +21,6 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: 8,
-            borderBottomWidth: 1,
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
             overflow: 'hidden',
         },
         emojiContainer: {
@@ -37,7 +36,11 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const EmojiTouchable = ({name, onEmojiPress}: TouchableEmojiProps) => {
+const EmojiTouchable = ({
+    name,
+    onEmojiPress,
+    shouldShowName = true,
+}: TouchableEmojiProps) => {
     const theme = useTheme();
     const style = getStyleSheetFromTheme(theme);
 
@@ -52,10 +55,10 @@ const EmojiTouchable = ({name, onEmojiPress}: TouchableEmojiProps) => {
                 <Emoji
                     emojiName={name}
                     textStyle={style.emoji}
-                    size={20}
+                    size={32}
                 />
             </View>
-            <Text style={style.emojiText}>{`:${name}:`}</Text>
+            {shouldShowName && <Text style={style.emojiText}>{`:${name}:`}</Text>}
         </TouchableOpacity>
     );
 };

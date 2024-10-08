@@ -4,9 +4,8 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import CameraAction from './camera_quick_action';
-import FileAction from './file_quick_action';
-import ImageAction from './image_quick_action';
+import AttachmentOptions from './attachment_options';
+import EmojiQuickAction from './emojii_quick_action';
 import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
 
@@ -25,6 +24,8 @@ type Props = {
     postPriority: PostPriority;
     updatePostPriority: (postPriority: PostPriority) => void;
     focus: () => void;
+    handleToggleEmojiPicker: () => void;
+    isEmojiPickerOpen: boolean;
 }
 
 const style = StyleSheet.create({
@@ -32,6 +33,8 @@ const style = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         height: 44,
+        marginLeft: 10,
+        gap: 4,
     },
 });
 
@@ -48,30 +51,29 @@ export default function QuickActions({
     postPriority,
     updatePostPriority,
     focus,
+    handleToggleEmojiPicker,
+    isEmojiPickerOpen,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
 
     const atInputActionTestID = `${testID}.at_input_action`;
     const slashInputActionTestID = `${testID}.slash_input_action`;
-    const fileActionTestID = `${testID}.file_action`;
-    const imageActionTestID = `${testID}.image_action`;
-    const cameraActionTestID = `${testID}.camera_action`;
     const postPriorityActionTestID = `${testID}.post_priority_action`;
-
-    const uploadProps = {
-        disabled: !canUploadFiles,
-        fileCount,
-        maxFileCount,
-        maxFilesReached: fileCount >= maxFileCount,
-        onUploadFiles: addFiles,
-    };
 
     return (
         <View
             testID={testID}
             style={style.quickActionsContainer}
         >
+            <AttachmentOptions
+                testID={testID}
+                fileCount={fileCount}
+                maxFileCount={maxFileCount}
+                canUploadFiles={canUploadFiles}
+                maxFilesReached={fileCount >= maxFileCount}
+                onUploadFiles={addFiles}
+            />
             <InputAction
                 testID={atInputActionTestID}
                 disabled={atDisabled}
@@ -86,17 +88,9 @@ export default function QuickActions({
                 updateValue={updateValue}
                 focus={focus}
             />
-            <FileAction
-                testID={fileActionTestID}
-                {...uploadProps}
-            />
-            <ImageAction
-                testID={imageActionTestID}
-                {...uploadProps}
-            />
-            <CameraAction
-                testID={cameraActionTestID}
-                {...uploadProps}
+            <EmojiQuickAction
+                handleToggleEmojiPicker={handleToggleEmojiPicker}
+                isEmojiPickerOpen={isEmojiPickerOpen}
             />
             {isPostPriorityEnabled && canShowPostPriority && (
                 <PostPriorityAction
