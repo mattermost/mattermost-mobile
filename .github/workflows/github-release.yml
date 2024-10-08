@@ -47,6 +47,12 @@ jobs:
           path: Mattermost-unsigned.ipa
           name: Mattermost-unsigned.ipa
 
+      -name: ci/sbom-ios
+        uses: ./.github/actions/snyk-sbom
+        working-directory: ./ios
+        with:
+          sbom_name: 'sbom_ios.json'
+
   build-android-unsigned:
     runs-on: ubuntu-22.04
     needs:
@@ -72,6 +78,12 @@ jobs:
         with:
           path: Mattermost-unsigned.apk
           name: Mattermost-unsigned.apk
+
+      -name: ci/sbom-android
+          uses: ./.github/actions/snyk-sbom
+          working-directory: ./android
+          with:
+            sbom_name: 'sbom_android.json'
 
   release:
     runs-on: ubuntu-22.04

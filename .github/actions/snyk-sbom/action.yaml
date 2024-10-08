@@ -1,0 +1,22 @@
+name: snyk-sbom
+description: Snyk - Software Bill of Materials (SBOM)
+inputs:
+  sbom_name:
+    description: 'SBOM file name'
+    required: true
+
+runs:
+  using: composite
+  steps:
+      - name: sbom/install-snyk
+        run: npm install -g snyk@1.1293.0
+
+      - name: sbom/generate
+        run: snyk sbom --format=cyclonedx1.5+json --all-projects > ${{ inputs.sbom_name }}
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: sbom/upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" ${{ inputs.sbom_name }}
