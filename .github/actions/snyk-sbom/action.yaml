@@ -4,6 +4,9 @@ inputs:
   sbom_name:
     description: 'SBOM file name'
     required: true
+  snyk_token:
+    description: 'SNYK API token'
+    required: true
 
 runs:
   using: composite
@@ -14,7 +17,7 @@ runs:
       - name: sbom/generate
         run: snyk sbom --format=cyclonedx1.5+json --all-projects > ${{ inputs.sbom_name }}
         env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_TOKEN: ${{ inputs.snyk_token }}
 
       - name: sbom/upload
         env:

@@ -52,6 +52,7 @@ jobs:
         working-directory: ./ios
         with:
           sbom_name: 'sbom_ios.json'
+          snyk_token: "${{ secrets.SNYK_TOKEN }}"
 
   build-android-unsigned:
     runs-on: ubuntu-22.04
@@ -84,6 +85,7 @@ jobs:
           working-directory: ./android
           with:
             sbom_name: 'sbom_android.json'
+            snyk_token: "${{ secrets.SNYK_TOKEN }}"
 
   release:
     runs-on: ubuntu-22.04
