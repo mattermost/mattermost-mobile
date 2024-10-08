@@ -7,6 +7,9 @@ inputs:
   snyk_token:
     description: 'SNYK API token'
     required: true
+  tag:
+    description: 'Git tag'
+    required: true
 
 runs:
   using: composite
@@ -22,4 +25,4 @@ runs:
       - name: sbom/upload
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.event.release.tag_name }}" ${{ inputs.sbom_name }}
+        run: gh release upload "${{ inputs.tag }}" ${{ inputs.sbom_name }}

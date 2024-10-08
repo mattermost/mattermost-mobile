@@ -53,6 +53,7 @@ jobs:
         with:
           sbom_name: 'sbom_ios.json'
           snyk_token: "${{ secrets.SNYK_TOKEN }}"
+          tag: "${{ github.ref_name }}"
 
   build-android-unsigned:
     runs-on: ubuntu-22.04
@@ -86,6 +87,7 @@ jobs:
           with:
             sbom_name: 'sbom_android.json'
             snyk_token: "${{ secrets.SNYK_TOKEN }}"
+            tag: "${{ github.ref_name }}"
 
   release:
     runs-on: ubuntu-22.04
