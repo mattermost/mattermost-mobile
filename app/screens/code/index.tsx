@@ -58,7 +58,7 @@ const Code = ({code, componentId, language, textStyle}: Props) => {
                 },
             ],
         });
-    }, [theme.centerChannelColor]);
+    }, [theme.centerChannelColor, componentId]);
 
     return (
         <SafeAreaView
