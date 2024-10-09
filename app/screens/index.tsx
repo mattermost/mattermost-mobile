@@ -111,6 +111,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CHANNEL_ADD_MEMBERS:
             screen = withServerDatabase(require('@screens/channel_add_members').default);
             break;
+        case Screens.DRAFT_OPTIONS:
+            screen = withServerDatabase(require('@screens/draft_options').default);
+            break;
         case Screens.EDIT_POST:
             screen = withServerDatabase(require('@screens/edit_post').default);
             break;

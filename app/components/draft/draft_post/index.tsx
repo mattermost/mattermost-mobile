@@ -5,9 +5,9 @@ import React from 'react';
 import {View, TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@app/components/compass_icon';
+import DraftMessage from '@app/components/draft/draft_post/draft_message';
 import {useTheme} from '@app/context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import DraftMessage from '@app/components/draft/draft_post/draft_message';
 
 import DraftFiles from './draft_files';
 
@@ -21,6 +21,9 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
+        container: {
+            marginTop: 12,
+        },
         acknowledgementContainer: {
             marginTop: 8,
             alignItems: 'center',
@@ -46,8 +49,12 @@ const DraftPost: React.FC<Props> = ({
     const style = getStyleSheet(theme);
 
     return (
-        <View>
-            <DraftMessage draft={draft}/>
+        <View style={style.container}>
+            <DraftMessage
+                layoutWidth={layoutWidth}
+                location={location}
+                draft={draft}
+            />
             {
                 hasFiles &&
                 <DraftFiles

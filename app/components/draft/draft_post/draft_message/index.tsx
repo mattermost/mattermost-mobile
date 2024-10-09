@@ -4,7 +4,6 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {Screens} from '@app/constants';
 import {useTheme} from '@app/context/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@app/utils/markdown';
 import {makeStyleSheetFromTheme} from '@app/utils/theme';
@@ -16,6 +15,8 @@ import type {UserMentionKey} from '@typings/global/markdown';
 
 type Props = {
     draft: DraftModel;
+    layoutWidth: number;
+    location: string;
 }
 
 const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
@@ -31,7 +32,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         message: {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
-            lineHeight: undefined, // remove line height, not needed and causes problems with md images
         },
         pendingPost: {
             opacity: 0.5,
@@ -41,6 +41,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const DraftMessage: React.FC<Props> = ({
     draft,
+    layoutWidth,
+    location,
 }) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -52,24 +54,13 @@ const DraftMessage: React.FC<Props> = ({
                 baseTextStyle={style.message}
                 blockStyles={blockStyles}
                 channelId={draft.channelId}
-
-                // channelMentions={post.props?.channel_mentions}
-                // imagesMetadata={post.metadata?.images}
-                // isEdited={isEdited}
-                // isReplyPost={isReplyPost}
-                // isSearchResult={location === SEARCH}
-                // layoutWidth={layoutWidth}
-                location={Screens.GLOBAL_DRAFTS}
+                layoutWidth={layoutWidth}
+                location={location}
                 postId={draft.id}
                 textStyles={textStyles}
                 value={draft.message}
                 mentionKeys={EMPTY_MENTION_KEYS}
-
-                // highlightKeys={isHighlightWithoutNotificationLicensed ? (currentUser?.highlightKeys ?? EMPTY_HIGHLIGHT_KEYS) : EMPTY_HIGHLIGHT_KEYS}
-                // searchPatterns={searchPatterns}
                 theme={theme}
-
-                // isUnsafeLinksPost={post.props.unsafe_links && post.props.unsafe_links !== ''}
             />
         </View>
     );

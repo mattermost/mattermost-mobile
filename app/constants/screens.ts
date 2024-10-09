@@ -21,6 +21,7 @@ export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
 export const CREATE_TEAM = 'CreateTeam';
 export const CUSTOM_STATUS = 'CustomStatus';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
+export const DRAFT_OPTIONS = 'DraftOptions';
 export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
@@ -101,6 +102,7 @@ export default {
     CREATE_TEAM,
     CUSTOM_STATUS,
     CUSTOM_STATUS_CLEAR_AFTER,
+    DRAFT_OPTIONS,
     EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,
@@ -185,6 +187,7 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
 
 export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     BOTTOM_SHEET,
+    DRAFT_OPTIONS,
     EMOJI_PICKER,
     POST_OPTIONS,
     POST_PRIORITY_PICKER,
