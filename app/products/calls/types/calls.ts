@@ -179,6 +179,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableAV1: false,
     TranscribeAPI: TranscribeAPI.WhisperCPP,
     GroupCallsAllowed: true, // Set to true to keep backward compatibility with older servers.
+    EnableDCSignaling: false,
 };
 
 export type ApiResp = {

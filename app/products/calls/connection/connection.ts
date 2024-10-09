@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {RTCMonitor, RTCPeer, parseRTCStats} from '@mattermost/calls/lib';
-import {deflate} from 'pako';
+import {zlibSync, strToU8} from 'fflate';
 import {DeviceEventEmitter, type EmitterSubscription, NativeEventEmitter, NativeModules, Platform} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
-import {mediaDevices, MediaStream, MediaStreamTrack, registerGlobals} from 'react-native-webrtc';
+import {mediaDevices, MediaStream, MediaStreamTrack, registerGlobals, RTCSessionDescription} from 'react-native-webrtc';
 
 import {setPreferredAudioRoute, setSpeakerphoneOn} from '@calls/actions/calls';
 import {
@@ -311,6 +311,7 @@ export async function newConnection(
                 title,
                 threadID: rootId,
                 av1Support,
+                dcSignaling: config.EnableDCSignaling,
             });
         }
     });
@@ -385,6 +386,7 @@ export async function newConnection(
         peer = new RTCPeer({
             iceServers: iceConfigs || [],
             logger,
+            dcSignaling: config.EnableDCSignaling,
         });
 
         collectICEStats();
@@ -396,22 +398,20 @@ export async function newConnection(
         });
         rtcMonitor.on('mos', processMeanOpinionScore);
 
-        peer.on('offer', (sdp) => {
-            logDebug(`calls: local offer, sending: ${JSON.stringify(sdp)}`);
-            ws.send('sdp', {
-                data: deflate(JSON.stringify(sdp)),
-            }, true);
-        });
+        const sdpHandler = (sdp: RTCSessionDescription) => {
+            const payload = JSON.stringify(sdp);
 
-        peer.on('answer', (sdp) => {
-            logDebug(`calls: local answer, sending: ${JSON.stringify(sdp)}`);
+            // SDP data is compressed using zlib since it's text based
+            // and can grow substantially, potentially hitting the maximum
+            // message size (8KB).
             ws.send('sdp', {
-                data: deflate(JSON.stringify(sdp)),
+                data: zlibSync(strToU8(payload)),
             }, true);
-        });
+        };
+        peer.on('offer', sdpHandler);
+        peer.on('answer', sdpHandler);
 
         peer.on('candidate', (candidate) => {
-            logDebug(`calls: local candidate: ${JSON.stringify(candidate)}`);
             ws.send('ice', {
                 data: JSON.stringify(candidate),
             });
@@ -448,9 +448,6 @@ export async function newConnection(
         const msg = JSON.parse(data);
         if (!msg) {
             return;
-        }
-        if (msg.type !== 'ping') {
-            logDebug('calls: remote signal', data);
         }
         if (msg.type === 'answer' || msg.type === 'candidate' || msg.type === 'offer') {
             peer?.signal(data);
