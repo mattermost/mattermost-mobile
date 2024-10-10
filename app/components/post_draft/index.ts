@@ -32,7 +32,7 @@ const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (
     }
 
     const draft = channelId.pipe(
-        switchMap((cId) => queryDraft(database, cId, rootId).observeWithColumns(['update_at']).pipe(
+        switchMap((cId) => queryDraft(database, cId, rootId).observeWithColumns(['message', 'files', 'metadata']).pipe(
             switchMap(observeFirstDraft),
         )),
     );
