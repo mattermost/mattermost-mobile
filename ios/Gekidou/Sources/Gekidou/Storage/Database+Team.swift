@@ -4,8 +4,8 @@ import SQLite
 extension Database {
     public func queryCurrentTeamId(_ serverUrl: String) -> String? {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let idCol = Expression<String>("id")
-            let valueCol = Expression<String>("value")
+            let idCol = SQLite.Expression<String>("id")
+            let valueCol = SQLite.Expression<String>("value")
             
             if let result = try? db.pluck(systemTable.where(idCol == "currentTeamId")) {
                 return try? result.get(valueCol).replacingOccurrences(of: "\"", with: "")
@@ -17,8 +17,8 @@ extension Database {
     
     public func queryTeamIdForChannel(withId channelId: String, forServerUrl serverUrl: String) -> String? {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let idCol = Expression<String>("id")
-            let teamIdCol = Expression<String?>("team_id")
+            let idCol = SQLite.Expression<String>("id")
+            let teamIdCol = SQLite.Expression<String?>("team_id")
             let query = channelTable.where(idCol == channelId)
             
             if let result = try? db.pluck(query) {
@@ -35,7 +35,7 @@ extension Database {
     
     public func queryTeamExists(withId teamId: String, forServerUrl serverUrl: String) -> Bool {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let idCol = Expression<String>("id")
+            let idCol = SQLite.Expression<String>("id")
             let query = teamTable.where(idCol == teamId)
             if let _ = try? db.pluck(query) {
                 return true
@@ -46,7 +46,7 @@ extension Database {
     
     public func queryMyTeamExists(withId teamId: String, forServerUrl serverUrl: String) -> Bool {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let idCol = Expression<String>("id")
+            let idCol = SQLite.Expression<String>("id")
             let query = myTeamTable.where(idCol == teamId)
             if let _ = try? db.pluck(query) {
                 return true
@@ -57,7 +57,7 @@ extension Database {
     
     public func queryAllMyTeamIds(_ serverUrl: String) -> [String]? {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let idCol = Expression<String>("id")
+            let idCol = SQLite.Expression<String>("id")
             if let myTeams = try? db.prepare(myTeamTable.select(idCol)) {
                 return myTeams.map { try! $0.get(idCol) }
             }
@@ -80,17 +80,17 @@ extension Database {
     }
     
     private func createTeamSetter(from team: Team) -> [Setter] {
-        let id = Expression<String>("id")
-        let isAllowOpenInvite = Expression<Bool>("is_allow_open_invite")
-        let updateAt = Expression<Double>("update_at")
-        let description = Expression<String>("description")
-        let displayName = Expression<String>("display_name")
-        let isGroupeConstrained = Expression<Bool>("is_group_constrained")
-        let lastTeamIconUpdatedAt = Expression<Double>("last_team_icon_updated_at")
-        let name = Expression<String>("name")
-        let type = Expression<String>("type")
-        let allowedDomains = Expression<String>("allowed_domains")
-        let inviteId = Expression<String>("invite_id")
+        let id = SQLite.Expression<String>("id")
+        let isAllowOpenInvite = SQLite.Expression<Bool>("is_allow_open_invite")
+        let updateAt = SQLite.Expression<Double>("update_at")
+        let description = SQLite.Expression<String>("description")
+        let displayName = SQLite.Expression<String>("display_name")
+        let isGroupeConstrained = SQLite.Expression<Bool>("is_group_constrained")
+        let lastTeamIconUpdatedAt = SQLite.Expression<Double>("last_team_icon_updated_at")
+        let name = SQLite.Expression<String>("name")
+        let type = SQLite.Expression<String>("type")
+        let allowedDomains = SQLite.Expression<String>("allowed_domains")
+        let inviteId = SQLite.Expression<String>("invite_id")
         
         let setter: [Setter] = [
             id <- team.id,
@@ -109,8 +109,8 @@ extension Database {
     }
     
     private func createMyTeamSetter(from member: TeamMember) -> [Setter] {
-        let id = Expression<String>("id")
-        let roles = Expression<String>("roles")
+        let id = SQLite.Expression<String>("id")
+        let roles = SQLite.Expression<String>("roles")
         
         var setter = [Setter]()
         setter.append(id <- member.id)
@@ -120,10 +120,10 @@ extension Database {
     }
     
     private func createTeamMemberSetter(from member: TeamMember) -> [Setter] {
-        let id = Expression<String>("id")
-        let teamId = Expression<String>("team_id")
-        let userId = Expression<String>("user_id")
-        let schemeAdmin = Expression<Bool>("scheme_admin")
+        let id = SQLite.Expression<String>("id")
+        let teamId = SQLite.Expression<String>("team_id")
+        let userId = SQLite.Expression<String>("user_id")
+        let schemeAdmin = SQLite.Expression<Bool>("scheme_admin")
         
         let setter: [Setter] = [
             id <- "\(member.id)-\(member.userId)",

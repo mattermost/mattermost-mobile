@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
 import {AppState, type AppStateStatus} from 'react-native';
 import performance from 'react-native-performance';
 
@@ -18,7 +19,6 @@ const MAX_RETRIES = 3;
 class PerformanceMetricsManager {
     private target: Target;
     private batchers: {[serverUrl: string]: Batcher} = {};
-    private hasRegisteredLoad = false;
     private lastAppStateIsActive = AppState.currentState === 'active';
 
     constructor() {
@@ -49,7 +49,7 @@ class PerformanceMetricsManager {
     }
 
     public skipLoadMetric() {
-        this.hasRegisteredLoad = true;
+        RNUtils.setHasRegisteredLoad();
     }
 
     public finishLoad(location: Target, serverUrl: string) {
@@ -57,7 +57,7 @@ class PerformanceMetricsManager {
     }
 
     private finishLoadWithRetries(location: Target, serverUrl: string, retries: number) {
-        if (this.target !== location || this.hasRegisteredLoad) {
+        if (this.target !== location || RNUtils.getHasRegisteredLoad().hasRegisteredLoad) {
             return;
         }
 
@@ -79,7 +79,7 @@ class PerformanceMetricsManager {
             logWarning('We could not retrieve the mobile load metric');
         }
 
-        this.hasRegisteredLoad = true;
+        RNUtils.setHasRegisteredLoad();
     }
 
     public startMetric(metricName: MetricName) {

@@ -17,6 +17,7 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
         const val NAME = "RNUtils"
 
         private var context: ReactApplicationContext? = null
+        private var hasRegisteredLoad = false
 
         fun sendJSEvent(eventName: String, data: ReadableMap?) {
             if (context?.hasActiveReactInstance() == true) {
@@ -71,6 +72,16 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
 
     fun getWindowDimensions(): WritableMap? {
         return SplitView.getWindowDimensions()
+    }
+
+    fun setHasRegisteredLoad() {
+        hasRegisteredLoad = true
+    }
+
+    fun getHasRegisteredLoad(): WritableMap {
+        val map = Arguments.createMap()
+        map.putBoolean("hasRegisteredLoad", hasRegisteredLoad)
+        return map
     }
 
     fun unlockOrientation() {}

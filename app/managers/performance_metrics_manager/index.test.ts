@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
 import performance from 'react-native-performance';
 
 import {mockApiClient} from '@test/mock_api_client';
@@ -64,6 +65,12 @@ describe('load metrics', () => {
             'setInterval',
         ]}).setSystemTime(new Date(TEST_EPOCH));
         PerformanceMetricsManager = new PerformanceMetricsManagerClass();
+
+        const mockHasRegisteredLoad = {hasRegisteredLoad: false};
+        jest.mocked(RNUtils.setHasRegisteredLoad).mockImplementation(() => {
+            mockHasRegisteredLoad.hasRegisteredLoad = true;
+        });
+        jest.mocked(RNUtils.getHasRegisteredLoad).mockImplementation(() => mockHasRegisteredLoad);
     });
     afterEach(async () => {
         jest.useRealTimers();
@@ -89,6 +96,26 @@ describe('load metrics', () => {
         jest.advanceTimersByTime(INTERVAL_TIME);
         await TestHelper.tick();
         expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl, expectedRequest);
+    });
+
+    it('only register load once', async () => {
+        performance.mark('nativeLaunchStart');
+        const measure = getMeasure(TEST_EPOCH, 0);
+        const expectedRequest = getBaseReportRequest(measure.timestamp, measure.timestamp + 1);
+        expectedRequest.body.histograms = [measure];
+
+        PerformanceMetricsManager.setLoadTarget('HOME');
+        PerformanceMetricsManager.finishLoad('HOME', serverUrl);
+        await TestHelper.tick();
+        jest.advanceTimersByTime(INTERVAL_TIME);
+        await TestHelper.tick();
+        expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl, expectedRequest);
+        mockApiClient.post.mockClear();
+        PerformanceMetricsManager.finishLoad('HOME', serverUrl);
+        await TestHelper.tick();
+        jest.advanceTimersByTime(INTERVAL_TIME);
+        await TestHelper.tick();
+        expect(mockApiClient.post).not.toHaveBeenCalled();
     });
 
     it('retry if the mark is not yet present', async () => {

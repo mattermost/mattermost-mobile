@@ -13,8 +13,8 @@ extension Database {
     internal func queryCurrentChannelId(_ serverUrl: String) throws -> String {
         let db = try getDatabaseForServer(serverUrl)
         
-        let idCol = Expression<String>("id")
-        let valueCol = Expression<String>("value")
+        let idCol = SQLite.Expression<String>("id")
+        let valueCol = SQLite.Expression<String>("value")
         let query = systemTable.where(idCol == "currentChannelId")
         
         if let result = try db.pluck(query) {
@@ -42,7 +42,7 @@ extension Database {
     
     public func queryChannelExists(withId channelId: String, forServerUrl serverUrl: String) -> Bool {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let idCol = Expression<String>("id")
+            let idCol = SQLite.Expression<String>("id")
             let query = channelTable.where(idCol == channelId)
             if let _ = try? db.pluck(query) {
                 return true
@@ -52,7 +52,7 @@ extension Database {
     }
     
     public func hasMyChannel(_ db: Connection, channelId: String) -> Bool {
-        let idCol = Expression<String>("id")
+        let idCol = SQLite.Expression<String>("id")
         let query = myChannelTable.where(idCol == channelId)
         if let _ = try? db.pluck(query) {
             return true
@@ -216,12 +216,12 @@ extension Database {
     }
     
     public func insertOrUpdateMyChannel(_ db: Connection, _ myChannel: ChannelMember, _ isCRTEnabled: Bool, _ lastFetchedAt: Double, _ lastPostAt: Double) throws {
-        let idCol = Expression<String>("id")
-        let messageCountCol = Expression<Int>("message_count")
-        let mentionsCol = Expression<Int>("mentions_count")
-        let isUnreadCol = Expression<Bool>("is_unread")
-        let lastFetchedAtCol = Expression<Double>("last_fetched_at")
-        let lastPostAtCol = Expression<Double>("last_post_at")
+        let idCol = SQLite.Expression<String>("id")
+        let messageCountCol = SQLite.Expression<Int>("message_count")
+        let mentionsCol = SQLite.Expression<Int>("mentions_count")
+        let isUnreadCol = SQLite.Expression<Bool>("is_unread")
+        let lastFetchedAtCol = SQLite.Expression<Double>("last_fetched_at")
+        let lastPostAtCol = SQLite.Expression<Double>("last_post_at")
         let mentionsCount = isCRTEnabled ? myChannel.mentionCountRoot : myChannel.mentionCount
         let messageCount = isCRTEnabled ? myChannel.internalMsgCountRoot : myChannel.internalMsgCount
         let isUnread = messageCount > 0
@@ -237,10 +237,10 @@ extension Database {
                 )
             let _ = try db.run(updateQuery)
         } else {
-            let rolesCol = Expression<String>("roles")
-            let manuallyUnreadCol = Expression<Bool>("manually_unread")
-            let lastViewedAtCol = Expression<Double>("last_viewed_at")
-            let viewedAtCol = Expression<Double>("viewed_at")
+            let rolesCol = SQLite.Expression<String>("roles")
+            let manuallyUnreadCol = SQLite.Expression<Bool>("manually_unread")
+            let lastViewedAtCol = SQLite.Expression<Double>("last_viewed_at")
+            let viewedAtCol = SQLite.Expression<Double>("viewed_at")
             
             let setter: [Setter] = [
                 idCol <- myChannel.id,
@@ -261,8 +261,8 @@ extension Database {
     }
     
     private func insertMyChannelSettings(_ db: Connection, _ myChannel: ChannelMember) throws {
-        let id = Expression<String>("id")
-        let notifyProps = Expression<String>("notify_props")
+        let id = SQLite.Expression<String>("id")
+        let notifyProps = SQLite.Expression<String>("notify_props")
         
         let setter: [Setter] = [
             id <- myChannel.id,
@@ -273,10 +273,10 @@ extension Database {
     }
     
     private func insertChannelMember(_ db: Connection, _ member: ChannelMember) throws {
-        let id = Expression<String>("id")
-        let channelId = Expression<String>("channel_id")
-        let userId = Expression<String>("user_id")
-        let schemeAdmin = Expression<Bool>("scheme_admin")
+        let id = SQLite.Expression<String>("id")
+        let channelId = SQLite.Expression<String>("channel_id")
+        let userId = SQLite.Expression<String>("user_id")
+        let schemeAdmin = SQLite.Expression<Bool>("scheme_admin")
         
         let setter: [Setter] = [
             id <- "\(member.id)-\(member.userId)",
@@ -289,17 +289,17 @@ extension Database {
     }
     
     private func createChannelSetter(from channel: Channel) -> [Setter] {
-        let id = Expression<String>("id")
-        let createAt = Expression<Double>("create_at")
-        let deleteAt = Expression<Double>("delete_at")
-        let updateAt = Expression<Double>("update_at")
-        let creatorId = Expression<String>("creator_id")
-        let displayName = Expression<String>("display_name")
-        let name = Expression<String>("name")
-        let teamId = Expression<String>("team_id")
-        let type = Expression<String>("type")
-        let isGroupConstrained = Expression<Bool>("group_constrained")
-        let shared = Expression<Bool>("shared")
+        let id = SQLite.Expression<String>("id")
+        let createAt = SQLite.Expression<Double>("create_at")
+        let deleteAt = SQLite.Expression<Double>("delete_at")
+        let updateAt = SQLite.Expression<Double>("update_at")
+        let creatorId = SQLite.Expression<String>("creator_id")
+        let displayName = SQLite.Expression<String>("display_name")
+        let name = SQLite.Expression<String>("name")
+        let teamId = SQLite.Expression<String>("team_id")
+        let type = SQLite.Expression<String>("type")
+        let isGroupConstrained = SQLite.Expression<Bool>("group_constrained")
+        let shared = SQLite.Expression<Bool>("shared")
         
         var setter = [Setter]()
         setter.append(id <- channel.id)
@@ -318,12 +318,12 @@ extension Database {
     }
     
     private func createChannelInfoSetter(from channel: Channel) -> [Setter] {
-        let id = Expression<String>("id")
-        let header = Expression<String>("header")
-        let purpose = Expression<String>("purpose")
-        let guestCount = Expression<Int>("guest_count")
-        let memberCount = Expression<Int>("member_count")
-        let pinnedPostCount = Expression<Int>("pinned_post_count")
+        let id = SQLite.Expression<String>("id")
+        let header = SQLite.Expression<String>("header")
+        let purpose = SQLite.Expression<String>("purpose")
+        let guestCount = SQLite.Expression<Int>("guest_count")
+        let memberCount = SQLite.Expression<Int>("member_count")
+        let pinnedPostCount = SQLite.Expression<Int>("pinned_post_count")
         
         var setter = [Setter]()
         setter.append(id <- channel.id)
