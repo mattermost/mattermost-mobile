@@ -5,6 +5,7 @@ import Emm from '@mattermost/react-native-emm';
 import {Alert, AppState, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
+import {removePost} from '@actions/local/post';
 import {switchToChannelById} from '@actions/remote/channel';
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
@@ -14,6 +15,8 @@ import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getLastViewedChannelIdAndServer, getOnboardingViewed, getLastViewedThreadIdAndServer} from '@queries/app/global';
+import {getAllServers} from '@queries/app/servers';
+import {queryPostsByType} from '@queries/servers/post';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
@@ -112,6 +115,8 @@ const launchApp = async (props: LaunchProps) => {
     if (props.launchError && !serverUrl) {
         serverUrl = await getActiveServerUrl();
     }
+
+    await cleanupEphemeralPosts();
 
     if (serverUrl) {
         const credentials = await getServerCredentials(serverUrl);
@@ -252,3 +257,19 @@ export const getLaunchPropsFromNotification = async (notification: NotificationW
 
     return launchProps;
 };
+
+async function cleanupEphemeralPosts() {
+    const servers = await getAllServers();
+
+    const promises = servers.map(async (server) => {
+        const database = DatabaseManager.serverDatabases[server.url]?.database;
+        if (!database) {
+            return;
+        }
+
+        const posts = await queryPostsByType(database, 'system_ephemeral').fetch();
+        posts.forEach((post) => removePost(server.url, post));
+    });
+
+    await Promise.all(promises);
+}
