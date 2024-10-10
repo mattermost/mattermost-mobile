@@ -7,9 +7,9 @@ import {Text, TouchableHighlight, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import Markdown from '@app/components/markdown';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
-import RemoveMarkdown from '@components/remove_markdown';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -21,6 +21,8 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
+
+import FileCard from '../file_card/file_card';
 
 import ThreadFooter from './thread_footer';
 
@@ -120,6 +122,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignSelf: 'center',
             color: theme.buttonColor,
         },
+        threadText: {
+            overflow: 'hidden',
+            maxHeight: 40,
+        },
     };
 });
 
@@ -215,17 +221,25 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
         );
         if (post?.message) {
             postBody = (
-                <Text numberOfLines={2}>
-                    <RemoveMarkdown
-                        enableCodeSpan={true}
-                        enableEmoji={true}
-                        enableHardBreak={true}
-                        enableSoftBreak={true}
-                        textStyle={textStyles}
-                        baseStyle={styles.message}
-                        value={post.message.substring(0, 100)} // This substring helps to avoid ANR's
-                    />
-                </Text>
+                <>
+                    <View style={styles.threadText}>
+                        <Markdown
+                            theme={theme}
+                            baseTextStyle={styles.message}
+                            textStyles={textStyles}
+                            value={post.message}
+                            location={location}
+                            imagesMetadata={post.metadata?.images}
+                        />
+                    </View>
+                </>
+            );
+        } else {
+            postBody = (
+                <FileCard
+                    post={post}
+                    theme={theme}
+                />
             );
         }
     }
