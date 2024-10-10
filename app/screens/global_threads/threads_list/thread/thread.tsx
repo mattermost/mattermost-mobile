@@ -219,6 +219,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                     <RemoveMarkdown
                         enableCodeSpan={true}
                         enableEmoji={true}
+                        enableChannelLink={true}
                         enableHardBreak={true}
                         enableSoftBreak={true}
                         textStyle={textStyles}

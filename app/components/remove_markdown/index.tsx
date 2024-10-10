@@ -9,21 +9,24 @@ import {type StyleProp, Text, type TextStyle} from 'react-native';
 import Emoji from '@components/emoji';
 import {computeTextStyle} from '@utils/markdown';
 
+import ChannelMention from '../markdown/channel_mention';
+
 import AtMention from './at_mention';
 
-import type {MarkdownBaseRenderer, MarkdownEmojiRenderer, MarkdownTextStyles} from '@typings/global/markdown';
+import type {MarkdownBaseRenderer, MarkdownChannelMentionRenderer, MarkdownEmojiRenderer, MarkdownTextStyles} from '@typings/global/markdown';
 
 type Props = {
     enableEmoji?: boolean;
     enableCodeSpan?: boolean;
     enableHardBreak?: boolean;
     enableSoftBreak?: boolean;
+    enableChannelLink?: boolean;
     baseStyle?: StyleProp<TextStyle>;
     textStyle?: MarkdownTextStyles;
     value: string;
 };
 
-const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, enableCodeSpan, baseStyle, textStyle = {}, value}: Props) => {
+const RemoveMarkdown = ({enableEmoji, enableChannelLink, enableHardBreak, enableSoftBreak, enableCodeSpan, baseStyle, textStyle = {}, value}: Props) => {
     const renderEmoji = useCallback(({emojiName, literal}: MarkdownEmojiRenderer) => {
         if (!enableEmoji) {
             return renderText({literal});
@@ -52,6 +55,16 @@ const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, enableCo
             <AtMention
                 textStyle={computeTextStyle(textStyle, baseStyle, context)}
                 mentionName={mentionName}
+            />
+        );
+    };
+
+    const renderChannelLink = ({context, channelName}: MarkdownChannelMentionRenderer) => {
+        return (
+            <ChannelMention
+                linkStyle={textStyle.link}
+                textStyle={computeTextStyle(textStyle, [], context)}
+                channelName={channelName}
             />
         );
     };
@@ -88,7 +101,7 @@ const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, enableCo
                 link: Renderer.forwardChildren,
                 image: renderNull,
                 atMention: renderAtMention,
-                channelLink: Renderer.forwardChildren,
+                channelLink: enableChannelLink ? renderChannelLink : Renderer.forwardChildren,
                 emoji: renderEmoji,
                 hashtag: Renderer.forwardChildren,
                 latexinline: Renderer.forwardChildren,
