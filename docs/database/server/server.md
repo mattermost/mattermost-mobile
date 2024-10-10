@@ -1,4 +1,4 @@
-# Server Database - Schema Version 2
+# Server Database - Schema Version 3 
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.

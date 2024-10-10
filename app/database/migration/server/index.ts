@@ -12,6 +12,17 @@ const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, POST} = MM_TABLES.SERVER;
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 5,
+        steps: [
+            addColumns({
+                table: DRAFT,
+                columns: [
+                    {name: 'update_at', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 4,
         steps: [
             createTable({

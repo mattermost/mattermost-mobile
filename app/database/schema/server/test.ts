@@ -46,7 +46,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 4,
+            version: 5,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -265,6 +265,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         message: {name: 'message', type: 'string'},
                         root_id: {name: 'root_id', type: 'string', isIndexed: true},
                         metadata: {name: 'metadata', type: 'string', isOptional: true},
+                        update_at: {name: 'update_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
@@ -272,6 +273,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'message', type: 'string'},
                         {name: 'root_id', type: 'string', isIndexed: true},
                         {name: 'metadata', type: 'string', isOptional: true},
+                        {name: 'update_at', type: 'number'},
                     ],
                 },
                 [FILE]: {

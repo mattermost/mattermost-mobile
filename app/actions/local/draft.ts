@@ -23,6 +23,7 @@ export async function updateDraftFile(serverUrl: string, channelId: string, root
         newFiles[i] = file;
         draft.prepareUpdate((d) => {
             d.files = newFiles;
+            d.updateAt = Date.now();
         });
 
         if (!prepareRecordsOnly) {
@@ -54,6 +55,7 @@ export async function removeDraftFile(serverUrl: string, channelId: string, root
         } else {
             draft.prepareUpdate((d) => {
                 d.files = draft.files.filter((v, index) => index !== i);
+                d.updateAt = Date.now();
             });
         }
 
@@ -81,6 +83,7 @@ export async function updateDraftMessage(serverUrl: string, channelId: string, r
                 channel_id: channelId,
                 root_id: rootId,
                 message,
+                update_at: Date.now(),
             };
 
             return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
@@ -95,6 +98,7 @@ export async function updateDraftMessage(serverUrl: string, channelId: string, r
         } else {
             draft.prepareUpdate((d) => {
                 d.message = message;
+                d.updateAt = Date.now();
             });
         }
 
@@ -119,6 +123,7 @@ export async function addFilesToDraft(serverUrl: string, channelId: string, root
                 root_id: rootId,
                 files,
                 message: '',
+                update_at: Date.now(),
             };
 
             return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
@@ -126,6 +131,7 @@ export async function addFilesToDraft(serverUrl: string, channelId: string, root
 
         draft.prepareUpdate((d) => {
             d.files = [...draft.files, ...files];
+            d.updateAt = Date.now();
         });
 
         if (!prepareRecordsOnly) {
@@ -167,6 +173,7 @@ export async function updateDraftPriority(serverUrl: string, channelId: string, 
                 metadata: {
                     priority: postPriority,
                 },
+                update_at: Date.now(),
             };
 
             return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
@@ -177,6 +184,7 @@ export async function updateDraftPriority(serverUrl: string, channelId: string, 
                 ...d.metadata,
                 priority: postPriority,
             };
+            d.updateAt = Date.now();
         });
 
         if (!prepareRecordsOnly) {

@@ -35,6 +35,7 @@ const draft: Draft = {
     channel_id: channel.id,
     message: 'test',
     root_id: '',
+    update_at: Date.now(),
 } as Draft;
 
 beforeEach(async () => {
@@ -106,7 +107,7 @@ describe('removeDraftFile', () => {
     });
 
     it('remove draft file, no message', async () => {
-        await operator.handleDraft({drafts: [{channel_id: channel.id, files: [fileInfo], root_id: ''}], prepareRecordsOnly: false});
+        await operator.handleDraft({drafts: [{channel_id: channel.id, files: [fileInfo], root_id: '', update_at: Date.now()}], prepareRecordsOnly: false});
 
         const {draft: draftModel, error} = await removeDraftFile(serverUrl, channelId, '', 'clientid', false);
         expect(error).toBeUndefined();
@@ -152,7 +153,7 @@ describe('updateDraftMessage', () => {
     });
 
     it('update draft message, no file', async () => {
-        await operator.handleDraft({drafts: [{channel_id: channel.id, files: [], root_id: ''}], prepareRecordsOnly: false});
+        await operator.handleDraft({drafts: [{channel_id: channel.id, files: [], root_id: '', update_at: Date.now()}], prepareRecordsOnly: false});
 
         const result = await updateDraftMessage(serverUrl, channelId, '', 'newmessage', false) as {draft: DraftModel; error: unknown};
         expect(result.error).toBeUndefined();

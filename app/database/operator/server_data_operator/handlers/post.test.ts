@@ -53,6 +53,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
                 ],
                 message: 'test draft message for post',
                 root_id: '',
+                update_at: Date.now(),
             },
         ];
 
