@@ -1,0 +1,36 @@
+name: Start Proxy
+description: Action to throttle the bandwidth on MacOS runner
+
+inputs:
+  test_server_url:
+    description: The host of the test server, no protocol
+    required: true
+
+runs:
+  using: composite
+  steps:
+
+    - name: restart mitmdump
+      shell: bash
+      run: |
+        pm2 restart mitmdump
+
+        sleep 5;
+
+    - name: start proxy
+      shell: bash
+      run: |
+        networksetup -setwebproxy Ethernet "127.0.0.1" "8080"
+        networksetup -setsecurewebproxy Ethernet "127.0.0.1" "8080"
+
+        sleep 5;
+
+        networksetup -getwebproxy Ethernet
+        networksetup -getsecurewebproxy Ethernet
+
+    - name: test curl and direct it into proxy
+      shell: bash
+      run: |
+        curl -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ inputs.test_server_url }}/api/v4/system/ping?get_server_status=true'
+
+        curl --proxy "127.0.0.1:8080" -o /dev/null -m 20 -s -w 'Total: %{time_total}s\n' '${{ inputs.test_server_url }}/api/v4/system/ping?get_server_status=true'
