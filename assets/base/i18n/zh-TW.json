@@ -96,6 +96,7 @@
   "camera_type.video.option": "錄製影片",
   "center_panel.archived.closeChannel": "關閉頻道",
   "channel_add_members.add_members.button": "新增成員",
+  "channel_bookmark_add.link": "連結",
   "channel_files.empty.paragraph": "在這個頻道張貼的檔案會顯示於此處。",
   "channel_files.empty.title": "還沒有檔案",
   "channel_files.noFiles.paragraph": "此頻道不包含任何符合篩選條件的檔案",
