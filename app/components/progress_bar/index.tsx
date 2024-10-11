@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect} from 'react';
 import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle, StyleSheet} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import Animated, {runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {clamp, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
@@ -47,33 +47,53 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
     const theme = useTheme();
     const widthValue = useSharedValue(0);
     const progressValue = useSharedValue(progress);
+    const isGestureActive = useSharedValue(false);
 
     // eslint-disable-next-line new-cap
     const panGesture = Gesture.Pan().
+        onStart(() => {
+            isGestureActive.value = true;
+        }).
         onChange((e) => {
             if (onSeek) {
-                const clampedSeekPosition = Math.max(START_CURSOR_VALUE, Math.min(END_CURSOR_VALUE, e.x / widthValue.value));
+                const clampedSeekPosition = clamp(e.x / widthValue.value, START_CURSOR_VALUE, END_CURSOR_VALUE);
                 runOnJS(onSeek)(clampedSeekPosition);
             }
+        }).
+        onEnd(() => {
+            isGestureActive.value = false;
+        }).
+        onFinalize(() => {
+            isGestureActive.value = false;
         });
 
     // eslint-disable-next-line new-cap
     const tapGesture = Gesture.Tap().
+        onStart(() => {
+            isGestureActive.value = true;
+        }).
         onEnd((e) => {
             if (onSeek) {
-                const clampedSeekPosition = Math.max(START_CURSOR_VALUE, Math.min(END_CURSOR_VALUE, e.x / widthValue.value));
+                const clampedSeekPosition = clamp(e.x / widthValue.value, START_CURSOR_VALUE, END_CURSOR_VALUE);
                 runOnJS(onSeek)(clampedSeekPosition);
             }
+            isGestureActive.value = false;
+        }).
+        onFinalize(() => {
+            isGestureActive.value = false;
         });
 
     // eslint-disable-next-line new-cap
     const composedGestures = Gesture.Race(tapGesture, panGesture);
 
     const progressAnimatedStyle = useAnimatedStyle(() => {
+        const translateX = ((progressValue.value * 0.5) - 0.5) * widthValue.value;
+        const scaleX = progressValue.value ? progressValue.value : 0.0001;
+
         return {
             transform: [
-                {translateX: withTiming(((progressValue.value * 0.5) - 0.5) * widthValue.value, {duration: 200})},
-                {scaleX: withTiming(progressValue.value ? progressValue.value : 0.0001, {duration: 200})},
+                {translateX: isGestureActive.value ? translateX : withTiming(translateX, {duration: 200})},
+                {scaleX: isGestureActive.value ? scaleX : withTiming(scaleX, {duration: 200})},
             ],
             width: widthValue.value,
         };
@@ -81,8 +101,10 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
 
     const cursorAnimatedStyle = useAnimatedStyle(() => {
         const cursorWidth = 15;
+        const leftPosition = (progressValue.value * widthValue.value) - (cursorWidth / 2);
+
         return {
-            left: withTiming((progressValue.value * widthValue.value) - (cursorWidth / 2), {duration: 200}),
+            left: isGestureActive.value ? leftPosition : withTiming(leftPosition, {duration: 100}),
         };
     });
 
@@ -97,7 +119,7 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
     return (
         <GestureDetector gesture={composedGestures}>
             <View
-                onTouchStart={(e) => e.stopPropagation}
+                onTouchStart={(e) => e.stopPropagation()}
                 style={styles.container}
             >
                 <View
