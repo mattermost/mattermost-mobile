@@ -37,15 +37,13 @@ const AnimatedNumber = ({
         // comparing previousNumber and animateToNumber gets trickier when the number of digits changes and the length differs.
         // By padding the previousNumber with 0s, or slicing the previousNumber to match the length of animateToNumber
         // we can compare them digit by digit
-        let _previousNumberString = String(Math.abs(previousNumber)).padStart(
+        const _previousNumberString = String(Math.abs(previousNumber)).padStart(
             animateToNumberString.length,
             '0',
         );
 
         if (_previousNumberString.length > animateToNumberString.length) {
-            _previousNumberString = _previousNumberString.slice(
-                _previousNumberString.length - animateToNumberString.length,
-            );
+            _previousNumberString.slice(_previousNumberString.length - animateToNumberString.length);
         }
 
         return _previousNumberString;
