@@ -61,7 +61,7 @@ const AnimatedNumber = ({
         const previousNumberArray = Array.from(previousNumberString, Number);
 
         return animateToNumberArray.map((_, index) => {
-            const useDigit = previousNumberArray[index] === animateToNumberArray[index] ? 0 : previousNumberArray[index];
+            const useDigit = previousNumberArray[index] === animateToNumberArray[index] ? animateToNumberArray[index] : previousNumberArray[index];
 
             return new Animated.Value(-1 * (numberHeight * useDigit));
         });
