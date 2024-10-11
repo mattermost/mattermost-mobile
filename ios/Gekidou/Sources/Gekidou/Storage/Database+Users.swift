@@ -25,8 +25,8 @@ extension Database {
     public func queryCurrentUserId(_ serverUrl: String) throws -> String {
         let db = try getDatabaseForServer(serverUrl)
         
-        let idCol = SQLite.Expression<String>("id")
-        let valueCol = SQLite.Expression<String>("value")
+        let idCol = Expression<String>("id")
+        let valueCol = Expression<String>("value")
         let query = systemTable.where(idCol == "currentUserId")
         
         if let result = try db.pluck(query) {
@@ -38,7 +38,7 @@ extension Database {
     
     public func queryCurrentUser(_ serverUrl: String) throws -> Row? {
         let currentUserId = try queryCurrentUserId(serverUrl)
-        let idCol = SQLite.Expression<String>("id")
+        let idCol = Expression<String>("id")
         let query = userTable.where(idCol == currentUserId)
         let db = try getDatabaseForServer(serverUrl)
 
@@ -51,7 +51,7 @@ extension Database {
     
     public func getCurrentUserLocale(_ serverUrl: String) -> String {
         if let user = try? queryCurrentUser(serverUrl) {
-            if let locale = try? user.get(SQLite.Expression<String>("locale")) {
+            if let locale = try? user.get(Expression<String>("locale")) {
                 return locale
             }
         }
@@ -80,7 +80,7 @@ extension Database {
         var result: Set<String> = Set()
         if let db = try? getDatabaseForServer(serverUrl) {
             
-            let idCol = SQLite.Expression<String>("id")
+            let idCol = Expression<String>("id")
             if let users = try? db.prepare(
                 userTable.select(idCol).filter(userIds.contains(idCol))
             ) {
@@ -96,7 +96,7 @@ extension Database {
     public func queryUsers(byUsernames usernames: Set<String>, forServerUrl serverUrl: String) -> Set<String> {
         var result: Set<String> = Set()
         if let db = try? getDatabaseForServer(serverUrl) {
-            let usernameCol = SQLite.Expression<String>("username")
+            let usernameCol = Expression<String>("username")
             if let users = try? db.prepare(
                 userTable.select(usernameCol).filter(usernames.contains(usernameCol))
             ) {
@@ -116,25 +116,25 @@ extension Database {
     }
     
     private func createUserSetters(from users: [User]) -> [[Setter]] {
-        let id = SQLite.Expression<String>("id")
-        let authService = SQLite.Expression<String>("auth_service")
-        let updateAt = SQLite.Expression<Double>("update_at")
-        let deleteAt = SQLite.Expression<Double>("delete_at")
-        let email = SQLite.Expression<String>("email")
-        let firstName = SQLite.Expression<String>("first_name")
-        let isBot = SQLite.Expression<Bool>("is_bot")
-        let isGuest = SQLite.Expression<Bool>("is_guest")
-        let lastName = SQLite.Expression<String>("last_name")
-        let lastPictureUpdate = SQLite.Expression<Double>("last_picture_update")
-        let locale = SQLite.Expression<String>("locale")
-        let nickname = SQLite.Expression<String>("nickname")
-        let position = SQLite.Expression<String>("position")
-        let roles = SQLite.Expression<String>("roles")
-        let status = SQLite.Expression<String>("status")
-        let username = SQLite.Expression<String>("username")
-        let notifyProps = SQLite.Expression<String>("notify_props")
-        let props = SQLite.Expression<String>("props")
-        let timezone = SQLite.Expression<String>("timezone")
+        let id = Expression<String>("id")
+        let authService = Expression<String>("auth_service")
+        let updateAt = Expression<Double>("update_at")
+        let deleteAt = Expression<Double>("delete_at")
+        let email = Expression<String>("email")
+        let firstName = Expression<String>("first_name")
+        let isBot = Expression<Bool>("is_bot")
+        let isGuest = Expression<Bool>("is_guest")
+        let lastName = Expression<String>("last_name")
+        let lastPictureUpdate = Expression<Double>("last_picture_update")
+        let locale = Expression<String>("locale")
+        let nickname = Expression<String>("nickname")
+        let position = Expression<String>("position")
+        let roles = Expression<String>("roles")
+        let status = Expression<String>("status")
+        let username = Expression<String>("username")
+        let notifyProps = Expression<String>("notify_props")
+        let props = Expression<String>("props")
+        let timezone = Expression<String>("timezone")
         
         var setters = [[Setter]]()
         for user in users {

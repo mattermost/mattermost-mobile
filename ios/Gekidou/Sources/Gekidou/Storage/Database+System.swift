@@ -12,8 +12,8 @@ import SQLite
 extension Database {
     public func getDeviceToken() -> String? {
         if let db = try? Connection(DEFAULT_DB_PATH) {
-            let idCol = SQLite.Expression<String>("id")
-            let valueCol = SQLite.Expression<String>("value")
+            let idCol = Expression<String>("id")
+            let valueCol = Expression<String>("value")
             let query = globalTable.select(valueCol).filter(idCol == "deviceToken")
             if let result = try? db.pluck(query) {
                 return try? result.get(valueCol)
@@ -25,8 +25,8 @@ extension Database {
 
     public func getConfig(_ serverUrl: String, _ key: String) -> String? {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let id = SQLite.Expression<String>("id")
-            let value = SQLite.Expression<String>("value")
+            let id = Expression<String>("id")
+            let value = Expression<String>("value")
             let query = configTable.select(value).filter(id == key)
             if let result = try? db.pluck(query) {
                 return try? result.get(value)
@@ -37,8 +37,8 @@ extension Database {
     
     public func getLicense(_ serverUrl: String) -> String? {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let id = SQLite.Expression<String>("id")
-            let value = SQLite.Expression<String>("value")
+            let id = Expression<String>("id")
+            let value = Expression<String>("value")
             let query = systemTable.select(value).filter(id == "license")
             if let result = try? db.pluck(query) {
                 return try? result.get(value)

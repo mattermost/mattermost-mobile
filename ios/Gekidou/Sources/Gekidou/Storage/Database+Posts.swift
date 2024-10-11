@@ -32,8 +32,8 @@ struct ThreadSetters {
 extension Database {
     public func queryLastPostInThread(withRootId rootId: String, forServerUrl serverUrl: String) -> Double? {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let createAtCol = SQLite.Expression<Double>("create_at")
-            let rootIdCol = SQLite.Expression<String>("root_id")
+            let createAtCol = Expression<Double>("create_at")
+            let rootIdCol = Expression<String>("root_id")
             let query = postTable
                 .select(createAtCol)
                 .where(rootIdCol == rootId)
@@ -48,9 +48,9 @@ extension Database {
     
     public func queryLastPostCreateAt(withId channelId: String, forServerUrl serverUrl: String) -> Double? {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let earliestCol = SQLite.Expression<Double>("earliest")
-            let latestCol = SQLite.Expression<Double>("latest")
-            let channelIdCol = SQLite.Expression<String>("channel_id")
+            let earliestCol = Expression<Double>("earliest")
+            let latestCol = Expression<Double>("latest")
+            let channelIdCol = Expression<String>("channel_id")
             let earliestLatestQuery = postsInChannelTable
                 .select(earliestCol, latestCol)
                 .where(channelIdCol == channelId)
@@ -66,8 +66,8 @@ extension Database {
                 return nil
             }
             
-            let createAtCol = SQLite.Expression<Double>("create_at")
-            let deleteAtCol = SQLite.Expression<Double>("delete_at")
+            let createAtCol = Expression<Double>("create_at")
+            let deleteAtCol = Expression<Double>("delete_at")
             var postQuery = postTable
                 .select(createAtCol)
                 .where(channelIdCol == channelId && deleteAtCol == 0)
@@ -87,8 +87,8 @@ extension Database {
     
     public func queryPostsSinceForChannel(withId channelId: String, forServerUrl serverUrl: String) -> Double? {
         if let db = try? getDatabaseForServer(serverUrl) {
-            let idCol = SQLite.Expression<String>("id")
-            let lastFetchedAtColAsDouble = SQLite.Expression<Double?>("last_fetched_at")
+            let idCol = Expression<String>("id")
+            let lastFetchedAtColAsDouble = Expression<Double?>("last_fetched_at")
             let query = myChannelTable.where(idCol == channelId)
             
             if let result = try? db.pluck(query) {
@@ -156,11 +156,11 @@ extension Database {
     }
     
     private func updatePostsInChannelEarliestAndLatest(_ db: Connection, _ channelId: String, _ earliest: Double, _ latest: Double) throws -> Bool {
-        let idCol = SQLite.Expression<String>("id")
-        let channelIdCol = SQLite.Expression<String>("channel_id")
-        let earliestCol = SQLite.Expression<Double>("earliest")
-        let latestCol = SQLite.Expression<Double>("latest")
-        let statusCol = SQLite.Expression<String>("_status")
+        let idCol = Expression<String>("id")
+        let channelIdCol = Expression<String>("channel_id")
+        let earliestCol = Expression<Double>("earliest")
+        let latestCol = Expression<Double>("latest")
+        let statusCol = Expression<String>("_status")
         
         let query = postsInChannelTable
             .where(channelIdCol == channelId && (earliestCol <= earliest || latestCol >= latest))
@@ -185,11 +185,11 @@ extension Database {
     }
     
     private func insertPostsInChannel(_ db: Connection, _ channelId: String, _ earliest: Double, _ latest: Double) throws {
-        let idCol = SQLite.Expression<String>("id")
-        let channelIdCol = SQLite.Expression<String>("channel_id")
-        let earliestCol = SQLite.Expression<Double>("earliest")
-        let latestCol = SQLite.Expression<Double>("latest")
-        let statusCol = SQLite.Expression<String>("_status")
+        let idCol = Expression<String>("id")
+        let channelIdCol = Expression<String>("channel_id")
+        let earliestCol = Expression<Double>("earliest")
+        let latestCol = Expression<Double>("latest")
+        let statusCol = Expression<String>("_status")
         let id = generateId()
         
         let query = postsInChannelTable
@@ -223,7 +223,7 @@ extension Database {
             }
             
             if !setter.reactionSetters.isEmpty {
-                let postIdCol = SQLite.Expression<String>("post_id")
+                let postIdCol = Expression<String>("post_id")
                 let deletePreviousReactions = reactionTable.where(postIdCol == setter.id).delete()
                 try db.run(deletePreviousReactions)
                 let insertReactions = reactionTable.insertMany(setter.reactionSetters)
@@ -233,24 +233,24 @@ extension Database {
     }
     
     private func createPostSetters(from posts: [Post]) -> [PostSetters] {
-        let id = SQLite.Expression<String>("id")
-        let createAt = SQLite.Expression<Double>("create_at")
-        let updateAt = SQLite.Expression<Double>("update_at")
-        let editAt = SQLite.Expression<Double>("edit_at")
-        let deleteAt = SQLite.Expression<Double>("delete_at")
-        let isPinned = SQLite.Expression<Bool>("is_pinned")
-        let userId = SQLite.Expression<String>("user_id")
-        let channelId = SQLite.Expression<String>("channel_id")
-        let rootId = SQLite.Expression<String>("root_id")
-        let originalId = SQLite.Expression<String>("original_id")
-        let message = SQLite.Expression<String>("message")
-        let messageSource = SQLite.Expression<String>("message_source")
-        let metadata = SQLite.Expression<String>("metadata")
-        let type = SQLite.Expression<String>("type")
-        let pendingPostId = SQLite.Expression<String?>("pending_post_id")
-        let prevPostId = SQLite.Expression<String?>("previous_post_id")
-        let props = SQLite.Expression<String?>("props")
-        let statusCol = SQLite.Expression<String>("_status")
+        let id = Expression<String>("id")
+        let createAt = Expression<Double>("create_at")
+        let updateAt = Expression<Double>("update_at")
+        let editAt = Expression<Double>("edit_at")
+        let deleteAt = Expression<Double>("delete_at")
+        let isPinned = Expression<Bool>("is_pinned")
+        let userId = Expression<String>("user_id")
+        let channelId = Expression<String>("channel_id")
+        let rootId = Expression<String>("root_id")
+        let originalId = Expression<String>("original_id")
+        let message = Expression<String>("message")
+        let messageSource = Expression<String>("message_source")
+        let metadata = Expression<String>("metadata")
+        let type = Expression<String>("type")
+        let pendingPostId = Expression<String?>("pending_post_id")
+        let prevPostId = Expression<String?>("previous_post_id")
+        let props = Expression<String?>("props")
+        let statusCol = Expression<String>("_status")
         
         var postsSetters: [PostSetters] = []
         
@@ -296,20 +296,20 @@ extension Database {
     }
     
     private func createPostMetadataSetters(from post: Post) -> MetadataSetters {
-        let id = SQLite.Expression<String>("id")
-        let userId = SQLite.Expression<String>("user_id")
-        let postId = SQLite.Expression<String>("post_id")
-        let emojiName = SQLite.Expression<String>("emoji_name")
-        let createAt = SQLite.Expression<Double>("create_at")
-        let name = SQLite.Expression<String>("name")
-        let ext = SQLite.Expression<String>("extension")
-        let size = SQLite.Expression<Double>("size")
-        let mimeType = SQLite.Expression<String>("mime_type")
-        let width = SQLite.Expression<Double>("width")
-        let height = SQLite.Expression<Double>("height")
-        let localPath = SQLite.Expression<String?>("local_path")
-        let imageThumbnail = SQLite.Expression<String?>("image_thumbnail")
-        let statusCol = SQLite.Expression<String>("_status")
+        let id = Expression<String>("id")
+        let userId = Expression<String>("user_id")
+        let postId = Expression<String>("post_id")
+        let emojiName = Expression<String>("emoji_name")
+        let createAt = Expression<Double>("create_at")
+        let name = Expression<String>("name")
+        let ext = Expression<String>("extension")
+        let size = Expression<Double>("size")
+        let mimeType = Expression<String>("mime_type")
+        let width = Expression<Double>("width")
+        let height = Expression<Double>("height")
+        let localPath = Expression<String?>("local_path")
+        let imageThumbnail = Expression<String?>("image_thumbnail")
+        let statusCol = Expression<String>("_status")
         
         var metadataString = "{}"
         var reactionSetters = [[Setter]]()
@@ -401,10 +401,10 @@ extension Database {
             }
         }
         
-        let rootIdCol = SQLite.Expression<String>("root_id")
-        let earliestCol = SQLite.Expression<Double>("earliest")
-        let latestCol = SQLite.Expression<Double>("latest")
-        let statusCol = SQLite.Expression<String>("_status")
+        let rootIdCol = Expression<String>("root_id")
+        let earliestCol = Expression<Double>("earliest")
+        let latestCol = Expression<Double>("latest")
+        let statusCol = Expression<String>("_status")
         
         for (rootId, posts) in postsInThread {
             let sortedPosts = posts.sorted(by: { $0.createAt < $1.createAt })

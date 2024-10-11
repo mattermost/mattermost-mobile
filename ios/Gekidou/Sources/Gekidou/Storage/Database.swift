@@ -9,6 +9,8 @@ import Foundation
 import SQLite3
 import SQLite
 
+typealias Expression = SQLite.Expression
+
 enum DatabaseError: Error {
     case OpenFailure(_ dbPath: String)
     case MultipleServers
@@ -92,9 +94,9 @@ public class Database: NSObject {
     
     public func getOnlyServerUrl() throws -> String {
         let db = try Connection(DEFAULT_DB_PATH)
-        let url = SQLite.Expression<String>("url")
-        let identifier = SQLite.Expression<String>("identifier")
-        let lastActiveAt = SQLite.Expression<Int64>("last_active_at")
+        let url = Expression<String>("url")
+        let identifier = Expression<String>("identifier")
+        let lastActiveAt = Expression<Int64>("last_active_at")
         let query = serversTable.select(url).filter(lastActiveAt > 0 && identifier != "")
         
         var serverUrl: String?
@@ -115,8 +117,8 @@ public class Database: NSObject {
     
     public func getServerUrlForServer(_ id: String) throws -> String {
         let db = try Connection(DEFAULT_DB_PATH)
-        let url = SQLite.Expression<String>("url")
-        let identifier = SQLite.Expression<String>("identifier")
+        let url = Expression<String>("url")
+        let identifier = Expression<String>("identifier")
         let query = serversTable.select(url).filter(identifier == id)
         
         if let server = try db.pluck(query) {
@@ -131,8 +133,8 @@ public class Database: NSObject {
     
     public func getAllActiveDatabases<T: Codable>() -> [T] {
         guard let db = try? Connection(DEFAULT_DB_PATH) else {return []}
-        let lastActiveAt = SQLite.Expression<Int64>("last_active_at")
-        let identifier = SQLite.Expression<String>("identifier")
+        let lastActiveAt = Expression<Int64>("last_active_at")
+        let identifier = Expression<String>("identifier")
         let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
         do {
             let rows = try db.prepare(query)
@@ -148,9 +150,9 @@ public class Database: NSObject {
     
     public func getAllActiveServerUrls() -> [String] {
         guard let db = try? Connection(DEFAULT_DB_PATH) else {return []}
-        let lastActiveAt = SQLite.Expression<Int64>("last_active_at")
-        let identifier = SQLite.Expression<String>("identifier")
-        let url = SQLite.Expression<String>("url")
+        let lastActiveAt = Expression<Int64>("last_active_at")
+        let identifier = Expression<String>("identifier")
+        let url = Expression<String>("url")
         let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
         do {
             let rows = try db.prepare(query)
@@ -167,8 +169,8 @@ public class Database: NSObject {
     public func getCurrentServerDatabase<T: Codable>() -> T? {
         guard let db = try? Connection(DEFAULT_DB_PATH) else {return nil}
         do {
-            let lastActiveAt = SQLite.Expression<Int64>("last_active_at")
-            let identifier = SQLite.Expression<String>("identifier")
+            let lastActiveAt = Expression<Int64>("last_active_at")
+            let identifier = Expression<String>("identifier")
             let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
             
             if let result = try db.pluck(query) {
@@ -184,8 +186,8 @@ public class Database: NSObject {
     
     internal func getDatabaseForServer(_ serverUrl: String) throws -> Connection {
         let db = try Connection(DEFAULT_DB_PATH)
-        let url = SQLite.Expression<String>("url")
-        let dbPath = SQLite.Expression<String>("db_path")
+        let url = Expression<String>("url")
+        let dbPath = Expression<String>("db_path")
         let query = serversTable.select(dbPath).where(url == serverUrl)
         
         if let result = try db.pluck(query) {

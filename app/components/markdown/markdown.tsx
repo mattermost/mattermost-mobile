@@ -357,11 +357,15 @@ const Markdown = ({
             return null;
         }
 
+        const isInsideLink = context.indexOf('link') !== -1;
+
+        const disableInteraction = (disableGallery ?? Boolean(!location)) || isInsideLink;
+
         if (context.indexOf('table') !== -1) {
             // We have enough problems rendering images as is, so just render a link inside of a table
             return (
                 <MarkdownTableImage
-                    disabled={disableGallery ?? Boolean(!location)}
+                    disabled={disableInteraction}
                     imagesMetadata={imagesMetadata}
                     location={location}
                     postId={postId!}
@@ -372,7 +376,7 @@ const Markdown = ({
 
         return (
             <MarkdownImage
-                disabled={disableGallery ?? Boolean(!location)}
+                disabled={disableInteraction}
                 errorTextStyle={[computeTextStyle(textStyles, baseTextStyle, context), textStyles.error]}
                 layoutHeight={layoutHeight}
                 layoutWidth={layoutWidth}
@@ -407,6 +411,7 @@ const Markdown = ({
         if (isUnsafeLinksPost) {
             return renderText({context: [], literal: href});
         }
+
         return (
             <MarkdownLink
                 href={href}
