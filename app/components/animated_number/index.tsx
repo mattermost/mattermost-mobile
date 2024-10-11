@@ -42,9 +42,9 @@ const AnimatedNumber = ({
             '0',
         );
 
-        if (previousNumberString.length > animateToNumberString.length) {
+        if (_previousNumberString.length > animateToNumberString.length) {
             _previousNumberString = _previousNumberString.slice(
-                previousNumberString.length - animateToNumberString.length,
+                _previousNumberString.length - animateToNumberString.length,
             );
         }
 
