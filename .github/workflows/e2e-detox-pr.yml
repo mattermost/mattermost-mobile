@@ -10,7 +10,7 @@ on:
       - labeled
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.event.pull_request.number }}"
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}"
   cancel-in-progress: true
 
 jobs:
