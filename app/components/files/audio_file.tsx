@@ -106,11 +106,11 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
         toggleDownloadAndPreview(file);
     };
 
-    const loadTimeInMinutes = throttle((timeInSeconds: number) => {
+    const loadTimeInMinutes = (timeInSeconds: number) => {
         const minutes = Math.floor(timeInSeconds / 60);
         const seconds = Math.floor(timeInSeconds % 60);
         setTimeInMinutes(`${minutes}:${seconds.toString().padStart(2, '0')}`);
-    }, 1000);
+    };
 
     const onLoad = (loadData: OnLoadData) => {
         loadTimeInMinutes(loadData.duration);
@@ -123,7 +123,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
         }
         const {currentTime, playableDuration} = progressData;
         setProgress(currentTime / playableDuration);
-        loadTimeInMinutes(currentTime);
+        throttle(() => loadTimeInMinutes(currentTime), 1000)();
     };
 
     const onEnd = () => {
@@ -142,7 +142,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
             const newTime = seekPosition * duration;
             videoRef.current.seek(newTime);
             setProgress(seekPosition);
-            loadTimeInMinutes(newTime);
+            throttle(() => loadTimeInMinutes(newTime), 100)();
         }
     };
 
