@@ -47,7 +47,7 @@ const Code = ({code, componentId, language, textStyle}: Props) => {
         showSnackBar({barType: SNACK_BAR_TYPE.CODE_COPIED, sourceScreen: componentId});
     }, [code, componentId]);
 
-    useNavButtonPressed(COPY_CODE_BUTTON, componentId, copyToClipboard, []);
+    useNavButtonPressed(COPY_CODE_BUTTON, componentId, copyToClipboard, [componentId, copyToClipboard]);
 
     useEffect(() => {
         setButtons(componentId, {
