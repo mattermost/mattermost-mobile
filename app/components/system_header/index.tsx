@@ -40,13 +40,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         header: {
             flex: 1,
             flexDirection: 'row',
+        },
+        headerWithTop: {
             marginTop: 10,
         },
         timeContainer: {
             flex: 1,
             marginTop: 5,
             flexDirection: 'row',
-            alignItems: 'center',
             gap: 5,
         },
         time: {
@@ -62,7 +63,7 @@ const SystemHeader = ({isMilitaryTime, createAt, theme, user, isEphemeral}: Prop
     const userTimezone = getUserTimezone(user);
 
     return (
-        <View style={styles.header}>
+        <View style={[styles.header, isEphemeral && styles.headerWithTop]}>
             <View style={styles.displayNameContainer}>
                 <FormattedText
                     id='post_info.system'
