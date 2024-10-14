@@ -21,7 +21,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     channel: ChannelModel;
     location: string;
-    sendToUser?: UserModel;
+    draftReceiverUser?: UserModel;
     draft: DraftModel;
     layoutWidth: number;
 }
@@ -45,7 +45,7 @@ const Draft: React.FC<Props> = ({
     channel,
     location,
     draft,
-    sendToUser,
+    draftReceiverUser,
     layoutWidth,
 }) => {
     const intl = useIntl();
@@ -76,7 +76,7 @@ const Draft: React.FC<Props> = ({
             >
                 <ChannelInfo
                     channel={channel}
-                    sendToUser={sendToUser}
+                    draftReceiverUser={draftReceiverUser}
                     rootId={draft.rootId}
                     testID='draft_post.channel_info'
                 />

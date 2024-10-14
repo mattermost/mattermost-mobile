@@ -19,7 +19,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     channel: ChannelModel;
-    sendToUser?: UserModel;
+    draftReceiverUser?: UserModel;
     updateAt?: string;
     rootId?: PostModel['rootId'];
     testID?: string;
@@ -63,7 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const ChannelInfo: React.FC<Props> = ({
     channel,
-    sendToUser,
+    draftReceiverUser,
     updateAt = 'Yesterday',
     rootId,
     testID,
@@ -73,7 +73,7 @@ const ChannelInfo: React.FC<Props> = ({
     const isChannelTypeDM = channel.type === General.DM_CHANNEL;
 
     let headerComponent: ReactNode = null;
-    const profileComponent = sendToUser ? <Avatar author={sendToUser}/> : (
+    const profileComponent = draftReceiverUser ? <Avatar author={draftReceiverUser}/> : (
         <CompassIcon
             color={changeOpacity(theme.centerChannelColor, 0.64)}
             name='globe'
