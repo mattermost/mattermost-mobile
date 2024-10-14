@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import React from 'react';
 import {switchMap, of} from 'rxjs';
 
 import {observeChannel, observeChannelMembers} from '@app/queries/servers/channel';
@@ -10,46 +11,82 @@ import {observeCurrentUser, observeUser} from '@app/queries/servers/user';
 import Drafts from './draft';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
+import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     channelId: string;
+    currentUser?: UserModel;
+    members?: ChannelMembershipModel[];
+    channel?: ChannelModel;
 } & WithDatabaseArgs;
 
-const enhance = withObservables(['channelId'], ({channelId, database}: Props) => {
+const withCurrentUser = withObservables([], ({database}: WithDatabaseArgs) => ({
+    currentUser: observeCurrentUser(database),
+}));
+
+const withChannel = withObservables(['channelId'], ({channelId, database}: Props) => ({
+    channel: observeChannel(database, channelId),
+}));
+
+const withChannelMembers = withObservables(['channelId'], ({channelId, database}: Props) => {
     const channel = observeChannel(database, channelId);
-    const currentUser = observeCurrentUser(database);
-    const draftReceiverUser = channel.pipe(
+
+    const members = channel.pipe(
         switchMap((channelData) => {
             if (channelData?.type === 'D') {
-                // Fetch the channel member for direct message channels
-                return observeChannelMembers(database, channelId).pipe(
-                    // eslint-disable-next-line max-nested-callbacks
-                    switchMap((members) => {
-                        if (members.length > 0) {
-                            return currentUser.pipe(
-                                // eslint-disable-next-line max-nested-callbacks
-                                switchMap((user) => {
-                                    // eslint-disable-next-line max-nested-callbacks
-                                    const validMember = members.find((member) => member.userId !== user?.id);
-                                    if (validMember) {
-                                        return observeUser(database, validMember.userId);
-                                    }
-                                    return of(undefined);
-                                }),
-                            );
-                        }
-                        return of(undefined);
-                    }),
-                );
+                return observeChannelMembers(database, channelId);
             }
             return of(undefined);
         }),
     );
 
     return {
+        members,
+    };
+});
+
+const observeDraftReceiverUser = ({
+    members,
+    database,
+    channelData,
+    currentUser,
+}: {
+    members?: ChannelMembershipModel[];
+    database: WithDatabaseArgs['database'];
+    channelData?: ChannelModel;
+    currentUser?: UserModel;
+}) => {
+    if (channelData?.type === 'D') {
+        if (members && members.length > 0) {
+            const validMember = members.find((member) => member.userId !== currentUser?.id);
+            if (validMember) {
+                return observeUser(database, validMember.userId);
+            }
+            return of(undefined);
+        }
+        return of(undefined);
+    }
+    return of(undefined);
+};
+
+const enhance = withObservables(['channel', 'members'], ({channel, database, currentUser, members}: Props) => {
+    const draftReceiverUser = observeDraftReceiverUser({members, database, channelData: channel, currentUser});
+    return {
         channel,
         draftReceiverUser,
     };
 });
 
-export default withDatabase(enhance(Drafts));
+export default React.memo(
+    withDatabase(
+        withChannel(
+            withCurrentUser(
+                withChannelMembers(
+                    enhance(Drafts),
+                ),
+            ),
+        ),
+    ),
+);

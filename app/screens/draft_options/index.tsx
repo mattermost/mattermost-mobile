@@ -14,6 +14,13 @@ import DeleteDraft from './delete_draft';
 import EditDraft from './edit_draft';
 import SendDraft from './send_draft';
 
+import type ChannelModel from '@typings/database/models/servers/channel';
+
+type Props = {
+    channel: ChannelModel;
+    rootId: string;
+}
+
 export const DRAFT_OPTIONS_BUTTON = 'close-post-options';
 
 const styles = StyleSheet.create({
@@ -24,7 +31,10 @@ const styles = StyleSheet.create({
     },
 });
 
-const DraftOptions = () => {
+const DraftOptions: React.FC<Props> = ({
+    channel,
+    rootId,
+}) => {
     const {formatMessage} = useIntl();
     const isTablet = useIsTablet();
     const renderContent = () => {
@@ -35,6 +45,8 @@ const DraftOptions = () => {
                 )}</Text>}
                 <EditDraft
                     bottomSheetId={Screens.DRAFT_OPTIONS}
+                    channel={channel}
+                    rootId={rootId}
                 />
                 <SendDraft
                     bottomSheetId={Screens.DRAFT_OPTIONS}

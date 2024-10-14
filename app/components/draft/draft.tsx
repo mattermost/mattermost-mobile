@@ -61,7 +61,7 @@ const Draft: React.FC<Props> = ({
             screen: Screens.DRAFT_OPTIONS,
             theme,
             title,
-            props: {},
+            props: {channel, rootId: draft.rootId},
         });
     };
 
