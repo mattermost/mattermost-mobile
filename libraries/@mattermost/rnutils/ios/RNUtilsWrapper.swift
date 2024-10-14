@@ -3,6 +3,7 @@ import React
 
 @objc public class RNUtilsWrapper: NSObject {
     @objc public weak var delegate: RNUtilsDelegate? = nil
+    @objc private var hasRegisteredLoad = false
     
     deinit {
         DispatchQueue.main.async {
@@ -250,6 +251,14 @@ import React
             }
             group.wait()
             return dimensions
+    }
+
+    @objc public func setHasRegisteredLoad() {
+        hasRegisteredLoad = true
+    }
+
+    @objc public func getHasRegisteredLoad() -> Dictionary<String, Any> {
+        return ["hasRegisteredLoad": hasRegisteredLoad]
     }
     
     @objc public func unlockOrientation() {

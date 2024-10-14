@@ -41,6 +41,10 @@ export type WindowDimensionsChanged = Readonly<{
   height: Double;
 }>
 
+type HasRegisteredLoadResponse = {
+  hasRegisteredLoad: boolean;
+}
+
 export interface Spec extends TurboModule {
     readonly getConstants: () => Constants;
 
@@ -54,6 +58,9 @@ export interface Spec extends TurboModule {
     isRunningInSplitView: () => SplitView;
     unlockOrientation: () => void;
     lockPortrait: () => void;
+
+    getHasRegisteredLoad: () => HasRegisteredLoadResponse;
+    setHasRegisteredLoad: () => void;
 
     deleteDatabaseDirectory: (databaseName: string, shouldRemoveDirectory: boolean) => DatabaseOperationResult;
     renameDatabase: (databaseName: string, newDatabaseName: string) => DatabaseOperationResult;
