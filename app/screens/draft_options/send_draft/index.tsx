@@ -1,63 +1,94 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {useIntl} from 'react-intl';
-import {Text} from 'react-native';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {combineLatest, of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
-import CompassIcon from '@app/components/compass_icon';
-import TouchableWithFeedback from '@app/components/touchable_with_feedback';
-import {ICON_SIZE} from '@app/constants/post_draft';
-import {useTheme} from '@app/context/theme';
-import {dismissBottomSheet} from '@app/screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import {typography} from '@app/utils/typography';
+import {INITIAL_PRIORITY} from '@app/components/post_draft/send_handler/send_handler';
+import {General, Permissions} from '@constants';
+import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
+import {observeChannel, observeChannelInfo, observeCurrentChannel} from '@queries/servers/channel';
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {observeFirstDraft, queryDraft} from '@queries/servers/drafts';
+import {observePermissionForChannel} from '@queries/servers/role';
+import {observeConfigBooleanValue, observeConfigIntValue, observeCurrentUserId} from '@queries/servers/system';
+import {observeUser} from '@queries/servers/user';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
+import SendDraft from './send_draft';
 
-type Props = {
-    bottomSheetId: AvailableScreens;
-}
+import type {WithDatabaseArgs} from '@typings/database/database';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    title: {
-        color: theme.centerChannelColor,
-        ...typography('Body', 200),
-    },
-    draftOptions: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 16,
-        paddingVertical: 12,
-    },
-}));
+type Props ={
+    rootId: string;
+    channelId: string;
+} & WithDatabaseArgs;
 
-const SendDraft: React.FC<Props> = ({
-    bottomSheetId,
-}) => {
-    const theme = useTheme();
-    const intl = useIntl();
-    const style = getStyleSheet(theme);
+const enhanced = withObservables([], ({database, rootId, channelId}: Props) => {
+    let channel;
+    if (rootId) {
+        channel = observeChannel(database, channelId);
+    } else {
+        channel = observeCurrentChannel(database);
+    }
 
-    const draftSendHandler = async () => {
-        await dismissBottomSheet(bottomSheetId);
-    };
-
-    return (
-        <TouchableWithFeedback
-            type={'opacity'}
-            style={style.draftOptions}
-            onPress={draftSendHandler}
-        >
-            <CompassIcon
-                name='send'
-                size={ICON_SIZE}
-                color={changeOpacity(theme.centerChannelColor, 0.56)}
-            />
-            <Text style={style.title}>{intl.formatMessage({id: 'draft.options.save.title', defaultMessage: 'Save'})}</Text>
-        </TouchableWithFeedback>
+    const currentUserId = observeCurrentUserId(database);
+    const currentUser = currentUserId.pipe(
+        switchMap((id) => observeUser(database, id)),
     );
-};
+    const userIsOutOfOffice = currentUser.pipe(
+        switchMap((u) => of$(u?.status === General.OUT_OF_OFFICE)),
+    );
 
-export default SendDraft;
+    const postPriority = queryDraft(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
+        switchMap(observeFirstDraft),
+        switchMap((d) => {
+            if (!d?.metadata?.priority) {
+                return of$(INITIAL_PRIORITY);
+            }
+
+            return of$(d.metadata.priority);
+        }),
+    );
+
+    const enableConfirmNotificationsToChannel = observeConfigBooleanValue(database, 'EnableConfirmNotificationsToChannel');
+    const maxMessageLength = observeConfigIntValue(database, 'MaxPostSize', MAX_MESSAGE_LENGTH_FALLBACK);
+    const persistentNotificationInterval = observeConfigIntValue(database, 'PersistentNotificationIntervalMinutes');
+    const persistentNotificationMaxRecipients = observeConfigIntValue(database, 'PersistentNotificationMaxRecipients');
+
+    const useChannelMentions = combineLatest([channel, currentUser]).pipe(
+        switchMap(([c, u]) => {
+            if (!c) {
+                return of$(true);
+            }
+
+            return u ? observePermissionForChannel(database, c, u, Permissions.USE_CHANNEL_MENTIONS, false) : of$(false);
+        }),
+    );
+
+    const channelInfo = channel.pipe(switchMap((c) => (c ? observeChannelInfo(database, c.id) : of$(undefined))));
+    const channelType = channel.pipe(switchMap((c) => of$(c?.type)));
+    const channelName = channel.pipe(switchMap((c) => of$(c?.name)));
+    const membersCount = channelInfo.pipe(
+        switchMap((i) => (i ? of$(i.memberCount) : of$(0))),
+    );
+
+    const customEmojis = queryAllCustomEmojis(database).observe();
+
+    return {
+        channelType,
+        channelName,
+        currentUserId,
+        enableConfirmNotificationsToChannel,
+        maxMessageLength,
+        membersCount,
+        userIsOutOfOffice,
+        useChannelMentions,
+        customEmojis,
+        persistentNotificationInterval,
+        persistentNotificationMaxRecipients,
+        postPriority,
+    };
+});
+
+export default withDatabase(enhanced(SendDraft));

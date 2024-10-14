@@ -119,7 +119,7 @@ export default function SendHandler({
             addFiles={addFiles}
             uploadFileError={uploadFileError}
             sendMessage={handleSendMessage}
-            canSend={canSend()}
+            canSend={canSend}
             maxMessageLength={maxMessageLength}
             updatePostInputTop={updatePostInputTop}
             postPriority={postPriority}
