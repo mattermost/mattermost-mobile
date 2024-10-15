@@ -107,7 +107,7 @@ const SendDraft: React.FC<Props> = ({
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
-            <Text style={style.title}>{intl.formatMessage({id: 'draft.options.save.title', defaultMessage: 'Save'})}</Text>
+            <Text style={style.title}>{intl.formatMessage({id: 'draft.options.send.title', defaultMessage: 'Send'})}</Text>
         </TouchableWithFeedback>
     );
 };

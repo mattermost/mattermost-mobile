@@ -310,7 +310,7 @@
   "drafts": "Drafts",
   "draft.options.delete.title": "Delete",
   "draft.options.edit.title": "Edit",
-  "draft.options.save.title": "Save",
+  "draft.options.send.title": "Send",
   "draft.options.header": "Draft actions",
   "draft.options.title": "Draft Options",
   "download.error": "Unable to download the file. Try again later",
