@@ -116,7 +116,7 @@ const launchApp = async (props: LaunchProps) => {
         serverUrl = await getActiveServerUrl();
     }
 
-    await cleanupEphemeralPosts();
+    cleanupEphemeralPosts();
 
     if (serverUrl) {
         const credentials = await getServerCredentials(serverUrl);
@@ -261,15 +261,13 @@ export const getLaunchPropsFromNotification = async (notification: NotificationW
 async function cleanupEphemeralPosts() {
     const servers = await getAllServers();
 
-    const promises = servers.map(async (server) => {
+    for (const server of servers) {
         const database = DatabaseManager.serverDatabases[server.url]?.database;
         if (!database) {
-            return;
+            continue;
         }
 
-        const posts = await queryPostsByType(database, 'system_ephemeral').fetch();
-        posts.forEach((post) => removePost(server.url, post));
-    });
-
-    await Promise.all(promises);
+        const postsPromise = queryPostsByType(database, 'system_ephemeral').fetch();
+        postsPromise.then((posts) => posts.forEach((post) => removePost(server.url, post)));
+    }
 }
