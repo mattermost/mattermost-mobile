@@ -5,9 +5,11 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
 
+import {removeDraft} from '@actions/local/draft';
 import CompassIcon from '@app/components/compass_icon';
 import TouchableWithFeedback from '@app/components/touchable_with_feedback';
 import {ICON_SIZE} from '@app/constants/post_draft';
+import {useServerUrl} from '@app/context/server';
 import {useTheme} from '@app/context/theme';
 import {dismissBottomSheet} from '@app/screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
@@ -17,6 +19,8 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     bottomSheetId: AvailableScreens;
+    channelId: string;
+    rootId: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -35,13 +39,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const DeleteDraft: React.FC<Props> = ({
     bottomSheetId,
+    channelId,
+    rootId,
 }) => {
     const theme = useTheme();
     const intl = useIntl();
     const style = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
 
     const draftDeleteHandler = async () => {
         await dismissBottomSheet(bottomSheetId);
+        removeDraft(serverUrl, channelId, rootId);
     };
 
     return (

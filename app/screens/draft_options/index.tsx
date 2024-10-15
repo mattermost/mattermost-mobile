@@ -60,6 +60,8 @@ const DraftOptions: React.FC<Props> = ({
                 />
                 <DeleteDraft
                     bottomSheetId={Screens.DRAFT_OPTIONS}
+                    channelId={channel.id}
+                    rootId={rootId}
                 />
             </View>
         );
