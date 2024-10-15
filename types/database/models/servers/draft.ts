@@ -27,6 +27,9 @@ declare class DraftModel extends Model {
     files: FileInfo[];
 
     metadata?: PostMetadata;
+
+    /** update_at : The timestamp to when this post was last updated on the server */
+    updateAt: number;
 }
 
 export default DraftModel;
