@@ -11,6 +11,7 @@ import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/ent
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import LocalConfig from '@assets/config.json';
 import {DeepLink, Events, Launch, PushNotification} from '@constants';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
@@ -267,7 +268,7 @@ async function cleanupEphemeralPosts() {
             continue;
         }
 
-        const postsPromise = queryPostsByType(database, 'system_ephemeral').fetch();
+        const postsPromise = queryPostsByType(database, PostTypes.EPHEMERAL).fetch();
         postsPromise.then((posts) => posts.forEach((post) => removePost(server.url, post)));
     }
 }

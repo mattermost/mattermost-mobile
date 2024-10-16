@@ -14,6 +14,7 @@ import NewMessagesLine from '@components/post_list/new_message_line';
 import Post from '@components/post_list/post';
 import ThreadOverview from '@components/post_list/thread_overview';
 import {Events, Screens} from '@constants';
+import {PostTypes} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
@@ -174,7 +175,7 @@ const PostList = ({
             await fetchPostThread(serverUrl, rootId, options);
         }
         const removalPromises = posts.
-            filter((post) => post.type === 'system_ephemeral').
+            filter((post) => post.type === PostTypes.EPHEMERAL).
             map((post) => removePost(serverUrl, post));
         await Promise.all(removalPromises);
         setRefreshing(false);
