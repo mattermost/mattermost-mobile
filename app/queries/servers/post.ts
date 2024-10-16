@@ -190,11 +190,8 @@ export const queryPostsById = (database: Database, postIds: string[], sort?: Q.S
     return database.get<PostModel>(POST).query(...clauses);
 };
 
-export const queryPostsByType = (database: Database, type: string, sort?: Q.SortOrder) => {
+export const queryPostsByType = (database: Database, type: string) => {
     const clauses: Q.Clause[] = [Q.where('type', type)];
-    if (sort) {
-        clauses.push(Q.sortBy('create_at', sort));
-    }
     return database.get<PostModel>(POST).query(...clauses);
 };
 
