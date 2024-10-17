@@ -4,7 +4,7 @@
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
-import {addColumns, createTable, schemaMigrations} from '@nozbe/watermelondb/Schema/migrations';
+import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozbe/watermelondb/Schema/migrations';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -14,12 +14,7 @@ export default schemaMigrations({migrations: [
     {
         toVersion: 6,
         steps: [
-            addColumns({
-                table: POST,
-                columns: [
-                    {name: 'type', type: 'string', isIndexed: true},
-                ],
-            }),
+            unsafeExecuteSql('CREATE INDEX Post_type ON Post (type)'),
         ],
     },
     {
