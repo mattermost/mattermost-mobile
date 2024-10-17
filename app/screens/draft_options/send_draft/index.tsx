@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 import {INITIAL_PRIORITY} from '@app/components/post_draft/send_handler/send_handler';
 import {General, Permissions} from '@constants';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
-import {observeChannel, observeChannelInfo, observeCurrentChannel} from '@queries/servers/channel';
+import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {observeFirstDraft, queryDraft} from '@queries/servers/drafts';
 import {observePermissionForChannel} from '@queries/servers/role';
@@ -25,12 +25,7 @@ type Props ={
 } & WithDatabaseArgs;
 
 const enhanced = withObservables([], ({database, rootId, channelId}: Props) => {
-    let channel;
-    if (rootId) {
-        channel = observeChannel(database, channelId);
-    } else {
-        channel = observeCurrentChannel(database);
-    }
+    const channel = observeChannel(database, channelId);
 
     const currentUserId = observeCurrentUserId(database);
     const currentUser = currentUserId.pipe(

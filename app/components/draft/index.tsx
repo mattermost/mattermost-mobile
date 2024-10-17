@@ -6,6 +6,7 @@ import React from 'react';
 import {switchMap, of} from 'rxjs';
 
 import {observeChannel, observeChannelMembers} from '@app/queries/servers/channel';
+import {observeIsPostPriorityEnabled} from '@app/queries/servers/post';
 import {observeCurrentUser, observeUser} from '@app/queries/servers/user';
 
 import Drafts from './draft';
@@ -76,6 +77,7 @@ const enhance = withObservables(['channel', 'members'], ({channel, database, cur
     return {
         channel,
         draftReceiverUser,
+        isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
     };
 });
 

@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View, TouchableOpacity} from 'react-native';
+import {View} from 'react-native';
 
-import CompassIcon from '@app/components/compass_icon';
 import DraftMessage from '@app/components/draft/draft_post/draft_message';
 import {useTheme} from '@app/context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
@@ -45,7 +44,6 @@ const DraftPost: React.FC<Props> = ({
 }) => {
     const theme = useTheme();
     const hasFiles = draft.files.length > 0;
-    const acknowledgementsVisible = draft.metadata?.priority?.requested_ack;
     const style = getStyleSheet(theme);
 
     return (
@@ -64,16 +62,6 @@ const DraftPost: React.FC<Props> = ({
                     location={location}
                     layoutWidth={layoutWidth}
                 />
-            }
-            {
-                acknowledgementsVisible &&
-                <TouchableOpacity style={style.acknowledgementContainer}>
-                    <CompassIcon
-                        color={theme.onlineIndicator}
-                        name='check-circle-outline'
-                        size={24}
-                    />
-                </TouchableOpacity>
             }
         </View>
     );

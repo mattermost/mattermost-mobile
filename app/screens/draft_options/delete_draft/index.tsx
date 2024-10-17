@@ -63,7 +63,7 @@ const DeleteDraft: React.FC<Props> = ({
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
-            <Text style={style.title}>{intl.formatMessage({id: 'draft.options.delete.title', defaultMessage: 'Delete'})}</Text>
+            <Text style={style.title}>{intl.formatMessage({id: 'draft.options.delete.title', defaultMessage: 'Delete draft'})}</Text>
         </TouchableWithFeedback>
     );
 };

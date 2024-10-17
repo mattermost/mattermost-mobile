@@ -69,7 +69,7 @@ const EditDraft: React.FC<Props> = ({
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
-            <Text style={style.title}>{intl.formatMessage({id: 'draft.options.edit.title', defaultMessage: 'Edit'})}</Text>
+            <Text style={style.title}>{intl.formatMessage({id: 'draft.options.edit.title', defaultMessage: 'Send draft'})}</Text>
         </TouchableWithFeedback>
     );
 };

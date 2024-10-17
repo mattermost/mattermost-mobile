@@ -12,7 +12,9 @@ import {ICON_SIZE} from '@app/constants/post_draft';
 import {useServerUrl} from '@app/context/server';
 import {useTheme} from '@app/context/theme';
 import {useHandleSendMessage} from '@app/hooks/handle_send_message';
+import {usePersistentNotificationProps} from '@app/hooks/persistent_notification_props';
 import {dismissBottomSheet} from '@app/screens/navigation';
+import {persistentNotificationsConfirmation} from '@app/utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import {typography} from '@app/utils/typography';
 
@@ -24,6 +26,7 @@ type Props = {
     rootId: string;
     channelType: ChannelType | undefined;
     currentUserId: string;
+    channelName: string | undefined;
     enableConfirmNotificationsToChannel?: boolean;
     maxMessageLength: number;
     membersCount?: number;
@@ -34,6 +37,8 @@ type Props = {
     value: string;
     files: FileInfo[];
     postPriority: PostPriority;
+    persistentNotificationInterval: number;
+    persistentNotificationMaxRecipients: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -48,10 +53,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         gap: 16,
         paddingVertical: 12,
     },
+    disabled: {
+        color: 'red',
+    },
 }));
 
 const SendDraft: React.FC<Props> = ({
     channelId,
+    channelName,
     rootId,
     channelType,
     bottomSheetId,
@@ -65,6 +74,8 @@ const SendDraft: React.FC<Props> = ({
     value,
     files,
     postPriority,
+    persistentNotificationInterval,
+    persistentNotificationMaxRecipients,
 }) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -73,6 +84,12 @@ const SendDraft: React.FC<Props> = ({
     const clearDraft = () => {
         removeDraft(serverUrl, channelId, rootId);
     };
+
+    const {persistentNotificationsEnabled, mentionsList} = usePersistentNotificationProps({
+        value,
+        channelType,
+        postPriority,
+    });
 
     const {handleSendMessage} = useHandleSendMessage({
         value,
@@ -93,13 +110,17 @@ const SendDraft: React.FC<Props> = ({
 
     const draftSendHandler = async () => {
         await dismissBottomSheet(bottomSheetId);
-        handleSendMessage();
+        if (persistentNotificationsEnabled) {
+            persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, handleSendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
+        } else {
+            handleSendMessage();
+        }
     };
 
     return (
         <TouchableWithFeedback
             type={'opacity'}
-            style={style.draftOptions}
+            style={[style.draftOptions]}
             onPress={draftSendHandler}
         >
             <CompassIcon
@@ -107,7 +128,7 @@ const SendDraft: React.FC<Props> = ({
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
-            <Text style={style.title}>{intl.formatMessage({id: 'draft.options.send.title', defaultMessage: 'Send'})}</Text>
+            <Text style={style.title}>{intl.formatMessage({id: 'draft.options.send.title', defaultMessage: 'Edit draft'})}</Text>
         </TouchableWithFeedback>
     );
 };

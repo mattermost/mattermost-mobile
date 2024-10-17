@@ -13,6 +13,7 @@ import {useIsTablet} from '@app/hooks/device';
 import {DRAFT_OPTIONS_BUTTON} from '@app/screens/draft_options';
 import {openAsBottomSheet} from '@app/screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
+import Header from '@components/post_draft/draft_input/header';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -24,6 +25,7 @@ type Props = {
     draftReceiverUser?: UserModel;
     draft: DraftModel;
     layoutWidth: number;
+    isPostPriorityEnabled: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -38,6 +40,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         pressInContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
+        postPriority: {
+            marginTop: 10,
+            marginLeft: -12,
+        },
     };
 });
 
@@ -47,11 +53,13 @@ const Draft: React.FC<Props> = ({
     draft,
     draftReceiverUser,
     layoutWidth,
+    isPostPriorityEnabled,
 }) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
+    const showPostPriority = Boolean(isPostPriorityEnabled && draft.metadata?.priority && draft.metadata?.priority?.priority);
 
     const onLongPress = () => {
         Keyboard.dismiss();
@@ -80,6 +88,14 @@ const Draft: React.FC<Props> = ({
                     rootId={draft.rootId}
                     testID='draft_post.channel_info'
                 />
+                {showPostPriority && draft.metadata?.priority &&
+                <View style={style.postPriority}>
+                    <Header
+                        noMentionsError={false}
+                        postPriority={draft.metadata?.priority}
+                    />
+                </View>
+                }
                 <DraftPost
                     draft={draft}
                     location={location}
