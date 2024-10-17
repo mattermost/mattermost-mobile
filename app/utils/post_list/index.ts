@@ -356,6 +356,10 @@ export function getDateForDateLine(item: string) {
 }
 
 export function getPostIdsForCombinedUserActivityPost(item: string) {
+    if (!item.startsWith(COMBINED_USER_ACTIVITY)) {
+        throw new Error(`Invalid prefix, expected string to start with '${COMBINED_USER_ACTIVITY}'`);
+    }
+
     return item.substring(COMBINED_USER_ACTIVITY.length).split('_');
 }
 
