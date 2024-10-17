@@ -87,6 +87,7 @@ const Draft: React.FC<Props> = ({
                     draftReceiverUser={draftReceiverUser}
                     rootId={draft.rootId}
                     testID='draft_post.channel_info'
+                    updateAt={draft.updateAt}
                 />
                 {showPostPriority && draft.metadata?.priority &&
                 <View style={style.postPriority}>

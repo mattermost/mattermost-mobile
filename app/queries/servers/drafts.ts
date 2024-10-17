@@ -42,6 +42,7 @@ export const queryAllDrafts = (database: Database, teamId: string) => {
                 Q.where('delete_at', 0), // Ensure the channel is not deleted
             ),
         ),
+        Q.sortBy('update_at', Q.desc),
     );
 };
 
