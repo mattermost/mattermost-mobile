@@ -267,8 +267,8 @@ async function cleanupEphemeralPosts() {
         if (!database) {
             continue;
         }
-
-        const postsPromise = queryPostsByType(database, PostTypes.EPHEMERAL).fetch();
-        postsPromise.then((posts) => posts.forEach((post) => removePost(server.url, post)));
+        /* eslint-disable-next-line no-await-in-loop */
+        const posts = await queryPostsByType(database, PostTypes.EPHEMERAL).fetch();
+        posts.forEach((post) => removePost(server.url, post));
     }
 }
