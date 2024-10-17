@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {TabTypes, type TabType} from '.'; // Adjust path as needed
+import {TabTypes, type TabType} from '.';
 
 describe('TabTypes', () => {
     it('should create a mirrored object with keys equal to their values', () => {
