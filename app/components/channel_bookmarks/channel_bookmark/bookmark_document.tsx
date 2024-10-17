@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {Button} from '@rneui/base';
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import ProgressBar from '@app/components/progress_bar';
 import {useTheme} from '@app/context/theme';
 import Document, {type DocumentRef} from '@components/document';
+import {useDownloadFileAndPreview} from '@hooks/files';
 
 import BookmarkDetails from './bookmark_details';
 
@@ -33,9 +34,9 @@ const styles = StyleSheet.create({
 });
 
 const BookmarkDocument = ({bookmark, canDownloadFiles, file, onLongPress}: Props) => {
-    const [progress, setProgress] = useState(0);
     const document = useRef<DocumentRef>(null);
     const theme = useTheme();
+    const {progress, toggleDownloadAndPreview} = useDownloadFileAndPreview();
 
     const handlePress = useCallback(async () => {
         if (document.current) {
@@ -47,7 +48,7 @@ const BookmarkDocument = ({bookmark, canDownloadFiles, file, onLongPress}: Props
         <Document
             canDownloadFiles={canDownloadFiles}
             file={file.toFileInfo(bookmark.ownerId)}
-            onProgress={setProgress}
+            downloadAndPreviewFile={toggleDownloadAndPreview}
             ref={document}
         >
             <Button
