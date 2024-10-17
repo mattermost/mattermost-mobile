@@ -1091,6 +1091,7 @@
   "skintone_selector.tooltip.title": "Välj standard-hudton",
   "smobile.search.recent_title": "Senaste sökningar i {teamName}",
   "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {medlem tillagd} other {medlemmar tillagda}}",
+  "snack.bar.code.copied": "Kod kopierad till urklipp",
   "snack.bar.favorited.channel": "Den här kanalen markerades som favorit",
   "snack.bar.following.thread": "Följer tråden",
   "snack.bar.info.copied": "Kopierat till clipboard",
