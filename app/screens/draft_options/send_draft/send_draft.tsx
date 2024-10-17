@@ -8,13 +8,14 @@ import {Text} from 'react-native';
 import {removeDraft} from '@actions/local/draft';
 import CompassIcon from '@app/components/compass_icon';
 import TouchableWithFeedback from '@app/components/touchable_with_feedback';
+import {General} from '@app/constants';
 import {ICON_SIZE} from '@app/constants/post_draft';
 import {useServerUrl} from '@app/context/server';
 import {useTheme} from '@app/context/theme';
 import {useHandleSendMessage} from '@app/hooks/handle_send_message';
 import {usePersistentNotificationProps} from '@app/hooks/persistent_notification_props';
 import {dismissBottomSheet} from '@app/screens/navigation';
-import {persistentNotificationsConfirmation} from '@app/utils/post';
+import {persistentNotificationsConfirmation, sendMessageWithAlert} from '@app/utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import {typography} from '@app/utils/typography';
 
@@ -39,6 +40,7 @@ type Props = {
     postPriority: PostPriority;
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
+    draftReceiverUserName: string | undefined;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -76,6 +78,7 @@ const SendDraft: React.FC<Props> = ({
     postPriority,
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
+    draftReceiverUserName,
 }) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -113,7 +116,16 @@ const SendDraft: React.FC<Props> = ({
         if (persistentNotificationsEnabled) {
             persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, handleSendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
         } else {
-            handleSendMessage();
+            const receivingChannel = channelType === General.DM_CHANNEL ? draftReceiverUserName : channelName;
+            sendMessageWithAlert({
+                title: intl.formatMessage({
+                    id: 'send_message.confirm.title',
+                    defaultMessage: 'Send message now',
+                }),
+                intl,
+                channelName: receivingChannel || '',
+                sendMessageHandler: handleSendMessage,
+            });
         }
     };
 

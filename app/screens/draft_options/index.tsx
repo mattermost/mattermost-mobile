@@ -21,6 +21,7 @@ type Props = {
     channel: ChannelModel;
     rootId: string;
     draft: DraftModel;
+    draftReceiverUserName: string | undefined;
 }
 
 export const DRAFT_OPTIONS_BUTTON = 'close-post-options';
@@ -37,6 +38,7 @@ const DraftOptions: React.FC<Props> = ({
     channel,
     rootId,
     draft,
+    draftReceiverUserName,
 }) => {
     const {formatMessage} = useIntl();
     const isTablet = useIsTablet();
@@ -57,6 +59,7 @@ const DraftOptions: React.FC<Props> = ({
                     rootId={rootId}
                     files={draft.files}
                     value={draft.message}
+                    draftReceiverUserName={draftReceiverUserName}
                 />
                 <DeleteDraft
                     bottomSheetId={Screens.DRAFT_OPTIONS}
