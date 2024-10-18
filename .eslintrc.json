@@ -30,7 +30,7 @@
     "no-shadow": "off",
     "react/display-name": [2, { "ignoreTranspilerName": false }],
     "react/jsx-filename-extension": 0,
-    "react-hooks/exhaustive-deps": 0,
+    "react-hooks/exhaustive-deps": "warn",
     "camelcase": [
       0,
       {
