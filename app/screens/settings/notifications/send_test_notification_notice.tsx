@@ -103,7 +103,7 @@ const SendTestNotificationNotice = ({
         };
     }, [intl]);
 
-    if (!isMinimumServerVersion(serverVersion, 10, 3)) {
+    if (!isMinimumServerVersion(serverVersion, 10, 0)) {
         return null;
     }
 

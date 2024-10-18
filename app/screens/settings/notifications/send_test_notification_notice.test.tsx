@@ -14,6 +14,7 @@ import SendTestNotificationNotice from './send_test_notification_notice';
 import type Database from '@nozbe/watermelondb/Database';
 
 const version = '10.3.0';
+const oldVersion = '9.2.1';
 
 jest.mock('@utils/url', () => {
     return {
@@ -66,7 +67,7 @@ describe('SendTestNotificationNotice', () => {
     });
 
     it('should show nothing on older versions', () => {
-        const wrapper = renderWithEverything(<SendTestNotificationNotice serverVersion={'10.2.1'}/>, {database});
+        const wrapper = renderWithEverything(<SendTestNotificationNotice serverVersion={oldVersion}/>, {database});
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
