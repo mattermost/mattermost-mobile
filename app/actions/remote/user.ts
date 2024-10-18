@@ -295,7 +295,7 @@ const debouncedFetchUserOrGroupsByMentionNames = debounce(
 );
 
 const notFoundMentions: {[serverUrl: string]: Set<string>} = {};
-const fetchUserOrGroupsByMentionNames = async (serverUrl: string, mentions: string[]) => {
+export const fetchUserOrGroupsByMentionNames = async (serverUrl: string, mentions: string[]) => {
     try {
         if (!notFoundMentions[serverUrl]) {
             notFoundMentions[serverUrl] = new Set();
@@ -332,7 +332,7 @@ const fetchUserOrGroupsByMentionNames = async (serverUrl: string, mentions: stri
                 }
             }
         }
-        return {};
+        return {users: fetchedUsers};
     } catch (error) {
         logDebug('error on fetchUserOrGroupsByMentionNames', getFullErrorMessage(error));
         return {error};
@@ -651,13 +651,13 @@ export async function updateAllUsersSince(serverUrl: string, since: number, fetc
 
             await operator.batchRecords(modelsToBatch, 'updateAllUsersSince');
         }
+
+        return {userUpdates};
     } catch (error) {
         logDebug('error on updateAllUsersSince', getFullErrorMessage(error));
-
-        // Do nothing
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
     }
-
-    return {users: userUpdates};
 }
 
 export async function updateUsersNoLongerVisible(serverUrl: string, prepareRecordsOnly = false): Promise<{error?: unknown; models?: Model[]}> {
@@ -807,13 +807,13 @@ export const autoUpdateTimezone = async (serverUrl: string) => {
         const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         database = result.database;
     } catch (e) {
-        return;
+        return {error: e};
     }
 
     const currentUser = await getCurrentUser(database);
 
     if (!currentUser) {
-        return;
+        return {};
     }
 
     // Set timezone
@@ -826,6 +826,8 @@ export const autoUpdateTimezone = async (serverUrl: string) => {
         const timezone = {useAutomaticTimezone: 'true', automaticTimezone: deviceTimezone, manualTimezone: currentTimezone.manualTimezone};
         await updateMe(serverUrl, {timezone});
     }
+
+    return {};
 };
 
 export const fetchTeamAndChannelMembership = async (serverUrl: string, userId: string, teamId: string, channelId?: string) => {
