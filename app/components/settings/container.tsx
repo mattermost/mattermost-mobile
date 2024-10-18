@@ -18,6 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         contentContainerStyle: {
             marginTop: 8,
+            flex: 1,
         },
     };
 });

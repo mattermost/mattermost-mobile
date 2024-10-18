@@ -15,6 +15,8 @@ import {popTopScreen} from '@screens/navigation';
 import {gotoSettingsScreen} from '@screens/settings/config';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
 
+import SendTestNotificationNotice from './send_test_notification_notice';
+
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -45,6 +47,7 @@ type NotificationsProps = {
     enableEmailBatching: boolean;
     isCRTEnabled: boolean;
     sendEmailNotifications: boolean;
+    serverVersion: string;
 }
 const Notifications = ({
     componentId,
@@ -54,6 +57,7 @@ const Notifications = ({
     enableEmailBatching,
     isCRTEnabled,
     sendEmailNotifications,
+    serverVersion,
 }: NotificationsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -161,6 +165,7 @@ const Notifications = ({
                     testID='notification_settings.automatic_replies.option'
                 />
             )}
+            <SendTestNotificationNotice serverVersion={serverVersion}/>
         </SettingContainer>
     );
 };

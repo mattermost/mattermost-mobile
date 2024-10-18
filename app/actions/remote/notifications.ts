@@ -13,6 +13,7 @@ import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
 import {getMyChannel, getChannelById} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getMyTeamById, prepareMyTeams} from '@queries/servers/team';
@@ -230,6 +231,17 @@ export const openNotification = async (serverUrl: string, notification: Notifica
             return fetchAndSwitchToThread(serverUrl, rootId, true);
         }
         return switchToChannelById(serverUrl, channelId, teamId);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const sendTestNotification = async (serverUrl: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const result = await client.sendTestNotification();
+        return result;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
