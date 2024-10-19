@@ -1091,6 +1091,7 @@
   "skintone_selector.tooltip.title": "デフォルトの肌の色を選択",
   "smobile.search.recent_title": "{teamName} での最近の検索",
   "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {メンバー} other {メンバー}} が追加されました",
+  "snack.bar.code.copied": "クリップボードにコードがコピーされました",
   "snack.bar.favorited.channel": "このチャンネルはお気に入り済みです",
   "snack.bar.following.thread": "スレッドをフォローしました",
   "snack.bar.info.copied": "情報がクリップボードにコピーされました",
