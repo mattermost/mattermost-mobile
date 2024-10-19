@@ -67,11 +67,15 @@ const AnimatedNumber = ({
     return (
         <>
             {numberHeight !== 0 && (
-                <View style={{flexDirection: 'row'}}>
+                <View
+                    style={{flexDirection: 'row'}}
+                    testID='animation-number-main'
+                >
                     {animateToNumber < 0 && (
                         <Text style={[fontStyle, {height: numberHeight}]}>{'-'}</Text>
                     )}
                     {numberStringToDigitsArray.map((n, index) => {
+                        const useIndex = numberStringToDigitsArray.length - 1 - index;
                         return (
                             <View
                                 key={`${index.toString()}`}
@@ -87,13 +91,17 @@ const AnimatedNumber = ({
                                             ],
                                         },
                                     ]}
+                                    testID={`animated-number-view-${useIndex}`}
                                 >
                                     {NUMBERS.map((number, i) => (
                                         <View
                                             style={{flexDirection: 'row'}}
                                             key={`${i.toString()}`}
                                         >
-                                            <Text style={[fontStyle, {height: numberHeight}]}>
+                                            <Text
+                                                style={[fontStyle, {height: numberHeight}]}
+                                                testID={`text-${useIndex}-${number}`}
+                                            >
                                                 {number}
                                             </Text>
                                         </View>
@@ -108,6 +116,7 @@ const AnimatedNumber = ({
             <Text
                 style={[fontStyle]}
                 onLayout={setButtonLayout}
+                testID={'no-animation-number'}
             >
                 {animateToNumberString}
             </Text>
