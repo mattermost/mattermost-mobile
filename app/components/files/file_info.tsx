@@ -4,7 +4,9 @@
 import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
-import FormattedDate from '@components/formatted_date';
+import FormattedDate, {
+    type FormattedDateFormat,
+} from '@components/formatted_date';
 import {useTheme} from '@context/theme';
 import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -14,10 +16,15 @@ type FileInfoProps = {
     disabled?: boolean;
     file: FileInfo;
     showDate: boolean;
-    channelName?: string ;
+    channelName?: string;
     onPress: () => void;
-}
-const FORMAT = ' • MMM DD HH:MM A';
+};
+const FORMAT: FormattedDateFormat = {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -59,7 +66,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const FileInfo = ({disabled, file, channelName, showDate, onPress}: FileInfoProps) => {
+const FileInfo = ({
+    disabled,
+    file,
+    channelName,
+    showDate,
+    onPress,
+}: FileInfoProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -77,7 +90,7 @@ const FileInfo = ({disabled, file, channelName, showDate, onPress}: FileInfoProp
                     {decodeURIComponent(file.name.trim())}
                 </Text>
                 <View style={style.fileDownloadContainer}>
-                    {channelName &&
+                    {channelName && (
                         <View style={style.channelWrapper}>
                             <Text
                                 style={style.channelText}
@@ -86,18 +99,21 @@ const FileInfo = ({disabled, file, channelName, showDate, onPress}: FileInfoProp
                                 {channelName}
                             </Text>
                         </View>
-                    }
+                    )}
                     <View style={style.fileStatsContainer}>
                         <Text style={style.infoText}>
                             {`${getFormattedFileSize(file.size)}`}
                         </Text>
-                        {showDate &&
-                            <FormattedDate
-                                style={style.infoText}
-                                format={FORMAT}
-                                value={file.create_at as number}
-                            />
-                        }
+                        {showDate && (
+                            <>
+                                {' • '}
+                                <FormattedDate
+                                    style={style.infoText}
+                                    format={FORMAT}
+                                    value={file.create_at as number}
+                                />
+                            </>
+                        )}
                     </View>
                 </View>
             </TouchableOpacity>
