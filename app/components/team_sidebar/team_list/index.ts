@@ -14,6 +14,7 @@ import {queryJoinedTeams, queryMyTeams} from '@queries/servers/team';
 import TeamList from './team_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type MyTeamModel from '@typings/database/models/servers/my_team';
 
 const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
     const myTeams = queryMyTeams(database).observe();
@@ -33,22 +34,18 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
                     map((t) => t.id);
             }
 
-            const indexes: {[x: string]: number} = {};
-            const originalIndexes: {[x: string]: number} = {};
-            ids.forEach((v, i) => {
-                indexes[v] = i;
-            });
+            const teamMap = ts.reduce<{[x: string]: MyTeamModel}>((result, team) => {
+                result[team.id] = team;
+                return result;
+            }, {});
 
-            ts.forEach((t, i) => {
-                originalIndexes[t.id] = i;
-            });
-
-            return ts.sort((a, b) => {
-                if ((indexes[a.id] != null) || (indexes[b.id] != null)) {
-                    return (indexes[a.id] ?? tids.length) - (indexes[b.id] ?? tids.length);
+            return ids.reduce<MyTeamModel[]>((result, id) => {
+                const t = teamMap[id];
+                if (t) {
+                    result.push(t);
                 }
-                return (originalIndexes[a.id] - originalIndexes[b.id]);
-            });
+                return result;
+            }, []);
         }),
     );
     return {
