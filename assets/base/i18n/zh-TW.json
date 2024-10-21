@@ -1091,6 +1091,7 @@
   "skintone_selector.tooltip.title": "選擇您的預設膚色色調",
   "smobile.search.recent_title": "{teamName} 中最近的搜尋",
   "snack.bar.channel.members.added": "已加入{numMembers, number} {numMembers, plural, one {位成員} other {位成員}}",
+  "snack.bar.code.copied": "將程式碼複製到剪貼簿",
   "snack.bar.favorited.channel": "已將此頻道加入最愛",
   "snack.bar.following.thread": "已追蹤討論串",
   "snack.bar.info.copied": "已複製資訊至剪貼簿",
