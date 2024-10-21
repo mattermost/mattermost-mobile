@@ -14,6 +14,7 @@ type ConditionalProps = | {iconName: string; iconSize: number} | {iconName?: nev
 type Props = ConditionalProps & {
     theme: Theme;
     backgroundStyle?: StyleProp<ViewStyle>;
+    buttonContainerStyle?: StyleProp<ViewStyle>;
     textStyle?: StyleProp<TextStyle>;
     size?: ButtonSize;
     emphasis?: ButtonEmphasis;
@@ -25,7 +26,7 @@ type Props = ConditionalProps & {
     iconComponent?: ReactNode;
     disabled?: boolean;
     hitSlop?: Insets;
-}
+};
 
 const styles = StyleSheet.create({
     container: {flexDirection: 'row'},
@@ -35,6 +36,7 @@ const styles = StyleSheet.create({
 const Button = ({
     theme,
     backgroundStyle,
+    buttonContainerStyle,
     textStyle,
     size,
     emphasis,
@@ -59,7 +61,7 @@ const Button = ({
         textStyle,
     ], [theme, textStyle, size, emphasis, buttonType]);
 
-    const containerStyle = useMemo(
+    const textContainerStyle = useMemo(
         () =>
             (iconSize ? [
                 styles.container,
@@ -68,11 +70,11 @@ const Button = ({
         [iconSize],
     );
 
-    let buttonContainerStyle = StyleSheet.flatten(bgStyle);
+    let buttonStyle = StyleSheet.flatten(bgStyle);
     if (disabled) {
-        buttonContainerStyle = {
-            ...buttonContainerStyle,
-            backgroundColor: changeOpacity(buttonContainerStyle.backgroundColor! as string, 0.4),
+        buttonStyle = {
+            ...buttonStyle,
+            backgroundColor: changeOpacity(buttonStyle.backgroundColor! as string, 0.4),
         };
     }
 
@@ -93,13 +95,14 @@ const Button = ({
 
     return (
         <ElementButton
-            buttonStyle={buttonContainerStyle}
+            buttonStyle={buttonStyle}
+            containerStyle={buttonContainerStyle}
             onPress={onPress}
             testID={testID}
             disabled={disabled}
             hitSlop={hitSlop}
         >
-            <View style={containerStyle}>
+            <View style={textContainerStyle}>
                 {icon}
                 <Text
                     style={txtStyle}

@@ -45,6 +45,16 @@ class RNUtilsModule(context: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun setHasRegisteredLoad() {
+        implementation.setHasRegisteredLoad()
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getHasRegisteredLoad(): WritableMap {
+        return implementation.getHasRegisteredLoad()
+    }
+
+    @ReactMethod
     fun unlockOrientation() {
         implementation.unlockOrientation()
     }

@@ -6,6 +6,7 @@ import keyMirror from '@utils/key_mirror';
 
 export const SNACK_BAR_TYPE = keyMirror({
     ADD_CHANNEL_MEMBERS: null,
+    CODE_COPIED: null,
     FAVORITE_CHANNEL: null,
     FOLLOW_THREAD: null,
     INFO_COPIED: null,
@@ -39,6 +40,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         id: t('snack.bar.channel.members.added'),
         defaultMessage: '{numMembers, number} {numMembers, plural, one {member} other {members}} added',
         iconName: 'check',
+        canUndo: false,
+    },
+    CODE_COPIED: {
+        id: t('snack.bar.code.copied'),
+        defaultMessage: 'Code copied to clipboard',
+        iconName: 'content-copy',
         canUndo: false,
     },
     FAVORITE_CHANNEL: {

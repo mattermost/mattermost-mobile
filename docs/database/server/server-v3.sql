@@ -1,5 +1,5 @@
 ﻿-- Exported from QuickDBD: https://www.quickdatabasediagrams.com/
--- Link to schema: https://app.quickdatabasediagrams.com/#/d/6OtugI
+-- Link to schema: https://app.quickdatabasediagrams.com/#/d/PITc8R
 -- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
 
 -- Server Database - Schema Version 2
@@ -101,6 +101,7 @@ CREATE TABLE [Draft] (
     [files] string  NOT NULL ,
     [message] string  NOT NULL ,
     [root_id] string  NULL ,
+    [update_at] number  NOT NULL ,
     CONSTRAINT [PK_Draft] PRIMARY KEY CLUSTERED (
         [id] ASC
     )

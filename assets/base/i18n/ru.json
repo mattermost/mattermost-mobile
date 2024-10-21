@@ -702,6 +702,8 @@
   "mobile.no_results_with_term.files": "Нет файлов, соответствующих \"{term}\"",
   "mobile.no_results_with_term.messages": "Не найдено совпадений для \"{term}\"",
   "mobile.oauth.failed_to_login": "Ваша попытка входа не удалась. Пожалуйста, попробуйте ещё раз.",
+  "mobile.oauth.failed_to_open_link": "Ссылка не открылась. Пожалуйста, попробуйте ещё раз.",
+  "mobile.oauth.failed_to_open_link_no_browser": "Ссылку не удалось открыть. Убедитесь, что на устройстве установлен браузер.",
   "mobile.oauth.something_wrong.okButton": "ОК",
   "mobile.oauth.success.description": "Входим в систему, один момент...",
   "mobile.oauth.success.title": "Аутентификация успешна",

@@ -76,6 +76,14 @@ RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(getWindowDimensions, NSDictionary*, window
     return [wrapper getWindowDimensions];
 }
 
+RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(getHasRegisteredLoad, NSDictionary*, getLoad) {
+    return [wrapper getHasRegisteredLoad];
+}
+
+RCT_REMAP_METHOD(setHasRegisteredLoad, setLoad) {
+    [wrapper setHasRegisteredLoad];
+}
+
 RCT_REMAP_METHOD(unlockOrientation, unlock) {
     [wrapper unlockOrientation];
 }
@@ -164,6 +172,14 @@ RCT_EXPORT_METHOD(saveFile:(NSString *)filePath
 
 - (NSDictionary *)getWindowDimensions {
     return [wrapper getWindowDimensions];
+}
+
+- (NSDictionary *)getHasRegisteredLoad {
+    return [wrapper getHasRegisteredLoad];
+}
+
+- (void)setHasRegisteredLoad {
+    [wrapper setHasRegisteredLoad];
 }
 
 - (void)lockPortrait {
