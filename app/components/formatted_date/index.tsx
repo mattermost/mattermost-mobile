@@ -11,7 +11,7 @@ type FormattedDateProps = TextProps & {
     format?: FormattedDateFormat;
     timezone?: string | UserTimezone | null;
     value: number | string | Date;
-};
+}
 
 const FormattedDate = ({
     format = {dateStyle: 'medium'},

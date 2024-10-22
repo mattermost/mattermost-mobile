@@ -4,9 +4,7 @@
 import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
-import FormattedDate, {
-    type FormattedDateFormat,
-} from '@components/formatted_date';
+import FormattedDate, {type FormattedDateFormat} from '@components/formatted_date';
 import {useTheme} from '@context/theme';
 import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -66,13 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const FileInfo = ({
-    disabled,
-    file,
-    channelName,
-    showDate,
-    onPress,
-}: FileInfoProps) => {
+const FileInfo = ({disabled, file, channelName, showDate, onPress}: FileInfoProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -90,7 +82,7 @@ const FileInfo = ({
                     {decodeURIComponent(file.name.trim())}
                 </Text>
                 <View style={style.fileDownloadContainer}>
-                    {channelName && (
+                    {channelName &&
                         <View style={style.channelWrapper}>
                             <Text
                                 style={style.channelText}
@@ -99,7 +91,7 @@ const FileInfo = ({
                                 {channelName}
                             </Text>
                         </View>
-                    )}
+                    }
                     <View style={style.fileStatsContainer}>
                         <Text style={style.infoText}>
                             {`${getFormattedFileSize(file.size)}`}
