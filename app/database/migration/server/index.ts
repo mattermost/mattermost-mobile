@@ -14,7 +14,7 @@ export default schemaMigrations({migrations: [
     {
         toVersion: 6,
         steps: [
-            unsafeExecuteSql('CREATE INDEX Post_type ON Post (type)'),
+            unsafeExecuteSql('CREATE UNIQUE INDEX IF NOT EXISTS Post_type ON Post (type)'),
         ],
     },
     {
