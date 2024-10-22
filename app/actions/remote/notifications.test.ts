@@ -24,15 +24,15 @@ beforeAll(() => {
 
 describe('sendTestNotification', () => {
     it('calls client function and returns correctly', async () => {
-        mockClient.sendTestNotification.mockReturnValueOnce(new Promise((r) => r({data: true})));
+        mockClient.sendTestNotification.mockResolvedValueOnce({status: 'OK'});
         const result = await sendTestNotification(serverUrl);
-        expect(result.data).toBe(true);
+        expect(result.status).toBe('OK');
         expect(result.error).toBeUndefined();
         expect(mockClient.sendTestNotification).toHaveBeenCalled();
     });
 
     it('calls client function and returns correctly when error value', async () => {
-        mockClient.sendTestNotification.mockReturnValueOnce(new Promise((r) => r({error: 'some error'})));
+        mockClient.sendTestNotification.mockRejectedValueOnce(new Error('some error'));
         const result = await sendTestNotification(serverUrl);
         expect(result.error).toBeTruthy();
         expect(mockClient.sendTestNotification).toHaveBeenCalled();

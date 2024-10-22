@@ -68,7 +68,7 @@ describe('SendTestNotificationNotice', () => {
 
     it('should show nothing on older versions', () => {
         const wrapper = renderWithEverything(<SendTestNotificationNotice serverVersion={oldVersion}/>, {database});
-        expect(wrapper.toJSON()).toMatchSnapshot();
+        expect(wrapper.toJSON()).toBeNull();
     });
 
     it('should call send notification action when the send notification button is clicked', () => {
@@ -77,7 +77,7 @@ describe('SendTestNotificationNotice', () => {
         expect(tryOpenURL).toHaveBeenCalledWith('https://docs.mattermost.com/collaborate/mention-people.html');
     });
 
-    it('should call send notification action when the send notification button is clicked, and all states go throuhg correctly', async () => {
+    it('should call send notification action when the send notification button is clicked, and all states go through correctly', async () => {
         jest.useFakeTimers({doNotFake: allTimerExceptSetTimeout});
         const wrapper = renderWithEverything(<SendTestNotificationNotice serverVersion={version}/>, {database});
 
@@ -100,7 +100,7 @@ describe('SendTestNotificationNotice', () => {
         expect(wrapper.getByText('Send a test notification')).toBeVisible();
     });
 
-    it('should call send notification action when the send notification button is clicked, and when it fails, all states go throuhg correctly', async () => {
+    it('should call send notification action when the send notification button is clicked, and when it fails, all states go through correctly', async () => {
         jest.useFakeTimers({doNotFake: allTimerExceptSetTimeout});
         const wrapper = renderWithEverything(<SendTestNotificationNotice serverVersion={version}/>, {database});
 

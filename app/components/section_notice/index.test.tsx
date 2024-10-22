@@ -184,16 +184,28 @@ describe('Section notice', () => {
         expect(props.linkButton!.onClick).not.toHaveBeenCalled();
         expect(props.onDismissClick!).not.toHaveBeenCalled();
 
+        jest.clearAllMocks();
+
         fireEvent.press(wrapper.getByText(props.secondaryButton!.text));
+        expect(props.primaryButton!.onClick).not.toHaveBeenCalled();
         expect(props.secondaryButton!.onClick).toHaveBeenCalled();
         expect(props.linkButton!.onClick).not.toHaveBeenCalled();
         expect(props.onDismissClick!).not.toHaveBeenCalled();
 
+        jest.clearAllMocks();
+
         fireEvent.press(wrapper.getByText(props.linkButton!.text));
+        expect(props.primaryButton!.onClick).not.toHaveBeenCalled();
+        expect(props.secondaryButton!.onClick).not.toHaveBeenCalled();
         expect(props.linkButton!.onClick).toHaveBeenCalled();
         expect(props.onDismissClick!).not.toHaveBeenCalled();
 
+        jest.clearAllMocks();
+
         fireEvent.press(wrapper.getByTestId('sectionNoticeDismissButton'));
+        expect(props.primaryButton!.onClick).not.toHaveBeenCalled();
+        expect(props.secondaryButton!.onClick).not.toHaveBeenCalled();
+        expect(props.linkButton!.onClick).not.toHaveBeenCalled();
         expect(props.onDismissClick!).toHaveBeenCalled();
     });
 });

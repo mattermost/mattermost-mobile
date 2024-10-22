@@ -237,7 +237,7 @@ export const openNotification = async (serverUrl: string, notification: Notifica
     }
 };
 
-export const sendTestNotification = async (serverUrl: string) => {
+export const sendTestNotification = async (serverUrl: string): Promise<{status?: 'OK'; error?: unknown}> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const result = await client.sendTestNotification();

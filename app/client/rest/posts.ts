@@ -33,7 +33,7 @@ export interface ClientPostsMix {
     doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string) => Promise<any>;
     acknowledgePost: (postId: string, userId: string) => Promise<PostAcknowledgement>;
     unacknowledgePost: (postId: string, userId: string) => Promise<any>;
-    sendTestNotification: () => Promise<any>;
+    sendTestNotification: () => Promise<{status: 'OK'}>;
 }
 
 const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
