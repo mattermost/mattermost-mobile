@@ -128,7 +128,7 @@ jobs:
     if: ${{ inputs.run-ios-tests }}
     runs-on: macos-14
     continue-on-error: true
-    timeout-minutes: ${{ inputs.low_bandwidth_mode && 80 || 120 }} 
+    timeout-minutes: ${{ inputs.low_bandwidth_mode && 80 || 40 }} 
     env:
       IOS: true
     needs:
