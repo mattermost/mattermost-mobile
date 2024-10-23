@@ -110,7 +110,7 @@ export const useHandleSendMessage = ({
         clearDraft?.();
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
-    }, [files, currentUserId, channelId, rootId, value, clearDraft, postPriority]);
+    }, [files, currentUserId, channelId, rootId, value, postPriority, serverUrl, clearDraft]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);
@@ -165,7 +165,7 @@ export const useHandleSendMessage = ({
         if (data?.goto_location && !value.startsWith('/leave')) {
             handleGotoLocation(serverUrl, intl, data.goto_location);
         }
-    }, [userIsOutOfOffice, currentUserId, intl, value, serverUrl, channelId, rootId]);
+    }, [value, userIsOutOfOffice, serverUrl, intl, channelId, rootId, clearDraft, channelType, currentUserId]);
 
     const sendMessage = useCallback(() => {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
@@ -179,15 +179,7 @@ export const useHandleSendMessage = ({
         } else {
             doSubmitMessage();
         }
-    }, [
-        enableConfirmNotificationsToChannel,
-        useChannelMentions,
-        value,
-        channelTimezoneCount,
-        sendCommand,
-        showSendToAllOrChannelOrHereAlert,
-        doSubmitMessage,
-    ]);
+    }, [enableConfirmNotificationsToChannel, useChannelMentions, value, membersCount, sendCommand, showSendToAllOrChannelOrHereAlert, doSubmitMessage]);
 
     const handleSendMessage = useCallback(preventDoubleTap(() => {
         if (!canSend()) {
