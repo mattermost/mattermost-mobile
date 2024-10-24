@@ -67,7 +67,7 @@
     "react": "18.2.0",
     "react-freeze": "1.0.4",
     "react-intl": "6.6.8",
-    "react-native": "0.74.5",
+    "react-native": "0.76.0",
     "react-native-background-timer": "2.4.1",
     "react-native-document-picker": "9.3.0",
     "react-native-dotenv": "3.4.11",
