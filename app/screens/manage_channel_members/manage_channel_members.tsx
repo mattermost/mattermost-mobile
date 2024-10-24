@@ -20,7 +20,7 @@ import {openAsBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
-import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
+import {displayUsername, filterDeactivatedProfiles, filterProfilesMatchingTerm} from '@utils/user';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -220,10 +220,8 @@ export default function ManageChannelMembers({
 
     const data = useMemo(() => {
         const isSearch = Boolean(searchedTerm);
-        if (isSearch) {
-            return filterProfilesMatchingTerm(searchResults.length ? searchResults : sortedProfiles, searchedTerm);
-        }
-        return profiles;
+        const newProfiles = isSearch ? filterProfilesMatchingTerm(searchResults.length ? searchResults : sortedProfiles, searchedTerm) : profiles;
+        return filterDeactivatedProfiles(newProfiles);
     }, [searchResults, profiles, searchedTerm, sortedProfiles]);
 
     useEffect(() => {
