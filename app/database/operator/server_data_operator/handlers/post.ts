@@ -3,6 +3,7 @@
 
 import {Q} from '@nozbe/watermelondb';
 
+import {safeParseJSON} from '@app/utils/helpers';
 import {ActionType} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {buildDraftKey} from '@database/operator/server_data_operator/comparators';
@@ -177,7 +178,10 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
             // Process the metadata of each post
             if (post?.metadata && Object.keys(post?.metadata).length > 0) {
-                const data = post.metadata;
+                let data = post.metadata;
+
+                // parsing into json since notifications are sending metadata as a string
+                data = safeParseJSON(post.metadata) as PostMetadata;
 
                 // Extracts reaction from post's metadata
                 if (data.reactions) {
