@@ -5,10 +5,9 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
+import DraftModel from '@typings/database/models/servers/draft';
 
-import type DraftModel from '@typings/database/models/servers/draft';
-
-const {SERVER: {DRAFT}} = MM_TABLES;
+const {SERVER: {DRAFT, CHANNEL}} = MM_TABLES;
 
 export const getDraft = async (database: Database, channelId: string, rootId = '') => {
     const record = await queryDraft(database, channelId, rootId).fetch();
@@ -30,3 +29,27 @@ export const queryDraft = (database: Database, channelId: string, rootId = '') =
 export function observeFirstDraft(v: DraftModel[]) {
     return v[0]?.observe() || of$(undefined);
 }
+
+export const queryAllDrafts = (database: Database, teamId: string) => {
+    return database.collections.get<DraftModel>(DRAFT).query(
+        Q.on(CHANNEL,
+            Q.and(
+                Q.or(
+                    Q.where('team_id', teamId), // Channels associated with the given team
+                    Q.where('type', 'D'), // Channels of type 'D'
+                    Q.where('type', 'G'), // Channels of type 'D'
+                ),
+                Q.where('delete_at', 0), // Ensure the channel is not deleted
+            ),
+        ),
+        Q.sortBy('update_at', Q.desc),
+    );
+};
+
+export const observeAllDrafts = (database: Database, teamId: string) => {
+    return queryAllDrafts(database, teamId).observeWithColumns(['messages', 'files', 'metadata']);
+};
+
+export const observeDraftCount = (database: Database, teamId: string) => {
+    return queryAllDrafts(database, teamId).observeCount();
+};

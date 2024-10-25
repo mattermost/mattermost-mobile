@@ -212,3 +212,37 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
         buttons,
     );
 }
+
+export async function sendMessageWithAlert({title, channelName, intl, sendMessageHandler}: {
+    title: string;
+    channelName: string;
+    intl: IntlShape;
+    sendMessageHandler: () => void;
+}) {
+    const buttons: AlertButton[] = [{
+        text: intl.formatMessage({
+            id: 'send_message.confirm.cancel',
+            defaultMessage: 'Cancel',
+        }),
+        style: 'cancel',
+    }, {
+        text: intl.formatMessage({
+            id: 'send_message.confirm.send',
+            defaultMessage: 'Send',
+        }),
+        onPress: sendMessageHandler,
+    }];
+
+    const description = intl.formatMessage({
+        id: 'send_message.confirm.description',
+        defaultMessage: 'Are you sure you want to send this message to {channelName} now?',
+    }, {
+        channelName,
+    });
+
+    Alert.alert(
+        title,
+        description,
+        buttons,
+    );
+}

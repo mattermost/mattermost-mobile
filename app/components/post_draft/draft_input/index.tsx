@@ -1,14 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef} from 'react';
+import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {General} from '@constants';
-import {MENTIONS_REGEX} from '@constants/autocomplete';
-import {PostPriorityType} from '@constants/post';
+import {usePersistentNotificationProps} from '@app/hooks/persistent_notification_props';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {persistentNotificationsConfirmation} from '@utils/post';
@@ -149,20 +147,11 @@ export default function DraftInput({
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
 
-    const persistentNotificationsEnabled = postPriority.persistent_notifications && postPriority.priority === PostPriorityType.URGENT;
-    const {noMentionsError, mentionsList} = useMemo(() => {
-        let error = false;
-        let mentions: string[] = [];
-        if (
-            channelType !== General.DM_CHANNEL &&
-            persistentNotificationsEnabled
-        ) {
-            mentions = (value.match(MENTIONS_REGEX) || []);
-            error = mentions.length === 0;
-        }
-
-        return {noMentionsError: error, mentionsList: mentions};
-    }, [channelType, persistentNotificationsEnabled, value]);
+    const {persistentNotificationsEnabled, noMentionsError, mentionsList} = usePersistentNotificationProps({
+        value,
+        channelType,
+        postPriority,
+    });
 
     const handleSendMessage = useCallback(async () => {
         if (persistentNotificationsEnabled) {

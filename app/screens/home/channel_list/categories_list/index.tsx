@@ -5,6 +5,7 @@ import React, {useEffect, useMemo} from 'react';
 import {useWindowDimensions} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import DraftsButtton from '@app/components/drafts_buttton';
 import ThreadsButton from '@components/threads_button';
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
@@ -72,6 +73,9 @@ const CategoriesList = ({hasChannels, iconPad, isCRTEnabled, moreThanOneTeam}: C
                         shouldHighlighActive={true}
                     />
                 }
+                <DraftsButtton
+                    shouldHighlighActive={true}
+                />
                 <Categories/>
             </>
         );
