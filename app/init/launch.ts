@@ -5,15 +5,19 @@ import Emm from '@mattermost/react-native-emm';
 import {Alert, AppState, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
+import {removePost} from '@actions/local/post';
 import {switchToChannelById} from '@actions/remote/channel';
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import LocalConfig from '@assets/config.json';
 import {DeepLink, Events, Launch, PushNotification} from '@constants';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getLastViewedChannelIdAndServer, getOnboardingViewed, getLastViewedThreadIdAndServer} from '@queries/app/global';
+import {getAllServers} from '@queries/app/servers';
+import {queryPostsByType} from '@queries/servers/post';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
@@ -112,6 +116,8 @@ const launchApp = async (props: LaunchProps) => {
     if (props.launchError && !serverUrl) {
         serverUrl = await getActiveServerUrl();
     }
+
+    cleanupEphemeralPosts();
 
     if (serverUrl) {
         const credentials = await getServerCredentials(serverUrl);
@@ -252,3 +258,17 @@ export const getLaunchPropsFromNotification = async (notification: NotificationW
 
     return launchProps;
 };
+
+async function cleanupEphemeralPosts() {
+    const servers = await getAllServers();
+
+    for (const server of servers) {
+        const database = DatabaseManager.serverDatabases[server.url]?.database;
+        if (!database) {
+            continue;
+        }
+        /* eslint-disable-next-line no-await-in-loop */
+        const posts = await queryPostsByType(database, PostTypes.EPHEMERAL).fetch();
+        posts.forEach((post) => removePost(server.url, post));
+    }
+}
