@@ -37,9 +37,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             color: changeOpacity(theme.centerChannelColor, 0.35),
         },
-        retryMessage: {
+        retryStatusText: {
+            position: 'absolute',
+            top: 25,
+            left: 40,
             color: theme.errorTextColor,
-            paddingBottom: 25,
+            fontSize: 12,
         },
     };
 });
@@ -71,8 +74,8 @@ const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, 
                 <FormattedText
                     id={'custom_status.failure_message'}
                     defaultMessage='Failed to update status. Try again'
-                    style={styles.retryMessage}
                     testID='account.custom_status.failure_message'
+                    style={styles.retryStatusText}
                 />
             )}
             {isStatusSet && (

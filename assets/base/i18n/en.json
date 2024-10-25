@@ -607,6 +607,8 @@
   "mobile.custom_status.clear_after": "Clear After",
   "mobile.custom_status.clear_after.title": "Clear Custom Status After",
   "mobile.custom_status.modal_confirm": "Done",
+  "mobile.custom_status.network_error.text": "Check your network connection and try again.",
+  "mobile.custom_status.network_error.title": "Status couldn’t be updated",
   "mobile.deep_link.invalid": "This link you are trying to open is invalid.",
   "mobile.diagnostic_id.empty": "A DiagnosticId value is missing for this server. Contact your system admin to review this value and restart the server.",
   "mobile.direct_message.error": "We couldn't open a DM with {displayName}.",
