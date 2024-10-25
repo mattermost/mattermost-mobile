@@ -29,6 +29,9 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
 
     override fun getWindowDimensions(): WritableMap? = implementation.getWindowDimensions()
 
+    override fun setHasRegisteredLoad() = implementation.setHasRegisteredLoad()
+    override fun getHasRegisteredLoad(): WritableMap = implementation.getHasRegisteredLoad()
+
     override fun unlockOrientation() {
         implementation.unlockOrientation()
     }

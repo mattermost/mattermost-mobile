@@ -1091,6 +1091,7 @@
   "skintone_selector.tooltip.title": "Choose your default skin tone",
   "smobile.search.recent_title": "Recent searches in {teamName}",
   "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {member} other {members}} added",
+  "snack.bar.code.copied": "Code copied to clipboard",
   "snack.bar.favorited.channel": "This channel was favorited",
   "snack.bar.following.thread": "Thread followed",
   "snack.bar.info.copied": "Info copied to clipboard",

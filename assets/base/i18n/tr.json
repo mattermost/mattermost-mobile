@@ -702,6 +702,8 @@
   "mobile.no_results_with_term.files": "\"{term}\" ile eşleşen bir dosya bulunamadı",
   "mobile.no_results_with_term.messages": "\"{term}\" için bir eşleşme bulunamadı",
   "mobile.oauth.failed_to_login": "Oturum açma girişimi başarısız oldu. Lütfen yeniden deneyin.",
+  "mobile.oauth.failed_to_open_link": "Bağlantı açılamadı. Lütfen yeniden deneyin.",
+  "mobile.oauth.failed_to_open_link_no_browser": "Bağlantı açılamadı. Lütfen aygıt üzerinde bir tarayıcının kurulu olduğundan emin olun.",
   "mobile.oauth.something_wrong.okButton": "Tamam",
   "mobile.oauth.success.description": "Oturum açılıyor, lütfen bekleyin...",
   "mobile.oauth.success.title": "Kimlik doğrulandı",

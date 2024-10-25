@@ -9,6 +9,8 @@ import Foundation
 import SQLite3
 import SQLite
 
+typealias Expression = SQLite.Expression
+
 enum DatabaseError: Error {
     case OpenFailure(_ dbPath: String)
     case MultipleServers
