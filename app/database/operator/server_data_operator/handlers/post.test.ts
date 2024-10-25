@@ -315,16 +315,15 @@ describe('*** Operator: Post Handlers tests ***', () => {
     });
 
     it('=> HandlePosts: should properly parse metadata when the metadata is a string', async () => {
-        // @ts-expect-error notifications are sending metadata as a string, so we need to handle that case
-        const updatedPosts: Post[] = posts.map((post) => {
-            if (post.metadata && typeof post.metadata === 'object') {
-                return {
-                    ...post,
-                    metadata: JSON.stringify(post.metadata),
-                };
-            }
-            return post;
-        });
+        const postWithMetadata = posts[0];
+        const updatedPosts: Post[] = [
+            {
+                ...postWithMetadata,
+
+                // @ts-expect-error metadata should be an object, but notifications are sending post with metadata as a string
+                metadata: JSON.stringify(postWithMetadata.metadata),
+            },
+        ];
 
         const order = [
             '8swgtrrdiff89jnsiwiip3y1eoe',
@@ -334,6 +333,8 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
         const actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
         const spyOnHandleFiles = jest.spyOn(operator, 'handleFiles');
+        const spyOnHandleReactions = jest.spyOn(operator, 'handleReactions');
+        const spyOnHandleCustomEmojis = jest.spyOn(operator, 'handleCustomEmojis');
 
         await operator.handlePosts({
             actionType,
@@ -344,24 +345,25 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
         expect(spyOnHandleFiles).toHaveBeenCalledWith({
             files: [
-                {
-                    id: 'f1oxe5rtepfs7n3zifb4sso7po',
-                    user_id: '89ertha8xpfsumpucqppy5knao',
-                    post_id: 'a7ebyw883trm884p1qcgt8yw4a',
-                    create_at: 1608270920357,
-                    update_at: 1608270920357,
-                    delete_at: 0,
-                    name: '4qtwrg.jpg',
-                    extension: 'jpg',
-                    size: 89208,
-                    mime_type: 'image/jpeg',
-                    width: 500,
-                    height: 656,
-                    has_preview_image: true,
-                    mini_preview:
-                        '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
-                },
+                expect.objectContaining({id: postWithMetadata.metadata.files![0].id}),
             ],
+            prepareRecordsOnly: true,
+        });
+
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith({
+            prepareRecordsOnly: true,
+            emojis: [
+                expect.objectContaining({id: postWithMetadata.metadata.emojis![0].id}),
+            ],
+        });
+
+        expect(spyOnHandleReactions).toHaveBeenCalledWith({
+            postsReactions: [{
+                post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                reactions: [
+                    expect.objectContaining({emoji_name: postWithMetadata.metadata.reactions![0].emoji_name}),
+                ],
+            }],
             prepareRecordsOnly: true,
         });
     });
