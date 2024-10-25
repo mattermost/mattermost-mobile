@@ -660,6 +660,9 @@ ON [Post] ([channel_id])
 CREATE INDEX [idx_Post_pending_post_id]
 ON [Post] ([pending_post_id])
 
+CREATE INDEX [idx_Post_type]
+ON [Post] ([type])
+
 CREATE INDEX [idx_Post_user_id]
 ON [Post] ([user_id])
 

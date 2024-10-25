@@ -4,13 +4,19 @@
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
-import {addColumns, createTable, schemaMigrations} from '@nozbe/watermelondb/Schema/migrations';
+import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozbe/watermelondb/Schema/migrations';
 
 import {MM_TABLES} from '@constants/database';
 
 const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, POST} = MM_TABLES.SERVER;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 6,
+        steps: [
+            unsafeExecuteSql('CREATE INDEX IF NOT EXISTS Post_type ON Post (type)'),
+        ],
+    },
     {
         toVersion: 5,
         steps: [

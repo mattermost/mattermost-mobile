@@ -23,7 +23,7 @@ export default tableSchema({
         {name: 'previous_post_id', type: 'string'},
         {name: 'props', type: 'string'},
         {name: 'root_id', type: 'string'},
-        {name: 'type', type: 'string'},
+        {name: 'type', type: 'string', isIndexed: true},
         {name: 'update_at', type: 'number'},
         {name: 'user_id', type: 'string', isIndexed: true},
     ],

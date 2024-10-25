@@ -46,7 +46,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 5,
+            version: 6,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -413,7 +413,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         previous_post_id: {name: 'previous_post_id', type: 'string'},
                         props: {name: 'props', type: 'string'},
                         root_id: {name: 'root_id', type: 'string'},
-                        type: {name: 'type', type: 'string'},
+                        type: {name: 'type', type: 'string', isIndexed: true},
                         update_at: {name: 'update_at', type: 'number'},
                         user_id: {name: 'user_id', type: 'string', isIndexed: true},
                     },
@@ -431,7 +431,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'previous_post_id', type: 'string'},
                         {name: 'props', type: 'string'},
                         {name: 'root_id', type: 'string'},
-                        {name: 'type', type: 'string'},
+                        {name: 'type', type: 'string', isIndexed: true},
                         {name: 'update_at', type: 'number'},
                         {name: 'user_id', type: 'string', isIndexed: true},
                     ],
