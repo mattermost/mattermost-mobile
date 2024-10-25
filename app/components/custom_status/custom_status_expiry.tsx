@@ -8,7 +8,7 @@ import {Text, type TextStyle} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import FormattedDate from '@components/formatted_date';
+import FormattedDate, {type FormattedDateFormat} from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
@@ -72,11 +72,11 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
             />
         );
     } else if (expiryMomentTime.isAfter(tomorrowEndTime)) {
-        let format = 'dddd';
+        let format: FormattedDateFormat = {weekday: 'long'};
         if (expiryMomentTime.isAfter(plusSixDaysEndTime) && isCurrentYear) {
-            format = 'MMM DD';
+            format = {month: 'short', day: 'numeric'};
         } else if (!isCurrentYear) {
-            format = 'MMM DD, YYYY';
+            format = {dateStyle: 'medium'};
         }
 
         dateComponent = (
