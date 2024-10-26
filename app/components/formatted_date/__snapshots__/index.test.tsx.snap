@@ -8,13 +8,13 @@ exports[`<FormattedDate/> should match snapshot for 'bg' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'bg' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26.10.2024 г., 12:01 ч.
+  26.10.2024 г., 10:01 ч.
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'bg' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26.10, 12:01 ч.
+  26.10, 10:01 ч.
 </Text>
 `;
 
@@ -44,13 +44,13 @@ exports[`<FormattedDate/> should match snapshot for 'de' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'de' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26. Okt. 2024, 12:01
+  26. Okt. 2024, 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'de' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26. Okt., 12:01
+  26. Okt., 10:01
 </Text>
 `;
 
@@ -80,13 +80,13 @@ exports[`<FormattedDate/> should match snapshot for 'en' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'en' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  Oct 26, 2024, 12:01 PM
+  Oct 26, 2024, 10:01 AM
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'en' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  Oct 26, 12:01 PM
+  Oct 26, 10:01 AM
 </Text>
 `;
 
@@ -116,13 +116,13 @@ exports[`<FormattedDate/> should match snapshot for 'en-AU' locale and '{"dateSt
 
 exports[`<FormattedDate/> should match snapshot for 'en-AU' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 Oct 2024, 12:01 pm
+  26 Oct 2024, 10:01 am
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'en-AU' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 Oct, 12:01 pm
+  26 Oct, 10:01 am
 </Text>
 `;
 
@@ -152,13 +152,13 @@ exports[`<FormattedDate/> should match snapshot for 'es' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'es' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 oct 2024, 12:01
+  26 oct 2024, 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'es' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 oct, 12:01
+  26 oct, 10:01
 </Text>
 `;
 
@@ -188,13 +188,13 @@ exports[`<FormattedDate/> should match snapshot for 'fa' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'fa' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  ۵ آبان ۱۴۰۳، ۱۲:۰۱
+  ۵ آبان ۱۴۰۳، ۱۰:۰۱
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'fa' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  ۵ آبان، ۱۲:۰۱
+  ۵ آبان، ۱۰:۰۱
 </Text>
 `;
 
@@ -224,13 +224,13 @@ exports[`<FormattedDate/> should match snapshot for 'fr' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'fr' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 oct. 2024, 12:01
+  26 oct. 2024, 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'fr' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 oct., 12:01
+  26 oct., 10:01
 </Text>
 `;
 
@@ -260,13 +260,13 @@ exports[`<FormattedDate/> should match snapshot for 'hu' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'hu' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  2024. okt. 26. 12:01
+  2024. okt. 26. 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'hu' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  okt. 26. 12:01
+  okt. 26. 10:01
 </Text>
 `;
 
@@ -296,13 +296,13 @@ exports[`<FormattedDate/> should match snapshot for 'it' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'it' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 ott 2024, 12:01
+  26 ott 2024, 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'it' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 ott, 12:01
+  26 ott, 10:01
 </Text>
 `;
 
@@ -332,13 +332,13 @@ exports[`<FormattedDate/> should match snapshot for 'ja' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'ja' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  2024年10月26日 12:01
+  2024年10月26日 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'ja' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  10月26日 12:01
+  10月26日 10:01
 </Text>
 `;
 
@@ -368,13 +368,13 @@ exports[`<FormattedDate/> should match snapshot for 'ko' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'ko' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  2024년 10월 26일 오후 12:01
+  2024년 10월 26일 오전 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'ko' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  10월 26일 오후 12:01
+  10월 26일 오전 10:01
 </Text>
 `;
 
@@ -404,13 +404,13 @@ exports[`<FormattedDate/> should match snapshot for 'nl' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'nl' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 okt 2024, 12:01
+  26 okt 2024, 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'nl' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 okt, 12:01
+  26 okt, 10:01
 </Text>
 `;
 
@@ -440,13 +440,13 @@ exports[`<FormattedDate/> should match snapshot for 'pl' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'pl' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 paź 2024, 12:01
+  26 paź 2024, 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'pl' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 paź, 12:01
+  26 paź, 10:01
 </Text>
 `;
 
@@ -476,13 +476,13 @@ exports[`<FormattedDate/> should match snapshot for 'pt-BR' locale and '{"dateSt
 
 exports[`<FormattedDate/> should match snapshot for 'pt-BR' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 de out. de 2024, 12:01
+  26 de out. de 2024, 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'pt-BR' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 de out., 12:01
+  26 de out., 10:01
 </Text>
 `;
 
@@ -512,13 +512,13 @@ exports[`<FormattedDate/> should match snapshot for 'ro' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'ro' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 oct. 2024, 12:01
+  26 oct. 2024, 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'ro' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 oct., 12:01
+  26 oct., 10:01
 </Text>
 `;
 
@@ -548,13 +548,13 @@ exports[`<FormattedDate/> should match snapshot for 'ru' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'ru' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 окт. 2024 г., 12:01
+  26 окт. 2024 г., 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'ru' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 окт., 12:01
+  26 окт., 10:01
 </Text>
 `;
 
@@ -584,13 +584,13 @@ exports[`<FormattedDate/> should match snapshot for 'sv' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'sv' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 okt. 2024 12:01
+  26 okt. 2024 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'sv' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 okt. 12:01
+  26 okt. 10:01
 </Text>
 `;
 
@@ -620,13 +620,13 @@ exports[`<FormattedDate/> should match snapshot for 'tr' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'tr' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 Eki 2024 12:01
+  26 Eki 2024 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'tr' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 Eki 12:01
+  26 Eki 10:01
 </Text>
 `;
 
@@ -656,13 +656,13 @@ exports[`<FormattedDate/> should match snapshot for 'uk' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'uk' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  26 жовт. 2024 р., 12:01
+  26 жовт. 2024 р., 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'uk' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  26 жовт., 12:01
+  26 жовт., 10:01
 </Text>
 `;
 
@@ -692,13 +692,13 @@ exports[`<FormattedDate/> should match snapshot for 'vi' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'vi' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  12:01 26 thg 10, 2024
+  10:01 26 thg 10, 2024
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'vi' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  12:01 26 thg 10
+  10:01 26 thg 10
 </Text>
 `;
 
@@ -728,13 +728,13 @@ exports[`<FormattedDate/> should match snapshot for 'zh-CN' locale and '{"dateSt
 
 exports[`<FormattedDate/> should match snapshot for 'zh-CN' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  2024年10月26日 12:01
+  2024年10月26日 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'zh-CN' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  10月26日 12:01
+  10月26日 10:01
 </Text>
 `;
 
@@ -764,13 +764,13 @@ exports[`<FormattedDate/> should match snapshot for 'zh-TW' locale and '{"dateSt
 
 exports[`<FormattedDate/> should match snapshot for 'zh-TW' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  2024年10月26日 下午12:01
+  2024年10月26日 上午10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'zh-TW' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  10月26日 下午12:01
+  10月26日 上午10:01
 </Text>
 `;
 

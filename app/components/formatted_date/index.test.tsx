@@ -40,6 +40,7 @@ describe('<FormattedDate/>', () => {
             <FormattedDate
                 format={format}
                 value={DATE}
+                timezone='UTC'
             />,
             {locale},
         );
