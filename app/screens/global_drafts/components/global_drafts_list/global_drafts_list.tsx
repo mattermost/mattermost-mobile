@@ -6,9 +6,10 @@ import React, {useCallback, useState} from 'react';
 import {View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import Draft from '@app/components/draft';
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@app/components/post_list/config';
 import {Screens} from '@app/constants';
+
+import SwipeableDraft from './SwipeableDraft';
 
 import type DraftModel from '@typings/database/models/servers/draft';
 
@@ -33,10 +34,8 @@ const GlobalDraftsList: React.FC<Props> = ({
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<DraftModel>) => {
         return (
-            <Draft
-                key={item.id}
-                channelId={item.channelId}
-                draft={item}
+            <SwipeableDraft
+                item={item}
                 location={location}
                 layoutWidth={layoutWidth}
             />
