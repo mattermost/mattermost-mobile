@@ -13,8 +13,10 @@ type FormattedDateProps = TextProps & {
     value: number | string | Date;
 }
 
+const DEFAULT_FORMAT: FormattedDateFormat = {dateStyle: 'medium'};
+
 const FormattedDate = ({
-    format = {dateStyle: 'medium'},
+    format = DEFAULT_FORMAT,
     timezone,
     value,
     ...props

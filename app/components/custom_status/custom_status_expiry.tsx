@@ -43,6 +43,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const DATE_FORMATS = {
+    withinWeek: {weekday: 'long'},
+    withinYear: {month: 'short', day: 'numeric'},
+    afterYear: {dateStyle: 'medium'},
+} satisfies Record<string, FormattedDateFormat>;
+
 const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCompulsory, showToday, testID = '', textStyles = {}, theme, time, withinBrackets}: Props) => {
     const userTimezone = getUserTimezoneProps(currentUser);
     const timezone = userTimezone.useAutomaticTimezone ? userTimezone.automaticTimezone : userTimezone.manualTimezone;
@@ -72,11 +78,11 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
             />
         );
     } else if (expiryMomentTime.isAfter(tomorrowEndTime)) {
-        let format: FormattedDateFormat = {weekday: 'long'};
+        let format: FormattedDateFormat = DATE_FORMATS.withinWeek;
         if (expiryMomentTime.isAfter(plusSixDaysEndTime) && isCurrentYear) {
-            format = {month: 'short', day: 'numeric'};
+            format = DATE_FORMATS.withinYear;
         } else if (!isCurrentYear) {
-            format = {dateStyle: 'medium'};
+            format = DATE_FORMATS.afterYear;
         }
 
         dateComponent = (

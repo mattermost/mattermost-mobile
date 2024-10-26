@@ -96,13 +96,13 @@ const FileInfo = ({disabled, file, channelName, showDate, onPress}: FileInfoProp
                         <Text style={style.infoText}>
                             {`${getFormattedFileSize(file.size)}`}
                         </Text>
-                        {showDate && (
+                        {showDate && file.create_at != null && (
                             <>
                                 {' • '}
                                 <FormattedDate
                                     style={style.infoText}
                                     format={FORMAT}
-                                    value={file.create_at as number}
+                                    value={file.create_at}
                                 />
                             </>
                         )}
