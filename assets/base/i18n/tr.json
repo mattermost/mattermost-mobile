@@ -1091,6 +1091,7 @@
   "skintone_selector.tooltip.title": "Varsayılan cilt tonunuzu seçin",
   "smobile.search.recent_title": "{teamName} takımındaki son aramalar",
   "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {üye} other {üye}} eklendi",
+  "snack.bar.code.copied": "Kod panoya kopyalandı",
   "snack.bar.favorited.channel": "Bu kanal beğendiklerime eklendi",
   "snack.bar.following.thread": "Konu izleniyor",
   "snack.bar.info.copied": "Bilgiler panoya kopyalandı",
