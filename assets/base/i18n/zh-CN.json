@@ -1091,6 +1091,7 @@
   "skintone_selector.tooltip.title": "选择您默认的皮肤色调",
   "smobile.search.recent_title": "{teamName}内最近的搜索",
   "snack.bar.channel.members.added": "{numMembers, number} 位成员已添加",
+  "snack.bar.code.copied": "代码已复制到剪贴板",
   "snack.bar.favorited.channel": "此频道已收藏",
   "snack.bar.following.thread": "线程关注",
   "snack.bar.info.copied": "信息已复制到剪贴板",
