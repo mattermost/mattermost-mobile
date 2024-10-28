@@ -1091,6 +1091,7 @@
   "skintone_selector.tooltip.title": "Wybierz swój domyślny odcień wyglądu",
   "smobile.search.recent_title": "Ostatnie wyszukiwania w {teamName}",
   "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {użytkownik} other {użytkowników}} dodanych",
+  "snack.bar.code.copied": "Kod skopiowany do schowka",
   "snack.bar.favorited.channel": "Ten kanał został polubiony",
   "snack.bar.following.thread": "Wątek śledzony",
   "snack.bar.info.copied": "Informacje skopiowane do schowka",

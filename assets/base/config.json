@@ -1,4 +1,6 @@
 {
+    "AuthUrlScheme": "mmauth://",
+    "AuthUrlSchemeDev": "mmauthbeta://",
     "DefaultServerUrl": "",
     "DefaultServerName": "",
     "TestServerUrl": "http://localhost:8065",

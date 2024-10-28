@@ -392,7 +392,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
                 return res;
             }
 
-            if (e.updateAt !== b.update_at) {
+            if (e.updateAt !== b.update_at || e.sortOrder !== b.sort_order) {
                 res.createOrUpdateRaws.push(b);
                 if (b.file) {
                     files.push(b.file);
