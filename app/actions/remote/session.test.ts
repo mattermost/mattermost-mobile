@@ -25,14 +25,6 @@ import type {LoginArgs} from '@typings/database/database';
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
 
-const channelId = 'channelid1';
-const teamId = 'teamid1';
-
-const team: Team = {
-    id: teamId,
-    name: 'team1',
-} as Team;
-
 const user1 = {id: 'userid1', username: 'user1', email: 'user1@mattermost.com', roles: ''} as UserProfile;
 
 const session1 = {id: 'sessionid1', user_id: user1.id, device_id: 'deviceid', props: {csrf: 'csrfid'}} as Session;
