@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Channel, General, Permissions} from '@constants';
-import {t, DEFAULT_LOCALE} from '@i18n';
-import {hasPermission} from '@utils/role';
+import {defineMessages, type IntlShape} from 'react-intl';
 
-import {generateId} from '../general';
-import {cleanUpUrlable} from '../url';
+import {Channel, General, Permissions} from '@constants';
+import {DEFAULT_LOCALE} from '@i18n';
+import {generateId} from '@utils/general';
+import {hasPermission} from '@utils/role';
+import {cleanUpUrlable} from '@utils/url';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type {IntlShape} from 'react-intl';
 
 export function getDirectChannelName(id: string, otherId: string): string {
     let handle;
@@ -83,20 +83,20 @@ export function sortChannelsModelByDisplayName(locale: string, a: ChannelModel, 
     return a.name.toLowerCase().localeCompare(b.name.toLowerCase(), locale, {numeric: true});
 }
 
-const displayNameValidationMessages = {
+const displayNameValidationMessages = defineMessages({
     display_name_required: {
-        id: t('mobile.rename_channel.display_name_required'),
+        id: 'mobile.rename_channel.display_name_required',
         defaultMessage: 'Channel name is required',
     },
     display_name_maxLength: {
-        id: t('mobile.rename_channel.display_name_maxLength'),
+        id: 'mobile.rename_channel.display_name_maxLength',
         defaultMessage: 'Channel name must be less than {maxLength, number} characters',
     },
     display_name_minLength: {
-        id: t('mobile.rename_channel.display_name_minLength'),
+        id: 'mobile.rename_channel.display_name_minLength',
         defaultMessage: 'Channel name must be {minLength, number} or more characters',
     },
-};
+});
 
 export const validateDisplayName = (intl: IntlShape, displayName: string): {error: string} => {
     let errorMessage;
@@ -117,6 +117,7 @@ export const validateDisplayName = (intl: IntlShape, displayName: string): {erro
 
         default:
             errorMessage = '';
+            break;
     }
     return {error: errorMessage};
 };

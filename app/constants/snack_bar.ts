@@ -6,10 +6,12 @@ import keyMirror from '@utils/key_mirror';
 
 export const SNACK_BAR_TYPE = keyMirror({
     ADD_CHANNEL_MEMBERS: null,
+    CODE_COPIED: null,
     FAVORITE_CHANNEL: null,
     FOLLOW_THREAD: null,
     INFO_COPIED: null,
     LINK_COPIED: null,
+    LINK_COPY_FAILED: null,
     MESSAGE_COPIED: null,
     MUTE_CHANNEL: null,
     REMOVE_CHANNEL_USER: null,
@@ -40,6 +42,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         iconName: 'check',
         canUndo: false,
     },
+    CODE_COPIED: {
+        id: t('snack.bar.code.copied'),
+        defaultMessage: 'Code copied to clipboard',
+        iconName: 'content-copy',
+        canUndo: false,
+    },
     FAVORITE_CHANNEL: {
         id: t('snack.bar.favorited.channel'),
         defaultMessage: 'This channel was favorited',
@@ -64,6 +72,13 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         iconName: 'link-variant',
         canUndo: false,
         type: MESSAGE_TYPE.SUCCESS,
+    },
+    LINK_COPY_FAILED: {
+        id: t('gallery.copy_link.failed'),
+        defaultMessage: 'Failed to copy link to clipboard',
+        iconName: 'link-variant',
+        canUndo: false,
+        type: MESSAGE_TYPE.ERROR,
     },
     MESSAGE_COPIED: {
         id: t('snack.bar.message.copied'),

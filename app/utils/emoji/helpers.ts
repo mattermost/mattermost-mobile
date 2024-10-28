@@ -42,7 +42,7 @@ const RE_REACTION = /^(\+|-):([^:\s]+):\s*$/;
 
 const MAX_JUMBO_EMOJIS = 8;
 
-function isEmoticon(text: string) {
+export function isEmoticon(text: string) {
     for (const emoticon of Object.keys(RE_EMOTICON)) {
         const reEmoticon = RE_EMOTICON[emoticon];
         const matchEmoticon = text.match(reEmoticon);
@@ -106,9 +106,17 @@ export function getEmojiName(emoji: string, customEmojiNames: string[]) {
 
     const matchUnicodeEmoji = emoji.match(RE_UNICODE_EMOJI);
     if (matchUnicodeEmoji) {
-        const index = EmojiIndicesByUnicode.get(matchUnicodeEmoji[0]);
-        if (index != null) {
-            return fillEmoji('', Emojis[index]).name;
+        function getEmojiHexValue(code: string) {
+            let hexValue = '';
+            for (const char of code) {
+                hexValue += char.codePointAt(0)?.toString(16).toLowerCase() + ' ';
+            }
+            return hexValue.trim();
+        }
+        const hex = getEmojiHexValue(matchUnicodeEmoji[0]);
+        const index = EmojiIndicesByUnicode.get(hex);
+        if (index != null && Emojis[index]) {
+            return fillEmoji('', index).name;
         }
         return undefined;
     }
@@ -303,11 +311,11 @@ export function compareEmojis(emojiA: string | Partial<EmojiType>, emojiB: strin
 }
 
 export const isCustomEmojiEnabled = (config: ClientConfig | SystemModel) => {
-    if (config instanceof SystemModel) {
-        return config?.value?.EnableCustomEmoji === 'true';
+    if ('value' in config) {
+        return config.value?.EnableCustomEmoji === 'true';
     }
 
-    return config?.EnableCustomEmoji === 'true';
+    return config.EnableCustomEmoji === 'true';
 };
 
 export function fillEmoji(category: string, index: number) {

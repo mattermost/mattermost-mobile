@@ -39,4 +39,5 @@ export const displayPermalink = async (teamName: string, postId: string, openAsP
 
 export const closePermalink = () => {
     showingPermalink = false;
+    return showingPermalink;
 };

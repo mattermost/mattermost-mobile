@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database, Model, Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 import {
@@ -9,6 +9,7 @@ import {
     buildChannelMembershipKey,
 } from '@database/operator/server_data_operator/comparators';
 import {
+    transformChannelBookmarkRecord,
     transformChannelInfoRecord,
     transformChannelMembershipRecord,
     transformChannelRecord,
@@ -17,10 +18,11 @@ import {
 } from '@database/operator/server_data_operator/transformers/channel';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 import {logWarning} from '@utils/log';
 
 import type ServerDataOperatorBase from '.';
-import type {HandleChannelArgs, HandleChannelInfoArgs, HandleChannelMembershipArgs, HandleMyChannelArgs, HandleMyChannelSettingsArgs} from '@typings/database/database';
+import type {HandleChannelArgs, HandleChannelBookmarkArgs, HandleChannelInfoArgs, HandleChannelMembershipArgs, HandleMyChannelArgs, HandleMyChannelSettingsArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -29,6 +31,7 @@ import type MyChannelSettingsModel from '@typings/database/models/servers/my_cha
 
 const {
     CHANNEL,
+    CHANNEL_BOOKMARK,
     CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
     MY_CHANNEL,
@@ -37,10 +40,11 @@ const {
 
 export interface ChannelHandlerMix {
   handleChannel: ({channels, prepareRecordsOnly}: HandleChannelArgs) => Promise<ChannelModel[]>;
+  handleChannelBookmark: ({bookmarks, prepareRecordsOnly}: HandleChannelBookmarkArgs) => Promise<Model[]>;
   handleChannelMembership: ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembershipModel[]>;
   handleMyChannelSettings: ({settings, prepareRecordsOnly}: HandleMyChannelSettingsArgs) => Promise<MyChannelSettingsModel[]>;
   handleChannelInfo: ({channelInfos, prepareRecordsOnly}: HandleChannelInfoArgs) => Promise<ChannelInfoModel[]>;
-  handleMyChannel: ({channels, myChannels, isCRTEnabled, prepareRecordsOnly}: HandleMyChannelArgs) => Promise<MyChannelModel[]>;
+  handleMyChannel: ({channels, myChannels, isCRTEnabled, prepareRecordsOnly}: HandleMyChannelArgs) => Promise<Model[]>;
 }
 
 const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
@@ -217,7 +221,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
      * @param {boolean} myChannelsArgs.prepareRecordsOnly
      * @returns {Promise<MyChannelModel[]>}
      */
-    handleMyChannel = async ({channels, myChannels, isCRTEnabled, prepareRecordsOnly = true}: HandleMyChannelArgs): Promise<MyChannelModel[]> => {
+    handleMyChannel = async ({channels, myChannels, isCRTEnabled, prepareRecordsOnly = true}: HandleMyChannelArgs): Promise<Model[]> => {
         if (!myChannels?.length) {
             logWarning(
                 'An empty or undefined "myChannels" array has been passed to the handleMyChannel method',
@@ -235,7 +239,6 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
         }
 
         const isCRT = isCRTEnabled ?? await getIsCRTEnabled(this.database);
-
         const channelMap = channels.reduce((result: Record<string, Channel>, channel) => {
             result[channel.id] = channel;
             return result;
@@ -352,6 +355,87 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
             createOrUpdateRawValues,
             tableName: CHANNEL_MEMBERSHIP,
         }, 'handleChannelMembership');
+    };
+
+    /**
+     * handleChannelMembership: Handler responsible for the Create/Update/Delete operations occurring on the CHANNEL_BOOKMARK table from the 'Server' schema
+     * @param {HandleChannelBookmarkArgs} channelBookmarkArgs
+     * @param {ChannelBookmark[]} channelBookmarkArgs.bookmarks
+     * @param {boolean} channelBookmarkArgs.prepareRecordsOnly
+     * @returns {Promise<ChannelBookmarkModel[]>}
+     */
+    handleChannelBookmark = async ({bookmarks, prepareRecordsOnly}: HandleChannelBookmarkArgs): Promise<Model[]> => {
+        if (!bookmarks?.length) {
+            logWarning(
+                'An empty or undefined "bookmarks" array has been passed to the handleChannelBookmark method',
+            );
+            return [];
+        }
+
+        const uniqueRaws = getUniqueRawsBy({raws: bookmarks, key: 'id'}) as ChannelBookmarkWithFileInfo[];
+        const keys = uniqueRaws.map((c) => c.id);
+        const db: Database = this.database;
+        const existing = await db.get<ChannelBookmarkModel>(CHANNEL_BOOKMARK).query(
+            Q.where('id', Q.oneOf(keys)),
+        ).fetch();
+        const bookmarkMap = new Map<string, ChannelBookmarkModel>(existing.map((b) => [b.id, b]));
+        const files: FileInfo[] = [];
+        const raws = uniqueRaws.reduce<{createOrUpdateRaws: ChannelBookmarkWithFileInfo[]; deleteRaws: ChannelBookmarkWithFileInfo[]}>((res, b) => {
+            const e = bookmarkMap.get(b.id);
+            if (!e) {
+                if (!b.delete_at) {
+                    res.createOrUpdateRaws.push(b);
+                    if (b.file) {
+                        files.push(b.file);
+                    }
+                }
+                return res;
+            }
+
+            if (e.updateAt !== b.update_at || e.sortOrder !== b.sort_order) {
+                res.createOrUpdateRaws.push(b);
+                if (b.file) {
+                    files.push(b.file);
+                }
+            }
+
+            if (b.delete_at) {
+                res.deleteRaws.push(b);
+                if (b.file) {
+                    b.file.delete_at = b.delete_at;
+                    files.push(b.file);
+                }
+            }
+
+            return res;
+        }, {createOrUpdateRaws: [], deleteRaws: []});
+
+        if (!raws.createOrUpdateRaws.length && !raws.deleteRaws.length) {
+            return [];
+        }
+
+        const preparedBookmarks = await this.handleRecords({
+            fieldName: 'id',
+            transformer: transformChannelBookmarkRecord,
+            createOrUpdateRawValues: raws.createOrUpdateRaws,
+            deleteRawValues: raws.deleteRaws,
+            tableName: CHANNEL_BOOKMARK,
+            prepareRecordsOnly: true,
+        }, 'handleChannelBookmark');
+
+        const batch: Model[] = [...preparedBookmarks];
+        if (files.length) {
+            const bookmarkFiles = await this.handleFiles({files, prepareRecordsOnly: true});
+            if (bookmarkFiles.length) {
+                batch.push(...bookmarkFiles);
+            }
+        }
+
+        if (batch.length && !prepareRecordsOnly) {
+            await this.batchRecords(batch, 'handleChannelBookmark');
+        }
+
+        return batch;
     };
 };
 

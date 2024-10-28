@@ -1,9 +1,10 @@
 {
-  "about.date": "תאריך בילד:",
+  "about.date": "תאריך בנייה:",
   "about.enterpriseEditionLearn": "למד עוד אודות הגרסה הארגונית ב ",
   "about.enterpriseEditionSt": "תקשורת מודרנית מאחורי חומת האש שלך.",
   "about.enterpriseEditione1": "רשיון מסחרי",
-  "about.hash": "ה Hash של הבילד:",
+  "about.hash": "Build Hash:",
+  "about.hashee": "EE Build Hash:",
   "about.teamEditionLearn": "הצטרף לקהילת Mattermost ב ",
   "about.teamEditionSt": "כל תקשורת הצוות שלך במקום אחד, ניתנת לחיפוש מיידי ונגישה בכל מקום.",
   "about.teamEditiont0": "רשיון קבוצתי",

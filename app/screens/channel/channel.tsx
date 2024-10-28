@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {type KeyboardTrackingViewRef} from 'libraries/@mattermost/keyboard-tracker/src';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -26,7 +27,6 @@ import useGMasDMNotice from './use_gm_as_dm_notice';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
 type ChannelProps = {
     channelId: string;
@@ -34,12 +34,14 @@ type ChannelProps = {
     showJoinCallBanner: boolean;
     isInACall: boolean;
     isCallsEnabledInChannel: boolean;
+    groupCallsAllowed: boolean;
     showIncomingCalls: boolean;
     isTabletView?: boolean;
     dismissedGMasDMNotice: PreferenceModel[];
     currentUserId: string;
     channelType: ChannelType;
     hasGMasDMFeature: boolean;
+    includeBookmarkBar?: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -57,12 +59,14 @@ const Channel = ({
     showJoinCallBanner,
     isInACall,
     isCallsEnabledInChannel,
+    groupCallsAllowed,
     showIncomingCalls,
     isTabletView,
     dismissedGMasDMNotice,
     channelType,
     currentUserId,
     hasGMasDMFeature,
+    includeBookmarkBar,
 }: ChannelProps) => {
     useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
@@ -123,7 +127,9 @@ const Channel = ({
                     channelId={channelId}
                     componentId={componentId}
                     callsEnabledInChannel={isCallsEnabledInChannel}
+                    groupCallsAllowed={groupCallsAllowed}
                     isTabletView={isTabletView}
+                    shouldRenderBookmarks={shouldRender}
                 />
                 {shouldRender &&
                 <>
@@ -145,12 +151,13 @@ const Channel = ({
                     />
                 </>
                 }
-                {showFloatingCallContainer &&
+                {showFloatingCallContainer && shouldRender &&
                     <FloatingCallContainer
                         channelId={channelId}
                         showJoinCallBanner={showJoinCallBanner}
                         showIncomingCalls={showIncomingCalls}
                         isInACall={isInACall}
+                        includeBookmarkBar={includeBookmarkBar}
                     />
                 }
             </SafeAreaView>

@@ -85,7 +85,7 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, `@${testUser.username}`);
     });
 
-    it('MM-T4886_2 - should be able to select and post channel mention suggestion -- KNOWN ISSUE: MM-50351', async () => {
+    it('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
         // # Type in "~" to activate channel mention autocomplete
         await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
@@ -136,7 +136,7 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, '🦊');
     });
 
-    it('MM-T4886_4 - should be able to select and post slash suggestion -- KNOWN ISSUE: MM-50351', async () => {
+    it('MM-T4886_4 - should be able to select and post slash suggestion', async () => {
         // # Type in "/" to activate slash suggestion autocomplete
         await ChannelScreen.postInput.typeText('/');
         await Autocomplete.toBeVisible();

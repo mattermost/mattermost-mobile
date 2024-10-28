@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {nativeApplicationVersion} from 'expo-application';
+import {RESULTS, checkNotifications} from 'react-native-permissions';
+
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
@@ -22,12 +25,12 @@ import {getDeviceToken} from '@queries/app/global';
 import {getChannelById, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig, getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getConfig, getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getLastFullSync, setCurrentTeamAndChannelId, getConfigValue} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import NavigationStore from '@store/navigation_store';
 import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
-import {isTablet} from '@utils/helpers';
+import {isMinimumServerVersion, isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
@@ -124,7 +127,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
     }
     const {database} = operator;
 
-    const lastDisconnectedAt = since || await getWebSocketLastDisconnected(database);
+    const lastDisconnectedAt = since || await getLastFullSync(database);
 
     const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, teamId, channelId);
     if ('error' in fetchedData) {
@@ -413,17 +416,25 @@ async function restDeferredAppEntryActions(
     }, FETCH_MISSING_DM_TIMEOUT);
 }
 
-export const registerDeviceToken = async (serverUrl: string) => {
+export const setExtraSessionProps = async (serverUrl: string) => {
     try {
-        const client = NetworkManager.getClient(serverUrl);
-
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const serverVersion = await getConfigValue(database, 'Version');
         const deviceToken = await getDeviceToken();
-        if (deviceToken) {
-            client.attachDevice(deviceToken);
+
+        // For new servers, we want to send all the information.
+        // For old servers, we only want to send the information when there
+        // is a device token. Sending the rest of the information should not
+        // create any issue.
+        if (isMinimumServerVersion(serverVersion, 10, 1, 0) || deviceToken) {
+            const res = await checkNotifications();
+            const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
+            const client = NetworkManager.getClient(serverUrl);
+            client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion);
         }
         return {};
     } catch (error) {
-        logDebug('error on registerDeviceToken', getFullErrorMessage(error));
+        logDebug('error on setExtraSessionProps', getFullErrorMessage(error));
         return {error};
     }
 };

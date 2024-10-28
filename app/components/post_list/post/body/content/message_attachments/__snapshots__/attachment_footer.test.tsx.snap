@@ -10,35 +10,42 @@ exports[`AttachmentFooter it matches snapshot when both footer and footer_icon a
     }
   }
 >
-  <View
-    style={
+  <ViewManagerAdapter_ExpoImage
+    containerViewRef={"[React.ref]"}
+    contentFit="cover"
+    contentPosition={
+      {
+        "left": "50%",
+        "top": "50%",
+      }
+    }
+    height={12}
+    marginRight={5}
+    marginTop={1}
+    nativeViewRef={"[React.ref]"}
+    onError={[Function]}
+    onLoad={[Function]}
+    onLoadStart={[Function]}
+    onProgress={[Function]}
+    placeholder={[]}
+    source={
       [
         {
-          "overflow": "hidden",
-        },
-        {
-          "height": 12,
-          "marginRight": 5,
-          "marginTop": 1,
-          "width": 12,
+          "uri": "https://images.com/image.png",
         },
       ]
     }
-  >
-    <FastImageView
-      defaultSource={null}
-      resizeMode="cover"
-      style={
-        {
-          "bottom": 0,
-          "left": 0,
-          "position": "absolute",
-          "right": 0,
-          "top": 0,
-        }
+    style={
+      {
+        "height": 12,
+        "marginRight": 5,
+        "marginTop": 1,
+        "width": 12,
       }
-    />
-  </View>
+    }
+    transition={null}
+    width={12}
+  />
   <Text
     ellipsizeMode="tail"
     numberOfLines={1}

@@ -1,17 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type RefObject, useEffect, useRef, useState} from 'react';
-import {AppState, Keyboard, Platform, useWindowDimensions, View} from 'react-native';
+import RNUtils, {type WindowDimensions} from '@mattermost/rnutils';
+import React, {type RefObject, useEffect, useRef, useState, useContext} from 'react';
+import {AppState, DeviceEventEmitter, Keyboard, NativeEventEmitter, Platform, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {DeviceContext} from '@context/device';
 
-import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
+import type {KeyboardTrackingViewRef, KeyboardWillShowEventData} from '@mattermost/keyboard-tracker';
+
+const utilsEmitter = new NativeEventEmitter(RNUtils);
 
 export function useSplitView() {
-    const {isSplitView} = React.useContext(DeviceContext);
-    return isSplitView;
+    const {isSplit} = React.useContext(DeviceContext);
+    return isSplit;
 }
 
 export function useAppState() {
@@ -28,12 +31,26 @@ export function useAppState() {
     return appState;
 }
 
-export function useIsTablet() {
-    const {isSplitView, isTablet} = React.useContext(DeviceContext);
-    return isTablet && !isSplitView;
+export function useWindowDimensions() {
+    const [dimensions, setDimensions] = useState(RNUtils.getWindowDimensions());
+
+    useEffect(() => {
+        const listener = utilsEmitter.addListener('DimensionsChanged', (window: WindowDimensions) => {
+            setDimensions(window);
+        });
+
+        return () => listener.remove();
+    }, []);
+
+    return dimensions;
 }
 
-export function useKeyboardHeightWithDuration(keyboardTracker?: React.RefObject<KeyboardTrackingViewRef>) {
+export function useIsTablet() {
+    const {isSplit, isTablet} = useContext(DeviceContext);
+    return isTablet && !isSplit;
+}
+
+export function useKeyboardHeightWithDuration(keyboardTracker?: RefObject<KeyboardTrackingViewRef>) {
     const [keyboardHeight, setKeyboardHeight] = useState({height: 0, duration: 0});
     const updateTimeout = useRef<NodeJS.Timeout | null>(null);
     const insets = useSafeAreaInsets();
@@ -54,15 +71,21 @@ export function useKeyboardHeightWithDuration(keyboardTracker?: React.RefObject<
 
     useEffect(() => {
         const show = Keyboard.addListener(Platform.select({ios: 'keyboardWillShow', default: 'keyboardDidShow'}), async (event) => {
+            if (!keyboardTracker?.current) {
+                setKeyboardHeight({height: event.endCoordinates.height, duration: event.duration});
+            }
+        });
+
+        const tracker = DeviceEventEmitter.addListener('MattermostKeyboardTrackerView', (event: KeyboardWillShowEventData) => {
+            const props = event.nativeEvent;
             if (keyboardTracker?.current) {
-                const props = await keyboardTracker.current.getNativeProps();
                 if (props.keyboardHeight) {
-                    updateValue((props.trackingViewHeight + props.keyboardHeight) - KEYBOARD_TRACKINGVIEW_SEPARATION, event.duration);
+                    updateValue((props.trackingViewHeight + props.keyboardHeight) - KEYBOARD_TRACKINGVIEW_SEPARATION, props.animationDuration);
                 } else {
-                    updateValue((props.trackingViewHeight + insets.bottom) - KEYBOARD_TRACKINGVIEW_SEPARATION, event.duration);
+                    updateValue((props.trackingViewHeight + insets.bottom) - KEYBOARD_TRACKINGVIEW_SEPARATION, props.animationDuration);
                 }
             } else {
-                setKeyboardHeight({height: event.endCoordinates.height, duration: event.duration});
+                setKeyboardHeight({height: props.keyboardFrameEndHeight, duration: props.animationDuration});
             }
         });
 
@@ -77,13 +100,14 @@ export function useKeyboardHeightWithDuration(keyboardTracker?: React.RefObject<
         return () => {
             show.remove();
             hide.remove();
+            tracker.remove();
         };
-    }, [keyboardTracker && insets.bottom]);
+    }, [keyboardTracker?.current && insets.bottom]);
 
     return keyboardHeight;
 }
 
-export function useKeyboardHeight(keyboardTracker?: React.RefObject<KeyboardTrackingViewRef>) {
+export function useKeyboardHeight(keyboardTracker?: RefObject<KeyboardTrackingViewRef>) {
     const {height} = useKeyboardHeightWithDuration(keyboardTracker);
     return height;
 }

@@ -17,13 +17,11 @@ const {ARTIFACTS_DIR} = require('./constants');
 require('dotenv').config();
 
 const {
-    BRANCH,
-    BUILD_ID,
-    COMMIT_HASH,
     DETOX_AWS_S3_BUCKET,
     DETOX_AWS_ACCESS_KEY_ID,
     DETOX_AWS_SECRET_ACCESS_KEY,
     IOS,
+    REPORT_PATH,
 } = process.env;
 const platform = IOS === 'true' ? 'ios' : 'android';
 
@@ -45,7 +43,6 @@ async function saveArtifacts() {
         return;
     }
 
-    const s3Folder = `${BUILD_ID}-${COMMIT_HASH}-${BRANCH}`.replace(/\./g, '-');
     const uploadPath = path.resolve(__dirname, `../${ARTIFACTS_DIR}`);
     const filesToUpload = await getFiles(uploadPath);
 
@@ -54,7 +51,7 @@ async function saveArtifacts() {
             filesToUpload,
             10,
             async.asyncify(async (file) => {
-                const Key = file.replace(uploadPath, s3Folder);
+                const Key = file.replace(uploadPath, REPORT_PATH);
                 const contentType = mime.lookup(file);
                 const charset = mime.charset(contentType);
 
@@ -80,7 +77,7 @@ async function saveArtifacts() {
                     return reject(new Error(err));
                 }
 
-                const reportLink = `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/jest-stare/${platform}-report.html`;
+                const reportLink = `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/jest-stare/${platform}-report.html`;
                 resolve({success: true, reportLink});
             },
         );

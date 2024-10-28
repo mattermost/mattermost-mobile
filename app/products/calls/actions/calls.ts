@@ -8,6 +8,7 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {
+    endCallConfirmationAlert,
     leaveAndJoinWithAlert,
     needsRecordingErrorAlert,
     needsRecordingWillBePostedAlert,
@@ -28,6 +29,8 @@ import {
     setScreenShareURL,
     setSpeakerPhone,
 } from '@calls/state';
+import {type AudioDevice, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
+import {areGroupCallsAllowed} from '@calls/utils';
 import {General, Preferences} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
@@ -44,7 +47,6 @@ import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/u
 
 import {newConnection} from '../connection/connection';
 
-import type {AudioDevice, Call, CallSession, CallsConnection} from '@calls/types/calls';
 import type {CallChannelState, CallState, EmojiData, SessionState} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
@@ -132,7 +134,7 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
         fetchUsersByIds(serverUrl, Array.from(ids));
     }
 
-    setCallForChannel(serverUrl, channelId, resp.enabled, call);
+    setCallForChannel(serverUrl, channelId, call, resp.enabled);
 
     return {data: {call, enabled: resp.enabled}};
 };
@@ -160,11 +162,12 @@ const convertOldCallToNew = (call: CallState): CallState => {
     };
 };
 
-const createCallAndAddToIds = (channelId: string, call: CallState, ids: Set<string>) => {
-    return {
+export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: Set<string>) => {
+    // Don't cast so that we get alerted to missing types
+    const convertedCall: Call = {
         sessions: Object.values(call.sessions).reduce((accum, cur) => {
             // Add the id to the set of UserModels we want to ensure are loaded.
-            ids.add(cur.user_id);
+            ids?.add(cur.user_id);
 
             // Create the CallParticipant
             accum[cur.session_id] = {
@@ -184,7 +187,9 @@ const createCallAndAddToIds = (channelId: string, call: CallState, ids: Set<stri
         hostId: call.host_id,
         recState: call.recording,
         dismissed: call.dismissed_notification || {},
-    } as Call;
+    };
+
+    return convertedCall;
 };
 
 export const loadConfigAndCalls = async (serverUrl: string, userId: string) => {
@@ -302,6 +307,29 @@ export const leaveCall = (err?: Error) => {
     }
 };
 
+export const leaveCallConfirmation = async (
+    intl: IntlShape,
+    otherParticipants: boolean,
+    isAdmin: boolean,
+    isHost: boolean,
+    serverUrl: string,
+    channelId: string,
+    leaveCb?: () => void) => {
+    const showHostControls = (isHost || isAdmin) && otherParticipants;
+    const ret = await endCallConfirmationAlert(intl, showHostControls) as EndCallReturn;
+    switch (ret) {
+        case EndCallReturn.Cancel:
+            return;
+        case EndCallReturn.LeaveCall:
+            leaveCall();
+            leaveCb?.();
+            return;
+        case EndCallReturn.EndCall:
+            endCall(serverUrl, channelId);
+            leaveCb?.();
+    }
+};
+
 export const muteMyself = () => {
     if (connection) {
         connection.mute();
@@ -363,7 +391,7 @@ export const canEndCall = async (serverUrl: string, channelId: string) => {
         return false;
     }
 
-    return isSystemAdmin(currentUser.roles) || currentUser.id === call.ownerId;
+    return isSystemAdmin(currentUser.roles) || currentUser.id === call.hostId;
 };
 
 export const getEndCallMessage = async (serverUrl: string, channelId: string, currentUserId: string, intl: IntlShape) => {
@@ -466,7 +494,7 @@ export const dismissIncomingCall = async (serverUrl: string, channelId: string) 
 };
 
 // handleCallsSlashCommand will return true if the slash command was handled
-export const handleCallsSlashCommand = async (value: string, serverUrl: string, channelId: string, rootId: string, currentUserId: string, intl: IntlShape):
+export const handleCallsSlashCommand = async (value: string, serverUrl: string, channelId: string, channelType: string, rootId: string, currentUserId: string, intl: IntlShape):
     Promise<{ handled?: boolean; error?: string }> => {
     const tokens = value.split(' ');
     if (tokens.length < 2 || tokens[0] !== '/call') {
@@ -478,6 +506,15 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
             await handleEndCall(serverUrl, channelId, currentUserId, intl);
             return {handled: true};
         case 'start': {
+            if (!areGroupCallsAllowed(getCallsConfig(serverUrl)) && channelType !== General.DM_CHANNEL) {
+                return {
+                    error: intl.formatMessage({
+                        id: 'mobile.calls_group_calls_not_available',
+                        defaultMessage: 'Calls are only available in DM channels.',
+                    }),
+                };
+            }
+
             if (getChannelsWithCalls(serverUrl)[channelId]) {
                 return {
                     error: intl.formatMessage({
@@ -491,13 +528,22 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
             return {handled: true};
         }
         case 'join': {
+            if (!areGroupCallsAllowed(getCallsConfig(serverUrl)) && channelType !== General.DM_CHANNEL) {
+                return {
+                    error: intl.formatMessage({
+                        id: 'mobile.calls_group_calls_not_available',
+                        defaultMessage: 'Calls are only available in DM channels.',
+                    }),
+                };
+            }
+
             const title = tokens.length > 2 ? tokens.slice(2).join(' ') : undefined;
             await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
             return {handled: true};
         }
         case 'leave':
             if (getCurrentCall()?.channelId === channelId) {
-                await leaveCall();
+                leaveCall();
                 return {handled: true};
             }
             return {

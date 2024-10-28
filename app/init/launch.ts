@@ -12,6 +12,7 @@ import LocalConfig from '@assets/config.json';
 import {DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getLastViewedChannelIdAndServer, getOnboardingViewed, getLastViewedThreadIdAndServer} from '@queries/app/global';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
@@ -21,6 +22,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {getLaunchPropsFromDeepLink} from '@utils/deep_link';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
+import {removeProtocol} from '@utils/url';
 
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
@@ -79,8 +81,16 @@ const launchApp = async (props: LaunchProps) => {
                 const existingServer = DatabaseManager.searchUrl(extra.data!.serverUrl);
                 serverUrl = existingServer;
                 props.serverUrl = serverUrl || extra.data?.serverUrl;
-                if (!serverUrl) {
+                if (!serverUrl && extra.type !== DeepLink.Server) {
                     props.launchError = true;
+                }
+                if (extra.type === DeepLink.Server) {
+                    if (removeProtocol(serverUrl) === extra.data?.serverUrl) {
+                        props.extra = undefined;
+                        props.launchType = Launch.Normal;
+                    } else {
+                        serverUrl = await getActiveServerUrl();
+                    }
                 }
             }
             break;
@@ -178,9 +188,13 @@ const launchToHome = async (props: LaunchProps) => {
                 const lastViewedThread = await getLastViewedThreadIdAndServer();
 
                 if (lastViewedThread && lastViewedThread.server_url === props.serverUrl && lastViewedThread.thread_id) {
+                    PerformanceMetricsManager.setLoadTarget('THREAD');
                     fetchAndSwitchToThread(props.serverUrl!, lastViewedThread.thread_id);
                 } else if (lastViewedChannel && lastViewedChannel.server_url === props.serverUrl && lastViewedChannel.channel_id) {
+                    PerformanceMetricsManager.setLoadTarget('CHANNEL');
                     switchToChannelById(props.serverUrl!, lastViewedChannel.channel_id);
+                } else {
+                    PerformanceMetricsManager.setLoadTarget('HOME');
                 }
 
                 appEntry(props.serverUrl!);

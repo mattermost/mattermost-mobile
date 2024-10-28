@@ -38,7 +38,7 @@ export interface ClientUsersMix {
     autocompleteUsers: (name: string, teamId: string, channelId?: string, options?: Record<string, any>) => Promise<{users: UserProfile[]; out_of_channel?: UserProfile[]}>;
     getSessions: (userId: string) => Promise<Session[]>;
     checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
-    attachDevice: (deviceId: string) => Promise<any>;
+    setExtraSessionProps: (deviceId: string, notificationsEnabled: boolean, version: string | null) => Promise<{}>;
     searchUsers: (term: string, options: SearchUserOptions) => Promise<UserProfile[]>;
     getStatusesByIds: (userIds: string[]) => Promise<UserStatus[]>;
     getStatus: (userId: string) => Promise<UserStatus>;
@@ -50,8 +50,6 @@ export interface ClientUsersMix {
 
 const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     createUser = async (user: UserProfile, token: string, inviteId: string) => {
-        this.analytics?.trackAPI('api_users_create');
-
         const queryParams: any = {};
 
         if (token) {
@@ -76,8 +74,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     patchUser = async (userPatch: Partial<UserProfile> & {id: string}) => {
-        this.analytics?.trackAPI('api_users_patch');
-
         return this.doFetch(
             `${this.getUserRoute(userPatch.id)}/patch`,
             {method: 'put', body: userPatch},
@@ -85,8 +81,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     updateUser = async (user: UserProfile) => {
-        this.analytics?.trackAPI('api_users_update');
-
         return this.doFetch(
             `${this.getUserRoute(user.id)}`,
             {method: 'put', body: user},
@@ -94,8 +88,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     demoteUserToGuest = async (userId: string) => {
-        this.analytics?.trackAPI('api_users_demote_user_to_guest');
-
         return this.doFetch(
             `${this.getUserRoute(userId)}/demote`,
             {method: 'post'},
@@ -103,8 +95,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getKnownUsers = async () => {
-        this.analytics?.trackAPI('api_get_known_users');
-
         return this.doFetch(
             `${this.getUsersRoute()}/known`,
             {method: 'get'},
@@ -112,8 +102,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     sendPasswordResetEmail = async (email: string) => {
-        this.analytics?.trackAPI('api_users_send_password_reset');
-
         return this.doFetch(
             `${this.getUsersRoute()}/password/reset/send`,
             {method: 'post', body: {email}},
@@ -121,8 +109,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     setDefaultProfileImage = async (userId: string) => {
-        this.analytics?.trackAPI('api_users_set_default_profile_picture');
-
         return this.doFetch(
             `${this.getUserRoute(userId)}/image`,
             {method: 'delete'},
@@ -130,12 +116,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     login = async (loginId: string, password: string, token = '', deviceId = '', ldapOnly = false) => {
-        this.analytics?.trackAPI('api_users_login');
-
-        if (ldapOnly) {
-            this.analytics?.trackAPI('api_users_login_ldap');
-        }
-
         const body: any = {
             device_id: deviceId,
             login_id: loginId,
@@ -161,7 +141,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     loginById = async (id: string, password: string, token = '', deviceId = '') => {
-        this.analytics?.trackAPI('api_users_login');
         const body: any = {
             device_id: deviceId,
             id,
@@ -183,8 +162,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     logout = async () => {
-        this.analytics?.trackAPI('api_users_logout');
-
         const response = await this.doFetch(
             `${this.getUsersRoute()}/logout`,
             {method: 'post'},
@@ -194,8 +171,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getProfiles = async (page = 0, perPage = PER_PAGE_DEFAULT, options = {}) => {
-        this.analytics?.trackAPI('api_profiles_get');
-
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString({page, per_page: perPage, ...options})}`,
             {method: 'get'},
@@ -203,8 +178,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getProfilesByIds = async (userIds: string[], options = {}) => {
-        this.analytics?.trackAPI('api_profiles_get_by_ids');
-
         return this.doFetch(
             `${this.getUsersRoute()}/ids${buildQueryString(options)}`,
             {method: 'post', body: userIds},
@@ -212,8 +185,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getProfilesByUsernames = async (usernames: string[]) => {
-        this.analytics?.trackAPI('api_profiles_get_by_usernames');
-
         return this.doFetch(
             `${this.getUsersRoute()}/usernames`,
             {method: 'post', body: usernames},
@@ -221,8 +192,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getProfilesInTeam = async (teamId: string, page = 0, perPage = PER_PAGE_DEFAULT, sort = '', options = {}) => {
-        this.analytics?.trackAPI('api_profiles_get_in_team', {team_id: teamId, sort});
-
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString({...options, in_team: teamId, page, per_page: perPage, sort})}`,
             {method: 'get'},
@@ -230,8 +199,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getProfilesNotInTeam = async (teamId: string, groupConstrained: boolean, page = 0, perPage = PER_PAGE_DEFAULT) => {
-        this.analytics?.trackAPI('api_profiles_get_not_in_team', {team_id: teamId, group_constrained: groupConstrained});
-
         const queryStringObj: any = {not_in_team: teamId, page, per_page: perPage};
         if (groupConstrained) {
             queryStringObj.group_constrained = true;
@@ -244,8 +211,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getProfilesWithoutTeam = async (page = 0, perPage = PER_PAGE_DEFAULT, options = {}) => {
-        this.analytics?.trackAPI('api_profiles_get_without_team');
-
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString({...options, without_team: 1, page, per_page: perPage})}`,
             {method: 'get'},
@@ -253,8 +218,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getProfilesInChannel = async (channelId: string, options: GetUsersOptions) => {
-        this.analytics?.trackAPI('api_profiles_get_in_channel', {channel_id: channelId});
-
         const queryStringObj = {in_channel: channelId, ...options};
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString(queryStringObj)}`,
@@ -263,8 +226,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getProfilesInGroupChannels = async (channelsIds: string[]) => {
-        this.analytics?.trackAPI('api_profiles_get_in_group_channels', {channelsIds});
-
         return this.doFetch(
             `${this.getUsersRoute()}/group_channels`,
             {method: 'post', body: channelsIds},
@@ -272,8 +233,6 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getProfilesNotInChannel = async (teamId: string, channelId: string, groupConstrained: boolean, page = 0, perPage = PER_PAGE_DEFAULT) => {
-        this.analytics?.trackAPI('api_profiles_get_not_in_channel', {team_id: teamId, channel_id: channelId, group_constrained: groupConstrained});
-
         const queryStringObj: any = {in_team: teamId, not_in_channel: channelId, page, per_page: perPage};
         if (groupConstrained) {
             queryStringObj.group_constrained = true;
@@ -366,16 +325,21 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    attachDevice = async (deviceId: string) => {
+    setExtraSessionProps = async (deviceId: string, deviceNotificationDisabled: boolean, version: string | null) => {
         return this.doFetch(
             `${this.getUsersRoute()}/sessions/device`,
-            {method: 'put', body: {device_id: deviceId}},
+            {
+                method: 'put',
+                body: {
+                    device_id: deviceId,
+                    device_notification_disabled: deviceNotificationDisabled ? 'true' : 'false',
+                    mobile_version: version || '',
+                },
+            },
         );
     };
 
     searchUsers = async (term: string, options: any) => {
-        this.analytics?.trackAPI('api_search_users');
-
         return this.doFetch(
             `${this.getUsersRoute()}/search`,
             {method: 'post', body: {term, ...options}},

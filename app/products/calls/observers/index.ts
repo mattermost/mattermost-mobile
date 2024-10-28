@@ -17,6 +17,7 @@ import {observeConfigValue, observeLicense} from '@queries/servers/system';
 import {queryUsersById} from '@queries/servers/user';
 import UserModel from '@typings/database/models/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
+import {isSystemAdmin} from '@utils/user';
 
 import type {CallSession} from '@calls/types/calls';
 import type {Database} from '@nozbe/watermelondb';
@@ -28,6 +29,10 @@ export type LimitRestrictedInfo = {
 }
 
 export const observeIsCallsEnabledInChannel = (database: Database, serverUrl: string, channelId: Observable<string>) => {
+    const callsPluginEnabled = observeCallsConfig(serverUrl).pipe(
+        switchMap((config) => of$(config.pluginEnabled)),
+        distinctUntilChanged(),
+    );
     const callsDefaultEnabled = observeCallsConfig(serverUrl).pipe(
         switchMap((config) => of$(config.DefaultEnabled)),
         distinctUntilChanged(),
@@ -39,8 +44,12 @@ export const observeIsCallsEnabledInChannel = (database: Database, serverUrl: st
     const callsGAServer = observeConfigValue(database, 'Version').pipe(
         switchMap((v) => of$(isMinimumServerVersion(v || '', 7, 6))),
     );
-    return combineLatest([channelId, callsStateEnabledDict, callsDefaultEnabled, callsGAServer]).pipe(
-        switchMap(([id, enabled, defaultEnabled, gaServer]) => {
+    return combineLatest([callsPluginEnabled, channelId, callsStateEnabledDict, callsDefaultEnabled, callsGAServer]).pipe(
+        switchMap(([pluginEnabled, id, enabled, defaultEnabled, gaServer]) => {
+            if (!pluginEnabled) {
+                return of$(false);
+            }
+
             const explicitlyEnabled = enabled.hasOwnProperty(id as string) && enabled[id];
             const explicitlyDisabled = enabled.hasOwnProperty(id as string) && !enabled[id];
             return of$(explicitlyEnabled || (!explicitlyDisabled && defaultEnabled) || (!explicitlyDisabled && gaServer));
@@ -135,5 +144,27 @@ export const observeCallStateInChannel = (serverUrl: string, database: Database,
         showJoinCallBanner,
         isInACall,
         showIncomingCalls,
+    };
+};
+
+export const observeEndCallDetails = () => {
+    const cc = observeCurrentCall();
+    const otherParticipants = cc.pipe(
+        switchMap((call) => of$(Object.keys(call?.sessions || {}).length > 1)),
+        distinctUntilChanged(),
+    );
+    const isAdmin = cc.pipe(
+        switchMap((call) => of$(isSystemAdmin(call?.sessions[call?.mySessionId || '']?.userModel?.roles || ''))),
+        distinctUntilChanged(),
+    );
+    const isHost = cc.pipe(
+        switchMap((call) => of$(call?.hostId === call?.myUserId)),
+        distinctUntilChanged(),
+    );
+
+    return {
+        otherParticipants,
+        isAdmin,
+        isHost,
     };
 };

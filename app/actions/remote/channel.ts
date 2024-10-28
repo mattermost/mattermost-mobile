@@ -31,6 +31,7 @@ import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
+import {fetchChannelBookmarks} from './channel_bookmark';
 import {fetchGroupsForChannelIfConstrained} from './groups';
 import {fetchPostsForChannel} from './post';
 import {openChannelIfNeeded, savePreference} from './preference';
@@ -98,6 +99,7 @@ export async function fetchChannelMembersByIds(serverUrl: string, channelId: str
         return {error};
     }
 }
+
 export async function updateChannelMemberSchemeRoles(serverUrl: string, channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean, fetchOnly = false) {
     try {
         const client = NetworkManager.getClient(serverUrl);
@@ -796,7 +798,7 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
             const config = await getConfig(database);
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
             const {directChannels, users} = await fetchMissingDirectChannelsInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
-            created.display_name = directChannels?.[0].display_name || created.display_name;
+            created.display_name = (directChannels?.length && directChannels?.[0].display_name) || created.display_name;
             if (users?.length) {
                 profiles.push(...users);
             }
@@ -1049,6 +1051,7 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, true);
 
     fetchPostsForChannel(serverUrl, channelId);
+    fetchChannelBookmarks(serverUrl, channelId);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
     openChannelIfNeeded(serverUrl, channelId);
     markChannelAsRead(serverUrl, channelId);
@@ -1240,7 +1243,7 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
 
         const currentChannelId = await getCurrentChannelId(database);
         if (currentChannelId !== channelId) {
-            return;
+            return {};
         }
 
         const currentServer = await getActiveServer();
@@ -1270,8 +1273,10 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         } else {
             await setCurrentChannelId(operator, '');
         }
+        return {};
     } catch (error) {
         logDebug('cannot kick user from channel', error);
+        return {error};
     }
 };
 

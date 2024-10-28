@@ -17,6 +17,7 @@ import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {openAsBottomSheet} from '@screens/navigation';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
@@ -60,6 +61,7 @@ type PostProps = {
     post: PostModel;
     rootId?: string;
     previousPost?: PostModel;
+    isLastPost: boolean;
     hasReactions: boolean;
     searchPatterns?: SearchPattern[];
     shouldRenderReplyButton?: boolean;
@@ -109,10 +111,39 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, customEmojiNames, differentThreadSequence, hasFiles, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
-    isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isLastReply, isPostAcknowledgementEnabled, isPostAddChannelMember, isPostPriorityEnabled,
-    location, post, rootId, hasReactions, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
-    testID, thread, previousPost,
+    appsEnabled,
+    canDelete,
+    currentUser,
+    customEmojiNames,
+    differentThreadSequence,
+    hasFiles,
+    hasReplies,
+    highlight,
+    highlightPinnedOrSaved = true,
+    highlightReplyBar,
+    isCRTEnabled,
+    isConsecutivePost,
+    isEphemeral,
+    isFirstReply,
+    isSaved,
+    isLastReply,
+    isPostAcknowledgementEnabled,
+    isPostAddChannelMember,
+    isPostPriorityEnabled,
+    location,
+    post,
+    rootId,
+    hasReactions,
+    searchPatterns,
+    shouldRenderReplyButton,
+    skipSavedHeader,
+    skipPinnedHeader,
+    showAddReaction = true,
+    style,
+    testID,
+    thread,
+    previousPost,
+    isLastPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -216,6 +247,19 @@ const Post = ({
         };
     }, [post.id]);
 
+    useEffect(() => {
+        if (!isLastPost) {
+            return;
+        }
+
+        if (location !== 'Channel' && location !== 'Thread') {
+            return;
+        }
+
+        PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
+        PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
+    }, []);
+
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
@@ -297,6 +341,12 @@ const Post = ({
             <CallsCustomMessage
                 serverUrl={serverUrl}
                 post={post}
+
+                // Note: the below are provided by the index, but typescript seems to be having problems.
+                otherParticipants={false}
+                isAdmin={false}
+                isHost={false}
+                joiningChannelId={null}
             />
         );
     } else {

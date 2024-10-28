@@ -10,15 +10,15 @@ import nock from 'nock';
 
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
+import {ActionType} from '@constants';
+import {Ringtone} from '@constants/calls';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues} from '@queries/servers/system';
-import {generateId} from '@utils/general';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
-const PASSWORD = 'password1';
 const DEFAULT_LOCALE = 'en';
 
 class TestHelper {
@@ -51,8 +51,8 @@ class TestHelper {
         this.basicRoles = null;
     }
 
-    setupServerDatabase = async () => {
-        const serverUrl = 'https://appv1.mattermost.com';
+    setupServerDatabase = async (url?: string) => {
+        const serverUrl = url || 'https://appv1.mattermost.com';
         await DatabaseManager.init([serverUrl]);
         const {database, operator} = DatabaseManager.serverDatabases[serverUrl]!;
 
@@ -112,6 +112,13 @@ class TestHelper {
             systems: [{id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: PUSH_PROXY_STATUS_VERIFIED}],
         });
 
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_NEW,
+            order: [this.basicPost!.id],
+            posts: [this.basicPost!],
+            prepareRecordsOnly: false,
+        });
+
         return {database, operator};
     };
 
@@ -127,7 +134,23 @@ class TestHelper {
     };
 
     generateId = () => {
-        return generateId();
+        // implementation taken from http://stackoverflow.com/a/2117523
+        let id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+        id = id.replace(/[xy]/g, (c) => {
+            const r = Math.floor(Math.random() * 16);
+            let v;
+
+            if (c === 'x') {
+                v = r;
+            } else {
+                // eslint-disable-next-line no-mixed-operators
+                v = (r & 0x3) | 0x8;
+            }
+
+            return v.toString(16);
+        });
+
+        return id;
     };
 
     createClient = () => {
@@ -291,7 +314,7 @@ class TestHelper {
         return 'success' + this.generateId() + '@simulator.amazonses.com';
     };
 
-    fakePost = (channelId: string) => {
+    fakePost = (channelId: string, userId?: string): Post => {
         const time = Date.now();
 
         return {
@@ -301,6 +324,17 @@ class TestHelper {
             update_at: time,
             message: `Unit Test ${this.generateId()}`,
             type: '',
+            delete_at: 0,
+            edit_at: 0,
+            hashtags: '',
+            is_pinned: false,
+            metadata: {},
+            original_id: '',
+            pending_post_id: '',
+            props: {},
+            reply_count: 0,
+            root_id: '',
+            user_id: userId || this.generateId(),
         };
     };
 
@@ -314,7 +348,7 @@ class TestHelper {
         };
     };
 
-    fakeTeam = () => {
+    fakeTeam = (): Team => {
         const name = this.generateId();
         let inviteId = this.generateId();
         if (inviteId.length > 32) {
@@ -322,6 +356,7 @@ class TestHelper {
         }
 
         return {
+            id: this.generateId(),
             name,
             display_name: `Unit Test ${name}`,
             type: 'O' as const,
@@ -334,6 +369,9 @@ class TestHelper {
             allow_open_invite: true,
             group_constrained: false,
             last_team_icon_update: 0,
+            create_at: 0,
+            delete_at: 0,
+            update_at: 0,
         };
     };
 
@@ -361,11 +399,9 @@ class TestHelper {
         };
     };
 
-    fakeUser = () => {
+    fakeUser = (): UserProfile => {
         return {
             email: this.fakeEmail(),
-            allow_marketing: true,
-            password: PASSWORD,
             locale: DEFAULT_LOCALE,
             username: this.generateId(),
             first_name: this.generateId(),
@@ -373,6 +409,31 @@ class TestHelper {
             create_at: Date.now(),
             delete_at: 0,
             roles: 'system_user',
+            auth_service: '',
+            id: this.generateId(),
+            nickname: '',
+            notify_props: this.fakeNotifyProps(),
+            position: '',
+            update_at: 0,
+        };
+    };
+
+    fakeNotifyProps = (): UserNotifyProps => {
+        return {
+            channel: 'false',
+            comments: 'root',
+            desktop: 'default',
+            desktop_sound: 'false',
+            email: 'false',
+            first_name: 'false',
+            highlight_keys: '',
+            mention_keys: '',
+            push: 'default',
+            push_status: 'away',
+            calls_desktop_sound: 'true',
+            calls_mobile_notification_sound: '',
+            calls_mobile_sound: 'true',
+            calls_notification_sound: '',
         };
     };
 
@@ -397,6 +458,10 @@ class TestHelper {
                 channel: 'true',
                 mention_keys: '',
                 highlight_keys: '',
+                calls_desktop_sound: 'true',
+                calls_mobile_sound: '',
+                calls_notification_sound: Ringtone.Calm,
+                calls_mobile_notification_sound: '',
             },
             last_picture_update: 0,
             position: '',
@@ -665,6 +730,7 @@ class TestHelper {
     };
 
     wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
+    tick = () => new Promise((r) => setImmediate(r));
 }
 
 export default new TestHelper();

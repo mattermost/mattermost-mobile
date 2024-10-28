@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import {getServerCredentials} from '@init/credentials';
 import {useShareExtensionState} from '@share/state';
 import {changeOpacity} from '@utils/theme';
 
@@ -28,7 +29,7 @@ const PostButton = ({theme}: Props) => {
 
     const disabled = !serverUrl || !channelId || (!message && !files.length && !linkPreviewUrl) || globalError;
 
-    const onPress = useCallback(() => {
+    const onPress = useCallback(async () => {
         if (!serverUrl || !channelId || !userId) {
             return;
         }
@@ -42,13 +43,18 @@ const PostButton = ({theme}: Props) => {
             }
         }
 
-        closeExtension({
-            serverUrl,
-            channelId,
-            files,
-            message: text,
-            userId,
-        });
+        const credentials = await getServerCredentials(serverUrl);
+
+        if (credentials?.token) {
+            closeExtension({
+                serverUrl,
+                token: credentials.token,
+                channelId,
+                files,
+                message: text,
+                userId,
+            });
+        }
     }, [serverUrl, channelId, message, files, linkPreviewUrl, userId]);
 
     return (

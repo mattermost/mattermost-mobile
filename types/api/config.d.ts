@@ -46,6 +46,7 @@ interface ClientConfig {
     EnableBanner: string;
     EnableBotAccountCreation: string;
     EnableChannelViewedMessages: string;
+    EnableClientMetrics?: string;
     EnableCluster: string;
     EnableCommands: string;
     EnableCompliance: string;
@@ -119,6 +120,7 @@ interface ClientConfig {
     FeatureFlagAppsEnabled?: string;
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagPostPriority?: string;
+    FeatureFlagChannelBookmarks?: string;
     ForgotPasswordLink?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
@@ -145,6 +147,7 @@ interface ClientConfig {
     MaxNotificationsPerChannel: string;
     MaxPostSize: string;
     MinimumHashtagLength: string;
+    MobileExternalBrowser: string;
     OpenIdButtonColor: string;
     OpenIdButtonText: string;
     PasswordEnableForgotLink: string;

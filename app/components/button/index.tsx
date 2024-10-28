@@ -1,18 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Button as ElementButton} from '@rneui/base';
 import React, {useMemo, type ReactNode} from 'react';
-import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
-import RNButton from 'react-native-button';
+import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {changeOpacity} from '@utils/theme';
 
 type ConditionalProps = | {iconName: string; iconSize: number} | {iconName?: never; iconSize?: never}
 
 type Props = ConditionalProps & {
     theme: Theme;
     backgroundStyle?: StyleProp<ViewStyle>;
+    buttonContainerStyle?: StyleProp<ViewStyle>;
     textStyle?: StyleProp<TextStyle>;
     size?: ButtonSize;
     emphasis?: ButtonEmphasis;
@@ -22,7 +24,9 @@ type Props = ConditionalProps & {
     onPress: () => void;
     text: string;
     iconComponent?: ReactNode;
-}
+    disabled?: boolean;
+    hitSlop?: Insets;
+};
 
 const styles = StyleSheet.create({
     container: {flexDirection: 'row'},
@@ -32,6 +36,7 @@ const styles = StyleSheet.create({
 const Button = ({
     theme,
     backgroundStyle,
+    buttonContainerStyle,
     textStyle,
     size,
     emphasis,
@@ -43,6 +48,8 @@ const Button = ({
     iconName,
     iconSize,
     iconComponent,
+    disabled,
+    hitSlop,
 }: Props) => {
     const bgStyle = useMemo(() => [
         buttonBackgroundStyle(theme, size, emphasis, buttonType, buttonState),
@@ -54,7 +61,7 @@ const Button = ({
         textStyle,
     ], [theme, textStyle, size, emphasis, buttonType]);
 
-    const containerStyle = useMemo(
+    const textContainerStyle = useMemo(
         () =>
             (iconSize ? [
                 styles.container,
@@ -62,6 +69,14 @@ const Button = ({
             ] : styles.container),
         [iconSize],
     );
+
+    let buttonStyle = StyleSheet.flatten(bgStyle);
+    if (disabled) {
+        buttonStyle = {
+            ...buttonStyle,
+            backgroundColor: changeOpacity(buttonStyle.backgroundColor! as string, 0.4),
+        };
+    }
 
     let icon: ReactNode;
 
@@ -79,12 +94,15 @@ const Button = ({
     }
 
     return (
-        <RNButton
-            containerStyle={bgStyle}
+        <ElementButton
+            buttonStyle={buttonStyle}
+            containerStyle={buttonContainerStyle}
             onPress={onPress}
             testID={testID}
+            disabled={disabled}
+            hitSlop={hitSlop}
         >
-            <View style={containerStyle}>
+            <View style={textContainerStyle}>
                 {icon}
                 <Text
                     style={txtStyle}
@@ -93,7 +111,7 @@ const Button = ({
                     {text}
                 </Text>
             </View>
-        </RNButton>
+        </ElementButton>
     );
 };
 

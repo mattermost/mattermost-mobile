@@ -2,14 +2,15 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
-import {createIntl, type IntlShape} from 'react-intl';
+import {type IntlShape} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
 import {NOTIFICATION_TYPE} from '@constants/push_notification';
-import {DEFAULT_LOCALE, getTranslations} from '@i18n';
+import {DEFAULT_LOCALE} from '@i18n';
 import PushNotifications from '@init/push_notifications';
 import {popToRoot} from '@screens/navigation';
+import {getIntlShape} from '@utils/general';
 
 export const convertToNotificationData = (notification: Notification, tapped = true): NotificationWithData => {
     if (!notification.payload) {
@@ -95,7 +96,7 @@ export const scheduleExpiredNotification = (serverUrl: string, session: Session,
     const expiresInHours = Math.ceil(Math.abs(moment.duration(moment().diff(moment(expiresAt))).asHours()));
     const expiresInDays = Math.floor(expiresInHours / 24); // Calculate expiresInDays
     const remainingHours = expiresInHours % 24; // Calculate remaining hours
-    const intl = createIntl({locale, messages: getTranslations(locale)});
+    const intl = getIntlShape(locale);
     let body = '';
     if (expiresInDays === 0) {
         body = intl.formatMessage({

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils/src';
 import {AppState, DeviceEventEmitter, Platform, type EmitterSubscription} from 'react-native';
 import {
     Notification,
@@ -22,7 +23,6 @@ import {isCallsStartedMessage} from '@calls/utils';
 import {Device, Events, Navigation, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
-import NativeNotifications from '@notifications';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
@@ -255,7 +255,10 @@ class PushNotifications {
 
             this.processNotification(notification);
         }
-        completion({alert: false, sound: true, badge: true});
+
+        // Always play a sound, except when this is a foreground notification about a call
+        const sound = !(notification.foreground && isCallsStartedMessage(notification.payload));
+        completion({alert: false, sound, badge: true});
     };
 
     onRemoteNotificationsRegistered = async (event: Registered) => {
@@ -282,15 +285,15 @@ class PushNotifications {
     };
 
     removeChannelNotifications = async (serverUrl: string, channelId: string) => {
-        NativeNotifications.removeChannelNotifications(serverUrl, channelId);
+        RNUtils.removeChannelNotifications(serverUrl, channelId);
     };
 
     removeServerNotifications = (serverUrl: string) => {
-        NativeNotifications.removeServerNotifications(serverUrl);
+        RNUtils.removeServerNotifications(serverUrl);
     };
 
     removeThreadNotifications = async (serverUrl: string, threadId: string) => {
-        NativeNotifications.removeThreadNotifications(serverUrl, threadId);
+        RNUtils.removeThreadNotifications(serverUrl, threadId);
     };
 
     requestNotificationReplyPermissions = () => {

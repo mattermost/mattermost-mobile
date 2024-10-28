@@ -9,6 +9,8 @@ import Foundation
 import SQLite3
 import SQLite
 
+typealias Expression = SQLite.Expression
+
 enum DatabaseError: Error {
     case OpenFailure(_ dbPath: String)
     case MultipleServers
@@ -87,20 +89,7 @@ public class Database: NSObject {
     }
     
     public func generateId() -> String {
-        let alphabet = Array("0123456789abcdefghijklmnopqrstuvwxyz")
-        let alphabetLenght = alphabet.count
-        let idLenght = 16
-        var id = ""
-
-        for _ in 1...(idLenght / 2) {
-            let random = floor(Double.random(in: 0..<1) * Double(alphabetLenght) * Double(alphabetLenght))
-            let firstIndex = Int(floor(random / Double(alphabetLenght)))
-            let lastIndex = Int(random) % alphabetLenght
-            id += String(alphabet[firstIndex])
-            id += String(alphabet[lastIndex])
-        }
-        
-        return id
+        return UUID().uuidString.lowercased()
     }
     
     public func getOnlyServerUrl() throws -> String {

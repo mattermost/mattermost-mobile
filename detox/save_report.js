@@ -31,6 +31,7 @@
  *      - TYPE=[type], e.g. "MASTER", "PR", "RELEASE", "GEKIDOU"
  */
 
+const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -74,17 +75,19 @@ const saveReport = async () => {
     removeOldGeneratedReports();
 
     const detox_version = shell.exec('npm list detox').stdout.split('\n')[1].split('@')[1].trim();
-    const headless = IOS === 'true' ? false : HEADLESS === 'true';
+    const headless = IOS === 'true' ? 'false' : HEADLESS === 'true';
     const os_name = os.platform();
     const os_version = os.release();
     const node_version = process.version;
     const npm_version = shell.exec('npm --version').stdout.trim();
+    const device_name = DEVICE_NAME;
+    const device_os_version = DEVICE_OS_VERSION;
 
     // Write environment details to file
     const environmentDetails = {
         detox_version,
-        device_name: DEVICE_NAME,
-        device_os_version: DEVICE_OS_VERSION,
+        device_name,
+        device_os_version,
         headless,
         os_name,
         os_version,
@@ -96,7 +99,7 @@ const saveReport = async () => {
     // Merge all XML reports into one single XML report
     const platform = process.env.IOS === 'true' ? 'ios' : 'android';
     const combinedFilePath = `${ARTIFACTS_DIR}/${platform}-combined.xml`;
-    await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/${platform}-junit*.xml`]);
+    await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/${platform}-results*/${platform}-junit*.xml`]);
     console.log(`Merged, check ${combinedFilePath}`);
 
     // Read XML from a file
@@ -112,9 +115,23 @@ const saveReport = async () => {
     // Generate jest-stare report
     const jestStareOutputDir = path.join(__dirname, `${ARTIFACTS_DIR}/jest-stare`);
     const jestStareCombinedFilePath = `${jestStareOutputDir}/${platform}-combined.json`;
-    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/jest-stare/${platform}-data*.json`]);
+    if (!fs.existsSync(jestStareOutputDir)) {
+        fs.mkdirSync(jestStareOutputDir, {recursive: true});
+    }
+
+    // "ios-results-*" or "android-results-*" is the path in CI where the parallel detox jobs save the artifacts
+    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`]);
     generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath);
 
+    if (process.env.CI) {
+        // Delete folders starting with "ios-results-" or "android-results-" only in CI environment
+        const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
+        for (const entry of entries) {
+            if (entry.isDirectory() && entry.name.startsWith(`${platform}-results-`)) {
+                fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
+            }
+        }
+    }
     const result = await saveArtifacts();
     if (result && result.success) {
         console.log('Successfully uploaded artifacts to S3:', result.reportLink);
@@ -125,6 +142,9 @@ const saveReport = async () => {
     if (ZEPHYR_ENABLE === 'true') {
         const {start, end} = summary.stats;
         testCycle = ZEPHYR_CYCLE_KEY ? {key: ZEPHYR_CYCLE_KEY} : await createTestCycle(start, end);
+        if (!testCycle?.key) {
+            console.log('Failed to create test cycle');
+        }
     }
 
     // Send test report to "QA: Mobile Test Automation Report" channel via webhook

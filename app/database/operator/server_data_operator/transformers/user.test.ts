@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Ringtone} from '@constants/calls';
 import {OperationType} from '@constants/database';
 import {transformPreferenceRecord, transformUserRecord} from '@database/operator/server_data_operator/transformers/user';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
@@ -66,6 +67,10 @@ describe('*** USER Prepare Records Test ***', () => {
                         comments: 'never',
                         desktop_notification_sound: 'Hello',
                         push_status: 'online',
+                        calls_desktop_sound: 'true',
+                        calls_mobile_sound: '',
+                        calls_notification_sound: Ringtone.Calm,
+                        calls_mobile_notification_sound: '',
                     },
                     last_picture_update: 1604686302260,
                     locale: 'en',

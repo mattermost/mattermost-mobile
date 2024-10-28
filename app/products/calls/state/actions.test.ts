@@ -19,6 +19,7 @@ import {
     setChannelsWithCalls,
     setCurrentCall,
     setHost,
+    setJoiningChannelId,
     setMicPermissionsErrorDismissed,
     setMicPermissionsGranted,
     setRecordingState,
@@ -59,12 +60,14 @@ import {
     DefaultGlobalCallsState,
     DefaultIncomingCalls,
     type GlobalCallsState,
+    type IncomingCalls,
 } from '@calls/types/calls';
 import {License} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 
 import type {CallJobState, LiveCaptionData} from '@mattermost/calls/lib/types';
+import type UserModel from '@typings/database/models/servers/user';
 
 jest.mock('@calls/alerts');
 
@@ -919,6 +922,7 @@ describe('useCallsState', () => {
         };
         const expectedGlobalState: GlobalCallsState = {
             micPermissionsGranted: true,
+            joiningChannelId: null,
         };
 
         // setup
@@ -955,9 +959,33 @@ describe('useCallsState', () => {
         act(() => {
             myselfLeftCall();
             userLeftCall('server1', 'channel-1', 'mySessionId');
+
+            // reset state to default
+            setMicPermissionsGranted(false);
         });
         assert.deepEqual(result.current[0], initialCallsState);
         assert.deepEqual(result.current[1], null);
+    });
+
+    it('joining call', () => {
+        const initialGlobalState = DefaultGlobalCallsState;
+        const expectedGlobalState: GlobalCallsState = {
+            ...DefaultGlobalCallsState,
+            joiningChannelId: 'channel-1',
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useGlobalCallsState()];
+        });
+
+        // start joining call
+        act(() => setJoiningChannelId('channel-1'));
+        assert.deepEqual(result.current[0], expectedGlobalState);
+
+        // end joining call
+        act(() => setJoiningChannelId(null));
+        assert.deepEqual(result.current[0], initialGlobalState);
     });
 
     it('CallQuality', async () => {
@@ -1313,11 +1341,12 @@ describe('useCallsState', () => {
         };
         const initialCurrentCallState: CurrentCall | null = null;
         const initialIncomingCalls = DefaultIncomingCalls;
-        const expectedIncomingCalls = {
+        const expectedIncomingCalls: IncomingCalls = {
+            ...DefaultIncomingCalls,
             incomingCalls: [{
                 callID: 'callDM',
                 callerID: 'user-5',
-                callerModel: {username: 'user-5'},
+                callerModel: {username: 'user-5'} as UserModel,
                 channelID: 'channel-private',
                 myUserId: 'myId',
                 serverUrl: 'server1',

@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image} from 'expo-image';
 import React, {useCallback, useEffect, useState} from 'react';
 import {ActivityIndicator, type StyleProp, Text, View, type ViewStyle} from 'react-native';
-import FastImage from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
-import fetchOpenGraph, {type OpenGraph} from '@share/open_graph';
+import {fetchOpenGraph, type OpenGraph} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -81,8 +81,8 @@ const OpenGraphImage = ({style, theme, url}: OpenGraphImageProps) => {
             />
             }
             {!error &&
-            <FastImage
-                resizeMode='cover'
+            <Image
+                contentFit='cover'
                 source={{uri: url}}
                 style={{borderRadius: 4, height: 72, width: 72}}
                 onLoad={onLoad}

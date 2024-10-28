@@ -1,27 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import MattermostShare, {type ShareExtensionDataToSend, type SharedItem} from '@mattermost/rnshare';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import React, {useEffect, useMemo, useState} from 'react';
 import {IntlProvider} from 'react-intl';
-import {Appearance, BackHandler, NativeModules} from 'react-native';
+import {Appearance, BackHandler} from 'react-native';
 
 import {getDefaultThemeByAppearance} from '@context/theme';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {initialize} from '@init/app';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {extractStartLink, isValidUrl} from '@utils/url';
 
 import ChannelsScreen from './screens/channels';
 import ServersScreen from './screens/servers';
 import ShareScreen from './screens/share';
 
-const ShareModule: NativeShareExtension = NativeModules.MattermostShare;
-
 const Stack = createStackNavigator();
 
-const closeExtension = (data: ShareExtensionDataToSend | null = null) => {
-    ShareModule.close(data);
+const closeExtension = (data: ShareExtensionDataToSend | null) => {
+    MattermostShare.close(data);
 };
 
 const ShareExtension = () => {
@@ -65,15 +65,22 @@ const ShareExtension = () => {
     }, [data]);
 
     useEffect(() => {
+        // Since the share functionality inits the app, the init mark gets set
+        // at this point. Therefore, any check on load times after this is done
+        // over the wrong value.
+        PerformanceMetricsManager.skipLoadMetric();
+    }, []);
+
+    useEffect(() => {
         initialize().finally(async () => {
-            const items = await ShareModule.getSharedData();
+            const items = await MattermostShare.getSharedData();
             setData(items);
         });
 
         const backListener = BackHandler.addEventListener('hardwareBackPress', () => {
-            const scene = ShareModule.getCurrentActivityName();
+            const scene = MattermostShare.getCurrentActivityName();
             if (scene === 'ShareActivity') {
-                closeExtension();
+                closeExtension(null);
                 return true;
             }
             return false;

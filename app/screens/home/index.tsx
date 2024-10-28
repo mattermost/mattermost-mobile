@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {createBottomTabNavigator, type BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
-import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {autoUpdateTimezone} from '@actions/remote/user';
 import ServerVersion from '@components/server_version';
-import {Events, Screens} from '@constants';
+import {Events, Launch, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
 import {getAllServers} from '@queries/app/servers';
@@ -62,6 +62,18 @@ export default function HomeScreen(props: HomeProps) {
     const intl = useIntl();
     const appState = useAppState();
 
+    const handleFindChannels = useCallback(() => {
+        if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS)) {
+            findChannels(
+                intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
+                theme,
+            );
+        }
+    }, [intl, theme]);
+
+    const events = useMemo(() => ({onFindChannels: handleFindChannels}), [handleFindChannels]);
+    useHardwareKeyboardEvents(events);
+
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel' | 'Post' | 'Connection') => {
             notificationError(intl, value);
@@ -100,27 +112,13 @@ export default function HomeScreen(props: HomeProps) {
     }, [intl.locale]);
 
     useEffect(() => {
-        const listener = HWKeyboardEvent.onHWKeyPressed((keyEvent: {pressedKey: string}) => {
-            if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS) && keyEvent.pressedKey === 'find-channels') {
-                findChannels(
-                    intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
-                    theme,
-                );
-            }
-        });
-        return () => {
-            listener.remove();
-        };
-    }, [intl.locale]);
-
-    useEffect(() => {
         if (appState === 'active') {
             updateTimezoneIfNeeded();
         }
     }, [appState]);
 
     useEffect(() => {
-        if (props.launchType === 'deeplink') {
+        if (props.launchType === Launch.DeepLink) {
             if (props.launchError) {
                 alertInvalidDeepLink(intl);
                 return;
@@ -128,7 +126,7 @@ export default function HomeScreen(props: HomeProps) {
 
             const deepLink = props.extra as DeepLinkWithData;
             if (deepLink?.url) {
-                handleDeepLink(deepLink.url).then((result) => {
+                handleDeepLink(deepLink.url, intl, props.componentId, true).then((result) => {
                     if (result.error) {
                         alertInvalidDeepLink(intl);
                     }

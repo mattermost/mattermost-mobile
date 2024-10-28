@@ -9,8 +9,10 @@ import {
     RetryTypes,
     type APIClientConfiguration,
 } from '@mattermost/react-native-network-client';
+import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
+import {modelName, osName, osVersion} from 'expo-device';
+import {defineMessages} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import urlParse from 'url-parse';
 
 import LocalConfig from '@assets/config.json';
@@ -18,17 +20,37 @@ import {Client} from '@client/rest';
 import * as ClientConstants from '@client/rest/constants';
 import ClientError from '@client/rest/error';
 import {CERTIFICATE_ERRORS} from '@constants/network';
-import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import ManagedApp from '@init/managed_app';
+import {toMilliseconds} from '@utils/datetime';
+import {getIntlShape} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
 import {getCSRFFromCookie} from '@utils/security';
 
 const CLIENT_CERTIFICATE_IMPORT_ERROR_CODES = [-103, -104, -105, -108];
 const CLIENT_CERTIFICATE_MISSING_ERROR_CODE = -200;
 const SERVER_CERTIFICATE_INVALID = -299;
+const SERVER_TRUST_EVALUATION_FAILED = -298;
+let showingServerTrustAlert = false;
+
+const messages = defineMessages({
+    invalidSslTitle: {
+        id: 'server.invalid.certificate.title',
+        defaultMessage: 'Invalid SSL certificate',
+    },
+    invalidSslDescription: {
+        id: 'server.invalid.certificate.description',
+        defaultMessage: 'The certificate for this server is invalid.\nYou might be connecting to a server that is pretending to be “{hostname}” which could put your confidential information at risk.',
+    },
+    invalidPinningTitle: {
+        id: 'server.invalid.pinning.title',
+        defaultMessage: 'Invalid pinned SSL certificate',
+    },
+});
 
 class NetworkManager {
     private clients: Record<string, Client> = {};
+
+    private intl = getIntlShape();
 
     private DEFAULT_CONFIG: APIClientConfiguration = {
         headers: {
@@ -98,7 +120,7 @@ class NetworkManager {
     };
 
     private buildConfig = async () => {
-        const userAgent = `Mattermost Mobile/${DeviceInfo.getVersion()}+${DeviceInfo.getBuildNumber()} (${DeviceInfo.getSystemName()}; ${DeviceInfo.getSystemVersion()}; ${DeviceInfo.getModel()})`;
+        const userAgent = `Mattermost Mobile/${nativeApplicationVersion}+${nativeBuildVersion} (${osName}; ${osVersion}; ${modelName})`;
         const managedConfig = ManagedApp.enabled ? Emm.getManagedConfig<ManagedConfig>() : undefined;
         const headers: Record<string, string> = {
             [ClientConstants.HEADER_USER_AGENT]: userAgent,
@@ -128,12 +150,23 @@ class NetworkManager {
             logDebug('Invalid SSL certificate:', event.errorDescription);
             const parsed = urlParse(event.serverUrl);
             Alert.alert(
-                getLocalizedMessage(DEFAULT_LOCALE, t('server.invalid.certificate.title'), 'Invalid SSL certificate'),
-                getLocalizedMessage(
-                    DEFAULT_LOCALE,
-                    t('server.invalid.certificate.description'),
-                    'The certificate for this server is invalid.\nYou might be connecting to a server that is pretending to be “{hostname}” which could put your confidential information at risk.',
-                ).replace('{hostname}', parsed.hostname),
+                this.intl.formatMessage(messages.invalidSslTitle),
+                this.intl.formatMessage(messages.invalidSslDescription, {hostname: parsed.hostname}),
+            );
+        } else if (SERVER_TRUST_EVALUATION_FAILED === event.errorCode && !showingServerTrustAlert) {
+            logDebug('Invalid SSL Pinning:', event.errorDescription);
+            showingServerTrustAlert = true;
+            Alert.alert(
+                this.intl.formatMessage(messages.invalidPinningTitle),
+                event.errorDescription,
+                [{
+                    text: this.intl.formatMessage({id: 'server_upgrade.dismiss', defaultMessage: 'Dismiss'}),
+                    onPress: () => {
+                        setTimeout(() => {
+                            showingServerTrustAlert = false;
+                        }, toMilliseconds({hours: 23}));
+                    },
+                }],
             );
         }
     };

@@ -2,26 +2,23 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, Platform, StyleSheet, useWindowDimensions} from 'react-native';
+import {DeviceEventEmitter, StyleSheet} from 'react-native';
 import Animated, {
     Easing,
-    useAnimatedRef,
     useAnimatedStyle,
     useSharedValue,
     withTiming,
     type WithTimingConfig,
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Video, {type OnPlaybackRateData} from 'react-native-video';
+import Video, {SelectedTrackType, type OnPlaybackRateChangeData, type VideoRef} from 'react-native-video';
 
 import {updateLocalFilePath} from '@actions/local/file';
 import {CaptionsEnabledContext} from '@calls/context';
 import {getTranscriptionUri} from '@calls/utils';
-import CompassIcon from '@components/compass_icon';
 import {Events} from '@constants';
 import {GALLERY_FOOTER_HEIGHT, VIDEO_INSET} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
-import {changeOpacity} from '@utils/theme';
 
 import DownloadWithAction from '../footer/download_with_action';
 
@@ -36,24 +33,12 @@ interface VideoRendererProps extends ImageRendererProps {
     onShouldHideControls: (hide: boolean) => void;
 }
 
-const AnimatedVideo = Animated.createAnimatedComponent(Video);
 const timingConfig: WithTimingConfig = {
     duration: 250,
     easing: Easing.bezier(0.33, 0.01, 0, 1),
 };
 
 const styles = StyleSheet.create({
-    playContainer: {
-        alignItems: 'center',
-        height: '100%',
-        justifyContent: 'center',
-        position: 'absolute',
-        width: '100%',
-    },
-    play: {
-        backgroundColor: changeOpacity('#000', 0.16),
-        borderRadius: 40,
-    },
     video: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -62,11 +47,10 @@ const styles = StyleSheet.create({
 });
 
 const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShouldHideControls, width}: VideoRendererProps) => {
-    const dimensions = useWindowDimensions();
     const fullscreen = useSharedValue(false);
     const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
-    const videoRef = useAnimatedRef<Video>();
+    const videoRef = useRef<VideoRef>();
     const showControls = useRef(!(initialIndex === index));
     const captionsEnabled = useContext(CaptionsEnabledContext);
     const [paused, setPaused] = useState(!(initialIndex === index));
@@ -111,18 +95,17 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
         showControls.current = true;
     }, [onShouldHideControls]);
 
-    const onPlay = useCallback(() => {
-        setPaused(false);
-    }, []);
-
-    const onPlaybackRateChange = useCallback(({playbackRate}: OnPlaybackRateData) => {
+    const onPlaybackRateChange = useCallback(({playbackRate}: OnPlaybackRateChangeData) => {
         if (isPageActive.value) {
             const isPlaying = Boolean(playbackRate);
             showControls.current = isPlaying;
             onShouldHideControls(isPlaying);
-            setPaused(!isPlaying);
         }
     }, [onShouldHideControls]);
+
+    const onPlaybackStateChange = useCallback(({isPlaying}: {isPlaying: boolean}) => {
+        setPaused(!isPlaying);
+    }, []);
 
     const onReadyForDisplay = useCallback(() => {
         setVideoReady(true);
@@ -141,27 +124,23 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
         }
     }, []);
 
-    const animatedStyle = useAnimatedStyle(() => {
-        let w = width;
-        let h = height - (VIDEO_INSET + GALLERY_FOOTER_HEIGHT + bottom);
+    const dimensionsStyle = useMemo(() => {
+        const w = width;
+        const h = height - (VIDEO_INSET + GALLERY_FOOTER_HEIGHT + bottom);
 
         if (hasError) {
-            return {height: 0};
+            return {height: 0, width: 0};
         }
 
-        if (fullscreen.value) {
-            w = dimensions.width;
-            h = dimensions.height;
-        } else if (dimensions.width > dimensions.height) {
-            w = h;
-            h = width;
-        }
+        return {width: w, height: h};
+    }, [hasError, fullscreen.value, height, width]);
 
+    const animatedStyle = useAnimatedStyle(() => {
         return {
-            width: withTiming(w, timingConfig),
-            height: withTiming(h, timingConfig),
+            width: withTiming(dimensionsStyle.width, timingConfig),
+            height: withTiming(dimensionsStyle.height, timingConfig),
         };
-    }, [dimensions, hasError]);
+    }, [dimensionsStyle, hasError]);
 
     useEffect(() => {
         if (initialIndex === index && videoReady) {
@@ -179,35 +158,29 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     }, [isPageActive.value, paused]);
 
     return (
-        <>
-            <AnimatedVideo
+        <Animated.View style={animatedStyle}>
+            <Video
+
+                //@ts-expect-error legacy ref
                 ref={videoRef}
                 source={source}
                 paused={paused}
                 poster={item.posterUri}
+                posterResizeMode='center'
                 onError={onError}
-                style={[styles.video, animatedStyle]}
+                style={[styles.video, dimensionsStyle]}
                 controls={isPageActive.value}
                 onPlaybackRateChange={onPlaybackRateChange}
                 onFullscreenPlayerWillDismiss={onFullscreenPlayerWillDismiss}
                 onFullscreenPlayerWillPresent={onFullscreenPlayerWillPresent}
+                onPlaybackStateChanged={onPlaybackStateChange}
                 onReadyForDisplay={onReadyForDisplay}
                 onEnd={onEnd}
                 onTouchStart={handleTouchStart}
+                resizeMode='none'
                 textTracks={tracks}
-                selectedTextTrack={captionsEnabled[index] ? selected : {type: 'disabled'}}
+                selectedTextTrack={captionsEnabled[index] ? selected : {type: SelectedTrackType.DISABLED, value: ''}}
             />
-            {Platform.OS === 'android' && paused && videoReady &&
-            <Animated.View style={styles.playContainer}>
-                <CompassIcon
-                    color={changeOpacity('#fff', 0.8)}
-                    style={styles.play}
-                    name='play'
-                    onPress={onPlay}
-                    size={80}
-                />
-            </Animated.View>
-            }
             {hasError &&
             <VideoError
                 filename={item.name}
@@ -228,7 +201,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 item={item}
             />
             }
-        </>
+        </Animated.View>
     );
 };
 

@@ -12,7 +12,7 @@ type FileIconProps = {
     backgroundColor?: string;
     defaultImage?: boolean;
     failed?: boolean;
-    file?: FileInfo;
+    file?: FileInfo | ExtractedFileInfo;
     iconColor?: string;
     iconSize?: number;
     smallImage?: boolean;

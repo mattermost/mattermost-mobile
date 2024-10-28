@@ -11,6 +11,7 @@ const {
     CATEGORY,
     CATEGORY_CHANNEL,
     CHANNEL,
+    CHANNEL_BOOKMARK,
     CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
     CONFIG,
@@ -45,7 +46,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 3,
+            version: 6,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -134,6 +135,43 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'type', type: 'string'},
                         {name: 'update_at', type: 'number'},
+                    ],
+                },
+                [CHANNEL_BOOKMARK]: {
+                    name: CHANNEL_BOOKMARK,
+                    unsafeSql: undefined,
+                    columns: {
+                        create_at: {name: 'create_at', type: 'number'},
+                        update_at: {name: 'update_at', type: 'number'},
+                        delete_at: {name: 'delete_at', type: 'number'},
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        owner_id: {name: 'owner_id', type: 'string'},
+                        file_id: {name: 'file_id', type: 'string', isOptional: true},
+                        display_name: {name: 'display_name', type: 'string'},
+                        sort_order: {name: 'sort_order', type: 'number'},
+                        link_url: {name: 'link_url', type: 'string', isOptional: true},
+                        image_url: {name: 'image_url', type: 'string', isOptional: true},
+                        emoji: {name: 'emoji', type: 'string', isOptional: true},
+                        type: {name: 'type', type: 'string'},
+                        original_id: {name: 'original_id', type: 'string', isOptional: true},
+                        parent_id: {name: 'parent_id', type: 'string', isOptional: true},
+
+                    },
+                    columnArray: [
+                        {name: 'create_at', type: 'number'},
+                        {name: 'update_at', type: 'number'},
+                        {name: 'delete_at', type: 'number'},
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'owner_id', type: 'string'},
+                        {name: 'file_id', type: 'string', isOptional: true},
+                        {name: 'display_name', type: 'string'},
+                        {name: 'sort_order', type: 'number'},
+                        {name: 'link_url', type: 'string', isOptional: true},
+                        {name: 'image_url', type: 'string', isOptional: true},
+                        {name: 'emoji', type: 'string', isOptional: true},
+                        {name: 'type', type: 'string'},
+                        {name: 'original_id', type: 'string', isOptional: true},
+                        {name: 'parent_id', type: 'string', isOptional: true},
                     ],
                 },
                 [CHANNEL_MEMBERSHIP]: {
@@ -227,6 +265,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         message: {name: 'message', type: 'string'},
                         root_id: {name: 'root_id', type: 'string', isIndexed: true},
                         metadata: {name: 'metadata', type: 'string', isOptional: true},
+                        update_at: {name: 'update_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
@@ -234,6 +273,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'message', type: 'string'},
                         {name: 'root_id', type: 'string', isIndexed: true},
                         {name: 'metadata', type: 'string', isOptional: true},
+                        {name: 'update_at', type: 'number'},
                     ],
                 },
                 [FILE]: {
@@ -373,7 +413,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         previous_post_id: {name: 'previous_post_id', type: 'string'},
                         props: {name: 'props', type: 'string'},
                         root_id: {name: 'root_id', type: 'string'},
-                        type: {name: 'type', type: 'string'},
+                        type: {name: 'type', type: 'string', isIndexed: true},
                         update_at: {name: 'update_at', type: 'number'},
                         user_id: {name: 'user_id', type: 'string', isIndexed: true},
                     },
@@ -391,7 +431,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'previous_post_id', type: 'string'},
                         {name: 'props', type: 'string'},
                         {name: 'root_id', type: 'string'},
-                        {name: 'type', type: 'string'},
+                        {name: 'type', type: 'string', isIndexed: true},
                         {name: 'update_at', type: 'number'},
                         {name: 'user_id', type: 'string', isIndexed: true},
                     ],

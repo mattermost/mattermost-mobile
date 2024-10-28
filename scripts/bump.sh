@@ -6,7 +6,7 @@ cd "$(dirname "$0")"/..
 log () { echo "[$(date +%Y-%m-%dT%H:%M:%S%Z)]" "$@"; }
 
 : "${BRANCH_TO_BUILD:=main}"
-: "${PR_REVIEWERS:=mattermost/core-build-engineers}"
+: "${PR_REVIEWERS:=mattermost/core-build-engineers,amyblais}"
 : "${BUMP_BUILD_NUMBER:=}"    # You can optionally specify the BUILD_NUMBER variable for selecting the next build number
                               # If you don't, then the Fastlane action will pick the next build number automatically
 : "${BUMP_VERSION_NUMBER:=}"  # If enabled, you must populate the VERSION_NUMBER variable as well
@@ -87,7 +87,7 @@ if [ -n "${CREATE_PR}" ]; then
   log "Creating PR"
   PR_TITLE="Bump app ${BUMP_BUILD_NUMBER:+build}${BUMP_VERSION_NUMBER:+${BUMP_BUILD_NUMBER:+ and }version} number"
   # We won't specify the milestone when opening the PR if either we're not bumping the version number, or if the milestone is not found
-  MILESTONE_FOUND=$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" --jq '.[] | .title' /repos/mattermost/mattermost-mobile/milestones | grep -E "^v${VERSION_NUMBER}$")
+  MILESTONE_FOUND=$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" --jq '.[] | .title' /repos/mattermost/mattermost-mobile/milestones | sed -n -E "s/^v${VERSION_NUMBER:-}$/yes/p")
   #shellcheck disable=SC2046
   gh pr create \
     --repo mattermost/mattermost-mobile \

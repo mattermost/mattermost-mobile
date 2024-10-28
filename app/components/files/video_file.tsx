@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {getThumbnailAsync} from 'expo-video-thumbnails';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {StyleSheet, useWindowDimensions, View, NativeModules} from 'react-native';
+import {StyleSheet, useWindowDimensions, View} from 'react-native';
 
 import {updateLocalFile} from '@actions/local/file';
 import {buildFilePreviewUrl, buildFileUrl} from '@actions/remote/file';
@@ -10,14 +11,14 @@ import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {getServerCredentials} from '@init/credentials';
 import {fileExists} from '@utils/file';
 import {calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FileIcon from './file_icon';
 
-import type {ResizeMode} from 'react-native-fast-image';
-const {createThumbnail} = NativeModules.MattermostManaged;
+import type {ImageContentFit} from 'expo-image';
 
 type Props = {
     index: number;
@@ -25,7 +26,7 @@ type Props = {
     forwardRef?: React.RefObject<unknown>;
     inViewPort?: boolean;
     isSingleImage?: boolean;
-    resizeMode?: ResizeMode;
+    contentFit?: ImageContentFit;
     wrapperWidth: number;
     updateFileForGallery?: (idx: number, file: FileInfo) => void;
 }
@@ -61,7 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const VideoFile = ({
     index, file, forwardRef, inViewPort, isSingleImage,
-    resizeMode = 'cover', wrapperWidth, updateFileForGallery,
+    contentFit = 'cover', wrapperWidth, updateFileForGallery,
 }: Props) => {
     const serverUrl = useServerUrl();
     const [failed, setFailed] = useState(false);
@@ -86,7 +87,12 @@ const VideoFile = ({
             if (!data.mini_preview || !exists) {
                 const videoUrl = buildFileUrl(serverUrl, data.id!);
                 if (videoUrl) {
-                    const {path: uri, height, width} = await createThumbnail({url: data.localPath || videoUrl, timeStamp: 2000});
+                    const cred = await getServerCredentials(serverUrl);
+                    const headers: Record<string, string> = {};
+                    if (cred?.token) {
+                        headers.Authorization = `Bearer ${cred.token}`;
+                    }
+                    const {uri, height, width} = await getThumbnailAsync(data.localPath || videoUrl, {time: 1000, headers});
                     data.mini_preview = uri;
                     data.height = height;
                     data.width = width;
@@ -151,7 +157,7 @@ const VideoFile = ({
             forwardRef={forwardRef}
             style={[isSingleImage ? null : style.imagePreview, imageDimensions]}
             onError={handleError}
-            resizeMode={resizeMode}
+            contentFit={contentFit}
             {...imageProps()}
         />
     );

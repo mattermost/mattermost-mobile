@@ -97,7 +97,7 @@ const Body = ({
     let message;
 
     const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== THREAD);
-    const hasContent = (post.metadata?.embeds?.length || (appsEnabled && post.props?.app_bindings?.length)) || post.props?.attachments?.length;
+    const hasContent = Boolean((post.metadata?.embeds?.length || (appsEnabled && post.props?.app_bindings?.length)) || post.props?.attachments?.length);
 
     const replyBarStyle = useCallback((): StyleProp<ViewStyle>|undefined => {
         if (!isReplyPost || (isCRTEnabled && location === Screens.PERMALINK)) {

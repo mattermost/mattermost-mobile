@@ -1,20 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {
-    CallJobState,
-    CallsConfig,
-    EmojiData,
-    UserReactionData,
+import {
+    TranscribeAPI,
+    type CallJobState,
+    type CallsConfig,
+    type EmojiData,
+    type UserReactionData,
 } from '@mattermost/calls/lib/types';
+
 import type UserModel from '@typings/database/models/servers/user';
 
 export type GlobalCallsState = {
     micPermissionsGranted: boolean;
+    joiningChannelId: string | null;
 }
 
 export const DefaultGlobalCallsState: GlobalCallsState = {
     micPermissionsGranted: false,
+    joiningChannelId: null,
 };
 
 export type CallsState = {
@@ -47,10 +51,13 @@ export type IncomingCallNotification = {
 
 export type IncomingCalls = {
     incomingCalls: IncomingCallNotification[];
+    currentRingingCallId?: string;
+    callIdHasRung: Dictionary<boolean>;
 }
 
 export const DefaultIncomingCalls: IncomingCalls = {
     incomingCalls: [],
+    callIdHasRung: {},
 };
 
 export type Call = {
@@ -144,6 +151,7 @@ export type CallsConnection = {
 
 export type CallsConfigState = CallsConfig & {
     AllowEnableCalls: boolean;
+    GroupCallsAllowed: boolean;
     pluginEnabled: boolean;
     version: CallsVersion;
     last_retrieved_at: number;
@@ -168,6 +176,10 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableTranscriptions: false,
     EnableLiveCaptions: false,
     HostControlsAllowed: false,
+    EnableAV1: false,
+    TranscribeAPI: TranscribeAPI.WhisperCPP,
+    GroupCallsAllowed: true, // Set to true to keep backward compatibility with older servers.
+    EnableDCSignaling: false,
 };
 
 export type ApiResp = {
@@ -204,18 +216,6 @@ export type CallsVersion = {
     build?: string;
 };
 
-export type SubtitleTrack = {
-    title?: string | undefined;
-    language?: string | undefined;
-    type: 'application/x-subrip' | 'application/ttml+xml' | 'text/vtt';
-    uri: string;
-};
-
-export type SelectedSubtitleTrack = {
-    type: 'system' | 'disabled' | 'title' | 'language' | 'index';
-    value?: string | number | undefined;
-};
-
 export type LiveCaptionMobile = {
     captionId: string;
     sessionId: string;
@@ -246,4 +246,10 @@ export type HostControlsMsgData = {
 export type HostControlsLowerHandMsgData = HostControlsMsgData & {
     call_id: string;
     host_id: string;
+}
+
+export enum EndCallReturn {
+    Cancel,
+    LeaveCall,
+    EndCall,
 }

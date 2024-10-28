@@ -11,12 +11,12 @@ function cocoapods() {
 }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  if !(gem list bundler -i --version 2.3.26) > /dev/null 2>&1; then
+  if !(gem list bundler -i --version 2.5.11) > /dev/null 2>&1; then
     echo "Installing Bundler"
-    gem install bundler --version 2.3.26  || exit 1
+    gem install bundler --version 2.5.11  || exit 1
   fi
 
-  if !(gem list cocoapods -i --version 1.14.3) > /dev/null 2>&1; then
+  if !(gem list cocoapods -i --version 1.15.2) > /dev/null 2>&1; then
     cocoapods
   fi
 fi

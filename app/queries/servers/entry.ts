@@ -7,7 +7,7 @@ import DatabaseManager from '@database/manager';
 import {prepareCategoriesAndCategoriesChannels} from './categories';
 import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
 import {prepareMyPreferences} from './preference';
-import {resetWebSocketLastDisconnected} from './system';
+import {resetLastFullSync} from './system';
 import {prepareDeleteTeam, prepareMyTeams} from './team';
 import {prepareUsers} from './user';
 
@@ -33,6 +33,7 @@ type PrepareModelsArgs = {
 }
 
 const {
+    CHANNEL_BOOKMARK,
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
@@ -100,10 +101,11 @@ export async function truncateCrtRelatedTables(serverUrl: string): Promise<{erro
                     [`DELETE FROM ${THREAD_PARTICIPANT}`, []],
                     [`DELETE FROM ${TEAM_THREADS_SYNC}`, []],
                     [`DELETE FROM ${MY_CHANNEL}`, []],
+                    [`DELETE FROM ${CHANNEL_BOOKMARK}`, []],
                 ],
             });
         });
-        await resetWebSocketLastDisconnected(operator);
+        await resetLastFullSync(operator);
     } catch (error) {
         if (__DEV__) {
             throw error;

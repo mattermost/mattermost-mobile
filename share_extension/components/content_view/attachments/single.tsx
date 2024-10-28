@@ -14,6 +14,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import Info from './info';
 import Thumbnail from './thumbnail';
 
+import type {SharedItem} from '@mattermost/rnshare';
+
 type Props = {
     file: SharedItem;
     maxFileSize: number;

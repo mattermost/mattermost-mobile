@@ -369,8 +369,23 @@ index 027c366..5807e79 100644
    // Performs work on the underlying database - see concrete DatabaseAdapter implementation for more details
    unsafeExecute(work: UnsafeExecuteOperations, callback: ResultCallback<void>): void
  
+diff --git a/node_modules/@nozbe/watermelondb/native/android-jsi/src/main/java/com/nozbe/watermelondb/jsi/JSIInstaller.java b/node_modules/@nozbe/watermelondb/native/android-jsi/src/main/java/com/nozbe/watermelondb/jsi/JSIInstaller.java
+index 055cede..fb7ca33 100755
+--- a/node_modules/@nozbe/watermelondb/native/android-jsi/src/main/java/com/nozbe/watermelondb/jsi/JSIInstaller.java
++++ b/node_modules/@nozbe/watermelondb/native/android-jsi/src/main/java/com/nozbe/watermelondb/jsi/JSIInstaller.java
+@@ -1,8 +1,8 @@
+ package com.nozbe.watermelondb.jsi;
+ 
+ import android.content.Context;
+-class JSIInstaller {
+-    static void install(Context context, long javaScriptContextHolder) {
++public class JSIInstaller {
++    public static void install(Context context, long javaScriptContextHolder) {
+         JSIInstaller.context = context;
+         new JSIInstaller().installBinding(javaScriptContextHolder);
+ 
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java
-index 2f170e0..bac0352 100644
+index 2f170e0..bd87f92 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java
 +++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java
 @@ -11,6 +11,8 @@ import java.util.Arrays;
@@ -414,17 +429,19 @@ index 2f170e0..bac0352 100644
          } else {
              // On some systems there is some kind of lock on `/databases` folder ¯\_(ツ)_/¯
              path = context.getDatabasePath("" + name + ".db").getPath().replace("/databases", "");
-@@ -172,6 +190,10 @@ public class WMDatabase {
+@@ -172,7 +190,11 @@ public class WMDatabase {
          });
      }
  
+-    interface TransactionFunction {
 +    public void unsafeVacuum() {
 +        execute("vacuum");
 +    }
 +
-     interface TransactionFunction {
++    public interface TransactionFunction {
          void applyTransactionFunction();
      }
+ 
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java
 index 117b2bc..57e4abb 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java

@@ -15,7 +15,7 @@ import type {FloatingTextInputRef} from '@components/floating_text_input_label';
 const services: Record<string, string> = {
     gitlab: 'GitLab',
     google: 'Google Apps',
-    office365: 'Office 365',
+    office365: 'Entra ID',
     ldap: 'AD/LDAP',
     saml: 'SAML',
 };

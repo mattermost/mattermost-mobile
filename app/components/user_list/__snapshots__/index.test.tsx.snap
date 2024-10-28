@@ -269,6 +269,10 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             "locale": "",
             "nickname": "",
             "notify_props": {
+              "calls_desktop_sound": "true",
+              "calls_mobile_notification_sound": "",
+              "calls_mobile_sound": "",
+              "calls_notification_sound": "Calm",
               "channel": "true",
               "comments": "never",
               "desktop": "mention",
@@ -437,40 +441,42 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             }
             testID="create_direct_message.user_list.user_item.1.1.profile_picture"
           >
-            <View
-              style={
+            <ViewManagerAdapter_ExpoImage
+              backgroundColor={4294967295}
+              borderRadius={12}
+              containerViewRef={"[React.ref]"}
+              contentFit="cover"
+              contentPosition={
+                {
+                  "left": "50%",
+                  "top": "50%",
+                }
+              }
+              height={24}
+              nativeViewRef={"[React.ref]"}
+              onError={[Function]}
+              onLoad={[Function]}
+              onLoadStart={[Function]}
+              onProgress={[Function]}
+              placeholder={[]}
+              source={
                 [
                   {
-                    "overflow": "hidden",
-                  },
-                  {
-                    "backgroundColor": "#ffffff",
-                    "borderRadius": 12,
-                    "height": 24,
-                    "width": 24,
+                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
                   },
                 ]
               }
-            >
-              <FastImageView
-                defaultSource={null}
-                resizeMode="cover"
-                source={
-                  {
-                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
-                  }
+              style={
+                {
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": 12,
+                  "height": 24,
+                  "width": 24,
                 }
-                style={
-                  {
-                    "bottom": 0,
-                    "left": 0,
-                    "position": "absolute",
-                    "right": 0,
-                    "top": 0,
-                  }
-                }
-              />
-            </View>
+              }
+              transition={null}
+              width={24}
+            />
           </View>
           <View
             style={
@@ -583,6 +589,10 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             "locale": "",
             "nickname": "",
             "notify_props": {
+              "calls_desktop_sound": "true",
+              "calls_mobile_notification_sound": "",
+              "calls_mobile_sound": "",
+              "calls_notification_sound": "Calm",
               "channel": "true",
               "comments": "never",
               "desktop": "mention",
@@ -751,40 +761,42 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             }
             testID="create_direct_message.user_list.user_item.1.1.profile_picture"
           >
-            <View
-              style={
+            <ViewManagerAdapter_ExpoImage
+              backgroundColor={4294967295}
+              borderRadius={12}
+              containerViewRef={"[React.ref]"}
+              contentFit="cover"
+              contentPosition={
+                {
+                  "left": "50%",
+                  "top": "50%",
+                }
+              }
+              height={24}
+              nativeViewRef={"[React.ref]"}
+              onError={[Function]}
+              onLoad={[Function]}
+              onLoadStart={[Function]}
+              onProgress={[Function]}
+              placeholder={[]}
+              source={
                 [
                   {
-                    "overflow": "hidden",
-                  },
-                  {
-                    "backgroundColor": "#ffffff",
-                    "borderRadius": 12,
-                    "height": 24,
-                    "width": 24,
+                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
                   },
                 ]
               }
-            >
-              <FastImageView
-                defaultSource={null}
-                resizeMode="cover"
-                source={
-                  {
-                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
-                  }
+              style={
+                {
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": 12,
+                  "height": 24,
+                  "width": 24,
                 }
-                style={
-                  {
-                    "bottom": 0,
-                    "left": 0,
-                    "position": "absolute",
-                    "right": 0,
-                    "top": 0,
-                  }
-                }
-              />
-            </View>
+              }
+              transition={null}
+              width={24}
+            />
           </View>
           <View
             style={
@@ -897,6 +909,10 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             "locale": "",
             "nickname": "",
             "notify_props": {
+              "calls_desktop_sound": "true",
+              "calls_mobile_notification_sound": "",
+              "calls_mobile_sound": "",
+              "calls_notification_sound": "Calm",
               "channel": "true",
               "comments": "never",
               "desktop": "mention",
@@ -931,6 +947,10 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             "locale": "",
             "nickname": "",
             "notify_props": {
+              "calls_desktop_sound": "true",
+              "calls_mobile_notification_sound": "",
+              "calls_mobile_sound": "",
+              "calls_notification_sound": "Calm",
               "channel": "true",
               "comments": "never",
               "desktop": "mention",
@@ -1099,40 +1119,42 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             }
             testID="create_direct_message.user_list.user_item.1.1.profile_picture"
           >
-            <View
-              style={
+            <ViewManagerAdapter_ExpoImage
+              backgroundColor={4294967295}
+              borderRadius={12}
+              containerViewRef={"[React.ref]"}
+              contentFit="cover"
+              contentPosition={
+                {
+                  "left": "50%",
+                  "top": "50%",
+                }
+              }
+              height={24}
+              nativeViewRef={"[React.ref]"}
+              onError={[Function]}
+              onLoad={[Function]}
+              onLoadStart={[Function]}
+              onProgress={[Function]}
+              placeholder={[]}
+              source={
                 [
                   {
-                    "overflow": "hidden",
-                  },
-                  {
-                    "backgroundColor": "#ffffff",
-                    "borderRadius": 12,
-                    "height": 24,
-                    "width": 24,
+                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
                   },
                 ]
               }
-            >
-              <FastImageView
-                defaultSource={null}
-                resizeMode="cover"
-                source={
-                  {
-                    "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
-                  }
+              style={
+                {
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": 12,
+                  "height": 24,
+                  "width": 24,
                 }
-                style={
-                  {
-                    "bottom": 0,
-                    "left": 0,
-                    "position": "absolute",
-                    "right": 0,
-                    "top": 0,
-                  }
-                }
-              />
-            </View>
+              }
+              transition={null}
+              width={24}
+            />
           </View>
           <View
             style={
@@ -1316,40 +1338,42 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             }
             testID="create_direct_message.user_list.user_item.2.2.profile_picture"
           >
-            <View
-              style={
+            <ViewManagerAdapter_ExpoImage
+              backgroundColor={4294967295}
+              borderRadius={12}
+              containerViewRef={"[React.ref]"}
+              contentFit="cover"
+              contentPosition={
+                {
+                  "left": "50%",
+                  "top": "50%",
+                }
+              }
+              height={24}
+              nativeViewRef={"[React.ref]"}
+              onError={[Function]}
+              onLoad={[Function]}
+              onLoadStart={[Function]}
+              onProgress={[Function]}
+              placeholder={[]}
+              source={
                 [
                   {
-                    "overflow": "hidden",
-                  },
-                  {
-                    "backgroundColor": "#ffffff",
-                    "borderRadius": 12,
-                    "height": 24,
-                    "width": 24,
+                    "uri": "https://community.mattermost.com/api/v4/users/2/image?_=123456",
                   },
                 ]
               }
-            >
-              <FastImageView
-                defaultSource={null}
-                resizeMode="cover"
-                source={
-                  {
-                    "uri": "https://community.mattermost.com/api/v4/users/2/image?_=123456",
-                  }
+              style={
+                {
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": 12,
+                  "height": 24,
+                  "width": 24,
                 }
-                style={
-                  {
-                    "bottom": 0,
-                    "left": 0,
-                    "position": "absolute",
-                    "right": 0,
-                    "top": 0,
-                  }
-                }
-              />
-            </View>
+              }
+              transition={null}
+              width={24}
+            />
           </View>
           <View
             style={

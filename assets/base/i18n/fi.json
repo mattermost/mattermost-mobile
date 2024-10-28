@@ -86,7 +86,6 @@
   "mobile.announcement_banner.title": "Ilmoitus",
   "mobile.calls_end_msg_channel": "Haluatko varmasti päättää {numParticipants} osallistujan välisen puhelun kanavalla {displayName}?",
   "mobile.calls_end_msg_dm": "Haluatko varmasti päättää puhelun käyttäjän {displayName} kanssa?",
-  "mobile.calls_name_started_call": "{name} aloitti puhelun",
   "mobile.calls_participant_rec": "Isäntä käynnisti kokouksen tallennuksen. Pysymällä kokouksessa hyväksyt viestintäsi tallennuksen omalta osaltasi.",
   "mobile.calls_participant_transcription": "Isäntä käynnisti kokouksen tallennuksen ja tekstimuunnoksen. Pysymällä kokouksessa hyväksyt tallennuksen ja tekstimuunnoksen omalta osaltasi.",
   "mobile.channel_list.unreads": "LUKEMATTOMAT",

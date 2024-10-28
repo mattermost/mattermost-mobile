@@ -6,14 +6,12 @@ import {prepareBaseRecord} from '@database/operator/server_data_operator/transfo
 
 import type{TransformerArgs} from '@typings/database/database';
 import type DraftModel from '@typings/database/models/servers/draft';
-import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
 const {
     DRAFT,
-    FILE,
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
@@ -95,41 +93,6 @@ export const transformPostInThreadRecord = ({action, database, value}: Transform
 };
 
 /**
- * transformFileRecord: Prepares a record of the SERVER database 'Files' table for update or create actions.
- * @param {TransformerArgs} operator
- * @param {Database} operator.database
- * @param {RecordPair} operator.value
- * @returns {Promise<FileModel>}
- */
-export const transformFileRecord = ({action, database, value}: TransformerArgs): Promise<FileModel> => {
-    const raw = value.raw as FileInfo;
-    const record = value.record as FileModel;
-    const isCreateAction = action === OperationType.CREATE;
-
-    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (file: FileModel) => {
-        file._raw.id = isCreateAction ? (raw.id || file.id) : record.id;
-        file.postId = raw.post_id;
-        file.name = raw.name;
-        file.extension = raw.extension;
-        file.size = raw.size;
-        file.mimeType = raw?.mime_type ?? '';
-        file.width = raw?.width || record?.width || 0;
-        file.height = raw?.height || record?.height || 0;
-        file.imageThumbnail = raw?.mini_preview || record?.imageThumbnail || '';
-        file.localPath = raw?.localPath || record?.localPath || null;
-    };
-
-    return prepareBaseRecord({
-        action,
-        database,
-        tableName: FILE,
-        value,
-        fieldsMapper,
-    }) as Promise<FileModel>;
-};
-
-/**
  * transformDraftRecord: Prepares a record of the SERVER database 'Draft' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
@@ -149,6 +112,7 @@ export const transformDraftRecord = ({action, database, value}: TransformerArgs)
         draft.channelId = raw?.channel_id ?? '';
         draft.files = raw?.files ?? emptyFileInfo;
         draft.metadata = raw?.metadata ?? emptyPostMetadata;
+        draft.updateAt = raw.update_at ?? Date.now();
     };
 
     return prepareBaseRecord({

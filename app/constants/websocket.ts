@@ -91,6 +91,7 @@ const WebsocketEvents = {
     CALLS_HOST_MUTE: `custom_${Calls.PluginId}_host_mute`,
     CALLS_HOST_LOWER_HAND: `custom_${Calls.PluginId}_host_lower_hand`,
     CALLS_HOST_REMOVED: `custom_${Calls.PluginId}_host_removed`,
+    CALLS_CALL_STATE: `custom_${Calls.PluginId}_call_state`,
 
     GROUP_RECEIVED: 'received_group',
     GROUP_MEMBER_ADD: 'group_member_add',
@@ -99,5 +100,9 @@ const WebsocketEvents = {
     GROUP_DISSOCIATED_TO_TEAM: 'received_group_not_associated_to_team',
     GROUP_ASSOCIATED_TO_CHANNEL: 'received_group_associated_to_channel',
     GROUP_DISSOCIATED_TO_CHANNEL: 'received_group_not_associated_to_channel',
+    CHANNEL_BOOKMARK_CREATED: 'channel_bookmark_created',
+    CHANNEL_BOOKMARK_UPDATED: 'channel_bookmark_updated',
+    CHANNEL_BOOKMARK_SORTED: 'channel_bookmark_sorted',
+    CHANNEL_BOOKMARK_DELETED: 'channel_bookmark_deleted',
 };
 export default WebsocketEvents;

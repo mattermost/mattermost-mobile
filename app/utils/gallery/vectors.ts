@@ -160,6 +160,7 @@ export const set = <T extends VectorType>(
     if (typeof value === 'function') {
         vector.x.value = value();
         vector.y.value = value();
+        return;
     }
 
     const x = get(isVector(value) ? value.x : value);

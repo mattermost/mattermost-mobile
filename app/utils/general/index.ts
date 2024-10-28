@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {applicationId} from 'expo-application';
+import {randomUUID} from 'expo-crypto';
 import {createIntl} from 'react-intl';
-import DeviceInfo from 'react-native-device-info';
 import ReactNativeHapticFeedback, {HapticFeedbackTypes} from 'react-native-haptic-feedback';
 
-import {getTranslations} from '@i18n';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
-type SortByCreatAt = (Session | Channel | Team | Post) & {
+export type SortByCreatAt = (Session | Channel | Team | Post) & {
     create_at: number;
 }
 
-export function getIntlShape(locale = 'en') {
+export function getIntlShape(locale = DEFAULT_LOCALE) {
     return createIntl({
         locale,
         messages: getTranslations(locale),
@@ -25,22 +26,7 @@ export function emptyFunction(..._args: any[]) {
 
 // Generates a RFC-4122 version 4 compliant globally unique identifier.
 export const generateId = (prefix?: string): string => {
-    // implementation taken from http://stackoverflow.com/a/2117523
-    let id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
-    id = id.replace(/[xy]/g, (c) => {
-        const r = Math.floor(Math.random() * 16);
-        let v;
-
-        if (c === 'x') {
-            v = r;
-        } else {
-            // eslint-disable-next-line no-mixed-operators
-            v = (r & 0x3) | 0x8;
-        }
-
-        return v.toString(16);
-    });
-
+    const id = randomUUID();
     if (prefix) {
         return `${prefix}-${id}`;
     }
@@ -63,4 +49,4 @@ export const sortByNewest = (a: SortByCreatAt, b: SortByCreatAt) => {
     return 1;
 };
 
-export const isBetaApp = DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta');
+export const isBetaApp = applicationId && applicationId.includes('rnbeta');

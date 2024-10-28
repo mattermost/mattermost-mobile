@@ -331,10 +331,11 @@ export function parseSearchTerms(searchTerm: string): string[] | undefined {
     }
 
     // remove punctuation from each term
-    terms = terms.map((term) => {
-        term.replace(puncStart, '');
+    terms = terms.map((t) => {
+        let term = t;
+        term = term.replace(puncStart, '');
         if (term.charAt(term.length - 1) !== '*') {
-            term.replace(puncEnd, '');
+            term = term.replace(puncEnd, '');
         }
         return term;
     });

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Button} from '@rneui/base';
 import React, {useCallback} from 'react';
-import Button from 'react-native-button';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {switchToPenultimateChannel} from '@actions/remote/channel';
@@ -46,7 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         height: 40,
     },
     closeButtonText: {
-        marginTop: 7,
+        marginTop: 1,
         color: 'white',
         fontWeight: 'bold',
     },
@@ -97,7 +97,7 @@ export default function Archived({
                 location=''
             />
             <Button
-                containerStyle={style.closeButton}
+                buttonStyle={style.closeButton}
                 onPress={onCloseChannelPress}
                 testID={`${testID}.close_channel.button`}
             >

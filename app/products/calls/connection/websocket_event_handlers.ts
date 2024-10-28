@@ -5,6 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
+import {createCallAndAddToIds} from '@calls/actions/calls';
 import {hostRemovedErr} from '@calls/errors';
 import {
     callEnded,
@@ -13,6 +14,7 @@ import {
     getCurrentCall,
     receivedCaption,
     removeIncomingCall,
+    setCallForChannel,
     setCallScreenOff,
     setCallScreenOn,
     setCaptioningState,
@@ -38,6 +40,8 @@ import type {
     CallJobState,
     CallJobStateData,
     CallStartData,
+    CallState,
+    CallStateData,
     EmptyData,
     LiveCaptionData,
     UserConnectedData,
@@ -240,3 +244,19 @@ export const handleHostRemoved = async (serverUrl: string, msg: WebSocketMessage
 
     leaveCall(hostRemovedErr);
 };
+
+export const handleCallState = (serverUrl: string, msg: WebSocketMessage<CallStateData>) => {
+    const callState: CallState = JSON.parse(msg.data.call);
+    const call = createCallAndAddToIds(msg.data.channel_id, callState);
+
+    setCallForChannel(serverUrl, msg.data.channel_id, call);
+
+    if (callState.recording) {
+        setRecordingState(serverUrl, msg.data.channel_id, callState.recording);
+    }
+
+    if (callState.live_captions) {
+        setCaptioningState(serverUrl, msg.data.channel_id, callState.live_captions);
+    }
+};
+
