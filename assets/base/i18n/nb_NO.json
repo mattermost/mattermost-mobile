@@ -123,7 +123,7 @@
   "channel_files.noFiles.title": "Ingen filer funnet",
   "channel_header.directchannel.you": "{displayName} (deg)",
   "channel_header.info": "Vis info",
-  "channel_header.member_count": "",
+  "channel_header.member_count": "{count, plural, one {# member} other {# members}}",
   "channel_info.add_bookmark": "Legg til et bokmerke",
   "channel_info.add_bookmark.file": "Legg ved en fil",
   "channel_info.add_bookmark.link": "Legg til en lenke",
