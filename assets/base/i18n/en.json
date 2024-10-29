@@ -454,6 +454,8 @@
   "login.username": "Username",
   "markdown.latex.error": "Latex render error",
   "markdown.max_nodes.error": "This message is too long to by shown fully on a mobile device. Please view it on desktop or contact an admin to increase this limit.",
+  "markdown.parse_error": "An error occurred while parsing this text",
+  "markdown.render_error": "An error occurred while rendering this text",
   "mentions.empty.paragraph": "You'll see messages here when someone mentions you or uses terms you're monitoring.",
   "mentions.empty.title": "No Mentions yet",
   "mobile.about.appVersion": "App Version: {version} (Build {number})",

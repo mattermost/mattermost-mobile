@@ -7,6 +7,7 @@ import Renderer from 'commonmark-react-renderer';
 import React, {type ReactElement, useMemo, useRef} from 'react';
 import {Dimensions, type GestureResponderEvent, Platform, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
@@ -97,6 +98,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         editedIndicatorText: {
             color: editedColor,
             opacity: editedOpacity,
+        },
+        errorMessage: {
+            color: theme.errorTextColor,
+            ...typography('Body', 100),
         },
         maxNodesWarning: {
             color: theme.errorTextColor,
@@ -606,34 +611,76 @@ const Markdown = ({
 
     const parser = useRef(new Parser({urlFilter, minimumHashtagLength})).current;
     const renderer = useMemo(createRenderer, [theme, textStyles]);
-    let ast = parser.parse(value.toString());
 
-    ast = combineTextNodes(ast);
-    ast = addListItemIndices(ast);
-    ast = pullOutImages(ast);
-    ast = parseTaskLists(ast);
-    if (mentionKeys) {
-        ast = highlightMentions(ast, mentionKeys);
-    }
-    if (highlightKeys) {
-        ast = highlightWithoutNotification(ast, highlightKeys);
-    }
-    if (searchPatterns) {
-        ast = highlightSearchPatterns(ast, searchPatterns);
-    }
-    if (isEdited) {
-        const editIndicatorNode = new Node('edited_indicator');
-        if (ast.lastChild && ['heading', 'paragraph'].includes(ast.lastChild.type)) {
-            ast.appendChild(editIndicatorNode);
-        } else {
-            const node = new Node('paragraph');
-            node.appendChild(editIndicatorNode);
+    const errorLogged = useRef(false);
 
-            ast.appendChild(node);
+    let ast;
+    try {
+        ast = parser.parse(value.toString());
+
+        ast = combineTextNodes(ast);
+        ast = addListItemIndices(ast);
+        ast = pullOutImages(ast);
+        ast = parseTaskLists(ast);
+        if (mentionKeys) {
+            ast = highlightMentions(ast, mentionKeys);
         }
+        if (highlightKeys) {
+            ast = highlightWithoutNotification(ast, highlightKeys);
+        }
+        if (searchPatterns) {
+            ast = highlightSearchPatterns(ast, searchPatterns);
+        }
+
+        if (isEdited) {
+            const editIndicatorNode = new Node('edited_indicator');
+            if (ast.lastChild && ['heading', 'paragraph'].includes(ast.lastChild.type)) {
+                ast.appendChild(editIndicatorNode);
+            } else {
+                const node = new Node('paragraph');
+                node.appendChild(editIndicatorNode);
+
+                ast.appendChild(node);
+            }
+        }
+    } catch (e) {
+        if (!errorLogged.current) {
+            // eslint-disable-next-line no-console
+            console.error(e);
+
+            errorLogged.current = true;
+        }
+
+        return (
+            <FormattedText
+                id='markdown.parse_error'
+                defaultMessage='An error occurred while parsing this text'
+                style={style.errorMessage}
+            />
+        );
     }
 
-    return renderer.render(ast) as JSX.Element;
+    let output;
+    try {
+        output = renderer.render(ast);
+    } catch (e) {
+        if (!errorLogged.current) {
+            // eslint-disable-next-line no-console
+            console.error(e);
+
+            errorLogged.current = true;
+        }
+
+        return (
+            <FormattedText
+                id='markdown.render_error'
+                defaultMessage='An error occurred while rendering this text'
+                style={style.errorMessage}
+            />
+        );
+    }
+
+    return output;
 };
 
 export default Markdown;
