@@ -791,3 +791,9 @@ exports[`<FormattedDate/> should match snapshot for 'zh-TW' locale and 'undefine
   2024年10月26日
 </Text>
 `;
+
+exports[`<FormattedDate/> should render with a manual user time 1`] = `
+<Text>
+  Oct 26, 2024
+</Text>
+`;

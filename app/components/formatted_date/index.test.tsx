@@ -46,4 +46,34 @@ describe('<FormattedDate/>', () => {
         );
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
+
+    it('should render with a manual user time', () => {
+        const wrapper = renderWithIntl(
+            <FormattedDate
+                value={DATE}
+                timezone={{
+                    automaticTimezone: '',
+                    manualTimezone: 'Indian/Mauritius',
+                    useAutomaticTimezone: '',
+                }}
+            />,
+        );
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
+    it('should render with an automatic user time', () => {
+        const wrapper = renderWithIntl(
+            <FormattedDate
+                value={DATE}
+                timezone={{
+                    automaticTimezone: 'Indian/Mauritius',
+                    manualTimezone: '',
+                    useAutomaticTimezone: 'true',
+                }}
+            />,
+        );
+
+        // Just check that the component render as automatic timezone is environment dependant
+        expect(wrapper.toJSON()).toBeTruthy();
+    });
 });
