@@ -38,6 +38,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const DATE_FORMATS = {
+    withinYear: {month: 'short', day: 'numeric'},
+    afterYear: {dateStyle: 'medium'},
+} satisfies Record<string, FormattedDateFormat>;
+
 const RecentDate = (props: DateSeparatorProps) => {
     const {date, ...otherProps} = props;
     const when = new Date(date);
@@ -60,7 +65,7 @@ const RecentDate = (props: DateSeparatorProps) => {
         );
     }
 
-    const format: FormattedDateFormat = isSameYear(when, new Date()) ? {month: 'short', day: 'numeric'} : {dateStyle: 'medium'};
+    const format: FormattedDateFormat = isSameYear(when, new Date()) ? DATE_FORMATS.withinYear : DATE_FORMATS.afterYear;
 
     return (
         <FormattedDate
