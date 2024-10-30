@@ -938,6 +938,7 @@
   "post_body.check_for_out_of_channel_mentions.message_last": "? Sie werden Zugriff auf den Nachrichtenverlauf haben.",
   "post_body.commentedOn": "Kommentierte auf {name}{apostrophe} Nachricht: ",
   "post_body.deleted": "(Nachricht gelöscht)",
+  "post_header.visible_message": "(Nur für dich sichtbar)",
   "post_info.auto_responder": "Automatische Antwort",
   "post_info.bot": "Bot",
   "post_info.del": "Löschen",
