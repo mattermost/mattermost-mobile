@@ -9,7 +9,7 @@ import React
         DispatchQueue.main.sync {
             guard let w = UIApplication.shared.delegate?.window, let window = w else { return }
             window.removeObserver(self, forKeyPath: "frame")
-        }
+       }
     }
     
     func getSharedDirectory() -> URL? {
