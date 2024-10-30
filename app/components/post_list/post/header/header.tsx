@@ -4,6 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import FormattedText from '@app/components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {CHANNEL, THREAD} from '@constants/screens';
@@ -60,6 +61,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         time: {
             color: theme.centerChannelColor,
             marginTop: 5,
+            opacity: 0.5,
+            ...typography('Body', 75, 'Regular'),
+        },
+        visibleToYou: {
+            color: theme.centerChannelColor,
+            marginTop: 5,
+            marginLeft: 5,
             opacity: 0.5,
             ...typography('Body', 75, 'Regular'),
         },
@@ -121,6 +129,14 @@ const Header = (props: HeaderProps) => {
                         style={style.time}
                         testID='post_header.date_time'
                     />
+                    {isEphemeral && (
+                        <FormattedText
+                            id='post_header.visible_message'
+                            defaultMessage='(Only visible to you)'
+                            style={style.visibleToYou}
+                            testID='post_header.visible_message'
+                        />
+                    )}
                     {showPostPriority && post.metadata?.priority?.priority && (
                         <View style={style.postPriority}>
                             <PostPriorityLabel

@@ -934,6 +934,7 @@
   "post_body.check_for_out_of_channel_mentions.message.one": "was mentioned but is not in the channel. Would you like to ",
   "post_body.commentedOn": "Commented on {name}{apostrophe} message: ",
   "post_body.deleted": "(message deleted)",
+  "post_header.visible_message": "(Only visible to you)",
   "post_info.auto_responder": "Automatic Reply",
   "post_info.bot": "Bot",
   "post_info.del": "Delete",
