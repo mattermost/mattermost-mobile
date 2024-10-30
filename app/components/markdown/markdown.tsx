@@ -7,6 +7,7 @@ import Renderer from 'commonmark-react-renderer';
 import React, {type ReactElement, useMemo, useRef} from 'react';
 import {Dimensions, type GestureResponderEvent, Platform, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
+import {logError} from '@app/utils/log';
 import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
@@ -645,8 +646,7 @@ const Markdown = ({
         }
     } catch (e) {
         if (!errorLogged.current) {
-            // eslint-disable-next-line no-console
-            console.error(e);
+            logError('An error occurred while parsing Markdown', e);
 
             errorLogged.current = true;
         }
@@ -665,8 +665,7 @@ const Markdown = ({
         output = renderer.render(ast);
     } catch (e) {
         if (!errorLogged.current) {
-            // eslint-disable-next-line no-console
-            console.error(e);
+            logError('An error occurred while rendering Markdown', e);
 
             errorLogged.current = true;
         }
