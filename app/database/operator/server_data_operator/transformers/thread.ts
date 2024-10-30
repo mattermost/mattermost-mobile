@@ -63,9 +63,12 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
  */
 export const transformThreadParticipantRecord = ({action, database, value}: TransformerArgs): Promise<ThreadParticipantModel> => {
     const raw = value.raw as ThreadParticipant;
+    const record = value.record as ThreadParticipantModel;
+    const isCreateAction = action === OperationType.CREATE;
 
     // id of participant comes from server response
     const fieldsMapper = (participant: ThreadParticipantModel) => {
+        participant._raw.id = isCreateAction ? `${raw.thread_id}-${raw.id}` : record.id;
         participant.threadId = raw.thread_id;
         participant.userId = raw.id;
     };
@@ -81,8 +84,11 @@ export const transformThreadParticipantRecord = ({action, database, value}: Tran
 
 export const transformThreadInTeamRecord = ({action, database, value}: TransformerArgs): Promise<ThreadInTeamModel> => {
     const raw = value.raw as ThreadInTeam;
+    const record = value.record as ThreadInTeamModel;
+    const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (threadInTeam: ThreadInTeamModel) => {
+        threadInTeam._raw.id = isCreateAction ? `${raw.thread_id}-${raw.team_id}` : record.id;
         threadInTeam.threadId = raw.thread_id;
         threadInTeam.teamId = raw.team_id;
     };

@@ -6,10 +6,10 @@ import React
     @objc private var hasRegisteredLoad = false
     
     deinit {
-        DispatchQueue.main.async {
+//        DispatchQueue.main.async {
             guard let w = UIApplication.shared.delegate?.window, let window = w else { return }
             window.removeObserver(self, forKeyPath: "frame")
-        }
+//        }
     }
     
     func getSharedDirectory() -> URL? {

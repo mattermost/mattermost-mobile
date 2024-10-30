@@ -18,7 +18,6 @@ import {
     fetchAllTeams,
     fetchTeamsForComponent,
     updateCanJoinTeams,
-    fetchTeamsChannelsAndUnreadPosts,
     fetchTeamByName,
     removeCurrentUserFromTeam,
     removeUserFromTeam,
@@ -26,6 +25,7 @@ import {
     handleKickFromTeam,
     getTeamMembersByIds,
     buildTeamIconUrl,
+    fetchTeamsChannelsThreadsAndUnreadPosts,
 } from './team';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -81,12 +81,38 @@ const mockClient = {
     getMyTeams: jest.fn(() => ([{id: teamId, name: 'team1'}])),
     getMyTeamMembers: jest.fn(() => ([{id: 'userid1-' + teamId, user_id: 'userid1', team_id: teamId, roles: ''}])),
     getTeams: jest.fn(() => ([{id: teamId, name: 'team1'}])),
-    getMyChannels: jest.fn((id: string) => ([{id: channelId, name: 'channel1', creatorId: user.id, team_id: id}])),
-    getMyChannelMembers: jest.fn(() => ([{id: user.id + '-' + channelId, user_id: user.id, channel_id: channelId, roles: ''}])),
-    getCategories: jest.fn((userId: string, id: string) => ({categories: [{id: 'categoryid', channel_id: [channelId], team_id: id}], order: ['categoryid']})),
+    getMyChannels: jest.fn((id: string) => ([{id: channelId, name: 'channel1', creatorId: user.id, team_id: id, total_msg_count: 1}])),
+    getMyChannelMembers: jest.fn(() => ([{id: user.id + '-' + channelId, user_id: user.id, channel_id: channelId, roles: '', msg_count: 0}])),
+    getCategories: jest.fn((userId: string, id: string) => ({categories: [{id: 'categoryid', channel_ids: [channelId], team_id: id}], order: ['categoryid']})),
     getTeamByName: jest.fn((name: string) => ({id: teamId, name})),
     removeFromTeam: jest.fn(),
     getTeamMembersByIds: jest.fn((id: string, userIds: string[]) => (userIds.map((userId) => ({id: userId + '-' + id, user_id: userId, team_id: id, roles: ''})))),
+    getPosts: jest.fn(() => ({
+        order: ['yocj9xgkh78exk1uhx9yny1zxy', 'ad6yoisgh385fy7rkph49zpfqa', 'o5qqa4ntdigp7rbnf75f8hgeaw'],
+        posts: [{
+            channel_id: channelId,
+            create_at: 1726107604522,
+            delete_at: 0,
+            edit_at: 0,
+            hashtags: '',
+            id: 'yocj9xgkh78exk1uhx9yny1zxy',
+            is_pinned: false,
+            last_reply_at: 0,
+            message: 'Message ead863',
+            metadata: {},
+            original_id: '',
+            participants: null,
+            pending_post_id: '',
+            props: {},
+            remote_id: '',
+            reply_count: 0,
+            root_id: '',
+            type: '',
+            update_at: 1726107604522,
+            user_id: 'k479wsypafgjddz8cerqx4m1ha',
+        }],
+        previousPostId: '',
+    })),
 };
 
 beforeAll(() => {
@@ -245,13 +271,22 @@ describe('teams', () => {
         expect(result).toBeDefined();
     });
 
-    it('fetchTeamsChannelsAndUnreadPosts - handle not found database', async () => {
-        const result = await fetchTeamsChannelsAndUnreadPosts('foo', 0, [], []) as {error: unknown};
+    it('fetchTeamsChannelsThreadsAndUnreadPosts - handle not found database', async () => {
+        const result = await fetchTeamsChannelsThreadsAndUnreadPosts('foo', 0, []) as {error: unknown};
         expect(result?.error).toBeDefined();
     });
 
-    it('fetchTeamsChannelsAndUnreadPosts - base case', async () => {
-        const result = await fetchTeamsChannelsAndUnreadPosts(serverUrl, 0, [team], [{team_id: teamId, user_id: 'userid1'} as TeamMembership]);
+    it('fetchTeamsChannelsThreadsAndUnreadPosts - base case', async () => {
+        const result = await fetchTeamsChannelsThreadsAndUnreadPosts(
+            serverUrl, 0,
+            [team], true, false);
+        expect(result).toBeDefined();
+    });
+
+    it('fetchTeamsChannelsThreadsAndUnreadPosts - fetch only case', async () => {
+        const result = await fetchTeamsChannelsThreadsAndUnreadPosts(
+            serverUrl, 0,
+            [team], true, true);
         expect(result).toBeDefined();
     });
 
