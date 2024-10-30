@@ -19,6 +19,18 @@ import {
     editPost,
     acknowledgePost,
     unacknowledgePost,
+    fetchPostsForChannel,
+    fetchPostsForUnreadChannels,
+    fetchPosts,
+    fetchPostsBefore,
+    fetchPostsSince,
+    fetchPostAuthors,
+    fetchPostThread,
+    fetchPostsAround,
+    fetchMissingChannelsFromPosts,
+    fetchPostById,
+    fetchSavedPosts,
+    fetchPinnedPosts,
 } from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -29,36 +41,33 @@ let operator: ServerDataOperator;
 const channelId = 'channelid1';
 const teamId = 'teamid1';
 
-const team: Team = {
-    id: teamId,
-    name: 'team1',
-} as Team;
-
 const user1 = {id: 'userid1', username: 'user1', email: 'user1@mattermost.com', roles: ''} as UserProfile;
+const user2 = {id: 'userid2', username: 'user2', email: 'user2@mattermost.com', roles: ''} as UserProfile;
 
-const post1 = {...TestHelper.fakePost(channelId), id: 'postid1'};
-const reply1 = {...TestHelper.fakePost(channelId), id: 'replyid1', root_id: post1.id};
+const post1 = {...TestHelper.fakePost(channelId), id: 'postid1', user_id: user1.id};
+const post2 = {...TestHelper.fakePost(channelId), id: 'postid2', user_id: user2.id};
+const reply1 = {...TestHelper.fakePost(channelId), id: 'replyid1', root_id: post1.id, user_id: user2.id};
+
+const channel1 = {
+    id: channelId,
+    team_id: teamId,
+    total_msg_count: 12,
+    creator_id: user1.id,
+    delete_at: 0,
+} as Channel;
+
+const channelMember1 = {
+    id: 'memberid1',
+    channel_id: channelId,
+    user_id: user1.id,
+    msg_count: 10,
+} as ChannelMembership;
 
 const fileInfo1: FileInfo = {
     id: 'fileid',
     clientId: 'clientid',
     localPath: 'path1',
 } as FileInfo;
-
-const thread1: Thread = {id: 'postid1',
-    reply_count: 1,
-    last_reply_at: 1,
-    last_viewed_at: 1,
-    participants: [user1],
-    post: {id: 'postid1',
-        channel_id: channelId,
-        create_at: 1,
-        message: 'post1',
-        user_id: user1.id} as Post,
-    unread_replies: 0,
-    unread_mentions: 0,
-    delete_at: 0,
-};
 
 const mockPostModel = (overrides: Partial<PostModel> = {}): PostModel => ({
     id: 'post-id',
@@ -70,15 +79,13 @@ const mockPostModel = (overrides: Partial<PostModel> = {}): PostModel => ({
     ...overrides,
 } as PostModel);
 
-const threads = [
-    thread1,
-] as ThreadWithLastFetchedAt[];
-
 const throwFunc = () => {
     throw Error('error');
 };
 
 const acknowledgedTime = Date.now();
+
+const genericGetPostsMock = jest.fn((_channelId: string) => ({posts: {[post1.id]: {...post1, channel_id: _channelId}, [post2.id]: {...post2, channel_id: _channelId}}, order: [post1.id, post2.id]}));
 
 const mockClient = {
     createPost: jest.fn((post: Post) => ({...post, id: 'newid'})),
@@ -87,10 +94,21 @@ const mockClient = {
     deletePost: jest.fn(),
     getChannel: jest.fn((_channelId: string) => ({id: _channelId, name: 'channel1', creatorId: user1.id, total_msg_count: 100})),
     getChannelMember: jest.fn((_channelId: string, userId: string) => ({id: userId + '-' + _channelId, user_id: userId, channel_id: _channelId, roles: '', msg_count: 100, mention_count: 0})),
+    getMyChannelMember: jest.fn((_channelId: string) => ({id: user1.id + '-' + _channelId, user_id: user1.id, channel_id: _channelId, roles: '', msg_count: 100, mention_count: 0})),
     markPostAsUnread: jest.fn(),
     patchPost: jest.fn((message: string, postId: string) => ({...post1, id: postId, message})),
     acknowledgePost: jest.fn(() => ({acknowledged_at: acknowledgedTime})),
     unacknowledgePost: jest.fn(),
+    getPosts: genericGetPostsMock,
+    getPostsBefore: genericGetPostsMock,
+    getPostsSince: jest.fn((_channelId: string, since: number) => ({posts: {[post1.id]: {...post1, channel_id: _channelId, create_at: since + 1}, [post2.id]: {...post2, channel_id: _channelId, create_at: since + 2}}, order: [post1.id, post2.id]})),
+    getProfilesByIds: jest.fn((ids: string[]) => (ids.map((id) => ({...user1, id})))),
+    getProfilesByUsernames: jest.fn((names: string[]) => (names.map((name) => ({...user1, username: name, id: 'id' + name})))),
+    getPostThread: jest.fn((_postId: string) => ({posts: {[_postId]: {...post1, id: _postId}, [reply1.id]: {...reply1, root_id: _postId}}, order: [_postId, reply1.id]})),
+    getPostsAfter: genericGetPostsMock,
+    getPost: jest.fn((_postId: string) => ({...post2, id: _postId})),
+    getSavedPosts: genericGetPostsMock,
+    getPinnedPosts: genericGetPostsMock,
 };
 
 let mockGetIsCRTEnabled: jest.Mock;
@@ -331,5 +349,235 @@ describe('create, update & delete posts', () => {
         expect(result.error).toBeUndefined();
         expect(result.model).toBeDefined();
         expect(result.model?.metadata?.acknowledgements?.length).toBe(0);
+    });
+});
+
+describe('get posts', () => {
+    it('fetchPostsForChannel - handle database not found', async () => {
+        const result = await fetchPostsForChannel('foo', '');
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('fetchPostsForChannel - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [{
+            id: channelId,
+            team_id: teamId,
+            total_msg_count: 0,
+            creator_id: user1.id,
+        } as Channel],
+        myChannels: [{
+            id: 'id',
+            channel_id: channelId,
+            user_id: user1.id,
+            msg_count: 0,
+        } as ChannelMembership],
+        prepareRecordsOnly: false});
+
+        const result = await fetchPostsForChannel(serverUrl, channelId);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPostsForChannel - request error', async () => {
+        mockClient.getPosts.mockImplementationOnce(jest.fn(throwFunc));
+
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
+
+        const result = await fetchPostsForChannel(serverUrl, channelId);
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+    });
+
+    it('fetchPostsForUnreadChannels - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
+
+        const result = await fetchPostsForUnreadChannels(serverUrl, [channel1, {...channel1, id: 'channelid2', total_msg_count: 10}], [{...channelMember1, msg_count: 5}, {...channelMember1, channel_id: 'channelid2', msg_count: 10}], 'testid');
+        expect(result).toBeDefined();
+        expect(result.data).toBeDefined();
+        expect(result.data?.length).toBe(1); // Only returns the response for the channel with unread messages
+        expect(result.data?.[0].posts?.[0].channel_id).toBe(channel1.id);
+    });
+
+    it('fetchPosts - handle database not found', async () => {
+        const result = await fetchPosts('foo', '');
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('fetchPosts - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await fetchPosts(serverUrl, channelId);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPostsBefore - handle database not found', async () => {
+        const result = await fetchPostsBefore('foo', '', '') as {error: unknown};
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('fetchPostsBefore - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await fetchPostsBefore(serverUrl, channelId, post1.id) as {
+            posts: Post[];
+            order: string[];
+            previousPostId: string | undefined;
+        };
+        expect(result).toBeDefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPostsSince - handle database not found', async () => {
+        const result = await fetchPostsSince('foo', '', 0);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('fetchPostsSince - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await fetchPostsSince(serverUrl, channelId, 123);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPostAuthors - handle database not found', async () => {
+        const result = await fetchPostAuthors('foo', []);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('fetchPostAuthors - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
+
+        const result = await fetchPostAuthors(serverUrl, [{...post1, message: 'hi @user3'}, post2]);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.authors).toBeDefined();
+        expect(result.authors?.length).toBe(2); // 1 by id for user2, 1 by username for user3
+    });
+
+    it('fetchPostAuthors - no users to fetch', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
+
+        const result = await fetchPostAuthors(serverUrl, [post1]);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.authors).toBeDefined();
+        expect(result.authors?.length).toBe(0);
+    });
+
+    it('fetchPostThread - handle database not found', async () => {
+        const result = await fetchPostThread('foo', '');
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('fetchPostThread - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await fetchPostThread(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+        expect(result.posts?.[0].id).toBe(post1.id);
+        expect(result.posts?.[1].id).toBe(reply1.id);
+    });
+
+    it('fetchPostsAround - handle database not found', async () => {
+        const result = await fetchPostsAround('foo', '', '');
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('fetchPostsAround - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await fetchPostsAround(serverUrl, channelId, post2.id, 100, true);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchMissingChannelsFromPosts - handle database not found', async () => {
+        const result = await fetchMissingChannelsFromPosts('foo', []);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('fetchMissingChannelsFromPosts - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await fetchMissingChannelsFromPosts(serverUrl, [post1]);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.channels).toBeDefined();
+        expect(result.channels?.[0].id).toBe(post1.channel_id);
+    });
+
+    it('fetchPostById - handle database not found', async () => {
+        const result = await fetchPostById('foo', '');
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('fetchPostById - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await fetchPostById(serverUrl, post2.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.post).toBeDefined();
+        expect(result.post?.id).toBe(post2.id);
+    });
+
+    it('fetchSavedPosts - handle database not found', async () => {
+        const result = await fetchSavedPosts('foo');
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('fetchSavedPosts - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await fetchSavedPosts(serverUrl);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPinnedPosts - handle database not found', async () => {
+        const result = await fetchPinnedPosts('foo', '');
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('fetchPinnedPosts - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await fetchPinnedPosts(serverUrl, channel1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
     });
 });
