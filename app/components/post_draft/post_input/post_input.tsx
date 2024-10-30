@@ -11,7 +11,7 @@ import {
     type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
 } from 'react-native';
 
-import {updateDraftMessage} from '@actions/local/draft';
+import {parseMarkdownImages, updateDraftMarkdownImageMetadata, updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {Events, Screens} from '@constants';
 import {useExtraKeyboardContext} from '@context/extra_keyboard';
@@ -146,9 +146,14 @@ export default function PostInput({
         onFocus();
     };
 
-    const onBlur = useCallback(() => {
+    const onBlur = useCallback(async () => {
         keyboardContext?.registerTextInputBlur();
         updateDraftMessage(serverUrl, channelId, rootId, value);
+        const imageMetadata: Dictionary<PostImage | undefined> = {};
+        await parseMarkdownImages(value, imageMetadata);
+        if (Object.keys(imageMetadata).length !== 0) {
+            updateDraftMarkdownImageMetadata({serverUrl, channelId, rootId, imageMetadata});
+        }
         setIsFocused(false);
     }, [keyboardContext, serverUrl, channelId, rootId, value, setIsFocused]);
 

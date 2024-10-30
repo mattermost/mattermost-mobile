@@ -83,7 +83,7 @@ export default function SendHandler({
 
     const handlePostPriority = useCallback((priority: PostPriority) => {
         updateDraftPriority(serverUrl, channelId, rootId, priority);
-    }, [serverUrl, rootId]);
+    }, [serverUrl, channelId, rootId]);
 
     const {handleSendMessage, canSend} = useHandleSendMessage({
         value,

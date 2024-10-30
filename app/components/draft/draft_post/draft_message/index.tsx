@@ -85,6 +85,7 @@ const DraftMessage: React.FC<Props> = ({
                             value={draft.message}
                             mentionKeys={EMPTY_MENTION_KEYS}
                             theme={theme}
+                            imagesMetadata={draft.metadata?.images}
                         />
                     </View>
                 </ScrollView>

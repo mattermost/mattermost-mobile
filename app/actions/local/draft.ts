@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
+import {DeviceEventEmitter, Image} from 'react-native';
 
 import {Navigation, Screens} from '@app/constants';
 import {goToScreen} from '@app/screens/navigation';
@@ -209,5 +209,96 @@ export async function updateDraftPriority(serverUrl: string, channelId: string, 
     } catch (error) {
         logError('Failed updateDraftPriority', error);
         return {error};
+    }
+}
+
+export async function updateDraftMarkdownImageMetadata({
+    serverUrl,
+    channelId,
+    rootId,
+    imageMetadata,
+    prepareRecordsOnly = false,
+}: {
+    serverUrl: string;
+    channelId: string;
+    rootId: string;
+    imageMetadata: Dictionary<PostImage | undefined>;
+    prepareRecordsOnly?: boolean;
+}) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const draft = await getDraft(database, channelId, rootId);
+        if (!draft) {
+            const newDraft: Draft = {
+                channel_id: channelId,
+                root_id: rootId,
+                metadata: {
+                    images: imageMetadata,
+                },
+                update_at: Date.now(),
+            };
+
+            return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
+        }
+        draft.prepareUpdate((d) => {
+            d.metadata = {
+                ...d.metadata,
+                images: imageMetadata,
+            };
+            d.updateAt = Date.now();
+        });
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([draft], 'updateDraftImageMetadata');
+        }
+
+        return {draft};
+    } catch (error) {
+        logError('Failed updateDraftImages', error);
+        return {error};
+    }
+}
+
+async function getImageMetadata(url: string) {
+    let height = 0;
+    let width = 0;
+    let format;
+    try {
+        await new Promise((resolve, reject) => {
+            Image.getSize(
+                url,
+                (imageWidth, imageHeight) => {
+                    width = imageWidth;
+                    height = imageHeight;
+                    resolve(null);
+                },
+                (error) => {
+                    logError('Failed to get image size', error);
+                    reject(error);
+                },
+            );
+        });
+    } catch (error) {
+        width = 0;
+        height = 0;
+    }
+    const match = url.match(/\.(\w+)(?=\?|$)/);
+    if (match) {
+        format = match[1];
+    }
+    return {
+        height,
+        width,
+        format,
+        frame_count: 1,
+    };
+}
+
+export async function parseMarkdownImages(markdown: string, imageMetadata: Dictionary<PostImage | undefined>) {
+    let match;
+    const imageRegex = /!\[.*?\]\((https:\/\/[^\s)]+)\)/g;
+    while ((match = imageRegex.exec(markdown)) !== null) {
+        const imageUrl = match[1];
+        // eslint-disable-next-line no-await-in-loop
+        imageMetadata[imageUrl] = await getImageMetadata(imageUrl);
     }
 }
