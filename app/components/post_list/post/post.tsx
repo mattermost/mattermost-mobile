@@ -306,6 +306,7 @@ const Post = ({
                 <SystemHeader
                     createAt={post.createAt}
                     theme={theme}
+                    isEphemeral={isEphemeral}
                 />
             );
         } else {
