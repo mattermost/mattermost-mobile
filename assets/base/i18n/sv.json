@@ -938,6 +938,7 @@
   "post_body.check_for_out_of_channel_mentions.message_last": "? De kommer ha åtkomst till alla tidigare meddelanden.",
   "post_body.commentedOn": "Kommenterade {name}{apostrophe} meddelande: ",
   "post_body.deleted": "(meddelande borttaget)",
+  "post_header.visible_message": "(Endast synlig för dig)",
   "post_info.auto_responder": "Automatiskt svar",
   "post_info.bot": "Bot",
   "post_info.del": "Ta bort",
