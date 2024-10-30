@@ -16,7 +16,7 @@ import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
-import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
+import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
@@ -273,16 +273,6 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
     }
 
     return {};
-};
-
-export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const currentChannelId = await getCurrentChannelId(database);
-    return fetchPostsForChannel(serverUrl, currentChannelId);
 };
 
 export async function fetchPostsForChannel(serverUrl: string, channelId: string, fetchOnly = false) {
