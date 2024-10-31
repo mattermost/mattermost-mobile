@@ -174,7 +174,7 @@ describe('notifications', () => {
     });
 
     it('openNotification - handle not found database', async () => {
-        const result = await openNotification('foo', {payload: {channel_id: channelId}} as NotificationWithData);
+        const result = await openNotification('foo', {payload: {channel_id: channelId}} as NotificationWithData) as {error: unknown};
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
     });
@@ -182,7 +182,7 @@ describe('notifications', () => {
     it('openNotification - base case', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
 
-        const result = await openNotification(serverUrl, {payload: {...notificationData, team_id: ''}} as NotificationWithData);
+        const result = await openNotification(serverUrl, {payload: {...notificationData, team_id: ''}} as NotificationWithData) as {error?: unknown};
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
     });
