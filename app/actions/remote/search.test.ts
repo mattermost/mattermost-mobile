@@ -153,5 +153,9 @@ describe('search', () => {
         const result = await searchFiles(serverUrl, '', {terms: 'test', is_or_search: true}, channelModels[0]);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
+        expect(result.files).toBeDefined();
+        expect(result.files?.length).toBe(1);
+        expect(result.channels).toBeDefined();
+        expect(result.channels?.length).toBe(1);
     });
 });
