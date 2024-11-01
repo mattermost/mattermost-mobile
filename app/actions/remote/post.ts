@@ -331,8 +331,7 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
             promises.push(fetchPostsForChannel(serverUrl, channel.id));
         }
     }
-    const responses = await Promise.all(promises);
-    return {data: responses};
+    return Promise.all(promises);
 };
 
 export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false): Promise<PostsRequest> {
