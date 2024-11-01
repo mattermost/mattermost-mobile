@@ -1091,6 +1091,7 @@
   "skintone_selector.tooltip.title": "Wählen deinen Standard-Hautton",
   "smobile.search.recent_title": "Letzte Suchen in {teamName}",
   "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {Mitglied} other {Mitglieder}} hinzugefügt",
+  "snack.bar.code.copied": "Code in die Zwischenablage kopiert",
   "snack.bar.favorited.channel": "Dieser Kanal wurde favorisiert",
   "snack.bar.following.thread": "Unterhaltung gefolgt",
   "snack.bar.info.copied": "Info in die Zwischenablage kopiert",

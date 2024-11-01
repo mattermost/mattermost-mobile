@@ -631,7 +631,7 @@
   "mobile.file_upload.disabled2": "Nahrávání souborů z mobilu je zakázáno.",
   "mobile.file_upload.max_warning": "Nahrávání je omezeno na {count} souborů.",
   "mobile.files_paste.error_description": "Při vkládání souboru(-ů) došlo k chybě. Zkuste to prosím znovu.",
-  "mobile.files_paste.error_dismiss": "Zavřít",
+  "mobile.files_paste.error_dismiss": "Zrušit",
   "mobile.files_paste.error_title": "Vložení se nezdařilo",
   "mobile.gallery.title": "{index} z {total}",
   "mobile.integration_selector.loading_channels": "Načítání kanálů...",

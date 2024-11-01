@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Animated, Easing, type LayoutChangeEvent, type StyleProp, Text, type TextStyle, View} from 'react-native';
 
 interface Props {
     animateToNumber: number;
     fontStyle?: StyleProp<TextStyle>;
     animationDuration?: number;
-    easing?: ((input: number) => number) | undefined;
+    easing?: number;
   }
 
 const NUMBERS = Array(10).fill(null).map((_, i) => i);
@@ -24,45 +24,72 @@ const usePrevious = (value: number) => {
 
 const AnimatedNumber = ({
     animateToNumber,
-    animationDuration,
+    animationDuration = 1400,
     fontStyle,
-    easing,
+    easing = 1.2,
 }: Props) => {
-    const prevNumber = usePrevious(animateToNumber);
+    const previousNumber = usePrevious(animateToNumber);
+    const [numberHeight, setNumberHeight] = useState(0);
+
     const animateToNumberString = String(Math.abs(animateToNumber));
-    const prevNumberString = String(Math.abs(prevNumber));
 
-    const numberStringToDigitsArray = Array.from(animateToNumberString, Number);
-    const prevNumberersArr = Array.from(prevNumberString, Number);
+    const previousNumberString = useMemo(() => {
+        // comparing previousNumber and animateToNumber gets trickier when the number of digits changes and the length differs.
+        // By padding the previousNumber with 0s, or slicing the previousNumber to match the length of animateToNumber
+        // we can compare them digit by digit
+        const _previousNumberString = String(Math.abs(previousNumber)).padStart(
+            animateToNumberString.length,
+            '0',
+        );
 
-    const [numberHeight, setNumberHeight] = React.useState(0);
-    const animations = useMemo(() => numberStringToDigitsArray.map((__, index) => {
-        if (typeof prevNumberersArr[index] !== 'number') {
-            return new Animated.Value(0);
+        if (_previousNumberString.length > animateToNumberString.length) {
+            _previousNumberString.slice(_previousNumberString.length - animateToNumberString.length);
         }
 
-        const animationHeight = -1 * (numberHeight * prevNumberersArr[index]);
-        return new Animated.Value(animationHeight);
-    }), [numberStringToDigitsArray]);
+        return _previousNumberString;
+    }, [animateToNumberString, previousNumber]);
+
+    const animations = useMemo(() => {
+        const animateToNumberArray = Array.from(animateToNumberString, Number);
+
+        if (!numberHeight) {
+            return animateToNumberArray.map(() => new Animated.Value(0));
+        }
+
+        const previousNumberArray = Array.from(previousNumberString, Number);
+
+        return animateToNumberArray.map((_, index) => {
+            const useDigit = previousNumberArray[index] === animateToNumberArray[index] ? animateToNumberArray[index] : previousNumberArray[index];
+
+            return new Animated.Value(-1 * (numberHeight * useDigit));
+        });
+    }, [animateToNumberString, numberHeight, previousNumberString]);
+
+    useEffect(() => {
+        if (!numberHeight) {
+            return;
+        }
+
+        const animateToNumberArray = Array.from(animateToNumberString, Number);
+        animations.forEach((animation, index) => {
+            Animated.timing(animation, {
+                toValue: -1 * (numberHeight * animateToNumberArray[index]),
+                duration: animationDuration,
+                useNativeDriver: true,
+                easing: Easing.elastic(easing),
+            }).start();
+        });
+    }, [
+        animateToNumberString,
+        animationDuration,
+        animations,
+        easing,
+        numberHeight,
+    ]);
 
     const setButtonLayout = useCallback((e: LayoutChangeEvent) => {
         setNumberHeight(e.nativeEvent.layout.height);
     }, []);
-
-    React.useEffect(() => {
-        animations.forEach((animation, index) => {
-            Animated.timing(animation, {
-                toValue: -1 * (numberHeight * numberStringToDigitsArray[index]),
-                duration: animationDuration || 1400,
-                useNativeDriver: true,
-                easing: easing || Easing.elastic(1.2),
-            }).start();
-        });
-    }, [animateToNumber, animationDuration, fontStyle, numberHeight]);
-
-    const getTranslateY = (index: number) => {
-        return animations[index];
-    };
 
     return (
         <>
@@ -74,29 +101,27 @@ const AnimatedNumber = ({
                     {animateToNumber < 0 && (
                         <Text style={[fontStyle, {height: numberHeight}]}>{'-'}</Text>
                     )}
-                    {numberStringToDigitsArray.map((n, index) => {
-                        const useIndex = numberStringToDigitsArray.length - 1 - index;
+                    {Array.from(animateToNumberString, Number).map((_, index) => {
+                        const useIndex = animateToNumberString.length - 1 - index;
                         return (
                             <View
-                                key={`${index.toString()}`}
+                                key={`${animateToNumberString.length - index}`}
                                 style={{height: numberHeight, overflow: 'hidden'}}
                             >
                                 <Animated.View
-                                    style={[
-                                        {
-                                            transform: [
-                                                {
-                                                    translateY: getTranslateY(index),
-                                                },
-                                            ],
-                                        },
-                                    ]}
+                                    style={{
+                                        transform: [
+                                            {
+                                                translateY: animations[index],
+                                            },
+                                        ],
+                                    }}
                                     testID={`animated-number-view-${useIndex}`}
                                 >
                                     {NUMBERS.map((number, i) => (
                                         <View
+                                            key={`${NUMBERS.length - i}`}
                                             style={{flexDirection: 'row'}}
-                                            key={`${i.toString()}`}
                                         >
                                             <Text
                                                 style={[fontStyle, {height: numberHeight}]}
