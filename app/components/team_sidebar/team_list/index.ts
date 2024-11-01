@@ -16,7 +16,8 @@ import TeamList from './team_list';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 
-interface TeamWithLowerName extends MyTeamModel {
+interface TeamWithLowerName {
+    myTeam: MyTeamModel;
     lowerName?: string;
 }
 
@@ -42,7 +43,7 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
                 const extraTeams = teams.
                     filter((t) => !sortedTeamIds.has(t.id) && membershipMap.has(t.id)).
                     map((t) => ({
-                        ...membershipMap.get(t.id)!,
+                        myTeam: membershipMap.get(t.id)!,
                         lowerName: t.displayName.toLocaleLowerCase(),
                     } as TeamWithLowerName)).
                     sort((a, b) => a.lowerName!.localeCompare(b.lowerName!)).
@@ -57,13 +58,13 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
             return teams.
                 filter((t) => membershipMap.has(t.id)).
                 map((t) => ({
-                    ...membershipMap.get(t.id)!,
+                    myTeam: membershipMap.get(t.id)!,
                     lowerName: t.displayName.toLocaleLowerCase(),
                 } as TeamWithLowerName)).
                 sort((a, b) => a.lowerName!.localeCompare(b.lowerName!)).
                 map((t) => {
                     delete t.lowerName;
-                    return t;
+                    return t.myTeam;
                 });
         }),
     );
