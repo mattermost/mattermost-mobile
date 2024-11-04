@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment-timezone';
 import React, {useCallback, useEffect, useMemo, useReducer} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
@@ -244,27 +243,6 @@ const CustomStatus = ({
             return;
         }
 
-        const reachable = (await NetInfo.fetch()).isInternetReachable;
-        if (!reachable) {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.custom_status.network_error.title',
-                    defaultMessage: 'Status couldn’t be updated',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.custom_status.network_error.text',
-                    defaultMessage: 'Check your network connection and try again.',
-                }),
-            );
-            if (isTablet) {
-                DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
-            } else {
-                dismissModal();
-            }
-            DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
-            return;
-        }
-
         if (isStatusSet) {
             let isStatusSame =
                 storedStatus?.emoji === newStatus.emoji &&
@@ -288,6 +266,11 @@ const CustomStatus = ({
                 }
                 const {error} = await updateCustomStatus(serverUrl, status);
                 if (error) {
+                    if (isTablet) {
+                        DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
+                    } else {
+                        dismissModal();
+                    }
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
                     return;
                 }
