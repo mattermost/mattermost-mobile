@@ -67,7 +67,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         baseText: {
             color: theme.centerChannelColor,
-            ...typography('Body', 100, 'Regular'),
+            ...typography('Body', 200, 'Regular'),
         },
         infoText: {
             color: theme.centerChannelColor,

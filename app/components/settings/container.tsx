@@ -8,7 +8,7 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-const edges: Edge[] = ['left', 'right'];
+const edges: Edge[] = ['left', 'right', 'bottom'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -18,7 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         contentContainerStyle: {
             marginTop: 8,
-            flex: 1,
+            flexGrow: 1,
         },
     };
 });
