@@ -524,6 +524,7 @@
   "mobile.calls_more": "Більше",
   "mobile.calls_mute": "Вимкнути звук",
   "mobile.calls_mute_others": "Вимкнути звук у інших",
+  "mobile.calls_mute_participant": "Вимкнути звук в учасника",
   "mobile.calls_name_is_talking_postfix": "розмовляє...",
   "mobile.calls_noone_talking": "Ніхто не розмовляє",
   "mobile.calls_not_available_msg": "Щоб увімкнути цю функцію, зверніться до системного адміністратора.",
