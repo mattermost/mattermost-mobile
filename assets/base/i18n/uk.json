@@ -537,6 +537,7 @@
   "mobile.calls_participant_limit_title_GA": "Цей дзвінок вичерпав свій ліміт",
   "mobile.calls_participant_rec": "Ведучий розпочав запис цієї зустрічі. Залишаючись на зустрічі, ви даєте згоду на запис.",
   "mobile.calls_participant_rec_title": "Запис триває",
+  "mobile.calls_participant_transcription": "Ведучий розпочав запис та розшифровку цієї зустрічі. Залишаючись на зустрічі, ви даєте згоду на те, щоб вас записували і розшифровували.",
   "mobile.calls_participants": "Учасники",
   "mobile.calls_people": "Люди",
   "mobile.calls_phone": "Телефон",
