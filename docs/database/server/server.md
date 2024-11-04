@@ -166,7 +166,7 @@ pending_post_id string INDEX
 previous_post_id string
 props string
 root_id string
-type string
+type string INDEX
 update_at number
 user_id string INDEX  FK >- User.id
 

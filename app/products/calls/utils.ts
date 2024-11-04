@@ -17,7 +17,7 @@ import type {
     CallsTheme,
     CallsVersion,
 } from '@calls/types/calls';
-import type {CallsConfig, Caption} from '@mattermost/calls/lib/types';
+import type {CallsConfig, Caption, CallPostProps} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
@@ -246,3 +246,21 @@ export const getTranscriptionUri = (serverUrl: string, postProps?: Record<string
         selected: {type: SelectedTrackType.INDEX, value: 0},
     };
 };
+
+function isValidObject(v: any) {
+    return typeof v === 'object' && !Array.isArray(v) && v !== null;
+}
+
+export function getCallPropsFromPost(post: PostModel | Post): CallPostProps {
+    return {
+        title: typeof post.props?.title === 'string' ? post.props.title : '',
+        start_at: typeof post.props?.start_at === 'number' ? post.props.start_at : 0,
+        end_at: typeof post.props?.end_at === 'number' ? post.props.end_at : 0,
+        recordings: isValidObject(post.props?.recordings) ? post.props.recordings : {},
+        transcriptions: isValidObject(post.props?.transcriptions) ? post.props.transcriptions : {},
+        participants: Array.isArray(post.props?.participants) ? post.props.participants : [],
+
+        // DEPRECATED
+        recording_files: Array.isArray(post.props?.recording_files) ? post.props.recording_files : [],
+    };
+}

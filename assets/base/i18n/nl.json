@@ -1091,6 +1091,7 @@
   "skintone_selector.tooltip.title": "Kies jouw standaard huidskleur",
   "smobile.search.recent_title": "Recente zoekopdrachten in {teamName}",
   "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {lid} other {leden}} toegevoegd",
+  "snack.bar.code.copied": "Code gekopieerd naar klembord",
   "snack.bar.favorited.channel": "Dit kanaal was gemarkeerd als favoriet",
   "snack.bar.following.thread": "Gevolgd draadje",
   "snack.bar.info.copied": "Info gekopieerd naar klembord",
