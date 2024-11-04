@@ -938,6 +938,7 @@
   "post_body.check_for_out_of_channel_mentions.message_last": "? 他们将可以查看所有消息历史。",
   "post_body.commentedOn": "在{name}{apostrophe}的消息评论： ",
   "post_body.deleted": "(消息被删除)",
+  "post_header.visible_message": "(仅对您可见)",
   "post_info.auto_responder": "自动回复",
   "post_info.bot": "Bot",
   "post_info.del": "删除",

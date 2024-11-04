@@ -938,6 +938,7 @@
   "post_body.check_for_out_of_channel_mentions.message_last": "? 彼らは全ての会話履歴にアクセスできます。",
   "post_body.commentedOn": "{name} {apostrophe} のメッセージへのコメント: ",
   "post_body.deleted": "(メッセージは削除されています)",
+  "post_header.visible_message": "(あなただけが見ることができます)",
   "post_info.auto_responder": "自動返信",
   "post_info.bot": "Bot",
   "post_info.del": "削除",
