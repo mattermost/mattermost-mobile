@@ -998,7 +998,7 @@
   "screens.channel_bookmark_add": "Додати в закладки",
   "screens.channel_bookmark_edit": "Редагувати закладку",
   "screens.channel_edit": "Редагувати Канал",
-  "screens.channel_edit_header": "Редагувати заголовок каналу",
+  "screens.channel_edit_header": "Змінити заголовок каналу",
   "screens.channel_info": "Інформація про Канал",
   "screens.channel_info.dm": "Інформація про особисте повідомлення",
   "screens.channel_info.gm": "Інформація про групове повідомлення",
