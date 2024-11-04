@@ -24,11 +24,11 @@ import {processPostsFetched} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
 
-const fetchNotificationData = async (serverUrl: string, notification: NotificationWithData, skipEvents = false) => {
+export const fetchNotificationData = async (serverUrl: string, notification: NotificationWithData, skipEvents = false) => {
     const channelId = notification.payload?.channel_id;
 
     if (!channelId) {
-        return {error: 'No chanel Id was specified'};
+        return {error: 'No channel Id was specified'};
     }
 
     try {
@@ -103,7 +103,7 @@ export const backgroundNotification = async (serverUrl: string, notification: No
         const channelId = notification.payload?.channel_id;
         let teamId = notification.payload?.team_id;
         if (!channelId) {
-            throw new Error('No chanel Id was specified');
+            throw new Error('No channel Id was specified');
         }
 
         if (!teamId) {
@@ -173,9 +173,12 @@ export const backgroundNotification = async (serverUrl: string, notification: No
             if (models.length) {
                 await operator.batchRecords(models, 'backgroundNotification');
             }
+            return {models};
         }
+        return {models: []};
     } catch (error) {
         logWarning('backgroundNotification', error);
+        return {error};
     }
 };
 
