@@ -282,41 +282,41 @@ export const fetchThreads = async (
 
 export const syncThreadsIfNeeded = async (serverUrl: string, isCRTEnabled: boolean, teams?: Team[], fetchOnly = false) => {
     try {
-        if (isCRTEnabled) {
-            const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const promises = [];
-            const models: Model[][] = [];
-
-            // this is to keep backwards compatibility with servers that send the
-            // threads for DM / GM regardless for every team
-            const version = await getConfigValue(database, 'Version');
-            const hasThreadExclusions = isMinimumServerVersion(version, 10, 2, 0);
-
-            if (teams?.length) {
-                for (const team of teams) {
-                    promises.push(syncTeamThreads(serverUrl, team.id, true, true));
-                }
-            }
-
-            if (promises.length) {
-                const results = await Promise.all(promises);
-                for (const r of results) {
-                    if (r.models?.length) {
-                        models.push(r.models);
-                    }
-                }
-            }
-
-            const flat = models.flat();
-            if (!fetchOnly && flat.length) {
-                const uniqueArray = hasThreadExclusions ? flat : removeDuplicatesModels(flat);
-                await operator.batchRecords(uniqueArray, 'syncThreadsIfNeeded');
-            }
-
-            return {models: flat};
+        if (!isCRTEnabled) {
+            return {models: []};
         }
 
-        return {models: []};
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const promises = [];
+        const models: Model[][] = [];
+
+        // this is to keep backwards compatibility with servers that send the
+        // threads for DM / GM regardless for every team
+        const version = await getConfigValue(database, 'Version');
+        const hasThreadExclusions = isMinimumServerVersion(version, 10, 2, 0);
+
+        if (teams?.length) {
+            for (const team of teams) {
+                promises.push(syncTeamThreads(serverUrl, team.id, true, true));
+            }
+        }
+
+        if (promises.length) {
+            const results = await Promise.all(promises);
+            for (const r of results) {
+                if (r.models?.length) {
+                    models.push(r.models);
+                }
+            }
+        }
+
+        const flat = models.flat();
+        if (!fetchOnly && flat.length) {
+            const uniqueArray = hasThreadExclusions ? flat : removeDuplicatesModels(flat);
+            await operator.batchRecords(uniqueArray, 'syncThreadsIfNeeded');
+        }
+
+        return {models: flat};
     } catch (error) {
         logError('syncThreadsIfNeeded: Error', error);
         return {error, models: undefined};

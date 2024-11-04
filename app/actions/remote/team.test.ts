@@ -287,7 +287,7 @@ describe('teams', () => {
         const result = await fetchTeamsChannelsThreadsAndUnreadPosts(
             serverUrl, 0,
             [team], true, true);
-        expect(result).toBeDefined();
+        expect(result.models).toBeDefined();
     });
 
     it('fetchTeamByName - handle not found database', async () => {

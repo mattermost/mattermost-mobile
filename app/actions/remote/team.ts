@@ -324,6 +324,7 @@ export const fetchTeamsChannelsThreadsAndUnreadPosts = async (
 ) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const result: Model[] = [];
 
         // process up to 15 teams at a time
         const chunks = chunk(teams, 15);
@@ -385,9 +386,13 @@ export const fetchTeamsChannelsThreadsAndUnreadPosts = async (
             if (!fetchOnly && models.length) {
                 await operator.batchRecords(removeDuplicatesModels(models), 'fetchTeamsChannelsThreadsAndUnreadPosts');
             }
+
+            if (models.length) {
+                result.push(...models);
+            }
         }
 
-        return {error: undefined};
+        return {error: undefined, models: result};
     } catch (error) {
         logDebug('error on fetchTeamsChannelsThreadsAndUnreadPosts', getFullErrorMessage(error));
         return {error};

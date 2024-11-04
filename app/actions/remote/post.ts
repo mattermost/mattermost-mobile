@@ -4,6 +4,8 @@
 
 /* eslint-disable max-lines */
 
+import {chunk} from 'lodash';
+
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
@@ -336,14 +338,28 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
         membersMap.set(member.channel_id, member);
     }
 
-    const promises = [];
-    for (const channel of channels) {
+    const unreadChannelIds = channels.reduce<string[]>((result, channel) => {
         const member = membersMap.get(channel.id);
         if (member && !channel.delete_at && (channel.total_msg_count - member.msg_count) > 0 && channel.id !== excludeChannelId) {
-            promises.push(fetchPostsForChannel(serverUrl, channel.id, fetchOnly));
+            result.push(channel.id);
         }
+        return result;
+    }, []);
+
+    const postsForChannel: PostsForChannel[] = [];
+
+    // process 10 unread channels at a time
+    const chunks = chunk(unreadChannelIds, 10);
+    for await (const channelIds of chunks) {
+        const promises = [];
+        for (const channelId of channelIds) {
+            promises.push(fetchPostsForChannel(serverUrl, channelId, fetchOnly));
+        }
+
+        const results = await Promise.all(promises);
+        postsForChannel.push(...results);
     }
-    return Promise.all(promises);
+    return postsForChannel;
 };
 
 export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false): Promise<PostsRequest> {

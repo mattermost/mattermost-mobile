@@ -379,7 +379,10 @@ async function restDeferredAppEntryActions(
         fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
     }
 
-    // defer fetching posts for unread channels on initial team
+    updateAllUsersSince(serverUrl, since);
+    updateCanJoinTeams(serverUrl);
+
+    // defer fetch channels and unread posts for other teams
     setTimeout(async () => {
         if (chData?.channels?.length && chData.memberships?.length && initialTeamId) {
             if (isCRTEnabled && initialTeamId) {
@@ -387,13 +390,7 @@ async function restDeferredAppEntryActions(
             }
             fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
         }
-    });
 
-    updateAllUsersSince(serverUrl, since);
-    updateCanJoinTeams(serverUrl);
-
-    // defer fetch channels and unread posts for other teams
-    setTimeout(async () => {
         if (teamData.teams?.length && teamData.memberships?.length) {
             const teamsOrder = preferences?.find((p) => p.category === Preferences.CATEGORIES.TEAMS_ORDER);
             const sortedTeamIds = new Set(teamsOrder?.value.split(','));
