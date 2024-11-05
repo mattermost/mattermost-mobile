@@ -66,7 +66,7 @@ export default function Badge({
         ...restStyle
     } = (StyleSheet.flatten(style) || {}) as TextStyle;
 
-    const borderColor = borderColorProp || styleBorderColor || theme.mentionBg;
+    const borderColor = borderColorProp || styleBorderColor || theme.centerChannelBg;
     const textColor = color || theme.mentionColor;
     let lineHeight = Platform.select({android: 21, ios: 16.5});
     let fontSize = 12;
