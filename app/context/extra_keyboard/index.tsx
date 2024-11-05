@@ -6,7 +6,7 @@ import {Keyboard, Platform} from 'react-native';
 import Animated, {KeyboardState, useAnimatedKeyboard, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {preventDoubleTap} from '@app/utils/tap';
+import {preventDoubleTap} from '@utils/tap';
 
 export type ExtraKeyboardContextProps = {
     isExtraKeyboardVisible: boolean;
