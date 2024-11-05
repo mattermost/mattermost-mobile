@@ -61,12 +61,10 @@ export default function Badge({
     }
 
     const {
-
-        // @ts-expect-error: backgroundColor & borderColor definitely exist
-        backgroundColor = rest.backgroundColor || theme.mentionBg, borderColor: styleBorderColor,
-
-        ...restStyle} =
-    StyleSheet.flatten(style) || {};
+        backgroundColor = rest.backgroundColor || theme.mentionBg,
+        borderColor: styleBorderColor,
+        ...restStyle
+    } = (StyleSheet.flatten(style) || {}) as TextStyle;
 
     const borderColor = borderColorProp || styleBorderColor || theme.centerChannelBg;
     const textColor = color || theme.mentionColor;
