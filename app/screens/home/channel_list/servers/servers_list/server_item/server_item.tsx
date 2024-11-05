@@ -59,7 +59,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     badge: {
         left: 18,
         top: -5,
-        borderWidth: 1,
     },
     button: {
         borderRadius: 8,
