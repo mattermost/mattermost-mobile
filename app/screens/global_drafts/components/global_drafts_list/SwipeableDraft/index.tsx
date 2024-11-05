@@ -88,7 +88,7 @@ const SwipeableDraft: React.FC<Props> = ({
                         style={{}}
                     />
                     <Text style={styles.deleteText}>{intl.formatMessage({
-                        id: 'drafts.delete',
+                        id: 'draft.options.delete.confirm',
                         defaultMessage: 'Delete',
                     })}</Text>
                 </Animated.View>
