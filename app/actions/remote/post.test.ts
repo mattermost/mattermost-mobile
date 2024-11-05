@@ -3,10 +3,10 @@
 
 /* eslint-disable max-lines */
 
-import {ActionType, Post} from '@app/constants';
-import PostModel from '@app/database/models/server/post';
+import {ActionType, Post} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
 import TestHelper from '@test/test_helper';
 

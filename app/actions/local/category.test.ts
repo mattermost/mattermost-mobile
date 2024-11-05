@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DMS_CATEGORY} from '@app/constants/categories';
-import {setCurrentUserId} from '@app/queries/servers/system';
+import {DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
+import {setCurrentUserId} from '@queries/servers/system';
 
 import {
     deleteCategory,

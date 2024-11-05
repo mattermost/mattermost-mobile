@@ -5,12 +5,12 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, View} from 'react-native';
 
-import {useIsTablet} from '@app/hooks/device';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
+import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {fetchOpenGraph} from '@utils/opengraph';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
