@@ -123,6 +123,14 @@ RCT_EXPORT_METHOD(saveFile:(NSString *)filePath
     [self saveFile:filePath resolve:resolve reject:reject];
 }
 
+RCT_REMAP_METHOD(setSoftKeyboardToAdjustResize, setAdjustResize) {
+    [self setSoftKeyboardToAdjustResize];
+}
+
+RCT_REMAP_METHOD(setSoftKeyboardToAdjustNothing, setAdjustNothing) {
+    [self setSoftKeyboardToAdjustNothing];
+}
+
 // Don't compile this code when we build for the old architecture.
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<TurboModule>)getTurboModule:
@@ -214,6 +222,14 @@ RCT_EXPORT_METHOD(saveFile:(NSString *)filePath
 
 - (void)saveFile:(NSString *)filePath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     resolve(@"");
+}
+
+-(void)setSoftKeyboardToAdjustResize {
+    // Do nothing as it does not apply to iOS
+}
+
+-(void)setSoftKeyboardToAdjustNothing {
+    // Do nothing as it does not apply to iOS
 }
 
 #pragma helpers

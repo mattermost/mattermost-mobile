@@ -2,6 +2,8 @@ package com.mattermost.rnutils
 
 import android.app.Activity
 import android.net.Uri
+import android.view.WindowManager
+import androidx.core.view.OnApplyWindowInsetsListener
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -13,6 +15,8 @@ import com.mattermost.rnutils.helpers.SaveDataTask
 import com.mattermost.rnutils.helpers.SplitView
 
 class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
+    private var customInsetsListener: OnApplyWindowInsetsListener? = null
+
     companion object {
         const val NAME = "RNUtils"
 
@@ -120,5 +124,21 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
 
     fun removeServerNotifications(serverUrl: String?) {
         serverUrl?.let { Notifications.removeServerNotifications(it) }
+    }
+
+    fun setSoftKeyboardToAdjustNothing() {
+        val currentActivity: Activity = reactContext.currentActivity ?: return
+
+        currentActivity.runOnUiThread {
+            currentActivity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        }
+    }
+
+    fun setSoftKeyboardToAdjustResize() {
+        val currentActivity: Activity = reactContext.currentActivity ?: return
+
+        currentActivity.runOnUiThread {
+            currentActivity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        }
     }
 }

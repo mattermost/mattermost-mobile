@@ -94,27 +94,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - mattermost-keyboard-tracker (0.0.0):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.01.01.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Codegen
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-rendererdebug
-    - React-utils
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - mattermost-react-native-turbo-log (0.4.0):
     - CocoaLumberjack (~> 3.8.5)
     - DoubleConversion
@@ -1669,7 +1648,6 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - "mattermost-hardware-keyboard (from `../node_modules/@mattermost/hardware-keyboard`)"
-  - "mattermost-keyboard-tracker (from `../node_modules/@mattermost/keyboard-tracker`)"
   - "mattermost-react-native-turbo-log (from `../node_modules/@mattermost/react-native-turbo-log`)"
   - "mattermost-rnutils (from `../node_modules/@mattermost/rnutils`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1812,8 +1790,6 @@ EXTERNAL SOURCES:
     :tag: hermes-2024-06-28-RNv0.74.3-7bda0c267e76d11b68a585f84cfdd65000babf85
   mattermost-hardware-keyboard:
     :path: "../node_modules/@mattermost/hardware-keyboard"
-  mattermost-keyboard-tracker:
-    :path: "../node_modules/@mattermost/keyboard-tracker"
   mattermost-react-native-turbo-log:
     :path: "../node_modules/@mattermost/react-native-turbo-log"
   mattermost-rnutils:
@@ -2008,7 +1984,6 @@ SPEC CHECKSUMS:
   JitsiWebRTC: d0ae5fd6a81e771bfd82c2ee6c6bb542ebd65ee8
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
   mattermost-hardware-keyboard: b916a168bb3add779bb226b3a62d6ac5ec225a79
-  mattermost-keyboard-tracker: b48752a97e731fdae5e8259a4ea0e731e1a05094
   mattermost-react-native-turbo-log: c446c7e8a39c131d6bafa6ae6f830c735030ed5e
   mattermost-rnutils: 01504fb26beb75594f4c6e2150668b27783112f5
   RCT-Folly: 02617c592a293bd6d418e0a88ff4ee1f88329b47

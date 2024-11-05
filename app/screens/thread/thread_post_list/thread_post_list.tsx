@@ -3,7 +3,6 @@
 
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
-import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchPostThread} from '@actions/remote/post';
 import {markThreadAsRead} from '@actions/remote/thread';
@@ -13,7 +12,7 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
-import {useAppState, useIsTablet} from '@hooks/device';
+import {useAppState} from '@hooks/device';
 import {useFetchingThreadState} from '@hooks/fetching_thread';
 import {isMinimumServerVersion} from '@utils/helpers';
 
@@ -31,8 +30,6 @@ type Props = {
     version?: string;
 }
 
-const edges: Edge[] = ['bottom'];
-
 const styles = StyleSheet.create({
     container: {marginTop: 10},
     flex: {flex: 1},
@@ -44,7 +41,6 @@ const ThreadPostList = ({
     nativeID, posts, rootPost, teamId, thread, version,
 }: Props) => {
     const appState = useAppState();
-    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isFetchingThread = useFetchingThreadState(rootPost.id);
@@ -87,7 +83,7 @@ const ThreadPostList = ({
             oldPostsCount.current = posts.length;
             markThreadAsRead(serverUrl, teamId, rootPost.id, false);
         }
-    }, [isCRTEnabled, posts, rootPost, serverUrl, teamId, thread, appState === 'active']);
+    }, [isCRTEnabled, posts, rootPost, serverUrl, teamId, thread, appState]);
 
     const lastViewedAt = isCRTEnabled ? (thread?.viewedAt ?? 0) : channelLastViewedAt;
 
@@ -116,18 +112,7 @@ const ThreadPostList = ({
         />
     );
 
-    if (isTablet) {
-        return postList;
-    }
-
-    return (
-        <SafeAreaView
-            edges={edges}
-            style={styles.flex}
-        >
-            {postList}
-        </SafeAreaView>
-    );
+    return postList;
 };
 
 export default ThreadPostList;
