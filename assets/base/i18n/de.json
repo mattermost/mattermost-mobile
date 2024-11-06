@@ -1143,8 +1143,6 @@
   "terms_of_service.title": "Nutzungsbedingungen",
   "thread.header.thread": "Unterhaltung",
   "thread.header.thread_in": "in {channelName}",
-  "thread.loadingReplies": "Lade Antworten...",
-  "thread.noReplies": "Noch keine Antworten",
   "thread.options.title": "Unterhaltungsaktionen",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {Antwort} other {Antworten}}",
   "threads": "Unterhaltungen",

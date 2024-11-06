@@ -1142,8 +1142,6 @@
   "terms_of_service.title": "Gebruiksvoorwaarden",
   "thread.header.thread": "Draadje",
   "thread.header.thread_in": "in {channelName}",
-  "thread.loadingReplies": "Reacties laden...",
-  "thread.noReplies": "Nog geen antwoorden",
   "thread.options.title": "Acties voor draadjes",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {antwoord} other {antwoorden}}",
   "threads": "Draadjes",

@@ -1142,8 +1142,6 @@
   "terms_of_service.title": "服務條款",
   "thread.header.thread": "討論串",
   "thread.header.thread_in": "在 {channelName} 中",
-  "thread.loadingReplies": "正在載入回覆…",
-  "thread.noReplies": "尚無回覆",
   "thread.options.title": "討論串動作",
   "thread.repliesCount": "{repliesCount, number}則回覆",
   "threads": "討論串",

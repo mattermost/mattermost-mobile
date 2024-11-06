@@ -1143,8 +1143,6 @@
   "terms_of_service.title": "Умови надання послуг",
   "thread.header.thread": "Обговорення",
   "thread.header.thread_in": "в {channelName}",
-  "thread.loadingReplies": "Завантаження відповідей...",
-  "thread.noReplies": "Ще немає відповідей",
   "thread.options.title": "Дії з обговореннями",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {відповідь} few {відповіді} other {відповідей}}",
   "threads": "Обговорення",

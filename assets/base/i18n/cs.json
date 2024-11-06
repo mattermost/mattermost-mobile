@@ -1143,8 +1143,6 @@
   "terms_of_service.title": "Podmínky Služby",
   "thread.header.thread": "Vlákno",
   "thread.header.thread_in": "v {channelName}",
-  "thread.loadingReplies": "Načítám odpovědi...",
-  "thread.noReplies": "Zatím žádné odpovědi",
   "thread.options.title": "Akce Vlákna",
   "thread.repliesCount": "{repliesCount, number}{repliesCount, plural, one {odpověď} other {odpovědí}}",
   "threads": "Vlákna",

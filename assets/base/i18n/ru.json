@@ -1143,8 +1143,6 @@
   "terms_of_service.title": "Условия использования",
   "thread.header.thread": "Обсуждение",
   "thread.header.thread_in": "в {channelName}",
-  "thread.loadingReplies": "Загрузка ответов...",
-  "thread.noReplies": "Пока нет ответов",
   "thread.options.title": "Действия обсуждений",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {ответ} few{ответа} other {ответов}}",
   "threads": "Обсуждения",
