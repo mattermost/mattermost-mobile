@@ -8,6 +8,7 @@ import {View} from 'react-native';
 import {sendTestNotification} from '@actions/remote/notifications';
 import SectionNotice from '@components/section_notice';
 import {useServerUrl} from '@context/server';
+import {useExternalLink} from '@hooks/use_external_link';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {tryOpenURL} from '@utils/url';
@@ -16,13 +17,12 @@ const TIME_TO_IDLE = 3000;
 
 type Props = {
     serverVersion: string;
+    userId: string;
+isCloud: boolean;
+telemetryId: string;
 }
 
 type ButtonState = 'idle'|'sending'|'sent'|'error';
-
-function onGoToNotificationDocumentation() {
-    tryOpenURL('https://docs.mattermost.com/collaborate/mention-people.html');
-}
 
 const styles = {
     wrapper: {
@@ -34,12 +34,25 @@ const styles = {
 
 const SendTestNotificationNotice = ({
     serverVersion,
+    userId,
+    isCloud,
+    telemetryId,
 }: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [buttonState, setButtonState] = useState<ButtonState>('idle');
     const isSending = useRef(false);
     const timeout = useRef<NodeJS.Timeout>();
+
+    const [href] = useExternalLink({
+        userId,
+        isCloud,
+        telemetryId,
+    }, 'https://mattermost.com/pl/troubleshoot-notifications');
+
+    const onGoToNotificationDocumentation = useCallback(() => {
+        tryOpenURL(href);
+    }, [href]);
 
     const onSendTestNotificationClick = useCallback(async () => {
         if (isSending.current) {
@@ -59,7 +72,7 @@ const SendTestNotificationNotice = ({
             isSending.current = false;
             setButtonState('idle');
         }, TIME_TO_IDLE);
-    }, []);
+    }, [serverUrl]);
 
     useEffect(() => {
         return () => {
@@ -101,9 +114,9 @@ const SendTestNotificationNotice = ({
             text: intl.formatMessage({id: 'user_settings.notifications.test_notification.go_to_docs', defaultMessage: 'Troubleshooting docs'}),
             trailingIcon: 'open-in-new',
         };
-    }, [intl]);
+    }, [intl, onGoToNotificationDocumentation]);
 
-    if (!isMinimumServerVersion(serverVersion, 10, 0)) {
+    if (!isMinimumServerVersion(serverVersion, 10, 3)) {
         return null;
     }
 

@@ -188,6 +188,7 @@ interface ClientConfig {
     SiteURL: string;
     SupportEmail: string;
     TeammateNameDisplay: string;
+    TelemetryId: string;
     TermsOfServiceLink: string;
     TimeBetweenUserTypingUpdatesMilliseconds: string;
     Version: string;

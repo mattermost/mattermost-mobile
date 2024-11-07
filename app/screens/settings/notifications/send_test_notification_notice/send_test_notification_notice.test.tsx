@@ -14,7 +14,7 @@ import SendTestNotificationNotice from './send_test_notification_notice';
 import type Database from '@nozbe/watermelondb/Database';
 
 const version = '10.3.0';
-const oldVersion = '9.2.1';
+const oldVersion = '10.2.0';
 
 jest.mock('@utils/url', () => {
     return {
@@ -53,6 +53,15 @@ const allTimerExceptSetTimeout = [
     'clearTimeout' as const,
 ];
 
+function getBaseProps() {
+    return {
+        serverVersion: version,
+        telemetryId: 'some id',
+        userId: 'some user id',
+        isCloud: true,
+    };
+}
+
 describe('SendTestNotificationNotice', () => {
     let database: Database;
 
@@ -62,24 +71,26 @@ describe('SendTestNotificationNotice', () => {
     });
 
     it('should match snapshot', () => {
-        const wrapper = renderWithEverything(<SendTestNotificationNotice serverVersion={version}/>, {database});
+        const wrapper = renderWithEverything(<SendTestNotificationNotice {...getBaseProps()}/>, {database});
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     it('should show nothing on older versions', () => {
-        const wrapper = renderWithEverything(<SendTestNotificationNotice serverVersion={oldVersion}/>, {database});
+        const props = getBaseProps();
+        props.serverVersion = oldVersion;
+        const wrapper = renderWithEverything(<SendTestNotificationNotice {...props}/>, {database});
         expect(wrapper.toJSON()).toBeNull();
     });
 
     it('should call send notification action when the send notification button is clicked', () => {
-        const wrapper = renderWithEverything(<SendTestNotificationNotice serverVersion={version}/>, {database});
+        const wrapper = renderWithEverything(<SendTestNotificationNotice {...getBaseProps()}/>, {database});
         fireEvent.press(wrapper.getByText('Troubleshooting docs'));
         expect(tryOpenURL).toHaveBeenCalledWith('https://docs.mattermost.com/collaborate/mention-people.html');
     });
 
     it('should call send notification action when the send notification button is clicked, and all states go through correctly', async () => {
         jest.useFakeTimers({doNotFake: allTimerExceptSetTimeout});
-        const wrapper = renderWithEverything(<SendTestNotificationNotice serverVersion={version}/>, {database});
+        const wrapper = renderWithEverything(<SendTestNotificationNotice {...getBaseProps()}/>, {database});
 
         let resolve: ((value: any) => void) | undefined;
         mockedSendTestNotification.mockReturnValueOnce(new Promise((r) => {
@@ -102,7 +113,7 @@ describe('SendTestNotificationNotice', () => {
 
     it('should call send notification action when the send notification button is clicked, and when it fails, all states go through correctly', async () => {
         jest.useFakeTimers({doNotFake: allTimerExceptSetTimeout});
-        const wrapper = renderWithEverything(<SendTestNotificationNotice serverVersion={version}/>, {database});
+        const wrapper = renderWithEverything(<SendTestNotificationNotice {...getBaseProps()}/>, {database});
 
         let resolve: ((value: any) => void) | undefined;
         mockedSendTestNotification.mockReturnValueOnce(new Promise((r) => {
