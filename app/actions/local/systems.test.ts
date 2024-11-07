@@ -3,8 +3,8 @@
 
 import Database from '@nozbe/watermelondb/Database';
 
-import {ActionType} from '@app/constants';
-import {SYSTEM_IDENTIFIERS} from '@app/constants/database';
+import {ActionType} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 

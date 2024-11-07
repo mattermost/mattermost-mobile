@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ActionType, Post} from '@app/constants';
-import {COMBINED_USER_ACTIVITY} from '@app/utils/post_list';
+import {ActionType, Post} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
+import {COMBINED_USER_ACTIVITY} from '@utils/post_list';
 
 import {
     sendAddToChannelEphemeralPost,

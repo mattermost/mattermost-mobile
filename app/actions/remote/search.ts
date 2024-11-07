@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {getPosts} from '@actions/local/post';
-import {General} from '@app/constants';
+import {General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';

@@ -4,7 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import FormattedText from '@app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {CHANNEL, THREAD} from '@constants/screens';
