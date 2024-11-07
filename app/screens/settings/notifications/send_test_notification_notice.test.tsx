@@ -4,10 +4,10 @@
 import React from 'react';
 
 import {sendTestNotification} from '@actions/remote/notifications';
-import {logError} from '@app/utils/log';
-import {tryOpenURL} from '@app/utils/url';
 import {act, fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {logError} from '@utils/log';
+import {tryOpenURL} from '@utils/url';
 
 import SendTestNotificationNotice from './send_test_notification_notice';
 
