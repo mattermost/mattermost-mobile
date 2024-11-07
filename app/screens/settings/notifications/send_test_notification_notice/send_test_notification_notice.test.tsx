@@ -56,8 +56,8 @@ const allTimerExceptSetTimeout = [
 function getBaseProps() {
     return {
         serverVersion: version,
-        telemetryId: 'some id',
-        userId: 'some user id',
+        telemetryId: 'someId',
+        userId: 'someUserId',
         isCloud: true,
     };
 }
@@ -82,10 +82,10 @@ describe('SendTestNotificationNotice', () => {
         expect(wrapper.toJSON()).toBeNull();
     });
 
-    it('should call send notification action when the send notification button is clicked', () => {
+    it('should open the correct url for troubleshooting docs', () => {
         const wrapper = renderWithEverything(<SendTestNotificationNotice {...getBaseProps()}/>, {database});
         fireEvent.press(wrapper.getByText('Troubleshooting docs'));
-        expect(tryOpenURL).toHaveBeenCalledWith('https://docs.mattermost.com/collaborate/mention-people.html');
+        expect(tryOpenURL).toHaveBeenCalledWith('https://mattermost.com/pl/troubleshoot-notifications?utm_source=mattermost&utm_medium=in-product-cloud&utm_content=&uid=someUserId&sid=someId');
     });
 
     it('should call send notification action when the send notification button is clicked, and all states go through correctly', async () => {
