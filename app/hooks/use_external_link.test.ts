@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {renderHook} from '@testing-library/react-native';
+import {URL} from 'react-native-url-polyfill';
 
 import {useExternalLink} from './use_external_link';
 

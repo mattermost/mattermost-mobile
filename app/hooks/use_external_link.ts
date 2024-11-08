@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useMemo} from 'react';
+import {URL, URLSearchParams} from 'react-native-url-polyfill';
 
 export type ExternalLinkQueryParams = {
     utm_source?: string;
