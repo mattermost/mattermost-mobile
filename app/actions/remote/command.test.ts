@@ -12,12 +12,18 @@ import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
 import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
+import {getConfig} from '@queries/servers/system';
 import {showAppForm} from '@screens/navigation';
+import {matchDeepLink, handleDeepLink} from '@utils/deep_link';
 import {logDebug} from '@utils/log';
+import {tryOpenURL} from '@utils/url';
 
 import {
     executeCommand,
     executeAppCommand,
+    handleGotoLocation,
+    fetchCommands,
+    fetchSuggestions,
 } from './command';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -29,7 +35,10 @@ jest.mock('@database/manager');
 jest.mock('@managers/apps_manager');
 jest.mock('@managers/integrations_manager');
 jest.mock('@managers/network_manager');
+jest.mock('@queries/servers/system');
 jest.mock('@utils/log');
+jest.mock('@utils/deep_link');
+jest.mock('@utils/url');
 
 jest.mock('@screens/navigation', () => {
     const original = jest.requireActual('@screens/navigation');
@@ -66,8 +75,14 @@ const channel: Channel = {
     group_constrained: true,
 } as Channel;
 
+const mockCommands = [{id: 'command1'}, {id: 'command2'}];
+const mockSuggestions = ['suggestion1', 'suggestion2'];
+const error = new Error('Test error');
+
 const mockClient = {
     executeCommand: jest.fn(() => ({trigger_id: 'trigger_id'})),
+    getCommandsList: jest.fn().mockResolvedValue(mockCommands),
+    getCommandAutocompleteSuggestionsList: jest.fn().mockResolvedValue(mockSuggestions),
 };
 
 beforeAll(() => {
@@ -153,7 +168,6 @@ describe('executeCommand', () => {
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
         jest.spyOn(AppsManager, 'isAppsEnabled').mockResolvedValue(false);
-        const error = new Error('Test error');
         mockClient.executeCommand.mockRejectedValue(error as never);
 
         const result = await executeCommand(serverUrl, intl, message, channelId, rootId);
@@ -237,5 +251,113 @@ describe('executeAppCommand', () => {
         expect(parser.composeCommandSubmitCall).toHaveBeenCalledWith(msg);
         expect(doAppSubmit).toHaveBeenCalledWith(serverUrl, {}, intl);
         expect(result).toEqual({error: {message: 'App response type not supported. Response type: UNKNOWN.'}});
+    });
+});
+
+describe('handleGotoLocation', () => {
+    const location = 'https://example.com/some/path';
+
+    it('should return error if database not found', async () => {
+        (DatabaseManager.serverDatabases as any) = {};
+
+        const result = await handleGotoLocation(serverUrl, intl, location);
+
+        expect(result).toEqual({error: `${serverUrl} database not found`});
+    });
+
+    it('should handle deep link match found', async () => {
+        const mockOperator = {
+            database: {},
+        };
+        (DatabaseManager.serverDatabases as any) = {
+            [serverUrl]: {operator: mockOperator},
+        };
+        (getConfig as jest.Mock).mockResolvedValue({SiteURL: serverUrl});
+        (matchDeepLink as jest.Mock).mockReturnValue({url: location});
+
+        const result = await handleGotoLocation(serverUrl, intl, location);
+
+        expect(getConfig).toHaveBeenCalledWith(mockOperator.database);
+        expect(matchDeepLink).toHaveBeenCalledWith(location, serverUrl, serverUrl);
+        expect(handleDeepLink).toHaveBeenCalledWith(location, intl, location);
+        expect(result).toEqual({data: true});
+    });
+
+    it('should handle deep link match not found and URL opened successfully', async () => {
+        const mockOperator = {
+            database: {},
+        };
+        (DatabaseManager.serverDatabases as any) = {
+            [serverUrl]: {operator: mockOperator},
+        };
+        (getConfig as jest.Mock).mockResolvedValue({SiteURL: serverUrl});
+        (matchDeepLink as jest.Mock).mockReturnValue(null);
+        (tryOpenURL as jest.Mock).mockImplementation((url, onError) => onError());
+
+        const result = await handleGotoLocation(serverUrl, intl, location);
+
+        expect(getConfig).toHaveBeenCalledWith(mockOperator.database);
+        expect(matchDeepLink).toHaveBeenCalledWith(location, serverUrl, serverUrl);
+        expect(tryOpenURL).toHaveBeenCalledWith(location, expect.any(Function));
+        expect(result).toEqual({data: true});
+    });
+
+    it('should handle deep link match not found and URL open failed', async () => {
+        const mockOperator = {
+            database: {},
+        };
+        (DatabaseManager.serverDatabases as any) = {
+            [serverUrl]: {operator: mockOperator},
+        };
+        (getConfig as jest.Mock).mockResolvedValue({SiteURL: serverUrl});
+        (matchDeepLink as jest.Mock).mockReturnValue(null);
+        (tryOpenURL as jest.Mock).mockImplementation((url, onError) => onError());
+
+        const result = await handleGotoLocation(serverUrl, intl, location);
+
+        expect(getConfig).toHaveBeenCalledWith(mockOperator.database);
+        expect(matchDeepLink).toHaveBeenCalledWith(location, serverUrl, serverUrl);
+        expect(tryOpenURL).toHaveBeenCalledWith(location, expect.any(Function));
+        expect(result).toEqual({data: true});
+    });
+});
+
+describe('fetchCommands', () => {
+    it('should fetch commands successfully', async () => {
+        const result = await fetchCommands(serverUrl, teamId);
+
+        expect(mockClient.getCommandsList).toHaveBeenCalledWith(teamId);
+        expect(result).toEqual({commands: mockCommands});
+    });
+
+    it('should handle error during fetch commands', async () => {
+        mockClient.getCommandsList.mockRejectedValue(error);
+
+        const result = await fetchCommands(serverUrl, teamId);
+
+        expect(mockClient.getCommandsList).toHaveBeenCalledWith(teamId);
+        expect(logDebug).toHaveBeenCalledWith('error on fetchCommands', 'Test error');
+        expect(result).toEqual({error});
+    });
+});
+
+describe('fetchSuggestions', () => {
+    const term = 'test';
+
+    it('should fetch suggestions successfully', async () => {
+        const result = await fetchSuggestions(serverUrl, term, teamId, channelId, rootId);
+
+        expect(mockClient.getCommandAutocompleteSuggestionsList).toHaveBeenCalledWith(term, teamId, channelId, rootId);
+        expect(result).toEqual({suggestions: mockSuggestions});
+    });
+
+    it('should handle error during fetch suggestions', async () => {
+        mockClient.getCommandAutocompleteSuggestionsList.mockRejectedValue(error);
+
+        const result = await fetchSuggestions(serverUrl, term, teamId, channelId, rootId);
+
+        expect(mockClient.getCommandAutocompleteSuggestionsList).toHaveBeenCalledWith(term, teamId, channelId, rootId);
+        expect(logDebug).toHaveBeenCalledWith('error on fetchSuggestions', 'Test error');
+        expect(result).toEqual({error});
     });
 });
