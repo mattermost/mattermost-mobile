@@ -11,6 +11,7 @@ import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE} from '@i18n';
 import {getUserById} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
+import {ensureString} from '@utils/types';
 import {displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -36,7 +37,7 @@ export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {
 }
 
 export function isFromWebhook(post: PostModel | Post): boolean {
-    return post.props && post.props.from_webhook === 'true';
+    return post.props?.from_webhook === 'true';
 }
 
 export function isEdited(post: PostModel): boolean {
@@ -48,7 +49,7 @@ export function isPostEphemeral(post: PostModel): boolean {
 }
 
 export function isPostFailed(post: PostModel): boolean {
-    return post.props?.failed || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
+    return Boolean(post.props?.failed) || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
 }
 
 export function isPostPendingOrFailed(post: PostModel): boolean {
@@ -64,8 +65,13 @@ export function fromAutoResponder(post: PostModel): boolean {
 }
 
 export function postUserDisplayName(post: PostModel, author?: UserModel, teammateNameDisplay?: string, enablePostUsernameOverride = false) {
-    if (isFromWebhook(post) && post.props?.override_username && enablePostUsernameOverride) {
-        return post.props.override_username;
+    const overrideUsername = ensureString(post.props?.override_username);
+    if (
+        isFromWebhook(post) &&
+        enablePostUsernameOverride &&
+        overrideUsername
+    ) {
+        return overrideUsername;
     }
 
     return displayUsername(author, author?.locale || DEFAULT_LOCALE, teammateNameDisplay, true);

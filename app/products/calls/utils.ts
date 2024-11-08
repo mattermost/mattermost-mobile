@@ -9,6 +9,7 @@ import {buildFileUrl} from '@actions/remote/file';
 import {Calls, Post} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import {isMinimumServerVersion} from '@utils/helpers';
+import {ensureNumber, ensureString, isStringArray} from '@utils/types';
 import {displayUsername} from '@utils/user';
 
 import type {
@@ -17,7 +18,7 @@ import type {
     CallsTheme,
     CallsVersion,
 } from '@calls/types/calls';
-import type {CallsConfig, Caption, CallPostProps} from '@mattermost/calls/lib/types';
+import type {CallsConfig, CallPostProps} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
@@ -217,11 +218,11 @@ export function isCallsStartedMessage(payload?: NotificationData) {
     return (payload?.message === 'You\'ve been invited to a call' || callsMessageRegex.test(payload?.message || ''));
 }
 
-export const hasCaptions = (postProps?: Record<string, any> & { captions?: Caption[] }): boolean => {
+export const hasCaptions = (postProps?: Record<string, unknown>): boolean => {
     return !(!postProps || !postProps.captions?.[0]);
 };
 
-export const getTranscriptionUri = (serverUrl: string, postProps?: Record<string, any> & { captions?: Caption[] }): {
+export const getTranscriptionUri = (serverUrl: string, postProps?: Record<string, unknown>): {
     tracks?: TextTracks;
     selected: SelectedTrack;
 } => {
@@ -253,14 +254,14 @@ function isValidObject(v: any) {
 
 export function getCallPropsFromPost(post: PostModel | Post): CallPostProps {
     return {
-        title: typeof post.props?.title === 'string' ? post.props.title : '',
-        start_at: typeof post.props?.start_at === 'number' ? post.props.start_at : 0,
-        end_at: typeof post.props?.end_at === 'number' ? post.props.end_at : 0,
+        title: ensureString(post.props?.title),
+        start_at: ensureNumber(post.props?.start_at),
+        end_at: ensureNumber(post.props?.end_at),
         recordings: isValidObject(post.props?.recordings) ? post.props.recordings : {},
         transcriptions: isValidObject(post.props?.transcriptions) ? post.props.transcriptions : {},
-        participants: Array.isArray(post.props?.participants) ? post.props.participants : [],
+        participants: isStringArray(post.props?.participants) ? post.props.participants : [],
 
         // DEPRECATED
-        recording_files: Array.isArray(post.props?.recording_files) ? post.props.recording_files : [],
+        recording_files: isStringArray(post.props?.recording_files) ? post.props.recording_files : [],
     };
 }

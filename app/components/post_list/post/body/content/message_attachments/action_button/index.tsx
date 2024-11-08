@@ -6,7 +6,7 @@ import React, {useCallback, useRef} from 'react';
 
 import {postActionWithCookie} from '@actions/remote/integrations';
 import {useServerUrl} from '@context/server';
-import {getStatusColors} from '@utils/message_attachment_colors';
+import {getStatusColors} from '@utils/message_attachment';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 

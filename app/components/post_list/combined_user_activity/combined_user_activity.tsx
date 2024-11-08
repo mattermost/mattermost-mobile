@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, type StyleProp, TouchableHighlight, View, type ViewStyle} from 'react-native';
 
@@ -15,6 +15,7 @@ import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {emptyFunction} from '@utils/general';
 import {getMarkdownTextStyles} from '@utils/markdown';
+import {isUserActivityProp} from '@utils/post_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import LastUsers from './last_users';
@@ -69,6 +70,13 @@ const CombinedUserActivity = ({
     const styles = getStyleSheet(theme);
     const content = [];
     const removedUserIds: string[] = [];
+
+    const userActivity = useMemo(() => {
+        if (isUserActivityProp(post?.props?.user_activity)) {
+            return post?.props?.user_activity;
+        }
+        return undefined;
+    }, [post?.props?.user_activity]);
 
     const getUsernames = (userIds: string[]) => {
         const someone = intl.formatMessage({id: 'channel_loader.someone', defaultMessage: 'Someone'});
@@ -168,11 +176,12 @@ const CombinedUserActivity = ({
     };
 
     useEffect(() => {
-        if (!post) {
+        if (!userActivity) {
             return;
         }
 
-        const {allUserIds, allUsernames} = post.props.user_activity;
+        const allUserIds = userActivity.allUserIds;
+        const allUsernames = userActivity.allUsernames;
         if (allUserIds.length) {
             fetchMissingProfilesByIds(serverUrl, allUserIds);
         }
@@ -180,14 +189,14 @@ const CombinedUserActivity = ({
         if (allUsernames.length) {
             fetchMissingProfilesByUsernames(serverUrl, allUsernames);
         }
-    }, [post?.props.user_activity.allUserIds, post?.props.user_activity.allUsernames]);
+    }, [userActivity?.allUserIds, userActivity?.allUsernames]);
 
     if (!post) {
         return null;
     }
 
     const itemTestID = `${testID}.${post.id}`;
-    const {messageData} = post.props.user_activity;
+    const messageData = userActivity?.messageData || [];
     for (const message of messageData) {
         const {postType, actorId} = message;
         const userIds = new Set<string>(message.userIds);
