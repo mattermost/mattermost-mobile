@@ -938,6 +938,7 @@
   "post_body.check_for_out_of_channel_mentions.message_last": "? Ze zullen toegang hebben tot de volledige berichtgeschiedenis.",
   "post_body.commentedOn": "Gaf commentaar op het bericht van {name}{apostrophe}: ",
   "post_body.deleted": "(bericht verwijderd)",
+  "post_header.visible_message": "(Enkel zichtbaar voor jou)",
   "post_info.auto_responder": "Automatisch antwoord",
   "post_info.bot": "Bot",
   "post_info.del": "Verwijderen",
