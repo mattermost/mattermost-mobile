@@ -11,6 +11,7 @@ import Emoji from '@components/emoji';
 import {CST} from '@constants/custom_status';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     duration?: CustomStatusDuration;
@@ -43,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingTop: 14,
             paddingBottom: 14,
             justifyContent: 'center',
-            width: '70%',
+            width: '93%',
             flex: 1,
         },
         divider: {
@@ -57,6 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         customStatusText: {
             color: theme.centerChannelColor,
+            ...typography('Body', 200, 'Regular'),
         },
     };
 });
