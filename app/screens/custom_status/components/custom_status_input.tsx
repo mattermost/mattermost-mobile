@@ -34,7 +34,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignSelf: 'stretch',
             color: theme.centerChannelColor,
             flex: 1,
-            fontSize: 17,
             paddingHorizontal: 16,
             textAlignVertical: 'center',
             height: '100%',
