@@ -26,22 +26,20 @@ import React
     
     func getWindowSize() -> (CGSize?, CGSize?) {
         guard let w = UIApplication.shared.delegate?.window, let window = w else { return (nil, nil) }
-        return (window.screen.bounds.size, window.frame.size)
+        return (window.screen.bounds.size, window.bounds.size)
     }
     
     func isRunningInFullScreen() -> Bool {
         guard let w = UIApplication.shared.delegate?.window, let window = w else { return false }
-        let screenSize = window.screen.bounds.size.width
-        let frameSize = window.frame.size.width
-        let shouldBeConsideredFullScreen = frameSize >= (screenSize * 0.6)
-        return shouldBeConsideredFullScreen
+        let screenWidth = window.screen.bounds.size.width
+        let windowWidth = window.bounds.size.width
+        return windowWidth >= screenWidth * (2.0 / 3.0)
     }
     
-    func isRunningInFullScreen(screen: CGSize?, frame: CGSize?) -> Bool {
-        guard let screenSize = screen?.width,
-              let frameSize = frame?.width else {return false}
-        let shouldBeConsideredFullScreen = frameSize >= (screenSize * 0.6)
-        return shouldBeConsideredFullScreen
+    func isRunningInFullScreen(screen: CGSize?, bounds: CGSize?) -> Bool {
+        guard let screenWidth = screen?.width,
+              let windowWidth = bounds?.width else {return false}
+        return windowWidth >= screenWidth * (2.0 / 3.0)
     }
     
     @objc public func captureEvents() {
@@ -53,21 +51,21 @@ import React
     
     override public func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "frame" {
-            let (screen, frame) = getWindowSize()
-            guard let screen = screen, let frame = frame else {return}
-            isSplitView(screen: screen, frame: frame)
+            let (screen, bounds) = getWindowSize()
+            guard let screen = screen, let bounds = bounds else {return}
+            isSplitView(screen: screen, bounds: bounds)
             
             delegate?.sendEvent(name: "DimensionsChanged", result: [
-                "width": frame.width,
-                "height": frame.height
+                "width": bounds.width,
+                "height": bounds.height
             ])
         }
     }
     
-    @objc func isSplitView(screen: CGSize, frame: CGSize) {
+    @objc func isSplitView(screen: CGSize, bounds: CGSize) {
         if UIDevice.current.userInterfaceIdiom == .pad {
             delegate?.sendEvent(name: "SplitViewChanged", result: [
-                "isSplit": !isRunningInFullScreen(screen: screen, frame: frame),
+                "isSplit": !isRunningInFullScreen(screen: screen, bounds: bounds),
                 "isTablet": UIDevice.current.userInterfaceIdiom == .pad,
             ])
         }

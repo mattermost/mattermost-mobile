@@ -3,7 +3,7 @@
 
 /* eslint-disable max-lines */
 
-import {ActionType} from '@app/constants';
+import {ActionType} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';

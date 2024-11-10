@@ -938,6 +938,7 @@
   "post_body.check_for_out_of_channel_mentions.message_last": "? Będą mieć dostęp do całej historii wiadomości.",
   "post_body.commentedOn": "Skomentowane w {name}{apostrophe} wiadomości: ",
   "post_body.deleted": "(wiadomość usunięta)",
+  "post_header.visible_message": "(widoczne tylko dla Ciebie)",
   "post_info.auto_responder": "Automatyczna odpowiedź",
   "post_info.bot": "Bot",
   "post_info.del": "Usuń",
