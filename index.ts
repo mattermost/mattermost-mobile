@@ -8,9 +8,9 @@ import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 
-import {start} from './app/init/app';
-import setFontFamily from './app/utils/font_family';
-import {logInfo} from './app/utils/log';
+import {start} from '@init/app';
+import setFontFamily from '@utils/font_family';
+import {logInfo} from '@utils/log';
 
 declare const global: { HermesInternal: null | {} };
 

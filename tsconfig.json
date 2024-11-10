@@ -52,6 +52,7 @@
             "@i18n": ["app/i18n/index"],
             "@init/*": ["app/init/*"],
             "@managers/*": ["app/managers/*"],
+            "@plugins/*": ["app/plugins/*"],
             "@queries/*": ["app/queries/*"],
             "@screens/*": ["app/screens/*"],
             "@selectors/*": ["app/selectors/*"],
@@ -65,7 +66,7 @@
             "@websocket": ["app/client/websocket"],
         }
     },
-    "include": ["app/**/*", "share_extension/**/*", "test/**/*", "types/**/*"],
+    "include": ["index.ts", "app/**/*", "share_extension/**/*", "test/**/*", "types/**/*", "dev-plugins/**/*"],
     "exclude": [
         "node_modules",
         "build",

@@ -3,7 +3,8 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {type Insets, Text, TouchableWithoutFeedback, View} from 'react-native';
+import {Alert, type Insets, Text, TouchableWithoutFeedback, View} from 'react-native';
+import {ScrollView} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -16,7 +17,9 @@ import {HOME_PADDING} from '@constants/view';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import installPlugin from '@plugins/install';
 import {bottomSheet} from '@screens/navigation';
+import {getErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
 import {alertServerLogout} from '@utils/server';
@@ -127,14 +130,72 @@ const ChannelListHeader = ({
         marginLeft.value = iconPad ? 50 : 0;
     }, [iconPad]);
 
-    const onPress = useCallback(preventDoubleTap(() => {
+    const onPress = useCallback(preventDoubleTap(async () => {
+        // const renderContent = () => {
+        //     return (
+        //         <PlusMenu
+        //             canCreateChannels={canCreateChannels}
+        //             canJoinChannels={canJoinChannels}
+        //             canInvitePeople={canInvitePeople}
+        //         />
+        //     );
+        // };
+
         const renderContent = () => {
+            const {Plugin, clearCache} = installPlugin({verify: async () => true});
+            const renderError = ({error}: {error: Error}) => {
+                const errStr = getErrorMessage(error, intl);
+                return (
+                    <View style={{minHeight: 50}}>
+                        <Text style={{color: theme.errorTextColor, ...typography('Body', 100, 'Regular')}}>
+                            {errStr}
+                        </Text>
+                    </View>
+                );
+            };
+
+            const defaultExtras = {
+                textStyle: {
+                    color: theme.centerChannelBg,
+                    ...typography('Body', 400, 'Regular'),
+                },
+                onPress: () => {
+                    Alert.alert('You sure you want to clear the cache?', undefined, [{
+                        text: 'Yes',
+                        isPreferred: true,
+                        style: 'default',
+                        onPress: clearCache,
+                    }, {
+                        text: 'No',
+                        style: 'cancel',
+                    }]);
+                },
+                theme,
+                renderError,
+            };
+
+            const postExtras = {
+                theme,
+                baseTextStyle: {
+                    color: theme.centerChannelColor,
+                    ...typography('Body', 100, 'Regular'),
+                },
+                renderError,
+            };
+
             return (
-                <PlusMenu
-                    canCreateChannels={canCreateChannels}
-                    canJoinChannels={canJoinChannels}
-                    canInvitePeople={canInvitePeople}
-                />
+                <ScrollView>
+                    <Plugin
+                        source={{uri: 'https://enahum.ngrok.io/files/dda3sffti78ppqeswa187dbr4w/public?h=tfPcN2rACbQdyU7A5BZmo19lUO4fIGY6xOqVnA42sFI', options: {headers: {'Cache-Control': 'no-store'}}}}
+                        type='default'
+                        {...defaultExtras}
+                    />
+                    <Plugin
+                        source={{uri: 'https://enahum.ngrok.io/files/dda3sffti78ppqeswa187dbr4w/public?h=tfPcN2rACbQdyU7A5BZmo19lUO4fIGY6xOqVnA42sFI', options: {headers: {'Cache-Control': 'no-store'}}}}
+                        type='post'
+                        {...postExtras}
+                    />
+                </ScrollView>
             );
         };
 
@@ -158,7 +219,7 @@ const ChannelListHeader = ({
         bottomSheet({
             closeButtonId,
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + (separators * SEPARATOR_HEIGHT)],
+            snapPoints: [1, 700], //, bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + (separators * SEPARATOR_HEIGHT)],
             theme,
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });

@@ -27,6 +27,7 @@ module.exports = {
                 '@i18n': './app/i18n',
                 '@init': './app/init',
                 '@managers': './app/managers',
+                '@plugins': './app/plugins',
                 '@queries': './app/queries',
                 '@screens': './app/screens',
                 '@share': './share_extension',
