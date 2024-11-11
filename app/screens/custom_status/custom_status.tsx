@@ -192,7 +192,8 @@ const CustomStatus = ({
     }, []);
 
     const handleTextChange = useCallback((value: string) => {
-        dispatchStatus({type: 'text', value});
+        const noLines = value.replace('\n', '');
+        dispatchStatus({type: 'text', value: noLines});
     }, []);
 
     const handleEmojiClick = useCallback((value: string) => {
