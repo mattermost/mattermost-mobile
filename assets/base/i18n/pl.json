@@ -1143,8 +1143,6 @@
   "terms_of_service.title": "Warunki korzystania z usługi",
   "thread.header.thread": "Wątek",
   "thread.header.thread_in": "w {channelName}",
-  "thread.loadingReplies": "Ładowanie odpowiedzi...",
-  "thread.noReplies": "Nie ma jeszcze odpowiedzi",
   "thread.options.title": "Akcje Wątków",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {odpowiedź} other {odpowiedzi}}",
   "threads": "Wątki",
