@@ -92,6 +92,7 @@
     "react-native-shadow-2": "7.1.0",
     "react-native-share": "10.2.1",
     "react-native-svg": "15.4.0",
+    "react-native-url-polyfill": "2.0.0",
     "react-native-vector-icons": "10.1.0",
     "react-native-video": "6.4.3",
     "react-native-walkthrough-tooltip": "1.6.0",
