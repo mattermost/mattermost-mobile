@@ -167,6 +167,8 @@
   "channel_info.copy_link": "Copy Link",
   "channel_info.copy_purpose_text": "Copy Purpose Text",
   "channel_info.custom_status": "Custom status:",
+  "channel_info.draft_in_channel": "In:",
+  "channel_info.draft_to_user": "To:",
   "channel_info.edit_header": "Edit Header",
   "channel_info.error_close": "Close",
   "channel_info.favorite": "Favorite",
