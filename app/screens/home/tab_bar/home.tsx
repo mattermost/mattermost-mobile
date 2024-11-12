@@ -6,13 +6,13 @@ import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
-import useDidUpdate from '@app/hooks/did_update';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer, type UnreadObserverArgs} from '@database/subscription/unreads';
 import {useAppState} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
 import {logDebug} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
 

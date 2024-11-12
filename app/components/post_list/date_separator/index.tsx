@@ -4,7 +4,7 @@
 import React from 'react';
 import {type StyleProp, View, type ViewStyle} from 'react-native';
 
-import FormattedDate from '@components/formatted_date';
+import FormattedDate, {type FormattedDateFormat} from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {isSameYear, isToday, isYesterday} from '@utils/datetime';
@@ -38,6 +38,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const DATE_FORMATS = {
+    withinYear: {month: 'short', day: 'numeric'},
+    afterYear: {dateStyle: 'medium'},
+} satisfies Record<string, FormattedDateFormat>;
+
 const RecentDate = (props: DateSeparatorProps) => {
     const {date, ...otherProps} = props;
     const when = new Date(date);
@@ -60,7 +65,7 @@ const RecentDate = (props: DateSeparatorProps) => {
         );
     }
 
-    const format = isSameYear(when, new Date()) ? 'MMM DD' : 'MMM DD, YYYY';
+    const format: FormattedDateFormat = isSameYear(when, new Date()) ? DATE_FORMATS.withinYear : DATE_FORMATS.afterYear;
 
     return (
         <FormattedDate
