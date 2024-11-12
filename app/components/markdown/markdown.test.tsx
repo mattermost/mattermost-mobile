@@ -6,7 +6,7 @@ import * as CommonMark from 'commonmark';
 const {Node} = CommonMark;
 import React from 'react';
 
-import {Preferences} from '@app/constants';
+import {Preferences} from '@constants';
 import {renderWithIntl} from '@test/intl-test-helper';
 
 import Markdown from './markdown';

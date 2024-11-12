@@ -7,13 +7,13 @@ import Renderer from 'commonmark-react-renderer';
 import React, {type ReactElement, useMemo, useRef} from 'react';
 import {Dimensions, type GestureResponderEvent, Platform, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
-import {logError} from '@app/utils/log';
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
+import {logError} from '@utils/log';
 import {computeTextStyle} from '@utils/markdown';
 import {blendColors, changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getScheme} from '@utils/url';
 
 import AtMention from './at_mention';
