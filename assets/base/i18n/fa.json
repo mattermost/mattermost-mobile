@@ -928,8 +928,6 @@
   "terms_of_service.title": "مفاد قرارداد",
   "thread.header.thread": "گفت‌وگو",
   "thread.header.thread_in": "در {channelName}",
-  "thread.loadingReplies": "در حال بارگذاری پاسخ‌ها...",
-  "thread.noReplies": "هنوز پاسخی نیست",
   "thread.options.title": "عملیات گفت‌وگو",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {reply} other {replies}}",
   "threads": "موضوعات",

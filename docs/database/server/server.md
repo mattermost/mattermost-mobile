@@ -1,4 +1,4 @@
-# Server Database - Schema Version 2
+# Server Database - Schema Version 3 
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -166,7 +166,7 @@ pending_post_id string INDEX
 previous_post_id string
 props string
 root_id string
-type string
+type string INDEX
 update_at number
 user_id string INDEX  FK >- User.id
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import ServerDataOperator from '@app/database/operator/server_data_operator';
 import DatabaseManager from '@database/manager';
+import ServerDataOperator from '@database/operator/server_data_operator';
 import {getMyTeamById, getTeamById, getTeamSearchHistoryById, prepareDeleteTeam, removeTeamFromTeamHistory} from '@queries/servers/team';
 import {logError} from '@utils/log';
 

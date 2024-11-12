@@ -91,6 +91,7 @@ describe('***  POST Prepare Records Test ***', () => {
                     message: 'draft message',
                     channel_id: 'channel_idp23232e',
                     files: [],
+                    update_at: Date.now(),
                 },
             },
         });

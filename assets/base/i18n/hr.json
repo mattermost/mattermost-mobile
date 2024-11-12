@@ -489,8 +489,6 @@
   "terms_of_service.title": "Uvjeti usluge",
   "thread.header.thread": "Rasprava",
   "thread.header.thread_in": "u kanalu {channelName}",
-  "thread.loadingReplies": "Učitavanje odgovora …",
-  "thread.noReplies": "Još nema odgovora",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {odgovor} few {odgovora} other {odgovora}}",
   "threads": "Rasprave",
   "threads.deleted": "Izvorna poruka je izbrisana",

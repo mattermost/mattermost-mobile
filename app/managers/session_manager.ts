@@ -90,7 +90,7 @@ class SessionManager {
         if (!this.scheduling) {
             this.scheduling = true;
             const serverCredentials = await getAllServerCredentials();
-            const promises: Array<Promise<void>> = [];
+            const promises: Array<Promise<{error: unknown} | {error?: undefined}>> = [];
             for (const {serverUrl} of serverCredentials) {
                 promises.push(scheduleSessionNotification(serverUrl));
             }

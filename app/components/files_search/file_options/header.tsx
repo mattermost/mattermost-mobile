@@ -3,7 +3,7 @@
 import React from 'react';
 import {View, Text} from 'react-native';
 
-import FormattedDate from '@components/formatted_date';
+import FormattedDate, {type FormattedDateFormat} from '@components/formatted_date';
 import {useTheme} from '@context/theme';
 import {getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -11,7 +11,13 @@ import {typography} from '@utils/typography';
 
 import Icon, {ICON_SIZE} from './icon';
 
-const format = 'MMM DD YYYY HH:MM A';
+const FORMAT: FormattedDateFormat = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+};
 
 const HEADER_MARGIN = 8;
 const FILE_ICON_MARGIN = 8;
@@ -78,7 +84,7 @@ const Header = ({fileInfo}: Props) => {
                 <Text style={style.infoText}>{`${size} • `}</Text>
                 <FormattedDate
                     style={style.date}
-                    format={format}
+                    format={FORMAT}
                     value={fileInfo.create_at as number}
                 />
             </View>

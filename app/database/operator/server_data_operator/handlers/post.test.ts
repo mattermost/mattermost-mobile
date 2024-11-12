@@ -21,57 +21,9 @@ Q.sortBy = jest.fn().mockImplementation((field) => {
 describe('*** Operator: Post Handlers tests ***', () => {
     let operator: ServerDataOperator;
 
-    beforeAll(async () => {
-        await DatabaseManager.init(['baseHandler.test.com']);
-        operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
-    });
-
-    it('=> HandleDraft: should write to the the Draft table', async () => {
-        expect.assertions(1);
-
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const drafts = [
-            {
-                channel_id: '4r9jmr7eqt8dxq3f9woypzurrychannelid',
-                files: [
-                    {
-                        id: '322dxx',
-                        user_id: 'user_id',
-                        post_id: 'post_id',
-                        create_at: 123,
-                        update_at: 456,
-                        delete_at: 789,
-                        name: 'an_image',
-                        extension: 'jpg',
-                        size: 10,
-                        mime_type: 'image',
-                        width: 10,
-                        height: 10,
-                        has_preview_image: false,
-                        clientId: 'clientId',
-                    },
-                ],
-                message: 'test draft message for post',
-                root_id: '',
-            },
-        ];
-
-        await operator.handleDraft({drafts, prepareRecordsOnly: false});
-
-        expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            buildKeyRecordBy: buildDraftKey,
-            fieldName: 'channel_id',
-            transformer: transformDraftRecord,
-            createOrUpdateRawValues: drafts,
-            tableName: 'Draft',
-            prepareRecordsOnly: false,
-        }, 'handleDraft');
-    });
-
-    it('=> HandlePosts: should write to the Post and its sub-child tables', async () => {
-        // expect.assertions(12);
-
-        const posts: Post[] = [
+    let posts: Post[] = [];
+    beforeEach(() => {
+        posts = [
             {
                 id: '8swgtrrdiff89jnsiwiip3y1eoe',
                 create_at: 1596032651747,
@@ -217,6 +169,58 @@ describe('*** Operator: Post Handlers tests ***', () => {
                 metadata: {},
             },
         ];
+    });
+
+    beforeAll(async () => {
+        await DatabaseManager.init(['baseHandler.test.com']);
+        operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
+    });
+
+    it('=> HandleDraft: should write to the the Draft table', async () => {
+        expect.assertions(1);
+
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+        const drafts = [
+            {
+                channel_id: '4r9jmr7eqt8dxq3f9woypzurrychannelid',
+                files: [
+                    {
+                        id: '322dxx',
+                        user_id: 'user_id',
+                        post_id: 'post_id',
+                        create_at: 123,
+                        update_at: 456,
+                        delete_at: 789,
+                        name: 'an_image',
+                        extension: 'jpg',
+                        size: 10,
+                        mime_type: 'image',
+                        width: 10,
+                        height: 10,
+                        has_preview_image: false,
+                        clientId: 'clientId',
+                    },
+                ],
+                message: 'test draft message for post',
+                root_id: '',
+                update_at: 456,
+            },
+        ];
+
+        await operator.handleDraft({drafts, prepareRecordsOnly: false});
+
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
+            buildKeyRecordBy: buildDraftKey,
+            fieldName: 'channel_id',
+            transformer: transformDraftRecord,
+            createOrUpdateRawValues: drafts,
+            tableName: 'Draft',
+            prepareRecordsOnly: false,
+        }, 'handleDraft');
+    });
+
+    it('=> HandlePosts: should write to the Post and its sub-child tables', async () => {
+        // expect.assertions(12);
 
         const order = [
             '8swgtrrdiff89jnsiwiip3y1eoe',
@@ -308,6 +312,60 @@ describe('*** Operator: Post Handlers tests ***', () => {
         const linkedPosts = createPostsChain({order, posts, previousPostId: ''});
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(linkedPosts.slice(0, 3), actionType, true);
+    });
+
+    it('=> HandlePosts: should properly parse metadata when the metadata is a string', async () => {
+        const postWithMetadata = posts[0];
+        const updatedPosts: Post[] = [
+            {
+                ...postWithMetadata,
+
+                // @ts-expect-error metadata should be an object, but notifications are sending post with metadata as a string
+                metadata: JSON.stringify(postWithMetadata.metadata),
+            },
+        ];
+
+        const order = [
+            '8swgtrrdiff89jnsiwiip3y1eoe',
+            '8fcnk3p1jt8mmkaprgajoxz115a',
+            '3y3w3a6gkbg73bnj3xund9o5ic',
+        ];
+
+        const actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
+        const spyOnHandleFiles = jest.spyOn(operator, 'handleFiles');
+        const spyOnHandleReactions = jest.spyOn(operator, 'handleReactions');
+        const spyOnHandleCustomEmojis = jest.spyOn(operator, 'handleCustomEmojis');
+
+        await operator.handlePosts({
+            actionType,
+            order,
+            posts: updatedPosts,
+            previousPostId: '',
+        });
+
+        expect(spyOnHandleFiles).toHaveBeenCalledWith({
+            files: [
+                expect.objectContaining({id: postWithMetadata.metadata.files![0].id}),
+            ],
+            prepareRecordsOnly: true,
+        });
+
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith({
+            prepareRecordsOnly: true,
+            emojis: [
+                expect.objectContaining({id: postWithMetadata.metadata.emojis![0].id}),
+            ],
+        });
+
+        expect(spyOnHandleReactions).toHaveBeenCalledWith({
+            postsReactions: [{
+                post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                reactions: [
+                    expect.objectContaining({emoji_name: postWithMetadata.metadata.reactions![0].emoji_name}),
+                ],
+            }],
+            prepareRecordsOnly: true,
+        });
     });
 });
 

@@ -13,6 +13,7 @@ import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
 import {getMyChannel, getChannelById} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getMyTeamById, prepareMyTeams} from '@queries/servers/team';
@@ -24,11 +25,11 @@ import {processPostsFetched} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
 
-const fetchNotificationData = async (serverUrl: string, notification: NotificationWithData, skipEvents = false) => {
+export const fetchNotificationData = async (serverUrl: string, notification: NotificationWithData, skipEvents = false) => {
     const channelId = notification.payload?.channel_id;
 
     if (!channelId) {
-        return {error: 'No chanel Id was specified'};
+        return {error: 'No channel Id was specified'};
     }
 
     try {
@@ -103,7 +104,7 @@ export const backgroundNotification = async (serverUrl: string, notification: No
         const channelId = notification.payload?.channel_id;
         let teamId = notification.payload?.team_id;
         if (!channelId) {
-            throw new Error('No chanel Id was specified');
+            throw new Error('No channel Id was specified');
         }
 
         if (!teamId) {
@@ -173,9 +174,12 @@ export const backgroundNotification = async (serverUrl: string, notification: No
             if (models.length) {
                 await operator.batchRecords(models, 'backgroundNotification');
             }
+            return {models};
         }
+        return {models: []};
     } catch (error) {
         logWarning('backgroundNotification', error);
+        return {error};
     }
 };
 
@@ -230,6 +234,17 @@ export const openNotification = async (serverUrl: string, notification: Notifica
             return fetchAndSwitchToThread(serverUrl, rootId, true);
         }
         return switchToChannelById(serverUrl, channelId, teamId);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const sendTestNotification = async (serverUrl: string): Promise<{status?: 'OK'; error?: unknown}> => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const result = await client.sendTestNotification();
+        return result;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error);
         return {error};

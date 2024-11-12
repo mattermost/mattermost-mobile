@@ -1,3 +1,5 @@
+# Can be used to run Detox E2E tests on pull requests for the Mattermost mobile app with low bandwidth
+# by using 'E2E iOS tests for PR (LBW 1)' instead.
 name: Detox E2E Tests PR
 
 on:
@@ -7,10 +9,14 @@ on:
     types:
       - labeled
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}"
+  cancel-in-progress: true
+
 jobs:
   update-initial-status:
     runs-on: ubuntu-22.04
-    if: contains(github.event.pull_request.labels.*.name, 'E2E iOS tests for PR')
+    if: contains(github.event.label.name, 'E2E iOS tests for PR')
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -57,6 +63,7 @@ jobs:
       run-ios-tests: true
       run-type: "PR"
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
+      low_bandwidth_mode: ${{ contains(github.event.label.name,'LBW') && true || false }}
     secrets: inherit
 
   update-final-status:
@@ -87,14 +94,13 @@ jobs:
           script: |
             const iosLabel = 'E2E iOS tests for PR';
             const androidLabel = 'E2E Android tests for PR';
-            const labels = context.payload.pull_request.labels.map(label => label.name);
-
-            if (labels.includes(iosLabel)) {
-              github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: iosLabel,
-              });
-            }
-
+            context.payload.pull_request.labels.forEach(label => {
+              if (label.name.includes(iosLabel)) {
+                github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                });
+              }
+            });
