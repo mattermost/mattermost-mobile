@@ -5,6 +5,7 @@ import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps} from '
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
 import {ReduceMotion, type WithSpringConfig} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
@@ -93,6 +94,7 @@ const BottomSheet = ({
 }: Props) => {
     const sheetRef = useRef<BottomSheetM>(null);
     const isTablet = useIsTablet();
+    const insets = useSafeAreaInsets();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const interaction = useRef<Handle>();
@@ -216,6 +218,7 @@ const BottomSheet = ({
             keyboardBehavior='extend'
             keyboardBlurBehavior='restore'
             onClose={close}
+            bottomInset={insets.bottom}
         >
             {renderContainerContent()}
         </BottomSheetM>

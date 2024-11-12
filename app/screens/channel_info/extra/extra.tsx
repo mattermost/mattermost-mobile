@@ -7,7 +7,6 @@ import moment from 'moment';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StyleSheet, Text, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import Emoji from '@components/emoji';
@@ -97,7 +96,6 @@ const onCopy = async (text: string, isLink?: boolean) => {
 
 const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomStatusEnabled}: Props) => {
     const intl = useIntl();
-    const {bottom} = useSafeAreaInsets();
     const theme = useTheme();
     const managedConfig = useManagedConfig<ManagedConfig>();
 
@@ -112,7 +110,7 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
                 value={createdAt}
             />
         ),
-    }), [createdAt, createdBy, theme]);
+    }), [createdAt, createdBy, styles.created]);
 
     const handleLongPress = useCallback((url?: string) => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
@@ -163,18 +161,12 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
             bottomSheet({
                 closeButtonId: 'close-markdown-link',
                 renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(url ? 3 : 2, ITEM_HEIGHT, bottom)],
+                snapPoints: [1, bottomSheetSnapPoint(url ? 3 : 2, ITEM_HEIGHT)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [
-        header,
-        bottom,
-        theme,
-        intl.formatMessage,
-        managedConfig?.copyAndPasteProtection,
-    ]);
+    }, [managedConfig?.copyAndPasteProtection, intl, theme, header]);
 
     const touchableHandleLongPress = useCallback(() => handleLongPress(), [handleLongPress]);
 

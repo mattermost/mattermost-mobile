@@ -4,7 +4,6 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {getCallsConfig} from '@calls/state';
 import {CHANNEL_ACTIONS_OPTIONS_HEIGHT} from '@components/channel_actions/channel_actions';
@@ -85,7 +84,6 @@ const ChannelHeader = ({
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
-    const {bottom} = useSafeAreaInsets();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const defaultHeight = useDefaultHeaderHeight();
@@ -170,11 +168,11 @@ const ChannelHeader = ({
         bottomSheet({
             title: '',
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(1, height, bottom)],
+            snapPoints: [1, bottomSheetSnapPoint(1, height)],
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [bottom, channelId, isDMorGM, isTablet, onTitlePress, theme, callsAvailable]);
+    }, [channelId, isDMorGM, isTablet, onTitlePress, theme, callsAvailable]);
 
     const rightButtons: HeaderRightButton[] = useMemo(() => ([
 

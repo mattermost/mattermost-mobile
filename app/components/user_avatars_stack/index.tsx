@@ -4,7 +4,6 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {type StyleProp, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
@@ -102,7 +101,6 @@ const UserAvatarsStack = ({
     const theme = useTheme();
     const intl = useIntl();
     const isTablet = useIsTablet();
-    const {bottom} = useSafeAreaInsets();
 
     const showParticipantsList = useCallback(preventDoubleTap(() => {
         const renderContent = () => (
@@ -124,7 +122,7 @@ const UserAvatarsStack = ({
             </>
         );
 
-        const snapPoints: Array<string | number> = [1, bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT, bottom) + TITLE_HEIGHT];
+        const snapPoints: Array<string | number> = [1, bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT) + TITLE_HEIGHT];
         if (users.length > 5) {
             snapPoints.push('80%');
         }
@@ -137,7 +135,7 @@ const UserAvatarsStack = ({
             title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
             theme,
         });
-    }), [isTablet, theme, users, channelId, location, bottom]);
+    }), [isTablet, theme, users, channelId, location]);
 
     const displayUsers = users.slice(0, breakAt);
     const overflowUsersCount = Math.min(users.length - displayUsers.length, OVERFLOW_DISPLAY_LIMIT);

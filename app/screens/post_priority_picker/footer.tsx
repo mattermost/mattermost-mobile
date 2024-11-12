@@ -64,7 +64,7 @@ const PostPriorityPickerFooter = ({onCancel, onSubmit, ...props}: Props) => {
     const footer = (
         <View
             style={[style.container, {
-                paddingBottom: FOOTER_PADDING + Platform.select({ios: (isTablet ? FOOTER_PADDING_BOTTOM_TABLET_ADJUST : 0), default: 0}),
+                paddingBottom: Platform.select({ios: (isTablet ? FOOTER_PADDING_BOTTOM_TABLET_ADJUST : 0), default: FOOTER_PADDING}),
             }]}
         >
             <TouchableOpacity

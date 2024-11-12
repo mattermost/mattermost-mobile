@@ -4,7 +4,6 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, View, type Insets} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
 import {ITEM_HEIGHT} from '@components/option_item';
@@ -81,7 +80,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, showLarge}: Props) => {
     const theme = useTheme();
     const {formatMessage} = useIntl();
-    const {bottom} = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
     const onPress = useCallback(() => {
@@ -129,11 +127,11 @@ const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, 
         bottomSheet({
             title: formatMessage({id: 'channel_info.add_bookmark', defaultMessage: 'Add a bookmark'}),
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(1, (2 * ITEM_HEIGHT), bottom) + TITLE_HEIGHT],
+            snapPoints: [1, bottomSheetSnapPoint(1, (2 * ITEM_HEIGHT)) + TITLE_HEIGHT],
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [bottom, bookmarksCount, canUploadFiles, currentUserId, channelId, theme]);
+    }, [bookmarksCount, canUploadFiles, formatMessage, theme, channelId, currentUserId]);
 
     const button = (
         <Button

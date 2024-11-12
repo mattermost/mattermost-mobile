@@ -6,7 +6,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StyleSheet, Text, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
@@ -45,7 +44,6 @@ const PublicPrivate = ({displayName, purpose}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const {bottom} = useSafeAreaInsets();
 
     const styles = getStyleSheet(theme);
     const publicPrivateTestId = 'channel_info.title.public_private';
@@ -85,18 +83,12 @@ const PublicPrivate = ({displayName, purpose}: Props) => {
             bottomSheet({
                 closeButtonId: 'close-mardown-link',
                 renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [
-        bottom,
-        theme,
-        onCopy,
-        intl.formatMessage,
-        managedConfig?.copyAndPasteProtection,
-    ]);
+    }, [managedConfig?.copyAndPasteProtection, intl, theme, onCopy]);
 
     return (
         <>
