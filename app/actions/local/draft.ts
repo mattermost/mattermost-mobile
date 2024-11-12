@@ -228,29 +228,18 @@ export async function updateDraftMarkdownImageMetadata({
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const draft = await getDraft(database, channelId, rootId);
-        if (!draft) {
-            const newDraft: Draft = {
-                channel_id: channelId,
-                root_id: rootId,
-                metadata: {
+        if (draft) {
+            draft.prepareUpdate((d) => {
+                d.metadata = {
+                    ...d.metadata,
                     images: imageMetadata,
-                },
-                update_at: Date.now(),
-            };
-
-            return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
+                };
+                d.updateAt = Date.now();
+            });
+            if (!prepareRecordsOnly) {
+                await operator.batchRecords([draft], 'updateDraftImageMetadata');
+            }
         }
-        draft.prepareUpdate((d) => {
-            d.metadata = {
-                ...d.metadata,
-                images: imageMetadata,
-            };
-            d.updateAt = Date.now();
-        });
-        if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft], 'updateDraftImageMetadata');
-        }
-
         return {draft};
     } catch (error) {
         logError('Failed updateDraftImages', error);
