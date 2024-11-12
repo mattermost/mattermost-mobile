@@ -108,7 +108,7 @@ const ChannelInfo: React.FC<Props> = ({
         headerComponent = (
             <View style={style.channelInfo}>
                 <FormattedText
-                    id='channel_info.to'
+                    id='channel_info.draft_to_user'
                     defaultMessage={'To:'}
                     style={style.displayName}
                 />
@@ -119,7 +119,7 @@ const ChannelInfo: React.FC<Props> = ({
         headerComponent = (
             <View style={style.channelInfo}>
                 <FormattedText
-                    id='channel_info.in'
+                    id='channel_info.draft_in_channel'
                     defaultMessage={'In:'}
                     style={style.displayName}
                 />

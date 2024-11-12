@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, TouchableHighlight, View} from 'react-native';
 
@@ -61,7 +61,7 @@ const Draft: React.FC<Props> = ({
     const isTablet = useIsTablet();
     const showPostPriority = Boolean(isPostPriorityEnabled && draft.metadata?.priority && draft.metadata?.priority?.priority);
 
-    const onLongPress = () => {
+    const onLongPress = useCallback(() => {
         Keyboard.dismiss();
         const title = isTablet ? intl.formatMessage({id: 'draft.options.title', defaultMessage: 'Draft Options'}) : 'Draft Options';
         openAsBottomSheet({
@@ -71,7 +71,7 @@ const Draft: React.FC<Props> = ({
             title,
             props: {channel, rootId: draft.rootId, draft, draftReceiverUserName: draftReceiverUser?.username},
         });
-    };
+    }, [channel, draft, draftReceiverUser?.username, intl, isTablet, theme]);
 
     return (
         <TouchableHighlight
@@ -80,7 +80,7 @@ const Draft: React.FC<Props> = ({
             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
         >
             <View
-                style={[style.container]}
+                style={style.container}
             >
                 <ChannelInfo
                     channel={channel}

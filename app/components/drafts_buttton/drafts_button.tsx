@@ -19,7 +19,6 @@ import FormattedText from '@components/formatted_text';
 
 import CompassIcon from '../compass_icon';
 
-// See LICENSE.txt for license information.
 type DraftListProps = {
     currentChannelId: string;
     shouldHighlighActive?: boolean;
@@ -115,22 +114,6 @@ const DraftsButton: React.FC<DraftListProps> = ({
             </View>
         </TouchableOpacity>
     );
-
-    // const renderItem = ({item, index}: {item: string; index: number}) => (
-    //     <View style={styles.itemContainer}>
-    //         <Text style={styles.messageText}>{'Draft'} {index + 1} {':'} {item}</Text>
-    //         <Text style={styles.fileText}>{'Attached files:'} {files[index]?.length || 0}</Text>
-    //     </View>
-    // );
-
-    // return (
-    //     <FlatList
-    //         data={messages}
-    //         keyExtractor={(item, index) => `draft-${index}`}
-    //         renderItem={renderItem}
-    //         ListEmptyComponent={<Text style={styles.emptyText}>{'No drafts available.'}</Text>}
-    //     />
-    // );
 };
 
 export default DraftsButton;

@@ -4,7 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import NavigationHeader from '@app/components/navigation_header';
 import OtherMentionsBadge from '@app/components/other_mentions_badge';
@@ -13,13 +13,14 @@ import {Screens} from '@app/constants';
 import {useIsTablet} from '@app/hooks/device';
 import {useDefaultHeaderHeight} from '@app/hooks/header';
 import {useTeamSwitch} from '@app/hooks/team_switch';
-import {edges} from '@app/screens/global_threads/global_threads';
 
 import {popTopScreen} from '../navigation';
 
 import GlobalDraftsList from './components/global_drafts_list';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
+
+const edges: Edge[] = ['left', 'right'];
 
 type Props = {
     componentId?: AvailableScreens;
@@ -73,7 +74,7 @@ const GlobalDrafts = ({componentId}: Props) => {
                 onBackPress={onBackPress}
                 title={
                     intl.formatMessage({
-                        id: 'Drafts',
+                        id: 'drafts',
                         defaultMessage: 'Drafts',
                     })
                 }

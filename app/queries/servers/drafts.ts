@@ -36,8 +36,8 @@ export const queryAllDrafts = (database: Database, teamId: string) => {
             Q.and(
                 Q.or(
                     Q.where('team_id', teamId), // Channels associated with the given team
-                    Q.where('type', 'D'), // Channels of type 'D'
-                    Q.where('type', 'G'), // Channels of type 'D'
+                    Q.where('type', 'D'), // Direct Message
+                    Q.where('type', 'G'), // Group Message
                 ),
                 Q.where('delete_at', 0), // Ensure the channel is not deleted
             ),

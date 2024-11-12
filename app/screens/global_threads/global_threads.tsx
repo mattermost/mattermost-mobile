@@ -27,7 +27,7 @@ type Props = {
     globalThreadsTab: GlobalThreadsTab;
 };
 
-export const edges: Edge[] = ['left', 'right'];
+const edges: Edge[] = ['left', 'right'];
 
 const styles = StyleSheet.create({
     flex: {

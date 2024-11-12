@@ -58,7 +58,6 @@ const DraftPost: React.FC<Props> = ({
                 <DraftFiles
                     filesInfo={draft.files}
                     isReplyPost={false}
-                    draftId={draft.id}
                     location={location}
                     layoutWidth={layoutWidth}
                 />
