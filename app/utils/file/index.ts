@@ -72,8 +72,8 @@ const SUPPORTED_VIDEO_FORMAT = Platform.select({
 });
 
 const SUPPORTED_AUDIO_FORMAT = Platform.select({
-    ios: ['audio/aac', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-aiff'],
-    android: ['audio/aac', 'audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/3gpp'],
+    ios: ['audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-aiff'],
+    android: ['audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/3gpp'],
 });
 
 const types: Record<string, string> = {};
