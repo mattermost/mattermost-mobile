@@ -3,7 +3,7 @@
 
 /* eslint-disable max-lines */
 
-import {Preferences} from '@app/constants';
+import {Preferences} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -22,7 +22,7 @@ import {
     savePreferredSkinTone,
 } from './preference';
 
-import type {PreferenceModel} from '@app/database/models/server';
+import type {PreferenceModel} from '@database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
 const serverUrl = 'baseHandler.test.com';

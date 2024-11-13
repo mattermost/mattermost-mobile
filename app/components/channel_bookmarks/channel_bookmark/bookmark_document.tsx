@@ -5,9 +5,9 @@ import {Button} from '@rneui/base';
 import React, {useCallback, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import ProgressBar from '@app/components/progress_bar';
-import {useTheme} from '@app/context/theme';
 import Document, {type DocumentRef} from '@components/document';
+import ProgressBar from '@components/progress_bar';
+import {useTheme} from '@context/theme';
 
 import BookmarkDetails from './bookmark_details';
 

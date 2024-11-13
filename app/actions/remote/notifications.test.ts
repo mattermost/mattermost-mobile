@@ -14,6 +14,7 @@ import {
     fetchNotificationData,
     backgroundNotification,
     openNotification,
+    sendTestNotification,
 } from './notifications';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -83,12 +84,18 @@ const mockClient = {
     getTeamMember: jest.fn((id: string, userId: string) => ({id: userId + '-' + id, user_id: userId === 'me' ? user1.id : userId, team_id: id, roles: ''})),
     getChannel: jest.fn((_channelId: string) => ({...channel, id: _channelId})),
     getChannelMember: jest.fn((_channelId: string, userId: string) => ({id: userId + '-' + _channelId, user_id: userId === 'me' ? user1.id : userId, channel_id: _channelId, roles: ''})),
+    sendTestNotification: jest.fn(),
 };
 
 beforeAll(() => {
     // eslint-disable-next-line
     // @ts-ignore
-    NetworkManager.getClient = () => mockClient;
+    NetworkManager.getClient = (url) => {
+        if (serverUrl === url) {
+            return mockClient;
+        }
+        throw new Error('invalid url');
+    };
 });
 
 beforeEach(async () => {
@@ -185,5 +192,37 @@ describe('notifications', () => {
         const result = await openNotification(serverUrl, {payload: {...notificationData, team_id: ''}} as NotificationWithData) as {error?: unknown};
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
+    });
+});
+
+describe('sendTestNotification', () => {
+    it('calls client function and returns correctly', async () => {
+        mockClient.sendTestNotification.mockResolvedValueOnce({status: 'OK'});
+        const result = await sendTestNotification(serverUrl);
+        expect(result.status).toBe('OK');
+        expect(result.error).toBeUndefined();
+        expect(mockClient.sendTestNotification).toHaveBeenCalled();
+    });
+
+    it('calls client function and returns correctly when error value', async () => {
+        mockClient.sendTestNotification.mockRejectedValueOnce(new Error('some error'));
+        const result = await sendTestNotification(serverUrl);
+        expect(result.error).toBeTruthy();
+        expect(mockClient.sendTestNotification).toHaveBeenCalled();
+    });
+
+    it('calls client function and returns error on throw', async () => {
+        mockClient.sendTestNotification.mockImplementationOnce(() => {
+            throw new Error('error');
+        });
+        const result = await sendTestNotification(serverUrl);
+        expect(result.error).toBeTruthy();
+        expect(mockClient.sendTestNotification).toHaveBeenCalled();
+    });
+
+    it('show error when wrong server url is used', async () => {
+        const result = await sendTestNotification('bad server url');
+        expect(result.error).toBeTruthy();
+        expect(mockClient.sendTestNotification).not.toHaveBeenCalled();
     });
 });

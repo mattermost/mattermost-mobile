@@ -1033,8 +1033,6 @@
   "terms_of_service.title": "서비스 약관",
   "thread.header.thread": "글타래",
   "thread.header.thread_in": "{channelName} 채널에 있음",
-  "thread.loadingReplies": "댓글 불러오는 중...",
-  "thread.noReplies": "아직 댓글이 없습니다",
   "thread.options.title": "글타래 동작",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {reply} other {replies}}",
   "threads": "글타래",

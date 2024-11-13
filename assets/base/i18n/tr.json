@@ -1142,8 +1142,6 @@
   "terms_of_service.title": "Hizmet koşulları",
   "thread.header.thread": "Konu",
   "thread.header.thread_in": "{channelName} kanalında",
-  "thread.loadingReplies": "Yanıtlar yükleniyor...",
-  "thread.noReplies": "Henüz bir yanıt yok",
   "thread.options.title": "Konu işlemleri",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {yanıt} other {yanıt}}",
   "threads": "Konular",

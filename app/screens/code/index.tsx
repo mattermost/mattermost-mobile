@@ -7,14 +7,14 @@ import React, {useCallback, useEffect} from 'react';
 import {StyleSheet, type TextStyle} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
-import CompassIcon from '@app/components/compass_icon';
-import {SNACK_BAR_TYPE} from '@app/constants/snack_bar';
-import {useTheme} from '@app/context/theme';
-import useNavButtonPressed from '@app/hooks/navigation_button_pressed';
-import {showSnackBar} from '@app/utils/snack_bar';
+import CompassIcon from '@components/compass_icon';
 import SyntaxHiglight from '@components/syntax_highlight';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {popTopScreen, setButtons} from '@screens/navigation';
+import {showSnackBar} from '@utils/snack_bar';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 

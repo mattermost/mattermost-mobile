@@ -10,7 +10,7 @@ import ThreadOverview from './thread_overview';
 import type PostModel from '@typings/database/models/servers/post';
 
 describe('ThreadOverview', () => {
-    it('should match snapshot when post is not saved and 0 replies', () => {
+    it('should match snapshot when post is saved with no replies', () => {
         const props = {
             isSaved: true,
             repliesCount: 0,

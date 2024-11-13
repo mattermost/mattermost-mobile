@@ -60,7 +60,7 @@ class NetworkManager {
         sessionConfiguration: {
             allowsCellularAccess: true,
             waitsForConnectivity: false,
-            httpMaximumConnectionsPerHost: 10,
+            httpMaximumConnectionsPerHost: 100,
             cancelRequestsOnUnauthorized: true,
         },
         retryPolicyConfiguration: {

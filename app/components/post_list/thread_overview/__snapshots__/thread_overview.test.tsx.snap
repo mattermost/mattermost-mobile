@@ -1,126 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ThreadOverview should match snapshot when post is not saved and 0 replies 1`] = `
-<View
-  style={
-    [
-      {
-        "borderBottomWidth": 1,
-        "borderColor": "rgba(63,67,80,0.1)",
-        "borderTopWidth": 1,
-        "flexDirection": "row",
-        "marginVertical": 12,
-        "paddingHorizontal": 16,
-        "paddingVertical": 10,
-      },
-      {
-        "borderBottomWidth": 0,
-      },
-      undefined,
-    ]
-  }
-  testID="thread-overview"
->
-  <View
-    style={
-      {
-        "flex": 1,
-      }
-    }
-  >
-    <Text
-      style={
-        {
-          "color": "rgba(63,67,80,0.64)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
-          "marginHorizontal": 4,
-        }
-      }
-      testID="thread-overview.no_replies"
-    >
-      No replies yet
-    </Text>
-  </View>
-  <View
-    style={
-      {
-        "flexDirection": "row",
-      }
-    }
-  >
-    <RNGestureHandlerButton
-      collapsable={false}
-      delayLongPress={600}
-      enabled={true}
-      exclusive={true}
-      handlerTag={1}
-      handlerType="NativeViewGestureHandler"
-      innerRef={null}
-      onGestureEvent={[Function]}
-      onGestureHandlerEvent={[Function]}
-      onGestureHandlerStateChange={[Function]}
-      onHandlerStateChange={[Function]}
-      rippleColor={0}
-      testID="thread-overview.unsave.button"
-      touchSoundDisabled={false}
-    >
-      <View
-        accessible={true}
-        collapsable={false}
-        style={
-          {
-            "marginLeft": 16,
-            "opacity": 1,
-          }
-        }
-      >
-        <Icon
-          color="#386fe5"
-          name="bookmark"
-          size={24}
-        />
-      </View>
-    </RNGestureHandlerButton>
-    <RNGestureHandlerButton
-      collapsable={false}
-      delayLongPress={600}
-      enabled={true}
-      exclusive={true}
-      handlerTag={2}
-      handlerType="NativeViewGestureHandler"
-      innerRef={null}
-      onGestureEvent={[Function]}
-      onGestureHandlerEvent={[Function]}
-      onGestureHandlerStateChange={[Function]}
-      onHandlerStateChange={[Function]}
-      rippleColor={0}
-      testID="thread-overview.post_options.button"
-      touchSoundDisabled={false}
-    >
-      <View
-        accessible={true}
-        collapsable={false}
-        style={
-          {
-            "marginLeft": 16,
-            "opacity": 1,
-          }
-        }
-      >
-        <Icon
-          color="rgba(63,67,80,0.64)"
-          name="dots-horizontal"
-          size={24}
-        />
-      </View>
-    </RNGestureHandlerButton>
-  </View>
-</View>
-`;
-
 exports[`ThreadOverview should match snapshot when post is saved and has replies 1`] = `
 <View
   style={
@@ -174,7 +53,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       delayLongPress={600}
       enabled={true}
       exclusive={true}
-      handlerTag={3}
+      handlerTag={1}
       handlerType="NativeViewGestureHandler"
       innerRef={null}
       onGestureEvent={[Function]}
@@ -207,7 +86,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       delayLongPress={600}
       enabled={true}
       exclusive={true}
-      handlerTag={4}
+      handlerTag={2}
       handlerType="NativeViewGestureHandler"
       innerRef={null}
       onGestureEvent={[Function]}
@@ -238,3 +117,5 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
   </View>
 </View>
 `;
+
+exports[`ThreadOverview should match snapshot when post is saved with no replies 1`] = `null`;
