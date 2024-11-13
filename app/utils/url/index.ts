@@ -252,3 +252,12 @@ export function extractFilenameFromUrl(url: string) {
     const uri = urlParse(url);
     return uri.pathname.split('/').pop();
 }
+
+export function safeDecodeURIComponent(v: string) {
+    try {
+        const result = decodeURIComponent(v);
+        return result;
+    } catch {
+        return v;
+    }
+}

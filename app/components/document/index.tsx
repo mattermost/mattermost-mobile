@@ -116,7 +116,7 @@ const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, chil
             setPreview(true);
             setStatusBarColor('dark-content');
             FileViewer.open(path!.replace('file://', ''), {
-                displayName: decodeURIComponent(file.name),
+                displayName: file.name,
                 onDismiss: onDonePreviewingFile,
                 showOpenWithDialog: true,
                 showAppsSuggestions: true,
