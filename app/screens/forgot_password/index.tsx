@@ -15,7 +15,7 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useIsTablet} from '@hooks/device';
+import {useKeyboardHeight} from '@hooks/device';
 import Background from '@screens/background';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isEmail} from '@utils/helpers';
@@ -93,7 +93,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
     const dimensions = useWindowDimensions();
     const translateX = useSharedValue(dimensions.width);
-    const isTablet = useIsTablet();
+    const keyboard = useKeyboardHeight();
     const [email, setEmail] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isPasswordLinkSent, setIsPasswordLinkSent] = useState<boolean>(false);
@@ -105,20 +105,6 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
         setEmail(emailAddress);
         setError('');
     }, []);
-
-    const onFocus = useCallback(() => {
-        if (Platform.OS === 'ios') {
-            let offsetY = 150;
-            if (isTablet) {
-                const {width, height} = dimensions;
-                const isLandscape = width > height;
-                offsetY = (isLandscape ? 230 : 150);
-            }
-            requestAnimationFrame(() => {
-                keyboardAwareRef.current?.scrollToPosition(0, offsetY);
-            });
-        }
-    }, [dimensions]);
 
     const onReturn = useCallback(() => {
         Navigation.popTo(Screens.LOGIN);
@@ -146,7 +132,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
             id: 'password_send.generic_error',
             defaultMessage: 'We were unable to send you a reset password link. Please contact your System Admin for assistance.',
         }));
-    }, [email]);
+    }, [email, formatMessage, serverUrl]);
 
     const getCenterContent = () => {
         if (isPasswordLinkSent) {
@@ -188,7 +174,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
             <KeyboardAwareScrollView
                 bounces={false}
                 contentContainerStyle={styles.innerContainer}
-                enableAutomaticScroll={Platform.OS === 'android'}
+                enableAutomaticScroll={false}
                 enableOnAndroid={false}
                 enableResetScrollToCoords={true}
                 extraScrollHeight={0}
@@ -224,7 +210,6 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                             keyboardType='email-address'
                             label={formatMessage({id: 'login.email', defaultMessage: 'Email'})}
                             onChangeText={changeEmail}
-                            onFocus={onFocus}
                             onSubmitEditing={submitResetPassword}
                             returnKeyType='next'
                             spellCheck={false}
@@ -259,6 +244,16 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
     }, []);
 
     useEffect(() => {
+        requestAnimationFrame(() => {
+            let height = keyboard / 3;
+            if (height < 80) {
+                height = 0;
+            }
+            keyboardAwareRef.current?.scrollToPosition(0, height);
+        });
+    }, [keyboard, keyboardAwareRef]);
+
+    useEffect(() => {
         const listener = {
             componentDidAppear: () => {
                 translateX.value = 0;
@@ -270,7 +265,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
         const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
-    }, [dimensions]);
+    }, [componentId, dimensions, translateX]);
 
     useEffect(() => {
         translateX.value = 0;

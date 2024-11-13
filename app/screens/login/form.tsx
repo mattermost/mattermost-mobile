@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Button} from '@rneui/base';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
 
@@ -13,6 +13,7 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
+import {useKeyboardHeight} from '@hooks/device';
 import {t} from '@i18n';
 import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -22,10 +23,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import type {LaunchProps} from '@typings/launch';
+import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 interface LoginProps extends LaunchProps {
     config: Partial<ClientConfig>;
     license: Partial<ClientLicense>;
+    keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
     serverDisplayName: string;
     theme: Theme;
 }
@@ -77,12 +80,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
+const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
     const loginRef = useRef<TextInput>(null);
     const passwordRef = useRef<TextInput>(null);
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const keyboard = useKeyboardHeight();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | undefined>();
     const [loginId, setLoginId] = useState<string>('');
@@ -227,6 +231,16 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
     const togglePasswordVisiblity = useCallback(() => {
         setIsPasswordVisible((prevState) => !prevState);
     }, []);
+
+    useEffect(() => {
+        requestAnimationFrame(() => {
+            let height = keyboard / 3;
+            if (height < 80) {
+                height = 0;
+            }
+            keyboardAwareRef.current?.scrollToPosition(0, height);
+        });
+    }, [keyboard, keyboardAwareRef]);
 
     // useEffect to set userName for EMM
     useEffect(() => {
