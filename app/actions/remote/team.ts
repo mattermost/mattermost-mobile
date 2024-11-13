@@ -1,12 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {chunk} from 'lodash';
 import {DeviceEventEmitter} from 'react-native';
 
+import {storeCategories} from '@actions/local/category';
+import {storeMyChannelsForTeam} from '@actions/local/channel';
+import {storePostsForChannel} from '@actions/local/post';
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
+import {removeDuplicatesModels} from '@helpers/database';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
@@ -22,9 +27,10 @@ import {logDebug} from '@utils/log';
 
 import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
 import {fetchGroupsForTeamIfConstrained} from './groups';
-import {fetchPostsForChannel, fetchPostsForUnreadChannels} from './post';
+import {fetchPostsForChannel, fetchPostsForUnreadChannels, type PostsForChannel} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
+import {syncThreadsIfNeeded} from './thread';
 
 import type {Client} from '@client/rest';
 import type {Model} from '@nozbe/watermelondb';
@@ -312,24 +318,85 @@ export const updateCanJoinTeams = async (serverUrl: string) => {
     }
 };
 
-export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, since: number, teams: Team[], memberships: TeamMembership[], excludeTeamId?: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
+export const fetchTeamsChannelsThreadsAndUnreadPosts = async (
+    serverUrl: string, since: number, teams: Team[],
+    isCRTEnabled?: boolean, fetchOnly = false,
+) => {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const result: Model[] = [];
 
-    const membershipSet = new Set(memberships.map((m) => m.team_id));
-    const myTeams = teams.filter((t) => membershipSet.has(t.id) && t.id !== excludeTeamId);
+        // process up to 15 teams at a time
+        const chunks = chunk(teams, 15);
+        for await (const myTeams of chunks) {
+            const promises = [];
+            for (const team of myTeams) {
+                promises.push(fetchMyChannelsForTeam(serverUrl, team.id, true, since, true, true, isCRTEnabled));
+            }
 
-    for await (const team of myTeams) {
-        const {channels, memberships: members} = await fetchMyChannelsForTeam(serverUrl, team.id, true, since, false, true);
+            const results = await Promise.all(promises);
+            const models: Model[] = [];
+            const channels: Channel[] = [];
+            const members: ChannelMembership[] = [];
 
-        if (channels?.length && members?.length) {
-            fetchPostsForUnreadChannels(serverUrl, channels, members);
+            for await (const r of results) {
+                if (!r.error && r.teamId && r.categories && r.channels && r.memberships) {
+                    const {models: chModels} = await storeMyChannelsForTeam(serverUrl, r.teamId, r.channels, r.memberships, true, isCRTEnabled);
+                    const {models: catModels} = await storeCategories(serverUrl, r.categories, true, true); // Re-sync
+                    if (chModels?.length) {
+                        models.push(...chModels);
+                    }
+
+                    if (catModels?.length) {
+                        models.push(...catModels);
+                    }
+
+                    channels.push(...r.channels);
+                    members.push(...r.memberships);
+                }
+            }
+
+            const unreadPromise = fetchPostsForUnreadChannels(serverUrl, channels, members, undefined, true);
+            const threadsPromise = syncThreadsIfNeeded(serverUrl, isCRTEnabled ?? false, myTeams, true);
+            const postPromises: [Promise<PostsForChannel[]>, Promise<{models?: Model[]; error?: unknown}>] = [
+                unreadPromise,
+                threadsPromise,
+            ];
+
+            const [unreadPosts, threads] = await Promise.all(postPromises);
+
+            for await (const data of unreadPosts) {
+                if (data.channelId && data.posts?.length && data.order?.length && data.actionType) {
+                    const {models: prepared} = await storePostsForChannel(
+                        serverUrl, data.channelId,
+                        data.posts, data.order, data.previousPostId ?? '',
+                        data.actionType, data.authors || [], true,
+                    );
+
+                    if (prepared?.length) {
+                        models.push(...prepared);
+                    }
+                }
+            }
+
+            if (threads.models) {
+                models.push(...threads.models);
+            }
+
+            if (!fetchOnly && models.length) {
+                await operator.batchRecords(removeDuplicatesModels(models), 'fetchTeamsChannelsThreadsAndUnreadPosts');
+            }
+
+            if (models.length) {
+                result.push(...models);
+            }
         }
-    }
 
-    return {};
+        return {error: undefined, models: result};
+    } catch (error) {
+        logDebug('error on fetchTeamsChannelsThreadsAndUnreadPosts', getFullErrorMessage(error));
+        return {error};
+    }
 };
 
 export async function fetchTeamByName(serverUrl: string, teamName: string, fetchOnly = false) {
