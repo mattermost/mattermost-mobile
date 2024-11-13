@@ -9,6 +9,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {DeviceContext} from '@context/device';
 
 import type {KeyboardTrackingViewRef, KeyboardWillShowEventData} from '@mattermost/keyboard-tracker';
+import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 const utilsEmitter = new NativeEventEmitter(RNUtils);
 
@@ -146,4 +147,17 @@ export function useKeyboardOverlap(viewRef: RefObject<View>, containerHeight: nu
     });
 
     return overlap;
+}
+
+export function useAvoidKeyboard(ref: RefObject<KeyboardAwareScrollView>, dimisher = 3) {
+    const height = useKeyboardHeight();
+
+    useEffect(() => {
+        let offsetY = height / dimisher;
+        if (offsetY < 80) {
+            offsetY = 0;
+        }
+
+        ref.current?.scrollToPosition(0, height);
+    }, [height, dimisher, ref]);
 }

@@ -15,7 +15,7 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useKeyboardHeight} from '@hooks/device';
+import {useAvoidKeyboard} from '@hooks/device';
 import {t} from '@i18n';
 import Background from '@screens/background';
 import {popTopScreen} from '@screens/navigation';
@@ -98,7 +98,6 @@ const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const MFA = ({componentId, config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
     const dimensions = useWindowDimensions();
-    const keyboard = useKeyboardHeight();
     const translateX = useSharedValue(dimensions.width);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const intl = useIntl();
@@ -142,15 +141,7 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
         };
     }, []);
 
-    useEffect(() => {
-        requestAnimationFrame(() => {
-            let height = keyboard / 2;
-            if (height < 80) {
-                height = 0;
-            }
-            keyboardAwareRef.current?.scrollToPosition(0, height);
-        });
-    }, [keyboard, keyboardAwareRef]);
+    useAvoidKeyboard(keyboardAwareRef, 2);
 
     useEffect(() => {
         const listener = {

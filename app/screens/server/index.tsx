@@ -400,7 +400,6 @@ const Server = ({
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}
-                        isModal={isModal}
                         keyboardAwareRef={keyboardAwareRef}
                         theme={theme}
                         url={url}

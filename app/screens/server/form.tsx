@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Button} from '@rneui/base';
-import React, {type MutableRefObject, useCallback, useEffect, useRef} from 'react';
+import React, {type RefObject, useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, View} from 'react-native';
 
 import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-import {useKeyboardHeight} from '@hooks/device';
+import {useAvoidKeyboard} from '@hooks/device';
 import {t} from '@i18n';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -27,8 +27,7 @@ type Props = {
     handleConnect: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
     handleUrlTextChanged: (text: string) => void;
-    isModal?: boolean;
-    keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
+    keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
     theme: Theme;
     url?: string;
     urlError?: string;
@@ -85,10 +84,11 @@ const ServerForm = ({
     urlError,
 }: Props) => {
     const {formatMessage} = useIntl();
-    const keyboard = useKeyboardHeight();
     const displayNameRef = useRef<FloatingTextInputRef>(null);
     const urlRef = useRef<FloatingTextInputRef>(null);
     const styles = getStyleSheet(theme);
+
+    useAvoidKeyboard(keyboardAwareRef);
 
     const onConnect = useCallback(() => {
         Keyboard.dismiss();
@@ -98,16 +98,6 @@ const ServerForm = ({
     const onUrlSubmit = useCallback(() => {
         displayNameRef.current?.focus();
     }, []);
-
-    useEffect(() => {
-        requestAnimationFrame(() => {
-            let height = keyboard / 3;
-            if (height < 80) {
-                height = 0;
-            }
-            keyboardAwareRef.current?.scrollToPosition(0, height);
-        });
-    }, [keyboard, keyboardAwareRef]);
 
     const buttonType = buttonDisabled ? 'disabled' : 'default';
     const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', buttonType);

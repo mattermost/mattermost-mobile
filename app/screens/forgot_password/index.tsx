@@ -15,7 +15,7 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useKeyboardHeight} from '@hooks/device';
+import {useAvoidKeyboard} from '@hooks/device';
 import Background from '@screens/background';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isEmail} from '@utils/helpers';
@@ -93,13 +93,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
     const dimensions = useWindowDimensions();
     const translateX = useSharedValue(dimensions.width);
-    const keyboard = useKeyboardHeight();
     const [email, setEmail] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isPasswordLinkSent, setIsPasswordLinkSent] = useState<boolean>(false);
     const {formatMessage} = useIntl();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const styles = getStyleSheet(theme);
+
+    useAvoidKeyboard(keyboardAwareRef);
 
     const changeEmail = useCallback((emailAddress: string) => {
         setEmail(emailAddress);
@@ -242,16 +243,6 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
             transform: [{translateX: withTiming(translateX.value, {duration})}],
         };
     }, []);
-
-    useEffect(() => {
-        requestAnimationFrame(() => {
-            let height = keyboard / 3;
-            if (height < 80) {
-                height = 0;
-            }
-            keyboardAwareRef.current?.scrollToPosition(0, height);
-        });
-    }, [keyboard, keyboardAwareRef]);
 
     useEffect(() => {
         const listener = {
