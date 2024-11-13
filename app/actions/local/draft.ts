@@ -3,11 +3,11 @@
 
 import {DeviceEventEmitter, Image} from 'react-native';
 
-import {Navigation, Screens} from '@app/constants';
-import {goToScreen} from '@app/screens/navigation';
-import {isTablet} from '@app/utils/helpers';
+import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
+import {goToScreen} from '@screens/navigation';
+import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 export const switchToGlobalDrafts = async () => {

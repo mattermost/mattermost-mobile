@@ -5,15 +5,15 @@ import React, {useCallback, useState} from 'react';
 import {ScrollView, View, useWindowDimensions, type LayoutChangeEvent} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import ShowMoreButton from '@app/components/post_list/post/body/message/show_more_button';
-import {useTheme} from '@app/context/theme';
-import {useShowMoreAnimatedStyle} from '@app/hooks/show_more';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@app/utils/markdown';
-import {makeStyleSheetFromTheme} from '@app/utils/theme';
-import {typography} from '@app/utils/typography';
 import Markdown from '@components/markdown';
+import ShowMoreButton from '@components/post_list/post/body/message/show_more_button';
+import {useTheme} from '@context/theme';
+import {useShowMoreAnimatedStyle} from '@hooks/show_more';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
-import type {DraftModel} from '@app/database/models/server';
+import type DraftModel from '@typings/database/models/servers/draft';
 import type {UserMentionKey} from '@typings/global/markdown';
 
 type Props = {

@@ -4,9 +4,9 @@
 import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
-import GlobalDrafts from '@app/screens/global_drafts';
 import {Navigation, Screens} from '@constants';
 import Channel from '@screens/channel';
+import GlobalDrafts from '@screens/global_drafts';
 import GlobalThreads from '@screens/global_threads';
 
 type SelectedView = {

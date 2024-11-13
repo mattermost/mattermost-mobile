@@ -6,8 +6,8 @@ import React, {useCallback, useState} from 'react';
 import {View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@app/components/post_list/config';
-import {Screens} from '@app/constants';
+import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_list/config';
+import {Screens} from '@constants';
 
 import SwipeableDraft from './SwipeableDraft';
 

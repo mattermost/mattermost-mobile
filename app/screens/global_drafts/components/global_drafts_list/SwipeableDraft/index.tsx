@@ -6,14 +6,14 @@ import {useIntl} from 'react-intl';
 import {Text, Animated, DeviceEventEmitter, TouchableWithoutFeedback} from 'react-native';
 import {Swipeable} from 'react-native-gesture-handler';
 
-import CompassIcon from '@app/components/compass_icon';
-import Draft from '@app/components/draft';
-import {Events} from '@app/constants';
-import {useServerUrl} from '@app/context/server';
-import {useTheme} from '@app/context/theme';
-import {deleteDraftConfirmation} from '@app/utils/draft';
-import {makeStyleSheetFromTheme} from '@app/utils/theme';
-import {typography} from '@app/utils/typography';
+import CompassIcon from '@components/compass_icon';
+import Draft from '@components/draft';
+import {Events} from '@constants';
+import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
+import {deleteDraftConfirmation} from '@utils/draft';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type DraftModel from '@typings/database/models/servers/draft';
 

@@ -5,15 +5,15 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, TouchableHighlight, View} from 'react-native';
 
-import ChannelInfo from '@app/components/channel_info';
-import DraftPost from '@app/components/draft/draft_post';
-import {Screens} from '@app/constants';
-import {useTheme} from '@app/context/theme';
-import {useIsTablet} from '@app/hooks/device';
-import {DRAFT_OPTIONS_BUTTON} from '@app/screens/draft_options';
-import {openAsBottomSheet} from '@app/screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
+import ChannelInfo from '@components/channel_info';
+import DraftPost from '@components/draft/draft_post';
 import Header from '@components/post_draft/draft_input/header';
+import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
+import {DRAFT_OPTIONS_BUTTON} from '@screens/draft_options';
+import {openAsBottomSheet} from '@screens/navigation';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';

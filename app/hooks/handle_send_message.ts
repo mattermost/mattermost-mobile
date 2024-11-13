@@ -10,16 +10,16 @@ import {executeCommand, handleGotoLocation} from '@actions/remote/command';
 import {createPost} from '@actions/remote/post';
 import {handleReactionToLatestPost} from '@actions/remote/reactions';
 import {setStatus} from '@actions/remote/user';
-import {Events, Screens} from '@app/constants';
-import {NOTIFY_ALL_MEMBERS} from '@app/constants/post_draft';
-import {useServerUrl} from '@app/context/server';
-import {handleCallsSlashCommand} from '@app/products/calls/actions';
-import {isReactionMatch} from '@app/utils/emoji/helpers';
-import {getFullErrorMessage} from '@app/utils/errors';
-import {preventDoubleTap} from '@app/utils/tap';
-import {confirmOutOfOfficeDisabled} from '@app/utils/user';
+import {handleCallsSlashCommand} from '@calls/actions';
+import {Events, Screens} from '@constants';
+import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
+import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
+import {isReactionMatch} from '@utils/emoji/helpers';
+import {getFullErrorMessage} from '@utils/errors';
+import {preventDoubleTap} from '@utils/tap';
+import {confirmOutOfOfficeDisabled} from '@utils/user';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 

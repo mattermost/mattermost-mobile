@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {INITIAL_PRIORITY} from '@app/components/post_draft/send_handler/send_handler';
+import {INITIAL_PRIORITY} from '@components/post_draft/send_handler/send_handler';
 import {General, Permissions} from '@constants';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';

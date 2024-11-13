@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import Files from '@app/components/files/files';
+import Files from '@components/files/files';
 import {observeCanDownloadFiles, observeConfigBooleanValue} from '@queries/servers/system';
 
 import type {WithDatabaseArgs} from '@typings/database/database';

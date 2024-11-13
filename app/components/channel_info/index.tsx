@@ -4,9 +4,9 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {map} from 'rxjs/operators';
 
-import {getDisplayNamePreferenceAsBool} from '@app/helpers/api/preference';
-import {queryDisplayNamePreferences} from '@app/queries/servers/preference';
-import {observeCurrentUser} from '@app/queries/servers/user';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
+import {observeCurrentUser} from '@queries/servers/user';
 
 import ChannelInfo from './channel_info';
 

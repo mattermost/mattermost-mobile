@@ -5,10 +5,10 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, View, Text} from 'react-native';
 
-import {Screens} from '@app/constants';
-import {useIsTablet} from '@app/hooks/device';
-import {typography} from '@app/utils/typography';
+import {Screens} from '@constants';
+import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
+import {typography} from '@utils/typography';
 
 import DeleteDraft from './delete_draft';
 import EditDraft from './edit_draft';

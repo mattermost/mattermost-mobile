@@ -4,13 +4,13 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import DraftMessage from '@app/components/draft/draft_post/draft_message';
-import {useTheme} from '@app/context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
+import DraftMessage from '@components/draft/draft_post/draft_message';
+import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DraftFiles from './draft_files';
 
-import type {DraftModel} from '@app/database/models/server';
+import type DraftModel from '@typings/database/models/servers/draft';
 
 type Props = {
     draft: DraftModel;

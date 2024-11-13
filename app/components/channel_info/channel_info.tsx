@@ -4,13 +4,13 @@
 import React, {type ReactNode} from 'react';
 import {Text, View} from 'react-native';
 
-import {General} from '@app/constants';
-import {useTheme} from '@app/context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import {typography} from '@app/utils/typography';
-import {getUserTimezone} from '@app/utils/user';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
+import {General} from '@constants';
+import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
+import {getUserTimezone} from '@utils/user';
 
 import CompassIcon from '../compass_icon';
 

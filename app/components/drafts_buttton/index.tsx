@@ -5,8 +5,8 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 
-import {observeDraftCount} from '@app/queries/servers/drafts';
-import {observeCurrentChannelId, observeCurrentTeamId} from '@app/queries/servers/system';
+import {observeDraftCount} from '@queries/servers/drafts';
+import {observeCurrentChannelId, observeCurrentTeamId} from '@queries/servers/system';
 
 import DraftsButton from './drafts_button';
 

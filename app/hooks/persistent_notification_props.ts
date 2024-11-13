@@ -3,9 +3,9 @@
 
 import {useMemo} from 'react';
 
-import {General} from '@app/constants';
-import {MENTIONS_REGEX} from '@app/constants/autocomplete';
-import {PostPriorityType} from '@app/constants/post';
+import {General} from '@constants';
+import {MENTIONS_REGEX} from '@constants/autocomplete';
+import {PostPriorityType} from '@constants/post';
 
 type Props = {
     value: string;

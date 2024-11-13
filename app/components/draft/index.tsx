@@ -5,9 +5,9 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {switchMap, of} from 'rxjs';
 
-import {observeChannel, observeChannelMembers} from '@app/queries/servers/channel';
-import {observeIsPostPriorityEnabled} from '@app/queries/servers/post';
-import {observeCurrentUser, observeUser} from '@app/queries/servers/user';
+import {observeChannel, observeChannelMembers} from '@queries/servers/channel';
+import {observeIsPostPriorityEnabled} from '@queries/servers/post';
+import {observeCurrentUser, observeUser} from '@queries/servers/user';
 
 import Drafts from './draft';
 

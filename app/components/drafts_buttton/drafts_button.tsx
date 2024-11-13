@@ -5,17 +5,17 @@ import React, {useCallback, useMemo} from 'react';
 import {TouchableOpacity, View} from 'react-native';
 
 import {switchToGlobalDrafts} from '@actions/local/draft';
-import {HOME_PADDING} from '@app/constants/view';
-import {useTheme} from '@app/context/theme';
-import {useIsTablet} from '@app/hooks/device';
-import {preventDoubleTap} from '@app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import Badge from '@components/badge';
 import {
     getStyleSheet as getChannelItemStyleSheet,
     ROW_HEIGHT,
 } from '@components/channel_item/channel_item';
 import FormattedText from '@components/formatted_text';
+import {HOME_PADDING} from '@constants/view';
+import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CompassIcon from '../compass_icon';
 

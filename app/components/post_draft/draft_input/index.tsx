@@ -6,9 +6,9 @@ import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {usePersistentNotificationProps} from '@app/hooks/persistent_notification_props';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

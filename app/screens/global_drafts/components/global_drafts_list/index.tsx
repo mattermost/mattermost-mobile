@@ -5,8 +5,8 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 
-import {observeAllDrafts} from '@app/queries/servers/drafts';
-import {observeCurrentTeamId} from '@app/queries/servers/system';
+import {observeAllDrafts} from '@queries/servers/drafts';
+import {observeCurrentTeamId} from '@queries/servers/system';
 
 import GlobalDraftsList from './global_drafts_list';
 

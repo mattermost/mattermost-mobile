@@ -6,14 +6,14 @@ import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
 
 import {removeDraft} from '@actions/local/draft';
-import CompassIcon from '@app/components/compass_icon';
-import TouchableWithFeedback from '@app/components/touchable_with_feedback';
-import {ICON_SIZE} from '@app/constants/post_draft';
-import {useServerUrl} from '@app/context/server';
-import {useTheme} from '@app/context/theme';
-import {dismissBottomSheet} from '@app/screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import {typography} from '@app/utils/typography';
+import CompassIcon from '@components/compass_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {ICON_SIZE} from '@constants/post_draft';
+import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
+import {dismissBottomSheet} from '@screens/navigation';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
