@@ -158,6 +158,6 @@ export function useAvoidKeyboard(ref: RefObject<KeyboardAwareScrollView>, dimish
             offsetY = 0;
         }
 
-        ref.current?.scrollToPosition(0, height);
+        ref.current?.scrollToPosition(0, offsetY);
     }, [height, dimisher, ref]);
 }
