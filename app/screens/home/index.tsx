@@ -2,19 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
-import RNUtils from '@mattermost/rnutils';
 import {createBottomTabNavigator, type BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
-import {Button} from '@rneui/base';
-import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, DeviceEventEmitter, Platform, ScrollView, Text, TextInput, View, type TextInputProps} from 'react-native';
+import {DeviceEventEmitter, Platform} from 'react-native';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {autoUpdateTimezone} from '@actions/remote/user';
 import ServerVersion from '@components/server_version';
 import {Events, Launch, Screens} from '@constants';
-import {ExtraKeyboard, ExtraKeyboardProvider, useExtraKeyboardContext, useHideExtraKeyboardIfNeeded} from '@context/extra_keyboard';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
 import {getAllServers} from '@queries/app/servers';
@@ -85,7 +82,7 @@ export function HomeScreen(props: HomeProps) {
         return () => {
             listener.remove();
         };
-    }, [intl.locale]);
+    }, [intl]);
 
     useEffect(() => {
         const leaveTeamListener = DeviceEventEmitter.addListener(Events.LEAVE_TEAM, (displayName: string) => {
@@ -112,7 +109,7 @@ export function HomeScreen(props: HomeProps) {
             archivedChannelListener.remove();
             crtToggledListener.remove();
         };
-    }, [intl.locale]);
+    }, [intl]);
 
     useEffect(() => {
         if (appState === 'active') {
@@ -192,94 +189,6 @@ export function HomeScreen(props: HomeProps) {
             </NavigationContainer>
             <ServerVersion/>
         </>
-    );
-}
-
-const ShowButton = () => {
-    const context = useExtraKeyboardContext();
-
-    return (
-        <Button
-            style={{marginVertical: 10}}
-            onPress={() => {
-                const comp = <View style={{flex: 1, backgroundColor: 'blue'}}/>;
-                context?.showExtraKeyboard(comp);
-            }}
-        >
-            <Text>{'Show'}</Text>
-        </Button>
-    );
-};
-
-const HideButton = () => {
-    const onPress = useHideExtraKeyboardIfNeeded(() => {
-        Alert.alert('This is the normal event');
-    }, []);
-
-    return (
-        <Button onPress={onPress}>
-            <Text>{'Hide'}</Text>
-        </Button>
-    );
-};
-
-type CustomInputRef = {
-    blur: () => void;
-    focus: () => void;
-    isFocused: () => boolean;
-}
-
-const CustomInput = forwardRef<CustomInputRef, TextInputProps>((props, ref) => {
-    const context = useExtraKeyboardContext();
-
-    // Create a ref to the TextInput
-    const textInputRef = useRef<TextInput>(null);
-
-    // Expose the methods required by CustomInputRef
-    useImperativeHandle(ref, () => ({
-        blur: () => textInputRef.current?.blur(),
-        focus: () => textInputRef.current?.focus(),
-        isFocused: () => textInputRef.current?.isFocused() ?? false,
-    }));
-
-    return (
-        <TextInput
-            {...props}
-            ref={textInputRef}
-            style={{height: 50, width: '90%', backgroundColor: 'white'}}
-            onBlur={context?.registerTextInputBlur}
-            onFocus={context?.registerTextInputFocus}
-        />
-    );
-});
-
-CustomInput.displayName = 'CustomInput';
-
-export function App() {
-    const ref = useRef<TextInput>(null);
-    useEffect(() => {
-        ref.current?.blur();
-        RNUtils.setSoftKeyboardToAdjustNothing();
-        return () => {
-            RNUtils.setSoftKeyboardToAdjustResize();
-        };
-    }, []);
-
-    return (
-        <ExtraKeyboardProvider>
-            <ScrollView
-                style={{backgroundColor: 'green'}}
-                keyboardDismissMode='interactive'
-                keyboardShouldPersistTaps='always'
-            >
-                <ShowButton/>
-                <HideButton/>
-            </ScrollView>
-            <View style={{backgroundColor: 'red', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 20}}>
-                <CustomInput ref={ref}/>
-            </View>
-            <ExtraKeyboard/>
-        </ExtraKeyboardProvider>
     );
 }
 

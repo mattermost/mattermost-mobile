@@ -15,6 +15,7 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import PostList from '@components/post_list';
 import {Screens} from '@constants';
+import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
@@ -314,7 +315,7 @@ function Permalink({
         );
     } else {
         content = (
-            <>
+            <ExtraKeyboardProvider>
                 <View style={style.postList}>
                     <PostList
                         highlightedId={postId}
@@ -344,7 +345,7 @@ function Permalink({
                         />
                     </TouchableOpacity>
                 </View>
-            </>
+            </ExtraKeyboardProvider>
         );
     }
 

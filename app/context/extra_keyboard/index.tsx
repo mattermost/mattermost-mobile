@@ -6,7 +6,12 @@ import {Keyboard, Platform} from 'react-native';
 import Animated, {KeyboardState, useAnimatedKeyboard, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {Screens} from '@constants';
+import {useIsTablet} from '@hooks/device';
+import NavigationStore from '@store/navigation_store';
 import {preventDoubleTap} from '@utils/tap';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 export type ExtraKeyboardContextProps = {
     isExtraKeyboardVisible: boolean;
@@ -17,7 +22,31 @@ export type ExtraKeyboardContextProps = {
     registerTextInputBlur: () => void;
 };
 
+// This is based on the size of the tab bar
+const KEYBOARD_OFFSET = -77;
+
 export const ExtraKeyboardContext = createContext<ExtraKeyboardContextProps|undefined>(undefined);
+
+const useOffetForCurrentScreen = (): number => {
+    const [screen, setScreen] = useState<AvailableScreens|undefined>();
+    const [offset, setOffset] = useState(0);
+    const isTablet = useIsTablet();
+    const sub = NavigationStore.getSubject();
+
+    useEffect(() => {
+        const s = sub.subscribe(setScreen);
+
+        return () => s.unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        if (isTablet && screen === Screens.HOME) {
+            setOffset(KEYBOARD_OFFSET);
+        }
+    }, [isTablet, screen]);
+
+    return offset;
+};
 
 export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement|React.ReactElement[]}) => {
     const [isExtraKeyboardVisible, setExtraKeyboardVisible] = useState(false);
@@ -114,18 +143,23 @@ export const ExtraKeyboard = () => {
     const maxKeyboardHeight = useSharedValue(Platform.select({ios: 291, default: 240}));
     const context = useExtraKeyboardContext();
     const insets = useSafeAreaInsets();
+    const offset = useOffetForCurrentScreen();
 
     useDerivedValue(() => {
         if (keyb.state.value === KeyboardState.OPEN) {
-            maxKeyboardHeight.value = Math.max(maxKeyboardHeight.value, keyb.height.value);
-            return keyb.height.value;
+            const keyboardOffset = keyb.height.value < 70 ? 0 : offset; // When using a hw keyboard
+            maxKeyboardHeight.value = Math.max(maxKeyboardHeight.value, keyb.height.value) + keyboardOffset;
+            return keyb.height.value + keyboardOffset;
         }
 
         return maxKeyboardHeight.value;
     });
 
     const animatedStyle = useAnimatedStyle(() => {
-        let height = keyb.height.value;
+        let height = keyb.height.value + offset;
+        if (keyb.height.value < 70) {
+            height = 0; // When using a hw keyboard
+        }
         if (context?.isExtraKeyboardVisible) {
             height = withTiming(maxKeyboardHeight.value, {duration: 250});
         } else if (keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.UNKNOWN) {
@@ -136,7 +170,7 @@ export const ExtraKeyboard = () => {
             height,
             marginBottom: withTiming((keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.CLOSING || keyb.state.value === KeyboardState.UNKNOWN) ? insets.bottom : 0, {duration: 250}),
         };
-    }, [context, insets.bottom]);
+    }, [context, insets.bottom, offset]);
 
     return (
         <Animated.View style={animatedStyle}>
