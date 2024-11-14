@@ -184,6 +184,11 @@ describe('Utility functions', () => {
             const result = convertSearchTermToRegex('你好');
             expect(result.pattern).toEqual(/()(你好)/gi);
         });
+        
+        it('should create regex for Thai characters', () => {
+            const result = convertSearchTermToRegex('สวัสดี');
+            expect(result.pattern).toEqual(/()(สวัสดี)/gi);
+        });
 
         it('should create regex for wildcard at the end', () => {
             const result = convertSearchTermToRegex('hello*');
