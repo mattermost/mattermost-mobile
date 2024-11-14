@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -75,7 +75,8 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
 
         const snapPoints: Array<string | number> = [
             1,
-            teams.length ? (bottomSheetSnapPoint(Math.min(3, teams.length), ITEM_HEIGHT) + TITLE_HEIGHT) : NO_TEAMS_HEIGHT,
+            teams.length ? (bottomSheetSnapPoint(Math.min(3, teams.length), ITEM_HEIGHT) +
+                (Platform.select({android: 2, default: 1}) * TITLE_HEIGHT)) : NO_TEAMS_HEIGHT,
         ];
 
         if (teams.length > 3) {
