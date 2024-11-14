@@ -80,8 +80,7 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
 export const useExtraKeyboardContext = (): ExtraKeyboardContextProps|undefined => {
     const context = useContext(ExtraKeyboardContext);
     if (!context) {
-        // commented until we add the provider surrounding the code where we call this function
-        // throw new Error('useExtraKeyboardContext must be used within a ExtraKeyboardProvider');
+        throw new Error('useExtraKeyboardContext must be used within a ExtraKeyboardProvider');
     }
     return context;
 };
@@ -93,6 +92,12 @@ export const useHideExtraKeyboardIfNeeded = (callback: (...args: any) => void, d
         if (keyboardContext?.isExtraKeyboardVisible) {
             keyboardContext.hideExtraKeyboard();
 
+            /*
+            /* At this point the early return is commented
+            /* Based on the UX we actually want to have
+            /* we can uncoment this and reaturn as early
+            /* as the custom keyboard is hidden
+            */
             // return;
         }
 
