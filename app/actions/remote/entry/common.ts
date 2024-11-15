@@ -396,6 +396,11 @@ async function restDeferredAppEntryActions(
             const sortedTeamIds = new Set(teamsOrder?.value.split(','));
             const membershipSet = new Set(teamData.memberships.map((m) => m.team_id));
             const teamMap = new Map(teamData.teams.map((t) => [t.id, t]));
+            if (initialTeamId) {
+                sortedTeamIds.delete(initialTeamId);
+                membershipSet.delete(initialTeamId);
+                teamMap.delete(initialTeamId);
+            }
 
             let myTeams: Team[];
             if (sortedTeamIds.size) {
@@ -411,7 +416,10 @@ async function restDeferredAppEntryActions(
                 myTeams = teamData.teams.
                     sort((a, b) => a.display_name.toLocaleLowerCase().localeCompare(b.display_name.toLocaleLowerCase()));
             }
-            fetchTeamsChannelsThreadsAndUnreadPosts(serverUrl, since, myTeams, isCRTEnabled);
+
+            if (myTeams.length) {
+                fetchTeamsChannelsThreadsAndUnreadPosts(serverUrl, since, myTeams, isCRTEnabled);
+            }
         }
     });
 
