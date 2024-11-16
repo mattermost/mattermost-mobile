@@ -153,6 +153,7 @@
   "channel_info.convert_gm_to_channel.conversion_error": "Algo deu errado. Falha ao converter a Mensagem de Grupo em Canal Privado.",
   "channel_info.convert_gm_to_channel.loading.footer": "Obtendo detalhes...",
   "channel_info.convert_gm_to_channel.screen_title": "Converter para Canal Privado",
+  "channel_info.convert_gm_to_channel.team_selector_list.title": "Selecionar Equipe",
   "channel_info.convert_gm_to_channel.warning.body.yourself": "você mesmo",
   "channel_info.convert_gm_to_channel.warning.bodyXXXX": "Você está prestes a converter a Mensagem de Grupo com {memberNames} em um Canal. Isso não pode ser desfeito.",
   "channel_info.convert_gm_to_channel.warning.header": "O histórico de conversas ficará visível para todos os membros do canal",
