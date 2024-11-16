@@ -178,7 +178,7 @@
   "channel_info.leave_private_channel": "Ви впевнені, що хочете покинути приватний канал {ім'я_відображення}? Ви не зможете знову приєднатися до каналу, якщо вас не запросять знову.",
   "channel_info.leave_public_channel": "Ви впевнені, що хочете покинути публічний канал {displayName}? Ви завжди зможете знову приєднатися.",
   "channel_info.local_time": "Місцевий час",
-  "channel_info.members": "Учасники",
+  "channel_info.members": "Члени",
   "channel_info.mention": "Згадка",
   "channel_info.mobile_notifications": "Мобільні сповіщення",
   "channel_info.muted": "Вимкнути звук",
