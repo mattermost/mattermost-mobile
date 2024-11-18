@@ -24,7 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginBottom: 20,
         },
         title: {
-            ...typography('Heading'),
+            ...typography('Heading', 400, 'SemiBold'),
             color: theme.centerChannelColor,
         },
         subtitle: {
