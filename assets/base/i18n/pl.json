@@ -454,6 +454,8 @@
   "login_mfa.tokenReq": "Wprowadź token MFA",
   "markdown.latex.error": "Błąd renderowania Latex",
   "markdown.max_nodes.error": "Ta wiadomość jest zbyt długa, aby wyświetlić ją w całości na urządzeniu mobilnym. Wyświetl ją na komputerze lub skontaktuj się z administratorem, aby zwiększyć limit.",
+  "markdown.parse_error": "Wystąpił błąd podczas analizowania tego tekstu",
+  "markdown.render_error": "Wystąpił błąd podczas renderowania tego tekstu",
   "mentions.empty.paragraph": "Zobaczysz tutaj wiadomości, gdy ktoś wspomni o Tobie lub użyje terminów, które monitorujesz.",
   "mentions.empty.title": "Nie ma jeszcze wzmianek",
   "mobile.about.appVersion": "Wersja Aplikacji: {version} (Build {number})",
