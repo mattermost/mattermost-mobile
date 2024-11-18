@@ -105,7 +105,7 @@ const AnimatedNumber = ({
                         const useIndex = animateToNumberString.length - 1 - index;
                         return (
                             <View
-                                key={`${animateToNumberString.length - index}`}
+                                key={useIndex}
                                 style={{height: numberHeight, overflow: 'hidden'}}
                             >
                                 <Animated.View
@@ -120,7 +120,7 @@ const AnimatedNumber = ({
                                 >
                                     {NUMBERS.map((number, i) => (
                                         <View
-                                            key={`${NUMBERS.length - i}`}
+                                            key={`${NUMBERS.length - 1 - i}`}
                                             style={{flexDirection: 'row'}}
                                         >
                                             <Text
