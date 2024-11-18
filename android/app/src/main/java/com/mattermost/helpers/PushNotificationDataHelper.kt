@@ -2,7 +2,6 @@ package com.mattermost.helpers
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -15,6 +14,7 @@ import com.mattermost.helpers.push_notification.fetchNeededUsers
 import com.mattermost.helpers.push_notification.fetchPosts
 import com.mattermost.helpers.push_notification.fetchTeamIfNeeded
 import com.mattermost.helpers.push_notification.fetchThread
+import com.mattermost.turbolog.TurboLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -50,7 +50,7 @@ class PushNotificationDataRunnable {
                         val isCRTEnabled = initialData.getString("is_crt_enabled") == "true"
                         val ackId = initialData.getString("ack_id")
 
-                        Log.i("ReactNative", "Start fetching notification data in server=$serverUrl for channel=$channelId and ack=$ackId")
+                        TurboLog.i("ReactNative", "Start fetching notification data in server=$serverUrl for channel=$channelId and ack=$ackId")
 
                         val receivingThreads = isCRTEnabled && !rootId.isNullOrEmpty()
                         val notificationData = Arguments.createMap()
@@ -104,13 +104,13 @@ class PushNotificationDataRunnable {
                             dbHelper.saveToDatabase(db, notificationData, teamId, channelId, receivingThreads)
                         }
 
-                        Log.i("ReactNative", "Done processing push notification=$serverUrl for channel=$channelId and ack=$ackId")
+                        TurboLog.i("ReactNative", "Done processing push notification=$serverUrl for channel=$channelId and ack=$ackId")
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {
                     db?.close()
-                    Log.i("ReactNative", "DONE fetching notification data")
+                    TurboLog.i("ReactNative", "DONE fetching notification data")
                 }
 
                 return result
