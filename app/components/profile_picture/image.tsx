@@ -44,10 +44,10 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
     const lastPictureUpdateAt = author ? getLastPictureUpdate(author) : 0;
     const fIStyle = useMemo(() => ({
         borderRadius: size / 2,
-        backgroundColor: theme.centerChannelBg,
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
         height: size,
         width: size,
-    }), [size]);
+    }), [size, theme.centerChannelColor]);
 
     const imgSource = useMemo(() => {
         if (!author || typeof source === 'string') {
