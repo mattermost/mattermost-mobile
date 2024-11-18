@@ -3,8 +3,6 @@
 import {render} from '@testing-library/react-native';
 import React from 'react';
 
-import {buildProfileImageUrlFromUser} from '@actions/remote/user';
-
 import ProfileAvatar from './profile_avatar';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -14,56 +12,71 @@ jest.mock('@actions/remote/user', () => ({
 }));
 
 jest.mock('@actions/remote/file', () => ({
-    buildAbsoluteUrl: (serverUrl: string, uri: string) => `${serverUrl}${uri}`,
-}));
-
-jest.mock('@utils/theme', () => ({
-    changeOpacity: (color: string, opacity: number) => `rgba(${color}, ${opacity})`,
+    buildAbsoluteUrl: jest.fn(),
 }));
 
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(),
 }));
 
+const mockBuildAbsoluteUrl = require('@actions/remote/file').buildAbsoluteUrl;
+const mockBuildProfileImageUrlFromUser = require('@actions/remote/user').buildProfileImageUrlFromUser;
+const mockUseServerUrl = require('@context/server').useServerUrl;
+
 describe('Avatar Component', () => {
-    const mockServerUrl = 'mock.server.url';
-    const mockAuthor = {
-        id: 'user123',
-        username: 'testuser',
-        email: 'testuser@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        nickname: 'test',
-        locale: 'en',
-        lastPictureUpdate: 123456789,
-        updateAt: 123456789,
-        deleteAt: 0,
-    } as UserModel;
-
     beforeEach(() => {
-        jest.resetAllMocks();
-        require('@context/server').useServerUrl.mockReturnValue(mockServerUrl);
+        jest.clearAllMocks();
     });
 
-    it('renders the user profile image if available', () => {
-        (buildProfileImageUrlFromUser as jest.Mock).mockReturnValue('/profile/image/url');
+    it('renders the avatar image when URI is available', () => {
+        const mockServerUrl = 'base.url.com';
+        const mockUri = '/api/v4/users/mock-user-id/image';
+        const mockAuthor = {id: 'mock-user-id'} as UserModel;
 
-        const {getByTestId} = render(
-            <ProfileAvatar author={mockAuthor}/>,
-        );
+        mockUseServerUrl.mockReturnValue(mockServerUrl);
+        mockBuildProfileImageUrlFromUser.mockImplementation((_: string, author: UserModel) => {
+            return author ? mockUri : '';
+        });
+        mockBuildAbsoluteUrl.mockImplementation((serverUrl: string, uri: string) => `${serverUrl}${uri}`);
 
-        const image = getByTestId('avatar-image');
-        expect(image.props.source).toEqual({uri: `${mockServerUrl}/profile/image/url`});
+        const {queryByTestId} = render(<ProfileAvatar author={mockAuthor}/>);
+
+        expect(mockBuildProfileImageUrlFromUser).toHaveBeenCalledWith(mockServerUrl, mockAuthor);
+        expect(mockBuildAbsoluteUrl).toHaveBeenCalledWith(mockServerUrl, mockUri);
+
+        expect(queryByTestId('avatar-icon')).toBeNull();
     });
 
-    it('renders the default icon if profile image URL is not available', () => {
-        (buildProfileImageUrlFromUser as jest.Mock).mockReturnValue('');
+    it('renders the fallback icon when URI is not available', () => {
+        const mockServerUrl = 'base.url.com';
+        const mockAuthor = {id: 'mock-user-id'} as UserModel;
 
-        const {getByTestId} = render(
-            <ProfileAvatar author={mockAuthor}/>,
-        );
+        mockUseServerUrl.mockReturnValue(mockServerUrl);
+        mockBuildProfileImageUrlFromUser.mockReturnValue('');
+        mockBuildAbsoluteUrl.mockReturnValue('');
+
+        const {getByTestId, queryByTestId} = render(<ProfileAvatar author={mockAuthor}/>);
+
+        expect(mockBuildProfileImageUrlFromUser).toHaveBeenCalledWith(mockServerUrl, mockAuthor);
+        expect(mockBuildAbsoluteUrl).not.toHaveBeenCalled();
 
         const icon = getByTestId('avatar-icon');
         expect(icon.props.name).toBe('account-outline');
+        expect(queryByTestId('avatar-image')).toBeNull();
+    });
+
+    it('renders the fallback icon when author is not provided', () => {
+        const mockServerUrl = 'base.url.com';
+
+        mockUseServerUrl.mockReturnValue(mockServerUrl);
+
+        const {getByTestId, queryByTestId} = render(<ProfileAvatar author={null as unknown as UserModel}/>);
+
+        expect(mockBuildProfileImageUrlFromUser).toHaveBeenCalled();
+        expect(mockBuildAbsoluteUrl).not.toHaveBeenCalled();
+
+        const icon = getByTestId('avatar-icon');
+        expect(icon.props.name).toBe('account-outline');
+        expect(queryByTestId('avatar-image')).toBeNull();
     });
 });
