@@ -3,11 +3,13 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {useCallback, useState} from 'react';
-import {StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
+import {Platform, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_list/config';
 import {Screens} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {popTopScreen} from '@screens/navigation';
 
 import DraftEmptyComponent from '../draft_empty_component';
 
@@ -41,6 +43,14 @@ const GlobalDraftsList: React.FC<Props> = ({
             setLayoutWidth(e.nativeEvent.layout.width - 40); // 40 is the padding of the container
         }
     }, [location]);
+
+    const collapse = useCallback(() => {
+        if (Platform.OS === 'android') {
+            popTopScreen(Screens.GLOBAL_DRAFTS);
+        }
+    }, []);
+
+    useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, collapse);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<DraftModel>) => {
         return (
