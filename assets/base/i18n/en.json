@@ -317,6 +317,8 @@
   "draft.options.send.title": "Send draft",
   "draft.options.title": "Draft Options",
   "drafts": "Drafts",
+  "drafts.empty.subtitle": "Any message you have started will show here.",
+  "drafts.empty.title": "No drafts at the moment",
   "edit_post.editPost": "Edit the post...",
   "edit_post.save": "Save",
   "edit_server.description": "Specify a display name for this server",
