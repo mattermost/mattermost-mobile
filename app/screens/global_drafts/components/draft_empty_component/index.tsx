@@ -7,7 +7,7 @@ import {Image, Text, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import { typography } from '@utils/typography';
+import {typography} from '@utils/typography';
 
 const draft_message_image = require('@assets/images/Draft_Message.png');
 
