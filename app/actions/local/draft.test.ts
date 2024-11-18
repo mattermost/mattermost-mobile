@@ -12,6 +12,7 @@ import {
     addFilesToDraft,
     removeDraft,
     updateDraftPriority,
+    updateDraftMarkdownImageMetadata,
 } from './draft';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -232,5 +233,43 @@ describe('updateDraftPriority', () => {
         expect(result.error).toBeUndefined();
         expect(result.draft).toBeDefined();
         expect(result.draft.metadata?.priority?.priority).toBe(postPriority.priority);
+    });
+});
+
+describe('updateDraftMarkdownImageMetadata', () => {
+    const imageMetadata = {images: {width: 100, height: 100}};
+    it('handle not found database', async () => {
+        const {error} = await updateDraftMarkdownImageMetadata({
+            serverUrl: 'foo',
+            channelId,
+            rootId: '',
+            imageMetadata: {images: {width: 100, height: 100}},
+        });
+        expect(error).toBeTruthy();
+    });
+
+    it('handles no draft', async () => {
+        const result = await updateDraftMarkdownImageMetadata({
+            serverUrl,
+            channelId,
+            rootId: '',
+            imageMetadata,
+        });
+        expect(result.draft).toBeUndefined();
+    });
+
+    it('updates metadata for an existing draft', async () => {
+        await operator.handleDraft({drafts: [draft], prepareRecordsOnly: false});
+
+        const {draft: updatedDraft, error} = await updateDraftMarkdownImageMetadata({
+            serverUrl,
+            channelId,
+            rootId: '',
+            imageMetadata,
+        });
+
+        expect(error).toBeUndefined();
+        expect(updatedDraft).toBeDefined();
+        expect(updatedDraft?.metadata?.images).toEqual(imageMetadata);
     });
 });
