@@ -256,7 +256,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
         const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
-    }, [componentId, dimensions, translateX]);
+    }, [componentId, dimensions]);
 
     useEffect(() => {
         translateX.value = 0;
