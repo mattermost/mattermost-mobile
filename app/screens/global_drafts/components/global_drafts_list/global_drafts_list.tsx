@@ -3,11 +3,13 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {useCallback, useState} from 'react';
-import {View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
+import {StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_list/config';
 import {Screens} from '@constants';
+
+import DraftEmptyComponent from '../draft_empty_component';
 
 import SwipeableDraft from './SwipeableDraft';
 
@@ -17,6 +19,14 @@ type Props = {
     allDrafts: DraftModel[];
     location: string;
 }
+
+const styles = StyleSheet.create({
+    empty: {
+        alignItems: 'center',
+        flexGrow: 1,
+        justifyContent: 'center',
+    },
+});
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const keyExtractor = (item: DraftModel) => item.id;
@@ -52,9 +62,11 @@ const GlobalDraftsList: React.FC<Props> = ({
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
                 maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+                contentContainerStyle={!allDrafts.length && styles.empty}
                 maxToRenderPerBatch={10}
                 nativeID={location}
                 renderItem={renderItem}
+                ListEmptyComponent={DraftEmptyComponent}
             />
         </View>
     );
