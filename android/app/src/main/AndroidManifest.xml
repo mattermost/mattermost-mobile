@@ -1,5 +1,6 @@
 <manifest xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.mattermost.rnbeta">
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -124,6 +125,19 @@
           android:stopWithTask="false"
           tools:node="merge"
       />
+
+      <activity
+        android:name="androidx.test.core.app.InstrumentationActivityInvoker$BootstrapActivity"
+        android:exported="true">
+      </activity>
+      <activity
+        android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity"
+        android:exported="true">
+      </activity>
+      <activity
+        android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyFloatingActivity"
+        android:exported="true">
+      </activity>
 
     </application>
 </manifest>
