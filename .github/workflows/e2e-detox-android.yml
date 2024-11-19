@@ -10,7 +10,7 @@ on:
 jobs:
 
   build-android-apk:
-    runs-on: macos-14-large
+    runs-on: macos-14
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
