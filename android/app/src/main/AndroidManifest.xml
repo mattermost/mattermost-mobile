@@ -125,19 +125,5 @@
           android:stopWithTask="false"
           tools:node="merge"
       />
-
-      <activity
-        android:name="androidx.test.core.app.InstrumentationActivityInvoker$BootstrapActivity"
-        android:exported="true">
-      </activity>
-      <activity
-        android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity"
-        android:exported="true">
-      </activity>
-      <activity
-        android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyFloatingActivity"
-        android:exported="true">
-      </activity>
-
     </application>
 </manifest>
