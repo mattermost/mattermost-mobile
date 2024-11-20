@@ -16,6 +16,11 @@ import TeamList from './team_list';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 
+interface TeamWithLowerName {
+    myTeam: MyTeamModel;
+    lowerName?: string;
+}
+
 const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
     const myTeams = queryMyTeams(database).observe();
     const teamIds = queryJoinedTeams(database).observe().pipe(
@@ -26,26 +31,41 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
             switchMap((p) => (p.length ? of$(p[0].value.split(',')) : of$([]))),
         );
     const myOrderedTeams = combineLatest([myTeams, order, teamIds]).pipe(
-        map(([ts, o, tids]) => {
-            let ids: string[] = o;
-            if (!o.length) {
-                ids = tids.
-                    sort((a, b) => a.displayName.toLocaleLowerCase().localeCompare(b.displayName.toLocaleLowerCase())).
-                    map((t) => t.id);
+        map(([memberships, o, teams]) => {
+            const sortedTeamIds = new Set(o);
+            const membershipMap = new Map(memberships.map((m) => [m.id, m]));
+
+            if (sortedTeamIds.size) {
+                const mySortedTeams = [...sortedTeamIds].
+                    filter((id) => membershipMap.has(id)).
+                    map((id) => membershipMap.get(id)!);
+
+                const extraTeams = teams.
+                    filter((t) => !sortedTeamIds.has(t.id) && membershipMap.has(t.id)).
+                    map((t) => ({
+                        myTeam: membershipMap.get(t.id)!,
+                        lowerName: t.displayName.toLocaleLowerCase(),
+                    } as TeamWithLowerName)).
+                    sort((a, b) => a.lowerName!.localeCompare(b.lowerName!)).
+                    map((t) => {
+                        delete t.lowerName;
+                        return t;
+                    });
+
+                return [...mySortedTeams, ...extraTeams];
             }
 
-            const teamMap = ts.reduce<{[x: string]: MyTeamModel}>((result, team) => {
-                result[team.id] = team;
-                return result;
-            }, {});
-
-            return ids.reduce<MyTeamModel[]>((result, id) => {
-                const t = teamMap[id];
-                if (t) {
-                    result.push(t);
-                }
-                return result;
-            }, []);
+            return teams.
+                filter((t) => membershipMap.has(t.id)).
+                map((t) => ({
+                    myTeam: membershipMap.get(t.id)!,
+                    lowerName: t.displayName.toLocaleLowerCase(),
+                } as TeamWithLowerName)).
+                sort((a, b) => a.lowerName!.localeCompare(b.lowerName!)).
+                map((t) => {
+                    delete t.lowerName;
+                    return t.myTeam;
+                });
         }),
     );
     return {

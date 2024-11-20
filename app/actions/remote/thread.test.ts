@@ -19,6 +19,7 @@ import {
     syncTeamThreads,
     loadEarlierThreads,
     fetchAndSwitchToThread,
+    syncThreadsIfNeeded,
 } from './thread';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -150,7 +151,7 @@ describe('get threads', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeFalsy();
         expect(result.models).toBeDefined();
-        expect(result.models?.length).toBe(5); // 1 thread, 1 thread participant, 1 read thread in team, 1 unread thread in team, 1 team thread sync
+        expect(result.models?.length).toBe(4); // 1 thread, 1 thread participant, 1 latest thread in team, 1 team thread sync (the unread thread is actually the latest so it the duplicate is removed)
 
         // Sync again after first sync
         const result2 = await syncTeamThreads(serverUrl, team.id);
@@ -158,6 +159,23 @@ describe('get threads', () => {
         expect(result2.error).toBeFalsy();
         expect(result2.models).toBeDefined();
         expect(result2.models?.length).toBe(1); // 1 team thread sync
+    });
+
+    it('syncThreadsIfNeeded - handle error', async () => {
+        const result = await syncThreadsIfNeeded('foo', true, []);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('syncThreadsIfNeeded - base case', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
+
+        const result = await syncThreadsIfNeeded(serverUrl, true, [team]);
+        expect(result).toBeDefined();
+        expect(result.error).toBeFalsy();
+        expect(result.models).toBeDefined();
+        expect(result.models?.length).toBe(4); // 1 thread, 1 thread participant, 1 latest thread in team, 1 team thread sync (the unread thread is actually the latest so it the duplicate is removed)
     });
 
     it('loadEarlierThreads - handle error', async () => {

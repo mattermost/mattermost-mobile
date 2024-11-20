@@ -128,7 +128,7 @@ function reducer(state: NewStatusType, action: {
             return state;
         }
         case 'text':
-            return {...state, text: action.value};
+            return {...state, text: action.value?.replace('\n', ' ')};
         case 'emoji':
             return {...state, emoji: action.value};
         case 'duration':
