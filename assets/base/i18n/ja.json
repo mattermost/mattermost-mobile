@@ -1143,8 +1143,6 @@
   "terms_of_service.title": "利用規約",
   "thread.header.thread": "スレッド",
   "thread.header.thread_in": "{channelName}内",
-  "thread.loadingReplies": "返信を読み込んでいます...",
-  "thread.noReplies": "まだ返信はありません",
   "thread.options.title": "スレッドアクション",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {返信} other {返信}}",
   "threads": "スレッド",

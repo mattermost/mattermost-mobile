@@ -1026,8 +1026,6 @@
   "terms_of_service.title": "Conditions d'utilisation du service",
   "thread.header.thread": "Fil de discussion",
   "thread.header.thread_in": "dans {channelName}",
-  "thread.loadingReplies": "Chargement des réponses...",
-  "thread.noReplies": "Pas encore de réponses",
   "thread.options.title": "Actions du fil de discussion",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {réponse} other {réponses}}",
   "threads": "Fils",

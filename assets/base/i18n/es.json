@@ -1063,8 +1063,6 @@
   "terms_of_service.title": "Condiciones del servicio",
   "thread.header.thread": "Hilo",
   "thread.header.thread_in": "en {channelName}",
-  "thread.loadingReplies": "Cargando respuestas...",
-  "thread.noReplies": "Aún no hay respuestas",
   "thread.options.title": "Acciones de Hilos",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {respuesta} other {respuestas}}",
   "threads": "Hilos",

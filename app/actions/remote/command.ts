@@ -82,7 +82,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     return {data};
 };
 
-const executeAppCommand = async (serverUrl: string, intl: IntlShape, parser: AppCommandParser, msg: string, args: CommandArgs) => {
+export const executeAppCommand = async (serverUrl: string, intl: IntlShape, parser: AppCommandParser, msg: string, args: CommandArgs) => {
     const {creq, errorMessage} = await parser.composeCommandSubmitCall(msg);
     const createErrorMessage = (errMessage: string) => {
         return {error: {message: errMessage}};

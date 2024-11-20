@@ -1027,8 +1027,6 @@
   "terms_of_service.title": "Điều khoản dịch vụ",
   "thread.header.thread": "Chủ đề",
   "thread.header.thread_in": "trong {channelName}",
-  "thread.loadingReplies": "Đang tải câu trả lời...",
-  "thread.noReplies": "Chưa có câu trả lời nào",
   "thread.options.title": "Thao tác với chủ đề",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {trả lời} other {trả lời}}",
   "threads": "Chủ đề",
