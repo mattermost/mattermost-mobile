@@ -183,7 +183,7 @@ function isMessageAttachment(v: unknown): v is MessageAttachment {
         return false;
     }
 
-    if ('fields' in v && !isArrayOf(v.fields, isMessageAttachmentField)) {
+    if ('fields' in v && v.fields !== null && !isArrayOf(v.fields, isMessageAttachmentField)) {
         return false;
     }
 
