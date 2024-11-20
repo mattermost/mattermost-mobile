@@ -3,11 +3,12 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {type StyleProp, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
+import {Platform, type StyleProp, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -122,7 +123,12 @@ const UserAvatarsStack = ({
             </>
         );
 
-        const snapPoints: Array<string | number> = [1, bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT) + TITLE_HEIGHT];
+        let height = bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT) + TITLE_HEIGHT;
+        if (Platform.OS === 'android') {
+            height += BOTTOM_SHEET_ANDROID_OFFSET;
+        }
+
+        const snapPoints: Array<string | number> = [1, height];
         if (users.length > 5) {
             snapPoints.push('80%');
         }

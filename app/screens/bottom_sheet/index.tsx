@@ -23,6 +23,8 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 export {default as BottomSheetButton, BUTTON_HEIGHT} from './button';
 export {default as BottomSheetContent, TITLE_HEIGHT} from './content';
 
+export const BOTTOM_SHEET_ANDROID_OFFSET = 12;
+
 type Props = {
     closeButtonId?: string;
     componentId: AvailableScreens;

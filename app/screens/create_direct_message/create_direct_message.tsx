@@ -143,7 +143,7 @@ export default function CreateDirectMessage({
         }
 
         return !result.error;
-    }, [selectedIds, intl.locale, teammateNameDisplay, serverUrl]);
+    }, [selectedIds, intl, teammateNameDisplay, serverUrl]);
 
     const createGroupChannel = useCallback(async (ids: string[]): Promise<boolean> => {
         const result = await makeGroupChannel(serverUrl, ids);
@@ -153,7 +153,7 @@ export default function CreateDirectMessage({
         }
 
         return !result.error;
-    }, [serverUrl]);
+    }, [intl, serverUrl]);
 
     const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}, selectedUser?: UserProfile) => {
         if (startingConversation) {
@@ -208,7 +208,7 @@ export default function CreateDirectMessage({
                 return newSelectedIds;
             });
         }
-    }, [currentUserId, clearSearch]);
+    }, [currentUserId, startConversation, clearSearch, selectedCount]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
@@ -223,7 +223,7 @@ export default function CreateDirectMessage({
                 testID: 'close.create_direct_message.button',
             }],
         });
-    }, [intl.locale, theme]);
+    }, [componentId, theme.sidebarHeaderTextColor]);
 
     const onChangeText = useCallback((searchTerm: string) => {
         setTerm(searchTerm);
@@ -273,7 +273,7 @@ export default function CreateDirectMessage({
 
             return true;
         };
-    }, [selectedCount > 0, currentUserId]);
+    }, [currentUserId, selectedCount]);
 
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
     useAndroidHardwareBackHandler(componentId, close);
@@ -284,7 +284,7 @@ export default function CreateDirectMessage({
 
     useEffect(() => {
         setShowToast(selectedCount >= General.MAX_USERS_IN_GM);
-    }, [selectedCount >= General.MAX_USERS_IN_GM]);
+    }, [selectedCount]);
 
     if (startingConversation) {
         return (
@@ -300,7 +300,6 @@ export default function CreateDirectMessage({
             testID='create_direct_message.screen'
             onLayout={onLayout}
             ref={mainView}
-            edges={['top', 'left', 'right']}
         >
             <View style={style.searchBar}>
                 <Search

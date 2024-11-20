@@ -18,6 +18,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -153,7 +154,10 @@ const ChannelHeader = ({
 
         // When calls is enabled, we need space to move the "Copy Link" from a button to an option
         const items = callsAvailable && !isDMorGM ? 3 : 2;
-        const height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
+        let height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
+        if (Platform.OS === 'android') {
+            height += BOTTOM_SHEET_ANDROID_OFFSET;
+        }
 
         const renderContent = () => {
             return (

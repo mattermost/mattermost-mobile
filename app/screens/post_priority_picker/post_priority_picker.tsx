@@ -129,16 +129,16 @@ const PostPriorityPicker = ({
 
     const handleUpdateRequestedAck = useCallback((requested_ack: boolean) => {
         setData((prevData) => ({...prevData, requested_ack}));
-    }, [data]);
+    }, []);
 
     const handleUpdatePersistentNotifications = useCallback((persistent_notifications: boolean) => {
         setData((prevData) => ({...prevData, persistent_notifications}));
-    }, [data]);
+    }, []);
 
     const handleSubmit = useCallback(() => {
         updatePostPriority(data);
         closeBottomSheet();
-    }, [data]);
+    }, [closeBottomSheet, data, updatePostPriority]);
 
     const renderContent = () => (
         <View style={style.container}>

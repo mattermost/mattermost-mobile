@@ -78,6 +78,7 @@ export default function TeamList({
                 testID={`${testID}.flat_list`}
                 onEndReached={onEndReached}
                 ListFooterComponent={footer}
+                scrollEnabled={teams.length > 3}
             />
         </View>
     );
