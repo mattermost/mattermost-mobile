@@ -94,43 +94,54 @@ const AnimatedNumber = ({
     return (
         <>
             {numberHeight !== 0 && (
-                <View style={{flexDirection: 'row'}}>
+                <View
+                    style={{flexDirection: 'row'}}
+                    testID='animation-number-main'
+                >
                     {animateToNumber < 0 && (
                         <Text style={[fontStyle, {height: numberHeight}]}>{'-'}</Text>
                     )}
-                    {Array.from(animateToNumberString, Number).map((_, index) => (
-                        <View
-                            key={`${animateToNumberString.length - index}`}
-                            style={{height: numberHeight, overflow: 'hidden'}}
-                        >
-                            <Animated.View
-                                style={{
-                                    transform: [
-                                        {
-                                            translateY: animations[index],
-                                        },
-                                    ],
-                                }}
+                    {Array.from(animateToNumberString, Number).map((_, index) => {
+                        const useIndex = animateToNumberString.length - 1 - index;
+                        return (
+                            <View
+                                key={useIndex}
+                                style={{height: numberHeight, overflow: 'hidden'}}
                             >
-                                {NUMBERS.map((number, i) => (
-                                    <View
-                                        key={`${NUMBERS.length - i}`}
-                                        style={{flexDirection: 'row'}}
-                                    >
-                                        <Text style={[fontStyle, {height: numberHeight}]}>
-                                            {number}
-                                        </Text>
-                                    </View>
-                                ))}
-                            </Animated.View>
-                        </View>
-                    ))}
+                                <Animated.View
+                                    style={{
+                                        transform: [
+                                            {
+                                                translateY: animations[index],
+                                            },
+                                        ],
+                                    }}
+                                    testID={`animated-number-view-${useIndex}`}
+                                >
+                                    {NUMBERS.map((number, i) => (
+                                        <View
+                                            key={`${NUMBERS.length - 1 - i}`}
+                                            style={{flexDirection: 'row'}}
+                                        >
+                                            <Text
+                                                style={[fontStyle, {height: numberHeight}]}
+                                                testID={`text-${useIndex}-${number}`}
+                                            >
+                                                {number}
+                                            </Text>
+                                        </View>
+                                    ))}
+                                </Animated.View>
+                            </View>
+                        );
+                    })}
                 </View>
             )}
             {numberHeight === 0 &&
             <Text
                 style={[fontStyle]}
                 onLayout={setButtonLayout}
+                testID={'no-animation-number'}
             >
                 {animateToNumberString}
             </Text>
