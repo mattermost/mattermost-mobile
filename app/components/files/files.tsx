@@ -92,6 +92,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
                 <View
                     style={[container, styles.marginTop]}
                     key={file.id}
+                    testID='file_attachment'
                 >
                     <File
                         galleryIdentifier={galleryIdentifier}
