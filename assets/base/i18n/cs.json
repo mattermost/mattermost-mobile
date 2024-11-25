@@ -454,6 +454,8 @@
   "login_mfa.tokenReq": "Zadejte prosím token MFA",
   "markdown.latex.error": "Chyba při vykreslování Latexu",
   "markdown.max_nodes.error": "Tato zpráva je příliš dlouhá na to, aby byla plně zobrazena na mobilním zařízení. Zobrazte ji na desktopu nebo kontaktujte správce, aby zvýšil tento limit.",
+  "markdown.parse_error": "Chyba při zpracování tohoto textu",
+  "markdown.render_error": "Došlo k chybě při vykreslování tohoto textu",
   "mentions.empty.paragraph": "Zde uvidíte zprávy, když vás někdo zmíní nebo použije termíny, které sledujete.",
   "mentions.empty.title": "Zatím žádné zmínky",
   "mobile.about.appVersion": "Verze aplikace: {version} (Build {number})",
