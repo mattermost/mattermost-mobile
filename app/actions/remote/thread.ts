@@ -5,6 +5,7 @@ import {markTeamThreadsAsRead, markThreadAsViewed, processReceivedThreads, switc
 import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
+import {removeDuplicatesModels} from '@helpers/database';
 import PushNotifications from '@init/push_notifications';
 import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
@@ -13,7 +14,7 @@ import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/se
 import {getIsCRTEnabled, getThreadById, getTeamThreadsSyncData} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
-import {logDebug} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 import {showThreadFollowingSnackbar} from '@utils/snack_bar';
 import {getThreadsListEdges} from '@utils/thread';
 
@@ -30,6 +31,7 @@ type FetchThreadsOptions = {
     unread?: boolean;
     since?: number;
     totalsOnly?: boolean;
+    excludeDirect?: boolean;
 };
 
 enum Direction {
@@ -238,10 +240,10 @@ export const fetchThreads = async (
 
     let currentPage = 0;
     const fetchThreadsFunc = async (opts: FetchThreadsOptions) => {
-        const {before, after, perPage = General.CRT_CHUNK_SIZE, deleted, unread, since} = opts;
+        const {before, after, perPage = General.CRT_CHUNK_SIZE, deleted, unread, since, excludeDirect = false} = opts;
 
         currentPage++;
-        const {threads} = await client.getThreads(currentUser.id, teamId, before, after, perPage, deleted, unread, since, false, version);
+        const {threads} = await client.getThreads(currentUser.id, teamId, before, after, perPage, deleted, unread, since, false, version, excludeDirect);
         if (threads.length) {
             // Mark all fetched threads as following
             for (const thread of threads) {
@@ -277,7 +279,45 @@ export const fetchThreads = async (
     return {error: false, threads: threadsData};
 };
 
-export const syncTeamThreads = async (serverUrl: string, teamId: string, prepareRecordsOnly = false) => {
+export const syncThreadsIfNeeded = async (serverUrl: string, isCRTEnabled: boolean, teams?: Team[], fetchOnly = false) => {
+    try {
+        if (!isCRTEnabled) {
+            return {models: []};
+        }
+
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const promises = [];
+        const models: Model[][] = [];
+
+        if (teams?.length) {
+            for (const team of teams) {
+                promises.push(syncTeamThreads(serverUrl, team.id, true, true));
+            }
+        }
+
+        if (promises.length) {
+            const results = await Promise.all(promises);
+            for (const r of results) {
+                if (r.models?.length) {
+                    models.push(r.models);
+                }
+            }
+        }
+
+        const flat = models.flat();
+        if (!fetchOnly && flat.length) {
+            const uniqueArray = removeDuplicatesModels(flat);
+            await operator.batchRecords(uniqueArray, 'syncThreadsIfNeeded');
+        }
+
+        return {models: flat};
+    } catch (error) {
+        logError('syncThreadsIfNeeded: Error', error);
+        return {error, models: undefined};
+    }
+};
+
+export const syncTeamThreads = async (serverUrl: string, teamId: string, excludeDirect = false, fetchOnly = false) => {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const syncData = await getTeamThreadsSyncData(database, teamId);
@@ -299,13 +339,13 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
                 fetchThreads(
                     serverUrl,
                     teamId,
-                    {unread: true},
+                    {unread: true, excludeDirect},
                     Direction.Down,
                 ),
                 fetchThreads(
                     serverUrl,
                     teamId,
-                    {},
+                    {excludeDirect},
                     undefined,
                     1,
                 ),
@@ -313,6 +353,9 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
             if (allUnreadThreads.error || latestThreads.error) {
                 return {error: allUnreadThreads.error || latestThreads.error};
             }
+
+            const dedupe = new Set(latestThreads.threads?.map((t) => t.id));
+
             if (latestThreads.threads?.length) {
                 // We are fetching the threads for the first time. We get "latest" and "earliest" values.
                 const {earliestThread, latestThread} = getThreadsListEdges(latestThreads.threads);
@@ -322,13 +365,14 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
                 threads.push(...latestThreads.threads);
             }
             if (allUnreadThreads.threads?.length) {
-                threads.push(...allUnreadThreads.threads);
+                const unread = allUnreadThreads.threads.filter((u) => !dedupe.has(u.id));
+                threads.push(...unread);
             }
         } else {
             const allNewThreads = await fetchThreads(
                 serverUrl,
                 teamId,
-                {deleted: true, since: syncData.latest + 1},
+                {deleted: true, since: syncData.latest + 1, excludeDirect},
             );
             if (allNewThreads.error) {
                 return {error: allNewThreads.error};
@@ -361,7 +405,7 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
                 }
             }
 
-            if (!prepareRecordsOnly && models?.length) {
+            if (!fetchOnly && models?.length) {
                 try {
                     await operator.batchRecords(models, 'syncTeamThreads');
                 } catch (err) {
@@ -372,7 +416,6 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
                 }
             }
         }
-
         return {error: false, models};
     } catch (error) {
         return {error};

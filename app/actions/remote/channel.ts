@@ -45,6 +45,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type {IntlShape} from 'react-intl';
 
 export type MyChannelsRequest = {
+    teamId?: string;
     categories?: CategoryWithChannels[];
     channels?: Channel[];
     memberships?: ChannelMembership[];
@@ -441,7 +442,7 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
             setTeamLoading(serverUrl, false);
         }
 
-        return {channels, memberships, categories};
+        return {channels, memberships, categories, teamId};
     } catch (error) {
         logDebug('error on fetchMyChannelsForTeam', getFullErrorMessage(error));
         if (!fetchOnly) {

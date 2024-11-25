@@ -987,8 +987,6 @@
   "terms_of_service.title": "Termini di servizio",
   "thread.header.thread": "Thread",
   "thread.header.thread_in": "in {channelName}",
-  "thread.loadingReplies": "Caricamento delle risposte...",
-  "thread.noReplies": "Non ci sono ancora risposte",
   "thread.options.title": "Azioni del filo",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {reply} other {replies}}",
   "threads": "Thread",
