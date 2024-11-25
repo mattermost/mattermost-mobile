@@ -10,6 +10,7 @@ import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import CustomStatusText from './custom_status_text';
 
@@ -37,12 +38,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             color: changeOpacity(theme.centerChannelColor, 0.35),
         },
-        retryStatusText: {
+        retryMessage: {
             position: 'absolute',
             top: 25,
             left: 40,
             color: theme.errorTextColor,
-            fontSize: 12,
+            ...typography('Body', 100),
         },
     };
 });
@@ -75,7 +76,7 @@ const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, 
                     id={'custom_status.failure_message'}
                     defaultMessage='Failed to update status. Try again'
                     testID='account.custom_status.failure_message'
-                    style={styles.retryStatusText}
+                    style={styles.retryMessage}
                 />
             )}
             {isStatusSet && (

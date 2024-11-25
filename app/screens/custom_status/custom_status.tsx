@@ -4,13 +4,13 @@
 import moment from 'moment-timezone';
 import React, {useCallback, useEffect, useMemo, useReducer} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
+import {DeviceEventEmitter, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
 import TabletTitle from '@components/tablet_title';
-import {Events, Screens} from '@constants';
+import {Screens} from '@constants';
 import {CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -266,11 +266,7 @@ const CustomStatus = ({
                 }
                 const {error} = await updateCustomStatus(serverUrl, status);
                 if (error) {
-                    if (isTablet) {
-                        DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
-                    } else {
-                        dismissModal();
-                    }
+                    dismissModal();
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
                     return;
                 }
@@ -285,12 +281,7 @@ const CustomStatus = ({
                 updateLocalCustomStatus(serverUrl, currentUser, undefined);
             }
         }
-        Keyboard.dismiss();
-        if (isTablet) {
-            DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
-        } else {
-            dismissModal();
-        }
+        dismissModal();
     }, [newStatus, isStatusSet, storedStatus, currentUser]);
 
     const openEmojiPicker = useCallback(preventDoubleTap(() => {
@@ -304,12 +295,8 @@ const CustomStatus = ({
     }), [theme, intl, handleEmojiClick]);
 
     const handleBackButton = useCallback(() => {
-        if (isTablet) {
-            DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
-        } else {
-            dismissModal({componentId});
-        }
-    }, [componentId, isTablet]);
+        dismissModal({componentId});
+    }, [componentId]);
 
     useAndroidHardwareBackHandler(componentId, handleBackButton);
     useNavButtonPressed(BTN_UPDATE_STATUS, componentId, handleSetStatus, [handleSetStatus]);
