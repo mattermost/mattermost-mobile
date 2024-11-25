@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
@@ -11,6 +12,7 @@ import {fetchCustomEmojis, searchCustomEmojis, fetchCustomEmojiInBatchForTest} f
 jest.mock('@managers/network_manager');
 jest.mock('@utils/log');
 jest.mock('@utils/errors');
+jest.mock('@actions/remote/session');
 
 const serverUrl = 'baseHandler.test.com';
 
@@ -51,6 +53,7 @@ describe('fetchCustomEmojis', () => {
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
         expect(mockClient.getCustomEmojis).toHaveBeenCalled();
         expect(logDebug).toHaveBeenCalledWith('error on fetchCustomEmojis', 'Full error message');
+        expect(forceLogoutIfNecessary).toHaveBeenCalled();
     });
 });
 
@@ -83,6 +86,7 @@ describe('searchCustomEmojis', () => {
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
         expect(mockClient.searchCustomEmoji).toHaveBeenCalledWith(term);
         expect(logDebug).toHaveBeenCalledWith('error on searchCustomEmojis', 'Full error message');
+        expect(forceLogoutIfNecessary).toHaveBeenCalled();
     });
 });
 
