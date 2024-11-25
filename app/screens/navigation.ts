@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, StatusBar, Platform, Alert, type EmitterSubscription, Keyboard} from 'react-native';
+import {Appearance, DeviceEventEmitter, StatusBar, Platform, Alert, type EmitterSubscription} from 'react-native';
 import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
@@ -677,24 +677,19 @@ export function showModalOverCurrentContext(name: AvailableScreens, passProps = 
 }
 
 export async function dismissModal(options?: Options & { componentId: AvailableScreens}) {
-    if (isTablet()) {
-        DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
-    } else {
-        if (!NavigationStore.hasModalsOpened()) {
-            return;
-        }
+    if (!NavigationStore.hasModalsOpened()) {
+        return;
+    }
 
-        const componentId = options?.componentId || NavigationStore.getVisibleModal();
-        if (componentId) {
-            try {
-                await Navigation.dismissModal(componentId, options);
-            } catch (error) {
-                // RNN returns a promise rejection if there is no modal to
-                // dismiss. We'll do nothing in this case.
-            }
+    const componentId = options?.componentId || NavigationStore.getVisibleModal();
+    if (componentId) {
+        try {
+            await Navigation.dismissModal(componentId, options);
+        } catch (error) {
+            // RNN returns a promise rejection if there is no modal to
+            // dismiss. We'll do nothing in this case.
         }
     }
-    Keyboard.dismiss();
 }
 
 export async function dismissAllModals() {
