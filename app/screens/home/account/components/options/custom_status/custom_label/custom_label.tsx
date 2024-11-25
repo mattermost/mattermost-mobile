@@ -75,8 +75,8 @@ const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, 
                 <FormattedText
                     id={'custom_status.failure_message'}
                     defaultMessage='Failed to update status. Try again'
-                    testID='account.custom_status.failure_message'
                     style={styles.retryMessage}
+                    testID='account.custom_status.failure_message'
                 />
             )}
             {isStatusSet && (
