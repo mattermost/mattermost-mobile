@@ -3,7 +3,7 @@
 
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {Keyboard, Platform} from 'react-native';
-import Animated, {KeyboardState, useAnimatedKeyboard, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {KeyboardState, useAnimatedKeyboard, useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
@@ -31,9 +31,9 @@ const useOffetForCurrentScreen = (): number => {
     const [screen, setScreen] = useState<AvailableScreens|undefined>();
     const [offset, setOffset] = useState(0);
     const isTablet = useIsTablet();
-    const sub = NavigationStore.getSubject();
 
     useEffect(() => {
+        const sub = NavigationStore.getSubject();
         const s = sub.subscribe(setScreen);
 
         return () => s.unsubscribe();
@@ -135,24 +135,23 @@ export const useHideExtraKeyboardIfNeeded = (callback: (...args: any) => void, d
         }
 
         callback(...args);
-    }), [...dependencies]);
+    }), [keyboardContext, ...dependencies]);
 };
 
 export const ExtraKeyboard = () => {
     const keyb = useAnimatedKeyboard({isStatusBarTranslucentAndroid: true});
-    const maxKeyboardHeight = useSharedValue(Platform.select({ios: 291, default: 240}));
+    const defaultKeyboardHeight = Platform.select({ios: 291, default: 240});
     const context = useExtraKeyboardContext();
     const insets = useSafeAreaInsets();
     const offset = useOffetForCurrentScreen();
 
-    useDerivedValue(() => {
+    const maxKeyboardHeight = useDerivedValue(() => {
         if (keyb.state.value === KeyboardState.OPEN) {
             const keyboardOffset = keyb.height.value < 70 ? 0 : offset; // When using a hw keyboard
-            maxKeyboardHeight.value = Math.max(maxKeyboardHeight.value, keyb.height.value) + keyboardOffset;
             return keyb.height.value + keyboardOffset;
         }
 
-        return maxKeyboardHeight.value;
+        return defaultKeyboardHeight;
     });
 
     const animatedStyle = useAnimatedStyle(() => {
