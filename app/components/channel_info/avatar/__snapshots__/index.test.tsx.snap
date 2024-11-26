@@ -1,0 +1,102 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Avatar Component renders the avatar image when URI is available 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "rgba(255, 255, 255, 0.4)",
+        "height": 24,
+        "width": 24,
+      },
+      {
+        "borderRadius": 18,
+      },
+    ]
+  }
+>
+  <ViewManagerAdapter_ExpoImage
+    borderRadius={18}
+    containerViewRef={"[React.ref]"}
+    contentFit="cover"
+    contentPosition={
+      {
+        "left": "50%",
+        "top": "50%",
+      }
+    }
+    height={24}
+    nativeViewRef={"[React.ref]"}
+    onError={[Function]}
+    onLoad={[Function]}
+    onLoadStart={[Function]}
+    onProgress={[Function]}
+    placeholder={[]}
+    source={
+      [
+        {
+          "uri": "base.url.com/api/v4/users/mock-user-id/image",
+        },
+      ]
+    }
+    style={
+      {
+        "borderRadius": 18,
+        "height": 24,
+        "width": 24,
+      }
+    }
+    testID="avatar-image"
+    transition={null}
+    width={24}
+  />
+</View>
+`;
+
+exports[`Avatar Component renders the fallback icon when URI is not available 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "rgba(255, 255, 255, 0.4)",
+        "height": 24,
+        "width": 24,
+      },
+      {
+        "borderRadius": 18,
+      },
+    ]
+  }
+>
+  <Icon
+    color="rgba(255,255,255,0.48)"
+    name="account-outline"
+    size={22}
+    testID="avatar-icon"
+  />
+</View>
+`;
+
+exports[`Avatar Component renders the fallback icon when author is not provided 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "rgba(255, 255, 255, 0.4)",
+        "height": 24,
+        "width": 24,
+      },
+      {
+        "borderRadius": 18,
+      },
+    ]
+  }
+>
+  <Icon
+    color="rgba(255,255,255,0.48)"
+    name="account-outline"
+    size={22}
+    testID="avatar-icon"
+  />
+</View>
+`;

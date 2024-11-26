@@ -41,7 +41,7 @@ describe('Draft', () => {
             layoutWidth: 100,
             isPostPriorityEnabled: false,
         };
-        const {getByText} = renderWithEverything(
+        const wrapper = renderWithEverything(
             <Draft
                 channel={props.channel}
                 location={props.location}
@@ -51,6 +51,8 @@ describe('Draft', () => {
             />
             , {database},
         );
+
+        const {getByText} = wrapper;
 
         expect(FormattedText).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -66,6 +68,7 @@ describe('Draft', () => {
             expect.anything(),
         );
         expect(getByText('Hello, World!')).toBeTruthy();
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     it('should match the file count', () => {
@@ -95,7 +98,7 @@ describe('Draft', () => {
             layoutWidth: 100,
             isPostPriorityEnabled: false,
         };
-        const {getAllByTestId} = renderWithEverything(
+        const wrapper = renderWithEverything(
             <Draft
                 channel={props.channel}
                 location={props.location}
@@ -105,7 +108,9 @@ describe('Draft', () => {
             />
             , {database},
         );
+        const {getAllByTestId} = wrapper;
         expect(getAllByTestId('file_attachment')).toHaveLength(2);
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     it('should render the draft with channel info and draft message for a thread', () => {
@@ -123,7 +128,7 @@ describe('Draft', () => {
             layoutWidth: 100,
             isPostPriorityEnabled: false,
         };
-        const {getByText} = renderWithEverything(
+        const wrapper = renderWithEverything(
             <Draft
                 channel={props.channel}
                 location={props.location}
@@ -134,6 +139,7 @@ describe('Draft', () => {
             , {database},
         );
 
+        const {getByText} = wrapper;
         expect(FormattedText).toHaveBeenCalledWith(
             expect.objectContaining({
                 id: 'channel_info.thread_in',
@@ -149,6 +155,7 @@ describe('Draft', () => {
             expect.anything(),
         );
         expect(getByText('Hello, World!')).toBeTruthy();
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     it('should render the draft with post priority', () => {
@@ -166,7 +173,7 @@ describe('Draft', () => {
             layoutWidth: 100,
             isPostPriorityEnabled: true,
         };
-        const {getByText} = renderWithEverything(
+        const wrapper = renderWithEverything(
             <Draft
                 channel={props.channel}
                 location={props.location}
@@ -176,6 +183,8 @@ describe('Draft', () => {
             />
             , {database},
         );
+        const {getByText} = wrapper;
         expect(getByText('IMPORTANT')).toBeTruthy();
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 });

@@ -39,12 +39,14 @@ describe('Avatar Component', () => {
         });
         mockBuildAbsoluteUrl.mockImplementation((serverUrl: string, uri: string) => `${serverUrl}${uri}`);
 
-        const {queryByTestId} = render(<ProfileAvatar author={mockAuthor}/>);
+        const wrapper = render(<ProfileAvatar author={mockAuthor}/>);
+        const {queryByTestId} = wrapper;
 
         expect(mockBuildProfileImageUrlFromUser).toHaveBeenCalledWith(mockServerUrl, mockAuthor);
         expect(mockBuildAbsoluteUrl).toHaveBeenCalledWith(mockServerUrl, mockUri);
 
         expect(queryByTestId('avatar-icon')).toBeNull();
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     it('renders the fallback icon when URI is not available', () => {
@@ -54,8 +56,8 @@ describe('Avatar Component', () => {
         mockUseServerUrl.mockReturnValue(mockServerUrl);
         mockBuildProfileImageUrlFromUser.mockReturnValue('');
         mockBuildAbsoluteUrl.mockReturnValue('');
-
-        const {getByTestId, queryByTestId} = render(<ProfileAvatar author={mockAuthor}/>);
+        const wrapper = render(<ProfileAvatar author={mockAuthor}/>);
+        const {getByTestId, queryByTestId} = wrapper;
 
         expect(mockBuildProfileImageUrlFromUser).toHaveBeenCalledWith(mockServerUrl, mockAuthor);
         expect(mockBuildAbsoluteUrl).not.toHaveBeenCalled();
@@ -63,14 +65,15 @@ describe('Avatar Component', () => {
         const icon = getByTestId('avatar-icon');
         expect(icon.props.name).toBe('account-outline');
         expect(queryByTestId('avatar-image')).toBeNull();
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     it('renders the fallback icon when author is not provided', () => {
         const mockServerUrl = 'base.url.com';
 
         mockUseServerUrl.mockReturnValue(mockServerUrl);
-
-        const {getByTestId, queryByTestId} = render(<ProfileAvatar author={null as unknown as UserModel}/>);
+        const wrapper = render(<ProfileAvatar author={null as unknown as UserModel}/>);
+        const {getByTestId, queryByTestId} = wrapper;
 
         expect(mockBuildProfileImageUrlFromUser).toHaveBeenCalled();
         expect(mockBuildAbsoluteUrl).not.toHaveBeenCalled();
@@ -78,5 +81,6 @@ describe('Avatar Component', () => {
         const icon = getByTestId('avatar-icon');
         expect(icon.props.name).toBe('account-outline');
         expect(queryByTestId('avatar-image')).toBeNull();
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 });

@@ -1,0 +1,1090 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Draft should match the file count 1`] = `
+<View
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  focusable={false}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+>
+  <View
+    style={
+      {
+        "borderTopColor": "rgba(63,67,80,0.16)",
+        "borderTopWidth": 1,
+        "paddingHorizontal": 20,
+        "paddingVertical": 16,
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "display": "flex",
+          "flexDirection": "row",
+          "justifyContent": "space-between",
+        }
+      }
+      testID="draft_post.channel_info"
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "display": "flex",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "display": "flex",
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "marginRight": 6,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "backgroundColor": "rgba(63,67,80,0.08)",
+                  "borderRadius": 555,
+                  "height": 24,
+                  "padding": 4,
+                  "width": 24,
+                }
+              }
+            />
+          </View>
+        </View>
+        <Text
+          style={
+            {
+              "color": "rgba(63,67,80,0.64)",
+              "fontFamily": "OpenSans-SemiBold",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "lineHeight": 16,
+            }
+          }
+        >
+          Direct Message Channel
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "marginTop": 12,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "maxHeight": 721,
+          }
+        }
+      >
+        <RCTScrollView
+          keyboardShouldPersistTaps="always"
+          scrollEnabled={false}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            <View
+              onLayout={[Function]}
+              style={
+                [
+                  {
+                    "width": "100%",
+                  },
+                ]
+              }
+            >
+              <View
+                style={
+                  [
+                    {
+                      "alignItems": "flex-start",
+                      "flexDirection": "row",
+                      "flexWrap": "wrap",
+                    },
+                  ]
+                }
+                testID="markdown_paragraph"
+              >
+                <Text>
+                  <Text
+                    selectable={false}
+                    style={
+                      {
+                        "color": "#3f4350",
+                        "fontFamily": "OpenSans",
+                        "fontSize": 16,
+                        "fontWeight": "400",
+                        "lineHeight": 24,
+                      }
+                    }
+                    testID="markdown_text"
+                  >
+                    Hello, World!
+                  </Text>
+                </Text>
+              </View>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+      <View
+        style={
+          [
+            undefined,
+          ]
+        }
+      >
+        <View
+          style={
+            [
+              {
+                "flex": 1,
+              },
+              {
+                "marginTop": 10,
+              },
+            ]
+          }
+          testID="file_attachment"
+        >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "borderColor": "rgba(63,67,80,0.24)",
+                  "borderRadius": 4,
+                  "borderWidth": 1,
+                  "flex": 1,
+                  "flexDirection": "row",
+                },
+              ]
+            }
+          >
+            <View
+              style={
+                {
+                  "marginBottom": 8,
+                  "marginLeft": 6,
+                  "marginRight": 7,
+                  "marginTop": 8,
+                }
+              }
+            >
+              <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  {
+                    "opacity": 1,
+                  }
+                }
+              >
+                <View
+                  style={
+                    [
+                      {
+                        "alignItems": "center",
+                        "borderRadius": 4,
+                        "justifyContent": "center",
+                      },
+                      {
+                        "backgroundColor": "#ffffff",
+                      },
+                    ]
+                  }
+                />
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "flex": 1,
+                  "justifyContent": "center",
+                }
+              }
+            >
+              <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  {
+                    "opacity": 1,
+                  }
+                }
+              >
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={
+                    {
+                      "color": "#3f4350",
+                      "flexDirection": "column",
+                      "flexWrap": "wrap",
+                      "fontFamily": "OpenSans-SemiBold",
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "lineHeight": 24,
+                      "marginTop": -4,
+                      "paddingRight": 10,
+                    }
+                  }
+                >
+                  file1.txt
+                </Text>
+                <View
+                  style={
+                    {
+                      "flexDirection": "row",
+                      "marginTop": 3,
+                    }
+                  }
+                >
+                  <View
+                    style={
+                      {
+                        "flexDirection": "row",
+                        "flexGrow": 1,
+                      }
+                    }
+                  >
+                    <Text
+                      style={
+                        {
+                          "color": "rgba(63,67,80,0.64)",
+                          "fontFamily": "OpenSans",
+                          "fontSize": 12,
+                          "fontWeight": "400",
+                          "lineHeight": 16,
+                        }
+                      }
+                    >
+                      64 B
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+        <View
+          style={
+            [
+              {
+                "flex": 1,
+              },
+              {
+                "marginTop": 10,
+              },
+            ]
+          }
+          testID="file_attachment"
+        >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "borderColor": "rgba(63,67,80,0.24)",
+                  "borderRadius": 4,
+                  "borderWidth": 1,
+                  "flex": 1,
+                  "flexDirection": "row",
+                },
+              ]
+            }
+          >
+            <View
+              style={
+                {
+                  "marginBottom": 8,
+                  "marginLeft": 6,
+                  "marginRight": 7,
+                  "marginTop": 8,
+                }
+              }
+            >
+              <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  {
+                    "opacity": 1,
+                  }
+                }
+              >
+                <View
+                  style={
+                    [
+                      {
+                        "alignItems": "center",
+                        "borderRadius": 4,
+                        "justifyContent": "center",
+                      },
+                      {
+                        "backgroundColor": "#ffffff",
+                      },
+                    ]
+                  }
+                />
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "flex": 1,
+                  "justifyContent": "center",
+                }
+              }
+            >
+              <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": false,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  {
+                    "opacity": 1,
+                  }
+                }
+              >
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={
+                    {
+                      "color": "#3f4350",
+                      "flexDirection": "column",
+                      "flexWrap": "wrap",
+                      "fontFamily": "OpenSans-SemiBold",
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "lineHeight": 24,
+                      "marginTop": -4,
+                      "paddingRight": 10,
+                    }
+                  }
+                >
+                  file2.pdf
+                </Text>
+                <View
+                  style={
+                    {
+                      "flexDirection": "row",
+                      "marginTop": 3,
+                    }
+                  }
+                >
+                  <View
+                    style={
+                      {
+                        "flexDirection": "row",
+                        "flexGrow": 1,
+                      }
+                    }
+                  >
+                    <Text
+                      style={
+                        {
+                          "color": "rgba(63,67,80,0.64)",
+                          "fontFamily": "OpenSans",
+                          "fontSize": 12,
+                          "fontWeight": "400",
+                          "lineHeight": 16,
+                        }
+                      }
+                    >
+                      64 B
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`Draft should render the draft with channel info and draft message 1`] = `
+<View
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  focusable={false}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+>
+  <View
+    style={
+      {
+        "borderTopColor": "rgba(63,67,80,0.16)",
+        "borderTopWidth": 1,
+        "paddingHorizontal": 20,
+        "paddingVertical": 16,
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "display": "flex",
+          "flexDirection": "row",
+          "justifyContent": "space-between",
+        }
+      }
+      testID="draft_post.channel_info"
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "display": "flex",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "display": "flex",
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "marginRight": 6,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "backgroundColor": "rgba(63,67,80,0.08)",
+                  "borderRadius": 555,
+                  "height": 24,
+                  "padding": 4,
+                  "width": 24,
+                }
+              }
+            />
+          </View>
+        </View>
+        <Text
+          style={
+            {
+              "color": "rgba(63,67,80,0.64)",
+              "fontFamily": "OpenSans-SemiBold",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "lineHeight": 16,
+            }
+          }
+        >
+          Direct Message Channel
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "marginTop": 12,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "maxHeight": 721,
+          }
+        }
+      >
+        <RCTScrollView
+          keyboardShouldPersistTaps="always"
+          scrollEnabled={false}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            <View
+              onLayout={[Function]}
+              style={
+                [
+                  {
+                    "width": "100%",
+                  },
+                ]
+              }
+            >
+              <View
+                style={
+                  [
+                    {
+                      "alignItems": "flex-start",
+                      "flexDirection": "row",
+                      "flexWrap": "wrap",
+                    },
+                  ]
+                }
+                testID="markdown_paragraph"
+              >
+                <Text>
+                  <Text
+                    selectable={false}
+                    style={
+                      {
+                        "color": "#3f4350",
+                        "fontFamily": "OpenSans",
+                        "fontSize": 16,
+                        "fontWeight": "400",
+                        "lineHeight": 24,
+                      }
+                    }
+                    testID="markdown_text"
+                  >
+                    Hello, World!
+                  </Text>
+                </Text>
+              </View>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`Draft should render the draft with channel info and draft message for a thread 1`] = `
+<View
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  focusable={false}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+>
+  <View
+    style={
+      {
+        "borderTopColor": "rgba(63,67,80,0.16)",
+        "borderTopWidth": 1,
+        "paddingHorizontal": 20,
+        "paddingVertical": 16,
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "display": "flex",
+          "flexDirection": "row",
+          "justifyContent": "space-between",
+        }
+      }
+      testID="draft_post.channel_info"
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "display": "flex",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "display": "flex",
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "marginRight": 6,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "backgroundColor": "rgba(63,67,80,0.08)",
+                  "borderRadius": 555,
+                  "height": 24,
+                  "padding": 4,
+                  "width": 24,
+                }
+              }
+            />
+          </View>
+        </View>
+        <Text
+          style={
+            {
+              "color": "rgba(63,67,80,0.64)",
+              "fontFamily": "OpenSans-SemiBold",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "lineHeight": 16,
+            }
+          }
+        >
+          Direct Message Channel
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "marginTop": 12,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "maxHeight": 721,
+          }
+        }
+      >
+        <RCTScrollView
+          keyboardShouldPersistTaps="always"
+          scrollEnabled={false}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            <View
+              onLayout={[Function]}
+              style={
+                [
+                  {
+                    "width": "100%",
+                  },
+                ]
+              }
+            >
+              <View
+                style={
+                  [
+                    {
+                      "alignItems": "flex-start",
+                      "flexDirection": "row",
+                      "flexWrap": "wrap",
+                    },
+                  ]
+                }
+                testID="markdown_paragraph"
+              >
+                <Text>
+                  <Text
+                    selectable={false}
+                    style={
+                      {
+                        "color": "#3f4350",
+                        "fontFamily": "OpenSans",
+                        "fontSize": 16,
+                        "fontWeight": "400",
+                        "lineHeight": 24,
+                      }
+                    }
+                    testID="markdown_text"
+                  >
+                    Hello, World!
+                  </Text>
+                </Text>
+              </View>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`Draft should render the draft with post priority 1`] = `
+<View
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  focusable={false}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+>
+  <View
+    style={
+      {
+        "borderTopColor": "rgba(63,67,80,0.16)",
+        "borderTopWidth": 1,
+        "paddingHorizontal": 20,
+        "paddingVertical": 16,
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "display": "flex",
+          "flexDirection": "row",
+          "justifyContent": "space-between",
+        }
+      }
+      testID="draft_post.channel_info"
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "display": "flex",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "display": "flex",
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "marginRight": 6,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "backgroundColor": "rgba(63,67,80,0.08)",
+                  "borderRadius": 555,
+                  "height": 24,
+                  "padding": 4,
+                  "width": 24,
+                }
+              }
+            />
+          </View>
+        </View>
+        <Text
+          style={
+            {
+              "color": "rgba(63,67,80,0.64)",
+              "fontFamily": "OpenSans-SemiBold",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "lineHeight": 16,
+            }
+          }
+        >
+          Direct Message Channel
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "marginLeft": -12,
+          "marginTop": 10,
+        }
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "gap": 7,
+              "marginLeft": 12,
+            },
+            {
+              "paddingTop": 6,
+            },
+          ]
+        }
+      >
+        <View
+          style={
+            [
+              {
+                "alignItems": "center",
+                "alignSelf": "flex-start",
+                "borderRadius": 4,
+                "flexDirection": "row",
+                "paddingHorizontal": 4,
+              },
+              {
+                "backgroundColor": "#5D89EA",
+              },
+            ]
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#fff",
+                "fontFamily": "OpenSans-SemiBold",
+                "fontSize": 10,
+                "fontWeight": "600",
+                "lineHeight": 16,
+              }
+            }
+          >
+            IMPORTANT
+          </Text>
+        </View>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "marginTop": 12,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "maxHeight": 721,
+          }
+        }
+      >
+        <RCTScrollView
+          keyboardShouldPersistTaps="always"
+          scrollEnabled={false}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            <View
+              onLayout={[Function]}
+              style={
+                [
+                  {
+                    "width": "100%",
+                  },
+                ]
+              }
+            >
+              <View
+                style={
+                  [
+                    {
+                      "alignItems": "flex-start",
+                      "flexDirection": "row",
+                      "flexWrap": "wrap",
+                    },
+                  ]
+                }
+                testID="markdown_paragraph"
+              >
+                <Text>
+                  <Text
+                    selectable={false}
+                    style={
+                      {
+                        "color": "#3f4350",
+                        "fontFamily": "OpenSans",
+                        "fontSize": 16,
+                        "fontWeight": "400",
+                        "lineHeight": 24,
+                      }
+                    }
+                    testID="markdown_text"
+                  >
+                    Hello, World!
+                  </Text>
+                </Text>
+              </View>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </View>
+  </View>
+</View>
+`;
