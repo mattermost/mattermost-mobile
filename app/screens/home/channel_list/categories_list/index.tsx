@@ -73,9 +73,7 @@ const CategoriesList = ({hasChannels, iconPad, isCRTEnabled, moreThanOneTeam}: C
                         shouldHighlighActive={true}
                     />
                 }
-                <DraftsButtton
-                    shouldHighlighActive={true}
-                />
+                <DraftsButtton/>
                 <Categories/>
             </>
         );

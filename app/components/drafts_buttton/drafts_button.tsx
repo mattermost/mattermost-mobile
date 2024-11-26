@@ -2,10 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import {switchToGlobalDrafts} from '@actions/local/draft';
-import Badge from '@components/badge';
 import {
     getStyleSheet as getChannelItemStyleSheet,
     ROW_HEIGHT,
@@ -16,6 +15,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import CompassIcon from '../compass_icon';
 
@@ -40,6 +40,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     text: {
         flex: 1,
     },
+    countContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    count: {
+        color: theme.sidebarText,
+        ...typography('Body', 75, 'SemiBold'),
+        opacity: 0.64,
+    },
+    opacity: {
+        opacity: 0.56,
+    },
 }));
 
 const DraftsButton: React.FC<DraftListProps> = ({
@@ -58,7 +72,7 @@ const DraftsButton: React.FC<DraftListProps> = ({
 
     const isActive = isTablet && shouldHighlighActive && !currentChannelId;
 
-    const [containerStyle, iconStyle, textStyle, badgeStyle] = useMemo(() => {
+    const [containerStyle, iconStyle, textStyle] = useMemo(() => {
         const container = [
             styles.container,
             HOME_PADDING,
@@ -80,11 +94,7 @@ const DraftsButton: React.FC<DraftListProps> = ({
             isActive && styles.textActive,
         ];
 
-        const badge = [
-            styles.badge,
-        ];
-
-        return [container, icon, text, badge];
+        return [container, icon, text];
     }, [customStyles, isActive, styles]);
 
     if (!draftsCount) {
@@ -106,11 +116,15 @@ const DraftsButton: React.FC<DraftListProps> = ({
                     defaultMessage='Drafts'
                     style={textStyle}
                 />
-                <Badge
-                    value={draftsCount}
-                    style={badgeStyle}
-                    visible={draftsCount > 0}
-                />
+                <View style={customStyles.countContainer}>
+                    <CompassIcon
+                        name='pencil-outline'
+                        size={14}
+                        color={theme.sidebarText}
+                        style={customStyles.opacity}
+                    />
+                    <Text style={customStyles.count}>{draftsCount}</Text>
+                </View>
             </View>
         </TouchableOpacity>
     );
