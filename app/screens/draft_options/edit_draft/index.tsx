@@ -63,6 +63,7 @@ const EditDraft: React.FC<Props> = ({
             type={'opacity'}
             style={style.draftOptions}
             onPress={editHandler}
+            testID='edit_draft'
         >
             <CompassIcon
                 name='pencil-outline'

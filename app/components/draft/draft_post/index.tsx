@@ -47,7 +47,10 @@ const DraftPost: React.FC<Props> = ({
     const style = getStyleSheet(theme);
 
     return (
-        <View style={style.container}>
+        <View
+            style={style.container}
+            testID='draft_post_with_message_and_file'
+        >
             <DraftMessage
                 layoutWidth={layoutWidth}
                 location={location}

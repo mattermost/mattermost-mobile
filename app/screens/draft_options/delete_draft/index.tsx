@@ -57,6 +57,7 @@ const DeleteDraft: React.FC<Props> = ({
             type={'opacity'}
             style={style.draftOptions}
             onPress={draftDeleteHandler}
+            testID='delete_draft'
         >
             <CompassIcon
                 name='trash-can-outline'

@@ -66,6 +66,7 @@ const GlobalDraftsList: React.FC<Props> = ({
         <View
             style={{flex: 1}}
             onLayout={onLayout}
+            testID='global_drafts_list'
         >
             <AnimatedFlatList
                 data={allDrafts}

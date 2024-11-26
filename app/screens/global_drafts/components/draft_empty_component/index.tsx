@@ -41,7 +41,10 @@ const DraftEmptyComponent = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            testID='draft_empty_component'
+        >
             <Image
                 source={draft_message_image}
             />
