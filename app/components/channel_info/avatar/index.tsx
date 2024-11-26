@@ -20,13 +20,12 @@ type Props = {
 const styles = StyleSheet.create({
     avatarContainer: {
         backgroundColor: 'rgba(255, 255, 255, 0.4)',
-        margin: 2,
-        width: 20,
-        height: 20,
+        width: 24,
+        height: 24,
     },
     avatar: {
-        height: 20,
-        width: 20,
+        height: 24,
+        width: 24,
     },
     avatarRadius: {
         borderRadius: 18,
@@ -55,7 +54,7 @@ const Avatar = ({
         picture = (
             <CompassIcon
                 name='account-outline'
-                size={20}
+                size={22}
                 color={changeOpacity('#fff', 0.48)}
             />
         );
