@@ -19,6 +19,7 @@ exports[`Draft should match the file count 1`] = `
   onResponderTerminate={[Function]}
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
+  testID="draft_post"
 >
   <View
     style={
@@ -101,6 +102,7 @@ exports[`Draft should match the file count 1`] = `
           "marginTop": 12,
         }
       }
+      testID="draft_post_with_message_and_file"
     >
       <View
         style={
@@ -108,6 +110,7 @@ exports[`Draft should match the file count 1`] = `
             "maxHeight": 721,
           }
         }
+        testID="draft_message"
       >
         <RCTScrollView
           keyboardShouldPersistTaps="always"
@@ -558,6 +561,7 @@ exports[`Draft should render the draft with channel info and draft message 1`] =
   onResponderTerminate={[Function]}
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
+  testID="draft_post"
 >
   <View
     style={
@@ -640,6 +644,7 @@ exports[`Draft should render the draft with channel info and draft message 1`] =
           "marginTop": 12,
         }
       }
+      testID="draft_post_with_message_and_file"
     >
       <View
         style={
@@ -647,6 +652,7 @@ exports[`Draft should render the draft with channel info and draft message 1`] =
             "maxHeight": 721,
           }
         }
+        testID="draft_message"
       >
         <RCTScrollView
           keyboardShouldPersistTaps="always"
@@ -723,6 +729,7 @@ exports[`Draft should render the draft with channel info and draft message for a
   onResponderTerminate={[Function]}
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
+  testID="draft_post"
 >
   <View
     style={
@@ -805,6 +812,7 @@ exports[`Draft should render the draft with channel info and draft message for a
           "marginTop": 12,
         }
       }
+      testID="draft_post_with_message_and_file"
     >
       <View
         style={
@@ -812,6 +820,7 @@ exports[`Draft should render the draft with channel info and draft message for a
             "maxHeight": 721,
           }
         }
+        testID="draft_message"
       >
         <RCTScrollView
           keyboardShouldPersistTaps="always"
@@ -888,6 +897,7 @@ exports[`Draft should render the draft with post priority 1`] = `
   onResponderTerminate={[Function]}
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
+  testID="draft_post"
 >
   <View
     style={
@@ -1025,6 +1035,7 @@ exports[`Draft should render the draft with post priority 1`] = `
           "marginTop": 12,
         }
       }
+      testID="draft_post_with_message_and_file"
     >
       <View
         style={
@@ -1032,6 +1043,7 @@ exports[`Draft should render the draft with post priority 1`] = `
             "maxHeight": 721,
           }
         }
+        testID="draft_message"
       >
         <RCTScrollView
           keyboardShouldPersistTaps="always"

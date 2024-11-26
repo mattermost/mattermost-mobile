@@ -68,7 +68,7 @@ describe('Send Draft', () => {
             />,
         );
         const {getByTestId} = wrapper;
-        fireEvent.press(getByTestId('send-draft-button'));
+        fireEvent.press(getByTestId('send_draft_button'));
         expect(dismissBottomSheet).toHaveBeenCalledTimes(1);
         expect(wrapper.toJSON()).toMatchSnapshot();
     });

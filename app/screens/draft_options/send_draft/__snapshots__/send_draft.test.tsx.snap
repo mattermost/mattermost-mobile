@@ -39,7 +39,7 @@ exports[`Send Draft should call dismissBottmSheet after sending the draft 1`] = 
       "paddingVertical": 12,
     }
   }
-  testID="send-draft-button"
+  testID="send_draft_button"
 >
   <Icon
     color="rgba(63,67,80,0.56)"
@@ -101,7 +101,7 @@ exports[`Send Draft should render the component 1`] = `
       "paddingVertical": 12,
     }
   }
-  testID="send-draft-button"
+  testID="send_draft_button"
 >
   <Icon
     color="rgba(63,67,80,0.56)"

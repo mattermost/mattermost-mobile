@@ -39,6 +39,7 @@ exports[`DeleteDraft calls draftDeleteHandler when pressed 1`] = `
       "paddingVertical": 12,
     }
   }
+  testID="delete_draft"
 >
   <Icon
     color="rgba(63,67,80,0.56)"
@@ -101,6 +102,7 @@ exports[`DeleteDraft should render the component 1`] = `
       "paddingVertical": 12,
     }
   }
+  testID="delete_draft"
 >
   <Icon
     color="rgba(63,67,80,0.56)"

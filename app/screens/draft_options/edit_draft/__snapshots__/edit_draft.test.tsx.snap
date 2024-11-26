@@ -39,6 +39,7 @@ exports[`Edit Draft Should call editHandler when pressed 1`] = `
       "paddingVertical": 12,
     }
   }
+  testID="edit_draft"
 >
   <Icon
     color="rgba(63,67,80,0.56)"
@@ -101,6 +102,7 @@ exports[`Edit Draft Should render the Edit draft component 1`] = `
       "paddingVertical": 12,
     }
   }
+  testID="edit_draft"
 >
   <Icon
     color="rgba(63,67,80,0.56)"

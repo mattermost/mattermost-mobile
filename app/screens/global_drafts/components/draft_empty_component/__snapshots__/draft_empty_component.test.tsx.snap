@@ -9,6 +9,7 @@ exports[`Draft Empty Component should match the snapshot 1`] = `
       "justifyContent": "center",
     }
   }
+  testID="draft_empty_component"
 >
   <Image
     source={1}
@@ -53,6 +54,7 @@ exports[`Draft Empty Component should render empty draft message 1`] = `
       "justifyContent": "center",
     }
   }
+  testID="draft_empty_component"
 >
   <Image
     source={1}
