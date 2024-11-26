@@ -41,21 +41,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         infoContainer: {
             display: 'flex',
             flexDirection: 'row',
-            gap: 5,
             alignItems: 'center',
         },
         channelInfo: {
             display: 'flex',
             flexDirection: 'row',
-            gap: 5,
             alignItems: 'center',
         },
-        displayName: {
-            fontSize: 12,
-            fontWeight: '600',
+        category: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            lineHeight: 16,
-            fontFamily: 'Open Sans',
+            ...typography('Body', 75, 'SemiBold'),
+            marginRight: 8,
+        },
+        categoryIconContainer: {
+            width: 24,
+            height: 24,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            padding: 4,
+            borderRadius: 555,
+        },
+        profileComponentContainer: {
+            marginRight: 6,
+        },
+        displayName: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75, 'SemiBold'),
         },
         timeInfo: {
             fontSize: 12,
@@ -64,10 +74,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 16,
         },
         time: {
-            color: theme.centerChannelColor,
-            marginTop: 5,
-            opacity: 0.5,
-            ...typography('Body', 75, 'Regular'),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75),
         },
     };
 });
@@ -87,11 +95,13 @@ const ChannelInfo: React.FC<Props> = ({
 
     let headerComponent: ReactNode = null;
     const profileComponent = draftReceiverUser ? <Avatar author={draftReceiverUser}/> : (
-        <CompassIcon
-            color={changeOpacity(theme.centerChannelColor, 0.64)}
-            name='globe'
-            size={18}
-        />);
+        <View style={style.categoryIconContainer}>
+            <CompassIcon
+                color={changeOpacity(theme.centerChannelColor, 0.64)}
+                name='globe'
+                size={16}
+            />
+        </View>);
 
     if (rootId) {
         headerComponent = (
@@ -99,9 +109,11 @@ const ChannelInfo: React.FC<Props> = ({
                 <FormattedText
                     id='channel_info.thread_in'
                     defaultMessage={'Thread in:'}
-                    style={style.displayName}
+                    style={style.category}
                 />
-                {profileComponent}
+                <View style={style.profileComponentContainer}>
+                    {profileComponent}
+                </View>
             </View>
         );
     } else if (isChannelTypeDM) {
@@ -110,9 +122,11 @@ const ChannelInfo: React.FC<Props> = ({
                 <FormattedText
                     id='channel_info.draft_to_user'
                     defaultMessage={'To:'}
-                    style={style.displayName}
+                    style={style.category}
                 />
-                {profileComponent}
+                <View style={style.profileComponentContainer}>
+                    {profileComponent}
+                </View>
             </View>
         );
     } else {
@@ -121,9 +135,11 @@ const ChannelInfo: React.FC<Props> = ({
                 <FormattedText
                     id='channel_info.draft_in_channel'
                     defaultMessage={'In:'}
-                    style={style.displayName}
+                    style={style.category}
                 />
-                {profileComponent}
+                <View style={style.profileComponentContainer}>
+                    {profileComponent}
+                </View>
             </View>
         );
     }
