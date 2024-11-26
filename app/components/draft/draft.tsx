@@ -78,6 +78,7 @@ const Draft: React.FC<Props> = ({
             delayLongPress={200}
             onLongPress={onLongPress}
             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+            testID='draft_post'
         >
             <View
                 style={style.container}

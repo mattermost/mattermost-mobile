@@ -147,7 +147,7 @@ const SendDraft: React.FC<Props> = ({
             type={'opacity'}
             style={[style.draftOptions]}
             onPress={draftSendHandler}
-            testID='send-draft-button'
+            testID='send_draft_button'
         >
             <CompassIcon
                 name='send'

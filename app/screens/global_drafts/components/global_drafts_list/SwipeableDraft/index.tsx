@@ -113,6 +113,7 @@ const SwipeableDraft: React.FC<Props> = ({
             ref={swipeable}
             onSwipeableWillOpen={onSwipeableWillOpen}
             childrenContainerStyle={{flex: 1}}
+            testID='draft_swipeable'
         >
             <Draft
                 key={item.id}
