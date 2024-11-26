@@ -1,0 +1,789 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Draft Options should render the draft options 1`] = `
+[
+  <View
+    accessibilityHint="Tap to close the bottom sheet"
+    accessibilityLabel="Bottom sheet backdrop"
+    accessibilityRole="button"
+    accessible={true}
+    animatedPosition={
+      {
+        "value": 1334,
+      }
+    }
+    collapsable={false}
+    handlerTag={4}
+    handlerType="TapGestureHandler"
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    pointerEvents="auto"
+    style={
+      [
+        {
+          "backgroundColor": "black",
+        },
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+        {
+          "flex": 1,
+          "opacity": undefined,
+        },
+      ]
+    }
+  />,
+  <View
+    onLayout={[Function]}
+    pointerEvents="box-none"
+    style={
+      [
+        undefined,
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+        {
+          "bottom": 0,
+          "overflow": "hidden",
+          "top": 0,
+        },
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "backgroundColor": "#ffffff",
+            "borderTopEndRadius": 24,
+            "borderTopStartRadius": 24,
+            "elevation": 24,
+            "shadowColor": "#000",
+            "shadowOffset": {
+              "height": 8,
+              "width": 0,
+            },
+            "shadowOpacity": 0.12,
+            "shadowRadius": 24,
+          },
+          {
+            "flexDirection": "column-reverse",
+            "left": 0,
+            "position": "absolute",
+            "right": 0,
+            "top": 0,
+          },
+          {
+            "opacity": 1,
+            "transform": [
+              {
+                "translateY": 1334,
+              },
+            ],
+          },
+        ]
+      }
+    >
+      <View
+        accessibilityLabel="Bottom Sheet"
+        accessibilityRole="adjustable"
+        accessible={true}
+        pointerEvents="none"
+        style={
+          [
+            {
+              "backgroundColor": "white",
+              "borderRadius": 15,
+            },
+            {
+              "backgroundColor": "#ffffff",
+              "borderColor": "rgba(63,67,80,0.16)",
+              "borderWidth": 1,
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+          ]
+        }
+      />
+      <View
+        accessibilityLabel="Bottom Sheet"
+        accessibilityRole="adjustable"
+        accessible={true}
+        pointerEvents="box-none"
+        style={
+          [
+            {
+              "overflow": "hidden",
+            },
+            {
+              "paddingBottom": undefined,
+            },
+          ]
+        }
+      >
+        <View
+          collapsable={false}
+          handlerTag={5}
+          handlerType="PanGestureHandler"
+          onGestureHandlerEvent={[Function]}
+          onGestureHandlerStateChange={[Function]}
+          style={
+            [
+              {},
+              {
+                "height": NaN,
+              },
+            ]
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "flex": 1,
+                  "paddingHorizontal": 20,
+                  "paddingTop": 20,
+                },
+                false,
+                undefined,
+              ]
+            }
+            testID="draft_options.screen"
+          >
+            <View>
+              <Text
+                style={
+                  {
+                    "color": "#3f4350",
+                    "display": "flex",
+                    "fontFamily": "Metropolis-SemiBold",
+                    "fontSize": 25,
+                    "fontWeight": "600",
+                    "lineHeight": 30,
+                    "paddingBottom": 4,
+                  }
+                }
+              >
+                Draft actions
+              </Text>
+              <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": undefined,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  {
+                    "alignItems": "center",
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "gap": 16,
+                    "opacity": 1,
+                    "paddingVertical": 12,
+                  }
+                }
+              >
+                <Icon
+                  color="rgba(63,67,80,0.56)"
+                  name="pencil-outline"
+                  size={24}
+                  testID="pencil-outline-icon"
+                />
+                <Text
+                  style={
+                    {
+                      "color": "#3f4350",
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "lineHeight": 24,
+                    }
+                  }
+                >
+                  Edit draft
+                </Text>
+              </View>
+              <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": undefined,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  {
+                    "alignItems": "center",
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "gap": 16,
+                    "opacity": 1,
+                    "paddingVertical": 12,
+                  }
+                }
+                testID="send-draft-button"
+              >
+                <Icon
+                  color="rgba(63,67,80,0.56)"
+                  name="send"
+                  size={24}
+                />
+                <Text
+                  style={
+                    {
+                      "color": "#3f4350",
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "lineHeight": 24,
+                    }
+                  }
+                >
+                  Send draft
+                </Text>
+              </View>
+              <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": undefined,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  {
+                    "alignItems": "center",
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "gap": 16,
+                    "opacity": 1,
+                    "paddingVertical": 12,
+                  }
+                }
+              >
+                <Icon
+                  color="rgba(63,67,80,0.56)"
+                  name="trash-can-outline"
+                  size={24}
+                  testID="trash-can-outline-icon"
+                />
+                <Text
+                  style={
+                    {
+                      "color": "#3f4350",
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "lineHeight": 24,
+                    }
+                  }
+                >
+                  Delete draft
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+      <View
+        collapsable={false}
+        handlerTag={6}
+        handlerType="PanGestureHandler"
+        onGestureHandlerEvent={[Function]}
+        onGestureHandlerStateChange={[Function]}
+        onLayout={[Function]}
+      >
+        <View
+          collapsable={false}
+          style={
+            {
+              "alignItems": "center",
+              "justifyContent": "center",
+              "top": -15,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "backgroundColor": "white",
+                "borderRadius": 25,
+                "height": 5,
+                "opacity": 0.9,
+                "width": 62.5,
+              }
+            }
+          />
+        </View>
+      </View>
+    </View>
+  </View>,
+]
+`;
+
+exports[`Draft Options should render the draft options component 1`] = `
+[
+  <View
+    accessibilityHint="Tap to close the bottom sheet"
+    accessibilityLabel="Bottom sheet backdrop"
+    accessibilityRole="button"
+    accessible={true}
+    animatedPosition={
+      {
+        "value": 1334,
+      }
+    }
+    collapsable={false}
+    handlerTag={1}
+    handlerType="TapGestureHandler"
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    pointerEvents="auto"
+    style={
+      [
+        {
+          "backgroundColor": "black",
+        },
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+        {
+          "flex": 1,
+          "opacity": undefined,
+        },
+      ]
+    }
+  />,
+  <View
+    onLayout={[Function]}
+    pointerEvents="box-none"
+    style={
+      [
+        undefined,
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+        {
+          "bottom": 0,
+          "overflow": "hidden",
+          "top": 0,
+        },
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "backgroundColor": "#ffffff",
+            "borderTopEndRadius": 24,
+            "borderTopStartRadius": 24,
+            "elevation": 24,
+            "shadowColor": "#000",
+            "shadowOffset": {
+              "height": 8,
+              "width": 0,
+            },
+            "shadowOpacity": 0.12,
+            "shadowRadius": 24,
+          },
+          {
+            "flexDirection": "column-reverse",
+            "left": 0,
+            "position": "absolute",
+            "right": 0,
+            "top": 0,
+          },
+          {
+            "opacity": 1,
+            "transform": [
+              {
+                "translateY": 1334,
+              },
+            ],
+          },
+        ]
+      }
+    >
+      <View
+        accessibilityLabel="Bottom Sheet"
+        accessibilityRole="adjustable"
+        accessible={true}
+        pointerEvents="none"
+        style={
+          [
+            {
+              "backgroundColor": "white",
+              "borderRadius": 15,
+            },
+            {
+              "backgroundColor": "#ffffff",
+              "borderColor": "rgba(63,67,80,0.16)",
+              "borderWidth": 1,
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+          ]
+        }
+      />
+      <View
+        accessibilityLabel="Bottom Sheet"
+        accessibilityRole="adjustable"
+        accessible={true}
+        pointerEvents="box-none"
+        style={
+          [
+            {
+              "overflow": "hidden",
+            },
+            {
+              "paddingBottom": undefined,
+            },
+          ]
+        }
+      >
+        <View
+          collapsable={false}
+          handlerTag={2}
+          handlerType="PanGestureHandler"
+          onGestureHandlerEvent={[Function]}
+          onGestureHandlerStateChange={[Function]}
+          style={
+            [
+              {},
+              {
+                "height": NaN,
+              },
+            ]
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "flex": 1,
+                  "paddingHorizontal": 20,
+                  "paddingTop": 20,
+                },
+                false,
+                undefined,
+              ]
+            }
+            testID="draft_options.screen"
+          >
+            <View>
+              <Text
+                style={
+                  {
+                    "color": "#3f4350",
+                    "display": "flex",
+                    "fontFamily": "Metropolis-SemiBold",
+                    "fontSize": 25,
+                    "fontWeight": "600",
+                    "lineHeight": 30,
+                    "paddingBottom": 4,
+                  }
+                }
+              >
+                Draft actions
+              </Text>
+              <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": undefined,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  {
+                    "alignItems": "center",
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "gap": 16,
+                    "opacity": 1,
+                    "paddingVertical": 12,
+                  }
+                }
+              >
+                <Icon
+                  color="rgba(63,67,80,0.56)"
+                  name="pencil-outline"
+                  size={24}
+                  testID="pencil-outline-icon"
+                />
+                <Text
+                  style={
+                    {
+                      "color": "#3f4350",
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "lineHeight": 24,
+                    }
+                  }
+                >
+                  Edit draft
+                </Text>
+              </View>
+              <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": undefined,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  {
+                    "alignItems": "center",
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "gap": 16,
+                    "opacity": 1,
+                    "paddingVertical": 12,
+                  }
+                }
+                testID="send-draft-button"
+              >
+                <Icon
+                  color="rgba(63,67,80,0.56)"
+                  name="send"
+                  size={24}
+                />
+                <Text
+                  style={
+                    {
+                      "color": "#3f4350",
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "lineHeight": 24,
+                    }
+                  }
+                >
+                  Send draft
+                </Text>
+              </View>
+              <View
+                accessibilityState={
+                  {
+                    "busy": undefined,
+                    "checked": undefined,
+                    "disabled": undefined,
+                    "expanded": undefined,
+                    "selected": undefined,
+                  }
+                }
+                accessibilityValue={
+                  {
+                    "max": undefined,
+                    "min": undefined,
+                    "now": undefined,
+                    "text": undefined,
+                  }
+                }
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  {
+                    "alignItems": "center",
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "gap": 16,
+                    "opacity": 1,
+                    "paddingVertical": 12,
+                  }
+                }
+              >
+                <Icon
+                  color="rgba(63,67,80,0.56)"
+                  name="trash-can-outline"
+                  size={24}
+                  testID="trash-can-outline-icon"
+                />
+                <Text
+                  style={
+                    {
+                      "color": "#3f4350",
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "lineHeight": 24,
+                    }
+                  }
+                >
+                  Delete draft
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+      <View
+        collapsable={false}
+        handlerTag={3}
+        handlerType="PanGestureHandler"
+        onGestureHandlerEvent={[Function]}
+        onGestureHandlerStateChange={[Function]}
+        onLayout={[Function]}
+      >
+        <View
+          collapsable={false}
+          style={
+            {
+              "alignItems": "center",
+              "justifyContent": "center",
+              "top": -15,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "backgroundColor": "white",
+                "borderRadius": 25,
+                "height": 5,
+                "opacity": 0.9,
+                "width": 62.5,
+              }
+            }
+          />
+        </View>
+      </View>
+    </View>
+  </View>,
+]
+`;
