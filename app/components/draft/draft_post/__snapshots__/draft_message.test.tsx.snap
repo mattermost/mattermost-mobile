@@ -1,0 +1,62 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Draft Message should match snapshot 1`] = `
+<View
+  style={
+    {
+      "maxHeight": 721,
+    }
+  }
+>
+  <RCTScrollView
+    keyboardShouldPersistTaps="always"
+    scrollEnabled={false}
+    showsHorizontalScrollIndicator={false}
+    showsVerticalScrollIndicator={false}
+  >
+    <View>
+      <View
+        onLayout={[Function]}
+        style={
+          [
+            {
+              "width": "100%",
+            },
+          ]
+        }
+      >
+        <View
+          style={
+            [
+              {
+                "alignItems": "flex-start",
+                "flexDirection": "row",
+                "flexWrap": "wrap",
+              },
+            ]
+          }
+          testID="markdown_paragraph"
+        >
+          <Text>
+            <Text
+              selectable={false}
+              style={
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                }
+              }
+              testID="markdown_text"
+            >
+              Hello, World!
+            </Text>
+          </Text>
+        </View>
+      </View>
+    </View>
+  </RCTScrollView>
+</View>
+`;
