@@ -51,7 +51,7 @@ describe('ChannelInfo Component', () => {
             isMilitaryTime: true,
         };
 
-        render(<ChannelInfo {...baseProps}/>);
+        const wrapper = render(<ChannelInfo {...baseProps}/>);
         expect(CompassIcon).toHaveBeenCalledWith(
             expect.objectContaining({
                 name: 'globe',
@@ -66,6 +66,7 @@ describe('ChannelInfo Component', () => {
             }),
             expect.anything(),
         );
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     it('renders correctly for a public channel', () => {
@@ -78,7 +79,7 @@ describe('ChannelInfo Component', () => {
             currentUser: {timezone: 'UTC'} as unknown as UserModel,
             isMilitaryTime: true,
         };
-        render(<ChannelInfo {...baseProps}/>);
+        const wrapper = render(<ChannelInfo {...baseProps}/>);
         expect(FormattedText).toHaveBeenCalledWith(
             expect.objectContaining({
                 id: 'channel_info.draft_in_channel',
@@ -92,6 +93,7 @@ describe('ChannelInfo Component', () => {
             }),
             expect.anything(),
         );
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     it('renders correctly for a thread', () => {
@@ -104,7 +106,8 @@ describe('ChannelInfo Component', () => {
             currentUser: {timezone: 'UTC'} as unknown as UserModel,
             isMilitaryTime: true,
         };
-        const {getByTestId} = render(<ChannelInfo {...baseProps}/>);
+        const wrapper = render(<ChannelInfo {...baseProps}/>);
+        const {getByTestId} = wrapper;
 
         expect(useTheme).toHaveBeenCalled();
         expect(getByTestId('channel-info')).toBeTruthy();
@@ -115,6 +118,7 @@ describe('ChannelInfo Component', () => {
             }),
             expect.anything(),
         );
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     it('renders the Avatar when draftReceiverUser is provided', () => {
@@ -127,7 +131,7 @@ describe('ChannelInfo Component', () => {
             currentUser: {timezone: 'UTC'} as unknown as UserModel,
             isMilitaryTime: true,
         };
-        render(<ChannelInfo {...baseProps}/>);
+        const wrapper = render(<ChannelInfo {...baseProps}/>);
 
         expect(Avatar).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -135,6 +139,7 @@ describe('ChannelInfo Component', () => {
             }),
             expect.anything(),
         );
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     it('renders CompassIcon when draftReceiverUser is not provided', () => {
@@ -147,13 +152,13 @@ describe('ChannelInfo Component', () => {
             currentUser: {timezone: 'UTC'} as unknown as UserModel,
             isMilitaryTime: true,
         };
-        render(<ChannelInfo {...baseProps}/>);
-
+        const wrapper = render(<ChannelInfo {...baseProps}/>);
         expect(CompassIcon).toHaveBeenCalledWith(
             expect.objectContaining({
                 name: 'globe',
             }),
             expect.anything(),
         );
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 });
