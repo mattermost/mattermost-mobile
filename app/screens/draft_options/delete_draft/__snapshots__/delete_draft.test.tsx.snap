@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Edit Draft Should call editHandler when pressed 1`] = `
+exports[`DeleteDraft calls draftDeleteHandler when pressed 1`] = `
 <View
   accessibilityState={
     {
@@ -39,13 +39,13 @@ exports[`Edit Draft Should call editHandler when pressed 1`] = `
       "paddingVertical": 12,
     }
   }
-  testID="edit_draft"
+  testID="delete_draft"
 >
   <Icon
     color="rgba(63,67,80,0.56)"
-    name="pencil-outline"
+    name="trash-can-outline"
     size={24}
-    testID="pencil-outline-icon"
+    testID="trash-can-outline-icon"
   />
   <Text
     style={
@@ -58,12 +58,12 @@ exports[`Edit Draft Should call editHandler when pressed 1`] = `
       }
     }
   >
-    Edit draft
+    Delete draft
   </Text>
 </View>
 `;
 
-exports[`Edit Draft Should render the Edit draft component 1`] = `
+exports[`DeleteDraft should render the component 1`] = `
 <View
   accessibilityState={
     {
@@ -102,13 +102,13 @@ exports[`Edit Draft Should render the Edit draft component 1`] = `
       "paddingVertical": 12,
     }
   }
-  testID="edit_draft"
+  testID="delete_draft"
 >
   <Icon
     color="rgba(63,67,80,0.56)"
-    name="pencil-outline"
+    name="trash-can-outline"
     size={24}
-    testID="pencil-outline-icon"
+    testID="trash-can-outline-icon"
   />
   <Text
     style={
@@ -121,7 +121,7 @@ exports[`Edit Draft Should render the Edit draft component 1`] = `
       }
     }
   >
-    Edit draft
+    Delete draft
   </Text>
 </View>
 `;

@@ -7,6 +7,7 @@ exports[`Draft Post should match the snapshot 1`] = `
       "marginTop": 12,
     }
   }
+  testID="draft_post_with_message_and_file"
 >
   <View
     style={
@@ -14,6 +15,7 @@ exports[`Draft Post should match the snapshot 1`] = `
         "maxHeight": 721,
       }
     }
+    testID="draft_message"
   >
     <RCTScrollView
       keyboardShouldPersistTaps="always"

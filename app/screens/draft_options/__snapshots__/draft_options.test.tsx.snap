@@ -215,6 +215,7 @@ exports[`Draft Options should render the draft options 1`] = `
                     "paddingVertical": 12,
                   }
                 }
+                testID="edit_draft"
               >
                 <Icon
                   color="rgba(63,67,80,0.56)"
@@ -274,7 +275,7 @@ exports[`Draft Options should render the draft options 1`] = `
                     "paddingVertical": 12,
                   }
                 }
-                testID="send-draft-button"
+                testID="send_draft_button"
               >
                 <Icon
                   color="rgba(63,67,80,0.56)"
@@ -333,6 +334,7 @@ exports[`Draft Options should render the draft options 1`] = `
                     "paddingVertical": 12,
                   }
                 }
+                testID="delete_draft"
               >
                 <Icon
                   color="rgba(63,67,80,0.56)"
@@ -609,6 +611,7 @@ exports[`Draft Options should render the draft options component 1`] = `
                     "paddingVertical": 12,
                   }
                 }
+                testID="edit_draft"
               >
                 <Icon
                   color="rgba(63,67,80,0.56)"
@@ -668,7 +671,7 @@ exports[`Draft Options should render the draft options component 1`] = `
                     "paddingVertical": 12,
                   }
                 }
-                testID="send-draft-button"
+                testID="send_draft_button"
               >
                 <Icon
                   color="rgba(63,67,80,0.56)"
@@ -727,6 +730,7 @@ exports[`Draft Options should render the draft options component 1`] = `
                     "paddingVertical": 12,
                   }
                 }
+                testID="delete_draft"
               >
                 <Icon
                   color="rgba(63,67,80,0.56)"

@@ -7,6 +7,7 @@ exports[`Draft Message should match snapshot 1`] = `
       "maxHeight": 721,
     }
   }
+  testID="draft_message"
 >
   <RCTScrollView
     keyboardShouldPersistTaps="always"
