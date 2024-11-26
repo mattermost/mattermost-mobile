@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Button} from '@rneui/base';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState, type RefObject} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
 
@@ -13,6 +13,7 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
+import {useAvoidKeyboard} from '@hooks/device';
 import {t} from '@i18n';
 import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -22,10 +23,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import type {LaunchProps} from '@typings/launch';
+import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 interface LoginProps extends LaunchProps {
     config: Partial<ClientConfig>;
     license: Partial<ClientLicense>;
+    keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
     serverDisplayName: string;
     theme: Theme;
 }
@@ -77,7 +80,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
+const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
     const loginRef = useRef<TextInput>(null);
     const passwordRef = useRef<TextInput>(null);
@@ -92,6 +95,8 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
     const emailEnabled = config.EnableSignInWithEmail === 'true';
     const usernameEnabled = config.EnableSignInWithUsername === 'true';
     const ldapEnabled = license.IsLicensed === 'true' && config.EnableLdap === 'true' && license.LDAP === 'true';
+
+    useAvoidKeyboard(keyboardAwareRef);
 
     const preSignIn = preventDoubleTap(async () => {
         setIsLoading(true);
@@ -222,7 +227,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
         };
 
         goToScreen(FORGOT_PASSWORD, '', passProps, loginAnimationOptions());
-    }, [theme]);
+    }, [config.ForgotPasswordLink, serverUrl, theme]);
 
     const togglePasswordVisiblity = useCallback(() => {
         setIsPasswordVisible((prevState) => !prevState);
