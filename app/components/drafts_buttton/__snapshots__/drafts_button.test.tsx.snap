@@ -1,0 +1,381 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Drafts Button calls switchToGlobalDrafts when pressed 1`] = `
+<View
+  accessibilityState={
+    {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "opacity": 1,
+    }
+  }
+  testID="channel_list.drafts.button"
+>
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        {
+          "paddingLeft": 18,
+          "paddingRight": 20,
+        },
+        false,
+        false,
+        {
+          "minHeight": 40,
+        },
+      ]
+    }
+  >
+    <Icon
+      name="pencil-outline"
+      style={
+        [
+          {
+            "color": "rgba(255,255,255,0.5)",
+            "fontSize": 24,
+            "marginRight": 12,
+          },
+          false,
+        ]
+      }
+    />
+    <Text
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          {
+            "color": "#ffffff",
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          false,
+        ]
+      }
+    >
+      Drafts
+    </Text>
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "display": "flex",
+          "flexDirection": "row",
+          "gap": 4,
+        }
+      }
+    >
+      <Icon
+        color="#ffffff"
+        name="pencil-outline"
+        size={14}
+        style={
+          {
+            "opacity": 0.56,
+          }
+        }
+      />
+      <Text
+        style={
+          {
+            "color": "#ffffff",
+            "fontFamily": "OpenSans-SemiBold",
+            "fontSize": 12,
+            "fontWeight": "600",
+            "lineHeight": 16,
+            "opacity": 0.64,
+          }
+        }
+      >
+        5
+      </Text>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`Drafts Button does not render if draftsCount is 0 1`] = `null`;
+
+exports[`Drafts Button should render the drafts button component 1`] = `
+<View
+  accessibilityState={
+    {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "opacity": 1,
+    }
+  }
+  testID="channel_list.drafts.button"
+>
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        {
+          "paddingLeft": 18,
+          "paddingRight": 20,
+        },
+        false,
+        false,
+        {
+          "minHeight": 40,
+        },
+      ]
+    }
+  >
+    <Icon
+      name="pencil-outline"
+      style={
+        [
+          {
+            "color": "rgba(255,255,255,0.5)",
+            "fontSize": 24,
+            "marginRight": 12,
+          },
+          false,
+        ]
+      }
+    />
+    <Text
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          {
+            "color": "#ffffff",
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          false,
+        ]
+      }
+    >
+      Drafts
+    </Text>
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "display": "flex",
+          "flexDirection": "row",
+          "gap": 4,
+        }
+      }
+    >
+      <Icon
+        color="#ffffff"
+        name="pencil-outline"
+        size={14}
+        style={
+          {
+            "opacity": 0.56,
+          }
+        }
+      />
+      <Text
+        style={
+          {
+            "color": "#ffffff",
+            "fontFamily": "OpenSans-SemiBold",
+            "fontSize": 12,
+            "fontWeight": "600",
+            "lineHeight": 16,
+            "opacity": 0.64,
+          }
+        }
+      >
+        1
+      </Text>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`Drafts Button should render the drafts button component with drafts count 1`] = `
+<View
+  accessibilityState={
+    {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "opacity": 1,
+    }
+  }
+  testID="channel_list.drafts.button"
+>
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        {
+          "paddingLeft": 18,
+          "paddingRight": 20,
+        },
+        false,
+        false,
+        {
+          "minHeight": 40,
+        },
+      ]
+    }
+  >
+    <Icon
+      name="pencil-outline"
+      style={
+        [
+          {
+            "color": "rgba(255,255,255,0.5)",
+            "fontSize": 24,
+            "marginRight": 12,
+          },
+          false,
+        ]
+      }
+    />
+    <Text
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          {
+            "color": "#ffffff",
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          false,
+        ]
+      }
+    >
+      Drafts
+    </Text>
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "display": "flex",
+          "flexDirection": "row",
+          "gap": 4,
+        }
+      }
+    >
+      <Icon
+        color="#ffffff"
+        name="pencil-outline"
+        size={14}
+        style={
+          {
+            "opacity": 0.56,
+          }
+        }
+      />
+      <Text
+        style={
+          {
+            "color": "#ffffff",
+            "fontFamily": "OpenSans-SemiBold",
+            "fontSize": 12,
+            "fontWeight": "600",
+            "lineHeight": 16,
+            "opacity": 0.64,
+          }
+        }
+      >
+        23
+      </Text>
+    </View>
+  </View>
+</View>
+`;
