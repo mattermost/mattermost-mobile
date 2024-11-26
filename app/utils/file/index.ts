@@ -463,7 +463,7 @@ export function uploadDisabledWarning(intl: IntlShape) {
 
 export const fileExists = async (path: string) => {
     try {
-        const file = await getInfoAsync(encodeURIComponent(path));
+        const file = await getInfoAsync(path);
         return file.exists;
     } catch {
         return false;

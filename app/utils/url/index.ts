@@ -255,8 +255,7 @@ export function extractFilenameFromUrl(url: string) {
 
 export function safeDecodeURIComponent(v: string) {
     try {
-        const result = decodeURIComponent(v);
-        return result;
+        return decodeURIComponent(v);
     } catch {
         return v;
     }
