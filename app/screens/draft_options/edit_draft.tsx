@@ -65,6 +65,7 @@ const EditDraft: React.FC<Props> = ({
         >
             <CompassIcon
                 name='pencil-outline'
+                testID='pencil-outline-icon'
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
