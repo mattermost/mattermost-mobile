@@ -3,11 +3,13 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, View, Text} from 'react-native';
+import {View, Text} from 'react-native';
 
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import DeleteDraft from './delete_draft';
@@ -26,12 +28,15 @@ type Props = {
 
 export const DRAFT_OPTIONS_BUTTON = 'close-post-options';
 
-const styles = StyleSheet.create({
-    header: {
-        ...typography('Heading', 600, 'SemiBold'),
-        display: 'flex',
-        paddingBottom: 4,
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        header: {
+            ...typography('Heading', 600, 'SemiBold'),
+            display: 'flex',
+            paddingBottom: 4,
+            color: theme.centerChannelColor,
+        },
+    };
 });
 
 const DraftOptions: React.FC<Props> = ({
@@ -42,6 +47,8 @@ const DraftOptions: React.FC<Props> = ({
 }) => {
     const {formatMessage} = useIntl();
     const isTablet = useIsTablet();
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
     const renderContent = () => {
         return (
             <View>
