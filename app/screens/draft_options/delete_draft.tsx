@@ -66,6 +66,7 @@ const DeleteDraft: React.FC<Props> = ({
         >
             <CompassIcon
                 name='trash-can-outline'
+                testID='trash-can-outline-icon'
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
