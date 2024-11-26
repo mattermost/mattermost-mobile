@@ -14,12 +14,6 @@ import {queryJoinedTeams, queryMyTeams} from '@queries/servers/team';
 import TeamList from './team_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type MyTeamModel from '@typings/database/models/servers/my_team';
-
-interface TeamWithLowerName {
-    myTeam: MyTeamModel;
-    lowerName?: string;
-}
 
 const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
     const myTeams = queryMyTeams(database).observe();
@@ -37,35 +31,21 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
 
             if (sortedTeamIds.size) {
                 const mySortedTeams = [...sortedTeamIds].
-                    filter((id) => membershipMap.has(id)).
+                    filter((id) => id && membershipMap.has(id)).
                     map((id) => membershipMap.get(id)!);
 
                 const extraTeams = teams.
-                    filter((t) => !sortedTeamIds.has(t.id) && membershipMap.has(t.id)).
-                    map((t) => ({
-                        myTeam: membershipMap.get(t.id)!,
-                        lowerName: t.displayName.toLocaleLowerCase(),
-                    } as TeamWithLowerName)).
-                    sort((a, b) => a.lowerName!.localeCompare(b.lowerName!)).
-                    map((t) => {
-                        delete t.lowerName;
-                        return t;
-                    });
+                    filter((t) => t.id && !sortedTeamIds.has(t.id) && membershipMap.has(t.id)).
+                    sort((a, b) => a.displayName.toLocaleLowerCase().localeCompare(b.displayName.toLocaleLowerCase())).
+                    map((t) => membershipMap.get(t.id)!);
 
                 return [...mySortedTeams, ...extraTeams];
             }
 
             return teams.
-                filter((t) => membershipMap.has(t.id)).
-                map((t) => ({
-                    myTeam: membershipMap.get(t.id)!,
-                    lowerName: t.displayName.toLocaleLowerCase(),
-                } as TeamWithLowerName)).
-                sort((a, b) => a.lowerName!.localeCompare(b.lowerName!)).
-                map((t) => {
-                    delete t.lowerName;
-                    return t.myTeam;
-                });
+                filter((t) => t.id && membershipMap.has(t.id)).
+                sort((a, b) => a.displayName.toLocaleLowerCase().localeCompare(b.displayName.toLocaleLowerCase())).
+                map((t) => membershipMap.get(t.id)!);
         }),
     );
     return {
