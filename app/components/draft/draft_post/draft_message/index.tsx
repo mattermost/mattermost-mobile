@@ -63,7 +63,10 @@ const DraftMessage: React.FC<Props> = ({
 
     return (
         <>
-            <Animated.View style={animatedStyle}>
+            <Animated.View
+                style={animatedStyle}
+                testID='draft_message'
+            >
                 <ScrollView
                     keyboardShouldPersistTaps={'always'}
                     scrollEnabled={false}
