@@ -28,6 +28,7 @@ type Props = {
     channelType: ChannelType | undefined;
     currentUserId: string;
     channelName: string | undefined;
+    channelDisplayName?: string;
     enableConfirmNotificationsToChannel?: boolean;
     maxMessageLength: number;
     membersCount?: number;
@@ -63,6 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const SendDraft: React.FC<Props> = ({
     channelId,
     channelName,
+    channelDisplayName,
     rootId,
     channelType,
     bottomSheetId,
@@ -116,7 +118,18 @@ const SendDraft: React.FC<Props> = ({
         if (persistentNotificationsEnabled) {
             persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, handleSendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
         } else {
-            const receivingChannel = channelType === General.DM_CHANNEL ? draftReceiverUserName : channelName;
+            let receivingChannel = channelName;
+            switch (channelType) {
+                case General.DM_CHANNEL:
+                    receivingChannel = draftReceiverUserName;
+                    break;
+                case General.GM_CHANNEL:
+                    receivingChannel = channelDisplayName;
+                    break;
+                default:
+                    receivingChannel = channelName;
+                    break;
+            }
             sendMessageWithAlert({
                 title: intl.formatMessage({
                     id: 'send_message.confirm.title',
