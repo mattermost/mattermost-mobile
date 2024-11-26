@@ -51,7 +51,7 @@ const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, chil
         let exists = false;
 
         try {
-            path = decodeURIComponent(file.localPath || '');
+            path = file.localPath || '';
             if (path) {
                 exists = await fileExists(path);
             }
@@ -103,7 +103,7 @@ const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, chil
 
     const openDocument = useCallback(async () => {
         if (!didCancel && !preview) {
-            let path = decodeURIComponent(file.localPath || '');
+            let path = file.localPath || '';
             let exists = false;
             if (path) {
                 exists = await fileExists(path);

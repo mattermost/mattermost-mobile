@@ -58,8 +58,9 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
     const getFileInfo = () => {
         const height = metadata?.height || 0;
         const width = metadata?.width || 0;
-        const link = safeDecodeURIComponent(getImageSource());
-        let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
+        const uri = getImageSource();
+        const decodedLink = safeDecodeURIComponent(uri);
+        let filename = parseUrl(decodedLink.substring(decodedLink.lastIndexOf('/'))).pathname.replace('/', '');
         let extension = filename.split('.').pop();
 
         if (extension === filename) {
@@ -74,7 +75,7 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
             extension,
             has_preview_image: true,
             post_id: postId,
-            uri: link,
+            uri,
             width,
             height,
         };
