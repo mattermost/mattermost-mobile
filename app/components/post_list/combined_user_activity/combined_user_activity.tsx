@@ -16,6 +16,7 @@ import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@
 import {emptyFunction} from '@utils/general';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 
 import LastUsers from './last_users';
 import {postTypeMessages} from './messages';
@@ -76,7 +77,7 @@ const CombinedUserActivity = ({
         const usernamesValues = Object.values(usernamesById);
         const usernames = userIds.reduce((acc: string[], id: string) => {
             if (id !== currentUserId && id !== currentUsername) {
-                const name = usernamesById[id] ?? usernamesValues.find((n) => n === id);
+                const name = secureGetFromRecord(usernamesById, id) ?? usernamesValues.find((n) => n === id);
                 acc.push(name ? `@${name}` : someone);
             }
             return acc;
@@ -112,7 +113,7 @@ const CombinedUserActivity = ({
             return null;
         }
         let actor = '';
-        if (usernamesById[actorId]) {
+        if (secureGetFromRecord(usernamesById, actorId)) {
             actor = `@${usernamesById[actorId]}`;
         }
 
@@ -141,11 +142,11 @@ const CombinedUserActivity = ({
         const secondUser = usernames[1];
         let localeHolder;
         if (numOthers === 0) {
-            localeHolder = postTypeMessages[postType].one;
+            localeHolder = secureGetFromRecord(postTypeMessages, postType)?.one;
 
             if (
                 (userIds[0] === currentUserId || userIds[0] === currentUsername) &&
-                postTypeMessages[postType].one_you
+                secureGetFromRecord(postTypeMessages, postType)?.one_you
             ) {
                 localeHolder = postTypeMessages[postType].one_you;
             }
@@ -153,7 +154,8 @@ const CombinedUserActivity = ({
             localeHolder = postTypeMessages[postType].two;
         }
 
-        const formattedMessage = intl.formatMessage(localeHolder, {firstUser, secondUser, actor});
+        // We default to empty string, but this should never happen
+        const formattedMessage = localeHolder ? intl.formatMessage(localeHolder, {firstUser, secondUser, actor}) : '';
         return (
             <Markdown
                 channelId={post.channel_id}
