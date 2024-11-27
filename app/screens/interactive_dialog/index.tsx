@@ -16,6 +16,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 
 import DialogElement from './dialog_element';
 import DialogIntroductionText from './dialog_introduction_text';
@@ -142,7 +143,7 @@ function InteractiveDialog({
         let hasErrors = false;
         if (elements) {
             elements.forEach((elem) => {
-                const newError = checkDialogElementForError(elem, values[elem.name]);
+                const newError = checkDialogElementForError(elem, secureGetFromRecord(values, elem.name));
                 if (newError) {
                     newErrors[elem.name] = intl.formatMessage({id: newError.id, defaultMessage: newError.defaultMessage}, newError.values);
                     hasErrors = true;
@@ -244,6 +245,10 @@ function InteractiveDialog({
                     />
                 }
                 {Boolean(elements) && elements.map((e) => {
+                    const value = secureGetFromRecord(values, e.name);
+                    if (value === undefined) {
+                        return null;
+                    }
                     return (
                         <DialogElement
                             key={'dialogelement' + e.name}
@@ -252,13 +257,13 @@ function InteractiveDialog({
                             type={e.type}
                             subtype={e.subtype}
                             helpText={e.help_text}
-                            errorText={errors[e.name]}
+                            errorText={secureGetFromRecord(errors, e.name)}
                             placeholder={e.placeholder}
                             maxLength={e.max_length}
                             dataSource={e.data_source}
                             optional={e.optional}
                             options={e.options}
-                            value={values[e.name]}
+                            value={value}
                             onChange={onChange}
                         />
                     );

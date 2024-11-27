@@ -10,6 +10,7 @@ import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {alertErrorWithFallback} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
+import {secureGetFromRecord} from '@utils/types';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -40,7 +41,7 @@ function getChannelFromChannelName(name: string, channels: ChannelModel[], chann
     });
 
     while (channelName.length > 0) {
-        if (channelsByName[channelName]) {
+        if (secureGetFromRecord(channelsByName, channelName)) {
             return channelsByName[channelName];
         }
 
