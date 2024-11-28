@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {makeCallsBaseAndBadgeRGB, rgbToCSS} from '@mattermost/calls';
+import {type CallsConfig, type CallPostProps, isCaption, type Caption, isCallJobMetadata, type CallJobMetadata} from '@mattermost/calls/lib/types';
 import {Alert} from 'react-native';
 import {SelectedTrackType, TextTrackType, type ISO639_1, type SelectedTrack, type TextTracks} from 'react-native-video';
 
@@ -9,6 +10,7 @@ import {buildFileUrl} from '@actions/remote/file';
 import {Calls, Post} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import {isMinimumServerVersion} from '@utils/helpers';
+import {ensureNumber, ensureString, isArrayOf, isRecordOf, isStringArray} from '@utils/types';
 import {displayUsername} from '@utils/user';
 
 import type {
@@ -17,7 +19,6 @@ import type {
     CallsTheme,
     CallsVersion,
 } from '@calls/types/calls';
-import type {CallsConfig, Caption, CallPostProps} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
@@ -217,17 +218,17 @@ export function isCallsStartedMessage(payload?: NotificationData) {
     return (payload?.message === 'You\'ve been invited to a call' || callsMessageRegex.test(payload?.message || ''));
 }
 
-export const hasCaptions = (postProps?: Record<string, any> & { captions?: Caption[] }): boolean => {
-    return !(!postProps || !postProps.captions?.[0]);
+export const hasCaptions = (postProps?: Record<string, unknown>): boolean => {
+    return Boolean(isArrayOf<Caption>(postProps?.captions, isCaption) && postProps.captions[0]);
 };
 
-export const getTranscriptionUri = (serverUrl: string, postProps?: Record<string, any> & { captions?: Caption[] }): {
+export const getTranscriptionUri = (serverUrl: string, postProps?: Record<string, unknown>): {
     tracks?: TextTracks;
     selected: SelectedTrack;
 } => {
     // Note: We're not using hasCaptions above because this tells typescript that the caption exists later.
     // We could use some fancy typescript to do the same, but it's not worth the complexity.
-    if (!postProps || !postProps.captions?.[0]) {
+    if (!isArrayOf<Caption>(postProps?.captions, isCaption) || !postProps.captions[0]) {
         return {
             tracks: undefined,
             selected: {type: SelectedTrackType.DISABLED, value: ''},
@@ -247,20 +248,16 @@ export const getTranscriptionUri = (serverUrl: string, postProps?: Record<string
     };
 };
 
-function isValidObject(v: any) {
-    return typeof v === 'object' && !Array.isArray(v) && v !== null;
-}
-
 export function getCallPropsFromPost(post: PostModel | Post): CallPostProps {
     return {
-        title: typeof post.props?.title === 'string' ? post.props.title : '',
-        start_at: typeof post.props?.start_at === 'number' ? post.props.start_at : 0,
-        end_at: typeof post.props?.end_at === 'number' ? post.props.end_at : 0,
-        recordings: isValidObject(post.props?.recordings) ? post.props.recordings : {},
-        transcriptions: isValidObject(post.props?.transcriptions) ? post.props.transcriptions : {},
-        participants: Array.isArray(post.props?.participants) ? post.props.participants : [],
+        title: ensureString(post.props?.title),
+        start_at: ensureNumber(post.props?.start_at),
+        end_at: ensureNumber(post.props?.end_at),
+        recordings: isRecordOf<CallJobMetadata>(post.props?.recordings, isCallJobMetadata) ? post.props.recordings : {},
+        transcriptions: isRecordOf<CallJobMetadata>(post.props?.transcriptions, isCallJobMetadata) ? post.props.transcriptions : {},
+        participants: isStringArray(post.props?.participants) ? post.props.participants : [],
 
         // DEPRECATED
-        recording_files: Array.isArray(post.props?.recording_files) ? post.props.recording_files : [],
+        recording_files: isStringArray(post.props?.recording_files) ? post.props.recording_files : [],
     };
 }

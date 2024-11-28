@@ -5,7 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
-import {getStatusColors} from '@utils/message_attachment_colors';
+import {getStatusColors} from '@utils/message_attachment';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {isValidUrl} from '@utils/url';

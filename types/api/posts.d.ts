@@ -71,7 +71,7 @@ type Post = {
     message_source?: string;
     type: PostType;
     participants?: null | UserProfile[]|string[];
-    props: Record<string, any>;
+    props: Record<string, unknown> | undefined;
     hashtags: string;
     pending_post_id: string;
     reply_count: number;
