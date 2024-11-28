@@ -124,5 +124,6 @@
           android:stopWithTask="false"
           tools:node="merge"
       />
+
     </application>
 </manifest>
