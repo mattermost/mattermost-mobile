@@ -12,11 +12,10 @@ npm install
 
 ### Inject Detox Settings
 
-To inject the Detox settings into your project, navigate to the `detox` directory and run the following commands:
+To inject the Detox settings into your project, navigate to the `detox` directory and run the following command:
 
 ```sh
-gradle -b inject_detox_settings.gradle
-gradle -b inject_detox_manifest.gradle
+npm run inject-detox-settings
 ```
 
 ### Update `minSdkVersion` for `react-native-image-picker`
@@ -29,7 +28,7 @@ sed -i '' 's/minSdkVersion 21/minSdkVersion 23/' ./node_modules/react-native-ima
 
 ### Build detox android app
 
-From the detox folder run:
+From the `detox` folder run:
 
 ```
 npm run e2e:android-build

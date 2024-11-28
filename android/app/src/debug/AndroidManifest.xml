@@ -1,23 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          package="com.mattermost.rnbeta">
+          xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:usesCleartextTraffic="true"
-        tools:targetApi="28"
-        tools:ignore="GoogleAppIndexingWarning">
-        <activity
-            android:name="androidx.test.core.app.InstrumentationActivityInvoker$BootstrapActivity"
-            android:exported="true" 
-            tools:node="replace"/>
-        <activity
-            android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity"
-            android:exported="true" 
-            tools:node="replace"/>
-        <activity
-            android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyFloatingActivity"
-            android:exported="true" 
-            tools:node="replace"/>
+        tools:targetApi="28"/>
     </application>
 </manifest>

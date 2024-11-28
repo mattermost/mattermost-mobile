@@ -45,11 +45,8 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v3
 
-      - name: Inject Detox settings into settings.gradle
-        run: gradle -b detox/inject_detox_settings.gradle
-
-      - name: Inject Detox settings into AndroidManifest.xml
-        run: gradle -b detox/inject_detox_manifest.gradle
+      - name: Inject Detox settings
+        run: cd detox && npm run e2e:android-inject-settings
 
       - name: Update minSdkVersion for react-native-image-picker
         run: |
