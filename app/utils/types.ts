@@ -36,3 +36,7 @@ export function ensureString(v: unknown): string {
 export function ensureNumber(v: unknown): number {
     return typeof v === 'number' ? v : 0;
 }
+
+export function secureGetFromRecord<T>(v: Record<string, T> | undefined, key: string) {
+    return typeof v === 'object' && v && Object.prototype.hasOwnProperty.call(v, key) ? v[key] : undefined;
+}

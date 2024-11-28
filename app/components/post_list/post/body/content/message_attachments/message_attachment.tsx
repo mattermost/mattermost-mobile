@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {getStatusColors} from '@utils/message_attachment';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 import {isValidUrl} from '@utils/url';
 
 import AttachmentActions from './attachment_actions';
@@ -62,7 +63,7 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
     if (attachment.color) {
         if (attachment.color[0] === '#') {
             borderStyle = {borderLeftColor: attachment.color};
-        } else if (STATUS_COLORS[attachment.color]) {
+        } else if (secureGetFromRecord(STATUS_COLORS, attachment.color)) {
             borderStyle = {borderLeftColor: STATUS_COLORS[attachment.color]};
         }
     }

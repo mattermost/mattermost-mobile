@@ -12,7 +12,7 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {ensureString} from '@utils/types';
+import {secureGetFromRecord, ensureString} from '@utils/types';
 import {typography} from '@utils/typography';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -277,7 +277,7 @@ export const SystemMessage = ({post, location, author, hideGuestTags}: SystemMes
         return renderAddGuestToChannelMessage({post, author, location, styles, intl, theme}, hideGuestTags);
     }
 
-    const renderer = systemMessageRenderers[post.type];
+    const renderer = secureGetFromRecord(systemMessageRenderers, post.type);
     if (!renderer) {
         return (
             <Markdown
