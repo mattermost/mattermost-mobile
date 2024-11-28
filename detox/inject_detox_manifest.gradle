@@ -1,0 +1,25 @@
+
+def manifestFile = new File(rootProject.projectDir, '../android/app/src/debug/AndroidManifest.xml')
+def detoxManifest = """
+<application
+    android:usesCleartextTraffic="true"
+    tools:targetApi="28"
+    tools:ignore="GoogleAppIndexingWarning">
+    <activity
+        android:name="androidx.test.core.app.InstrumentationActivityInvoker\$BootstrapActivity"
+        android:exported="true" 
+        tools:node="replace"/>
+    <activity
+        android:name="androidx.test.core.app.InstrumentationActivityInvoker\$EmptyActivity"
+        android:exported="true" 
+        tools:node="replace"/>
+    <activity
+        android:name="androidx.test.core.app.InstrumentationActivityInvoker\$EmptyFloatingActivity"
+        android:exported="true" 
+        tools:node="replace"/>
+</application>
+"""
+
+if (!manifestFile.text.contains(detoxManifest)) {
+    manifestFile.text = manifestFile.text.replace("</manifest>", detoxManifest + "\n</manifest>")
+}

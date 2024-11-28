@@ -45,6 +45,12 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v3
 
+      - name: Inject Detox settings into settings.gradle
+        run: gradle -b detox/inject_detox_settings.gradle
+
+      - name: Inject Detox settings into AndroidManifest.xml
+        run: gradle -b detox/inject_detox_manifest.gradle
+
       - name: Update minSdkVersion for react-native-image-picker
         run: |
           sed -i '' 's/minSdkVersion 21/minSdkVersion 23/' ./node_modules/react-native-image-picker/android/build.gradle

@@ -1,0 +1,10 @@
+
+def settingsFile = new File(rootProject.projectDir, '../android/settings.gradle')
+def detoxSettings = """
+include ':detox'
+project(':detox').projectDir = new File(rootProject.projectDir, '../detox/node_modules/detox/android')
+"""
+
+if (!settingsFile.text.contains(detoxSettings)) {
+    settingsFile.append("\n" + detoxSettings)
+}
