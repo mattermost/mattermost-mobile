@@ -85,7 +85,7 @@ describe('post utils', () => {
             const post = {
                 props: {
                     from_webhook: 'true',
-                },
+                } as Record<string, unknown>,
             } as PostModel;
 
             const result = isFromWebhook(post);
@@ -96,7 +96,7 @@ describe('post utils', () => {
             const post = {
                 props: {
                     from_webhook: 'false',
-                },
+                } as Record<string, unknown>,
             } as PostModel;
 
             const result = isFromWebhook(post);
@@ -149,7 +149,7 @@ describe('post utils', () => {
             const post = {
                 props: {
                     failed: true,
-                },
+                } as Record<string, unknown>,
                 pendingPostId: 'id',
                 id: 'id',
                 updateAt: Date.now() - Post.POST_TIME_TO_FAIL - 1000,
@@ -471,7 +471,7 @@ describe('post utils', () => {
                 props: {
                     from_webhook: 'true',
                     override_username: 'webhook_user',
-                },
+                } as Record<string, unknown>,
             } as PostModel;
 
             const result = postUserDisplayName(post, undefined, undefined, true);
@@ -482,7 +482,7 @@ describe('post utils', () => {
             const post = {
                 props: {
                     from_webhook: 'false',
-                },
+                } as Record<string, unknown>,
             } as PostModel;
             const author = {
                 username: 'user1',
@@ -497,7 +497,7 @@ describe('post utils', () => {
             const post = {
                 props: {
                     from_webhook: 'false',
-                },
+                } as Record<string, unknown>,
             } as PostModel;
             const author = {
                 username: 'user1',
