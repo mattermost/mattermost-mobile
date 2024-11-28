@@ -26,6 +26,7 @@ import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {closePermalink} from '@utils/permalink';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
 
 import PermalinkError from './permalink_error';
@@ -176,7 +177,7 @@ function Permalink({
                 return;
             }
 
-            const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+            const database = secureGetFromRecord(DatabaseManager.serverDatabases, serverUrl)?.database;
             if (!database) {
                 setError({unreachable: true});
                 setLoading(false);

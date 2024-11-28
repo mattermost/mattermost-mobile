@@ -15,7 +15,7 @@ import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {showAppForm} from '@screens/navigation';
 import {createCallContext} from '@utils/apps';
-import {getStatusColors} from '@utils/message_attachment_colors';
+import {getStatusColors} from '@utils/message_attachment';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 

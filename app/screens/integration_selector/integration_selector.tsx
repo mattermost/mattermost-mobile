@@ -24,6 +24,7 @@ import {
 } from '@screens/navigation';
 import {filterChannelsMatchingTerm} from '@utils/channel';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
 
 import ChannelListRow from './channel_list_row';
@@ -68,7 +69,8 @@ const extractItemKey = (dataSource: string, item: DataType): string => {
 const toggleFromMap = <T extends DialogOption | Channel | UserProfile>(current: MultiselectSelectedMap, key: string, item: T): MultiselectSelectedMap => {
     const newMap = {...current};
 
-    if (current[key]) {
+    const hasValue = Boolean(secureGetFromRecord<any>(current, key));
+    if (hasValue) {
         delete newMap[key];
     } else {
         newMap[key] = item;
@@ -96,7 +98,7 @@ const filterSearchData = (source: string, searchData: DataTypeList, searchTerm: 
 const handleIdSelection = (dataSource: string, currentIds: {[id: string]: DataType}, item: DataType) => {
     const newSelectedIds = {...currentIds};
     const key = extractItemKey(dataSource, item);
-    const wasSelected = currentIds[key];
+    const wasSelected = secureGetFromRecord(currentIds, key);
 
     if (wasSelected) {
         Reflect.deleteProperty(newSelectedIds, key);
@@ -239,7 +241,9 @@ function IntegrationSelector(
         } else {
             setMultiselectSelected((current) => {
                 const multiselectSelectedItems = {...current};
-                delete multiselectSelectedItems[itemKey];
+                if (secureGetFromRecord<any>(multiselectSelectedItems, itemKey) !== undefined) {
+                    delete multiselectSelectedItems[itemKey];
+                }
                 return multiselectSelectedItems;
             });
         }
@@ -470,7 +474,7 @@ function IntegrationSelector(
     }, [multiselectSelected, theme, isMultiselect]);
 
     const renderOptionItem = useCallback((itemProps: any) => {
-        const itemSelected = Boolean(multiselectSelected[itemProps.item.value]);
+        const itemSelected = Boolean(secureGetFromRecord<any>(multiselectSelected, itemProps.item.value));
         return (
             <OptionListRow
                 key={itemProps.id}

@@ -80,7 +80,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
     const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
 
     const existing = await getPostById(database, pendingPostId);
-    if (existing && !existing.props.failed) {
+    if (existing && !existing.props?.failed) {
         return {data: false};
     }
 
@@ -240,7 +240,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
         // timestamps will remain the same as the initial attempt for createAt
         // but updateAt will be use for the optimistic post UI
         post.prepareUpdate((p) => {
-            p.props = newPost.props;
+            p.props = newPost.props || null;
             p.updateAt = timestamp;
         });
         await operator.batchRecords([post], 'retryFailedPost - first update');

@@ -3,6 +3,8 @@
 
 /* eslint-disable max-lines */
 
+import {Platform} from 'react-native';
+
 import {GLOBAL_IDENTIFIERS, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -12,6 +14,7 @@ import {
     forceLogoutIfNecessary,
     fetchSessions,
     login,
+    logout,
     cancelSessionNotification,
     scheduleSessionNotification,
     sendPasswordResetEmail,
@@ -109,6 +112,13 @@ describe('sessions', () => {
         expect(result.error).toBeDefined();
     });
 
+    it('addPushProxyVerificationStateFromLogin - no verification', async () => {
+        mockGetPushProxyVerificationState.mockImplementationOnce(() => '');
+        const result = await addPushProxyVerificationStateFromLogin(serverUrl);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+    });
+
     it('addPushProxyVerificationStateFromLogin - base case', async () => {
         const result = await addPushProxyVerificationStateFromLogin(serverUrl);
         expect(result).toBeDefined();
@@ -146,6 +156,13 @@ describe('sessions', () => {
         expect(result).toBeUndefined();
     });
 
+    it('fetchSessions - handle client error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await fetchSessions(serverUrl, user1.id);
+        expect(result).toBeUndefined();
+    });
+
     it('fetchSessions - base case', async () => {
         const result = await fetchSessions(serverUrl, user1.id);
         expect(result).toBeDefined();
@@ -166,6 +183,21 @@ describe('sessions', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
         expect(result.failed).toBe(true);
+    });
+
+    it('login - handle throw after login request', async () => {
+        jest.spyOn(DatabaseManager, 'setActiveServerDatabase').mockImplementationOnce(throwFunc);
+
+        const result = await login(serverUrl, {config: {DiagnosticId: 'diagnosticid'}} as LoginArgs);
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.failed).toBe(false);
+    });
+
+    it('logout - base case', async () => {
+        const result = await logout(serverUrl, true, true, true);
+        expect(result).toBeDefined();
+        expect(result.data).toBeDefined();
     });
 
     it('cancelSessionNotification - handle not found database', async () => {
@@ -192,6 +224,12 @@ describe('sessions', () => {
         expect(result.error).toBeUndefined();
     });
 
+    it('cancelSessionNotification - no expired session', async () => {
+        const result = await cancelSessionNotification(serverUrl);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+    });
+
     it('scheduleSessionNotification - handle not found database', async () => {
         const result = await scheduleSessionNotification('foo');
         expect(result).toBeDefined();
@@ -211,6 +249,20 @@ describe('sessions', () => {
             prepareRecordsOnly: false,
         });
 
+        const result = await scheduleSessionNotification(serverUrl);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+    });
+
+    it('scheduleSessionNotification - no session', async () => {
+        mockClient.getSessions.mockImplementationOnce(() => []);
+        const result = await scheduleSessionNotification(serverUrl);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+    });
+
+    it('scheduleSessionNotification - null sessions', async () => {
+        mockClient.getSessions.mockImplementationOnce(() => null as any);
         const result = await scheduleSessionNotification(serverUrl);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
@@ -242,6 +294,15 @@ describe('sessions', () => {
         const result = await ssoLogin(serverUrl, 'servername', 'diagnosticid', 'authtoken', 'csrftoken');
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
+        expect(result.failed).toBe(false);
+    });
+
+    it('ssoLogin - handle throw after login request', async () => {
+        jest.spyOn(DatabaseManager, 'setActiveServerDatabase').mockImplementationOnce(throwFunc);
+
+        const result = await ssoLogin(serverUrl, 'servername', 'diagnosticid', 'authtoken', 'csrftoken');
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
         expect(result.failed).toBe(false);
     });
 
@@ -277,8 +338,35 @@ describe('sessions', () => {
         expect(session).toBeDefined();
     });
 
+    it('findSession - non-match device token', async () => {
+        await DatabaseManager.appDatabase?.operator.handleGlobal({
+            globals: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: 'diffdeviceid'}],
+            prepareRecordsOnly: false,
+        });
+
+        const session = await findSession(serverUrl, [session1]);
+        expect(session).toBeDefined();
+    });
+
     it('findSession - by csrf', async () => {
         const session = await findSession(serverUrl, [session1]);
         expect(session).toBeDefined();
+    });
+
+    it('findSession - no csrf token', async () => {
+        mockGetCSRFFromCookie.mockResolvedValueOnce('');
+        const session = await findSession(serverUrl, [session1]);
+        expect(session).toBeUndefined();
+    });
+
+    it('findSession - by os', async () => {
+        const session = await findSession(serverUrl, [{...session1, props: {os: Platform.OS, csrf: 'diffcsrfid'}}]);
+        expect(session).toBeDefined();
+    });
+
+    it('findSession - handle error', async () => {
+        jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockImplementationOnce(throwFunc);
+        const result = await findSession(serverUrl, []);
+        expect(result).toBeUndefined();
     });
 });

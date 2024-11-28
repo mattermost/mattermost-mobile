@@ -36,6 +36,16 @@ jest.mock('@utils/general', () => {
     };
 });
 
+let mockGetIsCRTEnabled: jest.Mock;
+jest.mock('@queries/servers/thread', () => {
+    const original = jest.requireActual('@queries/servers/thread');
+    mockGetIsCRTEnabled = jest.fn(() => true);
+    return {
+        ...original,
+        getIsCRTEnabled: mockGetIsCRTEnabled,
+    };
+});
+
 const channelId = 'channelid1';
 const user: UserProfile = {
     id: 'userid',
@@ -62,7 +72,7 @@ describe('sendAddToChannelEphemeralPost', () => {
     it('base case', async () => {
         const users = await operator.handleUsers({users: [user], prepareRecordsOnly: false});
 
-        const {posts, error} = await sendAddToChannelEphemeralPost(serverUrl, users[0], ['username2'], ['added username2'], channelId, '');
+        const {posts, error} = await sendAddToChannelEphemeralPost(serverUrl, users[0], ['username2'], ['added username2'], channelId);
         expect(error).toBeUndefined();
         expect(posts).toBeDefined();
         expect(posts?.length).toBe(1);
@@ -86,7 +96,7 @@ describe('sendEphemeralPost', () => {
     it('handle no user', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'useridcurrent'}], prepareRecordsOnly: false});
 
-        const {post, error} = await sendEphemeralPost(serverUrl, 'newmessage', channelId, '');
+        const {post, error} = await sendEphemeralPost(serverUrl, 'newmessage', channelId);
         expect(error).toBeUndefined();
         expect(post).toBeDefined();
         expect(post?.user_id).toBe('useridcurrent');
@@ -117,6 +127,12 @@ describe('removePost', () => {
             prepareRecordsOnly: false,
         });
 
+        const {post: rPost, error} = await removePost(serverUrl, post);
+        expect(error).toBeUndefined();
+        expect(rPost).toBeDefined();
+    });
+
+    it('base case - missing post', async () => {
         const {post: rPost, error} = await removePost(serverUrl, post);
         expect(error).toBeUndefined();
         expect(rPost).toBeDefined();
@@ -189,21 +205,23 @@ describe('storePostsForChannel', () => {
         expect(error).toBeTruthy();
     });
 
-    it('base case', async () => {
+    it('base case - CRT on', async () => {
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
-        await operator.handleConfigs({
-            configs: [
-                {id: 'CollapsedThreads', value: 'default_on'},
-                {id: 'FeatureFlagCollapsedThreads', value: 'true'},
-            ],
-            configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
 
         const {models, error} = await storePostsForChannel(serverUrl, channelId, [post], [post.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, [user], false);
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models?.length).toBe(5); // Post, PostsInChannel, User, MyChannel, Thread
+    });
+
+    it('base case - CRT off', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        mockGetIsCRTEnabled.mockImplementationOnce(() => false);
+
+        const {models, error} = await storePostsForChannel(serverUrl, channelId, [post], [post.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, [user]);
+        expect(error).toBeUndefined();
+        expect(models).toBeDefined();
+        expect(models?.length).toBe(4); // Post, PostsInChannel, User, MyChannel
     });
 });
 
@@ -267,7 +285,7 @@ describe('addPostAcknowledgement', () => {
             prepareRecordsOnly: false,
         });
 
-        const {model, error} = await addPostAcknowledgement(serverUrl, post.id, user.id, 123, false);
+        const {model, error} = await addPostAcknowledgement(serverUrl, post.id, user.id, 123);
         expect(error).toBeUndefined();
         expect(model).toBeDefined();
     });
@@ -296,7 +314,7 @@ describe('removePostAcknowledgement', () => {
             prepareRecordsOnly: false,
         });
 
-        const {model, error} = await removePostAcknowledgement(serverUrl, post.id, user.id, false);
+        const {model, error} = await removePostAcknowledgement(serverUrl, post.id, user.id);
         expect(error).toBeUndefined();
         expect(model).toBeDefined();
     });
