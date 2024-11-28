@@ -66,7 +66,7 @@ env:
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
   ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-  BRANCH: ${{ github.head_ref || github.ref_name }}
+  BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
   COMMIT_HASH: ${{ github.sha }}
   DEVICE_NAME: ${{ inputs.ios_device_name }}
   DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
@@ -194,7 +194,6 @@ jobs:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
-
 
       - name: reset network settings
         if: ${{ inputs.low_bandwidth_mode || failure() }}
