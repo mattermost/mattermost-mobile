@@ -14,6 +14,7 @@ import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {isStringArray} from '@utils/types';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -24,6 +25,39 @@ type AddMembersProps = {
     location: string;
     post: PostModel;
     theme: Theme;
+}
+
+export type AddMemberPostProps = {
+    post_id: string;
+    not_in_channel_user_ids?: string[];
+    not_in_groups_usernames?: string[];
+    not_in_channel_usernames?: string[];
+    user_ids?: string[];
+    usernames?: string[];
+}
+
+export function isAddMemberProps(v: unknown): v is AddMemberPostProps {
+    if (typeof v !== 'object' || !v) {
+        return false;
+    }
+
+    if (!('post_id' in v) || typeof v.post_id !== 'string') {
+        return false;
+    }
+
+    if (('not_in_channel_user_ids' in v) && !isStringArray(v.not_in_channel_user_ids)) {
+        return false;
+    }
+
+    if (('not_in_groups_usernames' in v) && !isStringArray(v.not_in_groups_usernames)) {
+        return false;
+    }
+
+    if (('not_in_channel_usernames' in v) && !isStringArray(v.not_in_channel_usernames)) {
+        return false;
+    }
+
+    return true;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -41,20 +75,17 @@ const AddMembers = ({channelType, currentUser, location, post, theme}: AddMember
     const styles = getStyleSheet(theme);
     const textStyles = getMarkdownTextStyles(theme);
     const serverUrl = useServerUrl();
-    const postId: string = post.props.add_channel_member?.post_id;
-    const noGroupsUsernames = post.props.add_channel_member?.not_in_groups_usernames;
-    let userIds: string[] = post.props.add_channel_member?.not_in_channel_user_ids;
-    let usernames: string[] = post.props.add_channel_member?.not_in_channel_usernames;
-
-    if (!postId || !channelType) {
+    if (!isAddMemberProps(post.props?.add_channel_member)) {
         return null;
     }
 
-    if (!userIds) {
-        userIds = post.props.add_channel_member?.user_ids;
-    }
-    if (!usernames) {
-        usernames = post.props.add_channel_member?.usernames;
+    const postId = post.props.add_channel_member.post_id;
+    const noGroupsUsernames = post.props.add_channel_member.not_in_groups_usernames || [];
+    const userIds = post.props.add_channel_member.not_in_channel_user_ids || post.props.add_channel_member.user_ids || [];
+    const usernames = post.props.add_channel_member.not_in_channel_usernames || post.props.add_channel_member?.usernames || [];
+
+    if (!postId || !channelType) {
+        return null;
     }
 
     const handleAddChannelMember = () => {

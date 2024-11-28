@@ -18,7 +18,7 @@
     "@formatjs/intl-numberformat": "8.10.3",
     "@formatjs/intl-pluralrules": "5.2.14",
     "@gorhom/bottom-sheet": "4.6.4",
-    "@mattermost/calls": "github:mattermost/calls-common#07607cf603f1e3f0c86ae248b2332e8da17f9cf8",
+    "@mattermost/calls": "github:mattermost/calls-common#030ff7c0a37ee9b0ccc5fae0b2ea9c0e1c08473f",
     "@mattermost/compass-icons": "0.1.45",
     "@mattermost/hardware-keyboard": "file:./libraries/@mattermost/hardware-keyboard",
     "@mattermost/keyboard-tracker": "file:./libraries/@mattermost/keyboard-tracker",

@@ -194,12 +194,12 @@ describe('getCallPropsFromPost', () => {
 
         const props = getCallPropsFromPost(post);
 
-        expect(props.title).toBe(post.props.title);
-        expect(props.start_at).toBe(post.props.start_at);
-        expect(props.end_at).toBe(post.props.end_at);
-        expect(props.recordings).toBe(post.props.recordings);
-        expect(props.recording_files).toBe(post.props.recording_files);
-        expect(props.transcriptions).toBe(post.props.transcriptions);
-        expect(props.participants).toBe(post.props.participants);
+        expect(props.title).toBe(post.props?.title);
+        expect(props.start_at).toBe(post.props?.start_at);
+        expect(props.end_at).toBe(post.props?.end_at);
+        expect(props.recordings).toBe(post.props?.recordings);
+        expect(props.recording_files).toBe(post.props?.recording_files);
+        expect(props.transcriptions).toBe(post.props?.transcriptions);
+        expect(props.participants).toBe(post.props?.participants);
     });
 });

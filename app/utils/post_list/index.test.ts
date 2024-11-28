@@ -319,7 +319,7 @@ describe('generateCombinedPost', () => {
         const result = generateCombinedPost('combined-post-id', systemPosts);
 
         // Ensure all post ids are included in the system_post_ids prop
-        expect(result.props.system_post_ids).toEqual(['post1', 'post2', 'post3']);
+        expect(result.props?.system_post_ids).toEqual(['post1', 'post2', 'post3']);
     });
 
     it('should include combined messages in the props object', () => {
@@ -331,7 +331,7 @@ describe('generateCombinedPost', () => {
         const result = generateCombinedPost('combined-post-id', systemPosts);
 
         // Ensure the messages prop includes all individual messages
-        expect(result.props.messages).toEqual(['Message 1', 'Message 2']);
+        expect(result.props?.messages).toEqual(['Message 1', 'Message 2']);
     });
 
     it('should set the post type to COMBINED_USER_ACTIVITY', () => {
@@ -387,7 +387,7 @@ describe('generateCombinedPost', () => {
         const result = generateCombinedPost(combinedPostId, systemPosts);
 
         // Extract the post types from the sorted messages in the combined post props
-        const sortedPostTypes = result.props.user_activity_posts.map((post: PostModel) => post.type);
+        const sortedPostTypes = (result.props?.user_activity_posts as any).map((post: PostModel) => post.type);
 
         // Expect the post types to be sorted based on their priorities in comparePostTypes
         expect(sortedPostTypes).toEqual([
@@ -422,9 +422,9 @@ describe('generateCombinedPost', () => {
         const result = generateCombinedPost(combinedPostId, systemPosts);
 
         // Ensure user activities are combined for ADD_TO_TEAM
-        expect(result.props.user_activity_posts.length).toBe(2);
-        expect(result.props.user_activity_posts[0].props.addedUserId).toBe('user1');
-        expect(result.props.user_activity_posts[1].props.addedUserId).toBe('user2');
+        expect((result.props?.user_activity_posts as any).length).toBe(2);
+        expect((result.props?.user_activity_posts as any)[0].props.addedUserId).toBe('user1');
+        expect((result.props?.user_activity_posts as any)[1].props.addedUserId).toBe('user2');
     });
 
     it('should combine user activity for REMOVE_FROM_CHANNEL posts correctly', () => {
@@ -451,9 +451,9 @@ describe('generateCombinedPost', () => {
         const result = generateCombinedPost(combinedPostId, systemPosts);
 
         // Ensure user activities are combined for REMOVE_FROM_CHANNEL
-        expect(result.props.user_activity_posts.length).toBe(2);
-        expect(result.props.user_activity_posts[0].props.removedUserId).toBe('user3');
-        expect(result.props.user_activity_posts[1].props.removedUserId).toBe('user4');
+        expect((result.props?.user_activity_posts as any).length).toBe(2);
+        expect((result.props?.user_activity_posts as any)[0].props.removedUserId).toBe('user3');
+        expect((result.props?.user_activity_posts as any)[1].props.removedUserId).toBe('user4');
     });
 
     it('should handle empty systemPosts gracefully', () => {
