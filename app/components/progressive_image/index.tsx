@@ -101,7 +101,7 @@ const ProgressiveImage = ({
                 transition={300}
                 style={[StyleSheet.absoluteFill, imageStyle]}
                 source={(showImage) ? {uri: imageUri} : undefined}
-                autoplay={false}
+                autoplay={true}
             />
         </Animated.View>
     );

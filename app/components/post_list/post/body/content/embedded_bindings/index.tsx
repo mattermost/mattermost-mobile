@@ -4,6 +4,9 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import {isAppBinding, validateBindings} from '@utils/apps';
+import {isArrayOf} from '@utils/types';
+
 import EmbeddedBinding from './embedded_binding';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -16,7 +19,7 @@ type Props = {
 
 const EmbeddedBindings = ({location, post, theme}: Props) => {
     const content: React.ReactNode[] = [];
-    const embeds: AppBinding[] = post.props.app_bindings;
+    const embeds: AppBinding[] = isArrayOf<AppBinding>(post.props?.app_bindings, isAppBinding) ? validateBindings(post.props.app_bindings) : [];
 
     embeds.forEach((embed, i) => {
         content.push(

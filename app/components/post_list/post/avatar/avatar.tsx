@@ -14,6 +14,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {openAsBottomSheet} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
+import {ensureString} from '@utils/types';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -39,12 +40,15 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
 
     const fromWebHook = post.props?.from_webhook === 'true';
     const iconOverride = enablePostIconOverride && post.props?.use_user_icon !== 'true';
+    const propsIconUrl = ensureString(post.props?.override_icon_url);
+    const propsUsername = ensureString(post.props?.override_username);
+
     if (fromWebHook && iconOverride) {
         const isEmoji = Boolean(post.props?.override_icon_emoji);
         const frameSize = ViewConstant.PROFILE_PICTURE_SIZE;
         const pictureSize = isEmoji ? ViewConstant.PROFILE_PICTURE_EMOJI_SIZE : ViewConstant.PROFILE_PICTURE_SIZE;
         const borderRadius = isEmoji ? 0 : ViewConstant.PROFILE_PICTURE_SIZE / 2;
-        const overrideIconUrl = buildAbsoluteUrl(serverUrl, post.props?.override_icon_url);
+        const overrideIconUrl = buildAbsoluteUrl(serverUrl, propsIconUrl);
 
         let iconComponent: ReactNode;
         if (overrideIconUrl) {
@@ -95,8 +99,8 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
             userId: author.id,
             channelId: post.channelId,
             location,
-            userIconOverride: post.props?.override_username,
-            usernameOverride: post.props?.override_icon_url,
+            userIconOverride: propsIconUrl,
+            usernameOverride: propsUsername,
         };
 
         Keyboard.dismiss();

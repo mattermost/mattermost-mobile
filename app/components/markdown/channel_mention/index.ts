@@ -12,8 +12,6 @@ import ChannelMention from './channel_mention';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-export type ChannelMentions = Record<string, {id?: string; display_name: string; name?: string; team_name: string}>;
-
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
     const channels = currentTeamId.pipe(

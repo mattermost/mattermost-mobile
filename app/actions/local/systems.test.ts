@@ -50,6 +50,41 @@ describe('storeConfigAndLicense', () => {
         expect(models.length).toBe(0);
     });
 
+    it('handle undefined config - storeConfig', async () => {
+        const models = await storeConfig(serverUrl, undefined);
+        expect(models).toBeDefined();
+        expect(models.length).toBe(0);
+    });
+
+    it('base case - storeConfig', async () => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'DataRetentionEnableMessageDeletion', value: 'true'},
+                {id: 'AboutLink', value: 'link'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        const models = await storeConfig(serverUrl, {AboutLink: 'link'} as ClientConfig);
+        expect(models).toBeDefined();
+        expect(models.length).toBe(1); // data retention removed
+    });
+
+    it('nothing to update - storeConfig', async () => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'AboutLink', value: 'link'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        const models = await storeConfig(serverUrl, {AboutLink: 'link'} as ClientConfig);
+        expect(models).toBeDefined();
+        expect(models.length).toBe(0);
+    });
+
     it('handle not found database', async () => {
         const models = await storeConfigAndLicense('foo', {} as ClientConfig, {} as ClientLicense);
         expect(models).toBeDefined();
@@ -76,6 +111,12 @@ describe('dataRetention', () => {
         expect(models.length).toBe(2); // data retention and granular data retention policies
     });
 
+    it('empty case - storeDataRetentionPolicies', async () => {
+        const models = await storeDataRetentionPolicies(serverUrl, {} as DataRetentionPoliciesRequest);
+        expect(models).toBeDefined();
+        expect(models.length).toBe(2); // data retention and granular data retention policies
+    });
+
     it('handle not found database - updateLastDataRetentionRun', async () => {
         const {error} = await updateLastDataRetentionRun('foo', 0) as {error: unknown};
         expect(error).toBeDefined();
@@ -83,6 +124,12 @@ describe('dataRetention', () => {
 
     it('base case - updateLastDataRetentionRun', async () => {
         const models = await updateLastDataRetentionRun(serverUrl, 10) as SystemModel[];
+        expect(models).toBeDefined();
+        expect(models.length).toBe(1); // data retention
+    });
+
+    it('no time provided - updateLastDataRetentionRun', async () => {
+        const models = await updateLastDataRetentionRun(serverUrl) as SystemModel[];
         expect(models).toBeDefined();
         expect(models.length).toBe(1); // data retention
     });
@@ -134,6 +181,33 @@ describe('dataRetention', () => {
         expect(error).toBeDefined(); // LokiJSAdapter doesn't support unsafeSqlQuery
         spy.mockRestore();
     });
+
+    it('already cleaned today - dataRetentionCleanup', async () => {
+        const channel: Channel = {
+            id: 'channelid1',
+            team_id: 'teamid1',
+            total_msg_count: 0,
+        } as Channel;
+
+        await operator.handleConfigs({
+            configs: [
+                {id: 'DataRetentionEnableMessageDeletion', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({systems:
+            [
+                {id: SYSTEM_IDENTIFIERS.LAST_DATA_RETENTION_RUN, value: Date.now()},
+                {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', DataRetention: 'true'}},
+                {id: SYSTEM_IDENTIFIERS.GRANULAR_DATA_RETENTION_POLICIES, value: {team: [{team_id: 'teamid1', post_duration: 100}], channel: [{channel_id: 'channelid1', post_duration: 100}]}},
+            ],
+        prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const {error} = await dataRetentionCleanup(serverUrl);
+        expect(error).toBeUndefined();
+    });
 });
 
 describe('setLastServerVersionCheck', () => {
@@ -144,6 +218,11 @@ describe('setLastServerVersionCheck', () => {
 
     it('base case', async () => {
         const {error} = await setLastServerVersionCheck(serverUrl);
+        expect(error).toBeUndefined();
+    });
+
+    it('base case - reset', async () => {
+        const {error} = await setLastServerVersionCheck(serverUrl, true);
         expect(error).toBeUndefined();
     });
 });

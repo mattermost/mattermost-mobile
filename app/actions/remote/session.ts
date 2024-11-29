@@ -149,6 +149,8 @@ export const logout = async (serverUrl: string, skipServerLogout = false, remove
     if (!skipEvents) {
         DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer});
     }
+
+    return {data: true};
 };
 
 export const cancelSessionNotification = async (serverUrl: string) => {

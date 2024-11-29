@@ -13,6 +13,7 @@ import {useGalleryItem} from '@hooks/gallery';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, isGifTooLarge} from '@utils/images';
+import {secureGetFromRecord} from '@utils/types';
 
 import type {GalleryItemType} from '@typings/screens/gallery';
 
@@ -33,7 +34,7 @@ const style = StyleSheet.create({
 });
 
 const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, source}: MarkdownTableImageProps) => {
-    const metadata = imagesMetadata[source];
+    const metadata = secureGetFromRecord(imagesMetadata, source);
     const fileId = useRef(generateId('uid')).current;
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
     const currentServerUrl = useServerUrl();

@@ -70,6 +70,10 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
     }, []);
 
     const registerTextInputFocus = useCallback(() => {
+        // If the extra keyboard is opened if we don't do this
+        // we get a glitch in the UI that will animate the extra keyboard down
+        // and immediately bring the keyboard, by doing this
+        // we delay hidding the extra keyboard, so that there is no animation glitch
         setIsTextInputFocused(true);
         setTimeout(() => {
             setExtraKeyboardVisible(false);
