@@ -67,4 +67,12 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
     override fun removeServerNotifications(serverUrl: String?) {
         implementation.removeServerNotifications(serverUrl)
     }
+
+    override fun setSoftKeyboardToAdjustResize() {
+        implementation.setSoftKeyboardToAdjustResize()
+    }
+
+    override fun setSoftKeyboardToAdjustNothing() {
+        implementation.setSoftKeyboardToAdjustNothing()
+    }
 }

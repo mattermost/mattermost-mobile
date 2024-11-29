@@ -21,7 +21,6 @@
     "@mattermost/calls": "github:mattermost/calls-common#030ff7c0a37ee9b0ccc5fae0b2ea9c0e1c08473f",
     "@mattermost/compass-icons": "0.1.45",
     "@mattermost/hardware-keyboard": "file:./libraries/@mattermost/hardware-keyboard",
-    "@mattermost/keyboard-tracker": "file:./libraries/@mattermost/keyboard-tracker",
     "@mattermost/react-native-emm": "1.5.0",
     "@mattermost/react-native-network-client": "1.7.3",
     "@mattermost/react-native-paste-input": "0.8.0",
