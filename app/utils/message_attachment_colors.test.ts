@@ -3,7 +3,7 @@
 
 import {Preferences} from '@constants';
 
-import {getStatusColors} from './message_attachment_colors';
+import {getStatusColors} from './message_attachment';
 
 describe('getStatusColors', () => {
     const mockTheme = Preferences.THEMES.denim;

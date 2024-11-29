@@ -15,6 +15,7 @@ import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
+import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
@@ -164,7 +165,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
     }, [appsEnabled, currentTimezone, customEmojiNames, theme]);
 
     return (
-        <>
+        <ExtraKeyboardProvider>
             <NavigationHeader
                 isLargeTitle={true}
                 showBackButton={false}
@@ -202,7 +203,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
                     />
                 </Animated.View>
             </SafeAreaView>
-        </>
+        </ExtraKeyboardProvider>
     );
 }
 

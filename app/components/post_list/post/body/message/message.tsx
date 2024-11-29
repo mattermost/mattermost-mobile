@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {type LayoutChangeEvent, ScrollView, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import Markdown from '@components/markdown';
+import {isChannelMentions} from '@components/markdown/channel_mention/channel_mention';
 import {SEARCH} from '@constants/screens';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
@@ -69,6 +70,10 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
     const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);
     const onPress = () => setOpen(!open);
 
+    const channelMentions = useMemo(() => {
+        return isChannelMentions(post.props?.channel_mentions) ? post.props.channel_mentions : {};
+    }, [post.props?.channel_mentions]);
+
     return (
         <>
             <Animated.View style={animatedStyle}>
@@ -86,7 +91,7 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
                             baseTextStyle={style.message}
                             blockStyles={blockStyles}
                             channelId={post.channelId}
-                            channelMentions={post.props?.channel_mentions}
+                            channelMentions={channelMentions}
                             imagesMetadata={post.metadata?.images}
                             isEdited={isEdited}
                             isReplyPost={isReplyPost}
@@ -100,7 +105,7 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
                             highlightKeys={isHighlightWithoutNotificationLicensed ? (currentUser?.highlightKeys ?? EMPTY_HIGHLIGHT_KEYS) : EMPTY_HIGHLIGHT_KEYS}
                             searchPatterns={searchPatterns}
                             theme={theme}
-                            isUnsafeLinksPost={post.props.unsafe_links && post.props.unsafe_links !== ''}
+                            isUnsafeLinksPost={Boolean(post.props?.unsafe_links && post.props.unsafe_links !== '')}
                         />
                     </View>
                 </ScrollView>

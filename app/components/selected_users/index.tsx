@@ -164,15 +164,15 @@ export default function SelectedUsers({
 
     const users = useMemo(() => {
         const u = [];
-        for (const id of Object.keys(selectedIds)) {
-            if (!selectedIds[id]) {
+        for (const [id, user] of Object.entries(selectedIds)) {
+            if (!user) {
                 continue;
             }
 
             u.push(
                 <SelectedUser
                     key={id}
-                    user={selectedIds[id]}
+                    user={user}
                     teammateNameDisplay={teammateNameDisplay}
                     onRemove={onRemove}
                     testID={`${testID}.selected_user`}

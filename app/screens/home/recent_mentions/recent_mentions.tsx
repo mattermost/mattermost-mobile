@@ -14,6 +14,7 @@ import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
+import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
@@ -162,7 +163,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
     }, [appsEnabled, customEmojiNames]);
 
     return (
-        <>
+        <ExtraKeyboardProvider>
             <NavigationHeader
                 isLargeTitle={true}
                 showBackButton={false}
@@ -200,7 +201,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
                     />
                 </Animated.View>
             </SafeAreaView>
-        </>
+        </ExtraKeyboardProvider>
     );
 };
 

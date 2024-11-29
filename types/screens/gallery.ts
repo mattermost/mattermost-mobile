@@ -76,7 +76,7 @@ export type GalleryItemType = {
     authorId?: string;
     size?: number;
     postId?: string;
-    postProps?: Record<string, any> & {captions?: Caption[]};
+    postProps?: Record<string, unknown> & {captions?: Caption[]};
 };
 
 export type GalleryAction = 'none' | 'downloading' | 'copying' | 'sharing' | 'opening' | 'external';

@@ -6,6 +6,7 @@ import moment from 'moment-timezone';
 import {Post} from '@constants';
 import {toMilliseconds} from '@utils/datetime';
 import {isFromWebhook} from '@utils/post';
+import {ensureString, isArrayOf, isStringArray} from '@utils/types';
 
 import type {PostList, PostWithPrevAndNext} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
@@ -154,9 +155,11 @@ function isJoinLeavePostForUsername(post: PostModel, currentUsername: string): b
         return false;
     }
 
-    if (post.props.user_activity_posts) {
+    // We can be more lax with the types here because the recursive function only checks
+    // whether it is an array, or comparison with strings, so it should be safe enough.
+    if (Array.isArray(post.props.user_activity_posts)) {
         for (const childPost of post.props.user_activity_posts as PostModel[]) {
-            if (isJoinLeavePostForUsername(childPost, currentUsername)) {
+            if (childPost && isJoinLeavePostForUsername(childPost, currentUsername)) {
                 // If any of the contained posts are for this user, the client will
                 // need to figure out how to render the post
                 return true;
@@ -264,8 +267,8 @@ function combineUserActivitySystemPost(systemPosts: PostModel[]) {
             postType === Post.POST_TYPES.ADD_TO_CHANNEL ||
             postType === Post.POST_TYPES.REMOVE_FROM_CHANNEL
         ) {
-            const userId = post.props.addedUserId || post.props.removedUserId;
-            const username = post.props.addedUsername || post.props.removedUsername;
+            const userId = ensureString(post.props?.addedUserId) || ensureString(post.props?.removedUserId);
+            const username = ensureString(post.props?.addedUsername) || ensureString(post.props?.removedUsername);
             if (combinedPostType) {
                 if (Array.isArray(combinedPostType[post.userId])) {
                     throw new Error('Invalid Post activity data');
@@ -383,4 +386,56 @@ export function shouldFilterJoinLeavePost(post: PostModel, showJoinLeave: boolea
 
     // Don't filter out join/leave messages about the current user
     return !isJoinLeavePostForUsername(post, currentUsername);
+}
+
+export type MessageData = {
+    actorId: string;
+    postType: string;
+    userIds: string[];
+}
+
+function isMessageData(v: unknown): v is MessageData {
+    if (typeof v !== 'object' || !v) {
+        return false;
+    }
+
+    if (!('actorId' in v) || typeof v.actorId !== 'string') {
+        return false;
+    }
+
+    if (!('postType' in v) || typeof v.postType !== 'string') {
+        return false;
+    }
+
+    if (!('userIds' in v) || !isStringArray(v.userIds)) {
+        return false;
+    }
+
+    return true;
+}
+
+export type UserActivityProp = {
+    allUserIds: string[];
+    allUsernames: string[];
+    messageData: MessageData[];
+}
+
+export function isUserActivityProp(v: unknown): v is UserActivityProp {
+    if (typeof v !== 'object' || !v) {
+        return false;
+    }
+
+    if (!('allUserIds' in v) || !isStringArray(v.allUserIds)) {
+        return false;
+    }
+
+    if (!('allUsernames' in v) || !isStringArray(v.allUsernames)) {
+        return false;
+    }
+
+    if (!('messageData' in v) || !isArrayOf(v.messageData, isMessageData)) {
+        return false;
+    }
+
+    return true;
 }
