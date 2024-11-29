@@ -42,12 +42,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 14"
+        default: "iPhone 15 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 17.0"
+        default: "iOS 17.4"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -66,8 +66,8 @@ env:
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
   ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-  # BRANCH: ${{ github.head_ref || github.ref_name }} 
-  # COMMIT_HASH: ${{ github.sha }}
+  BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+  COMMIT_HASH: ${{ github.sha }}
   DEVICE_NAME: ${{ inputs.ios_device_name }}
   DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
@@ -194,7 +194,6 @@ jobs:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
-
 
       - name: reset network settings
         if: ${{ inputs.low_bandwidth_mode || failure() }}

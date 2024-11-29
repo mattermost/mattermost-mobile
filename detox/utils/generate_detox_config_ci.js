@@ -4,10 +4,10 @@
 /* eslint-disable no-process-env */
 /* eslint-disable no-console */
 const fs = require('fs');
-const deviceType = process.env.DETOX_DEVICE_TYPE || 'iPhone 15 Pro';
-const deviceOS = process.env.DETOX_DEVICE_OS || 'iOS 17.4';
+const deviceName = process.env.DEVICE_NAME || 'iPhone 15 Pro';
+const deviceOSVersion = process.env.DEVICE_OS_VERSION || 'iOS 17.4';
 const detoxConfigTemplate = fs.readFileSync('../.detoxrc.json', 'utf8');
-const detoxConfig = detoxConfigTemplate.replace('__DEVICE_TYPE__', deviceType).replace('__DEVICE_OS__', deviceOS);
+const detoxConfig = detoxConfigTemplate.replace('__DEVICE_NAME__', deviceName).replace('__DEVICE_OS_VERSION__', deviceOSVersion);
 
 fs.writeFileSync('../.detoxrc.json', detoxConfig);
 
