@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
-import React, {useCallback, useEffect, useMemo, useReducer} from 'react';
+import React, {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
 import {type Options} from 'react-native-navigation';
@@ -166,6 +166,7 @@ const CustomStatus = ({
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+    const [isBtnEnabled, setIsBtnEnabled] = useState(true);
 
     const storedStatus = useMemo(() => {
         return getUserCustomStatus(currentUser);
@@ -252,6 +253,7 @@ const CustomStatus = ({
         if (!currentUser) {
             return;
         }
+        setIsBtnEnabled(false);
 
         if (isStatusSet) {
             let isStatusSame =
@@ -278,9 +280,10 @@ const CustomStatus = ({
                 if (error) {
                     dismissModalAndKeyboard(isTablet);
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
+                    setIsBtnEnabled(true);
                     return;
                 }
-
+                setIsBtnEnabled(true);
                 updateLocalCustomStatus(serverUrl, currentUser, status);
                 dispatchStatus({type: 'fromUserCustomStatus', status});
             }
@@ -316,7 +319,7 @@ const CustomStatus = ({
             topBar: {
                 rightButtons: [
                     {
-                        enabled: true,
+                        enabled: isBtnEnabled,
                         id: BTN_UPDATE_STATUS,
                         showAsAction: 'always',
                         testID: 'custom_status.done.button',
@@ -326,7 +329,7 @@ const CustomStatus = ({
                 ],
             },
         });
-    }, []);
+    }, [isBtnEnabled]);
 
     return (
         <>
