@@ -7,7 +7,6 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, type StyleProp, Text, type TextStyle, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
 
@@ -76,7 +75,6 @@ const MarkdownImage = ({
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
-    const {bottom} = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -182,12 +180,12 @@ const MarkdownImage = ({
             bottomSheet({
                 closeButtonId: 'close-mardown-image',
                 renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl.locale, bottom, theme]);
+    }, [managedConfig?.copyAndPasteProtection, intl, theme, style.bottomSheet, linkDestination, source]);
 
     const handleOnError = useCallback(() => {
         setFailed(true);

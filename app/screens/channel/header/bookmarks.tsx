@@ -50,7 +50,7 @@ const ChannelHeaderBookmarks = ({canAddBookmarks, channelId}: Props) => {
         ...styles.content,
         top: defaultHeight,
         zIndex: 1,
-    }), [defaultHeight]);
+    }), [defaultHeight, styles.content]);
 
     return (
         <View style={containerStyle}>

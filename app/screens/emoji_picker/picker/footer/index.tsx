@@ -35,7 +35,7 @@ const PickerFooter = (props: BottomSheetFooterProps) => {
 
     const animatedStyle = useAnimatedStyle(() => {
         const paddingBottom = withTiming(
-            Platform.OS === 'ios' ? 20 : 0,
+            Platform.OS === 'ios' ? 32 : 0,
             {duration: 250},
         );
         return {backgroundColor: theme.centerChannelBg, paddingBottom};
@@ -44,7 +44,7 @@ const PickerFooter = (props: BottomSheetFooterProps) => {
     const heightAnimatedStyle = useAnimatedStyle(() => {
         let height = 55;
         if (keyboardHeight === 0 && Platform.OS === 'ios') {
-            height += 20;
+            height -= 10;
         } else if (keyboardHeight) {
             height = 0;
         }

@@ -304,7 +304,7 @@ const CustomStatus = ({
         } else {
             dismissModal({componentId});
         }
-    }, [isTablet]);
+    }, [componentId, isTablet]);
 
     useAndroidHardwareBackHandler(componentId, handleBackButton);
     useNavButtonPressed(BTN_UPDATE_STATUS, componentId, handleSetStatus, [handleSetStatus]);

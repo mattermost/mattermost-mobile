@@ -6,7 +6,6 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {type ListRenderItemInfo, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {hostMuteOthers} from '@calls/actions/calls';
 import {useHostControlsAvailable, useHostMenus} from '@calls/hooks';
@@ -79,14 +78,13 @@ export const ParticipantsList = ({
     const theme = useTheme();
     const {onPress} = useHostMenus();
     const hostControlsAvailable = useHostControlsAvailable();
-    const {bottom} = useSafeAreaInsets();
     const {height} = useWindowDimensions();
     const isTablet = useIsTablet();
     const List = useMemo(() => (isTablet ? FlatList : BottomSheetFlatList), [isTablet]);
     const styles = getStyleSheet(theme);
 
     const sessions = sortSessions(intl.locale, teammateNameDisplay, sessionsDict);
-    const snapPoint1 = bottomSheetSnapPoint(Math.min(sessions.length, MIN_ROWS), ROW_HEIGHT, bottom) + HEADER_HEIGHT;
+    const snapPoint1 = bottomSheetSnapPoint(Math.min(sessions.length, MIN_ROWS), ROW_HEIGHT) + HEADER_HEIGHT;
     const snapPoint2 = height * 0.8;
     const snapPoints = [1, Math.min(snapPoint1, snapPoint2)];
     if (sessions.length > MIN_ROWS && snapPoint1 < snapPoint2) {
@@ -141,7 +139,6 @@ export const ParticipantsList = ({
                     renderItem={renderItem}
                     overScrollMode={'auto'}
                 />
-                <View style={{height: bottom}}/>
             </>
         );
     };

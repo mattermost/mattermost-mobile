@@ -94,7 +94,7 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
                 file,
             },
         });
-    }, [imageUrl, file, theme, setBookmarkEmoji]);
+    }, [theme, intl, setBookmarkEmoji, imageUrl, file]);
 
     return (
         <View style={paddingStyle}>

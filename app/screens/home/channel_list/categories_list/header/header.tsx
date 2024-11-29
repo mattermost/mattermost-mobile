@@ -5,7 +5,6 @@ import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {type Insets, Text, TouchableWithoutFeedback, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {logout} from '@actions/remote/session';
 import CompassIcon from '@components/compass_icon';
@@ -115,7 +114,6 @@ const ChannelListHeader = ({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const intl = useIntl();
-    const {bottom} = useSafeAreaInsets();
     const serverDisplayName = useServerDisplayName();
     const marginLeft = useSharedValue(iconPad ? 50 : 0);
     const styles = getStyles(theme);
@@ -158,11 +156,11 @@ const ChannelListHeader = ({
         bottomSheet({
             closeButtonId,
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + (separators * SEPARATOR_HEIGHT)],
+            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT) + (separators * SEPARATOR_HEIGHT)],
             theme,
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
-    }), [intl, bottom, isTablet, theme]);
+    }), [intl, isTablet, theme]);
 
     const onPushAlertPress = useCallback(() => {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {

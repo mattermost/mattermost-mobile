@@ -4,7 +4,6 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {hostLowerHand, hostMake, hostMuteSession, hostStopScreenshare} from '@calls/actions/calls';
 import {removeFromCall} from '@calls/alerts';
@@ -56,7 +55,6 @@ export const HostControls = ({
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const {bottom} = useSafeAreaInsets();
     const {openUserProfile} = useHostMenus();
     const styles = getStyleFromTheme(theme);
 
@@ -85,7 +83,7 @@ export const HostControls = ({
     const profilePress = useCallback(async () => {
         await dismissBottomSheet();
         openUserProfile(session);
-    }, [session]);
+    }, [openUserProfile, session]);
 
     const removePress = useCallback(async () => {
         const displayName = displayUsername(session.userModel, intl.locale, teammateNameDisplay, true);
@@ -96,9 +94,9 @@ export const HostControls = ({
         const items = 3 + (session.muted ? 0 : 1) + (sharingScreen ? 1 : 0) + (session.raisedHand ? 1 : 0);
         return [
             1,
-            bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + TITLE_HEIGHT + SEPARATOR_HEIGHT + (Platform.OS === 'android' ? ANDROID_BUMP_HEIGHT : 0),
+            bottomSheetSnapPoint(items, ITEM_HEIGHT) + TITLE_HEIGHT + SEPARATOR_HEIGHT + (Platform.OS === 'android' ? ANDROID_BUMP_HEIGHT : 0),
         ];
-    }, [bottom, session.muted, sharingScreen, session.raisedHand]);
+    }, [session.muted, sharingScreen, session.raisedHand]);
 
     const makeHostText = intl.formatMessage({id: 'mobile.calls_make_host', defaultMessage: 'Make host'});
     const muteText = intl.formatMessage({id: 'mobile.calls_mute_participant', defaultMessage: 'Mute participant'});

@@ -130,7 +130,7 @@ export default function ManageChannelMembers({
 
         Keyboard.dismiss();
         openAsBottomSheet({screen: USER_PROFILE, title, theme, closeButtonId: CLOSE_BUTTON_ID, props});
-    }, [canManageAndRemoveMembers, channelId, isManageMode, currentUserId]);
+    }, [currentUserId, isManageMode, formatMessage, channelId, canManageAndRemoveMembers, theme, serverUrl]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         setSearchedTerm(searchTerm);

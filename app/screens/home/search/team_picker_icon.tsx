@@ -4,7 +4,6 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -57,7 +56,6 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
-    const {bottom} = useSafeAreaInsets();
 
     const selectedTeam = teams.find((t) => t.id === teamId);
 
@@ -77,7 +75,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
 
         const snapPoints: Array<string | number> = [
             1,
-            teams.length ? (bottomSheetSnapPoint(Math.min(3, teams.length), ITEM_HEIGHT, bottom) + TITLE_HEIGHT) : NO_TEAMS_HEIGHT,
+            teams.length ? bottomSheetSnapPoint(Math.min(3, teams.length), ITEM_HEIGHT) + (2 * TITLE_HEIGHT) : NO_TEAMS_HEIGHT,
         ];
 
         if (teams.length > 3) {
@@ -91,7 +89,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
             theme,
             title,
         });
-    }), [theme, setTeamId, teamId, teams, bottom]);
+    }), [theme, setTeamId, teamId, teams]);
 
     return (
         <>
