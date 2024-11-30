@@ -10,6 +10,7 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
+import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
 import {Events, Screens} from '@constants';
 import {CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
@@ -146,14 +147,16 @@ function reducer(state: NewStatusType, action: {
     }
 }
 
-function dismissModalAndKeyboard(isTablet: boolean, options?: Options & { componentId: AvailableScreens}) {
+const dismissModalAndKeyboard = (isTablet: boolean, options?: Options & { componentId: AvailableScreens}) => {
     if (isTablet) {
         DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
     } else {
         dismissModal(options);
     }
     Keyboard.dismiss();
-}
+};
+
+const closeCustomStatusModalId = 'close-custom-status';
 
 const CustomStatus = ({
     customStatusExpirySupported,
@@ -167,7 +170,9 @@ const CustomStatus = ({
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const [isBtnEnabled, setIsBtnEnabled] = useState(true);
-
+    useNavButtonPressed('close-custom-status', componentId, () => {
+        dismissModalAndKeyboard(isTablet, {componentId});
+    }, [componentId, isTablet]);
     const storedStatus = useMemo(() => {
         return getUserCustomStatus(currentUser);
     }, [currentUser]);
@@ -233,6 +238,7 @@ const CustomStatus = ({
             initialDuration: newStatus.duration,
             intl,
             theme,
+            closeButtonId: 'close-custom-status',
         };
 
         if (isTablet) {
@@ -276,6 +282,7 @@ const CustomStatus = ({
                     status.duration = newStatus.duration;
                     status.expires_at = newExpiresAt;
                 }
+
                 const {error} = await updateCustomStatus(serverUrl, status);
                 if (error) {
                     dismissModalAndKeyboard(isTablet);
@@ -315,6 +322,7 @@ const CustomStatus = ({
     useNavButtonPressed(BTN_UPDATE_STATUS, componentId, handleSetStatus, [handleSetStatus]);
 
     useEffect(() => {
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
         mergeNavigationOptions(componentId, {
             topBar: {
                 rightButtons: [
@@ -327,6 +335,11 @@ const CustomStatus = ({
                         color: theme.sidebarHeaderTextColor,
                     },
                 ],
+                leftButtons: [{
+                    id: closeCustomStatusModalId,
+                    icon: closeButton,
+                    testID: 'close.custom_status.button',
+                }],
             },
         });
     }, [isBtnEnabled]);
