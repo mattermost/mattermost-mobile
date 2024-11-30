@@ -22,7 +22,7 @@
     "@mattermost/compass-icons": "0.1.45",
     "@mattermost/hardware-keyboard": "file:./libraries/@mattermost/hardware-keyboard",
     "@mattermost/react-native-emm": "1.5.0",
-    "@mattermost/react-native-network-client": "1.7.3",
+    "@mattermost/react-native-network-client": "github:mattermost/react-native-network-client#cd2afba4bc3d2963a6f2dc741cc981107f80445b",
     "@mattermost/react-native-paste-input": "0.8.0",
     "@mattermost/react-native-turbo-log": "0.4.0",
     "@mattermost/rnshare": "file:./libraries/@mattermost/rnshare",
