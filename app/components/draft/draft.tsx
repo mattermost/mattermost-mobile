@@ -5,10 +5,13 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, TouchableHighlight, View} from 'react-native';
 
+import {switchToThread} from '@actions/local/thread';
+import {switchToChannelById} from '@actions/remote/channel';
 import ChannelInfo from '@components/channel_info';
 import DraftPost from '@components/draft/draft_post';
 import Header from '@components/post_draft/draft_input/header';
 import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {DRAFT_OPTIONS_BUTTON} from '@screens/draft_options';
@@ -59,6 +62,7 @@ const Draft: React.FC<Props> = ({
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
+    const serverUrl = useServerUrl();
     const showPostPriority = Boolean(isPostPriorityEnabled && draft.metadata?.priority && draft.metadata?.priority?.priority);
 
     const onLongPress = useCallback(() => {
@@ -73,10 +77,19 @@ const Draft: React.FC<Props> = ({
         });
     }, [channel, draft, draftReceiverUser?.username, intl, isTablet, theme]);
 
+    const onPress = useCallback(() => {
+        if (draft.rootId) {
+            switchToThread(serverUrl, draft.rootId);
+            return;
+        }
+        switchToChannelById(serverUrl, channel.id, channel.teamId);
+    }, [channel.id, channel.teamId, draft.rootId, serverUrl]);
+
     return (
         <TouchableHighlight
             delayLongPress={200}
             onLongPress={onLongPress}
+            onPress={onPress}
             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
             testID='draft_post'
         >
