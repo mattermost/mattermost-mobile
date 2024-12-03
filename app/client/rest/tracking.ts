@@ -244,6 +244,16 @@ export default class ClientTracking {
                 status_code: response.code,
                 url,
             });
+        } catch (error) {
+            throw new ClientError(this.apiClient.baseUrl, {
+                message: 'Received invalid response from the server.',
+                intl: {
+                    id: t('mobile.request.invalid_response'),
+                    defaultMessage: 'Received invalid response from the server.',
+                },
+                url,
+                details: error,
+            });
         } finally {
             if (groupLabel) {
                 this.decrementRequestCount(groupLabel);
