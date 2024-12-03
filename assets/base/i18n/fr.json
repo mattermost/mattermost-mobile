@@ -156,6 +156,7 @@
   "channel_info.convert_gm_to_channel.team_selector_list.title": "Sélectionnez une équipe",
   "channel_info.convert_gm_to_channel.warning.body.yourself": "vous-même",
   "channel_info.convert_gm_to_channel.warning.bodyXXXX": "Vous êtes sur le point de convertir le message de groupe avec {memberNames} vers un canal. Cette opération est irréversible.",
+  "channel_info.convert_gm_to_channel.warning.header": "L'historique de conversation sera visible par tous les membres du canal",
   "channel_info.convert_gm_to_channel.warning.no_teams.body": "Le message de groupe ne peut pas être converti vers un canal, car ses membres ne font pas partie de la même équipe. Ajoutez tous les membres dans une seule équipe afin de convertir ce message de groupe vers un canal.",
   "channel_info.convert_gm_to_channel.warning.no_teams.header": "Impossible de convertir vers un canal, car les membres du groupe font partie d'équipes différentes",
   "channel_info.convert_private": "Convertir en canal privé",
