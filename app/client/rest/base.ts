@@ -200,10 +200,6 @@ export default class ClientBase extends ClientTraking {
     }
 
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
-        const resp = await this.doFetchWithTracking(url, options, returnDataOnly);
-        if (resp && 'error' in resp) {
-            throw resp.error;
-        }
-        return resp;
+        return this.doFetchWithTracking(url, options, returnDataOnly);
     };
 }

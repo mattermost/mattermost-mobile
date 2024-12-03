@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {DeviceEventEmitter, Platform} from 'react-native';
-import {catchError, finalize, from, of} from 'rxjs';
 
 import {Events} from '@constants';
 import {t} from '@i18n';
@@ -213,7 +212,8 @@ export default class ClientTraking {
             this.incrementRequestCount(groupLabel);
         }
 
-        const requestObservable = from(request!(url, this.buildRequestOptions(options)).then(async (response) => {
+        try {
+            const response = await request!(url, this.buildRequestOptions(options));
             const headers: ClientHeaders = response.headers || {};
             if (groupLabel) {
                 this.trackRequest(groupLabel, url, response.metrics);
@@ -244,17 +244,10 @@ export default class ClientTraking {
                 status_code: response.code,
                 url,
             });
-        })).pipe(
-            catchError((error) => {
-                return of({error}); // let the wrapper throw the error
-            }),
-            finalize(() => {
-                if (groupLabel) {
-                    this.decrementRequestCount(groupLabel);
-                }
-            }),
-        );
-
-        return requestObservable.toPromise();
+        } finally {
+            if (groupLabel) {
+                this.decrementRequestCount(groupLabel);
+            }
+        }
     };
 }
