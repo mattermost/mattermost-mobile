@@ -96,6 +96,8 @@
   "camera_type.video.option": "Enregistrer une vidéo",
   "center_panel.archived.closeChannel": "Fermer le canal",
   "channel_add_members.add_members.button": "Ajouter des membres",
+  "channel_bookmark.add.detail_title": "Titre",
+  "channel_bookmark.add.emoji": "Ajouter un émoji",
   "channel_bookmark.add_edit.failed_desc": "Détails : {error}",
   "channel_bookmark_add.link": "Lien",
   "channel_bookmark_add.link.input.description": "Ajouter un lien vers un message, un fichier ou un lien externe",
