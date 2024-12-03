@@ -413,7 +413,7 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
         } else {
             const localPath = file.uri || '';
             try {
-                const fileInfo = await getInfoAsync(decodeURIComponent(localPath), {size: true});
+                const fileInfo = await getInfoAsync(localPath, {size: true});
                 if ('size' in fileInfo) {
                     outFile.size = fileInfo.size || 0;
                     outFile.name = localPath.substring(localPath.lastIndexOf('/') + 1);
