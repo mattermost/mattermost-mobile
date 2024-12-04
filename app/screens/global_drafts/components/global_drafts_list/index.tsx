@@ -5,6 +5,8 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 
+import {Tutorial} from '@constants';
+import {observeTutorialWatched} from '@queries/app/global';
 import {observeAllDrafts} from '@queries/servers/drafts';
 import {observeCurrentTeamId} from '@queries/servers/system';
 
@@ -22,9 +24,11 @@ type Props = {
 
 const enhanced = withObservables(['teamId'], ({database, teamId}: Props) => {
     const allDrafts = observeAllDrafts(database, teamId);
+    const tutorialWatched = observeTutorialWatched(Tutorial.DRAFTS);
 
     return {
         allDrafts,
+        tutorialWatched,
     };
 });
 
