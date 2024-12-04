@@ -29,9 +29,9 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CHANNEL_INFO, USER, TEAM}} = MM_TABLES;
 
-type ChannelMembershipsExtended = Pick<ChannelMembership, 'user_id' | 'channel_id' | 'scheme_admin'>;
+export type ChannelMembershipsExtended = Pick<ChannelMembership, 'user_id' | 'channel_id' | 'scheme_admin'>;
 
-function prepareChannels(
+export function prepareChannels(
     operator: ServerDataOperator,
     channels?: Channel[],
     channelInfos?: ChannelInfo[],
