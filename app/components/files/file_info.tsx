@@ -98,7 +98,9 @@ const FileInfo = ({disabled, file, channelName, showDate, onPress}: FileInfoProp
                         </Text>
                         {showDate && file.create_at != null && (
                             <>
-                                {' • '}
+                                <Text style={style.infoText}>
+                                    {' • '}
+                                </Text>
                                 <FormattedDate
                                     style={style.infoText}
                                     format={FORMAT}
