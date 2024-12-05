@@ -389,7 +389,7 @@ export function shouldFilterJoinLeavePost(post: PostModel, showJoinLeave: boolea
 }
 
 export type MessageData = {
-    actorId: string;
+    actorId?: string;
     postType: string;
     userIds: string[];
 }
@@ -399,7 +399,7 @@ function isMessageData(v: unknown): v is MessageData {
         return false;
     }
 
-    if (!('actorId' in v) || typeof v.actorId !== 'string') {
+    if (('actorId' in v) && typeof v.actorId !== 'string') {
         return false;
     }
 
