@@ -677,7 +677,7 @@
   "mobile.manage_members.manage": "Gérer",
   "mobile.manage_members.manage_member": "Gérer le membre",
   "mobile.manage_members.member": "Membre",
-  "mobile.manage_members.message": "Êtes vous sûr de vouloir retirer du canal le membre sélectionné ?",
+  "mobile.manage_members.message": "Êtes-vous sûr de vouloir retirer du canal le membre sélectionné ?",
   "mobile.manage_members.remove": "Retirer",
   "mobile.manage_members.remove_member": "Retirer du canal",
   "mobile.manage_members.section_title_admins": "ADMINISTRATEURS DU CANAL",
