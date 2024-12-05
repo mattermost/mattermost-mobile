@@ -10,6 +10,7 @@ import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import CustomStatusText from './custom_status_text';
 
@@ -38,8 +39,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.35),
         },
         retryMessage: {
+            position: 'absolute',
+            top: 25,
+            left: 40,
             color: theme.errorTextColor,
-            paddingBottom: 25,
+            ...typography('Body', 100),
         },
     };
 });
