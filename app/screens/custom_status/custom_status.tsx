@@ -285,7 +285,7 @@ const CustomStatus = ({
 
                 const {error} = await updateCustomStatus(serverUrl, status);
                 if (error) {
-                    dismissModalAndKeyboard(isTablet);
+                    dismissModalAndKeyboard(isTablet, {componentId});
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
                     setIsBtnEnabled(true);
                     return;
@@ -301,7 +301,7 @@ const CustomStatus = ({
                 updateLocalCustomStatus(serverUrl, currentUser, undefined);
             }
         }
-        dismissModalAndKeyboard(isTablet);
+        dismissModalAndKeyboard(isTablet, {componentId});
     }, [newStatus, isStatusSet, storedStatus, currentUser, isTablet]);
 
     const openEmojiPicker = useCallback(preventDoubleTap(() => {
