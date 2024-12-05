@@ -90,7 +90,7 @@ const GlobalDraftsList: React.FC<Props> = ({
 
     const widthAnimatedStyle = useAnimatedStyle(() => {
         return {
-            width: withDelay(400, withTiming(layoutWidth + 40, {duration: 300})),
+            width: withDelay(200, withTiming(layoutWidth + 40, {duration: 300})),
             marginLeft: Platform.OS === 'android' ? 10 : undefined,
         };
     }, [layoutWidth]);
@@ -102,10 +102,10 @@ const GlobalDraftsList: React.FC<Props> = ({
     }, []);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<DraftModel>) => {
-        if (item.id === firstDraftId && !tutorialWatched) {
+        if (item.id === firstDraftId && tutorialWatched) {
             return (
                 <Tooltip
-                    isVisible={tooltipVisible}
+                    isVisible={!tooltipVisible}
                     useInteractionManager={true}
                     contentStyle={tooltipContentStyle}
                     placement={isTablet ? 'left' : 'bottom'}
@@ -114,17 +114,15 @@ const GlobalDraftsList: React.FC<Props> = ({
                     tooltipStyle={styles.tooltipStyle}
                 >
                     <Animated.View
-                        style={widthAnimatedStyle}
+                        style={[widthAnimatedStyle, opacityStyle]}
                         exiting={FadeOut}
                         entering={FadeIn}
                     >
-                        <Animated.View style={[opacityStyle]}>
-                            <SwipeableDraft
-                                item={item}
-                                location={location}
-                                layoutWidth={layoutWidth}
-                            />
-                        </Animated.View>
+                        <SwipeableDraft
+                            item={item}
+                            location={location}
+                            layoutWidth={layoutWidth}
+                        />
                     </Animated.View>
                 </Tooltip>
             );
@@ -136,7 +134,7 @@ const GlobalDraftsList: React.FC<Props> = ({
                 layoutWidth={layoutWidth}
             />
         );
-    }, [close, firstDraftId, isTablet, layoutWidth, location, opacityStyle, tooltipContentStyle, tooltipVisible, widthAnimatedStyle]);
+    }, [close, firstDraftId, isTablet, layoutWidth, location, opacityStyle, tooltipContentStyle, tooltipVisible, tutorialWatched, widthAnimatedStyle]);
 
     return (
         <View
