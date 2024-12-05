@@ -116,12 +116,12 @@ const CombinedUserActivity = ({
         }
     }, [post, canDelete, isTablet, intl, location]);
 
-    const renderMessage = (postType: string, userIds: string[], actorId: string) => {
+    const renderMessage = (postType: string, userIds: string[], actorId?: string) => {
         if (!post) {
             return null;
         }
         let actor = '';
-        if (secureGetFromRecord(usernamesById, actorId)) {
+        if (actorId && secureGetFromRecord(usernamesById, actorId)) {
             actor = `@${usernamesById[actorId]}`;
         }
 
