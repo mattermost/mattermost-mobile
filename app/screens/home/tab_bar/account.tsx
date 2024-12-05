@@ -32,12 +32,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Account = ({currentUser, isFocused, theme}: Props) => {
+export const Account = ({currentUser, isFocused, theme}: Props) => {
     const style = getStyleSheet(theme);
 
     return (
-        <View style={[isFocused ? style.focused : style.unfocused, style.container]}>
+        <View
+            style={[isFocused ? style.focused : style.unfocused, style.container]}
+            testID='account-container'
+        >
             <ProfilePicture
+                testID='account-profile-picture'
                 author={currentUser}
                 showStatus={true}
                 size={BOTTOM_TAB_PROFILE_PHOTO_SIZE}
