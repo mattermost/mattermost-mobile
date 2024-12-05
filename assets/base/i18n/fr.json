@@ -792,7 +792,7 @@
   "mobile.suggestion.members": "Membres",
   "mobile.system_message.channel_archived_message": "{username} a archivé le canal",
   "mobile.system_message.channel_unarchived_message": "{username} a archivé le canal",
-  "mobile.system_message.update_channel_displayname_message_and_forget.updated_from": "{username} à modifié le nom d'affichage du canal de : {oldDisplayName} en : {newDisplayName}",
+  "mobile.system_message.update_channel_displayname_message_and_forget.updated_from": "{username} a modifié le nom d'affichage du canal de : {oldDisplayName} en : {newDisplayName}",
   "mobile.system_message.update_channel_header_message_and_forget.removed": "{username} a supprimé l'entête du canal (précédemment : {oldHeader})",
   "mobile.system_message.update_channel_header_message_and_forget.updated_from": "{username} a mis à jour l'entête du canal de : {oldHeader} en : {newHeader}",
   "mobile.system_message.update_channel_header_message_and_forget.updated_to": "{username} a mis à jour l'entête du canal en : {newHeader}",
