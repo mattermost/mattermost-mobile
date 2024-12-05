@@ -68,12 +68,13 @@ const GlobalDraftsList: React.FC<Props> = ({
     }), [isTablet]);
 
     useEffect(() => {
+        if (tutorialWatched) {
+            return;
+        }
         InteractionManager.runAfterInteractions(() => {
-            if (!tutorialWatched) {
-                setTooltipVisible(true);
-            }
+            setTooltipVisible(true);
         });
-    }, [tutorialWatched]);
+    }, []);
 
     const collapse = useCallback(() => {
         if (Platform.OS === 'android') {
@@ -102,13 +103,13 @@ const GlobalDraftsList: React.FC<Props> = ({
     }, []);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<DraftModel>) => {
-        if (item.id === firstDraftId && tutorialWatched) {
+        if (item.id === firstDraftId && !tutorialWatched) {
             return (
                 <Tooltip
-                    isVisible={!tooltipVisible}
+                    isVisible={tooltipVisible}
                     useInteractionManager={true}
                     contentStyle={tooltipContentStyle}
-                    placement={isTablet ? 'left' : 'bottom'}
+                    placement={'bottom'}
                     content={<DraftTooltip onClose={close}/>}
                     onClose={close}
                     tooltipStyle={styles.tooltipStyle}

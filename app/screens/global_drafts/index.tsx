@@ -58,8 +58,10 @@ const GlobalDrafts = ({componentId}: Props) => {
 
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
-        popTopScreen(componentId);
-    }, [componentId]);
+        if (!isTablet) {
+            popTopScreen(componentId);
+        }
+    }, [componentId, isTablet]);
 
     return (
         <SafeAreaView

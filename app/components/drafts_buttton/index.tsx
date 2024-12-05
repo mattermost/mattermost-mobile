@@ -1,6 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-/* eslint-disable max-nested-callbacks */
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
@@ -21,7 +20,7 @@ const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
 }));
 
 const enhanced = withObservables(['teamId'], ({database, teamId}: Props) => {
-    const draftsCount = observeDraftCount(database, teamId); // Observe the draft count
+    const draftsCount = observeDraftCount(database, teamId);
     return {
         currentChannelId: observeCurrentChannelId(database),
         draftsCount,

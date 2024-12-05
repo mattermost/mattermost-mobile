@@ -38,7 +38,7 @@ const Avatar = ({
     const serverUrl = useServerUrl();
 
     let uri = '';
-    if (!uri && author) {
+    if (author) {
         uri = buildProfileImageUrlFromUser(serverUrl, author);
     }
 

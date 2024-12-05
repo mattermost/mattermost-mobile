@@ -11,7 +11,7 @@ import {
     type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
 } from 'react-native';
 
-import {parseMarkdownImages, updateDraftMarkdownImageMetadata, updateDraftMessage} from '@actions/local/draft';
+import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {Events, Screens} from '@constants';
 import {useExtraKeyboardContext} from '@context/extra_keyboard';
@@ -21,6 +21,7 @@ import {useIsTablet} from '@hooks/device';
 import {useInputPropagation} from '@hooks/input';
 import {t} from '@i18n';
 import NavigationStore from '@store/navigation_store';
+import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
@@ -148,12 +149,12 @@ export default function PostInput({
 
     const onBlur = useCallback(async () => {
         keyboardContext?.registerTextInputBlur();
-        await updateDraftMessage(serverUrl, channelId, rootId, value);
-        const imageMetadata: Dictionary<PostImage | undefined> = {};
-        await parseMarkdownImages(value, imageMetadata);
-        if (Object.keys(imageMetadata).length !== 0) {
-            updateDraftMarkdownImageMetadata({serverUrl, channelId, rootId, imageMetadata});
-        }
+        handleDraftUpdate({
+            serverUrl,
+            channelId,
+            rootId,
+            value,
+        });
         setIsFocused(false);
     }, [keyboardContext, serverUrl, channelId, rootId, value, setIsFocused]);
 

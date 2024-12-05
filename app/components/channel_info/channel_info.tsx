@@ -67,12 +67,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'SemiBold'),
         },
-        timeInfo: {
-            fontSize: 12,
-            fontWeight: '400',
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-            lineHeight: 16,
-        },
         time: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),

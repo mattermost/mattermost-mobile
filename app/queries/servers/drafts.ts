@@ -47,7 +47,7 @@ export const queryAllDrafts = (database: Database, teamId: string) => {
 };
 
 export const observeAllDrafts = (database: Database, teamId: string) => {
-    return queryAllDrafts(database, teamId).observeWithColumns(['messages', 'files', 'metadata']);
+    return queryAllDrafts(database, teamId).observeWithColumns(['update_at']);
 };
 
 export const observeDraftCount = (database: Database, teamId: string) => {
