@@ -198,6 +198,8 @@
   "channel_info.unarchive_description": "Voulez-vous vraiment désarchiver le {term} {name} ?",
   "channel_info.unarchive_failed": "Une erreur s'est produite lors de la tentative de désarchiver le canal {displayName}",
   "channel_info.unarchive_title": "Désarchiver {term}",
+  "channel_into.convert_gm_to_channel.team_selector.label": "Équipe",
+  "channel_into.convert_gm_to_channel.team_selector.placeholder": "Sélectionnez une Équipe",
   "channel_intro.createdBy": "Créé par {user} le {date}",
   "channel_intro.createdOn": "Créé le {date}",
   "channel_list.channels_category": "Canaux",
