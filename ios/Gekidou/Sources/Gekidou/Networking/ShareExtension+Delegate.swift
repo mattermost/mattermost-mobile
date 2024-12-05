@@ -136,6 +136,7 @@ extension ShareExtension: URLSessionDataDelegate {
             "Mattermost BackgroundSession: didCompleteWithError delegate for identifier=%{public}@ after calling postMessageIfUploadFinished",
             session.configuration.identifier ?? "no identifier"
         )
+        self.notifyFailureNow()
     }
     
     
@@ -189,10 +190,11 @@ extension ShareExtension: URLSessionDataDelegate {
                     self.postMessageForSession(withId: id)
                     self.urlSessionDidFinishEvents(forBackgroundURLSession: session)
                 }
+            self.cancelFailNotification()
         } else {
             os_log(
                 OSLogType.default,
-                "Mattermost BackgroundSession: finish uploading files %{public}@ of %{public}@ for identifier=%{public}@",
+                "Mattermost BackgroundSession: still uploading files %{public}@ of %{public}@ for identifier=%{public}@",
                 "\(count)",
                 "\(total)",
                 id

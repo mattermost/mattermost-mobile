@@ -7,6 +7,7 @@
 
 import Foundation
 import os.log
+import UserNotifications
 
 struct UploadSessionData {
     var serverUrl: String?
@@ -55,6 +56,7 @@ public class ShareExtension: NSObject {
     private let preferences = Preferences.default
     public var completionHandler: (() -> Void)?
     internal let lock = NSLock()
+    internal var failNotificationID: String?
 
     public override init() {
         super.init()
@@ -144,6 +146,71 @@ public class ShareExtension: NSObject {
                     file
                 )
             }
+        }
+    }
+    
+    func scheduleFailNotification(timeout: Double = SHARE_TIMEOUT, description: String = NETWORK_ERROR_MESSAGE) -> String {
+        let failNotification = UNMutableNotificationContent()
+        failNotification.title = "Share content failed"
+        failNotification.body = description
+
+        let timeoutTrigger = UNTimeIntervalNotificationTrigger(timeInterval: timeout, repeats: false)
+
+        let uuidString = UUID().uuidString
+        let request = UNNotificationRequest(identifier: uuidString, content: failNotification, trigger: timeoutTrigger)
+
+        // Schedule the request with the system.
+        let notificationCenter = UNUserNotificationCenter.current()
+        notificationCenter.add(request) { (_ Error) in
+            // cancel any pending uploads if we hit the time limit.
+            self.backgroundSession?.invalidateAndCancel()
+            os_log(
+                OSLogType.default,
+                "Mattermost BackgroundSession: Cancelling uploads due to time out"
+            )
+            self.failNotificationID = nil
+        }
+        self.failNotificationID = uuidString
+        return uuidString
+    }
+    func cancelFailNotification() -> Void {
+        if let id = self.failNotificationID {
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id])
+            os_log(
+                OSLogType.default,
+                "Mattermost BackgroundSession: Cancelled fail notification %{id}@",
+                id
+            )
+        }
+
+        self.failNotificationID = nil
+    }
+    func notifyFailureNow(description: String = NETWORK_ERROR_MESSAGE) -> Void {
+        self.cancelFailNotification()
+        _ = self.scheduleFailNotification(timeout: 1, description: description)
+    }
+    
+    func createCancelHandler(completionHandler: @escaping () -> Void) -> (Bool) -> Void {
+        return { success in
+            if success {
+                self.cancelFailNotification()
+                    
+                // cancel any pending tasks in case of not getting connection. If this affects anything else, then we should track the uploads and cancel them individually
+                // Session is configured to wait for connection, but we don't know when that's going to happen, so we die early if we don't get a connection in a time that
+                // makes sense.
+                self.backgroundSession?.invalidateAndCancel()
+                completionHandler()
+                return
+            }
+            
+            if self.failNotificationID != nil {
+                self.notifyFailureNow()
+                os_log(
+                    OSLogType.default,
+                    "Mattermost BackgroundSession: sending fail notification now"
+                )
+            }
+        completionHandler()
         }
     }
 }

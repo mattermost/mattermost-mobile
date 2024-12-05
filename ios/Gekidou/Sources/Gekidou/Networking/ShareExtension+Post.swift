@@ -8,10 +8,18 @@
 import Foundation
 import os.log
 
+// TODO: setup some configuration for allowing users to figure out the right ammount of time to wait.
+let SHARE_TIMEOUT: Double = 300
+let NETWORK_ERROR_MESSAGE: String = "Mattermost App couldn't acknowledge the message was posted due to network conditions, please review and try again"
+let FILE_ERROR_MESSAGE: String = "The shared file couldn't be processed for sharing"
+
 extension ShareExtension {
+   
     public func uploadFiles(serverUrl: String, channelId: String, message: String,
                             files: [String], completionHandler: @escaping () -> Void) -> String? {
         let id = "mattermost-share-upload-\(UUID().uuidString)"
+
+        let uuidString = self.scheduleFailNotification(timeout: SHARE_TIMEOUT)
         
         createUploadSessionData(
             id: id, serverUrl: serverUrl,
@@ -56,6 +64,7 @@ extension ShareExtension {
                                 filename,
                                 id
                             )
+                            return "There was an error when trying to upload. Please try again"
                         }
                     } else {
                         os_log(
@@ -64,6 +73,7 @@ extension ShareExtension {
                             filename,
                             id
                         )
+                        notifyFailureNow(description: FILE_ERROR_MESSAGE)
                         return "The file \(filename) could not be processed for upload"
                     }
                 } else {
@@ -73,6 +83,7 @@ extension ShareExtension {
                         file,
                         id
                     )
+                    notifyFailureNow(description: FILE_ERROR_MESSAGE)
                     return "File not found \(file)"
                 }
             }
@@ -83,13 +94,14 @@ extension ShareExtension {
                 "Mattermost BackgroundSession: posting message for identifier=%{public}@ without files",
                 id
             )
-            self.postMessageForSession(withId: id, completionHandler: completionHandler)
+            let cancelAndComplete = createCancelHandler(completionHandler: completionHandler)
+            self.postMessageForSession(withId: id, completionHandler: cancelAndComplete)
         }
         
         return nil
     }
     
-    func postMessageForSession(withId id: String, completionHandler: (() -> Void)? = nil) {
+    func postMessageForSession(withId id: String, completionHandler: ((Bool) -> Void)? = nil) {
         guard let data = getUploadSessionData(id: id)
         else {
             os_log(
@@ -127,7 +139,7 @@ extension ShareExtension {
                             "Mattermost BackgroundSession: postMessageForSession without files call completionHandler for identifier=%{public}@",
                             id
                         )
-                        handler()
+                        handler(error == nil)
                     }
                 })
         }
