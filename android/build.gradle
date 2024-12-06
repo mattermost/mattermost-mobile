@@ -34,7 +34,7 @@ buildscript {
 allprojects {
     repositories {
         maven {
-            url "$rootDir/../node_modules/detox/Detox-android"
+            url "$rootDir/../detox/node_modules/detox/Detox-android"
         }
     }
 }
