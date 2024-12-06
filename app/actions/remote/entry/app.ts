@@ -28,7 +28,7 @@ export async function appEntry(serverUrl: string, since = 0) {
         await operator.batchRecords(removeLastUnreadChannelId, 'appEntry - removeLastUnreadChannelId');
     }
 
-    WebsocketManager.openAll();
+    WebsocketManager.openAll('entry');
 
     verifyPushProxy(serverUrl);
 

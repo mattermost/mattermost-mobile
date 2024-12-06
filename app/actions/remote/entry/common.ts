@@ -66,14 +66,14 @@ export type EntryResponse = {
     error: unknown;
 }
 
-export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0): Promise<EntryResponse> => {
+export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0, groupLabel?: string): Promise<EntryResponse> => {
     const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-    const result = entryRest(serverUrl, teamId, channelId, since);
+    const result = entryRest(serverUrl, teamId, channelId, since, groupLabel);
 
     // Fetch data retention policies
     const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
     if (isDataRetentionEnabled) {
-        fetchDataRetentionPolicy(serverUrl);
+        fetchDataRetentionPolicy(serverUrl, false, groupLabel);
     }
 
     return result;
@@ -82,10 +82,17 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
 export async function deferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense | undefined, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
-    initialTeamId?: string, initialChannelId?: string) {
-    const result = restDeferredAppEntryActions(serverUrl, since, currentUserId, currentUserLocale, preferences, config, license, teamData, chData, initialTeamId, initialChannelId);
+    initialTeamId?: string, initialChannelId?: string,
+    groupLabel?: string,
+) {
+    const result = restDeferredAppEntryActions(
+        serverUrl, since, currentUserId, currentUserLocale,
+        preferences, config, license,
+        teamData, chData, initialTeamId, initialChannelId,
+        groupLabel,
+    );
 
-    autoUpdateTimezone(serverUrl);
+    autoUpdateTimezone(serverUrl, groupLabel);
 
     return result;
 }
@@ -117,7 +124,7 @@ const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
     return [];
 };
 
-const entryRest = async (serverUrl: string, teamId?: string, channelId?: string, since = 0): Promise<EntryResponse> => {
+const entryRest = async (serverUrl: string, teamId?: string, channelId?: string, since = 0, groupLabel?: string): Promise<EntryResponse> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -126,7 +133,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
 
     const lastDisconnectedAt = since || await getLastFullSync(database);
 
-    const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, teamId, channelId);
+    const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, teamId, channelId, groupLabel);
     if ('error' in fetchedData) {
         return {error: fetchedData.error};
     }
@@ -143,7 +150,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
         return {error};
     }
 
-    const rolesData = await fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData.user, true);
+    const rolesData = await fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData.user, true, false, groupLabel);
 
     const initialChannelId = await entryInitialChannelId(database, fetchedChannelId, teamId, initialTeamId, meData?.user?.locale || '', chData?.channels, chData?.memberships);
 
@@ -164,7 +171,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
     return {models: models.flat(), initialChannelId, initialTeamId, prefData, teamData, chData, meData, gmConverted};
 };
 
-const fetchAppEntryData = async (serverUrl: string, sinceArg: number, onLoadTeamId = '', channelId?: string): Promise<AppEntryData | AppEntryError> => {
+const fetchAppEntryData = async (serverUrl: string, sinceArg: number, onLoadTeamId = '', channelId?: string, groupLabel?: string): Promise<AppEntryData | AppEntryError> => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -173,8 +180,8 @@ const fetchAppEntryData = async (serverUrl: string, sinceArg: number, onLoadTeam
     const includeDeletedChannels = true;
     const fetchOnly = true;
 
-    const confReq = await fetchConfigAndLicense(serverUrl);
-    const prefData = await fetchMyPreferences(serverUrl, fetchOnly);
+    const confReq = await fetchConfigAndLicense(serverUrl, false, groupLabel);
+    const prefData = await fetchMyPreferences(serverUrl, fetchOnly, groupLabel);
     const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config?.CollapsedThreads, confReq.config?.FeatureFlagCollapsedThreads, confReq.config?.Version));
     if (prefData.preferences) {
         const crtToggled = await getHasCRTChanged(database, prefData.preferences);
@@ -193,8 +200,8 @@ const fetchAppEntryData = async (serverUrl: string, sinceArg: number, onLoadTeam
 
     // Fetch in parallel teams / team membership / user preferences / user
     const promises: [Promise<MyTeamsRequest>, Promise<MyUserRequest>] = [
-        fetchMyTeams(serverUrl, fetchOnly),
-        fetchMe(serverUrl, fetchOnly),
+        fetchMyTeams(serverUrl, fetchOnly, groupLabel),
+        fetchMe(serverUrl, fetchOnly, groupLabel),
     ];
 
     const resolution = await Promise.all(promises);
@@ -214,7 +221,7 @@ const fetchAppEntryData = async (serverUrl: string, sinceArg: number, onLoadTeam
             // active team on mobile app after this point.
 
             const client = NetworkManager.getClient(serverUrl);
-            const serverChannel = await client.getChannel(channelId);
+            const serverChannel = await client.getChannel(channelId, groupLabel);
 
             // Although yon can convert GM only to a pirvate channel, a private channel can furthur be converted to a public channel.
             // So between the mobile app being on the GM and reconnecting,
@@ -228,7 +235,7 @@ const fetchAppEntryData = async (serverUrl: string, sinceArg: number, onLoadTeam
     }
 
     if (initialTeamId) {
-        chData = await fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, since, fetchOnly, false, isCRTEnabled);
+        chData = await fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, since, fetchOnly, false, isCRTEnabled, groupLabel);
     }
 
     if (!initialTeamId && teamData.teams?.length && teamData.memberships?.length) {
@@ -239,7 +246,7 @@ const fetchAppEntryData = async (serverUrl: string, sinceArg: number, onLoadTeam
         const myTeams = teamData.teams!.filter((t) => teamMembers.has(t.id));
         const defaultTeam = selectDefaultTeam(myTeams, meData.user?.locale || DEFAULT_LOCALE, teamOrderPreference, config?.ExperimentalPrimaryTeam);
         if (defaultTeam?.id) {
-            chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, since, fetchOnly, false, isCRTEnabled);
+            chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, since, fetchOnly, false, isCRTEnabled, groupLabel);
         }
     }
 
@@ -274,7 +281,7 @@ const fetchAppEntryData = async (serverUrl: string, sinceArg: number, onLoadTeam
         }
 
         const availableTeamIds = await getAvailableTeamIds(database, initialTeamId, teamData.teams, prefData.preferences, meData.user?.locale);
-        const alternateTeamData = await fetchAlternateTeamData(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, since, fetchOnly, isCRTEnabled);
+        const alternateTeamData = await fetchAlternateTeamData(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, since, fetchOnly, isCRTEnabled, groupLabel);
 
         data = {
             ...data,
@@ -304,12 +311,14 @@ const fetchAppEntryData = async (serverUrl: string, sinceArg: number, onLoadTeam
 
 const fetchAlternateTeamData = async (
     serverUrl: string, availableTeamIds: string[], removeTeamIds: string[],
-    includeDeleted = true, since = 0, fetchOnly = false, isCRTEnabled?: boolean) => {
+    includeDeleted = true, since = 0, fetchOnly = false,
+    isCRTEnabled?: boolean, groupLabel?: string,
+) => {
     let initialTeamId = '';
     let chData;
 
     for await (const teamId of availableTeamIds) {
-        chData = await fetchMyChannelsForTeam(serverUrl, teamId, includeDeleted, since, fetchOnly, false, isCRTEnabled);
+        chData = await fetchMyChannelsForTeam(serverUrl, teamId, includeDeleted, since, fetchOnly, false, isCRTEnabled, groupLabel);
         const chError = chData.error;
         if (isErrorWithStatusCode(chError) && chError.status_code === 403) {
             removeTeamIds.push(teamId);
@@ -367,7 +376,7 @@ async function entryInitialChannelId(database: Database, requestedChannelId = ''
 async function restDeferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense | undefined, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
-    initialTeamId?: string, initialChannelId?: string,
+    initialTeamId?: string, initialChannelId?: string, groupLabel?: string,
 ) {
     const isCRTEnabled = (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads, config.Version)) || false;
     const directChannels = chData?.channels?.filter(isDMorGM);
@@ -376,21 +385,21 @@ async function restDeferredAppEntryActions(
     // sidebar DM & GM profiles
     if (channelsToFetchProfiles.size) {
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
-        fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
+        fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId, false, groupLabel);
     }
 
-    updateAllUsersSince(serverUrl, since);
+    updateAllUsersSince(serverUrl, since, false, groupLabel);
     updateCanJoinTeams(serverUrl);
 
-    // defer fetch channels and unread posts for other teams
     setTimeout(async () => {
         if (chData?.channels?.length && chData.memberships?.length && initialTeamId) {
             if (isCRTEnabled && initialTeamId) {
-                await syncTeamThreads(serverUrl, initialTeamId);
+                await syncTeamThreads(serverUrl, initialTeamId, false, false, groupLabel);
             }
-            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
+            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, false, groupLabel);
         }
 
+        // defer fetch channels and unread posts for other teams
         if (teamData.teams?.length && teamData.memberships?.length) {
             const teamsOrder = preferences?.find((p) => p.category === Preferences.CATEGORIES.TEAMS_ORDER);
             const sortedTeamIds = new Set(teamsOrder?.value.split(','));
@@ -418,16 +427,16 @@ async function restDeferredAppEntryActions(
             }
 
             if (myTeams.length) {
-                fetchTeamsChannelsThreadsAndUnreadPosts(serverUrl, since, myTeams, isCRTEnabled);
+                fetchTeamsChannelsThreadsAndUnreadPosts(serverUrl, since, myTeams, isCRTEnabled, false, groupLabel + '-additional');
             }
         }
     });
 
     // Fetch groups for current user
-    fetchGroupsForMember(serverUrl, currentUserId);
+    fetchGroupsForMember(serverUrl, currentUserId, false, groupLabel);
 }
 
-export const setExtraSessionProps = async (serverUrl: string) => {
+export const setExtraSessionProps = async (serverUrl: string, groupLabel?: string) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const serverVersion = await getConfigValue(database, 'Version');
@@ -441,7 +450,7 @@ export const setExtraSessionProps = async (serverUrl: string) => {
             const res = await checkNotifications();
             const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
             const client = NetworkManager.getClient(serverUrl);
-            client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion);
+            client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion, groupLabel);
         }
         return {};
     } catch (error) {
@@ -450,7 +459,7 @@ export const setExtraSessionProps = async (serverUrl: string) => {
     }
 };
 
-export async function verifyPushProxy(serverUrl: string) {
+export async function verifyPushProxy(serverUrl: string, groupLabel?: string) {
     const deviceId = await getDeviceToken();
     if (!deviceId) {
         return;
@@ -468,7 +477,7 @@ export async function verifyPushProxy(serverUrl: string) {
         }
 
         const client = NetworkManager.getClient(serverUrl);
-        const response = await client.ping(deviceId);
+        const response = await client.ping(deviceId, undefined, groupLabel);
         const canReceiveNotifications = response?.data?.CanReceiveNotifications;
         switch (canReceiveNotifications) {
             case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:

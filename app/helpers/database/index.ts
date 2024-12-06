@@ -94,6 +94,10 @@ const sqliteLikeStringRegex = xRegExp('[^\\p{L}\\p{Nd}]', 'g');
 export const sanitizeLikeString = (value: string) => value.replace(sqliteLikeStringRegex, '_');
 
 export function removeDuplicatesModels(array: Model[]) {
+    if (!array.length) {
+        return array;
+    }
+
     const seen = new Set();
     return array.filter((item) => {
         const key = `${item.collection.table}-${item.id}`;

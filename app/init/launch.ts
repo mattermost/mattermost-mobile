@@ -182,7 +182,7 @@ const launchToHome = async (props: LaunchProps) => {
             openPushNotification = Boolean(props.serverUrl && !props.launchError && extra.userInteraction && extra.payload?.channel_id && !extra.payload?.userInfo?.local);
             if (openPushNotification) {
                 await resetToHome(props);
-                return pushNotificationEntry(props.serverUrl!, extra.payload!);
+                return pushNotificationEntry(props.serverUrl!, extra.payload!, 'notification');
             }
 
             appEntry(props.serverUrl!);

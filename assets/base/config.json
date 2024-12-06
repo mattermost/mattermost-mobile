@@ -28,5 +28,6 @@
     "ShowOnboarding": false,
 
     "ExperimentalNormalizeMarkdownLinks": false,
-    "CustomRequestHeaders": {}
+    "CustomRequestHeaders": {},
+    "CollectNetworkMetrics": false
 }
