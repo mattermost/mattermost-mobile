@@ -3,11 +3,13 @@
 
 import {Alert, type AlertButton} from 'react-native';
 
+import {parseMarkdownImages, removeDraft, updateDraftMarkdownImageMetadata, updateDraftMessage} from '@actions/local/draft';
 import {General} from '@constants';
 import {CODE_REGEX} from '@constants/autocomplete';
 import {t} from '@i18n';
 
 import type {IntlShape, MessageDescriptor} from 'react-intl';
+import type {Swipeable} from 'react-native-gesture-handler';
 
 type AlertCallback = (value?: string) => void;
 
@@ -168,5 +170,71 @@ export function alertSlashCommandFailed(intl: IntlShape, error: string) {
             defaultMessage: 'Error Executing Command',
         }),
         error,
+    );
+}
+
+export const handleDraftUpdate = async ({
+    serverUrl,
+    channelId,
+    rootId,
+    value,
+}: {
+    serverUrl: string;
+    channelId: string;
+    rootId: string;
+    value: string;
+}) => {
+    await updateDraftMessage(serverUrl, channelId, rootId, value);
+    const imageMetadata: Dictionary<PostImage | undefined> = {};
+    await parseMarkdownImages(value, imageMetadata);
+
+    if (Object.keys(imageMetadata).length !== 0) {
+        updateDraftMarkdownImageMetadata({serverUrl, channelId, rootId, imageMetadata});
+    }
+};
+
+export function deleteDraftConfirmation({intl, serverUrl, channelId, rootId, swipeable}: {
+    intl: IntlShape;
+    serverUrl: string;
+    channelId: string;
+    rootId: string;
+    swipeable?: React.RefObject<Swipeable>;
+}) {
+    const deleteDraft = async () => {
+        removeDraft(serverUrl, channelId, rootId);
+    };
+
+    const onDismiss = () => {
+        if (swipeable?.current) {
+            swipeable.current.close();
+        }
+    };
+
+    Alert.alert(
+        intl.formatMessage({
+            id: 'draft.options.delete.title',
+            defaultMessage: 'Delete draft',
+        }),
+        intl.formatMessage({
+            id: 'draft.options.delete.confirmation',
+            defaultMessage: 'Are you sure you want to delete this draft?',
+        }),
+        [
+            {
+                text: intl.formatMessage({
+                    id: 'draft.options.delete.cancel',
+                    defaultMessage: 'Cancel',
+                }),
+                style: 'cancel',
+                onPress: onDismiss,
+            },
+            {
+                text: intl.formatMessage({
+                    id: 'draft.options.delete.confirm',
+                    defaultMessage: 'Delete',
+                }),
+                onPress: deleteDraft,
+            },
+        ],
     );
 }
