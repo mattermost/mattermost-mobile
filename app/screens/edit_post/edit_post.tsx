@@ -200,8 +200,9 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const overlap = useKeyboardOverlap(mainView, containerHeight);
     const autocompletePosition = overlap + AUTOCOMPLETE_SEPARATION;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
+    const errorHeight = (errorLine || errorExtra) ? 44 : 0;
 
-    const inputHeight = containerHeight - overlap;
+    const inputHeight = containerHeight - overlap - errorHeight;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
