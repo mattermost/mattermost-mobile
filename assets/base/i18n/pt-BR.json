@@ -158,7 +158,7 @@
   "channel_info.convert_gm_to_channel.warning.bodyXXXX": "Você está prestes a converter a Mensagem de Grupo com {memberNames} em um Canal. Isso não pode ser desfeito.",
   "channel_info.convert_gm_to_channel.warning.header": "O histórico de conversas ficará visível para todos os membros do canal",
   "channel_info.convert_gm_to_channel.warning.no_teams.body": "A Mensagem de Grupo não pode ser convertida em um canal porque os membros não fazem parte da mesma equipe. Adicione todos os membros a uma única equipe para converter essa mensagem de grupo em um canal.",
-  "channel_info.convert_gm_to_channel.warning.no_teams.header": "Não foi possível converter para um Canal pois os membros do grupo pertencem a diferentes equipes",
+  "channel_info.convert_gm_to_channel.warning.no_teams.header": "Não foi possível converter para um Canal, pois os membros do grupo pertencem a diferentes equipes",
   "channel_info.convert_private": "Converter para canal privado",
   "channel_info.convert_private_description": "Quando você converte {displayName} em um canal privado, o histórico e os membros são preservados. Os arquivos compartilhados publicamente permanecem acessíveis a qualquer pessoa com o link. A adesão a um canal privado é apenas por convite.\n\nA alteração é permanente e não pode ser desfeita.\n\nTem certeza de que deseja converter {displayName} em um canal privado?",
   "channel_info.convert_private_success": "{displayName} agora é um canal privado.",
