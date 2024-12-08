@@ -165,6 +165,7 @@
   "channel_info.convert_private_title": "Converter {displayName} em um canal privado?",
   "channel_info.copied": "Copiado",
   "channel_info.copy_link": "Copiar link",
+  "channel_info.copy_purpose_text": "Copiar Texto Propósito",
   "channel_info.custom_status": "Status personalizado:",
   "channel_info.edit_header": "Editar cabeçalho",
   "channel_info.error_close": "Fechar",
