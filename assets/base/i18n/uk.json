@@ -116,7 +116,7 @@
   "channel_bookmark.edit_option": "Редагувати",
   "channel_bookmark.share_option": "Поширити",
   "channel_bookmark_add.link": "Посилання",
-  "channel_bookmark_add.link.input.description": "Додайте посилання на будь-яку публікацію, файл або будь-яке зовнішнє посилання",
+  "channel_bookmark_add.link.input.description": "Додайте посилання на будь-яку публікацію, файл або зовнішнє посилання",
   "channel_bookmark_add.link.invalid": "Будь ласка, введіть дійсне посилання",
   "channel_files.empty.paragraph": "Файли, розміщені на цьому каналі, будуть показуватися тут.",
   "channel_files.empty.title": "Файлів ще немає",
