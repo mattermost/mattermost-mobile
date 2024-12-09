@@ -390,9 +390,9 @@ describe('Actions.Calls', () => {
         const {result} = renderHook(() => useCallsConfig('server1'));
 
         await act(async () => {
-            await CallsActions.loadConfig('server1');
+            await CallsActions.loadConfig('server1', false, 'calls');
         });
-        expect(mockClient.getCallsConfig).toHaveBeenCalledWith();
+        expect(mockClient.getCallsConfig).toHaveBeenCalledWith('calls');
         assert.equal(result.current.DefaultEnabled, true);
         assert.equal(result.current.AllowEnableCalls, true);
     });

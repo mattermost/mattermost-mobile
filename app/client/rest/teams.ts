@@ -12,14 +12,14 @@ export interface ClientTeamsMix {
     deleteTeam: (teamId: string) => Promise<any>;
     updateTeam: (team: Team) => Promise<Team>;
     patchTeam: (team: Partial<Team> & {id: string}) => Promise<Team>;
-    getTeams: (page?: number, perPage?: number, includeTotalCount?: boolean) => Promise<Team[]>;
-    getTeam: (teamId: string) => Promise<Team>;
+    getTeams: (page?: number, perPage?: number, includeTotalCount?: boolean, groupLabel?: string) => Promise<Team[]>;
+    getTeam: (teamId: string, groupLabel?: string) => Promise<Team>;
     getTeamByName: (teamName: string) => Promise<Team>;
-    getMyTeams: () => Promise<Team[]>;
+    getMyTeams: (groupLabel?: string) => Promise<Team[]>;
     getTeamsForUser: (userId: string) => Promise<Team[]>;
-    getMyTeamMembers: () => Promise<TeamMembership[]>;
+    getMyTeamMembers: (groupLabel?: string) => Promise<TeamMembership[]>;
     getTeamMembers: (teamId: string, page?: number, perPage?: number) => Promise<TeamMembership[]>;
-    getTeamMember: (teamId: string, userId: string) => Promise<TeamMembership>;
+    getTeamMember: (teamId: string, userId: string, groupLabel?: string) => Promise<TeamMembership>;
     getTeamMembersByIds: (teamId: string, userIds: string[]) => Promise<TeamMembership[]>;
     addToTeam: (teamId: string, userId: string) => Promise<TeamMembership>;
     addUsersToTeamGracefully: (teamId: string, userIds: string[]) => Promise<TeamMemberWithError[]>;
@@ -59,17 +59,17 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getTeams = async (page = 0, perPage = PER_PAGE_DEFAULT, includeTotalCount = false) => {
+    getTeams = async (page = 0, perPage = PER_PAGE_DEFAULT, includeTotalCount = false, groupLabel?: string) => {
         return this.doFetch(
             `${this.getTeamsRoute()}${buildQueryString({page, per_page: perPage, include_total_count: includeTotalCount})}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
-    getTeam = async (teamId: string) => {
+    getTeam = async (teamId: string, groupLabel?: string) => {
         return this.doFetch(
             this.getTeamRoute(teamId),
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -80,10 +80,10 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getMyTeams = async () => {
+    getMyTeams = async (groupLabel?: string) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/teams`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -94,10 +94,10 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getMyTeamMembers = async () => {
+    getMyTeamMembers = async (groupLabel?: string) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/teams/members`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -108,10 +108,10 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getTeamMember = async (teamId: string, userId: string) => {
+    getTeamMember = async (teamId: string, userId: string, groupLabel?: string) => {
         return this.doFetch(
             `${this.getTeamMemberRoute(teamId, userId)}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 

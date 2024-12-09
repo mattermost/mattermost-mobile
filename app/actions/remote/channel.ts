@@ -376,12 +376,12 @@ export async function fetchChannelCreator(serverUrl: string, channelId: string, 
     }
 }
 
-export async function fetchChannelStats(serverUrl: string, channelId: string, fetchOnly = false) {
+export async function fetchChannelStats(serverUrl: string, channelId: string, fetchOnly = false, groupLabel?: string) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const stats = await client.getChannelStats(channelId);
+        const stats = await client.getChannelStats(channelId, groupLabel);
         if (!fetchOnly) {
             const channel = await getChannelById(database, channelId);
             if (channel) {
@@ -404,7 +404,11 @@ export async function fetchChannelStats(serverUrl: string, channelId: string, fe
     }
 }
 
-export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, includeDeleted = true, since = 0, fetchOnly = false, excludeDirect = false, isCRTEnabled?: boolean): Promise<MyChannelsRequest> {
+export async function fetchMyChannelsForTeam(
+    serverUrl: string, teamId: string, includeDeleted = true,
+    since = 0, fetchOnly = false, excludeDirect = false,
+    isCRTEnabled?: boolean, groupLabel?: string,
+): Promise<MyChannelsRequest> {
     try {
         if (!fetchOnly) {
             setTeamLoading(serverUrl, true);
@@ -412,9 +416,9 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
-            client.getMyChannels(teamId, includeDeleted, since),
-            client.getMyChannelMembers(teamId),
-            client.getCategories('me', teamId),
+            client.getMyChannels(teamId, includeDeleted, since, groupLabel),
+            client.getMyChannelMembers(teamId, groupLabel),
+            client.getCategories('me', teamId, groupLabel),
         ]);
 
         let channels = allChannels;
@@ -453,13 +457,13 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
     }
 }
 
-export async function fetchMyChannel(serverUrl: string, teamId: string, channelId: string, fetchOnly = false): Promise<MyChannelsRequest> {
+export async function fetchMyChannel(serverUrl: string, teamId: string, channelId: string, fetchOnly = false, groupLabel?: string): Promise<MyChannelsRequest> {
     try {
         const client = NetworkManager.getClient(serverUrl);
 
         const [channel, member] = await Promise.all([
-            client.getChannel(channelId),
-            client.getChannelMember(channelId, 'me'),
+            client.getChannel(channelId, groupLabel),
+            client.getChannelMember(channelId, 'me', groupLabel),
         ]);
 
         if (!fetchOnly) {
@@ -477,7 +481,11 @@ export async function fetchMyChannel(serverUrl: string, teamId: string, channelI
     }
 }
 
-export async function fetchMissingDirectChannelsInfo(serverUrl: string, directChannels: Channel[], locale?: string, teammateDisplayNameSetting?: string, currentUserId?: string, fetchOnly = false) {
+export async function fetchMissingDirectChannelsInfo(
+    serverUrl: string, directChannels: Channel[], locale?: string,
+    teammateDisplayNameSetting?: string, currentUserId?: string,
+    fetchOnly = false, groupLabel?: string,
+) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const displayNameByChannel: Record<string, string> = {};
@@ -510,8 +518,8 @@ export async function fetchMissingDirectChannelsInfo(serverUrl: string, directCh
         const membersCount = await getMembersCountByChannelsId(database, dmIds);
         const profileChannelsToFetch = dmIds.filter((id) => membersCount[id] <= 1 && dmWithoutDisplayName.has(id));
         const results = await Promise.all([
-            profileChannelsToFetch.length ? fetchProfilesPerChannels(serverUrl, profileChannelsToFetch, currentUserId, false) : Promise.resolve({data: undefined}),
-            fetchProfilesInGroupChannels(serverUrl, gms.map((c) => c.id), false),
+            profileChannelsToFetch.length ? fetchProfilesPerChannels(serverUrl, profileChannelsToFetch, currentUserId, false, groupLabel) : Promise.resolve({data: undefined}),
+            fetchProfilesInGroupChannels(serverUrl, gms.map((c) => c.id), false, groupLabel),
         ]);
 
         const profileRequests = results.flat();
@@ -654,10 +662,10 @@ export async function joinChannelIfNeeded(serverUrl: string, channelId: string) 
     }
 }
 
-export async function markChannelAsRead(serverUrl: string, channelId: string, updateLocal = false) {
+export async function markChannelAsRead(serverUrl: string, channelId: string, updateLocal = false, groupLabel?: string) {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        await client.viewMyChannel(channelId);
+        await client.viewMyChannel(channelId, undefined, groupLabel);
 
         if (updateLocal) {
             await markChannelAsViewed(serverUrl, channelId, true);
@@ -1039,7 +1047,7 @@ export async function getChannelTimezones(serverUrl: string, channelId: string) 
     }
 }
 
-export async function switchToChannelById(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false) {
+export async function switchToChannelById(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false, groupLabel?: string) {
     if (channelId === Screens.GLOBAL_THREADS) {
         return switchToGlobalThreads(serverUrl, teamId);
     }
@@ -1051,18 +1059,18 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
 
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, true);
 
-    fetchPostsForChannel(serverUrl, channelId);
-    fetchChannelBookmarks(serverUrl, channelId);
+    fetchPostsForChannel(serverUrl, channelId, false, groupLabel);
+    fetchChannelBookmarks(serverUrl, channelId, false, groupLabel);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
-    openChannelIfNeeded(serverUrl, channelId);
-    markChannelAsRead(serverUrl, channelId);
-    fetchChannelStats(serverUrl, channelId);
-    fetchGroupsForChannelIfConstrained(serverUrl, channelId);
+    openChannelIfNeeded(serverUrl, channelId, groupLabel);
+    markChannelAsRead(serverUrl, channelId, false, groupLabel);
+    fetchChannelStats(serverUrl, channelId, false, groupLabel);
+    fetchGroupsForChannelIfConstrained(serverUrl, channelId, false, groupLabel);
 
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, false);
 
     if (await AppsManager.isAppsEnabled(serverUrl)) {
-        AppsManager.fetchBindings(serverUrl, channelId);
+        AppsManager.fetchBindings(serverUrl, channelId, false, groupLabel);
     }
 
     return {};

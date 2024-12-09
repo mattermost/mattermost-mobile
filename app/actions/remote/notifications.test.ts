@@ -107,6 +107,11 @@ afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
+afterAll(() => {
+    // This removes the timer set to log the results of the network metrics
+    jest.clearAllTimers();
+});
+
 describe('notifications', () => {
     it('fetchNotificationData - handle no channel id', async () => {
         const result = await fetchNotificationData(serverUrl, {} as NotificationWithData);

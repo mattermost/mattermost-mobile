@@ -8,7 +8,12 @@ import {PER_PAGE_DEFAULT} from './constants';
 import type ClientBase from './base';
 
 export interface ClientThreadsMix {
-    getThreads: (userId: string, teamId: string, before?: string, after?: string, pageSize?: number, deleted?: boolean, unread?: boolean, since?: number, totalsOnly?: boolean, serverVersion?: string, excludeDirect?: boolean) => Promise<GetUserThreadsResponse>;
+    getThreads: (
+        userId: string, teamId: string,
+        before?: string, after?: string, pageSize?: number,
+        deleted?: boolean, unread?: boolean, since?: number, totalsOnly?: boolean, serverVersion?: string,
+        excludeDirect?: boolean, groupLabel?: string,
+    ) => Promise<GetUserThreadsResponse>;
     getThread: (userId: string, teamId: string, threadId: string, extended?: boolean) => Promise<any>;
     markThreadAsRead: (userId: string, teamId: string, threadId: string, timestamp: number) => Promise<any>;
     markThreadAsUnread: (userId: string, teamId: string, threadId: string, postId: string) => Promise<any>;
@@ -17,7 +22,11 @@ export interface ClientThreadsMix {
 }
 
 const ClientThreads = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
-    getThreads = async (userId: string, teamId: string, before = '', after = '', pageSize = PER_PAGE_DEFAULT, deleted = false, unread = false, since = 0, totalsOnly = false, serverVersion = '', excludeDirect = false) => {
+    getThreads = async (
+        userId: string, teamId: string,
+        before = '', after = '', pageSize = PER_PAGE_DEFAULT,
+        deleted = false, unread = false, since = 0, totalsOnly = false, serverVersion = '',
+        excludeDirect = false, groupLabel?: string) => {
         const queryStringObj: Record<string, any> = {
             extended: 'true',
             before,
@@ -35,7 +44,7 @@ const ClientThreads = <TBase extends Constructor<ClientBase>>(superclass: TBase)
         }
         return this.doFetch(
             `${this.getThreadsRoute(userId, teamId)}${buildQueryString(queryStringObj)}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
