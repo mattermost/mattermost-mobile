@@ -67,10 +67,16 @@ jobs:
     #             path: "android/app/build/outputs/apk/**/app-*.apk"
 
     build-android-apk-ubuntu:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-latest-8-cores
         env:
             ORG_GRADLE_PROJECT_jvmargs: -Xmx6g -Dorg.gradle.workers.max=2
         steps:
+            - name: Prune Docker
+              run: docker system prune -af
+
+            - name: Remove npm Temporary Files
+              run: rm -rf ~/.npm/_cacache
+
             - name: ci/checkout-repo
               uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
               with:
@@ -84,13 +90,16 @@ jobs:
                 STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
                 MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
+            - name: Install Dependencies
+              run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
+      
             - name: Cache Gradle dependencies
-              uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+              uses: actions/cache@v4
               with:
-                path: ~/.gradle/caches
+                path: ~/.gradle/caches/modules-2/
                 key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-                restore-keys: |
-                  ${{ runner.os }}-gradle-
+                restore-keys: ${{ runner.os }}-gradle-
+
             - name: Install Java
               uses: actions/setup-java@v4
               with:
@@ -115,6 +124,7 @@ jobs:
                 npm install
                 npm install -g detox-cli
                 npm run e2e:android-build
+
             - name: ci/upload-android-pr-build
               uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
               with:
