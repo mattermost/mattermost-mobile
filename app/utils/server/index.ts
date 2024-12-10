@@ -21,9 +21,8 @@ export function isSupportedServer(currentVersion: string) {
 
 export function unsupportedServer(serverDisplayName: string, isSystemAdmin: boolean, intl: IntlShape, onPress?: () => void) {
     if (isSystemAdmin) {
-        return unsupportedServerAdminAlert(serverDisplayName, intl, onPress);
+        unsupportedServerAdminAlert(serverDisplayName, intl, onPress);
     }
-    return unsupportedServerAlert(serverDisplayName, intl, onPress);
 }
 
 export function semverFromServerVersion(value: string) {
@@ -240,26 +239,6 @@ function unsupportedServerAdminAlert(serverDisplayName: string, intl: IntlShape,
         },
     };
     const buttons: AlertButton[] = [cancel, learnMore];
-    const options = {cancelable: false};
-
-    Alert.alert(title, message, buttons, options);
-}
-
-function unsupportedServerAlert(serverDisplayName: string, intl: IntlShape, onPress?: () => void) {
-    const title = intl.formatMessage({id: 'unsupported_server.title', defaultMessage: 'Unsupported server version'});
-
-    const message = intl.formatMessage({
-        id: 'unsupported_server.message',
-        defaultMessage: 'Your server, {serverDisplayName}, is running an unsupported server version. You may experience compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Please contact your System Administrator to upgrade your Mattermost server.',
-    }, {serverDisplayName});
-
-    const okButton: AlertButton = {
-        text: intl.formatMessage({id: 'mobile.server_upgrade.button', defaultMessage: 'OK'}),
-        style: 'default',
-        onPress,
-    };
-
-    const buttons: AlertButton[] = [okButton];
     const options = {cancelable: false};
 
     Alert.alert(title, message, buttons, options);
