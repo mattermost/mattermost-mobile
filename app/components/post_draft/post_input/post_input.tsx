@@ -21,6 +21,7 @@ import {useIsTablet} from '@hooks/device';
 import {useInputPropagation} from '@hooks/input';
 import {t} from '@i18n';
 import NavigationStore from '@store/navigation_store';
+import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
@@ -146,9 +147,14 @@ export default function PostInput({
         onFocus();
     };
 
-    const onBlur = useCallback(() => {
+    const onBlur = useCallback(async () => {
         keyboardContext?.registerTextInputBlur();
-        updateDraftMessage(serverUrl, channelId, rootId, value);
+        handleDraftUpdate({
+            serverUrl,
+            channelId,
+            rootId,
+            value,
+        });
         setIsFocused(false);
     }, [keyboardContext, serverUrl, channelId, rootId, value, setIsFocused]);
 
