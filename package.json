@@ -24,7 +24,7 @@
     "@mattermost/react-native-emm": "1.5.0",
     "@mattermost/react-native-network-client": "1.7.3",
     "@mattermost/react-native-paste-input": "0.8.0",
-    "@mattermost/react-native-turbo-log": "0.4.0",
+    "@mattermost/react-native-turbo-log": "github:mattermost/react-native-turbo-log#d8ddf5e7974546aff3e83b2c563907eb609ac5f4",
     "@mattermost/rnshare": "file:./libraries/@mattermost/rnshare",
     "@mattermost/rnutils": "file:./libraries/@mattermost/rnutils",
     "@msgpack/msgpack": "2.8.0",
