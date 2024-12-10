@@ -71,11 +71,6 @@ jobs:
         env:
             ORG_GRADLE_PROJECT_jvmargs: -Xmx6g -Dorg.gradle.workers.max=2
         steps:
-            - name: Monitor disk space
-              run: |
-                df -h
-                du -sh /* | sort -h
-
             - name: Prune Docker
               run: docker system prune -af
 
