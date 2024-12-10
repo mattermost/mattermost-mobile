@@ -67,15 +67,21 @@ jobs:
     #             path: "android/app/build/outputs/apk/**/app-*.apk"
 
     build-android-apk-ubuntu:
-        runs-on: ubuntu-latest-8-cores
+        runs-on: ubuntu-latest
         env:
             ORG_GRADLE_PROJECT_jvmargs: -Xmx6g -Dorg.gradle.workers.max=2
         steps:
+            - name: Monitor disk space
+              run: |
+                df -h
+                du -sh /* | sort -h
+
             - name: Prune Docker
               run: docker system prune -af
 
             - name: Remove npm Temporary Files
-              run: rm -rf ~/.npm/_cacache
+              run: |
+               rm -rf ~/.npm/_cacache
 
             - name: ci/checkout-repo
               uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
