@@ -23,8 +23,8 @@ type FilesProps = {
     layoutWidth?: number;
     location: string;
     isReplyPost: boolean;
-    postId: string;
-    postProps: Record<string, unknown>;
+    postId?: string;
+    postProps?: Record<string, unknown>;
     publicLinkEnabled: boolean;
 }
 
