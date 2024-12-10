@@ -135,7 +135,7 @@ const GlobalDraftsList: React.FC<Props> = ({
                 layoutWidth={layoutWidth}
             />
         );
-    }, [close, firstDraftId, isTablet, layoutWidth, location, opacityStyle, tooltipContentStyle, tooltipVisible, tutorialWatched, widthAnimatedStyle]);
+    }, [close, firstDraftId, layoutWidth, location, opacityStyle, tooltipContentStyle, tooltipVisible, tutorialWatched, widthAnimatedStyle]);
 
     return (
         <View

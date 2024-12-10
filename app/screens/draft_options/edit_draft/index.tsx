@@ -52,10 +52,10 @@ const EditDraft: React.FC<Props> = ({
     const editHandler = async () => {
         await dismissBottomSheet(bottomSheetId);
         if (rootId) {
-            switchToThread(serverUrl, rootId);
+            switchToThread(serverUrl, rootId, false, true);
             return;
         }
-        switchToChannelById(serverUrl, channel.id, channel.teamId);
+        switchToChannelById(serverUrl, channel.id, channel.teamId, false, true);
     };
 
     return (
