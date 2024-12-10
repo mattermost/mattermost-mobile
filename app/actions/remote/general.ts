@@ -16,7 +16,7 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 import type {ClientResponse} from '@mattermost/react-native-network-client';
 
-async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
+export async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
     if (!checkDeviceId) {
         return undefined;
     }
