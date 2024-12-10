@@ -10,11 +10,38 @@ import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {alertErrorWithFallback} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
+import {secureGetFromRecord, isRecordOf} from '@utils/types';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type TeamModel from '@typings/database/models/servers/team';
 
-export type ChannelMentions = Record<string, {id?: string; display_name: string; name?: string; team_name: string}>;
+export type ChannelMentions = Record<string, {id?: string; display_name: string; name?: string; team_name?: string}>;
+
+export function isChannelMentions(v: unknown): v is ChannelMentions {
+    return isRecordOf(v, (e) => {
+        if (typeof e !== 'object' || !e) {
+            return false;
+        }
+
+        if (!('display_name' in e) || typeof e.display_name !== 'string') {
+            return false;
+        }
+
+        if ('team_name' in e && typeof e.team_name !== 'string') {
+            return false;
+        }
+
+        if ('id' in e && typeof e.id !== 'string') {
+            return false;
+        }
+
+        if ('name' in e && typeof e.name !== 'string') {
+            return false;
+        }
+
+        return true;
+    });
+}
 
 type ChannelMentionProps = {
     channelMentions?: ChannelMentions;
@@ -40,7 +67,7 @@ function getChannelFromChannelName(name: string, channels: ChannelModel[], chann
     });
 
     while (channelName.length > 0) {
-        if (channelsByName[channelName]) {
+        if (secureGetFromRecord(channelsByName, channelName)) {
             return channelsByName[channelName];
         }
 

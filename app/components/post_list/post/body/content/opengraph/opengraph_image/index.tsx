@@ -16,6 +16,7 @@ import {isTablet} from '@utils/helpers';
 import {calculateDimensions} from '@utils/images';
 import {type BestImage, getNearestPoint} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 import {extractFilenameFromUrl, isValidUrl} from '@utils/url';
 
 import type {GalleryItemType} from '@typings/screens/gallery';
@@ -71,10 +72,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
     const imageUrl = (bestImage.secure_url || bestImage.url)!;
     const imagesMetadata = metadata?.images;
 
-    let ogImage;
-    if (imagesMetadata && imagesMetadata[imageUrl]) {
-        ogImage = imagesMetadata[imageUrl];
-    }
+    let ogImage = secureGetFromRecord(imagesMetadata, imageUrl);
 
     if (!ogImage) {
         ogImage = openGraphImages.find((i: BestImage) => i.url === imageUrl || i.secure_url === imageUrl);

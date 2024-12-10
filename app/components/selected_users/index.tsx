@@ -10,7 +10,7 @@ import Button from '@components/button';
 import {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from '@components/selected_chip';
 import Toast from '@components/toast';
 import {useTheme} from '@context/theme';
-import {useKeyboardHeightWithDuration} from '@hooks/device';
+import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SelectedUser from './selected_user';
@@ -92,7 +92,7 @@ const SCROLL_MARGIN_BOTTOM = 12;
 const USERS_CHIPS_MAX_HEIGHT = (CHIP_HEIGHT_WITH_MARGIN * MAX_CHIP_ROWS) + EXPOSED_CHIP_HEIGHT;
 const SCROLL_MAX_HEIGHT = USERS_CHIPS_MAX_HEIGHT + SCROLL_MARGIN_TOP + SCROLL_MARGIN_BOTTOM;
 const PANEL_MAX_HEIGHT = SCROLL_MAX_HEIGHT + BUTTON_HEIGHT;
-const TABLET_MARGIN_BOTTOM = 20;
+const MARGIN_BOTTOM = 20;
 const TOAST_BOTTOM_MARGIN = 24;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -155,6 +155,7 @@ export default function SelectedUsers({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const keyboard = useKeyboardHeightWithDuration();
+    const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
 
     const usersChipsHeight = useSharedValue(0);
@@ -163,15 +164,15 @@ export default function SelectedUsers({
 
     const users = useMemo(() => {
         const u = [];
-        for (const id of Object.keys(selectedIds)) {
-            if (!selectedIds[id]) {
+        for (const [id, user] of Object.entries(selectedIds)) {
+            if (!user) {
                 continue;
             }
 
             u.push(
                 <SelectedUser
                     key={id}
-                    user={selectedIds[id]}
+                    user={user}
                     teammateNameDisplay={teammateNameDisplay}
                     onRemove={onRemove}
                     testID={`${testID}.selected_user`}
@@ -179,12 +180,10 @@ export default function SelectedUsers({
             );
         }
         return u;
-    }, [selectedIds, teammateNameDisplay, onRemove]);
+    }, [selectedIds, teammateNameDisplay, onRemove, testID]);
 
     const totalPanelHeight = useDerivedValue(() => (
-        isVisible ?
-            usersChipsHeight.value + SCROLL_MARGIN_BOTTOM + SCROLL_MARGIN_TOP + BUTTON_HEIGHT :
-            0
+        isVisible ? usersChipsHeight.value + SCROLL_MARGIN_BOTTOM + SCROLL_MARGIN_TOP + BUTTON_HEIGHT : 0
     ), [isVisible]);
 
     const handlePress = useCallback(() => {
@@ -205,10 +204,10 @@ export default function SelectedUsers({
     });
 
     const animatedContainerStyle = useAnimatedStyle(() => ({
-        marginBottom: withTiming(keyboardOverlap + TABLET_MARGIN_BOTTOM, {duration: keyboard.duration}),
+        marginBottom: withTiming(keyboardOverlap + ((Platform.OS === 'android' || isTablet) ? MARGIN_BOTTOM : -MARGIN_BOTTOM), {duration: keyboard.duration}),
         backgroundColor: isVisible ? theme.centerChannelBg : 'transparent',
         ...androidMaxHeight,
-    }), [keyboardOverlap, keyboard.duration, isVisible, theme.centerChannelBg]);
+    }), [keyboardOverlap, keyboard.duration, isVisible, isTablet, theme.centerChannelBg]);
 
     const animatedToastStyle = useAnimatedStyle(() => {
         return {

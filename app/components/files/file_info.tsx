@@ -79,7 +79,7 @@ const FileInfo = ({disabled, file, channelName, showDate, onPress}: FileInfoProp
                     ellipsizeMode='tail'
                     style={style.fileName}
                 >
-                    {decodeURIComponent(file.name.trim())}
+                    {file.name.trim()}
                 </Text>
                 <View style={style.fileDownloadContainer}>
                     {channelName &&
@@ -98,7 +98,9 @@ const FileInfo = ({disabled, file, channelName, showDate, onPress}: FileInfoProp
                         </Text>
                         {showDate && file.create_at != null && (
                             <>
-                                {' • '}
+                                <Text style={style.infoText}>
+                                    {' • '}
+                                </Text>
                                 <FormattedDate
                                     style={style.infoText}
                                     format={FORMAT}

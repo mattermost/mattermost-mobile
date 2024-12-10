@@ -98,4 +98,14 @@ class RNUtilsModule(context: ReactApplicationContext) :
     fun removeServerNotifications(serverUrl: String?) {
         implementation.removeServerNotifications(serverUrl)
     }
+
+    @ReactMethod
+    fun setSoftKeyboardToAdjustResize() {
+        implementation.setSoftKeyboardToAdjustResize()
+    }
+
+    @ReactMethod
+    fun setSoftKeyboardToAdjustNothing() {
+        implementation.setSoftKeyboardToAdjustNothing()
+    }
 }

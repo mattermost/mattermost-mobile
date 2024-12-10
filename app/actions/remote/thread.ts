@@ -14,7 +14,6 @@ import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/se
 import {getIsCRTEnabled, getThreadById, getTeamThreadsSyncData} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
-import {isMinimumServerVersion} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 import {showThreadFollowingSnackbar} from '@utils/snack_bar';
 import {getThreadsListEdges} from '@utils/thread';
@@ -286,14 +285,9 @@ export const syncThreadsIfNeeded = async (serverUrl: string, isCRTEnabled: boole
             return {models: []};
         }
 
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const promises = [];
         const models: Model[][] = [];
-
-        // this is to keep backwards compatibility with servers that send the
-        // threads for DM / GM regardless for every team
-        const version = await getConfigValue(database, 'Version');
-        const hasThreadExclusions = isMinimumServerVersion(version, 10, 2, 0);
 
         if (teams?.length) {
             for (const team of teams) {
@@ -312,7 +306,7 @@ export const syncThreadsIfNeeded = async (serverUrl: string, isCRTEnabled: boole
 
         const flat = models.flat();
         if (!fetchOnly && flat.length) {
-            const uniqueArray = hasThreadExclusions ? flat : removeDuplicatesModels(flat);
+            const uniqueArray = removeDuplicatesModels(flat);
             await operator.batchRecords(uniqueArray, 'syncThreadsIfNeeded');
         }
 

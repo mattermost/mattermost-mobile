@@ -10,11 +10,9 @@ import Header, {HEADER_HEIGHT} from './header';
 import OptionMenus from './option_menus';
 
 import type {GalleryAction} from '@typings/screens/gallery';
-import type {EdgeInsets} from 'react-native-safe-area-context';
 
 type Props = {
     fileInfo: FileInfo;
-    insets: EdgeInsets;
     numOptions: number;
     setAction: (action: GalleryAction) => void;
     theme: Theme;
@@ -22,7 +20,6 @@ type Props = {
 
 export const showMobileOptionsBottomSheet = ({
     fileInfo,
-    insets,
     numOptions,
     setAction,
     theme,
@@ -42,7 +39,7 @@ export const showMobileOptionsBottomSheet = ({
         renderContent,
         snapPoints: [
             1,
-            bottomSheetSnapPoint(numOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT,
+            bottomSheetSnapPoint(numOptions, ITEM_HEIGHT) + HEADER_HEIGHT,
         ],
         theme,
         title: '',

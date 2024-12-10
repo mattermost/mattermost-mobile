@@ -57,7 +57,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId
     const [error, setError] = useState(false);
     const fileId = useRef(generateId('uid')).current;
     const isTablet = useIsTablet();
-    const {height, width} = calculateDimensions(imageMetadata.height, imageMetadata.width, layoutWidth || getViewPortWidth(false, isTablet));
+    const {height, width} = calculateDimensions(imageMetadata.height, imageMetadata.width, layoutWidth || getViewPortWidth(false, isTablet, true));
     const style = getStyleSheet(theme);
 
     const onError = useCallback(() => {

@@ -101,8 +101,9 @@ const ChannelBookmarks = ({
             />
         );
     }, [
-        attachmentIndex, bookmarks, canDownloadFiles, canDeleteBookmarks, canEditBookmarks,
-        handlePreviewPress, publicLinkEnabled,
+        canDeleteBookmarks, canDownloadFiles, canEditBookmarks,
+        galleryIdentifier, attachmentIndex, handlePreviewPress,
+        publicLinkEnabled,
     ]);
 
     const renderItemSeparator = useCallback(() => (<View style={styles.emptyItemSeparator}/>), []);

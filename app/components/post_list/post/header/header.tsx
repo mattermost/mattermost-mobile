@@ -12,6 +12,7 @@ import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
 import {postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {ensureString} from '@utils/types';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
@@ -96,6 +97,8 @@ const Header = (props: HeaderProps) => {
         isCustomStatusEnabled && displayName && customStatus &&
         !(isSystemPost || author?.isBot || isAutoResponse || isWebHook),
     ) && !isCustomStatusExpired(author) && Boolean(customStatus?.emoji);
+    const userIconOverride = ensureString(post.props?.override_icon_url);
+    const usernameOverride = ensureString(post.props?.override_username);
 
     return (
         <>
@@ -109,9 +112,9 @@ const Header = (props: HeaderProps) => {
                         rootPostAuthor={rootAuthorDisplayName}
                         shouldRenderReplyButton={shouldRenderReplyButton}
                         theme={theme}
-                        userIconOverride={post.props?.override_icon_url}
+                        userIconOverride={userIconOverride}
                         userId={post.userId}
-                        usernameOverride={post.props?.override_username}
+                        usernameOverride={usernameOverride}
                         showCustomStatusEmoji={showCustomStatusEmoji}
                         customStatus={customStatus!}
                     />

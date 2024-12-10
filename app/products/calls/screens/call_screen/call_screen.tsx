@@ -19,7 +19,6 @@ import {
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
@@ -330,7 +329,6 @@ const CallScreen = ({
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const {bottom} = useSafeAreaInsets();
     const {width, height} = useWindowDimensions();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -504,7 +502,7 @@ const CallScreen = ({
 
         Keyboard.dismiss();
         openAsBottomSheet({screen, title, theme, closeButtonId});
-    }, [theme]);
+    }, [intl, theme]);
 
     const showOtherActions = useCallback(async () => {
         const renderContent = () => {
@@ -552,11 +550,11 @@ const CallScreen = ({
         bottomSheet({
             closeButtonId: 'close-other-actions',
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom)],
+            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT)],
             title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
             theme,
         });
-    }, [bottom, intl, theme, isHost, EnableRecordings, waitingForRecording, recording, startRecording,
+    }, [intl, theme, isHost, EnableRecordings, waitingForRecording, recording, startRecording,
         recordOptionTitle, stopRecording, stopRecordingOptionTitle, style, switchToThread,
         callThreadOptionTitle, openChannelOptionTitle, ccAvailable, toggleCC, showCC, hideCCTitle,
         showCCTitle]);

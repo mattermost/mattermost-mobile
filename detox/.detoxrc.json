@@ -30,8 +30,8 @@
     "ios.simulator": {
       "type": "ios.simulator",
       "device": {
-        "type": "__DEVICE_TYPE__",
-        "os": "__DEVICE_OS__"
+        "type": "__DEVICE_NAME__",
+        "os": "__DEVICE_OS_VERSION__"
       }
     },
     "android.emulator": {

@@ -69,7 +69,7 @@ const ReactionBar = ({bottomSheetId, recentEmojis = [], postId}: QuickReactionPr
             title: intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
             props: {onEmojiPress: handleEmojiPress},
         });
-    }, [handleEmojiPress, intl, theme]);
+    }, [bottomSheetId, handleEmojiPress, intl, theme]);
 
     let containerSize = LARGE_CONTAINER_SIZE;
     let iconSize = LARGE_ICON_SIZE;

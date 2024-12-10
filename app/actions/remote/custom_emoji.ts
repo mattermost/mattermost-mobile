@@ -53,7 +53,8 @@ export const searchCustomEmojis = async (serverUrl: string, term: string) => {
 };
 
 const names = new Set<string>();
-const debouncedFetchEmojiByNames = debounce(async (serverUrl: string) => {
+
+export const fetchEmojisByName = async (serverUrl: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -77,11 +78,18 @@ const debouncedFetchEmojiByNames = debounce(async (serverUrl: string) => {
         logDebug('error on debouncedFetchEmojiByNames', getFullErrorMessage(error));
         return {error};
     }
-}, 200, false, () => {
+};
+
+const debouncedFetchEmojiByNames = debounce(fetchEmojisByName, 200, false, () => {
     names.clear();
 });
 
 export const fetchCustomEmojiInBatch = (serverUrl: string, emojiName: string) => {
     names.add(emojiName);
     return debouncedFetchEmojiByNames.apply(null, [serverUrl]);
+};
+
+export const fetchCustomEmojiInBatchForTest = (serverUrl: string, emojiName: string) => {
+    names.add(emojiName);
+    return fetchEmojisByName(serverUrl);
 };

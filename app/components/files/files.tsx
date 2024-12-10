@@ -24,7 +24,7 @@ type FilesProps = {
     location: string;
     isReplyPost: boolean;
     postId: string;
-    postProps: Record<string, any>;
+    postProps: Record<string, unknown>;
     publicLinkEnabled: boolean;
 }
 
