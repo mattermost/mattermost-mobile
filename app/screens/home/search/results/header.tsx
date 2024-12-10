@@ -10,7 +10,7 @@ import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from '
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
-import TeamPickerIcon from '@screens/home/search/team_picker_icon';
+import TeamPicker from '@screens/home/search/team_picker';
 import {bottomSheet} from '@screens/navigation';
 import {type FileFilter, FileFilters} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -151,9 +151,7 @@ const Header = ({
                         </View>
                     )}
                     {teams.length > 1 && (
-                        <TeamPickerIcon
-                            size={32}
-                            divider={true}
+                        <TeamPicker
                             setTeamId={setTeamId}
                             teamId={teamId}
                             teams={teams}

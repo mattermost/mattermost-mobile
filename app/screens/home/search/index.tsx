@@ -19,6 +19,8 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
+export const ALL_TEAMS_ID = '';
+
 export default compose(
     withDatabase,
     enhance,

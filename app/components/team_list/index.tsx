@@ -23,6 +23,8 @@ type Props = {
     testID?: string;
     textColor?: string;
     type?: BottomSheetList;
+    hideIcon?: boolean;
+    separatorAfterFirstItem?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -31,6 +33,10 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         marginBottom: 4,
+    },
+    separator: {
+        height: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
     },
 });
 
@@ -47,11 +53,13 @@ export default function TeamList({
     testID,
     textColor,
     type = 'FlatList',
+    hideIcon = false,
+    separatorAfterFirstItem = false,
 }: Props) {
     const List = useMemo(() => (type === 'FlatList' ? FlatList : BottomSheetFlatList), [type]);
 
-    const renderTeam = useCallback(({item: t}: ListRenderItemInfo<Team|TeamModel>) => {
-        return (
+    const renderTeam = useCallback(({item: t, index: i}: ListRenderItemInfo<Team|TeamModel>) => {
+        let teamListItem = (
             <TeamListItem
                 onPress={onPress}
                 team={t}
@@ -59,9 +67,17 @@ export default function TeamList({
                 iconBackgroundColor={iconBackgroundColor}
                 iconTextColor={iconTextColor}
                 selectedTeamId={selectedTeamId}
+                hideIcon={hideIcon}
             />
         );
-    }, [textColor, iconTextColor, iconBackgroundColor, onPress, selectedTeamId]);
+        if (separatorAfterFirstItem && i === 0) {
+            teamListItem = (<>
+                {teamListItem}
+                <View style={styles.separator}/>
+            </>);
+        }
+        return teamListItem;
+    }, [textColor, iconTextColor, iconBackgroundColor, onPress, selectedTeamId, hideIcon, separatorAfterFirstItem]);
 
     let footer;
     if (loading) {
