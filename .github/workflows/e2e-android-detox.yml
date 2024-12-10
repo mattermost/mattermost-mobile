@@ -67,9 +67,9 @@ jobs:
     #             path: "android/app/build/outputs/apk/**/app-*.apk"
 
     build-android-apk-ubuntu:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-latest-8-cores
         env:
-            ORG_GRADLE_PROJECT_jvmargs: -Xmx6g -Dorg.gradle.workers.max=2
+            ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
         steps:
             - name: Prune Docker
               run: docker system prune -af
