@@ -18,6 +18,7 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import {loadPlaybookRunsForTeamAndUser} from '@playbooks/actions/playbooks';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
@@ -101,6 +102,11 @@ async function doReconnect(serverUrl: string) {
     if (isSupportedServerCalls(config?.Version)) {
         loadConfigAndCalls(serverUrl, currentUserId);
     }
+
+    // if (isSupportedServerCalls(config?.Version)) {
+    loadPlaybookRunsForTeamAndUser(serverUrl, currentTeamId, currentUserId);
+
+    // }
 
     await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 

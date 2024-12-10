@@ -149,12 +149,12 @@ const ChannelBookmarks = ({
                         {canAddBookmarks &&
                             <View style={styles.addContainer}>
                                 {allowEndFade &&
-                                <LinearGradient
-                                    locations={GRADIENT_LOCATIONS}
-                                    colors={gradientColors}
-                                    style={styles.gradient}
-                                    pointerEvents={'none'}
-                                />
+                                    <LinearGradient
+                                        locations={GRADIENT_LOCATIONS}
+                                        colors={gradientColors}
+                                        style={styles.gradient}
+                                        pointerEvents={'none'}
+                                    />
                                 }
                                 <AddBookmark
                                     bookmarksCount={bookmarks.length}
@@ -167,7 +167,7 @@ const ChannelBookmarks = ({
                         }
                     </Animated.View>
                     {separator &&
-                    <View style={styles.separator}/>
+                        <View style={styles.separator}/>
                     }
                 </Animated.View>
             </GalleryInit>

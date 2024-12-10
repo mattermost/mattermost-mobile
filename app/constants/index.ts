@@ -24,6 +24,7 @@ import Navigation from './navigation';
 import Network from './network';
 import NotificationLevel from './notification_level';
 import Permissions from './permissions';
+import Playbooks from './playbooks';
 import Post from './post';
 import PostDraft from './post_draft';
 import Preferences from './preferences';
@@ -63,6 +64,7 @@ export {
     Network,
     NotificationLevel,
     Permissions,
+    Playbooks,
     Post,
     PostDraft,
     Preferences,

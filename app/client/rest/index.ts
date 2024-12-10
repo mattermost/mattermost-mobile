@@ -3,6 +3,7 @@
 
 import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
+import ClientPlaybooks, {type ClientPlaybooksMix} from '@playbooks/client/rest';
 import mix from '@utils/mix';
 
 import ClientApps, {type ClientAppsMix} from './apps';
@@ -43,9 +44,9 @@ interface Client extends ClientBase,
     ClientTosMix,
     ClientUsersMix,
     ClientCallsMix,
+    ClientPlaybooksMix,
     ClientPluginsMix,
-    ClientNPSMix
-{}
+    ClientNPSMix { }
 
 class Client extends mix(ClientBase).with(
     ClientApps,
@@ -64,6 +65,7 @@ class Client extends mix(ClientBase).with(
     ClientTos,
     ClientUsers,
     ClientCalls,
+    ClientPlaybooks,
     ClientPlugins,
     ClientNPS,
 ) {

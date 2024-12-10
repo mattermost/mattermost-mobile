@@ -3,7 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {Events, Calls} from '@constants';
+import {Events, Calls, Playbooks} from '@constants';
 import {t} from '@i18n';
 import {setServerCredentials} from '@init/credentials';
 import {semverFromServerVersion} from '@utils/server';
@@ -229,6 +229,10 @@ export default class ClientBase {
 
     getCallsRoute() {
         return this.getPluginRoute(Calls.PluginId);
+    }
+
+    getPlaybooksRoute() {
+        return `${this.getPluginRoute(Playbooks.PluginId)}/api/v0`;
     }
 
     getPerformanceRoute() {

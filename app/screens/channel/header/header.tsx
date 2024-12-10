@@ -18,6 +18,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import ChannelHeaderPlaybookRuns from '@playbooks/components/channel_header_playbook_runs';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
@@ -98,6 +99,10 @@ const ChannelHeader = ({
     if (!groupCallsAllowed && channelType !== General.DM_CHANNEL) {
         callsAvailable = false;
     }
+
+    // const playbooksConfig = getPlaybooksConfig(serverUrl);
+    // const playbooksAvailable = playbooksConfig.pluginEnabled;
+    // const playbookRuns = usePlaybookRunsForChannel(serverUrl, teamId, channelId);
 
     const isDMorGM = isTypeDMorGM(channelType);
     const contextStyle = useMemo(() => ({
@@ -221,11 +226,11 @@ const ChannelHeader = ({
             return (
                 <View style={styles.customStatusContainer}>
                     {isCustomStatusEnabled && Boolean(customStatus.emoji) &&
-                    <CustomStatusEmoji
-                        customStatus={customStatus}
-                        emojiSize={13}
-                        style={styles.customStatusEmoji}
-                    />
+                        <CustomStatusEmoji
+                            customStatus={customStatus}
+                            emojiSize={13}
+                            style={styles.customStatusEmoji}
+                        />
                     }
                     <View style={styles.customStatusText}>
                         <Text
@@ -261,11 +266,16 @@ const ChannelHeader = ({
                 <RoundedHeaderContext/>
             </View>
             {isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks &&
-            <ChannelHeaderBookmarks
-                canAddBookmarks={canAddBookmarks}
+                <ChannelHeaderBookmarks
+                    canAddBookmarks={canAddBookmarks}
+                    channelId={channelId}
+                />
+            }
+            <ChannelHeaderPlaybookRuns
+                serverUrl={serverUrl}
+                teamId={teamId}
                 channelId={channelId}
             />
-            }
         </>
     );
 };
