@@ -1,14 +1,15 @@
 name: Detox E2E Android Tests PR
 
 on:
-    push:
-        branches:
-        - main
     pull_request:
-        branches:
+      branches:
         - main
-    pull_request_target:
-        types: [labeled]
+      types:
+        - labeled
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}"
+    cancel-in-progress: true
 
 jobs:
     build-android-apk:
