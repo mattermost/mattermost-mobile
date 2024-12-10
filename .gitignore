@@ -20,6 +20,7 @@ env.d.ts
 # Xcode
 #
 ios/build/*
+ios/Builds/*
 *.pbxuser
 !default.pbxuser
 *.mode1v3
