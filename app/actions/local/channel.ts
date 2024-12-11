@@ -17,10 +17,11 @@ import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig, getLicense} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
-import {dismissAllModals, dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen, resetToRootAndAddScreenOnTop} from '@screens/navigation';
+import {dismissAllModals, dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen, getThemeFromState, resetToRootAndAddScreenOnTop} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {logError, logInfo} from '@utils/log';
+import {changeOpacity} from '@utils/theme';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -89,8 +90,42 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     dismissAllModalsAndPopToRoot();
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
                 } else if (isNavigatedFromDraft) {
+                    const theme = getThemeFromState();
+                    const options = {
+                        layout: {
+                            componentBackgroundColor: theme.centerChannelBg,
+                        },
+                        popGesture: true,
+                        sideMenu: {
+                            left: {enabled: false},
+                            right: {enabled: false},
+                        },
+                        topBar: {
+                            animate: true,
+                            visible: false,
+                            backButton: {
+                                color: theme.sidebarHeaderTextColor,
+                                title: '',
+                                testID: 'screen.back.button',
+                            },
+                            background: {
+                                color: theme.sidebarBg,
+                            },
+                            title: {
+                                color: theme.sidebarHeaderTextColor,
+                            },
+                            subtitle: {
+                                color: changeOpacity(EphemeralStore.theme!.sidebarHeaderTextColor, 0.72),
+                            },
+                            noBorder: true,
+                            scrollEdgeAppearance: {
+                                noBorder: true,
+                                active: true,
+                            },
+                        },
+                    };
                     dismissAllModals();
-                    resetToRootAndAddScreenOnTop(Screens.CHANNEL, {}, {topBar: {visible: false}});
+                    resetToRootAndAddScreenOnTop(Screens.CHANNEL, {}, options);
                 } else {
                     dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
                 }

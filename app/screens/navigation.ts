@@ -346,24 +346,24 @@ export function resetToRootAndAddScreenOnTop(availableScreen: AvailableScreens, 
                         },
                     },
                 },
-            }],
+            },
+            {
+                component: {
+                    id: availableScreen,
+                    name: availableScreen,
+                    passProps: {
+                        ...passProps,
+                        theme,
+                    },
+                    options,
+                },
+            },
+            ],
         },
     };
 
     Navigation.setRoot({
         root: rootStack,
-    }).then(() => {
-        Navigation.push(Screens.HOME, {
-            component: {
-                id: availableScreen,
-                name: availableScreen,
-                passProps: {
-                    ...passProps,
-                    theme,
-                },
-                options,
-            },
-        });
     });
 }
 
