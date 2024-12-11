@@ -1155,7 +1155,7 @@
   "threads.followMessage": "Sledovat Zprávu",
   "threads.followThread": "Sledovat Vlákno",
   "threads.following": "Sleduji",
-  "threads.newReplies": "{počet} nový {počet, množné číslo, jeden {odpověď} další {odpovědi}}",
+  "threads.newReplies": "{count} nová {count, plural, one {odpověď} other {odpovědi}}",
   "threads.replies": "{count} {count, plural, one {odpověď} other {odpovědi}}",
   "threads.unfollowMessage": "Přestat Sledovat zprávu",
   "threads.unfollowThread": "Ukončit sledování Vlákna",
