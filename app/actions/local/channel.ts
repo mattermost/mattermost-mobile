@@ -17,18 +17,17 @@ import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig, getLicense} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
-import {dismissAllModals, dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen, getThemeFromState, resetToRootAndAddScreenOnTop} from '@screens/navigation';
+import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {logError, logInfo} from '@utils/log';
-import {changeOpacity} from '@utils/theme';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
-export async function switchToChannel(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false, prepareRecordsOnly = false, isNavigatedFromDraft = false) {
+export async function switchToChannel(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         let models: Model[] = [];
@@ -89,43 +88,6 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                 if (isTabletDevice) {
                     dismissAllModalsAndPopToRoot();
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
-                } else if (isNavigatedFromDraft) {
-                    const theme = getThemeFromState();
-                    const options = {
-                        layout: {
-                            componentBackgroundColor: theme.centerChannelBg,
-                        },
-                        popGesture: true,
-                        sideMenu: {
-                            left: {enabled: false},
-                            right: {enabled: false},
-                        },
-                        topBar: {
-                            animate: true,
-                            visible: false,
-                            backButton: {
-                                color: theme.sidebarHeaderTextColor,
-                                title: '',
-                                testID: 'screen.back.button',
-                            },
-                            background: {
-                                color: theme.sidebarBg,
-                            },
-                            title: {
-                                color: theme.sidebarHeaderTextColor,
-                            },
-                            subtitle: {
-                                color: changeOpacity(EphemeralStore.theme!.sidebarHeaderTextColor, 0.72),
-                            },
-                            noBorder: true,
-                            scrollEdgeAppearance: {
-                                noBorder: true,
-                                active: true,
-                            },
-                        },
-                    };
-                    dismissAllModals();
-                    resetToRootAndAddScreenOnTop(Screens.CHANNEL, {}, options);
                 } else {
                     dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
                 }

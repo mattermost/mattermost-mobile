@@ -313,60 +313,6 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
     });
 }
 
-export function resetToRootAndAddScreenOnTop(availableScreen: AvailableScreens, passProps = {}, options: Options = {}) {
-    const theme = getDefaultThemeByAppearance();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
-
-    const rootStack = {
-        stack: {
-            children: [{
-                component: {
-                    id: Screens.HOME,
-                    name: Screens.HOME,
-                    options: {
-                        layout: {
-                            backgroundColor: theme.centerChannelBg,
-                            componentBackgroundColor: theme.centerChannelBg,
-                        },
-                        statusBar: {
-                            visible: true,
-                            backgroundColor: theme.sidebarBg,
-                        },
-                        topBar: {
-                            visible: false,
-                            height: 0,
-                            background: {
-                                color: theme.sidebarBg,
-                            },
-                            backButton: {
-                                visible: false,
-                                color: theme.sidebarHeaderTextColor,
-                            },
-                        },
-                    },
-                },
-            },
-            {
-                component: {
-                    id: availableScreen,
-                    name: availableScreen,
-                    passProps: {
-                        ...passProps,
-                        theme,
-                    },
-                    options,
-                },
-            },
-            ],
-        },
-    };
-
-    Navigation.setRoot({
-        root: rootStack,
-    });
-}
-
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
     const isDark = tinyColor(theme.sidebarBg).isDark();

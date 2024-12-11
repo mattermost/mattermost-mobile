@@ -1039,7 +1039,7 @@ export async function getChannelTimezones(serverUrl: string, channelId: string) 
     }
 }
 
-export async function switchToChannelById(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false, isNavigatedFromDraft = false) {
+export async function switchToChannelById(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false) {
     if (channelId === Screens.GLOBAL_THREADS) {
         return switchToGlobalThreads(serverUrl, teamId);
     }
@@ -1053,7 +1053,7 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
 
     fetchPostsForChannel(serverUrl, channelId);
     fetchChannelBookmarks(serverUrl, channelId);
-    await switchToChannel(serverUrl, channelId, teamId, skipLastUnread, false, isNavigatedFromDraft);
+    await switchToChannel(serverUrl, channelId, teamId, skipLastUnread, false);
     openChannelIfNeeded(serverUrl, channelId);
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);

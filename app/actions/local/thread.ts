@@ -1,9 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import merge from 'deepmerge';
 import {DeviceEventEmitter} from 'react-native';
-import tinycolor from 'tinycolor2';
 
 import {ActionType, General, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -14,7 +12,7 @@ import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, type Prep
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModals, dismissAllModalsAndPopToRoot, dismissAllOverlays, getThemeFromState, goToScreen, resetToRootAndAddScreenOnTop} from '@screens/navigation';
+import {dismissAllModals, dismissAllModalsAndPopToRoot, dismissAllOverlays, goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
@@ -22,7 +20,6 @@ import {logError} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
-import type {Options} from 'react-native-navigation';
 
 export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, prepareRecordsOnly = false) => {
     try {
@@ -60,7 +57,7 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
     }
 };
 
-export const switchToThread = async (serverUrl: string, rootId: string, isFromNotification = false, isNavigatedFromDraft = false) => {
+export const switchToThread = async (serverUrl: string, rootId: string, isFromNotification = false) => {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const user = await getCurrentUser(database);
@@ -125,7 +122,8 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             subtitle = translations[t('thread.header.thread_in')] || 'in {channelName}';
             subtitle = subtitle.replace('{channelName}', channel.displayName);
         }
-        const threadOptions = {
+
+        goToScreen(Screens.THREAD, '', {rootId}, {
             topBar: {
                 title: {
                     text: title,
@@ -140,44 +138,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
                     active: true,
                 },
             },
-        };
-        if (isNavigatedFromDraft && !isTabletDevice) {
-            const theme = getThemeFromState();
-            const isDark = tinycolor(theme.sidebarBg).isDark();
-            const defaultOptions: Options = {
-                layout: {
-                    componentBackgroundColor: theme.centerChannelBg,
-                },
-                popGesture: true,
-                sideMenu: {
-                    left: {enabled: false},
-                    right: {enabled: false},
-                },
-                statusBar: {
-                    style: isDark ? 'light' : 'dark',
-                },
-                topBar: {
-                    animate: true,
-                    visible: true,
-                    backButton: {
-                        color: theme.sidebarHeaderTextColor,
-                        title: '',
-                        testID: 'screen.back.button',
-                    },
-                    background: {
-                        color: theme.sidebarBg,
-                    },
-                    title: {
-                        color: theme.sidebarHeaderTextColor,
-                        text: title,
-                    },
-                },
-            };
-            resetToRootAndAddScreenOnTop(Screens.THREAD, {rootId}, merge(defaultOptions, threadOptions));
-            return {};
-        }
-
-        goToScreen(Screens.THREAD, '', {rootId}, threadOptions);
+        });
 
         return {};
     } catch (error) {

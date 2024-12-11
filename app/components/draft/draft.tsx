@@ -79,10 +79,10 @@ const Draft: React.FC<Props> = ({
 
     const onPress = useCallback(() => {
         if (draft.rootId) {
-            switchToThread(serverUrl, draft.rootId, false, true);
+            switchToThread(serverUrl, draft.rootId, false);
             return;
         }
-        switchToChannelById(serverUrl, channel.id, channel.teamId, false, true);
+        switchToChannelById(serverUrl, channel.id, channel.teamId, false);
     }, [channel.id, channel.teamId, draft.rootId, serverUrl]);
 
     return (
