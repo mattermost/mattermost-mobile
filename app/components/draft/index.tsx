@@ -14,6 +14,7 @@ import Drafts from './draft';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
+import type DraftModel from '@typings/database/models/servers/draft';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
@@ -21,6 +22,7 @@ type Props = {
     currentUser?: UserModel;
     members?: ChannelMembershipModel[];
     channel?: ChannelModel;
+    draft: DraftModel;
 } & WithDatabaseArgs;
 
 const withCurrentUser = withObservables([], ({database}: WithDatabaseArgs) => ({
@@ -72,9 +74,10 @@ const observeDraftReceiverUser = ({
     return of(undefined);
 };
 
-const enhance = withObservables(['channel', 'members'], ({channel, database, currentUser, members}: Props) => {
+const enhance = withObservables(['channel', 'members', 'draft'], ({channel, database, currentUser, members, draft}: Props) => {
     const draftReceiverUser = observeDraftReceiverUser({members, database, channelData: channel, currentUser});
     return {
+        draft: draft.observe(),
         channel,
         draftReceiverUser,
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
