@@ -111,7 +111,7 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 579
+        versionCode 583
         versionName "2.23.0"
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -186,6 +186,7 @@ repositories {
     maven {
         url 'https://maven.google.com'
     }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -203,8 +204,11 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation "com.google.firebase:firebase-messaging:$firebaseVersion"
-
     androidTestImplementation('com.wix:detox:+')
+    androidTestImplementation 'androidx.test:core:1.6.0'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'com.wix:detox:20.26.2'
+
     implementation project(':reactnativenotifications')
     implementation project(':watermelondb-jsi')
 
@@ -217,6 +221,7 @@ dependencies {
 
 configurations.all {
     resolutionStrategy {
+        force 'androidx.test:core:1.6.0'
         eachDependency { DependencyResolveDetails details ->
             if (details.requested.name == 'play-services-base') {
                 details.useTarget group: details.requested.group, name: details.requested.name, version: '18.2.0'

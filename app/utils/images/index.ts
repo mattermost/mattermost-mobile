@@ -4,7 +4,14 @@
 import {Dimensions} from 'react-native';
 
 import {View} from '@constants';
-import {IMAGE_MAX_HEIGHT, IMAGE_MIN_DIMENSION, MAX_GIF_SIZE, VIEWPORT_IMAGE_OFFSET, VIEWPORT_IMAGE_REPLY_OFFSET} from '@constants/image';
+import {
+    IMAGE_MAX_HEIGHT,
+    IMAGE_MIN_DIMENSION,
+    MAX_GIF_SIZE,
+    VIEWPORT_IMAGE_ATTACHMENT_OFFSET,
+    VIEWPORT_IMAGE_OFFSET,
+    VIEWPORT_IMAGE_REPLY_OFFSET,
+} from '@constants/image';
 
 export const calculateDimensions = (height?: number, width?: number, viewPortWidth = 0, viewPortHeight = 0) => {
     'worklet';
@@ -47,7 +54,7 @@ export const calculateDimensions = (height?: number, width?: number, viewPortWid
     };
 };
 
-export function getViewPortWidth(isReplyPost: boolean, tabletOffset = false) {
+export function getViewPortWidth(isReplyPost: boolean, tabletOffset = false, imageAttachmentOffset = false) {
     const {width, height} = Dimensions.get('window');
     let portraitPostWidth = Math.min(width, height) - VIEWPORT_IMAGE_OFFSET;
 
@@ -57,6 +64,10 @@ export function getViewPortWidth(isReplyPost: boolean, tabletOffset = false) {
 
     if (isReplyPost) {
         portraitPostWidth -= VIEWPORT_IMAGE_REPLY_OFFSET;
+    }
+
+    if (imageAttachmentOffset) {
+        portraitPostWidth -= VIEWPORT_IMAGE_ATTACHMENT_OFFSET;
     }
 
     return portraitPostWidth;

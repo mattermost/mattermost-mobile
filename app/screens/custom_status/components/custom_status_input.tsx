@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {TextInput, View} from 'react-native';
+import {Platform, TextInput, View} from 'react-native';
 
 import ClearButton from '@components/custom_status/clear_button';
 import {CUSTOM_STATUS_TEXT_CHARACTER_LIMIT} from '@constants/custom_status';
@@ -35,7 +35,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             flex: 1,
             paddingHorizontal: 16,
-            textAlignVertical: 'center',
+            ...Platform.select({
+                ios: {
+                    paddingVertical: 25,
+                },
+                android: {
+                    textAlignVertical: 'center',
+                },
+            }),
             height: '100%',
             ...typography('Body', 200, 'Regular'),
         },

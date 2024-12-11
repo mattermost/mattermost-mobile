@@ -2,13 +2,15 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
-import React, {useCallback, useEffect, useMemo, useReducer} from 'react';
+import React, {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
+import {type Options} from 'react-native-navigation';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
+import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
 import {Events, Screens} from '@constants';
 import {CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
@@ -145,6 +147,17 @@ function reducer(state: NewStatusType, action: {
     }
 }
 
+const dismissModalAndKeyboard = (isTablet: boolean, options?: Options & { componentId: AvailableScreens}) => {
+    if (isTablet) {
+        DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
+    } else {
+        dismissModal(options);
+    }
+    Keyboard.dismiss();
+};
+
+const closeCustomStatusModalId = 'close-custom-status';
+
 const CustomStatus = ({
     customStatusExpirySupported,
     currentUser,
@@ -156,7 +169,10 @@ const CustomStatus = ({
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
-
+    const [isBtnEnabled, setIsBtnEnabled] = useState(true);
+    useNavButtonPressed('close-custom-status', componentId, () => {
+        dismissModalAndKeyboard(isTablet, {componentId});
+    }, [componentId, isTablet]);
     const storedStatus = useMemo(() => {
         return getUserCustomStatus(currentUser);
     }, [currentUser]);
@@ -222,6 +238,7 @@ const CustomStatus = ({
             initialDuration: newStatus.duration,
             intl,
             theme,
+            closeButtonId: 'close-custom-status',
         };
 
         if (isTablet) {
@@ -242,6 +259,7 @@ const CustomStatus = ({
         if (!currentUser) {
             return;
         }
+        setIsBtnEnabled(false);
 
         if (isStatusSet) {
             let isStatusSame =
@@ -264,12 +282,15 @@ const CustomStatus = ({
                     status.duration = newStatus.duration;
                     status.expires_at = newExpiresAt;
                 }
+
                 const {error} = await updateCustomStatus(serverUrl, status);
                 if (error) {
+                    dismissModalAndKeyboard(isTablet, {componentId});
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
+                    setIsBtnEnabled(true);
                     return;
                 }
-
+                setIsBtnEnabled(true);
                 updateLocalCustomStatus(serverUrl, currentUser, status);
                 dispatchStatus({type: 'fromUserCustomStatus', status});
             }
@@ -280,13 +301,8 @@ const CustomStatus = ({
                 updateLocalCustomStatus(serverUrl, currentUser, undefined);
             }
         }
-        Keyboard.dismiss();
-        if (isTablet) {
-            DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
-        } else {
-            dismissModal();
-        }
-    }, [newStatus, isStatusSet, storedStatus, currentUser]);
+        dismissModalAndKeyboard(isTablet, {componentId});
+    }, [newStatus, isStatusSet, storedStatus, currentUser, isTablet]);
 
     const openEmojiPicker = useCallback(preventDoubleTap(() => {
         openAsBottomSheet({
@@ -299,22 +315,19 @@ const CustomStatus = ({
     }), [theme, intl, handleEmojiClick]);
 
     const handleBackButton = useCallback(() => {
-        if (isTablet) {
-            DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
-        } else {
-            dismissModal({componentId});
-        }
+        dismissModalAndKeyboard(isTablet, {componentId});
     }, [componentId, isTablet]);
 
     useAndroidHardwareBackHandler(componentId, handleBackButton);
     useNavButtonPressed(BTN_UPDATE_STATUS, componentId, handleSetStatus, [handleSetStatus]);
 
     useEffect(() => {
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
         mergeNavigationOptions(componentId, {
             topBar: {
                 rightButtons: [
                     {
-                        enabled: true,
+                        enabled: isBtnEnabled,
                         id: BTN_UPDATE_STATUS,
                         showAsAction: 'always',
                         testID: 'custom_status.done.button',
@@ -322,9 +335,14 @@ const CustomStatus = ({
                         color: theme.sidebarHeaderTextColor,
                     },
                 ],
+                leftButtons: [{
+                    id: closeCustomStatusModalId,
+                    icon: closeButton,
+                    testID: 'close.custom_status.button',
+                }],
             },
         });
-    }, []);
+    }, [isBtnEnabled]);
 
     return (
         <>
