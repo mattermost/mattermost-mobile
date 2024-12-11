@@ -8,11 +8,6 @@
 import Foundation
 import os.log
 
-// TODO: setup some configuration for allowing users to figure out the right ammount of time to wait.
-let SHARE_TIMEOUT: Double = 300
-let NETWORK_ERROR_MESSAGE: String = "Mattermost App couldn't acknowledge the message was posted due to network conditions, please review and try again"
-let FILE_ERROR_MESSAGE: String = "The shared file couldn't be processed for sharing"
-
 extension ShareExtension {
    
     public func uploadFiles(serverUrl: String, channelId: String, message: String,
@@ -24,7 +19,9 @@ extension ShareExtension {
         createUploadSessionData(
             id: id, serverUrl: serverUrl,
             channelId: channelId, message: message,
-            files: files
+            files: files,
+            failNotificationID: uuidString,
+            failTimeout: Date().addingTimeInterval(SHARE_TIMEOUT)
         )
         
         guard let token = try? Keychain.default.getToken(for: serverUrl) else {return "Could not retrieve the session token from the KeyChain"}
@@ -73,7 +70,7 @@ extension ShareExtension {
                             filename,
                             id
                         )
-                        notifyFailureNow(description: FILE_ERROR_MESSAGE)
+                        notifyFailureNow(description: FILE_ERROR_MESSAGE, failID: uuidString)
                         return "The file \(filename) could not be processed for upload"
                     }
                 } else {
@@ -83,7 +80,7 @@ extension ShareExtension {
                         file,
                         id
                     )
-                    notifyFailureNow(description: FILE_ERROR_MESSAGE)
+                    notifyFailureNow(description: FILE_ERROR_MESSAGE, failID: uuidString)
                     return "File not found \(file)"
                 }
             }
@@ -94,7 +91,7 @@ extension ShareExtension {
                 "Mattermost BackgroundSession: posting message for identifier=%{public}@ without files",
                 id
             )
-            let cancelAndComplete = createCancelHandler(completionHandler: completionHandler)
+            let cancelAndComplete = createCancelHandler(completionHandler: completionHandler, failNotificationID: uuidString)
             self.postMessageForSession(withId: id, completionHandler: cancelAndComplete)
         }
         

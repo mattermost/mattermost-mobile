@@ -128,6 +128,14 @@ extension ShareExtension: URLSessionDataDelegate {
                 session.configuration.identifier ?? "no identifier",
                 error?.localizedDescription ?? "no error description available"
             )
+            
+            if let sessionID = session.configuration.identifier {
+                let uploadData = getUploadSessionData(id: sessionID)
+                self.notifyFailureNow(failID: uploadData?.failNotificationID)
+            } else {
+                _ = self.scheduleFailNotification(timeout: 1)
+            }
+            
             return
         }
         
@@ -136,7 +144,6 @@ extension ShareExtension: URLSessionDataDelegate {
             "Mattermost BackgroundSession: didCompleteWithError delegate for identifier=%{public}@ after calling postMessageIfUploadFinished",
             session.configuration.identifier ?? "no identifier"
         )
-        self.notifyFailureNow()
     }
     
     
@@ -177,6 +184,14 @@ extension ShareExtension: URLSessionDataDelegate {
         
         let total = data.totalFiles
         let count = data.fileIds.count
+        if let timeout = data.failTimeout, timeout < Date() {
+            backgroundSession?.invalidateAndCancel()
+            os_log(
+                "Mattermost BackgroundSession: postMessageIfUploadFinished session %{public}@ timed out",
+                session.configuration.identifier ?? "no identifier"
+            )
+            return
+        }
 
         if count == total {
             os_log(
@@ -190,7 +205,12 @@ extension ShareExtension: URLSessionDataDelegate {
                     self.postMessageForSession(withId: id)
                     self.urlSessionDidFinishEvents(forBackgroundURLSession: session)
                 }
-            self.cancelFailNotification()
+            os_log(
+                OSLogType.default,
+                "Mattermost BackgroundSession: we are good, removing the fail notification=%{public}@",
+                id
+            )
+            self.cancelFailNotification(failID: data.failNotificationID)
         } else {
             os_log(
                 OSLogType.default,

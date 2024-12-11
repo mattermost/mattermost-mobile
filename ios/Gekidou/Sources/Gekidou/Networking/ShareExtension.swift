@@ -16,6 +16,8 @@ struct UploadSessionData {
     var fileIds: [String] = []
     var message: String = ""
     var totalFiles: Int = 0
+    var failNotificationID: String?
+    var failTimeout: Date?
     
     func toDictionary() -> NSDictionary {
         let data: NSDictionary = [
@@ -24,7 +26,9 @@ struct UploadSessionData {
             "files": files,
             "fileIds": fileIds,
             "message": message,
-            "totalFiles": totalFiles
+            "totalFiles": totalFiles,
+            "failNotificationID": failNotificationID,
+            "failTimeout": failTimeout
         ]
         
         return data
@@ -37,6 +41,8 @@ struct UploadSessionData {
         let fileIds = dict["fileIds"] as! [String]
         let message = dict["message"] as! String
         let totalFiles = dict["totalFiles"] as! Int
+        let failNotificationID = dict["failNotificationID"] as! String
+        let failTimeout = dict["failTimeout"] as! Date
         
         return UploadSessionData(
             serverUrl: serverUrl,
@@ -44,10 +50,17 @@ struct UploadSessionData {
             files: files,
             fileIds: fileIds,
             message: message,
-            totalFiles: totalFiles
+            totalFiles: totalFiles,
+            failNotificationID: failNotificationID,
+            failTimeout: failTimeout
         )
     }
 }
+
+// TODO: setup some configuration for allowing users to figure out the right ammount of time to wait.
+let SHARE_TIMEOUT: Double = 120 // change to 300
+let NETWORK_ERROR_MESSAGE: String = "Mattermost App couldn't acknowledge the message was posted due to network conditions, please review and try again"
+let FILE_ERROR_MESSAGE: String = "The shared file couldn't be processed for sharing"
 
 public class ShareExtension: NSObject {
     public var backgroundSession: URLSession?
@@ -56,7 +69,6 @@ public class ShareExtension: NSObject {
     private let preferences = Preferences.default
     public var completionHandler: (() -> Void)?
     internal let lock = NSLock()
-    internal var failNotificationID: String?
 
     public override init() {
         super.init()
@@ -90,13 +102,15 @@ public class ShareExtension: NSObject {
         )
     }
     
-    func createUploadSessionData(id: String, serverUrl: String, channelId: String, message: String, files: [String]) {
+    func createUploadSessionData(id: String, serverUrl: String, channelId: String, message: String, files: [String], failNotificationID: String, failTimeout: Date) {
         let data = UploadSessionData(
             serverUrl: serverUrl,
             channelId: channelId,
             files: files,
             message: message,
-            totalFiles: files.count
+            totalFiles: files.count,
+            failNotificationID: failNotificationID,
+            failTimeout: failTimeout
         )
         
         saveUploadSessionData(id: id, data: data)
@@ -129,7 +143,9 @@ public class ShareExtension: NSObject {
                 files: data.files,
                 fileIds: fileIds,
                 message: data.message,
-                totalFiles: data.totalFiles
+                totalFiles: data.totalFiles,
+                failNotificationID: data.failNotificationID,
+                failTimeout: data.failTimeout
             )
             saveUploadSessionData(id: id, data: newData)
         }
@@ -159,22 +175,20 @@ public class ShareExtension: NSObject {
         let uuidString = UUID().uuidString
         let request = UNNotificationRequest(identifier: uuidString, content: failNotification, trigger: timeoutTrigger)
 
+        os_log(
+            OSLogType.default,
+            "Mattermost BackgroundSession: Created Fail notification with ID: %{uuidString}@",
+            uuidString
+        )
+        
         // Schedule the request with the system.
-        let notificationCenter = UNUserNotificationCenter.current()
-        notificationCenter.add(request) { (_ Error) in
-            // cancel any pending uploads if we hit the time limit.
-            self.backgroundSession?.invalidateAndCancel()
-            os_log(
-                OSLogType.default,
-                "Mattermost BackgroundSession: Cancelling uploads due to time out"
-            )
-            self.failNotificationID = nil
-        }
-        self.failNotificationID = uuidString
+        UNUserNotificationCenter.current().add(request)
+
         return uuidString
     }
-    func cancelFailNotification() -> Void {
-        if let id = self.failNotificationID {
+    
+    func cancelFailNotification(failID: String? = nil) -> Void {
+        if let id = failID {
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id])
             os_log(
                 OSLogType.default,
@@ -182,15 +196,14 @@ public class ShareExtension: NSObject {
                 id
             )
         }
-
-        self.failNotificationID = nil
     }
-    func notifyFailureNow(description: String = NETWORK_ERROR_MESSAGE) -> Void {
-        self.cancelFailNotification()
+    
+    func notifyFailureNow(description: String = NETWORK_ERROR_MESSAGE, failID: String?) -> Void {
+        self.cancelFailNotification(failID: failID)
         _ = self.scheduleFailNotification(timeout: 1, description: description)
     }
     
-    func createCancelHandler(completionHandler: @escaping () -> Void) -> (Bool) -> Void {
+    func createCancelHandler(completionHandler: @escaping () -> Void, failNotificationID: String) -> (Bool) -> Void {
         return { success in
             if success {
                 self.cancelFailNotification()
@@ -203,14 +216,13 @@ public class ShareExtension: NSObject {
                 return
             }
             
-            if self.failNotificationID != nil {
-                self.notifyFailureNow()
-                os_log(
-                    OSLogType.default,
-                    "Mattermost BackgroundSession: sending fail notification now"
-                )
-            }
-        completionHandler()
+            self.notifyFailureNow(failID: failNotificationID)
+            os_log(
+                OSLogType.default,
+                "Mattermost BackgroundSession: sending fail notification now"
+            )
+
+            completionHandler()
         }
     }
 }
