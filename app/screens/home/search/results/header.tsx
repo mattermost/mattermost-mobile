@@ -35,7 +35,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             marginTop: 10,
-            backgroundColor: theme.centerChannelBg,
             borderBottomWidth: 1,
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
@@ -44,15 +43,21 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             borderColor: theme.centerChannelBg,
             marginTop: 2,
         },
-        buttonsContainer: {
+        header: {
             marginBottom: 12,
             paddingHorizontal: 12,
             flexDirection: 'row',
+            justifyContent: 'space-between',
         },
-        iconsContainer: {
-            alignItems: 'center',
+        buttonContainer: {
             flexDirection: 'row',
-            marginLeft: 'auto',
+            backgroundColor: 'red',
+        },
+        filtersContainer: {
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            backgroundColor: 'blue',
+            alignItems: 'center',
         },
     };
 });
@@ -119,18 +124,20 @@ const Header = ({
 
     return (
         <View style={styles.container}>
-            <View style={styles.buttonsContainer}>
-                <SelectButton
-                    selected={selectedTab === TabTypes.MESSAGES}
-                    onPress={handleMessagesPress}
-                    text={messagesText}
-                />
-                <SelectButton
-                    selected={selectedTab === TabTypes.FILES}
-                    onPress={handleFilesPress}
-                    text={filesText}
-                />
-                <View style={styles.iconsContainer}>
+            <View style={styles.header}>
+                <View style={styles.buttonContainer}>
+                    <SelectButton
+                        selected={selectedTab === TabTypes.MESSAGES}
+                        onPress={handleMessagesPress}
+                        text={messagesText}
+                    />
+                    <SelectButton
+                        selected={selectedTab === TabTypes.FILES}
+                        onPress={handleFilesPress}
+                        text={filesText}
+                    />
+                </View>
+                <View style={styles.filtersContainer}>
                     {showFilterIcon && (
                         <View style={filterStyle}>
                             <CompassIcon
@@ -151,11 +158,13 @@ const Header = ({
                         </View>
                     )}
                     {teams.length > 1 && (
-                        <TeamPicker
-                            setTeamId={setTeamId}
-                            teamId={teamId}
-                            teams={teams}
-                        />
+                        <View style={{}}>
+                            <TeamPicker
+                                setTeamId={setTeamId}
+                                teamId={teamId}
+                                teams={teams}
+                            />
+                        </View>
                     )}
                 </View>
             </View>
