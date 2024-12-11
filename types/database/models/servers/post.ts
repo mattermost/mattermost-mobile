@@ -71,7 +71,7 @@ declare class PostModel extends Model {
     userId: string;
 
     /** props : Additional attributes for this props */
-    props: any;
+    props: Record<string, unknown> | null;
 
     /** drafts  : Every draft associated with this Post */
     drafts: Query<DraftModel>;

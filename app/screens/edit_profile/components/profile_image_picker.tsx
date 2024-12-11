@@ -4,7 +4,6 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableOpacity} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
@@ -68,7 +67,6 @@ const ProfileImagePicker = ({
 }: ImagePickerProps) => {
     const theme = useTheme();
     const intl = useIntl();
-    const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles, intl]);
     const canRemovePicture = hasPictureUrl(user, serverUrl);
@@ -109,7 +107,7 @@ const ProfileImagePicker = ({
             );
         };
 
-        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT, bottom) + TITLE_HEIGHT;
+        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT) + TITLE_HEIGHT;
 
         return bottomSheet({
             closeButtonId: 'close-edit-profile',
@@ -118,7 +116,7 @@ const ProfileImagePicker = ({
             title: 'Change profile photo',
             theme,
         });
-    }), [canRemovePicture, onRemoveProfileImage, bottom, pictureUtils, theme]);
+    }), [canRemovePicture, onRemoveProfileImage, pictureUtils, theme]);
 
     return (
         <TouchableOpacity

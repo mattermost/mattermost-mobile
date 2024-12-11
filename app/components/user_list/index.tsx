@@ -221,7 +221,7 @@ export default function UserList({
         }
 
         return createProfilesSections(intl, profiles, channelMembers);
-    }, [channelMembers, loading, profiles, term]);
+    }, [channelMembers, intl, loading, profiles, term]);
 
     const openUserProfile = useCallback(async (profile: UserProfile | UserModel) => {
         let user: UserModel;
@@ -246,7 +246,7 @@ export default function UserList({
 
         Keyboard.dismiss();
         openAsBottomSheet({screen, title, theme, closeButtonId, props});
-    }, []);
+    }, [intl, serverUrl, theme]);
 
     const renderItem = useCallback(({item, index, section}: RenderItemType) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
@@ -275,7 +275,7 @@ export default function UserList({
                 includeMargin={includeUserMargin}
             />
         );
-    }, [selectedIds, handleSelectProfile, showManageMode, manageMode, tutorialWatched, includeUserMargin]);
+    }, [selectedIds, currentUserId, manageMode, handleSelectProfile, openUserProfile, showManageMode, tutorialWatched, includeUserMargin]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {

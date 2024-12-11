@@ -6,9 +6,10 @@ import React, {useCallback, useRef} from 'react';
 
 import {postActionWithCookie} from '@actions/remote/integrations';
 import {useServerUrl} from '@context/server';
-import {getStatusColors} from '@utils/message_attachment_colors';
+import {getStatusColors} from '@utils/message_attachment';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 
 import ActionButtonText from './action_button_text';
 
@@ -65,7 +66,7 @@ const ActionButton = ({buttonColor, cookie, disabled, id, name, postId, theme}: 
 
     if (buttonColor) {
         const STATUS_COLORS = getStatusColors(theme);
-        const hexColor = STATUS_COLORS[buttonColor] || theme[buttonColor] || buttonColor;
+        const hexColor = secureGetFromRecord(STATUS_COLORS, buttonColor) || secureGetFromRecord(theme, buttonColor) || buttonColor;
         customButtonStyle = {borderColor: changeOpacity(hexColor, 0.25), backgroundColor: '#ffffff'};
         customButtonTextStyle = {color: hexColor};
     }

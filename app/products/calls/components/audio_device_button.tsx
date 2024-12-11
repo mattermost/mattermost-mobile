@@ -4,7 +4,6 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Pressable, type StyleProp, Text, type TextStyle, View, type ViewStyle} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {setPreferredAudioRoute} from '@calls/actions/calls';
 import {AudioDevice, type CurrentCall} from '@calls/types/calls';
@@ -33,7 +32,6 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
-    const {bottom} = useSafeAreaInsets();
     const isTablet = Device.IS_TABLET; // not `useIsTablet` because even if we're in splitView, we're still using a tablet.
     const color = theme.awayIndicator;
     const audioDeviceInfo = currentCall.audioDeviceInfo;
@@ -109,7 +107,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
         bottomSheet({
             closeButtonId: 'close-other-actions',
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(available.length + 1, ITEM_HEIGHT, bottom)],
+            snapPoints: [1, bottomSheetSnapPoint(available.length + 1, ITEM_HEIGHT)],
             title: intl.formatMessage({id: 'mobile.calls_audio_device', defaultMessage: 'Select audio device'}),
             theme,
         });

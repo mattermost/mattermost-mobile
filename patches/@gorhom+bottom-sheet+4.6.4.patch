@@ -1,0 +1,17 @@
+diff --git a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetContainer/BottomSheetContainer.tsx b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetContainer/BottomSheetContainer.tsx
+index 72fe2cb..abac348 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetContainer/BottomSheetContainer.tsx
++++ b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetContainer/BottomSheetContainer.tsx
+@@ -30,10 +30,10 @@ function BottomSheetContainerComponent({
+       {
+         top: topInset,
+         bottom: bottomInset,
+-        overflow: detached ? 'visible' : 'hidden',
++        overflow: 'visible',
+       },
+     ],
+-    [style, detached, topInset, bottomInset]
++    [style, topInset, bottomInset]
+   );
+   //#endregion
+ 

@@ -4,7 +4,6 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {getCallsConfig} from '@calls/state';
 import {CHANNEL_ACTIONS_OPTIONS_HEIGHT} from '@components/channel_actions/channel_actions';
@@ -19,6 +18,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -85,7 +85,6 @@ const ChannelHeader = ({
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
-    const {bottom} = useSafeAreaInsets();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const defaultHeight = useDefaultHeaderHeight();
@@ -155,7 +154,10 @@ const ChannelHeader = ({
 
         // When calls is enabled, we need space to move the "Copy Link" from a button to an option
         const items = callsAvailable && !isDMorGM ? 3 : 2;
-        const height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
+        let height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
+        if (Platform.OS === 'android') {
+            height += BOTTOM_SHEET_ANDROID_OFFSET;
+        }
 
         const renderContent = () => {
             return (
@@ -170,11 +172,11 @@ const ChannelHeader = ({
         bottomSheet({
             title: '',
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(1, height, bottom)],
+            snapPoints: [1, bottomSheetSnapPoint(1, height)],
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [bottom, channelId, isDMorGM, isTablet, onTitlePress, theme, callsAvailable]);
+    }, [channelId, isDMorGM, isTablet, onTitlePress, theme, callsAvailable]);
 
     const rightButtons: HeaderRightButton[] = useMemo(() => ([
 

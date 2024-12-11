@@ -70,6 +70,9 @@ export interface Spec extends TurboModule {
     removeChannelNotifications(serverUrl: string, channelId: string): void;
     removeThreadNotifications(serverUrl: string, threadId: string): void;
     removeServerNotifications(serverUrl: string): void;
+
+    setSoftKeyboardToAdjustResize(): void;
+    setSoftKeyboardToAdjustNothing(): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNUtils');

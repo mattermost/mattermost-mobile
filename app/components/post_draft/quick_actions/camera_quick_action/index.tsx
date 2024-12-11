@@ -4,7 +4,6 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, StyleSheet} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -40,7 +39,6 @@ export default function CameraQuickAction({
 }: QuickActionAttachmentProps) {
     const intl = useIntl();
     const theme = useTheme();
-    const {bottom} = useSafeAreaInsets();
 
     const handleButtonPress = useCallback((options: CameraOptions) => {
         const picker = new PickerUtil(intl,
@@ -72,11 +70,11 @@ export default function CameraQuickAction({
         bottomSheet({
             title: intl.formatMessage({id: 'mobile.camera_type.title', defaultMessage: 'Camera options'}),
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom) + TITLE_HEIGHT],
+            snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT) + TITLE_HEIGHT],
             theme,
             closeButtonId: 'camera-close-id',
         });
-    }, [intl, theme, renderContent, maxFilesReached, maxFileCount, bottom]);
+    }, [intl, theme, renderContent, maxFilesReached, maxFileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

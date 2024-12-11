@@ -11,7 +11,7 @@ import {queryPostsById} from '@queries/servers/post';
 import {observePermissionForPost} from '@queries/servers/role';
 import {observeCurrentUserId} from '@queries/servers/system';
 import {observeUser, queryUsersByIdsOrUsernames} from '@queries/servers/user';
-import {generateCombinedPost, getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
+import {generateCombinedPost, getPostIdsForCombinedUserActivityPost, isUserActivityProp} from '@utils/post_list';
 
 import CombinedUserActivity from './combined_user_activity';
 
@@ -35,10 +35,11 @@ const withCombinedPosts = withObservables(['postId'], ({database, postId}: WithD
     const usernamesById = post.pipe(
         switchMap(
             (p) => {
-                if (!p) {
+                const userActivity = isUserActivityProp(p?.props?.user_activity) ? p.props.user_activity : undefined;
+                if (!userActivity) {
                     return of$<Record<string, string>>({});
                 }
-                return queryUsersByIdsOrUsernames(database, p.props.user_activity.allUserIds, p.props.user_activity.allUsernames).observeWithColumns(['username']).
+                return queryUsersByIdsOrUsernames(database, userActivity.allUserIds, userActivity.allUsernames).observeWithColumns(['username']).
                     pipe(
                         // eslint-disable-next-line max-nested-callbacks
                         switchMap((users) => {

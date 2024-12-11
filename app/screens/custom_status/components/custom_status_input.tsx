@@ -3,11 +3,12 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {TextInput, View} from 'react-native';
+import {Platform, TextInput, View} from 'react-native';
 
 import ClearButton from '@components/custom_status/clear_button';
 import {CUSTOM_STATUS_TEXT_CHARACTER_LIMIT} from '@constants/custom_status';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import CustomStatusEmoji from './custom_status_emoji';
 
@@ -29,24 +30,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginRight: 16,
             marginLeft: 52,
         },
-        clearButton: {
-            position: 'absolute',
-            top: 3,
-            right: 14,
-        },
         input: {
             alignSelf: 'stretch',
             color: theme.centerChannelColor,
             flex: 1,
-            fontSize: 17,
             paddingHorizontal: 16,
-            textAlignVertical: 'center',
+            ...Platform.select({
+                ios: {
+                    paddingVertical: 25,
+                },
+                android: {
+                    textAlignVertical: 'center',
+                },
+            }),
             height: '100%',
+            ...typography('Body', 200, 'Regular'),
         },
         inputContainer: {
             justifyContent: 'center',
             alignItems: 'center',
-            height: 48,
+            height: 80,
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
         },
@@ -83,11 +86,11 @@ const CustomStatusInput = ({emoji, isStatusSet, onChangeText, onClearHandle, onO
                     style={style.input}
                     secureTextEntry={false}
                     underlineColorAndroid='transparent'
+                    multiline={true}
                     value={text}
                 />
                 {isStatusSet ? (
                     <View
-                        style={style.clearButton}
                         testID='custom_status.status.input.clear.button'
                     >
                         <ClearButton
