@@ -16,9 +16,9 @@ describe('Unsupported Server Alert', () => {
         expect(alert?.mock?.calls?.[0]?.[2]?.length).toBe(2);
     });
 
-    it('should show the alert for team admin / user', () => {
+    it('should not show the alert for team admin / user', () => {
         const alert = jest.spyOn(Alert, 'alert');
         unsupportedServer('Default Server', false, intl);
-        expect(alert?.mock?.calls?.[0]?.[2]?.length).toBe(1);
+        expect(alert).not.toHaveBeenCalled();
     });
 });
