@@ -29,11 +29,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         teamContainer: {
             flexDirection: 'row',
             alignItems: 'center',
+            justifyContent: 'flex-end',
             width: '100%',
         },
         teamName: {
             color: theme.centerChannelColor,
             fontSize: 12,
+            textAlign: 'right',
         },
     };
 });
@@ -92,13 +94,16 @@ const TeamPicker = ({setTeamId, teams, teamId}: Props) => {
                     onPress={handleTeamChange}
                     type='opacity'
                     testID='team_picker.button'
+                    style={styles.teamContainer}
                 >
-                    <View style={[styles.teamContainer]}>
+                    <View style={{flex: 1}}>
                         <Text
                             id={selectedTeam.id}
                             numberOfLines={1}
                             style={styles.teamName}
                         >{selectedTeam.displayName}</Text>
+                    </View>
+                    <View>
                         <CompassIcon
                             color={changeOpacity(theme.centerChannelColor, 0.56)}
                             name='menu-down'

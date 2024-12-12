@@ -29,11 +29,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             flexDirection: 'row',
             marginTop: 20,
-            marginRight: 18,
+            marginHorizontal: 18,
         },
         titleContainer: {
             flex: 1,
-            paddingLeft: 18,
         },
         title: {
             alignItems: 'center',

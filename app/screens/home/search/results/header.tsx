@@ -51,13 +51,18 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         buttonContainer: {
             flexDirection: 'row',
-            backgroundColor: 'red',
         },
-        filtersContainer: {
+        teamPickerContainer: {
+            flex: 1,
             flexDirection: 'row',
             justifyContent: 'flex-end',
-            backgroundColor: 'blue',
+        },
+        filterContainer: {
+            flex: 1,
+            flexDirection: 'row',
             alignItems: 'center',
+            justifyContent: 'center',
+            maxWidth: 32,
         },
     };
 });
@@ -118,9 +123,7 @@ const Header = ({
             theme,
             title,
         });
-    }, [onFilterChanged, selectedFilter]);
-
-    const filterStyle = useMemo(() => ({marginRight: teams.length > 1 ? 0 : 8}), [teams.length > 1]);
+    }, [onFilterChanged, selectedFilter, snapPoints, title, theme]);
 
     return (
         <View style={styles.container}>
@@ -137,34 +140,32 @@ const Header = ({
                         text={filesText}
                     />
                 </View>
-                <View style={styles.filtersContainer}>
-                    {showFilterIcon && (
-                        <View style={filterStyle}>
-                            <CompassIcon
-                                name={'filter-variant'}
-                                size={24}
-                                color={changeOpacity(
-                                    theme.centerChannelColor,
-                                    0.56,
-                                )}
-                                onPress={handleFilterPress}
-                            />
-                            <Badge
-                                style={styles.badge}
-                                visible={hasFilters}
-                                testID={'search.filters.badge'}
-                                value={-1}
-                            />
-                        </View>
-                    )}
+                {showFilterIcon && (
+                    <View style={styles.filterContainer}>
+                        <CompassIcon
+                            name={'filter-variant'}
+                            size={24}
+                            color={changeOpacity(
+                                theme.centerChannelColor,
+                                0.56,
+                            )}
+                            onPress={handleFilterPress}
+                        />
+                        <Badge
+                            style={styles.badge}
+                            visible={hasFilters}
+                            testID={'search.filters.badge'}
+                            value={-1}
+                        />
+                    </View>
+                )}
+                <View style={styles.teamPickerContainer}>
                     {teams.length > 1 && (
-                        <View style={{}}>
-                            <TeamPicker
-                                setTeamId={setTeamId}
-                                teamId={teamId}
-                                teams={teams}
-                            />
-                        </View>
+                        <TeamPicker
+                            setTeamId={setTeamId}
+                            teamId={teamId}
+                            teams={teams}
+                        />
                     )}
                 </View>
             </View>
