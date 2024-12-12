@@ -4,7 +4,7 @@
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {InteractionManager, Platform, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
-import Animated, {FadeIn, FadeOut, useAnimatedStyle, withDelay, withTiming} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {storeDraftsTutorial} from '@actions/app/global';
@@ -68,7 +68,7 @@ const GlobalDraftsList: React.FC<Props> = ({
     }), [isTablet]);
 
     useEffect(() => {
-        if (tutorialWatched) {
+        if (!tutorialWatched) {
             return;
         }
         InteractionManager.runAfterInteractions(() => {
@@ -89,21 +89,8 @@ const GlobalDraftsList: React.FC<Props> = ({
         storeDraftsTutorial();
     }, []);
 
-    const widthAnimatedStyle = useAnimatedStyle(() => {
-        return {
-            width: withDelay(200, withTiming(layoutWidth + 40, {duration: 300})),
-            marginLeft: Platform.OS === 'android' ? 10 : undefined,
-        };
-    }, [layoutWidth]);
-
-    const opacityStyle = useAnimatedStyle(() => {
-        return {
-            opacity: withDelay(700, withTiming(1, {duration: 350})),
-        };
-    }, []);
-
     const renderItem = useCallback(({item}: ListRenderItemInfo<DraftModel>) => {
-        if (item.id === firstDraftId && !tutorialWatched) {
+        if (item.id === firstDraftId && tutorialWatched) {
             return (
                 <Tooltip
                     isVisible={tooltipVisible}
@@ -114,17 +101,15 @@ const GlobalDraftsList: React.FC<Props> = ({
                     onClose={close}
                     tooltipStyle={styles.tooltipStyle}
                 >
-                    <Animated.View
-                        style={[widthAnimatedStyle, opacityStyle]}
-                        exiting={FadeOut}
-                        entering={FadeIn}
+                    <View
+                        style={{width: '100%'}}
                     >
                         <SwipeableDraft
                             item={item}
                             location={location}
                             layoutWidth={layoutWidth}
                         />
-                    </Animated.View>
+                    </View>
                 </Tooltip>
             );
         }
@@ -135,7 +120,7 @@ const GlobalDraftsList: React.FC<Props> = ({
                 layoutWidth={layoutWidth}
             />
         );
-    }, [close, firstDraftId, layoutWidth, location, opacityStyle, tooltipContentStyle, tooltipVisible, tutorialWatched, widthAnimatedStyle]);
+    }, [close, firstDraftId, layoutWidth, location, tooltipContentStyle, tooltipVisible, tutorialWatched]);
 
     return (
         <View
