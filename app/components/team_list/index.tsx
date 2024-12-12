@@ -73,7 +73,10 @@ export default function TeamList({
         if (separatorAfterFirstItem && i === 0) {
             teamListItem = (<>
                 {teamListItem}
-                <View style={styles.separator}/>
+                <View
+                    style={styles.separator}
+                    testID='team_list.separator'
+                />
             </>);
         }
         return teamListItem;
@@ -81,7 +84,7 @@ export default function TeamList({
 
     let footer;
     if (loading) {
-        footer = (<Loading/>);
+        footer = (<Loading testID='team_list.loading'/>);
     }
 
     return (
