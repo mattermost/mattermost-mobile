@@ -1162,8 +1162,6 @@
   "unreads.empty.paragraph": "Vypněte filtr na nepřečtené zprávy, abyste zobrazili všechny své kanály.",
   "unreads.empty.show_all": "Zobrazit vše",
   "unreads.empty.title": "Žádné další nepřečtené",
-  "unsupported_server.message": "Váš server, {serverDisplayName}, používá verzi serveru, která není podporována. Můžete se setkat s problémy s kompatibilitou, které mohou způsobit pády nebo závažné chyby narušující základní funkce aplikace. Kontaktujte svého systémového administrátora, aby provedl aktualizaci vašeho serveru Mattermost.",
-  "unsupported_server.title": "Nepodporovaná verze serveru",
   "user.edit_profile.email.auth_service": "Přihlášení probíhá prostřednictvím {service}. E-mail nelze aktualizovat. E-mailová adresa používaná pro upozornění je {email}.",
   "user.edit_profile.email.web_client": "E-mail musí být aktualizován pomocí webového klienta nebo desktopové aplikace.",
   "user.edit_profile.profile_photo.change_photo": "Změnit profilovou fotku",

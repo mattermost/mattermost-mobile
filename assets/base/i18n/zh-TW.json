@@ -1160,8 +1160,6 @@
   "unreads.empty.paragraph": "關閉未讀過濾器以顯示您所有的頻道。",
   "unreads.empty.show_all": "顯示全部",
   "unreads.empty.title": "沒有其他未讀訊息",
-  "unsupported_server.message": "您的伺服器 {serverDisplayName} 正在執行不支援的伺服器版本。您可能會遇到相容性問題，以至於應用程式當機或造成核心功能異常的嚴重臭蟲。請聯絡您的系統管理員來升級 Mattermost 伺服器。",
-  "unsupported_server.title": "不支援的伺服器版本",
   "user.edit_profile.email.auth_service": "透過 {service} 登入。無法更新電子郵件。用於傳送通知的電子郵件地址為 {email}。",
   "user.edit_profile.email.web_client": "必須使用網頁版用戶端或桌面應用程式才能更新電子郵件地址。",
   "user.edit_profile.profile_photo.change_photo": "變更個人檔案圖片",
