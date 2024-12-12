@@ -144,6 +144,7 @@ const Header = ({
                     <View style={styles.filterContainer}>
                         <CompassIcon
                             name={'filter-variant'}
+                            testID='search.filters.file_type_icon'
                             size={24}
                             color={changeOpacity(
                                 theme.centerChannelColor,

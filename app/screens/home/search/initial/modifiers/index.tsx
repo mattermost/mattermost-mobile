@@ -4,7 +4,7 @@
 import React, {type Dispatch, type RefObject, type SetStateAction, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {type IntlShape, useIntl} from 'react-intl';
 import {View} from 'react-native';
-import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {type SharedValue, useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
@@ -80,7 +80,7 @@ const getModifiersSectionsData = (intl: IntlShape, teamId: string): ModifierItem
 };
 
 type Props = {
-    scrollEnabled: Animated.SharedValue<boolean>;
+    scrollEnabled: SharedValue<boolean>;
     searchRef: RefObject<SearchRef>;
     setSearchValue: Dispatch<SetStateAction<string>>;
     searchValue?: string;
