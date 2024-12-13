@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Calls from '@constants/calls';
+import Playbooks from '@constants/playbooks';
 
 const WebsocketEvents = {
     POSTED: 'posted',
@@ -104,5 +105,11 @@ const WebsocketEvents = {
     CHANNEL_BOOKMARK_UPDATED: 'channel_bookmark_updated',
     CHANNEL_BOOKMARK_SORTED: 'channel_bookmark_sorted',
     CHANNEL_BOOKMARK_DELETED: 'channel_bookmark_deleted',
+
+    PLAYBOOKS_PLAYBOOK_RUN_UPDATED: `custom_${Playbooks.PluginId}_playbook_run_updated`,
+    PLAYBOOKS_PLAYBOOK_RUN_CREATED: `custom_${Playbooks.PluginId}_playbook_run_created`,
+    PLAYBOOKS_PLAYBOOK_CREATED: `custom_${Playbooks.PluginId}_playbook_created`,
+    PLAYBOOKS_PLAYBOOK_ARCHIVED: `custom_${Playbooks.PluginId}_playbook_archived`,
+    PLAYBOOKS_PLAYBOOK_RESTORED: `custom_${Playbooks.PluginId}_playbook_restored`,
 };
 export default WebsocketEvents;

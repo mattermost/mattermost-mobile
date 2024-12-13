@@ -14,7 +14,7 @@ import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
-import {isSupportedServerCalls} from '@calls/utils';
+import {isSupportedServerCalls, isSupportedServerPlaybooks} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
@@ -103,10 +103,9 @@ async function doReconnect(serverUrl: string) {
         loadConfigAndCalls(serverUrl, currentUserId);
     }
 
-    // if (isSupportedServerCalls(config?.Version)) {
-    loadPlaybookRunsForTeamAndUser(serverUrl, currentTeamId, currentUserId);
-
-    // }
+    if (isSupportedServerPlaybooks(config?.Version)) {
+        loadPlaybookRunsForTeamAndUser(serverUrl, currentTeamId, currentUserId);
+    }
 
     await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 

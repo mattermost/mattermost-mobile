@@ -7,7 +7,7 @@ import {Alert} from 'react-native';
 import {SelectedTrackType, TextTrackType, type ISO639_1, type SelectedTrack, type TextTracks} from 'react-native-video';
 
 import {buildFileUrl} from '@actions/remote/file';
-import {Calls, Post} from '@constants';
+import {Calls, Playbooks, Post} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {ensureNumber, ensureString, isArrayOf, isRecordOf, isStringArray} from '@utils/types';
@@ -90,6 +90,19 @@ export function isSupportedServerCalls(serverVersion?: string) {
             Calls.RequiredServer.MAJOR_VERSION,
             Calls.RequiredServer.MIN_VERSION,
             Calls.RequiredServer.PATCH_VERSION,
+        );
+    }
+
+    return false;
+}
+
+export function isSupportedServerPlaybooks(serverVersion?: string) {
+    if (serverVersion) {
+        return isMinimumServerVersion(
+            serverVersion,
+            Playbooks.RequiredServer.MAJOR_VERSION,
+            Playbooks.RequiredServer.MIN_VERSION,
+            Playbooks.RequiredServer.PATCH_VERSION,
         );
     }
 

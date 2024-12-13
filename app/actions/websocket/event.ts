@@ -27,9 +27,11 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.POST_EDITED:
             posts.handlePostEdited(serverUrl, msg);
+            playbooks.handlePostEdited(serverUrl, msg);
             break;
         case WebsocketEvents.POST_DELETED:
             posts.handlePostDeleted(serverUrl, msg);
+            playbooks.handlePostDeleted(serverUrl, msg);
             break;
         case WebsocketEvents.POST_UNREAD:
             posts.handlePostUnread(serverUrl, msg);
@@ -59,9 +61,11 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.USER_ADDED:
             channel.handleUserAddedToChannelEvent(serverUrl, msg);
+            playbooks.handleWebsocketUserAdded(serverUrl, msg);
             break;
         case WebsocketEvents.USER_REMOVED:
             channel.handleUserRemovedFromChannelEvent(serverUrl, msg);
+            playbooks.handleWebsocketUserRemoved(serverUrl, msg);
             break;
         case WebsocketEvents.USER_UPDATED:
             handleUserUpdatedEvent(serverUrl, msg);
@@ -100,6 +104,7 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.CHANNEL_UPDATED:
             channel.handleChannelUpdatedEvent(serverUrl, msg);
+            playbooks.handleChannelUpdated(serverUrl, msg);
             break;
         case WebsocketEvents.CHANNEL_CONVERTED:
             channel.handleChannelConvertedEvent(serverUrl, msg);
