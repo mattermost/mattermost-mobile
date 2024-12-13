@@ -9,10 +9,12 @@ import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {preventDoubleTap} from '@utils/tap';
 
-const Props = {
+type Props = {
+    teamId: string;
+    channelId: string;
 };
 
-const PlaybookRuns = () => {
+const PlaybookRuns = ({teamId, channelId}: Props) => {
     const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
     const title = formatMessage({id: 'channel_info.playbook runs', defaultMessage: 'Playbook runs'});
