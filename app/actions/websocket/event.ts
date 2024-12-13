@@ -297,10 +297,20 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
 
         // playbooks
-        // TODO: PLAYBOOKS_PLAYBOOK_RUN_UPDATED: `custom_${Playbooks.PluginId}_playbook_run_updated`,
-        // TODO: PLAYBOOKS_PLAYBOOK_RUN_CREATED: `custom_${Playbooks.PluginId}_playbook_run_created`,
-        // TODO: PLAYBOOKS_PLAYBOOK_CREATED: `custom_${Playbooks.PluginId}_playbook_created`,
-        // TODO: PLAYBOOKS_PLAYBOOK_ARCHIVED: `custom_${Playbooks.PluginId}_playbook_archived`,
-        // TODO: PLAYBOOKS_PLAYBOOK_RESTORED: `custom_${Playbooks.PluginId}_playbook_restored`,
+        case WebsocketEvents.PLAYBOOKS_PLAYBOOK_RUN_UPDATED:
+            playbooks.handlePlaybookRunUpdated(serverUrl, msg);
+            break;
+        case WebsocketEvents.PLAYBOOKS_PLAYBOOK_RUN_CREATED:
+            playbooks.handlePlaybookRunCreated(serverUrl, msg);
+            break;
+        case WebsocketEvents.PLAYBOOKS_PLAYBOOK_CREATED:
+            playbooks.handlePlaybookCreated(serverUrl, msg);
+            break;
+        case WebsocketEvents.PLAYBOOKS_PLAYBOOK_ARCHIVED:
+            playbooks.handlePlaybookArchived(serverUrl, msg);
+            break;
+        case WebsocketEvents.PLAYBOOKS_PLAYBOOK_RESTORED:
+            playbooks.handlePlaybookRestored(serverUrl, msg);
+            break;
     }
 }
