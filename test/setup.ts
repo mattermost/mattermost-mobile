@@ -392,7 +392,7 @@ jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
 jest.mock('react-native-haptic-feedback', () => {
-    const RNHF = jest.requireActual('react-native-haptic-feedback');
+    const RNHF = jest.requireActual('react-native-haptic-feedback/src/types');
     return {
         ...RNHF,
         trigger: () => '',

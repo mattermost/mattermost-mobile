@@ -70,7 +70,7 @@ export const getFullErrorMessage = (error: unknown, intl?: IntlShape, depth = 0)
         return `${message}; ${getFullErrorMessage(error.details, intl, depth + 1)}`;
     }
 
-    return message;
+    return message!;
 };
 
 export const getErrorMessage = (error: unknown, intl?: IntlShape) => {
@@ -78,7 +78,7 @@ export const getErrorMessage = (error: unknown, intl?: IntlShape) => {
         return error;
     }
     if (isErrorWithIntl(error)) {
-        return intl ? intl.formatMessage({id: error.intl.id, defaultMessage: error.intl.defaultMessage}, error.intl.values) : error.intl.defaultMessage;
+        return intl ? intl.formatMessage({id: error.intl.id, defaultMessage: error.intl.defaultMessage}, error.intl.values) : error.intl.defaultMessage!;
     }
 
     if (isErrorWithMessage(error)) {
