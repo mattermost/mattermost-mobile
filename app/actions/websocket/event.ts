@@ -297,5 +297,10 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
 
         // playbooks
+        // TODO: PLAYBOOKS_PLAYBOOK_RUN_UPDATED: `custom_${Playbooks.PluginId}_playbook_run_updated`,
+        // TODO: PLAYBOOKS_PLAYBOOK_RUN_CREATED: `custom_${Playbooks.PluginId}_playbook_run_created`,
+        // TODO: PLAYBOOKS_PLAYBOOK_CREATED: `custom_${Playbooks.PluginId}_playbook_created`,
+        // TODO: PLAYBOOKS_PLAYBOOK_ARCHIVED: `custom_${Playbooks.PluginId}_playbook_archived`,
+        // TODO: PLAYBOOKS_PLAYBOOK_RESTORED: `custom_${Playbooks.PluginId}_playbook_restored`,
     }
 }
