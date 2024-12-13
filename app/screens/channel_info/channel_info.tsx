@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {ScrollView, View, Text, TouchableOpacity} from 'react-native';
-import CompassIcon from '@components/compass_icon';
+import {ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
@@ -22,6 +21,7 @@ import ChannelInfoAppBindings from './app_bindings';
 import DestructiveOptions from './destructive_options';
 import Extra from './extra';
 import Options from './options';
+import PlaybookRuns from './options/playbook_runs';
 import Title from './title';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -150,26 +150,10 @@ const ChannelInfo = ({
                 />
                 <Extra channelId={channelId}/>
                 <View style={styles.separator}/>
-                <TouchableOpacity>
-                    <View style={styles.row}>
-                        <View style={styles.iconContainer}>
-                            <CompassIcon
-                                name='notebook-outline'
-                                size={24}
-                                color={theme.centerChannelColor}
-                            />
-                        </View>
-                        <View style={styles.rowBody}>
-                            <Text style={styles.rowLabel}>{'Playbook runs'}</Text>
-                            <Text style={styles.rowValue}>{'3 runs in progress'}</Text>
-                        </View>
-                        <CompassIcon
-                            name='chevron-right'
-                            size={24}
-                            color={changeOpacity(theme.centerChannelColor, 0.32)}
-                        />
-                    </View>
-                </TouchableOpacity>
+                <PlaybookRuns
+                    serverUrl={serverUrl}
+                    channelId={channelId}
+                />
                 <View style={styles.separator}/>
                 <Options
                     channelId={channelId}

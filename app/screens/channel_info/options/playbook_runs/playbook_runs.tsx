@@ -7,31 +7,34 @@ import {Platform} from 'react-native';
 
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
+import {useActivePlaybookRunsCount} from '@playbooks/state';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
-    teamId: string;
+    serverUrl: string;
     channelId: string;
 };
 
-const PlaybookRuns = ({teamId, channelId}: Props) => {
-    const {formatMessage} = useIntl();
-    const serverUrl = useServerUrl();
-    const title = formatMessage({id: 'channel_info.playbook runs', defaultMessage: 'Playbook runs'});
-    const count = useActivePlaybookRunsCount(serverUrl, teamId, channelId);
+const PlaybookRuns = ({serverUrl, channelId}: Props) => {
+    // const {formatMessage} = useIntl();
+    // const serverUrl = useServerUrl();
+    // const title = formatMessage({id: 'channel_info.playbook runs', defaultMessage: 'Playbook runs'});
+    // const count = useActivePlaybookRunsCount(serverUrl, teamId, channelId);
+    //
+    // const goToPlaybookRuns = preventDoubleTap(() => null);
 
-    const goToPlaybookRuns = preventDoubleTap(() => null);
-
-    return (
-        <OptionItem
-            action={goToPlaybookRuns}
-            label={title}
-            icon='product-playbooks'
-            type={Platform.select({ios: 'arrow', default: 'default'})}
-            info={count}
-            testID='channel_info.options.playbook_runs.option'
-        />
-    );
+    // return (
+    //     <OptionItem
+    //         action={goToPlaybookRuns}
+    //         label={title}
+    //         icon='product-playbooks'
+    //         type={Platform.select({ios: 'arrow', default: 'default'})}
+    //         info={count.toString()}
+    //         testID='channel_info.options.playbook_runs.option'
+    //     />
+    // );
+    //
+    return null;
 };
 
 export default PlaybookRuns;
