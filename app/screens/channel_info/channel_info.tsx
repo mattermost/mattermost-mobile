@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {ScrollView, View, Text} from 'react-native';
+import {ScrollView, View, Text, TouchableOpacity} from 'react-native';
+import CompassIcon from '@components/compass_icon';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
@@ -56,6 +57,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 1,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         marginVertical: 8,
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+    },
+    iconContainer: {
+        width: 32,
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    rowBody: {
+        flex: 1,
+        flexDirection: 'column',
+    },
+    rowLabel: {
+        fontSize: 16,
+        color: theme.centerChannelColor,
+    },
+    rowValue: {
+        fontSize: 14,
+        color: changeOpacity(theme.centerChannelColor, 0.64),
     },
 }));
 
@@ -127,7 +150,26 @@ const ChannelInfo = ({
                 />
                 <Extra channelId={channelId}/>
                 <View style={styles.separator}/>
-                <View><Text>{'Here'}</Text></View>
+                <TouchableOpacity>
+                    <View style={styles.row}>
+                        <View style={styles.iconContainer}>
+                            <CompassIcon
+                                name='notebook-outline'
+                                size={24}
+                                color={theme.centerChannelColor}
+                            />
+                        </View>
+                        <View style={styles.rowBody}>
+                            <Text style={styles.rowLabel}>{'Playbook runs'}</Text>
+                            <Text style={styles.rowValue}>{'3 runs in progress'}</Text>
+                        </View>
+                        <CompassIcon
+                            name='chevron-right'
+                            size={24}
+                            color={changeOpacity(theme.centerChannelColor, 0.32)}
+                        />
+                    </View>
+                </TouchableOpacity>
                 <View style={styles.separator}/>
                 <Options
                     channelId={channelId}
