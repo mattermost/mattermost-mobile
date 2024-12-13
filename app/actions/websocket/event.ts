@@ -4,6 +4,7 @@
 import * as bookmark from '@actions/local/channel_bookmark';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
+import * as playbooks from '@playbooks/connection/websocket_event_handlers';
 
 import * as category from './category';
 import * as channel from './channel';
@@ -294,5 +295,7 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.CHANNEL_BOOKMARK_SORTED:
             bookmark.handleBookmarkSorted(serverUrl, msg);
             break;
+
+        // playbooks
     }
 }
