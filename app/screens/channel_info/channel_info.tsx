@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {ScrollView, View} from 'react-native';
+import {ScrollView, View, Text} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
@@ -127,6 +127,8 @@ const ChannelInfo = ({
                 />
                 <Extra channelId={channelId}/>
                 <View style={styles.separator}/>
+                <View><Text>{'Here'}</Text></View>
+                <View style={styles.separator}/>
                 <Options
                     channelId={channelId}
                     type={type}
@@ -137,10 +139,10 @@ const ChannelInfo = ({
                 />
                 <View style={styles.separator}/>
                 {convertGMOptionAvailable &&
-                <>
-                    <ConvertToChannelLabel channelId={channelId}/>
-                    <View style={styles.separator}/>
-                </>
+                    <>
+                        <ConvertToChannelLabel channelId={channelId}/>
+                        <View style={styles.separator}/>
+                    </>
                 }
                 {canEnableDisableCalls &&
                     <>
