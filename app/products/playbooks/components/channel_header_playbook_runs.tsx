@@ -14,7 +14,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     serverUrl: string;
-    teamId: string;
     channelId: string;
 }
 
@@ -67,7 +66,7 @@ const ArrowSvg = () => (
     </Svg>
 );
 
-const ChannelHeaderPlaybookRuns = ({serverUrl, teamId, channelId}: Props) => {
+const ChannelHeaderPlaybookRuns = ({serverUrl, channelId}: Props) => {
     const theme = useTheme();
     const defaultHeight = useDefaultHeaderHeight();
     const styles = getStyleSheet(theme);
@@ -78,7 +77,7 @@ const ChannelHeaderPlaybookRuns = ({serverUrl, teamId, channelId}: Props) => {
         zIndex: 1,
     }), [defaultHeight, styles.container]);
 
-    const count = useActivePlaybookRunsCount(serverUrl, teamId, channelId);
+    const count = useActivePlaybookRunsCount(serverUrl, channelId);
 
     if (!count) {
         return null;

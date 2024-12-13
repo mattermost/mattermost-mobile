@@ -273,7 +273,6 @@ const ChannelHeader = ({
             }
             <ChannelHeaderPlaybookRuns
                 serverUrl={serverUrl}
-                teamId={teamId}
                 channelId={channelId}
             />
         </>

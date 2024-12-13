@@ -6,31 +6,33 @@ import {BehaviorSubject, map} from 'rxjs';
 
 import {type PlaybookRun, PlaybookRunStatus} from '../client/rest';
 
-type PlaybookRunsState = {
-    [teamId: string]: PlaybookRun[];
-};
+type PlaybookRunsState = PlaybookRun[];
 
 const playbookRunsSubjects: Dictionary<BehaviorSubject<PlaybookRunsState>> = {};
 
 const getPlaybookRunsSubject = (serverUrl: string) => {
     if (!playbookRunsSubjects[serverUrl]) {
-        playbookRunsSubjects[serverUrl] = new BehaviorSubject({});
+        playbookRunsSubjects[serverUrl] = new BehaviorSubject([]);
     }
 
     return playbookRunsSubjects[serverUrl];
 };
 
-export const getPlaybookRuns = (serverUrl: string, teamId: string) => {
-    return getPlaybookRunsSubject(serverUrl).value[teamId] || [];
+const byTeamId = (teamId: string) => (run: PlaybookRun) => run.team_id === teamId;
+const notByTeamId = (teamId: string) => (run: PlaybookRun) => run.team_id !== teamId;
+const byChannelId = (channelId: string) => (run: PlaybookRun) => run.channel_id === channelId;
+
+export const getPlaybookRunsForTeam = (serverUrl: string, teamId: string) => {
+    return getPlaybookRunsSubject(serverUrl).value.filter(byTeamId(teamId));
 };
 
-export const setPlaybookRuns = (serverUrl: string, teamId: string, runs: PlaybookRun[]) => {
+export const setPlaybookRunsForTeam = (serverUrl: string, teamId: string, runs: PlaybookRun[]) => {
     const subject = getPlaybookRunsSubject(serverUrl);
     const current = subject.value;
-    subject.next({
-        ...current,
-        [teamId]: runs,
-    });
+    subject.next([
+        ...current.filter(notByTeamId(teamId)),
+        ...runs,
+    ]);
 };
 
 export const observePlaybookRuns = (serverUrl: string) => {
@@ -44,27 +46,25 @@ export const usePlaybookRuns = (serverUrl: string, teamId: string) => {
 
     useEffect(() => {
         const subscription = runsSubject.subscribe((state) => {
-            setRuns(state[teamId] || []);
+            setRuns(state.filter(byTeamId(teamId)));
         });
 
         return () => {
             subscription?.unsubscribe();
         };
-    }, [teamId]);
+    }, [runsSubject, teamId]);
 
     return runs;
 };
 
-export const usePlaybookRunsForChannel = (serverUrl: string, teamId: string, channelId: string) => {
+export const usePlaybookRunsForChannel = (serverUrl: string, channelId: string) => {
     const [runs, setRuns] = useState<PlaybookRun[]>([]);
 
     const runsSubject = getPlaybookRunsSubject(serverUrl);
 
     useEffect(() => {
         const filterRuns = (state: PlaybookRunsState) => {
-            const teamRuns = state[teamId] || [];
-            return teamRuns.filter((run) =>
-                run.channel_id === channelId &&
+            return state.filter(byChannelId(channelId)).filter((run) =>
                 run.current_status === PlaybookRunStatus.InProgress,
             );
         };
@@ -76,21 +76,19 @@ export const usePlaybookRunsForChannel = (serverUrl: string, teamId: string, cha
         return () => {
             subscription?.unsubscribe();
         };
-    }, [serverUrl, teamId, channelId]);
+    }, [runsSubject, serverUrl, channelId]);
 
     return runs;
 };
 
-export const useActivePlaybookRunsCount = (serverUrl: string, teamId: string, channelId: string) => {
+export const useActivePlaybookRunsCount = (serverUrl: string, channelId: string) => {
     const [count, setCount] = useState(0);
 
     const runsSubject = getPlaybookRunsSubject(serverUrl);
 
     useEffect(() => {
         const getActiveRunsCount = (state: PlaybookRunsState) => {
-            const teamRuns = state[teamId] || [];
-            return teamRuns.filter((run) =>
-                run.channel_id === channelId &&
+            return state.filter(byChannelId(channelId)).filter((run) =>
                 run.current_status === PlaybookRunStatus.InProgress,
             ).length;
         };
@@ -102,7 +100,7 @@ export const useActivePlaybookRunsCount = (serverUrl: string, teamId: string, ch
         return () => {
             subscription?.unsubscribe();
         };
-    }, [serverUrl, teamId, channelId]);
+    }, [runsSubject, serverUrl, channelId]);
 
     return count;
 };

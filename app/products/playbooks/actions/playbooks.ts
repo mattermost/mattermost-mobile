@@ -5,7 +5,7 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import Playbooks from '@constants/playbooks';
 import NetworkManager from '@managers/network_manager';
 import {PlaybookRunStatus} from '@playbooks/client/rest';
-import {getPlaybooksConfig, setPlaybookRuns} from '@playbooks/state';
+import {getPlaybooksConfig, setPlaybookRunsForTeam} from '@playbooks/state';
 import {setPluginEnabled} from '@playbooks/state/actions';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -36,7 +36,7 @@ export const loadPlaybookRunsForTeamAndUser = async (serverUrl: string, teamId: 
         const client = NetworkManager.getClient(serverUrl);
 
         const resp = await client.getPlaybookRuns(teamId, {participant_id: userId, statuses: [PlaybookRunStatus.InProgress]});
-        setPlaybookRuns(serverUrl, teamId, resp.items);
+        setPlaybookRunsForTeam(serverUrl, teamId, resp.items);
     } catch (error) {
         logDebug('error on loadPlaybooksRunsForUser', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
