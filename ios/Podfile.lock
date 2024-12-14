@@ -1742,11 +1742,11 @@ PODS:
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
   - Sentry/HybridSDK (8.41.0)
-  - simdjson (3.1.0-wmelon1)
+  - simdjson (3.9.4)
   - SocketRocket (0.7.0)
   - Starscream (4.0.8)
   - SwiftyJSON (5.0.2)
-  - WatermelonDB (0.27.1):
+  - WatermelonDB (0.28.0-1):
     - React
     - simdjson
   - Yoga (0.0.0)
@@ -2109,7 +2109,7 @@ SPEC CHECKSUMS:
   mattermost-hardware-keyboard: 1384da185acef890297ddce42eec88ddad47d330
   mattermost-react-native-turbo-log: 64f188dac29a4552785a9fa6794f46b401c49f75
   mattermost-rnutils: e5ee407d2f078f85ae4037596c7c947bde4f11a7
-  RCT-Folly: 02617c592a293bd6d418e0a88ff4ee1f88329b47
+  RCT-Folly: 5dc73daec3476616d19e8a53f0156176f7b55461
   RCTDeprecation: 3afceddffa65aee666dafd6f0116f1d975db1584
   RCTRequired: ec1239bc9d8bf63e10fb92bd8b26171a9258e0c1
   RCTTypeSafety: f5ecbc86c5c5fa163c05acb7a1c5012e15b5f994
@@ -2192,11 +2192,11 @@ SPEC CHECKSUMS:
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   Sentry: 54d0fe6c0df448497c8ed4cce66ccf7027e1823e
-  simdjson: e6bfae9ce4bcdc80452d388d593816f1ca2106f3
+  simdjson: 7bb9e33d87737cec966e7b427773c67baa4458fe
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Starscream: 19b5533ddb925208db698f0ac508a100b884a1b9
   SwiftyJSON: f5b1bf1cd8dd53cd25887ac0eabcfd92301c6a5a
-  WatermelonDB: 358332faedb8dd4aa699a178e308586e4e3a8b23
+  WatermelonDB: 438a8dd16910dfe622095c44b5d1dbe11cbba6ba
   Yoga: 950bbfd7e6f04790fdb51149ed51df41f329fcc8
 
 PODFILE CHECKSUM: f61c6130110ff18ebe025edfebd33129a0601fec

@@ -7,10 +7,8 @@ import android.content.res.Configuration
 import android.os.Bundle
 import com.facebook.react.PackageList
 import com.facebook.react.ReactHost
-import com.facebook.react.ReactInstanceManager
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
-import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
@@ -22,6 +20,7 @@ import com.mattermost.rnshare.helpers.RealPathUtil
 import com.mattermost.turbolog.TurboLog
 import com.mattermost.turbolog.ConfigureOptions
 import com.nozbe.watermelondb.jsi.JSIInstaller
+import com.nozbe.watermelondb.jsi.WatermelonDBJSIPackage
 import com.reactnativenavigation.NavigationApplication
 import com.wix.reactnativenotifications.RNNotificationsPackage
 import com.wix.reactnativenotifications.core.AppLaunchHelper
@@ -45,6 +44,7 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
                         // Packages that cannot be autolinked yet can be added manually here, for example:
                         // add(MyReactNativePackage())
                         add(RNNotificationsPackage(this@MainApplication))
+                        add(WatermelonDBJSIPackage())
                     }
 
                 override fun getJSMainModuleName(): String = "index"
@@ -84,7 +84,6 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
             load(bridgelessEnabled = false)
         }
         ApplicationLifecycleDispatcher.onApplicationCreate(this)
-        registerJSIModules()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -115,29 +114,6 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
             reactNativeHost.reactInstanceManager.currentReactContext?.runOnJSQueueThread {
                 action()
             }
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    private fun registerJSIModules() {
-        val reactInstanceManager = reactNativeHost.reactInstanceManager
-
-        if (!listenerAdded) {
-            listenerAdded = true
-            reactInstanceManager.addReactInstanceEventListener(object : ReactInstanceManager.ReactInstanceEventListener {
-                override fun onReactContextInitialized(context: ReactContext) {
-                    runOnJSQueueThread {
-                        registerWatermelonJSI(context)
-                    }
-                }
-            })
-        }
-    }
-
-    private fun registerWatermelonJSI(context: ReactContext) {
-        val holder = context.javaScriptContextHolder?.get()
-        if (holder != null) {
-            JSIInstaller.install(context, holder)
         }
     }
 }

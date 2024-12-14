@@ -28,7 +28,7 @@
     "@mattermost/rnshare": "file:./libraries/@mattermost/rnshare",
     "@mattermost/rnutils": "file:./libraries/@mattermost/rnutils",
     "@msgpack/msgpack": "2.8.0",
-    "@nozbe/watermelondb": "0.27.1",
+    "@nozbe/watermelondb": "0.28.0-1",
     "@react-native-camera-roll/camera-roll": "7.9.0",
     "@react-native-clipboard/clipboard": "1.15.0",
     "@react-native-community/datetimepicker": "8.2.0",
