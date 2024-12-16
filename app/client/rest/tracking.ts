@@ -30,7 +30,7 @@ type GroupData = {
     completionTimer?: NodeJS.Timeout;
 }
 
-export default class ClientTraking {
+export default class ClientTracking {
     apiClient: APIClientInterface;
     csrfToken = '';
     requestHeaders: {[x: string]: string} = {};
@@ -155,7 +155,7 @@ export default class ClientTraking {
             requesting ${urls.length} urls 
             total Compressed size of: ${getFormattedFileSize(groupData.totalCompressedSize)}
             total size of: ${getFormattedFileSize(groupData.totalSize)}
-            ellapsed time: ${duration / 1000} seconds
+            elapsed time: ${duration / 1000} seconds
             average latency: ${latency} ms`);
 
         if (dupe.length) {

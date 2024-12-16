@@ -4,7 +4,7 @@
 import test_helper from '@test/test_helper';
 
 import * as ClientConstants from './constants';
-import ClientTraking from './tracking';
+import ClientTracking from './tracking';
 
 import type {APIClientInterface, ClientResponseMetrics} from '@mattermost/react-native-network-client';
 
@@ -60,11 +60,11 @@ describe('ClientTraking', () => {
         delete: jest.fn(),
     };
 
-    let client: ClientTraking;
+    let client: ClientTracking;
 
     beforeEach(() => {
         jest.clearAllMocks();
-        client = new ClientTraking(apiClientMock as unknown as APIClientInterface);
+        client = new ClientTracking(apiClientMock as unknown as APIClientInterface);
     });
 
     it('should set bearer token', () => {

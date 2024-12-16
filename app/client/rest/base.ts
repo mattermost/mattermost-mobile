@@ -4,11 +4,11 @@
 import {Calls} from '@constants';
 
 import * as ClientConstants from './constants';
-import ClientTraking from './tracking';
+import ClientTracking from './tracking';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
-export default class ClientBase extends ClientTraking {
+export default class ClientBase extends ClientTracking {
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
         super(apiClient);
 
