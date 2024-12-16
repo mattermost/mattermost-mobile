@@ -3,11 +3,12 @@
 
 import React, {useCallback, useEffect, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, Animated, DeviceEventEmitter, TouchableWithoutFeedback} from 'react-native';
+import {Animated, DeviceEventEmitter, TouchableWithoutFeedback} from 'react-native';
 import {Swipeable} from 'react-native-gesture-handler';
 
 import CompassIcon from '@components/compass_icon';
 import Draft from '@components/draft';
+import FormattedText from '@components/formatted_text';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -85,16 +86,16 @@ const SwipeableDraft: React.FC<Props> = ({
                         color={theme.sidebarText}
                         name='trash-can-outline'
                         size={18}
-                        style={{}}
                     />
-                    <Text style={styles.deleteText}>{intl.formatMessage({
-                        id: 'draft.options.delete.confirm',
-                        defaultMessage: 'Delete',
-                    })}</Text>
+                    <FormattedText
+                        id='draft.options.delete.title'
+                        defaultMessage={'Delete draft'}
+                        style={styles.deleteText}
+                    />
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
-    }, [deleteDraft, intl, layoutWidth, styles.deleteContainer, styles.deleteText, theme.sidebarText]);
+    }, [deleteDraft, layoutWidth, styles.deleteContainer, styles.deleteText, theme.sidebarText]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.DRAFT_SWIPEABLE, (draftId: string) => {

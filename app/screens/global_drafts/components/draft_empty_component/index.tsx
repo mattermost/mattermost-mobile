@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image} from 'expo-image';
 import React from 'react';
-import {useIntl} from 'react-intl';
-import {Image, Text, View} from 'react-native';
+import {View} from 'react-native';
 
+import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -37,7 +38,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const DraftEmptyComponent = () => {
-    const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     return (
@@ -48,12 +48,16 @@ const DraftEmptyComponent = () => {
             <Image
                 source={draft_message_image}
             />
-            <Text style={styles.title}>
-                {intl.formatMessage({id: 'drafts.empty.title', defaultMessage: 'No drafts at the moment'})}
-            </Text>
-            <Text style={styles.subtitle}>
-                {intl.formatMessage({id: 'drafts.empty.subtitle', defaultMessage: 'Any message you have started will show here.'})}
-            </Text>
+            <FormattedText
+                id='drafts.empty.title'
+                defaultMessage={'No drafts at the moment'}
+                style={styles.title}
+            />
+            <FormattedText
+                id='drafts.empty.subtitle'
+                defaultMessage={'Any message you have started will show here.'}
+                style={styles.subtitle}
+            />
         </View>
     );
 };
