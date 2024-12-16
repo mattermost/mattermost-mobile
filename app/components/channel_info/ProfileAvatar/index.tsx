@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Image} from 'expo-image';
-import React from 'react';
+import React, {useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
@@ -32,15 +32,12 @@ const styles = StyleSheet.create({
     },
 });
 
-const Avatar = ({
+const ProfileAvatar = ({
     author,
 }: Props) => {
     const serverUrl = useServerUrl();
 
-    let uri = '';
-    if (author) {
-        uri = buildProfileImageUrlFromUser(serverUrl, author);
-    }
+    const uri = useMemo(() => buildProfileImageUrlFromUser(serverUrl, author), [serverUrl, author]);
 
     let picture;
     if (uri) {
@@ -67,5 +64,5 @@ const Avatar = ({
     );
 };
 
-export default Avatar;
+export default ProfileAvatar;
 

@@ -4,6 +4,8 @@
 import React, {type ReactNode} from 'react';
 import {Text, View} from 'react-native';
 
+import ProfileAvatar from '@components/channel_info/ProfileAvatar';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {General} from '@constants';
@@ -11,10 +13,6 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
-
-import CompassIcon from '../compass_icon';
-
-import Avatar from './avatar';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -88,7 +86,7 @@ const ChannelInfo: React.FC<Props> = ({
     const isChannelTypeDM = channel.type === General.DM_CHANNEL;
 
     let headerComponent: ReactNode = null;
-    const profileComponent = draftReceiverUser ? <Avatar author={draftReceiverUser}/> : (
+    const profileComponent = draftReceiverUser ? <ProfileAvatar author={draftReceiverUser}/> : (
         <View style={style.categoryIconContainer}>
             <CompassIcon
                 color={changeOpacity(theme.centerChannelColor, 0.64)}
