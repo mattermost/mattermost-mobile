@@ -5,7 +5,7 @@ import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, type LayoutChangeEvent, Platform, StyleSheet, type ViewStyle, KeyboardAvoidingView, Keyboard} from 'react-native';
+import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -27,6 +27,7 @@ import {useCollapsibleHeader} from '@hooks/header';
 import NavigationStore from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, type TabType} from '@utils/search';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Initial from './initial';
 import Results from './results';
@@ -52,9 +53,10 @@ type Props = {
     teams: TeamModel[];
 }
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     flex: {
         flex: 1,
+        backgroundColor: theme.centerChannelBg,
     },
     loading: {
         flex: 1,
@@ -63,7 +65,7 @@ const styles = StyleSheet.create({
     autocompleteContainer: {
         zIndex: 11,
     },
-});
+}));
 
 const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
@@ -84,6 +86,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const keyboardHeight = useKeyboardHeight();
+    const styles = getStyleSheet(theme);
 
     const stateIndex = nav.getState()?.index;
     const serverUrl = useServerUrl();
@@ -114,17 +117,9 @@ const SearchScreen = ({teamId, teams}: Props) => {
         setSearchTeamId(teamId);
     }, [teamId]);
 
-    useEffect(() => {
-        if (searchTerm) {
-            resetToInitial();
-            setSearchValue(searchTerm);
-            handleSearch(searchTeamId, searchTerm);
-        }
-    }, [searchTerm]);
-
-    const onSnap = (offset: number, animated = true) => {
+    const onSnap = useCallback((offset: number, animated = true) => {
         scrollRef.current?.scrollToOffset({offset, animated});
-    };
+    }, []);
 
     const onSnapWithTimeout = useCallback((offset: number, animated = true) => {
         // wait until the keyboard is completely dismissed before scrolling to where the header should be
@@ -203,7 +198,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
         handleLoading(false);
         setShowResults(true);
-    }, [filter, handleClearSearch, handleLoading]);
+    }, [filter, handleClearSearch, handleLoading, hideHeader, serverUrl]);
 
     const onBlur = useCallback(() => {
         setSearchIsFocused(false);
@@ -233,7 +228,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
         setFileInfos(files?.length ? files : emptyFileResults);
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
         setResultsLoading(false);
-    }, [lastSearchedValue, searchTeamId]);
+    }, [lastSearchedValue, searchTeamId, serverUrl]);
 
     const handleResultsTeamChange = useCallback((newTeamId: string) => {
         setSearchTeamId(newTeamId);
@@ -267,8 +262,11 @@ const SearchScreen = ({teamId, teams}: Props) => {
                 teams={teams}
             />
         );
-    }, [handleRecentSearch, handleTextChange, loading,
-        scrollPaddingTop, searchTeamId, searchValue, theme]);
+    }, [
+        handleModifierTextChange, handleRecentSearch,
+        loading, scrollEnabled, scrollPaddingTop, searchTeamId,
+        searchValue, styles.loading, teams, theme.buttonBg,
+    ]);
 
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
@@ -319,6 +317,14 @@ const SearchScreen = ({teamId, teams}: Props) => {
             cancelRef.current = false;
         }
     }, [unlock, onSnapWithTimeout]);
+
+    useEffect(() => {
+        if (searchTerm) {
+            resetToInitial();
+            setSearchValue(searchTerm);
+            handleSearch(searchTeamId, searchTerm);
+        }
+    }, [handleSearch, resetToInitial, searchTeamId, searchTerm]);
 
     useDidUpdate(() => {
         if (isFocused) {

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
@@ -78,7 +78,7 @@ export default function ServerIcon({
                     backgroundColor={badgeBackgroundColor}
                     color={badgeColor}
                     visible={hasBadge}
-                    style={memoizedStyle}
+                    style={memoizedStyle as StyleProp<TextStyle>}
                     testID={`${testID}.badge`}
                     value={count}
                 />

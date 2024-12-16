@@ -223,7 +223,7 @@ const OptionItem = ({
                 color={changeOpacity(theme.centerChannelColor, 0.32)}
                 name='chevron-right'
                 size={24}
-                style={arrowStyle}
+                style={arrowStyle as StyleProp<TextStyle>}
             />
         );
     } else if (type === OptionType.REMOVE) {

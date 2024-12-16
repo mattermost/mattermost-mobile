@@ -24,7 +24,7 @@ const ErrorTextComponent = ({error, testID, textStyle}: ErrorProps) => {
     return (
         <Text
             testID={testID}
-            style={[style.errorLabel, textStyle]}
+            style={[style.errorLabel, textStyle as StyleProp<TextStyle>]}
         >
             {message}
         </Text>

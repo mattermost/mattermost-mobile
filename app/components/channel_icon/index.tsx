@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {type StyleProp, Text, View, type ViewStyle} from 'react-native';
+import {type StyleProp, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import General from '@constants/general';
@@ -144,7 +144,7 @@ const ChannelIcon = ({
             <CompassIcon
                 name='archive-outline'
                 style={[
-                    commonIconStyles,
+                    commonIconStyles as StyleProp<TextStyle>,
                     {left: 1},
                 ]}
                 testID={`${testID}.archive`}
@@ -155,7 +155,7 @@ const ChannelIcon = ({
             <CompassIcon
                 name='pencil-outline'
                 style={[
-                    commonIconStyles,
+                    commonIconStyles as StyleProp<TextStyle>,
                     {left: 2},
                 ]}
                 testID={`${testID}.draft`}
@@ -168,7 +168,7 @@ const ChannelIcon = ({
             <CompassIcon
                 name={iconName}
                 style={[
-                    commonIconStyles,
+                    commonIconStyles as StyleProp<TextStyle>,
                     {left: 0.5},
                 ]}
                 testID={sharedTestID}
@@ -179,7 +179,7 @@ const ChannelIcon = ({
             <CompassIcon
                 name='globe'
                 style={[
-                    commonIconStyles,
+                    commonIconStyles as StyleProp<TextStyle>,
                     {left: 1},
                 ]}
                 testID={`${testID}.public`}
@@ -190,7 +190,7 @@ const ChannelIcon = ({
             <CompassIcon
                 name='lock-outline'
                 style={[
-                    commonIconStyles,
+                    commonIconStyles as StyleProp<TextStyle>,
                     {left: 0.5},
                 ]}
                 testID={`${testID}.private`}

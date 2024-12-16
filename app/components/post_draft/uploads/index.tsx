@@ -109,7 +109,7 @@ function Uploads({
         } else {
             errorHeight.value = ERROR_HEIGHT_MIN;
         }
-    }, [uploadFileError]);
+    }, [errorHeight, uploadFileError]);
 
     useEffect(() => {
         if (files.length) {
@@ -117,13 +117,13 @@ function Uploads({
             return;
         }
         containerHeight.value = CONTAINER_HEIGHT_MIN;
-    }, [files.length > 0]);
+    }, [containerHeight, files.length]);
 
     const openGallery = useCallback((file: FileInfo) => {
         const items = filesForGallery.current.map((f) => fileToGalleryItem(f, currentUserId));
         const index = filesForGallery.current.findIndex((f) => f.clientId === file.clientId);
         openGalleryAtIndex(galleryIdentifier, index, items, true);
-    }, [currentUserId, files]);
+    }, [currentUserId, galleryIdentifier]);
 
     const buildFilePreviews = () => {
         return files.map((file, index) => {

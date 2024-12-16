@@ -121,7 +121,7 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
         }
 
         return (
-            <Text style={blockStyle}>
+            <Text style={blockStyle as StyleProp<TextStyle>}>
                 {children}
             </Text>
         );

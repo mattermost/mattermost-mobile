@@ -468,6 +468,7 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
         },
         statusBar: {
             style: isDark ? 'light' : 'dark',
+            backgroundColor: null,
         },
         topBar: {
             animate: true,
@@ -579,6 +580,7 @@ export function showModal(name: AvailableScreens, title: string, passProps = {},
         },
         statusBar: {
             visible: true,
+            backgroundColor: null,
         },
         topBar: {
             animate: true,

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {type ReactNode} from 'react';
-import {StyleSheet, type TextStyle, View, type ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 
@@ -35,7 +35,7 @@ const MarkdownBlockQuote = ({children, continueBlock, iconStyle}: MarkdownBlockQ
                 <View style={style.icon}>
                     <CompassIcon
                         name='format-quote-open'
-                        style={iconStyle}
+                        style={iconStyle as StyleProp<TextStyle>}
                         size={20}
                     />
                 </View>

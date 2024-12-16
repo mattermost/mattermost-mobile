@@ -3,7 +3,7 @@
 
 import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
-import Animated, {useDerivedValue} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import {Events} from '@constants';
 import {GalleryInit} from '@context/gallery';
@@ -56,21 +56,21 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(filesInfo, publicLinkEnabled);
 
-    const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
+    const filesForGallery = useMemo(() => imageAttachments.concat(nonImageAttachments),
         [imageAttachments, nonImageAttachments]);
 
     const attachmentIndex = (fileId: string) => {
-        return filesForGallery.value.findIndex((file) => file.id === fileId) || 0;
+        return filesForGallery.findIndex((file) => file.id === fileId) || 0;
     };
 
     const handlePreviewPress = preventDoubleTap((idx: number) => {
-        const items = filesForGallery.value.map((f) => fileToGalleryItem(f, f.user_id, postProps));
+        const items = filesForGallery.map((f) => fileToGalleryItem(f, f.user_id, postProps));
         openGalleryAtIndex(galleryIdentifier, idx, items);
     });
 
     const updateFileForGallery = (idx: number, file: FileInfo) => {
         'worklet';
-        filesForGallery.value[idx] = file;
+        filesForGallery[idx] = file;
     };
 
     const isSingleImage = useMemo(() => filesInfo.filter((f) => isImage(f) || isVideo(f)).length === 1, [filesInfo]);

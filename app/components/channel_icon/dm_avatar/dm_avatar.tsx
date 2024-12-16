@@ -11,7 +11,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {StyleProp, ViewStyle} from 'react-native';
+import type {StyleProp, TextStyle, ViewStyle} from 'react-native';
 
 type Props = {
     authorId: string;
@@ -58,7 +58,7 @@ const DmAvatar = ({
         return (
             <CompassIcon
                 name='archive-outline'
-                style={[styles.icon, style, isOnCenterBg && styles.iconOnCenterBg]}
+                style={[styles.icon, style as StyleProp<TextStyle>, isOnCenterBg && styles.iconOnCenterBg]}
                 size={24}
             />
         );

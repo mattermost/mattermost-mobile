@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {LinearGradient} from 'expo-linear-gradient';
+import {LinearGradient, type LinearGradientProps} from 'expo-linear-gradient';
 import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, View, type ListRenderItemInfo, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -31,7 +31,7 @@ type Props = {
     separator?: boolean;
 }
 
-const GRADIENT_LOCATIONS = [0, 0.64, 1];
+const GRADIENT_LOCATIONS: LinearGradientProps['locations'] = [0, 0.64, 1];
 const SCROLL_OFFSET = 10;
 
 const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}: NativeScrollEvent) => {
@@ -112,7 +112,7 @@ const ChannelBookmarks = ({
         setAllowEndFade(isCloseToBottom(e.nativeEvent));
     }, []);
 
-    const gradientColors = useMemo(() => [
+    const gradientColors: LinearGradientProps['colors'] = useMemo(() => [
         theme.centerChannelBg,
         changeOpacity(theme.centerChannelBg, 0.6458),
         changeOpacity(theme.centerChannelBg, 0),

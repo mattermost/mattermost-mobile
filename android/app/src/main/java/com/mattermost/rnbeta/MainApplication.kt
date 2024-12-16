@@ -13,6 +13,7 @@ import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
+import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.react.modules.network.OkHttpClientProvider
 import com.facebook.soloader.SoLoader
 import com.mattermost.networkclient.RCTOkHttpClientFactory
@@ -78,7 +79,7 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
         OkHttpClientProvider.setOkHttpClientFactory(RCTOkHttpClientFactory())
         ExpoImageOkHttpClientGlideModule.okHttpClient = RCTOkHttpClientFactory().createNewNetworkModuleClient()
 
-        SoLoader.init(this, false)
+        SoLoader.init(this, OpenSourceMergedSoMapping)
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
             // If you opted-in for the New Architecture, we load the native entry point for this app.
             load(bridgelessEnabled = false)

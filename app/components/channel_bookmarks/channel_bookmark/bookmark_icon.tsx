@@ -60,7 +60,7 @@ const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSiz
             name='book-outline'
             size={22}
             color={theme.centerChannelColor}
-            style={genericStyle}
+            style={genericStyle as StyleProp<TextStyle>}
         />
     );
 };
