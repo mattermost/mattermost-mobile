@@ -13,7 +13,7 @@ import DraftsButton from './drafts_button';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentTeamId = observeCurrentTeamId(database); // Observe teamId
+    const currentTeamId = observeCurrentTeamId(database);
     const draftsCount = currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))); // Observe draft count
     return {
         currentChannelId: observeCurrentChannelId(database),
