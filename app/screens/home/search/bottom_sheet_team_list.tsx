@@ -18,9 +18,10 @@ type Props = {
     teamId: string;
     setTeamId: (teamId: string) => void;
     title: string;
+    crossTeamSearchEnabled: boolean;
 }
 
-export default function BottomSheetTeamList({teams, title, setTeamId, teamId}: Props) {
+export default function BottomSheetTeamList({teams, title, setTeamId, teamId, crossTeamSearchEnabled}: Props) {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const showTitle = !isTablet && Boolean(teams.length);
@@ -32,7 +33,9 @@ export default function BottomSheetTeamList({teams, title, setTeamId, teamId}: P
 
     // teamList is a copy of teams to avoid modifying the original array
     const teamList = [...teams];
-    teamList.unshift({id: ALL_TEAMS_ID, displayName: intl.formatMessage({id: 'mobile.search.team.all_teams', defaultMessage: 'All teams'})} as TeamModel);
+    if (crossTeamSearchEnabled) {
+        teamList.unshift({id: ALL_TEAMS_ID, displayName: intl.formatMessage({id: 'mobile.search.team.all_teams', defaultMessage: 'All teams'})} as TeamModel);
+    }
 
     return (
         <BottomSheetContent
@@ -48,7 +51,7 @@ export default function BottomSheetTeamList({teams, title, setTeamId, teamId}: P
                 testID='search.select_team_slide_up.team_list'
                 type={isTablet ? 'FlatList' : 'BottomSheetFlatList'}
                 hideIcon={true}
-                separatorAfterFirstItem={true}
+                separatorAfterFirstItem={crossTeamSearchEnabled}
             />
         </BottomSheetContent>
     );

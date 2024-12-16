@@ -87,8 +87,9 @@ type Props = {
     setTeamId: (id: string) => void;
     teamId: string;
     teams: TeamModel[];
+    crossTeamSearchEnabled: boolean;
 }
-const Modifiers = ({scrollEnabled, searchValue, setSearchValue, searchRef, setTeamId, teamId, teams}: Props) => {
+const Modifiers = ({scrollEnabled, searchValue, setSearchValue, searchRef, setTeamId, teamId, teams, crossTeamSearchEnabled}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
 
@@ -157,6 +158,7 @@ const Modifiers = ({scrollEnabled, searchValue, setSearchValue, searchRef, setTe
                         setTeamId={setTeamId}
                         teamId={teamId}
                         teams={teams}
+                        crossTeamSearchEnabled={crossTeamSearchEnabled}
                     />
                 </View>
                 }

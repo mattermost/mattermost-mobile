@@ -29,6 +29,7 @@ type Props = {
     setTeamId: (id: string) => void;
     teamId: string;
     teams: TeamModel[];
+    crossTeamSearchEnabled: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -75,6 +76,7 @@ const Header = ({
     selectedTab,
     selectedFilter,
     teams,
+    crossTeamSearchEnabled,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
@@ -166,6 +168,7 @@ const Header = ({
                             setTeamId={setTeamId}
                             teamId={teamId}
                             teams={teams}
+                            crossTeamSearchEnabled={crossTeamSearchEnabled}
                         />
                     )}
                 </View>

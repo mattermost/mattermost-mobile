@@ -34,6 +34,7 @@ describe('Header', () => {
                 selectedTab={TabTypes.MESSAGES}
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
+                crossTeamSearchEnabled={false}
             />,
         );
 
@@ -51,6 +52,7 @@ describe('Header', () => {
                 selectedTab={TabTypes.MESSAGES}
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
+                crossTeamSearchEnabled={false}
             />,
         );
 
@@ -68,6 +70,7 @@ describe('Header', () => {
                 selectedTab={TabTypes.MESSAGES}
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
+                crossTeamSearchEnabled={false}
             />,
         );
 
@@ -85,6 +88,7 @@ describe('Header', () => {
                 selectedTab={TabTypes.MESSAGES}
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
+                crossTeamSearchEnabled={false}
             />,
         );
 
@@ -101,6 +105,7 @@ describe('Header', () => {
                 selectedTab={TabTypes.FILES}
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
+                crossTeamSearchEnabled={false}
             />,
         );
 

@@ -31,6 +31,7 @@ describe('TeamPicker', () => {
                 setTeamId={jest.fn()}
                 teams={teams}
                 teamId={'team1'}
+                crossTeamSearchEnabled={true}
             />,
         );
         expect(getByText('Team 1')).toBeTruthy();
@@ -42,6 +43,7 @@ describe('TeamPicker', () => {
                 setTeamId={jest.fn()}
                 teams={teams}
                 teamId={ALL_TEAMS_ID}
+                crossTeamSearchEnabled={true}
             />,
         );
         expect(getByText('All teams')).toBeTruthy();
@@ -53,6 +55,7 @@ describe('TeamPicker', () => {
                 setTeamId={jest.fn()}
                 teams={teams}
                 teamId={'team1'}
+                crossTeamSearchEnabled={true}
             />,
         );
         fireEvent.press(getByTestId('team_picker.button'));

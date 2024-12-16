@@ -34,6 +34,7 @@ describe('Modifiers', () => {
                 teams={teams}
                 scrollEnabled={scrollEnabled}
                 searchRef={searchRef}
+                crossTeamSearchEnabled={true}
             />,
         );
     };

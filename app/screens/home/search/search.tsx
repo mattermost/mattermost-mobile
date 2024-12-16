@@ -50,6 +50,7 @@ const AutocompletePaddingTop = 4;
 type Props = {
     teamId: string;
     teams: TeamModel[];
+    crossTeamSearchEnabled: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -77,7 +78,7 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
 
 const searchScreenIndex = 1;
 
-const SearchScreen = ({teamId, teams}: Props) => {
+const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
@@ -384,6 +385,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                                 selectedTab={selectedTab}
                                 selectedFilter={filter}
                                 teams={teams}
+                                crossTeamSearchEnabled={crossTeamSearchEnabled}
                             />
                             }
                         </Animated.View>

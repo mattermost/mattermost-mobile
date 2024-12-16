@@ -44,8 +44,9 @@ type Props = {
     teams: TeamModel[];
     setTeamId: (id: string) => void;
     teamId: string;
+    crossTeamSearchEnabled: boolean;
 }
-const TeamPicker = ({setTeamId, teams, teamId}: Props) => {
+const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
@@ -65,6 +66,7 @@ const TeamPicker = ({setTeamId, teams, teamId}: Props) => {
                     teams={teams}
                     teamId={teamId}
                     title={title}
+                    crossTeamSearchEnabled={crossTeamSearchEnabled}
                 />
             );
         };
