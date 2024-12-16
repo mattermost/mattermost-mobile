@@ -3,7 +3,7 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {InteractionManager, Platform, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
+import {InteractionManager, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
 import Animated from 'react-native-reanimated';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
@@ -28,6 +28,9 @@ type Props = {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
     empty: {
         alignItems: 'center',
         flexGrow: 1,
@@ -38,6 +41,9 @@ const styles = StyleSheet.create({
         shadowOffset: {width: 0, height: 2},
         shadowRadius: 2,
         shadowOpacity: 0.16,
+    },
+    swippeableContainer: {
+        width: '100%',
     },
 });
 
@@ -77,9 +83,7 @@ const GlobalDraftsList: React.FC<Props> = ({
     }, []);
 
     const collapse = useCallback(() => {
-        if (Platform.OS === 'android') {
-            popTopScreen(Screens.GLOBAL_DRAFTS);
-        }
+        popTopScreen(Screens.GLOBAL_DRAFTS);
     }, []);
 
     useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, collapse);
@@ -102,7 +106,7 @@ const GlobalDraftsList: React.FC<Props> = ({
                     tooltipStyle={styles.tooltipStyle}
                 >
                     <View
-                        style={{width: '100%'}}
+                        style={styles.swippeableContainer}
                     >
                         <SwipeableDraft
                             item={item}
@@ -124,7 +128,7 @@ const GlobalDraftsList: React.FC<Props> = ({
 
     return (
         <View
-            style={{flex: 1}}
+            style={styles.container}
             onLayout={onLayout}
             testID='global_drafts_list'
         >

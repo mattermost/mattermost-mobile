@@ -15,7 +15,7 @@ type Props = {
     onClose: () => void;
 }
 
-const logo = require('@assets/images/emojis/swipe.png');
+const longPressGestureHandLogo = require('@assets/images/emojis/swipe.png');
 
 const hitSlop = {top: 10, bottom: 10, left: 10, right: 10};
 
@@ -58,7 +58,7 @@ const DraftTooltip = ({onClose}: Props) => {
         <View style={styles.container}>
             <View style={styles.titleContainer}>
                 <Image
-                    source={logo}
+                    source={longPressGestureHandLogo}
                     style={styles.image}
                 />
                 <TouchableOpacity

@@ -3,10 +3,10 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Text} from 'react-native';
 
 import {removeDraft} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
@@ -154,7 +154,11 @@ const SendDraft: React.FC<Props> = ({
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
-            <Text style={style.title}>{intl.formatMessage({id: 'draft.options.send.title', defaultMessage: 'Edit draft'})}</Text>
+            <FormattedText
+                id='draft.options.send.title'
+                defaultMessage='Send draft'
+                style={style.title}
+            />
         </TouchableWithFeedback>
     );
 };
