@@ -1,9 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-/* eslint-disable max-nested-callbacks */
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import React from 'react';
 
 import {Tutorial} from '@constants';
 import {observeTutorialWatched} from '@queries/app/global';
@@ -32,4 +30,4 @@ const enhanced = withObservables(['teamId'], ({database, teamId}: Props) => {
     };
 });
 
-export default React.memo(withDatabase(withTeamId(enhanced(GlobalDraftsList))));
+export default withDatabase(withTeamId(enhanced(GlobalDraftsList)));
