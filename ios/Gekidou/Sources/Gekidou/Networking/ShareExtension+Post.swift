@@ -61,6 +61,7 @@ extension ShareExtension {
                                 filename,
                                 id
                             )
+                            notifyFailureNow(description: FILE_ERROR_MESSAGE, failID: uuidString)
                             return "There was an error when trying to upload. Please try again"
                         }
                     } else {
