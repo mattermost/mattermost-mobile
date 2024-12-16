@@ -7,7 +7,7 @@ import React from 'react';
 
 import {Tutorial} from '@constants';
 import {observeTutorialWatched} from '@queries/app/global';
-import {observeAllDrafts} from '@queries/servers/drafts';
+import {observeDraftsForTeam} from '@queries/servers/drafts';
 import {observeCurrentTeamId} from '@queries/servers/system';
 
 import GlobalDraftsList from './global_drafts_list';
@@ -23,7 +23,7 @@ type Props = {
 } & WithDatabaseArgs;
 
 const enhanced = withObservables(['teamId'], ({database, teamId}: Props) => {
-    const allDrafts = observeAllDrafts(database, teamId);
+    const allDrafts = observeDraftsForTeam(database, teamId);
     const tutorialWatched = observeTutorialWatched(Tutorial.DRAFTS);
 
     return {

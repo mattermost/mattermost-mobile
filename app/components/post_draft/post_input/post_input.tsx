@@ -147,7 +147,7 @@ export default function PostInput({
         onFocus();
     };
 
-    const onBlur = useCallback(async () => {
+    const onBlur = useCallback(() => {
         keyboardContext?.registerTextInputBlur();
         handleDraftUpdate({
             serverUrl,

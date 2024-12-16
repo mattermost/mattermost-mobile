@@ -30,7 +30,7 @@ export function observeFirstDraft(v: DraftModel[]) {
     return v[0]?.observe() || of$(undefined);
 }
 
-export const queryAllDrafts = (database: Database, teamId: string) => {
+export const queryDraftsForTeam = (database: Database, teamId: string) => {
     return database.collections.get<DraftModel>(DRAFT).query(
         Q.on(CHANNEL,
             Q.and(
@@ -46,10 +46,10 @@ export const queryAllDrafts = (database: Database, teamId: string) => {
     );
 };
 
-export const observeAllDrafts = (database: Database, teamId: string) => {
-    return queryAllDrafts(database, teamId).observeWithColumns(['update_at']);
+export const observeDraftsForTeam = (database: Database, teamId: string) => {
+    return queryDraftsForTeam(database, teamId).observeWithColumns(['update_at']);
 };
 
 export const observeDraftCount = (database: Database, teamId: string) => {
-    return queryAllDrafts(database, teamId).observeCount();
+    return queryDraftsForTeam(database, teamId).observeCount();
 };
