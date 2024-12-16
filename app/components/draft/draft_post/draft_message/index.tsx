@@ -59,7 +59,7 @@ const DraftMessage: React.FC<Props> = ({
     const animatedStyle = useShowMoreAnimatedStyle(height, maxHeight, open);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);
-    const onPress = () => setOpen(!open);
+    const onPress = useCallback(() => setOpen(!open), [open]);
 
     return (
         <>

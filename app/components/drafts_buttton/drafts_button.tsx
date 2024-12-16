@@ -9,6 +9,7 @@ import {
     getStyleSheet as getChannelItemStyleSheet,
     ROW_HEIGHT,
 } from '@components/channel_item/channel_item';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {HOME_PADDING} from '@constants/view';
 import {useTheme} from '@context/theme';
@@ -16,8 +17,6 @@ import {useIsTablet} from '@hooks/device';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import CompassIcon from '../compass_icon';
 
 type DraftListProps = {
     currentChannelId: string;

@@ -87,7 +87,6 @@ const Draft: React.FC<Props> = ({
 
     return (
         <TouchableHighlight
-            delayLongPress={200}
             onLongPress={onLongPress}
             onPress={onPress}
             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
