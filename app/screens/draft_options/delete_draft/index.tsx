@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 
-import {removeDraft} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -11,6 +11,7 @@ import {ICON_SIZE} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
+import {deleteDraftConfirmation} from '@utils/draft';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -44,10 +45,16 @@ const DeleteDraft: React.FC<Props> = ({
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+    const intl = useIntl();
 
     const draftDeleteHandler = async () => {
         await dismissBottomSheet(bottomSheetId);
-        removeDraft(serverUrl, channelId, rootId);
+        deleteDraftConfirmation({
+            intl,
+            serverUrl,
+            channelId,
+            rootId,
+        });
     };
 
     return (
