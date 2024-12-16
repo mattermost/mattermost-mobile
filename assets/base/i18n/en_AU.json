@@ -1162,8 +1162,6 @@
   "unreads.empty.paragraph": "Turn off the unread filter to show all your channels.",
   "unreads.empty.show_all": "Show all",
   "unreads.empty.title": "No more unreads",
-  "unsupported_server.message": "Your server, {serverDisplayName}, is running an unsupported server version. You may experience compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Please contact your System Administrator to upgrade your Mattermost server.",
-  "unsupported_server.title": "Unsupported server version",
   "user.edit_profile.email.auth_service": "Login occurs through {service} and the email cannot be updated. The email address used for notifications is {email}.",
   "user.edit_profile.email.web_client": "Email must be updated using a web client or desktop application.",
   "user.edit_profile.profile_photo.change_photo": "Change profile photo",

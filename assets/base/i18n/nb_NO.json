@@ -1140,8 +1140,6 @@
   "unreads.empty.paragraph": "Slå av ulest filteret for å vise alle kanalene dine.",
   "unreads.empty.show_all": "Vis all",
   "unreads.empty.title": "Ingen flere uleste",
-  "unsupported_server.message": "Serveren din, {serverDisplayName}, kjører en serverversjon som ikke støttes. Du kan oppleve kompatibilitetsproblemer som forårsaker krasjer eller alvorlige feil som bryter kjernefunksjonaliteten til appen. Ta kontakt med systemadministratoren din for å oppgradere din Mattermost-server.",
-  "unsupported_server.title": "Ustøttet serverversjon",
   "user.edit_profile.email.auth_service": "Innlogging skjer gjennom {service}. E-post kan ikke oppdateres. E-postadressen som brukes for varsler er {email}.",
   "user.edit_profile.email.web_client": "E-post må oppdateres ved hjelp av en nettklient eller desktop applikasjon.",
   "user.edit_profile.profile_photo.change_photo": "Bytt profilbilde",

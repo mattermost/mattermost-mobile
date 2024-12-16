@@ -1162,8 +1162,6 @@
   "unreads.empty.paragraph": "Tüm kanallarınızın görüntülenmesi için okunmamış süzgecini kapatın.",
   "unreads.empty.show_all": "Tümünü görüntüle",
   "unreads.empty.title": "Başka bir okunmamış yok",
-  "unsupported_server.message": "{serverDisplayName} sunucunuz desteklenmeyen bir sunucu sürümü kullanıyor. Uyumluluk sorunlarından kaynaklanan çökmeler ya da uygulamanın temel işlevselliğini bozan ciddi sorunlar ile karşılaşabilirsiniz. Lütfen Mattermost sunucunuzu yükseltmesi için sistem yöneticiniz ile görüşün.",
-  "unsupported_server.title": "Sunucu sürümü desteklenmiyor",
   "user.edit_profile.email.auth_service": "Oturum {service} kullanılarak açıldığından e-posta güncellenemez. Bildirimler için {email} e-posta adresi kullanılacak.",
   "user.edit_profile.email.web_client": "E-posta adresi, İnternet ya da masaüstü uygulaması üzerinden güncellenmelidir.",
   "user.edit_profile.profile_photo.change_photo": "Profil fotoğrafını değiştir",

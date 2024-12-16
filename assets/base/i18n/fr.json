@@ -1132,8 +1132,6 @@
   "unreads.empty.paragraph": "Désactivez le filtre des messages non lus pour afficher tous vos canaux.",
   "unreads.empty.show_all": "Afficher tout",
   "unreads.empty.title": "Plus de messages non lus",
-  "unsupported_server.message": "Votre serveur, {serverDisplayName}, utilise une version de serveur non prise en charge. Il se peut que vous rencontriez des problèmes de compatibilité entraà®nant des blocages ou des bugs graves et affectant les fonctionnalités essentielles de l'application. Veuillez contacter votre administrateur système pour mettre à niveau votre serveur Mattermost.",
-  "unsupported_server.title": "Version du serveur non prise en charge",
   "user.edit_profile.email.auth_service": "La connexion se fait par {service}. L'e-mail ne peut pas être mis à jour. Adresse e-mail utilisée pour la notification : {email}.",
   "user.edit_profile.email.web_client": "L'e-mail doit être mis à jour à l'aide d'un client web ou d'une application de bureau.",
   "user.edit_profile.profile_photo.change_photo": "Modifier la photo de profil",

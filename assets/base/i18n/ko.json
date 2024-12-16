@@ -1050,8 +1050,6 @@
   "unreads.empty.paragraph": "모든 채널을 표시하려면 읽지 않음 필터를 해제하세요.",
   "unreads.empty.show_all": "모두 보기",
   "unreads.empty.title": "읽지 않은 메시지 없음",
-  "unsupported_server.message": "{serverDisplayName} 서버는 지원되지 않는 서버 버전으로 작동 중입니다. 호환성 문제로 인해 충돌이 발생하거나 앱의 핵심 기능이 중단되는 심각한 버그가 발생할 수 있습니다. 시스템 관리자에게 문의하여 Mattermost 서버를 업그레이드하세요.",
-  "unsupported_server.title": "지원되지 않는 서버 버전",
   "user.edit_profile.email.auth_service": "로그인은 {service} 을 통해 이루어집니다. 이메일을 업데이트할 수 없습니다. 알림에 사용되는 이메일 주소는 {email} 입니다.",
   "user.edit_profile.email.web_client": "이메일은 웹 클라이언트 혹은 데스크톱 애플리케이션을 사용하여 변경해야 합니다.",
   "user.edit_profile.profile_photo.change_photo": "프로필 사진 변경",
