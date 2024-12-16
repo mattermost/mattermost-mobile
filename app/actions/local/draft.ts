@@ -7,7 +7,7 @@ import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
 import {goToScreen} from '@screens/navigation';
-import {isTablet} from '@utils/helpers';
+import {isTablet, isValidUrl} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 export const switchToGlobalDrafts = async () => {
@@ -283,11 +283,21 @@ async function getImageMetadata(url: string) {
 }
 
 export async function parseMarkdownImages(markdown: string, imageMetadata: Dictionary<PostImage | undefined>) {
-    let match;
-    const imageRegex = /!\[.*?\]\((https:\/\/[^\s)]+)\)/g;
-    while ((match = imageRegex.exec(markdown)) !== null) {
+    // Regex break down
+    // ([a-zA-Z][a-zA-Z\d+\-.]*):\/\/ - Matches any valid scheme (protocol), such as http, https, ftp, mailto, file, etc.
+    // [^\s()<>]+ - Matches the main part of the URL, excluding spaces, parentheses, and angle brackets.
+    // (?:\([^\s()<>]+\))* - Allows balanced parentheses inside the URL path or query parameters.
+    // !\[.*?\]\((...)\) - Matches an image markdown syntax ![alt text](image url)
+    const imageRegex = /!\[.*?\]\((([a-zA-Z][a-zA-Z\d+\-.]*):\/\/[^\s()<>]+(?:\([^\s()<>]+\))*)\)/g;
+    const matches = Array.from(markdown.matchAll(imageRegex));
+
+    const promises = matches.map(async (match) => {
         const imageUrl = match[1];
-        // eslint-disable-next-line no-await-in-loop
-        imageMetadata[imageUrl] = await getImageMetadata(imageUrl);
-    }
+        if (isValidUrl(imageUrl)) {
+            const metadata = await getImageMetadata(imageUrl);
+            imageMetadata[imageUrl] = metadata;
+        }
+    });
+
+    await Promise.all(promises);
 }

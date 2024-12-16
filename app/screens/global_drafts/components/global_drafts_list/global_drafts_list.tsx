@@ -68,7 +68,7 @@ const GlobalDraftsList: React.FC<Props> = ({
     }), [isTablet]);
 
     useEffect(() => {
-        if (!tutorialWatched) {
+        if (tutorialWatched) {
             return;
         }
         InteractionManager.runAfterInteractions(() => {
@@ -90,7 +90,7 @@ const GlobalDraftsList: React.FC<Props> = ({
     }, []);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<DraftModel>) => {
-        if (item.id === firstDraftId && tutorialWatched) {
+        if (item.id === firstDraftId && !tutorialWatched) {
             return (
                 <Tooltip
                     isVisible={tooltipVisible}
