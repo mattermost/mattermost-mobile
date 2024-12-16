@@ -7,10 +7,12 @@ import {updateDraftPriority} from '@actions/local/draft';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
+import SendDraft from '@screens/draft_options/send_draft/send_draft';
 
 import DraftInput from '../draft_input';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     testID?: string;
@@ -43,6 +45,11 @@ type Props = {
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
     postPriority: PostPriority;
+
+    bottomSheetId?: AvailableScreens;
+    channelDisplayName?: string;
+    isFromDraftView?: boolean;
+    draftReceiverUserName?: string;
 }
 
 export const INITIAL_PRIORITY = {
@@ -56,6 +63,7 @@ export default function SendHandler({
     channelId,
     channelType,
     channelName,
+    channelDisplayName,
     currentUserId,
     enableConfirmNotificationsToChannel,
     files,
@@ -78,6 +86,9 @@ export default function SendHandler({
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
     postPriority,
+    bottomSheetId,
+    draftReceiverUserName,
+    isFromDraftView,
 }: Props) {
     const serverUrl = useServerUrl();
 
@@ -101,6 +112,32 @@ export default function SendHandler({
         postPriority,
         clearDraft,
     });
+
+    if (isFromDraftView) {
+        return (
+            <SendDraft
+                channelId={channelId}
+                rootId={rootId}
+                channelType={channelType}
+                currentUserId={currentUserId}
+                channelName={channelName}
+                channelDisplayName={channelDisplayName}
+                enableConfirmNotificationsToChannel={enableConfirmNotificationsToChannel}
+                maxMessageLength={maxMessageLength}
+                membersCount={membersCount}
+                useChannelMentions={useChannelMentions}
+                userIsOutOfOffice={userIsOutOfOffice}
+                customEmojis={customEmojis}
+                bottomSheetId={bottomSheetId}
+                value={value}
+                files={files}
+                postPriority={postPriority}
+                persistentNotificationInterval={persistentNotificationInterval}
+                persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
+                draftReceiverUserName={draftReceiverUserName}
+            />
+        );
+    }
 
     return (
         <DraftInput

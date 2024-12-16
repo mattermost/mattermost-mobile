@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
-import {View, Text} from 'react-native';
+import {View} from 'react-native';
 
+import FormattedText from '@components/formatted_text';
+import SendHandler from '@components/post_draft/send_handler/';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -14,7 +15,6 @@ import {typography} from '@utils/typography';
 
 import DeleteDraft from './delete_draft';
 import EditDraft from './edit_draft';
-import SendDraft from './send_draft';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -45,28 +45,41 @@ const DraftOptions: React.FC<Props> = ({
     draft,
     draftReceiverUserName,
 }) => {
-    const {formatMessage} = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const renderContent = () => {
         return (
             <View>
-                {!isTablet && <Text style={styles.header}>{formatMessage(
-                    {id: 'draft.option.header', defaultMessage: 'Draft actions'},
-                )}</Text>}
+                {!isTablet &&
+                <FormattedText
+                    id='draft.option.header'
+                    defaultMessage='Draft actions'
+                    style={styles.header}
+                />}
                 <EditDraft
                     bottomSheetId={Screens.DRAFT_OPTIONS}
                     channel={channel}
                     rootId={rootId}
                 />
-                <SendDraft
+                <SendHandler
                     bottomSheetId={Screens.DRAFT_OPTIONS}
                     channelId={channel.id}
                     rootId={rootId}
                     files={draft.files}
                     value={draft.message}
                     draftReceiverUserName={draftReceiverUserName}
+                    isFromDraftView={true}
+                    uploadFileError={null}
+                    cursorPosition={0}
+                    /* eslint-disable no-empty-function */
+                    clearDraft={() => {}}
+                    updateCursorPosition={() => {}}
+                    updatePostInputTop={() => {}}
+                    addFiles={() => {}}
+                    setIsFocused={() => {}}
+                    updateValue={() => {}}
+                    /* eslint-enable no-empty-function */
                 />
                 <DeleteDraft
                     bottomSheetId={Screens.DRAFT_OPTIONS}

@@ -35,13 +35,13 @@ type Props = {
     useChannelMentions: boolean;
     userIsOutOfOffice: boolean;
     customEmojis: CustomEmojiModel[];
-    bottomSheetId: AvailableScreens;
+    bottomSheetId?: AvailableScreens;
     value: string;
     files: FileInfo[];
     postPriority: PostPriority;
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
-    draftReceiverUserName: string | undefined;
+    draftReceiverUserName?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
