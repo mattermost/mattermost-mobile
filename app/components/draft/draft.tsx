@@ -8,7 +8,7 @@ import {Keyboard, TouchableHighlight, View} from 'react-native';
 import {switchToThread} from '@actions/local/thread';
 import {switchToChannelById} from '@actions/remote/channel';
 import DraftPost from '@components/draft/draft_post';
-import ChannelInfo from '@components/draft_post_header';
+import DraftPostHeader from '@components/draft_post_header';
 import Header from '@components/post_draft/draft_input/header';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -95,7 +95,7 @@ const Draft: React.FC<Props> = ({
             <View
                 style={style.container}
             >
-                <ChannelInfo
+                <DraftPostHeader
                     channel={channel}
                     draftReceiverUser={draftReceiverUser}
                     rootId={draft.rootId}
