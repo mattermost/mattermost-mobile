@@ -1053,7 +1053,7 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
 
     fetchPostsForChannel(serverUrl, channelId);
     fetchChannelBookmarks(serverUrl, channelId);
-    await switchToChannel(serverUrl, channelId, teamId, skipLastUnread, false);
+    await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
     openChannelIfNeeded(serverUrl, channelId);
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
