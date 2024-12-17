@@ -77,17 +77,18 @@ describe('actions/remote/file', () => {
     });
 
     describe('uploadFile', () => {
+        const file = {
+            id: 'file123',
+            name: 'test.jpg',
+            mime_type: 'image/jpeg',
+            size: 1024,
+            extension: 'jpg',
+            has_preview_image: true,
+            localPath: '/path/to/file',
+        };
+        const channelId = 'channel123';
+
         it('should upload file successfully', () => {
-            const file = {
-                id: 'file123',
-                name: 'test.jpg',
-                mime_type: 'image/jpeg',
-                size: 1024,
-                extension: 'jpg',
-                has_preview_image: true,
-                localPath: '/path/to/file',
-            };
-            const channelId = 'channel123';
             const onProgress = jest.fn();
             const onComplete = jest.fn();
             const onError = jest.fn();
@@ -104,6 +105,24 @@ describe('actions/remote/file', () => {
                 0,
                 false,
             );
+            expect(result).toHaveProperty('cancel');
+        });
+
+        it('should use default callbacks when not provided', () => {
+            mockClient.uploadAttachment.mockReturnValue(() => {});
+
+            const result = uploadFile(serverUrl, file, channelId);
+
+            const uploadCall = mockClient.uploadAttachment.mock.calls[0];
+            expect(uploadCall[2]).toBeDefined(); // onProgress
+            expect(uploadCall[3]).toBeDefined(); // onComplete
+            expect(uploadCall[4]).toBeDefined(); // onError
+
+            // Call the default callbacks to ensure they don't throw
+            uploadCall[2](0.5, 512); // onProgress
+            uploadCall[3]({data: 'test'}); // onComplete
+            uploadCall[4]({message: 'test error'}); // onError
+
             expect(result).toHaveProperty('cancel');
         });
 
