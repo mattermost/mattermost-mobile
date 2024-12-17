@@ -32,6 +32,8 @@ import Initial from './initial';
 import Results from './results';
 import Header from './results/header';
 
+import {ALL_TEAMS_ID} from '.';
+
 import type {SearchRef} from '@components/search';
 import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -189,7 +191,10 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         hideHeader(true);
         handleLoading(true);
         setLastSearchedValue(term);
-        addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
+
+        if (newSearchTeamId !== ALL_TEAMS_ID) {
+            addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
+        }
         const [postResults, {files, channels}] = await Promise.all([
             searchPosts(serverUrl, newSearchTeamId, searchParams),
             searchFiles(serverUrl, newSearchTeamId, searchParams),
