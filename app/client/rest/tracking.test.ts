@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import LocalConfig from '@assets/config.json';
 import test_helper from '@test/test_helper';
 
 import * as ClientConstants from './constants';
@@ -61,6 +62,14 @@ describe('ClientTraking', () => {
     };
 
     let client: ClientTracking;
+
+    beforeAll(() => {
+        LocalConfig.CollectNetworkMetrics = true;
+    });
+
+    afterAll(() => {
+        LocalConfig.CollectNetworkMetrics = false;
+    });
 
     beforeEach(() => {
         jest.clearAllMocks();

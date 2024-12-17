@@ -1,5 +1,5 @@
 PODS:
-  - Alamofire (5.9.1)
+  - Alamofire (5.10.2)
   - boost (1.83.0)
   - CocoaLumberjack (3.8.5):
     - CocoaLumberjack/Core (= 3.8.5)
@@ -1141,8 +1141,8 @@ PODS:
     - Yoga
   - react-native-netinfo (11.3.2):
     - React-Core
-  - react-native-network-client (1.7.3):
-    - Alamofire (~> 5.9.1)
+  - react-native-network-client (1.8.0):
+    - Alamofire (~> 5.10.2)
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1163,7 +1163,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Starscream (~> 4.0.8)
-    - SwiftyJSON (~> 5.0)
+    - SwiftyJSON (~> 5.0.2)
     - Yoga
   - react-native-notifications (5.1.0):
     - React-Core
@@ -1960,7 +1960,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
+  Alamofire: 7193b3b92c74a07f85569e1a6c4f4237291e7496
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
   DoubleConversion: 76ab83afb40bddeeee456813d9c04f67f78771b5
@@ -2018,7 +2018,7 @@ SPEC CHECKSUMS:
   react-native-emm: ecab44d78fb1cc7d7b7901914f48fb6309c46ff2
   react-native-image-picker: c3afe5472ef870d98a4b28415fc0b928161ee5f7
   react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
-  react-native-network-client: 82ef7c000c5fd3bfd1ad9e78cd920af33040f9f3
+  react-native-network-client: 749f940841fb483f80a60b2dec038b58d2fbe3c5
   react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
   react-native-paste-input: 011a9916ef3acf809a7da122847c61ca0f93a60e
   react-native-performance: ff93f8af3b2ee9519fd7879896aa9b8b8272691d
