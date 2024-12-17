@@ -8,7 +8,7 @@ import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCurrentUser} from '@queries/servers/user';
 
-import ChannelInfo from './channel_info';
+import DraftPostHeader from './draft_post_header';
 
 const enhance = withObservables([], ({database}) => {
     const currentUser = observeCurrentUser(database);
@@ -22,4 +22,4 @@ const enhance = withObservables([], ({database}) => {
     };
 });
 
-export default withDatabase(enhance(ChannelInfo));
+export default withDatabase(enhance(DraftPostHeader));

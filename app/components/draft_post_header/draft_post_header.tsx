@@ -4,8 +4,8 @@
 import React, {type ReactNode} from 'react';
 import {Text, View} from 'react-native';
 
-import ProfileAvatar from '@components/channel_info/ProfileAvatar';
 import CompassIcon from '@components/compass_icon';
+import ProfileAvatar from '@components/draft_post_header/ProfileAvatar';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {General} from '@constants';
@@ -72,7 +72,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ChannelInfo: React.FC<Props> = ({
+const DraftPostHeader: React.FC<Props> = ({
     channel,
     draftReceiverUser,
     updateAt,
@@ -159,4 +159,4 @@ const ChannelInfo: React.FC<Props> = ({
     );
 };
 
-export default ChannelInfo;
+export default DraftPostHeader;
