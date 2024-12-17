@@ -27,7 +27,7 @@ const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, chil
         }
 
         downloadAndPreviewFile(file);
-    }, [canDownloadFiles, downloadAndPreviewFile, intl]);
+    }, [canDownloadFiles, downloadAndPreviewFile, intl, file]);
 
     useImperativeHandle(ref, () => ({
         handlePreviewPress,

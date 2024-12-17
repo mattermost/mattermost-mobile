@@ -99,7 +99,6 @@ const FileResults = ({
         if (!isTablet) {
             showMobileOptionsBottomSheet({
                 fileInfo: fInfo,
-                insets,
                 numOptions,
                 setAction,
                 theme,

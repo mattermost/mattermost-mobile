@@ -19,24 +19,24 @@ export interface ClientChannelsMix {
     updateChannelPrivacy: (channelId: string, privacy: any) => Promise<Channel>;
     patchChannel: (channelId: string, channelPatch: Partial<Channel>) => Promise<Channel>;
     updateChannelNotifyProps: (props: ChannelNotifyProps & {channel_id: string; user_id: string}) => Promise<any>;
-    getChannel: (channelId: string) => Promise<Channel>;
+    getChannel: (channelId: string, groupLabel?: string) => Promise<Channel>;
     getChannelByName: (teamId: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
     getChannelByNameAndTeamName: (teamName: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
     getChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
     getArchivedChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
     getSharedChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
-    getMyChannels: (teamId: string, includeDeleted?: boolean, lastDeleteAt?: number) => Promise<Channel[]>;
+    getMyChannels: (teamId: string, includeDeleted?: boolean, lastDeleteAt?: number, groupLabel?: string) => Promise<Channel[]>;
     getMyChannelMember: (channelId: string) => Promise<ChannelMembership>;
-    getMyChannelMembers: (teamId: string) => Promise<ChannelMembership[]>;
+    getMyChannelMembers: (teamId: string, groupLabel?: string) => Promise<ChannelMembership[]>;
     getChannelMembers: (channelId: string, page?: number, perPage?: number) => Promise<ChannelMembership[]>;
     getChannelTimezones: (channelId: string) => Promise<string[]>;
-    getChannelMember: (channelId: string, userId: string) => Promise<ChannelMembership>;
+    getChannelMember: (channelId: string, userId: string, groupLabel?: string) => Promise<ChannelMembership>;
     getChannelMembersByIds: (channelId: string, userIds: string[]) => Promise<ChannelMembership[]>;
     addToChannel: (userId: string, channelId: string, postRootId?: string) => Promise<ChannelMembership>;
     removeFromChannel: (userId: string, channelId: string) => Promise<any>;
-    getChannelStats: (channelId: string) => Promise<ChannelStats>;
+    getChannelStats: (channelId: string, groupLabel?: string) => Promise<ChannelStats>;
     getChannelMemberCountsByGroup: (channelId: string, includeTimezones: boolean) => Promise<ChannelMemberCountByGroup[]>;
-    viewMyChannel: (channelId: string, prevChannelId?: string) => Promise<any>;
+    viewMyChannel: (channelId: string, prevChannelId?: string, groupLabel?: string) => Promise<any>;
     autocompleteChannels: (teamId: string, name: string) => Promise<Channel[]>;
     autocompleteChannelsForSearch: (teamId: string, name: string) => Promise<Channel[]>;
     searchChannels: (teamId: string, term: string) => Promise<Channel[]>;
@@ -130,10 +130,10 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    getChannel = async (channelId: string) => {
+    getChannel = async (channelId: string, groupLabel?: string) => {
         return this.doFetch(
             this.getChannelRoute(channelId),
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -180,13 +180,13 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    getMyChannels = async (teamId: string, includeDeleted = false, since = 0) => {
+    getMyChannels = async (teamId: string, includeDeleted = false, since = 0, groupLabel?: string) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/teams/${teamId}/channels${buildQueryString({
                 include_deleted: includeDeleted,
                 last_delete_at: since,
             })}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -197,10 +197,10 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    getMyChannelMembers = async (teamId: string) => {
+    getMyChannelMembers = async (teamId: string, groupLabel?: string) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/teams/${teamId}/channels/members`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -218,10 +218,10 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    getChannelMember = async (channelId: string, userId: string) => {
+    getChannelMember = async (channelId: string, userId: string, groupLabel?: string) => {
         return this.doFetch(
             `${this.getChannelMemberRoute(channelId, userId)}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -247,10 +247,10 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    getChannelStats = async (channelId: string) => {
+    getChannelStats = async (channelId: string, groupLabel?: string) => {
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/stats`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -261,12 +261,12 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         );
     };
 
-    viewMyChannel = async (channelId: string, prevChannelId?: string) => {
+    viewMyChannel = async (channelId: string, prevChannelId?: string, groupLabel?: string) => {
         // collapsed_threads_supported is not based on user preferences but to know if "CLIENT" supports CRT
         const data = {channel_id: channelId, prev_channel_id: prevChannelId, collapsed_threads_supported: true};
         return this.doFetch(
             `${this.getChannelsRoute()}/members/me/view`,
-            {method: 'post', body: data},
+            {method: 'post', body: data, groupLabel},
         );
     };
 

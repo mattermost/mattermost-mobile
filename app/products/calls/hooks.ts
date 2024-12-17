@@ -208,7 +208,7 @@ export const useHostMenus = () => {
         const props = {closeButtonId: closeHostControls, session};
 
         openAsBottomSheet({screen, title, theme, closeButtonId: closeHostControls, props});
-    }, [theme]);
+    }, [intl, theme]);
 
     const openUserProfile = useCallback(async (session: CallSession) => {
         const screen = Screens.USER_PROFILE;
@@ -217,7 +217,7 @@ export const useHostMenus = () => {
         const props = {closeButtonId: closeUserProfile, location: '', userId: session.userId};
 
         openAsBottomSheet({screen, title, theme, closeButtonId: closeUserProfile, props});
-    }, [theme, currentCall?.channelId]);
+    }, [intl, theme]);
 
     const onPress = useCallback((session: CallSession) => () => {
         // Show host controls when allowed and I'm host or admin,

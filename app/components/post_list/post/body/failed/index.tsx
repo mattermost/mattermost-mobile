@@ -4,7 +4,6 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {removePost} from '@actions/local/post';
 import {retryFailedPost} from '@actions/remote/post';
@@ -33,7 +32,6 @@ const styles = StyleSheet.create({
 
 const Failed = ({post, theme}: FailedProps) => {
     const intl = useIntl();
-    const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
 
     const onPress = useCallback(() => {
@@ -69,11 +67,11 @@ const Failed = ({post, theme}: FailedProps) => {
         bottomSheet({
             closeButtonId: 'close-post-failed',
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
+            snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
             title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
             theme,
         });
-    }, [bottom]);
+    }, [intl, post, serverUrl, theme]);
 
     return (
         <TouchableOpacity

@@ -7,7 +7,6 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, type StyleProp, Text, type TextStyle, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
 
@@ -29,7 +28,8 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {getMarkdownImageSize} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {normalizeProtocol, tryOpenURL} from '@utils/url';
+import {secureGetFromRecord} from '@utils/types';
+import {normalizeProtocol, safeDecodeURIComponent, tryOpenURL} from '@utils/url';
 
 import type {GalleryItemType} from '@typings/screens/gallery';
 
@@ -75,12 +75,11 @@ const MarkdownImage = ({
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
-    const {bottom} = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
     const genericFileId = useRef(generateId('uid')).current;
-    const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
+    const metadata = secureGetFromRecord(imagesMetadata, source) || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
     const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight);
     const serverUrl = useServerUrl();
@@ -88,8 +87,8 @@ const MarkdownImage = ({
     const uri = source.startsWith('/') ? serverUrl + source : source;
 
     const fileInfo = useMemo(() => {
-        const link = decodeURIComponent(uri);
-        let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
+        const decodedLink = safeDecodeURIComponent(uri);
+        let filename = parseUrl(decodedLink.substr(decodedLink.lastIndexOf('/'))).pathname.replace('/', '');
         let extension = metadata?.format || filename.split('.').pop();
         if (extension === filename) {
             const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
@@ -104,7 +103,7 @@ const MarkdownImage = ({
             has_preview_image: true,
             mime_type: lookupMimeType(filename),
             post_id: postId,
-            uri: link,
+            uri,
             width: originalSize.width,
             height: originalSize.height,
         } as FileInfo;
@@ -181,12 +180,12 @@ const MarkdownImage = ({
             bottomSheet({
                 closeButtonId: 'close-mardown-image',
                 renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl.locale, bottom, theme]);
+    }, [managedConfig?.copyAndPasteProtection, intl, theme, style.bottomSheet, linkDestination, source]);
 
     const handleOnError = useCallback(() => {
         setFailed(true);

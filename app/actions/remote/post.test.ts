@@ -3,7 +3,7 @@
 
 /* eslint-disable max-lines */
 
-import {ActionType, Post} from '@constants';
+import {ActionType, Post, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import PostModel from '@database/models/server/post';
@@ -121,6 +121,16 @@ jest.mock('@queries/servers/thread', () => {
     };
 });
 
+let mockAddRecentReaction: jest.Mock;
+jest.mock('@actions/local/reactions', () => {
+    const original = jest.requireActual('@actions/local/reactions');
+    mockAddRecentReaction = jest.fn(() => [{user_id: 'userid1', emoji_name: 'smile'}]);
+    return {
+        ...original,
+        addRecentReaction: mockAddRecentReaction,
+    };
+});
+
 beforeAll(() => {
     // eslint-disable-next-line
     // @ts-ignore
@@ -143,6 +153,28 @@ describe('create, update & delete posts', () => {
         expect(result.error).toBeTruthy();
     });
 
+    it('createPost - handle client error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await createPost(serverUrl, post1);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('createPost - handle existing failed post', async () => {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [{...post1, props: {failed: false}}],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await createPost(serverUrl, {...post1, pending_post_id: post1.id});
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBe(false);
+    });
+
     it('createPost - fail create', async () => {
         mockClient.createPost.mockImplementationOnce(jest.fn(throwFunc));
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
@@ -153,7 +185,56 @@ describe('create, update & delete posts', () => {
         expect(result.data).toBeTruthy();
     });
 
+    it('createPost - fail on deleted root post server error', async () => {
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.DELETED_ROOT_POST_ERROR};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await createPost(serverUrl, post1);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBeTruthy();
+    });
+
+    it('createPost - fail on town square read only server error', async () => {
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await createPost(serverUrl, post1);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBeTruthy();
+    });
+
+    it('createPost - fail on plugin dismissed post server error', async () => {
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.PLUGIN_DISMISSED_POST_ERROR};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await createPost(serverUrl, post1);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBeTruthy();
+    });
+
     it('createPost - root', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await createPost(serverUrl, post1);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBeTruthy();
+    });
+
+    it('createPost - without reactions', async () => {
+        mockAddRecentReaction.mockImplementationOnce(() => []);
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
 
         const result = await createPost(serverUrl, post1);
@@ -177,6 +258,14 @@ describe('create, update & delete posts', () => {
         expect(result.error).toBeTruthy();
     });
 
+    it('retryFailedPost - handle client error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await retryFailedPost(serverUrl, mockPostModel({id: post1.id, prepareUpdate: jest.fn(), toApi: async () => post1}));
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
     it('retryFailedPost - base case', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
 
@@ -190,6 +279,42 @@ describe('create, update & delete posts', () => {
         const result = await retryFailedPost(serverUrl, mockPostModel({id: post1.id, prepareUpdate: jest.fn(), toApi: async () => post1}));
         expect(result).toBeDefined();
         expect(result.error).toBeTruthy();
+    });
+
+    it('retryFailedPost - fail on deleted root post server error', async () => {
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.DELETED_ROOT_POST_ERROR};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await retryFailedPost(serverUrl, mockPostModel({id: post1.id, prepareUpdate: jest.fn(), toApi: async () => post1}));
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+    });
+
+    it('retryFailedPost - fail on town square read only server error', async () => {
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await retryFailedPost(serverUrl, mockPostModel({id: post1.id, prepareUpdate: jest.fn(), toApi: async () => post1}));
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+    });
+
+    it('retryFailedPost - fail on plugin dismissed post server error', async () => {
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.PLUGIN_DISMISSED_POST_ERROR};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await retryFailedPost(serverUrl, mockPostModel({id: post1.id, prepareUpdate: jest.fn(), toApi: async () => post1}));
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
     });
 
     it('togglePinPost - handle database not found', async () => {
@@ -382,6 +507,65 @@ describe('get posts', () => {
         expect(result.posts?.length).toBe(2);
     });
 
+    it('fetchPostsForChannel - base case with since', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [{
+            id: channelId,
+            team_id: teamId,
+            total_msg_count: 0,
+            creator_id: user1.id,
+        } as Channel],
+        myChannels: [{
+            id: 'id',
+            channel_id: channelId,
+            user_id: user1.id,
+            msg_count: 0,
+        } as ChannelMembership],
+        prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await fetchPostsForChannel(serverUrl, channelId, true);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPostsForChannel - no posts with since', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [{
+            id: channelId,
+            team_id: teamId,
+            total_msg_count: 0,
+            creator_id: user1.id,
+        } as Channel],
+        myChannels: [{
+            id: 'id',
+            channel_id: channelId,
+            user_id: user1.id,
+            msg_count: 0,
+        } as ChannelMembership],
+        prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        mockClient.getPostsSince.mockImplementationOnce(jest.fn(() => ({posts: {}, order: []})));
+        const result = await fetchPostsForChannel(serverUrl, channelId, true);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(0);
+    });
+
     it('fetchPostsForChannel - request error', async () => {
         mockClient.getPosts.mockImplementationOnce(jest.fn(throwFunc));
 
@@ -419,8 +603,30 @@ describe('get posts', () => {
         expect(result.posts?.length).toBe(2);
     });
 
+    it('fetchPosts - no CRT', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockGetIsCRTEnabled.mockImplementationOnce(() => false);
+
+        const result = await fetchPosts(serverUrl, channelId);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPosts - no authors needed', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockClient.getProfilesByIds.mockImplementationOnce(jest.fn(() => []));
+
+        const result = await fetchPosts(serverUrl, channelId);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
     it('fetchPostsBefore - handle database not found', async () => {
-        const result = await fetchPostsBefore('foo', '', '') as {error: unknown};
+        const result = await fetchPostsBefore('foo', '', '', 50, true) as {error: unknown};
         expect(result).toBeDefined();
         expect(result.error).toBeTruthy();
     });
@@ -436,6 +642,48 @@ describe('get posts', () => {
         expect(result).toBeDefined();
         expect(result.posts).toBeTruthy();
         expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPostsBefore - no CRT', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockGetIsCRTEnabled.mockImplementationOnce(() => false);
+
+        const result = await fetchPostsBefore(serverUrl, channelId, post1.id) as {
+            posts: Post[];
+            order: string[];
+            previousPostId: string | undefined;
+        };
+        expect(result).toBeDefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPostsBefore - no authors needed', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockClient.getProfilesByIds.mockImplementationOnce(jest.fn(() => []));
+
+        const result = await fetchPostsBefore(serverUrl, channelId, post1.id) as {
+            posts: Post[];
+            order: string[];
+            previousPostId: string | undefined;
+        };
+        expect(result).toBeDefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPostsBefore - no posts', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockClient.getPostsBefore.mockImplementationOnce(jest.fn(() => ({posts: {}, order: []})));
+
+        const result = await fetchPostsBefore(serverUrl, channelId, post1.id) as {
+            posts: Post[];
+            order: string[];
+            previousPostId: string | undefined;
+        };
+        expect(result).toBeDefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(0);
     });
 
     it('fetchPostsSince - handle database not found', async () => {
@@ -500,6 +748,40 @@ describe('get posts', () => {
         expect(result.posts?.[1].id).toBe(reply1.id);
     });
 
+    it('fetchPostThread - no CRT', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockGetIsCRTEnabled.mockImplementationOnce(() => false);
+
+        const result = await fetchPostThread(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+        expect(result.posts?.[0].id).toBe(post1.id);
+        expect(result.posts?.[1].id).toBe(reply1.id);
+    });
+
+    it('fetchPostThread - no authors needed', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockClient.getProfilesByIds.mockImplementationOnce(jest.fn(() => []));
+
+        const result = await fetchPostThread(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+    });
+
+    it('fetchPostThread - no posts', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockClient.getPostThread.mockImplementationOnce(jest.fn(() => ({posts: {}, order: []})));
+
+        const result = await fetchPostThread(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(0);
+    });
+
     it('fetchPostsAround - handle database not found', async () => {
         const result = await fetchPostsAround('foo', '', '');
         expect(result).toBeDefined();
@@ -508,6 +790,28 @@ describe('get posts', () => {
 
     it('fetchPostsAround - base case', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await fetchPostsAround(serverUrl, channelId, post2.id, 100, true);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPostsAround - no CRT', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockGetIsCRTEnabled.mockImplementationOnce(() => false);
+
+        const result = await fetchPostsAround(serverUrl, channelId, post2.id, 100, true);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.posts).toBeTruthy();
+        expect(result.posts?.length).toBe(2);
+    });
+
+    it('fetchPostsAround - no authors needed', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockClient.getProfilesByIds.mockImplementationOnce(jest.fn(() => []));
 
         const result = await fetchPostsAround(serverUrl, channelId, post2.id, 100, true);
         expect(result).toBeDefined();
@@ -542,6 +846,38 @@ describe('get posts', () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
 
         const result = await fetchPostById(serverUrl, post2.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.post).toBeDefined();
+        expect(result.post?.id).toBe(post2.id);
+    });
+
+    it('fetchPostById - no CRT', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockGetIsCRTEnabled.mockImplementationOnce(() => false);
+
+        const result = await fetchPostById(serverUrl, post2.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.post).toBeDefined();
+        expect(result.post?.id).toBe(post2.id);
+    });
+
+    it('fetchPostById - no authors needed', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        mockClient.getProfilesByIds.mockImplementationOnce(jest.fn(() => []));
+
+        const result = await fetchPostById(serverUrl, post2.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.post).toBeDefined();
+        expect(result.post?.id).toBe(post2.id);
+    });
+
+    it('fetchPostById - fetch only', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await fetchPostById(serverUrl, post2.id, true);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.post).toBeDefined();

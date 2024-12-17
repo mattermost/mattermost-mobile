@@ -88,7 +88,7 @@ function BottomSheetButton({disabled = false, onPress, icon, testID, text}: Prop
                     )}
 
                 </TouchableWithFeedback>
-                <View style={{paddingBottom: Platform.select({ios: (isTablet ? 20 : 32), android: 20})}}/>
+                <View style={{paddingBottom: Platform.select({ios: (isTablet ? 20 : 0), android: 20})}}/>
             </View>
         </View>
     );

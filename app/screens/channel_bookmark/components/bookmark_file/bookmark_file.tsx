@@ -308,7 +308,7 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
                                 ellipsizeMode='tail'
                                 style={styles.filename}
                             >
-                                {decodeURIComponent(file.name.trim())}
+                                {file.name.trim()}
                             </Text>
                             {info}
                         </View>

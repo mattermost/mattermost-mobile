@@ -94,27 +94,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - mattermost-keyboard-tracker (0.0.0):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.01.01.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Codegen
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-rendererdebug
-    - React-utils
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - mattermost-react-native-turbo-log (0.4.0):
     - CocoaLumberjack (~> 3.8.5)
     - DoubleConversion
@@ -1162,7 +1141,7 @@ PODS:
     - Yoga
   - react-native-netinfo (11.3.2):
     - React-Core
-  - react-native-network-client (1.7.2):
+  - react-native-network-client (1.7.3):
     - Alamofire (~> 5.9.1)
     - DoubleConversion
     - glog
@@ -1669,7 +1648,6 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - "mattermost-hardware-keyboard (from `../node_modules/@mattermost/hardware-keyboard`)"
-  - "mattermost-keyboard-tracker (from `../node_modules/@mattermost/keyboard-tracker`)"
   - "mattermost-react-native-turbo-log (from `../node_modules/@mattermost/react-native-turbo-log`)"
   - "mattermost-rnutils (from `../node_modules/@mattermost/rnutils`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1812,8 +1790,6 @@ EXTERNAL SOURCES:
     :tag: hermes-2024-06-28-RNv0.74.3-7bda0c267e76d11b68a585f84cfdd65000babf85
   mattermost-hardware-keyboard:
     :path: "../node_modules/@mattermost/hardware-keyboard"
-  mattermost-keyboard-tracker:
-    :path: "../node_modules/@mattermost/keyboard-tracker"
   mattermost-react-native-turbo-log:
     :path: "../node_modules/@mattermost/react-native-turbo-log"
   mattermost-rnutils:
@@ -2008,7 +1984,6 @@ SPEC CHECKSUMS:
   JitsiWebRTC: d0ae5fd6a81e771bfd82c2ee6c6bb542ebd65ee8
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
   mattermost-hardware-keyboard: b916a168bb3add779bb226b3a62d6ac5ec225a79
-  mattermost-keyboard-tracker: b48752a97e731fdae5e8259a4ea0e731e1a05094
   mattermost-react-native-turbo-log: c446c7e8a39c131d6bafa6ae6f830c735030ed5e
   mattermost-rnutils: 01504fb26beb75594f4c6e2150668b27783112f5
   RCT-Folly: 02617c592a293bd6d418e0a88ff4ee1f88329b47
@@ -2043,7 +2018,7 @@ SPEC CHECKSUMS:
   react-native-emm: ecab44d78fb1cc7d7b7901914f48fb6309c46ff2
   react-native-image-picker: c3afe5472ef870d98a4b28415fc0b928161ee5f7
   react-native-netinfo: 076df4f9b07f6670acf4ce9a75aac8d34c2e2ccc
-  react-native-network-client: 5173c47230b5f497cdef469cba8e6e1b3df687eb
+  react-native-network-client: 82ef7c000c5fd3bfd1ad9e78cd920af33040f9f3
   react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
   react-native-paste-input: 011a9916ef3acf809a7da122847c61ca0f93a60e
   react-native-performance: ff93f8af3b2ee9519fd7879896aa9b8b8272691d

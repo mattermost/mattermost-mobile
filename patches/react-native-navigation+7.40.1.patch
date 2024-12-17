@@ -296,6 +296,37 @@ index 834d734..3fc00c3 100644
        want |= Typeface.ITALIC;
      }
  
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildController.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildController.java
+index 3acc41d..ebc8d18 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildController.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildController.java
+@@ -7,6 +7,7 @@ import android.util.Log;
+ import android.view.View;
+ import android.view.ViewGroup;
+ import android.view.WindowInsets;
++import android.view.WindowManager;
+ 
+ import com.reactnativenavigation.options.Options;
+ import com.reactnativenavigation.utils.LogKt;
+@@ -100,6 +101,18 @@ public abstract class ChildController<T extends ViewGroup> extends ViewControlle
+     }
+ 
+     protected WindowInsetsCompat onApplyWindowInsets(View view, WindowInsetsCompat insets) {
++        Activity activity = getActivity();
++        Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
++        if (activity != null) {
++            int softInputMode = activity.getWindow().getAttributes().softInputMode;
++            if (softInputMode == WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING && !isRoot()) {
++                view.setPadding(ime.left, ime.top, ime.right, 0);
++                return WindowInsetsCompat.CONSUMED;
++            }
++        }
++        if (!isRoot()) {
++            view.setPadding(0, 0, 0, 0);
++        }
+        return insets;
+     }
+ 
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
 index 035ec31..630b8d4 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java

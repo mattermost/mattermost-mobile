@@ -4,7 +4,6 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableOpacity, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {setStatus} from '@actions/remote/user';
 import FormattedText from '@components/formatted_text';
@@ -57,7 +56,6 @@ type Props = {
 };
 const UserStatus = ({currentUser}: Props) => {
     const intl = useIntl();
-    const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -125,7 +123,7 @@ const UserStatus = ({currentUser}: Props) => {
             );
         };
 
-        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT, bottom);
+        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT);
         bottomSheet({
             closeButtonId: 'close-set-user-status',
             renderContent,
@@ -133,7 +131,7 @@ const UserStatus = ({currentUser}: Props) => {
             title: intl.formatMessage({id: 'user_status.title', defaultMessage: 'Status'}),
             theme,
         });
-    }), [theme, bottom]);
+    }), [theme]);
 
     const updateStatus = useCallback((status: string) => {
         const userStatus = {

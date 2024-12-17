@@ -60,8 +60,9 @@ class NetworkManager {
         sessionConfiguration: {
             allowsCellularAccess: true,
             waitsForConnectivity: false,
-            httpMaximumConnectionsPerHost: 10,
+            httpMaximumConnectionsPerHost: 100,
             cancelRequestsOnUnauthorized: true,
+            collectMetrics: false,
         },
         retryPolicyConfiguration: {
             type: RetryTypes.EXPONENTIAL_RETRY,
@@ -134,6 +135,7 @@ class NetworkManager {
                 timeoutIntervalForRequest: managedConfig?.timeout ? parseInt(managedConfig.timeout, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForRequest,
                 timeoutIntervalForResource: managedConfig?.timeoutVPN ? parseInt(managedConfig.timeoutVPN, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForResource,
                 waitsForConnectivity: managedConfig?.useVPN === 'true',
+                collectMetrics: LocalConfig.CollectNetworkMetrics,
             },
             headers,
         };

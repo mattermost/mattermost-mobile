@@ -3,7 +3,6 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
@@ -58,7 +57,6 @@ const Header = ({
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
-    const {bottom} = useSafeAreaInsets();
     const isTablet = useIsTablet();
     const hasFilters = selectedFilter !== FileFilters.ALL;
     const messageObject = hasFilters ? {
@@ -78,10 +76,9 @@ const Header = ({
             bottomSheetSnapPoint(
                 NUMBER_FILTER_ITEMS,
                 FILTER_ITEM_HEIGHT,
-                bottom,
             ) + TITLE_HEIGHT + DIVIDERS_HEIGHT + (isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN),
         ];
-    }, []);
+    }, [isTablet]);
 
     const handleFilterPress = useCallback(() => {
         const renderContent = () => {

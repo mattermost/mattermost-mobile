@@ -98,7 +98,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
         }, new Map<string, ReactionModel[]>());
 
         return {reactionsByName, highlightedReactions};
-    }, [sortedReactions, reactions]);
+    }, [reactions, currentUserId]);
 
     const handleToggleReactionToPost = (emoji: string) => {
         toggleReaction(serverUrl, postId, emoji);

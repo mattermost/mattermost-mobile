@@ -62,7 +62,7 @@ const UserListItem = ({
             Keyboard.dismiss();
             openAsBottomSheet({screen, title, theme, closeButtonId, props});
         }
-    }, [channelId, location]);
+    }, [channelId, intl, location, theme]);
 
     return (
         <UserItem

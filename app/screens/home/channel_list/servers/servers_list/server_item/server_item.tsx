@@ -311,7 +311,7 @@ const ServerItem = ({
             await dismissBottomSheet();
             Navigation.updateProps(Screens.HOME, {extra: undefined});
             DatabaseManager.setActiveServerDatabase(server.url);
-            WebsocketManager.initializeClient(server.url);
+            WebsocketManager.initializeClient(server.url, 'entry');
             return;
         }
 

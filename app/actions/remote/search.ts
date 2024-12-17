@@ -161,7 +161,7 @@ export const searchFiles = async (serverUrl: string, teamId: string, params: Fil
         }, {});
         files.forEach((f) => {
             if (f.post_id) {
-                f.postProps = idToPost[f.post_id]?.props;
+                f.postProps = idToPost[f.post_id]?.props || {};
             }
         });
         return {files, channels};

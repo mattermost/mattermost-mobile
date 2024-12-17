@@ -107,6 +107,15 @@ describe('executeCommand', () => {
         expect(result).toEqual({error: 'invalid_url database not found'});
     });
 
+    it('handle client error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(() => {
+            throw error;
+        });
+
+        const result = await executeCommand(serverUrl, intl, message, channelId, rootId);
+        expect(result).toEqual({error});
+    });
+
     it('handle apps enabled', async () => {
         jest.spyOn(AppsManager, 'isAppsEnabled').mockResolvedValue(true);
         const parser = {
@@ -164,6 +173,34 @@ describe('executeCommand', () => {
         expect(result).toEqual({data: {trigger_id: 'trigger_id'}});
     });
 
+    it('handle /code command execution with successful response', async () => {
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        jest.spyOn(AppsManager, 'isAppsEnabled').mockResolvedValue(false);
+        const mockSetTriggerId = jest.fn();
+        jest.spyOn(IntegrationsManager, 'getManager').mockReturnValue({
+            setTriggerId: mockSetTriggerId,
+        } as any);
+
+        const result = await executeCommand(serverUrl, intl, '/code', channelId, rootId);
+
+        expect(mockClient.executeCommand).toHaveBeenCalledWith('/code ', args);
+        expect(mockSetTriggerId).toHaveBeenCalledWith('trigger_id');
+        expect(result).toEqual({data: {trigger_id: 'trigger_id'}});
+    });
+
+    it('handle command execution with no trigger id', async () => {
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        jest.spyOn(AppsManager, 'isAppsEnabled').mockResolvedValue(false);
+        mockClient.executeCommand.mockResolvedValueOnce({} as never);
+
+        const result = await executeCommand(serverUrl, intl, message, channelId, rootId);
+
+        expect(mockClient.executeCommand).toHaveBeenCalledWith(message, args);
+        expect(result).toEqual({data: {}});
+    });
+
     it('handle command execution with error response', async () => {
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
@@ -181,6 +218,16 @@ describe('executeCommand', () => {
 describe('executeAppCommand', () => {
     const msg = 'test message';
 
+    it('should handle a undefined creq', async () => {
+        const parser = {
+            composeCommandSubmitCall: jest.fn().mockResolvedValue({errorMessage: 'Error occurred'}),
+        };
+
+        const result = await executeAppCommand(serverUrl, intl, parser as any, msg, args);
+
+        expect(result).toEqual({error: {message: 'Error occurred'}});
+    });
+
     it('should handle a successful command execution with OK response', async () => {
         const parser = {
             composeCommandSubmitCall: jest.fn().mockResolvedValue({creq: {}, errorMessage: null}),
@@ -193,6 +240,20 @@ describe('executeAppCommand', () => {
         expect(parser.composeCommandSubmitCall).toHaveBeenCalledWith(msg);
         expect(doAppSubmit).toHaveBeenCalledWith(serverUrl, {}, intl);
         expect(postEphemeralCallResponseForCommandArgs).toHaveBeenCalledWith(serverUrl, {type: AppCallResponseTypes.OK, text: 'Success'}, 'Success', args);
+        expect(result).toEqual({data: {}});
+    });
+
+    it('should handle OK response with no text', async () => {
+        const parser = {
+            composeCommandSubmitCall: jest.fn().mockResolvedValue({creq: {}, errorMessage: null}),
+        };
+        (AppCommandParser as jest.Mock).mockReturnValue(parser);
+        (doAppSubmit as jest.Mock).mockResolvedValue({data: {type: AppCallResponseTypes.OK}});
+
+        const result = await executeAppCommand(serverUrl, intl, parser as any, msg, args);
+
+        expect(parser.composeCommandSubmitCall).toHaveBeenCalledWith(msg);
+        expect(doAppSubmit).toHaveBeenCalledWith(serverUrl, {}, intl);
         expect(result).toEqual({data: {}});
     });
 
@@ -210,6 +271,20 @@ describe('executeAppCommand', () => {
         expect(result).toEqual({error: {message: 'Error occurred'}});
     });
 
+    it('should handle an error response with no text', async () => {
+        const parser = {
+            composeCommandSubmitCall: jest.fn().mockResolvedValue({creq: {}, errorMessage: null}),
+        };
+        (AppCommandParser as jest.Mock).mockReturnValue(parser);
+        (doAppSubmit as jest.Mock).mockResolvedValue({error: {}});
+
+        const result = await executeAppCommand(serverUrl, intl, parser as any, msg, args);
+
+        expect(parser.composeCommandSubmitCall).toHaveBeenCalledWith(msg);
+        expect(doAppSubmit).toHaveBeenCalledWith(serverUrl, {}, intl);
+        expect(result).toEqual({error: {message: 'Unknown error.'}});
+    });
+
     it('should handle a form response', async () => {
         const parser = {
             composeCommandSubmitCall: jest.fn().mockResolvedValue({creq: {context: {}}, errorMessage: null}),
@@ -225,12 +300,40 @@ describe('executeAppCommand', () => {
         expect(result).toEqual({data: {}});
     });
 
+    it('should handle a form response with no form', async () => {
+        const parser = {
+            composeCommandSubmitCall: jest.fn().mockResolvedValue({creq: {context: {}}, errorMessage: null}),
+        };
+        (AppCommandParser as jest.Mock).mockReturnValue(parser);
+        (doAppSubmit as jest.Mock).mockResolvedValue({data: {type: AppCallResponseTypes.FORM}});
+
+        const result = await executeAppCommand(serverUrl, intl, parser as any, msg, args);
+
+        expect(parser.composeCommandSubmitCall).toHaveBeenCalledWith(msg);
+        expect(doAppSubmit).toHaveBeenCalledWith(serverUrl, {context: {}}, intl);
+        expect(result).toEqual({data: {}});
+    });
+
     it('should handle a navigate response', async () => {
         const parser = {
             composeCommandSubmitCall: jest.fn().mockResolvedValue({creq: {}, errorMessage: null}),
         };
         (AppCommandParser as jest.Mock).mockReturnValue(parser);
         (doAppSubmit as jest.Mock).mockResolvedValue({data: {type: AppCallResponseTypes.NAVIGATE, navigate_to_url: 'https://navigate.com'}});
+
+        const result = await executeAppCommand(serverUrl, intl, parser as any, msg, args);
+
+        expect(parser.composeCommandSubmitCall).toHaveBeenCalledWith(msg);
+        expect(doAppSubmit).toHaveBeenCalledWith(serverUrl, {}, intl);
+        expect(result).toEqual({data: {}});
+    });
+
+    it('should handle a navigate response with no url', async () => {
+        const parser = {
+            composeCommandSubmitCall: jest.fn().mockResolvedValue({creq: {}, errorMessage: null}),
+        };
+        (AppCommandParser as jest.Mock).mockReturnValue(parser);
+        (doAppSubmit as jest.Mock).mockResolvedValue({data: {type: AppCallResponseTypes.NAVIGATE}});
 
         const result = await executeAppCommand(serverUrl, intl, parser as any, msg, args);
 

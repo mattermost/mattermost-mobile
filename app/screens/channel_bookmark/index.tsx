@@ -159,13 +159,13 @@ const ChannelBookmarkAddOrEdit = ({
             ...(bookmark || emptyBookmark),
             owner_id: ownerId,
             channel_id: channelId,
-            display_name: decodeURIComponent(f.name),
+            display_name: f.name,
             type: 'file',
             file_id: f.id,
         };
         setBookmarkToSave(b);
         setFile(f);
-    }, [bookmark, channelId, ownerId]);
+    }, [bookmark, channelId, ownerId, setBookmarkToSave]);
 
     const setBookmarkDisplayName = useCallback((displayName: string) => {
         if (bookmark) {

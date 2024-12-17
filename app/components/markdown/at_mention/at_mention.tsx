@@ -6,7 +6,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {type GestureResponderEvent, Keyboard, type StyleProp, StyleSheet, Text, type TextStyle, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -62,7 +61,6 @@ const AtMention = ({
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
-    const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
 
     const user = useMemoMentionedUser(users, mentionName);
@@ -144,12 +142,12 @@ const AtMention = ({
             bottomSheet({
                 closeButtonId: 'close-at-mention',
                 renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, theme, bottom]);
+    }, [managedConfig?.copyAndPasteProtection, intl, theme, mentionName, user?.username]);
 
     const mentionTextStyle: StyleProp<TextStyle> = [];
 
