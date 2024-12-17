@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
-import {Text} from 'react-native';
 
 import {switchToThread} from '@actions/local/thread';
 import {switchToChannelById} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
@@ -45,7 +44,6 @@ const EditDraft: React.FC<Props> = ({
     rootId,
 }) => {
     const theme = useTheme();
-    const intl = useIntl();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
@@ -70,7 +68,11 @@ const EditDraft: React.FC<Props> = ({
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
-            <Text style={style.title}>{intl.formatMessage({id: 'draft.options.edit.title', defaultMessage: 'Edit draft'})}</Text>
+            <FormattedText
+                id='draft.options.edit.title'
+                defaultMessage={'Edit draft'}
+                style={style.title}
+            />
         </TouchableWithFeedback>
     );
 };
