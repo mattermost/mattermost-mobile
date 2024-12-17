@@ -3,7 +3,6 @@ package com.mattermost.rnbeta
 import android.app.PendingIntent
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.mattermost.helpers.CustomPushNotificationHelper
 import com.mattermost.helpers.DatabaseHelper
@@ -11,6 +10,7 @@ import com.mattermost.helpers.Network
 import com.mattermost.helpers.PushNotificationDataHelper
 import com.mattermost.helpers.database_extension.getServerUrlForIdentifier
 import com.mattermost.rnutils.helpers.NotificationHelper
+import com.mattermost.turbolog.TurboLog
 import com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME
 import com.wix.reactnativenotifications.core.AppLaunchHelper
 import com.wix.reactnativenotifications.core.AppLifecycleFacade
@@ -84,7 +84,7 @@ class CustomPushNotification(
         }
 
         if (!CustomPushNotificationHelper.verifySignature(mContext, signature, serverUrl, ackId)) {
-            Log.i("Mattermost Notifications Signature verification", "Notification skipped because we could not verify it.")
+            TurboLog.i("Mattermost Notifications Signature verification", "Notification skipped because we could not verify it.")
             return
         }
 
@@ -104,7 +104,7 @@ class CustomPushNotification(
         when (type) {
             CustomPushNotificationHelper.PUSH_TYPE_MESSAGE, CustomPushNotificationHelper.PUSH_TYPE_SESSION -> {
                 val currentActivityName = mAppLifecycleFacade.runningReactContext?.currentActivity?.componentName?.className ?: ""
-                Log.i("ReactNative", currentActivityName)
+                TurboLog.i("ReactNative", currentActivityName)
                 if (!mAppLifecycleFacade.isAppVisible() || currentActivityName != "MainActivity") {
                     var createSummary = type == CustomPushNotificationHelper.PUSH_TYPE_MESSAGE
                     if (type == CustomPushNotificationHelper.PUSH_TYPE_MESSAGE) {
