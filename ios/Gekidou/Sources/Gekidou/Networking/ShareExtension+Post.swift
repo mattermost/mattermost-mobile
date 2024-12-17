@@ -61,7 +61,7 @@ extension ShareExtension {
                                 filename,
                                 id
                             )
-                            notifyFailureNow(description: FILE_ERROR_MESSAGE, failID: uuidString)
+                            notifyFailureNow(description: FILE_ERROR_I18N_ID, failID: uuidString)
                             return "There was an error when trying to upload. Please try again"
                         }
                     } else {
@@ -71,7 +71,7 @@ extension ShareExtension {
                             filename,
                             id
                         )
-                        notifyFailureNow(description: FILE_ERROR_MESSAGE, failID: uuidString)
+                        notifyFailureNow(description: FILE_ERROR_I18N_ID, failID: uuidString)
                         return "The file \(filename) could not be processed for upload"
                     }
                 } else {
@@ -81,7 +81,7 @@ extension ShareExtension {
                         file,
                         id
                     )
-                    notifyFailureNow(description: FILE_ERROR_MESSAGE, failID: uuidString)
+                    notifyFailureNow(description: FILE_ERROR_I18N_ID, failID: uuidString)
                     return "File not found \(file)"
                 }
             }

@@ -57,8 +57,9 @@ struct UploadSessionData {
     }
 }
 
-// TODO: setup some configuration for allowing users to figure out the right ammount of time to wait.
 let SHARE_TIMEOUT: Double = 120 // change to 300
+let NETWORK_ERROR_I18N_ID: String = "share_extension.notification.network_error"
+let FILE_ERROR_I18N_ID: String = "share_extension.notification.file_error"
 let NETWORK_ERROR_MESSAGE: String = "Mattermost App couldn't acknowledge the message was posted due to network conditions, please review and try again"
 let FILE_ERROR_MESSAGE: String = "The shared file couldn't be processed for sharing"
 
@@ -165,10 +166,17 @@ public class ShareExtension: NSObject {
         }
     }
     
-    func scheduleFailNotification(timeout: Double = SHARE_TIMEOUT, description: String = NETWORK_ERROR_MESSAGE) -> String {
+    func getErrorMessage(error_identifier: String = NETWORK_ERROR_I18N_ID) -> String {
+        if error_identifier == FILE_ERROR_I18N_ID {
+            return NSLocalizedString(FILE_ERROR_I18N_ID, comment: FILE_ERROR_MESSAGE)
+        }
+        return NSLocalizedString(NETWORK_ERROR_I18N_ID, comment: NETWORK_ERROR_MESSAGE)
+    }
+    
+    func scheduleFailNotification(timeout: Double = SHARE_TIMEOUT, error_id: String = NETWORK_ERROR_I18N_ID) -> String {
         let failNotification = UNMutableNotificationContent()
-        failNotification.title = "Share content failed"
-        failNotification.body = description
+        failNotification.title = NSLocalizedString("share_extension.notification.title", comment: "Share content failed")
+        failNotification.body = getErrorMessage(error_identifier: error_id)
 
         let timeoutTrigger = UNTimeIntervalNotificationTrigger(timeInterval: timeout, repeats: false)
 
@@ -198,9 +206,9 @@ public class ShareExtension: NSObject {
         }
     }
     
-    func notifyFailureNow(description: String = NETWORK_ERROR_MESSAGE, failID: String?) -> Void {
+    func notifyFailureNow(description: String = NETWORK_ERROR_I18N_ID, failID: String?) -> Void {
         self.cancelFailNotification(failID: failID)
-        _ = self.scheduleFailNotification(timeout: 1, description: description)
+        _ = self.scheduleFailNotification(timeout: 1, error_id: description)
     }
     
     func createCancelHandler(completionHandler: @escaping () -> Void, failNotificationID: String) -> (Bool) -> Void {
