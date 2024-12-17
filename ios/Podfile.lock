@@ -81,7 +81,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - mattermost-react-native-turbo-log (0.4.0):
+  - mattermost-react-native-turbo-log (0.5.0):
     - CocoaLumberjack (~> 3.8.5)
     - DoubleConversion
     - glog
@@ -2479,7 +2479,7 @@ SPEC CHECKSUMS:
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
   JitsiWebRTC: d0ae5fd6a81e771bfd82c2ee6c6bb542ebd65ee8
   mattermost-hardware-keyboard: 510850877516c61f71f06c95377b96263af1b80d
-  mattermost-react-native-turbo-log: e1dd51c3ba6a86b040fe84727e63713928b025d8
+  mattermost-react-native-turbo-log: 4eff5879e0d263f8146666a6124d66f8e8fcc0ae
   mattermost-rnutils: 88291c01fc351a93c553b6a3bce44b17f8d38233
   RCT-Folly: 84578c8756030547307e4572ab1947de1685c599
   RCTDeprecation: fb7d408617e25d7f537940000d766d60149c5fea
