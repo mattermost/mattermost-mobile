@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {View} from 'react-native';
+import React, {useMemo} from 'react';
+import {Platform, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import SendHandler from '@components/post_draft/send_handler/';
@@ -39,6 +39,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+const TITLE_HEIGHT = 54;
+const ITEM_HEIGHT = 48;
+
 const DraftOptions: React.FC<Props> = ({
     channel,
     rootId,
@@ -48,6 +51,12 @@ const DraftOptions: React.FC<Props> = ({
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const snapPoints = useMemo(() => {
+        const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
+        const COMPONENT_HIEGHT = TITLE_HEIGHT + (3 * ITEM_HEIGHT) + bottomSheetAdjust;
+        return [1, COMPONENT_HIEGHT];
+    }, []);
+
     const renderContent = () => {
         return (
             <View>
@@ -95,7 +104,7 @@ const DraftOptions: React.FC<Props> = ({
             componentId={Screens.DRAFT_OPTIONS}
             renderContent={renderContent}
             closeButtonId={DRAFT_OPTIONS_BUTTON}
-            snapPoints={[200, 250]}
+            snapPoints={snapPoints}
             testID='draft_options'
         />
     );

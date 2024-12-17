@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {InteractionManager, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
 import Animated from 'react-native-reanimated';
 import Tooltip from 'react-native-walkthrough-tooltip';
@@ -11,7 +11,6 @@ import {storeDraftsTutorial} from '@actions/app/global';
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_list/config';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useIsTablet} from '@hooks/device';
 import {popTopScreen} from '@screens/navigation';
 
 import DraftEmptyComponent from '../draft_empty_component';
@@ -45,6 +44,12 @@ const styles = StyleSheet.create({
     swippeableContainer: {
         width: '100%',
     },
+    tooltipContentStyle: {
+        borderRadius: 8,
+        width: 247,
+        padding: 16,
+        height: 160,
+    },
 });
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -57,7 +62,6 @@ const GlobalDraftsList: React.FC<Props> = ({
 }) => {
     const [layoutWidth, setLayoutWidth] = useState(0);
     const [tooltipVisible, setTooltipVisible] = useState(false);
-    const isTablet = useIsTablet();
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         if (location === Screens.GLOBAL_DRAFTS) {
             setLayoutWidth(e.nativeEvent.layout.width - 40); // 40 is the padding of the container
@@ -65,13 +69,6 @@ const GlobalDraftsList: React.FC<Props> = ({
     }, [location]);
 
     const firstDraftId = allDrafts.length ? allDrafts[0].id : '';
-
-    const tooltipContentStyle = useMemo(() => ({
-        borderRadius: 8,
-        maxWidth: isTablet ? 352 : 247,
-        padding: 0,
-        height: 160,
-    }), [isTablet]);
 
     useEffect(() => {
         if (tutorialWatched) {
@@ -99,7 +96,7 @@ const GlobalDraftsList: React.FC<Props> = ({
                 <Tooltip
                     isVisible={tooltipVisible}
                     useInteractionManager={true}
-                    contentStyle={tooltipContentStyle}
+                    contentStyle={styles.tooltipContentStyle}
                     placement={'bottom'}
                     content={<DraftTooltip onClose={close}/>}
                     onClose={close}
@@ -124,7 +121,7 @@ const GlobalDraftsList: React.FC<Props> = ({
                 layoutWidth={layoutWidth}
             />
         );
-    }, [close, firstDraftId, layoutWidth, location, tooltipContentStyle, tooltipVisible, tutorialWatched]);
+    }, [close, firstDraftId, layoutWidth, location, tooltipVisible, tutorialWatched]);
 
     return (
         <View

@@ -20,9 +20,6 @@ const longPressGestureHandLogo = require('@assets/images/emojis/swipe.png');
 const hitSlop = {top: 10, bottom: 10, left: 10, right: 10};
 
 const styles = StyleSheet.create({
-    container: {
-        marginHorizontal: 24,
-    },
     close: {
         position: 'absolute',
         top: 0,
@@ -40,7 +37,6 @@ const styles = StyleSheet.create({
     titleContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 22,
         position: 'relative',
     },
     title: {
@@ -48,14 +44,14 @@ const styles = StyleSheet.create({
         ...typography('Body', 200, 'SemiBold'),
     },
     image: {
-        height: 68,
+        height: 69,
         width: 68,
     },
 });
 
 const DraftTooltip = ({onClose}: Props) => {
     return (
-        <View style={styles.container}>
+        <View>
             <View style={styles.titleContainer}>
                 <Image
                     source={longPressGestureHandLogo}
