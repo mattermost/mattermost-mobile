@@ -114,14 +114,16 @@ describe('actions/remote/file', () => {
             const result = uploadFile(serverUrl, file, channelId);
 
             const uploadCall = mockClient.uploadAttachment.mock.calls[0];
-            expect(uploadCall[2]).toBeDefined(); // onProgress
-            expect(uploadCall[3]).toBeDefined(); // onComplete
-            expect(uploadCall[4]).toBeDefined(); // onError
 
-            // Call the default callbacks to ensure they don't throw
-            uploadCall[2](0.5, 512); // onProgress
-            uploadCall[3]({data: 'test'}); // onComplete
-            uploadCall[4]({message: 'test error'}); // onError
+            // Verify default callbacks are undefined
+            expect(uploadCall[2]()).toBeUndefined(); // onProgress should return undefined
+            expect(uploadCall[3]()).toBeUndefined(); // onComplete should return undefined
+            expect(uploadCall[4]()).toBeUndefined(); // onError should return undefined
+
+            // Call with actual parameters to ensure they handle inputs correctly
+            expect(uploadCall[2](0.5, 512)).toBeUndefined(); // onProgress
+            expect(uploadCall[3]({data: 'test'})).toBeUndefined(); // onComplete
+            expect(uploadCall[4]({message: 'test error'})).toBeUndefined(); // onError
 
             expect(result).toHaveProperty('cancel');
         });
