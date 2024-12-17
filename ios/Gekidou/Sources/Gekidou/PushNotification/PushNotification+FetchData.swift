@@ -114,7 +114,11 @@ extension PushNotification {
                                 var copy = threads[index]
                                 copy.unreadMentions = thread.unreadMentions
                                 copy.unreadReplies = thread.unreadReplies
-                                copy.lastReplyAt = thread.lastReplyAt
+                                if (thread.lastReplyAt == 0) {
+                                    copy.lastReplyAt = thread.post?.createAt ?? 0
+                                } else {
+                                    copy.lastReplyAt = thread.lastReplyAt
+                                }
                                 copy.lastViewedAt = thread.lastViewedAt
                                 notificationData.threads?[index] = copy
                             }

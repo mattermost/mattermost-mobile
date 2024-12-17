@@ -126,7 +126,7 @@ const ThreadsList = ({
     const handleRefresh = useCallback(() => {
         setRefreshing(true);
 
-        syncTeamThreads(serverUrl, teamId).finally(() => {
+        syncTeamThreads(serverUrl, teamId, {refresh: true}).finally(() => {
             setRefreshing(false);
         });
     }, [serverUrl, teamId]);
