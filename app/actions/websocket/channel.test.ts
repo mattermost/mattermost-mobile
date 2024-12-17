@@ -20,6 +20,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {handleChannelCreatedEvent, handleChannelUnarchiveEvent, handleChannelConvertedEvent, handleChannelUpdatedEvent, handleChannelViewedEvent, handleMultipleChannelsViewedEvent, handleChannelMemberUpdatedEvent, handleChannelDeletedEvent, handleDirectAddedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 jest.mock('@database/manager');
 jest.mock('@store/ephemeral_store');
@@ -47,7 +48,23 @@ describe('WebSocket Channel Actions', () => {
 
     const teamId = 'teamid1';
     const channelId = 'channelid1';
+    const channel = {id: channelId, team_id: teamId} as Channel;
+    const channelModel = {
+        id: channelId,
+        type: General.PRIVATE_CHANNEL,
+        teamId,
+        createAt: 0,
+        updateAt: 0,
+        deleteAt: 0,
+        displayName: 'channeldisplayname',
+        name: 'channelname',
+    } as ChannelModel;
     const userId = 'userid1';
+
+    const mockedGetChannelById = jest.mocked(getChannelById);
+    const mockedFetchMyChannel = jest.mocked(fetchMyChannel);
+    const mockedPrepareMyChannelsForTeam = jest.mocked(prepareMyChannelsForTeam);
+    const mockedFetchChannelById = jest.mocked(fetchChannelById);
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
@@ -75,9 +92,9 @@ describe('WebSocket Channel Actions', () => {
     describe('handleChannelCreatedEvent', () => {
         it('should handle channel created event', async () => {
             (EphemeralStore.creatingChannel as boolean) = false;
-            (getChannelById as jest.Mock).mockResolvedValue(null);
-            (fetchMyChannel as jest.Mock).mockResolvedValue({channels: [{}], memberships: [{}]});
-            (prepareMyChannelsForTeam as jest.Mock).mockResolvedValue([[]]);
+            mockedGetChannelById.mockResolvedValue(undefined);
+            mockedFetchMyChannel.mockResolvedValue({channels: [channel], memberships: [{} as any]});
+            mockedPrepareMyChannelsForTeam.mockResolvedValue([[] as any]);
             (addChannelToDefaultCategory as jest.Mock).mockResolvedValue({models: []});
 
             await handleChannelCreatedEvent(serverUrl, msg);
@@ -90,8 +107,20 @@ describe('WebSocket Channel Actions', () => {
 
         it('should handle channel created event - no channels', async () => {
             (EphemeralStore.creatingChannel as boolean) = false;
-            (getChannelById as jest.Mock).mockResolvedValue(null);
-            (fetchMyChannel as jest.Mock).mockResolvedValue({channels: null, memberships: [{}]});
+            mockedGetChannelById.mockResolvedValue(undefined);
+            mockedFetchMyChannel.mockResolvedValue({channels: undefined, memberships: undefined});
+
+            await handleChannelCreatedEvent(serverUrl, msg);
+
+            expect(getChannelById).toHaveBeenCalled();
+            expect(fetchMyChannel).toHaveBeenCalledWith(serverUrl, teamId, channelId, true);
+            expect(prepareMyChannelsForTeam).not.toHaveBeenCalled();
+        });
+
+        it('should handle channel created event - no members', async () => {
+            (EphemeralStore.creatingChannel as boolean) = false;
+            mockedGetChannelById.mockResolvedValue(undefined);
+            mockedFetchMyChannel.mockResolvedValue({channels: [channel], memberships: undefined});
 
             await handleChannelCreatedEvent(serverUrl, msg);
 
@@ -102,9 +131,9 @@ describe('WebSocket Channel Actions', () => {
 
         it('should handle channel created event - nothing to prepare', async () => {
             (EphemeralStore.creatingChannel as boolean) = false;
-            (getChannelById as jest.Mock).mockResolvedValue(null);
-            (fetchMyChannel as jest.Mock).mockResolvedValue({channels: [{}], memberships: [{}]});
-            (prepareMyChannelsForTeam as jest.Mock).mockResolvedValue([]);
+            mockedGetChannelById.mockResolvedValue(undefined);
+            mockedFetchMyChannel.mockResolvedValue({channels: [channel], memberships: [{} as any]});
+            mockedPrepareMyChannelsForTeam.mockResolvedValue([]);
 
             await handleChannelCreatedEvent(serverUrl, msg);
 
@@ -124,7 +153,7 @@ describe('WebSocket Channel Actions', () => {
 
         it('should return if channel already exists', async () => {
             (EphemeralStore.creatingChannel as boolean) = false;
-            (getChannelById as jest.Mock).mockResolvedValue({});
+            mockedGetChannelById.mockResolvedValue(channelModel);
 
             await handleChannelCreatedEvent(serverUrl, msg);
 
@@ -154,7 +183,7 @@ describe('WebSocket Channel Actions', () => {
     describe('handleChannelConvertedEvent', () => {
         it('should handle channel converted event', async () => {
             (EphemeralStore.isConvertingChannel as jest.Mock).mockReturnValue(false);
-            (fetchChannelById as jest.Mock).mockResolvedValue({channel: {}});
+            mockedFetchChannelById.mockResolvedValue({channel});
             jest.spyOn(operator, 'handleChannel').mockResolvedValueOnce([]);
 
             await handleChannelConvertedEvent(serverUrl, msg);
@@ -166,7 +195,7 @@ describe('WebSocket Channel Actions', () => {
 
         it('should handle channel converted event - no channel', async () => {
             (EphemeralStore.isConvertingChannel as jest.Mock).mockReturnValue(false);
-            (fetchChannelById as jest.Mock).mockResolvedValue({channel: null});
+            mockedFetchChannelById.mockResolvedValue({error: 'some error'});
             jest.spyOn(operator, 'handleChannel').mockResolvedValueOnce([]);
 
             await handleChannelConvertedEvent(serverUrl, msg);
@@ -186,7 +215,7 @@ describe('WebSocket Channel Actions', () => {
     describe('handleChannelUpdatedEvent', () => {
         it('should handle channel updated event', async () => {
             (EphemeralStore.isConvertingChannel as jest.Mock).mockReturnValue(false);
-            (getChannelById as jest.Mock).mockResolvedValue({type: General.GM_CHANNEL});
+            mockedGetChannelById.mockResolvedValue({...channelModel, type: General.GM_CHANNEL} as ChannelModel);
             (updateChannelInfoFromChannel as jest.Mock).mockResolvedValue({model: []});
             jest.spyOn(operator, 'handleChannel').mockResolvedValueOnce([]);
             (getCurrentChannelId as jest.Mock).mockResolvedValue(channelId);
@@ -208,7 +237,7 @@ describe('WebSocket Channel Actions', () => {
         });
 
         it('should not call handleConvertedGMCategories if channel type is not GM', async () => {
-            (getChannelById as jest.Mock).mockResolvedValue({type: General.PRIVATE_CHANNEL});
+            mockedGetChannelById.mockResolvedValue(channelModel);
             (updateChannelInfoFromChannel as jest.Mock).mockResolvedValue({model: []});
 
             await handleChannelUpdatedEvent(serverUrl, msg);
@@ -217,7 +246,7 @@ describe('WebSocket Channel Actions', () => {
         });
 
         it('should not call setCurrentTeamId if current team ID is the same', async () => {
-            (getChannelById as jest.Mock).mockResolvedValue({type: General.GM_CHANNEL});
+            mockedGetChannelById.mockResolvedValue({...channelModel, type: General.GM_CHANNEL} as ChannelModel);
             (updateChannelInfoFromChannel as jest.Mock).mockResolvedValue({model: []});
             (getCurrentChannelId as jest.Mock).mockResolvedValue(channelId);
             (getCurrentTeamId as jest.Mock).mockResolvedValue(teamId);
@@ -296,7 +325,7 @@ describe('WebSocket Channel Actions', () => {
         it('should handle channel member updated event', async () => {
             const mockMember = JSON.stringify({id: 'member_id', channel_id: channelId, user_id: userId, roles: ''});
             msg.data = {channelMember: mockMember};
-            (getChannelById as jest.Mock).mockResolvedValue({id: channelId});
+            mockedGetChannelById.mockResolvedValue(channelModel);
             (updateChannelInfoFromChannel as jest.Mock).mockResolvedValue({model: []});
             (updateMyChannelFromWebsocket as jest.Mock).mockResolvedValue({model: {}});
             (fetchRolesIfNeeded as jest.Mock).mockResolvedValue({roles: []});
@@ -313,8 +342,8 @@ describe('WebSocket Channel Actions', () => {
         it('should handle direct added event', async () => {
             msg.data = {teammate_id: userId};
             (EphemeralStore.creatingDMorGMTeammates as string[]) = [];
-            (getChannelById as jest.Mock).mockResolvedValue(null);
-            (fetchMyChannel as jest.Mock).mockResolvedValue({channels: [{}], memberships: [{}]});
+            mockedGetChannelById.mockResolvedValue(undefined);
+            mockedFetchMyChannel.mockResolvedValue({channels: [channel], memberships: [{} as any]});
             (getCurrentUser as jest.Mock).mockResolvedValue({id: userId, locale: 'en'});
             (getTeammateNameDisplay as jest.Mock).mockResolvedValue('username');
             (fetchMissingDirectChannelsInfo as jest.Mock).mockResolvedValue({directChannels: [{}], users: [{}]});
@@ -327,9 +356,9 @@ describe('WebSocket Channel Actions', () => {
             expect(fetchMyChannel).toHaveBeenCalledWith(serverUrl, '', channelId, true);
             expect(getCurrentUser).toHaveBeenCalled();
             expect(getTeammateNameDisplay).toHaveBeenCalled();
-            expect(fetchMissingDirectChannelsInfo).toHaveBeenCalledWith(serverUrl, [{}], 'en', 'username', userId, true);
+            expect(fetchMissingDirectChannelsInfo).toHaveBeenCalledWith(serverUrl, [channel], 'en', 'username', userId, true);
             expect(storeMyChannelsForTeam).toHaveBeenCalledWith(serverUrl, '', [{}], [{}], true);
-            expect(addChannelToDefaultCategory).toHaveBeenCalledWith(serverUrl, {}, true);
+            expect(addChannelToDefaultCategory).toHaveBeenCalledWith(serverUrl, channel, true);
         });
 
         it('should handle direct added event - already adding DM', async () => {
@@ -352,7 +381,7 @@ describe('WebSocket Channel Actions', () => {
         });
 
         it('should return if channel already exists', async () => {
-            (getChannelById as jest.Mock).mockResolvedValue({id: channelId});
+            mockedGetChannelById.mockResolvedValue(channelModel);
 
             await handleDirectAddedEvent(serverUrl, msg);
 
@@ -361,8 +390,8 @@ describe('WebSocket Channel Actions', () => {
         });
 
         it('should return if no channels exist', async () => {
-            (getChannelById as jest.Mock).mockResolvedValue(null);
-            (fetchMyChannel as jest.Mock).mockResolvedValue({channels: null, memberships: [{}]});
+            mockedGetChannelById.mockResolvedValue(undefined);
+            mockedFetchMyChannel.mockResolvedValue({channels: undefined, memberships: [{} as any]});
 
             await handleDirectAddedEvent(serverUrl, msg);
 
@@ -372,8 +401,8 @@ describe('WebSocket Channel Actions', () => {
         });
 
         it('should return if no current user exists', async () => {
-            (getChannelById as jest.Mock).mockResolvedValue(null);
-            (fetchMyChannel as jest.Mock).mockResolvedValue({channels: {}, memberships: [{}]});
+            mockedGetChannelById.mockResolvedValue(undefined);
+            mockedFetchMyChannel.mockResolvedValue({channels: [channel], memberships: [{} as any]});
             (getCurrentUser as jest.Mock).mockResolvedValue(null);
 
             await handleDirectAddedEvent(serverUrl, msg);
@@ -385,8 +414,8 @@ describe('WebSocket Channel Actions', () => {
         });
 
         it('should return if no direct channels exists', async () => {
-            (getChannelById as jest.Mock).mockResolvedValue(null);
-            (fetchMyChannel as jest.Mock).mockResolvedValue({channels: {}, memberships: [{}]});
+            mockedGetChannelById.mockResolvedValue(undefined);
+            mockedFetchMyChannel.mockResolvedValue({channels: [channel], memberships: [{} as any]});
             (getCurrentUser as jest.Mock).mockResolvedValue({id: userId, locale: 'en'});
             (getTeammateNameDisplay as jest.Mock).mockResolvedValue('username');
             (fetchMissingDirectChannelsInfo as jest.Mock).mockResolvedValue({directChannels: [], users: [{}]});
@@ -404,8 +433,8 @@ describe('WebSocket Channel Actions', () => {
     describe('handleUserAddedToChannelEvent', () => {
         it('should handle user added to channel event for current user', async () => {
             (getCurrentUser as jest.Mock).mockResolvedValue({id: userId});
-            (fetchMyChannel as jest.Mock).mockResolvedValue({channels: [{}], memberships: [{}]});
-            (prepareMyChannelsForTeam as jest.Mock).mockResolvedValue([[]]);
+            mockedFetchMyChannel.mockResolvedValue({channels: [channel], memberships: [{} as any]});
+            mockedPrepareMyChannelsForTeam.mockResolvedValue([[] as any]);
             (addChannelToDefaultCategory as jest.Mock).mockResolvedValue({models: []});
             (fetchPostsForChannel as jest.Mock).mockResolvedValue({posts: [{}], order: ['order'], authors: [{}], actionType: 'action', previousPostId: 'prev_id'});
             (storePostsForChannel as jest.Mock).mockResolvedValue({models: []});
@@ -415,7 +444,7 @@ describe('WebSocket Channel Actions', () => {
             expect(getCurrentUser).toHaveBeenCalled();
             expect(fetchMyChannel).toHaveBeenCalledWith(serverUrl, teamId, channelId, true);
             expect(prepareMyChannelsForTeam).toHaveBeenCalled();
-            expect(addChannelToDefaultCategory).toHaveBeenCalledWith(serverUrl, {}, true);
+            expect(addChannelToDefaultCategory).toHaveBeenCalledWith(serverUrl, channel, true);
             expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, channelId, true);
             expect(storePostsForChannel).toHaveBeenCalledWith(serverUrl, channelId, [{}], ['order'], 'prev_id', 'action', [{}], true);
         });
@@ -435,7 +464,7 @@ describe('WebSocket Channel Actions', () => {
             (getCurrentUser as jest.Mock).mockResolvedValue({id: 'other_user_id'});
             (getUserById as jest.Mock).mockResolvedValue(null);
             (fetchUsersByIds as jest.Mock).mockResolvedValue({users: [{id: userId, roles: ''}]});
-            (getChannelById as jest.Mock).mockResolvedValue({id: channelId});
+            mockedGetChannelById.mockResolvedValue(channelModel);
 
             await handleUserAddedToChannelEvent(serverUrl, msg);
 
