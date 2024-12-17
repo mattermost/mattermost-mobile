@@ -146,6 +146,12 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
         }
     };
 
+    const onAudioFocusChanged = ({hasAudioFocus}: {hasAudioFocus: boolean}) => {
+        if (!hasAudioFocus) {
+            setHasPaused(true);
+        }
+    };
+
     if (hasError) {
         return (
             <FormattedText
@@ -181,6 +187,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
                     onProgress={onProgress}
                     onError={onError}
                     onEnd={onEnd}
+                    onAudioFocusChanged={onAudioFocusChanged}
                 />
 
                 <View style={style.progressBar}>
