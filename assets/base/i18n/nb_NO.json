@@ -211,7 +211,7 @@
   "channel_modal.headerEx": "Bruk Markdown for å formatere overskriftstekst",
   "channel_modal.makePrivate.description": "Når en kanal er satt til privat, kan bare inviterte teammedlemmer få tilgang til og delta i den kanalen",
   "channel_modal.makePrivate.label": "Gjør privat",
-  "channel_modal.name": "Нэр",
+  "channel_modal.name": "Navn",
   "channel_modal.nameEx": "Bugs, markedsføring",
   "channel_modal.optional": "(valgfri)",
   "channel_modal.purpose": "Formål",
