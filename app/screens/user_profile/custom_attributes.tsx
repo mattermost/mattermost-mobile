@@ -2,7 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {FlatList, View, Text, StyleSheet, type ListRenderItem} from 'react-native';
+import {FlatList, View, StyleSheet, type ListRenderItem} from 'react-native';
+
+import UserProfileLabel from './label';
 
 type CustomAttribute = {
     id: string;
@@ -19,10 +21,11 @@ const MOCK_CUSTOM_ATTRIBUTES: CustomAttribute[] = Array.from({length: 15}, (_, i
 
 const CustomAttributes = () => {
     const renderAttribute: ListRenderItem<CustomAttribute> = ({item}) => (
-        <View style={styles.attributeContainer}>
-            <Text style={styles.label}>{item.label}</Text>
-            <Text style={styles.value}>{item.value}</Text>
-        </View>
+        <UserProfileLabel
+            title={item.label}
+            description={item.value}
+            testID={`custom_attribute.${item.id}`}
+        />
     );
 
     return (
@@ -46,18 +49,6 @@ const styles = StyleSheet.create({
     container: {
         marginTop: 12,
         paddingHorizontal: 20,
-    },
-    attributeContainer: {
-        marginBottom: 12,
-    },
-    label: {
-        fontSize: 12,
-        color: '#3f4350',
-        marginBottom: 4,
-    },
-    value: {
-        fontSize: 14,
-        color: '#1c58d9',
     },
 });
 
