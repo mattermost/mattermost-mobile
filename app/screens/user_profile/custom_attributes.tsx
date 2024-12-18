@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {FlatList, View, StyleSheet, type ListRenderItem} from 'react-native';
+import {useIntl} from 'react-intl';
 
 import UserProfileLabel from './label';
 
@@ -12,14 +13,39 @@ type CustomAttribute = {
     value: string;
 };
 
-// Mock custom attributes - in real implementation these would come from the user model
-const MOCK_CUSTOM_ATTRIBUTES: CustomAttribute[] = Array.from({length: 15}, (_, i) => ({
-    id: `attr_${i}`,
-    label: `Custom Field ${i + 1}`,
-    value: `Value ${i + 1}`,
-}));
+type Props = {
+    nickname?: string;
+    position?: string;
+    localTime?: string;
+}
 
-const CustomAttributes = () => {
+const CustomAttributes = ({nickname, position, localTime}: Props) => {
+    const {formatMessage} = useIntl();
+
+    // Combine standard and custom attributes
+    const attributes = [
+        ...(nickname ? [{
+            id: 'nickname',
+            label: formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'}),
+            value: nickname,
+        }] : []),
+        ...(position ? [{
+            id: 'position',
+            label: formatMessage({id: 'channel_info.position', defaultMessage: 'Position'}),
+            value: position,
+        }] : []),
+        ...(localTime ? [{
+            id: 'local_time',
+            label: formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'}),
+            value: localTime,
+        }] : []),
+        // Mock custom attributes - in real implementation these would come from the user model
+        ...Array.from({length: 15}, (_, i) => ({
+            id: `attr_${i}`,
+            label: `Custom Field ${i + 1}`,
+            value: `Value ${i + 1}`,
+        })),
+    ];
     const renderAttribute: ListRenderItem<CustomAttribute> = ({item}) => (
         <UserProfileLabel
             title={item.label}
