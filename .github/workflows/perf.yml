@@ -1,0 +1,17 @@
+name: run-performance-tests
+
+on:
+  pull_request:
+    types: [ labeled ]
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.label.name == 'Run Performance Tests' }}
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: ci/test
+        uses: ./.github/actions/test
