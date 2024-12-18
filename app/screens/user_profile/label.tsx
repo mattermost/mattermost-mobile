@@ -17,15 +17,18 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         marginVertical: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     description: {
         color: theme.centerChannelColor,
+        flex: 2,
         ...typography('Body', 200),
     },
     title: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
-        marginBottom: 2,
-        ...typography('Body', 50, 'SemiBold'),
+        flex: 1,
+        ...typography('Body', 200, 'SemiBold'),
     },
 }));
 
@@ -38,6 +41,7 @@ const UserProfileLabel = ({title, description, testID}: Props) => {
             <Text
                 style={styles.title}
                 testID={`${testID}.title`}
+                numberOfLines={1}
             >
                 {title}
             </Text>
