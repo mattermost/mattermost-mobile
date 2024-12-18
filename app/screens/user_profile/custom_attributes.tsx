@@ -57,7 +57,7 @@ const CustomAttributes = ({nickname, position, localTime}: Props) => {
     return (
         <View style={styles.container}>
             <FlatList
-                data={MOCK_CUSTOM_ATTRIBUTES}
+                data={attributes}
                 renderItem={renderAttribute}
                 keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={true}
