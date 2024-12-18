@@ -121,7 +121,7 @@ function Typing({
 
     useEffect(() => {
         typingHeight.value = typing.current.length ? TYPING_HEIGHT : 0;
-    }, [refresh]);
+    }, [refresh, typingHeight]);
 
     useEffect(() => {
         typing.current = [];
@@ -130,7 +130,7 @@ function Typing({
             clearTimeout(timeoutToDisappear.current);
             timeoutToDisappear.current = undefined;
         }
-    }, [channelId, rootId]);
+    }, [channelId, rootId, typingHeight]);
 
     const renderTyping = () => {
         const nextTyping = typing.current.map(({username}) => username);

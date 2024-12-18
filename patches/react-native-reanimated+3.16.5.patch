@@ -1,0 +1,12 @@
+diff --git a/node_modules/react-native-reanimated/src/mock.ts b/node_modules/react-native-reanimated/src/mock.ts
+index 3d8e3f8..b32d457 100644
+--- a/node_modules/react-native-reanimated/src/mock.ts
++++ b/node_modules/react-native-reanimated/src/mock.ts
+@@ -114,6 +114,7 @@ const hook = {
+   }),
+   // useFrameCallback: ADD ME IF NEEDED
+   useAnimatedKeyboard: () => ({ height: 0, state: 0 }),
++  useReducedMotion: () => false,
+   // useScrollViewOffset: ADD ME IF NEEDED
+ };
+ 

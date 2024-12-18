@@ -6,12 +6,12 @@ import React from 'react';
 import Emoji from '@components/emoji';
 
 import type {EmojiCommonStyle} from '@typings/components/emoji';
-import type {StyleProp} from 'react-native';
+import type {StyleProp, TextStyle} from 'react-native';
 
 interface ComponentProps {
     customStatus: UserCustomStatus;
     emojiSize?: number;
-    style?: StyleProp<EmojiCommonStyle>;
+    style?: StyleProp<Intersection<EmojiCommonStyle, TextStyle>>;
 }
 
 const CustomStatusEmoji = ({customStatus, emojiSize = 16, style}: ComponentProps) => {

@@ -11,13 +11,13 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {StyleProp, ViewStyle} from 'react-native';
+import type {StyleProp, TextStyle, ViewStyle} from 'react-native';
 
 type Props = {
     authorId: string;
     author?: UserModel;
     isOnCenterBg?: boolean;
-    style: StyleProp<ViewStyle>;
+    style: StyleProp<Intersection<TextStyle, ViewStyle>>;
     size: number;
 }
 

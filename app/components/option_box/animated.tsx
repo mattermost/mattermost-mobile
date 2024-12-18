@@ -61,7 +61,7 @@ const AnimatedOptionBox = ({
         animate.value = withTiming(1, {duration: 150, easing: Easing.out(Easing.linear)});
         setActivated(true);
         onPress();
-    }, [onPress]);
+    }, [animate, onPress]);
 
     const backgroundStyle = useAnimatedStyle(() => ({
         backgroundColor: interpolateColor(
@@ -111,7 +111,7 @@ const AnimatedOptionBox = ({
                 clearTimeout(t);
             }
         };
-    }, [activated, animate.value, onAnimationEnd]);
+    }, [activated, animate, onAnimationEnd]);
 
     return (
         <AnimatedPressable

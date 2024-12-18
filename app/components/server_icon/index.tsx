@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
@@ -14,7 +14,7 @@ type Props = {
     badgeBackgroundColor?: string;
     badgeBorderColor?: string;
     badgeColor?: string;
-    badgeStyle?: StyleProp<ViewStyle>;
+    badgeStyle?: StyleProp<TextStyle>;
     hasUnreads: boolean;
     iconColor?: string;
     mentionCount: number;
@@ -22,7 +22,7 @@ type Props = {
     size?: number;
     style?: StyleProp<ViewStyle>;
     testID?: string;
-    unreadStyle?: StyleProp<ViewStyle>;
+    unreadStyle?: StyleProp<TextStyle>;
 }
 
 const hitSlop = {top: 20, bottom: 5, left: 40, right: 20};

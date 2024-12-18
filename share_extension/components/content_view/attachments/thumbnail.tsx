@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Image} from 'expo-image';
-import {LinearGradient} from 'expo-linear-gradient';
+import {LinearGradient, type LinearGradientProps} from 'expo-linear-gradient';
 import React, {useMemo} from 'react';
 import {StyleSheet, useWindowDimensions, View} from 'react-native';
 
@@ -20,9 +20,9 @@ type Props = {
     type?: 'image' | 'video';
 }
 
-const GRADIENT_COLORS = ['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, .16)'];
+const GRADIENT_COLORS: LinearGradientProps['colors'] = ['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, .16)'];
 const GRADIENT_END = {x: 1, y: 1};
-const GRADIENT_LOCATIONS = [0.5, 1];
+const GRADIENT_LOCATIONS: LinearGradientProps['locations'] = [0.5, 1];
 const GRADIENT_START = {x: 0.3, y: 0.3};
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -81,7 +81,7 @@ const Thumbnail = ({contentMode, file, hasError, theme, type}: Props) => {
         styles.container,
         hasError && styles.error,
         styles.radius,
-    ]), [styles, imgStyle, hasError]);
+    ]), [styles, hasError]);
 
     const source = useMemo(() => ({uri: type === 'video' ? file.videoThumb : file.value}), [type, file]);
 
