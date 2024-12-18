@@ -14,7 +14,7 @@ type Props = {
     badgeBackgroundColor?: string;
     badgeBorderColor?: string;
     badgeColor?: string;
-    badgeStyle?: StyleProp<ViewStyle>;
+    badgeStyle?: StyleProp<TextStyle>;
     hasUnreads: boolean;
     iconColor?: string;
     mentionCount: number;
@@ -22,7 +22,7 @@ type Props = {
     size?: number;
     style?: StyleProp<ViewStyle>;
     testID?: string;
-    unreadStyle?: StyleProp<ViewStyle>;
+    unreadStyle?: StyleProp<TextStyle>;
 }
 
 const hitSlop = {top: 20, bottom: 5, left: 40, right: 20};
@@ -78,7 +78,7 @@ export default function ServerIcon({
                     backgroundColor={badgeBackgroundColor}
                     color={badgeColor}
                     visible={hasBadge}
-                    style={memoizedStyle as StyleProp<TextStyle>}
+                    style={memoizedStyle}
                     testID={`${testID}.badge`}
                     value={count}
                 />

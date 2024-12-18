@@ -17,7 +17,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     pressableStyle: StyleProp<ViewStyle>;
-    iconStyle: StyleProp<ViewStyle>;
+    iconStyle: StyleProp<TextStyle>;
     buttonTextStyle: StyleProp<TextStyle>;
     currentCall: CurrentCall;
 }
@@ -141,7 +141,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
             <CompassIcon
                 name={icon}
                 size={32}
-                style={iconStyle as StyleProp<TextStyle>}
+                style={iconStyle}
             />
             <Text style={buttonTextStyle}>{label}</Text>
         </Pressable>

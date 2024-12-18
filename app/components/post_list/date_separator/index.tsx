@@ -13,7 +13,7 @@ import {typography} from '@utils/typography';
 
 type DateSeparatorProps = {
     date: number | Date;
-    style?: StyleProp<TextStyle>;
+    style?: StyleProp<Intersection<TextStyle, ViewStyle>>;
     timezone?: string | null;
 };
 

@@ -112,7 +112,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 export type OptionItemProps = {
     action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void);
-    arrowStyle?: StyleProp<ViewStyle>;
+    arrowStyle?: StyleProp<Intersection<TextStyle, ViewStyle>>;
     containerStyle?: StyleProp<ViewStyle>;
     description?: string;
     destructive?: boolean;
@@ -223,7 +223,7 @@ const OptionItem = ({
                 color={changeOpacity(theme.centerChannelColor, 0.32)}
                 name='chevron-right'
                 size={24}
-                style={arrowStyle as StyleProp<TextStyle>}
+                style={arrowStyle}
             />
         );
     } else if (type === OptionType.REMOVE) {

@@ -12,7 +12,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 type ErrorProps = {
     error: unknown;
     testID?: string;
-    textStyle?: StyleProp<ViewStyle> | StyleProp<TextStyle>;
+    textStyle?: StyleProp<Intersection<TextStyle, ViewStyle>> | StyleProp<TextStyle>;
 }
 
 const ErrorTextComponent = ({error, testID, textStyle}: ErrorProps) => {
@@ -24,7 +24,7 @@ const ErrorTextComponent = ({error, testID, textStyle}: ErrorProps) => {
     return (
         <Text
             testID={testID}
-            style={[style.errorLabel, textStyle as StyleProp<TextStyle>]}
+            style={[style.errorLabel, textStyle]}
         >
             {message}
         </Text>

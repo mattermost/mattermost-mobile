@@ -23,7 +23,7 @@ type ChannelIconProps = {
     name: string;
     shared: boolean;
     size?: number;
-    style?: StyleProp<ViewStyle>;
+    style?: StyleProp<Intersection<TextStyle, ViewStyle>>;
     testID?: string;
     type: string;
 };
@@ -125,12 +125,12 @@ const ChannelIcon = ({
         mutedStyle = styles.muted;
     }
 
-    const commonStyles = [
+    const commonStyles: StyleProp<Intersection<TextStyle, ViewStyle>> = [
         style,
         mutedStyle,
     ];
 
-    const commonIconStyles = [
+    const commonIconStyles: StyleProp<TextStyle> = [
         styles.icon,
         unreadIcon,
         activeIcon,
@@ -144,7 +144,7 @@ const ChannelIcon = ({
             <CompassIcon
                 name='archive-outline'
                 style={[
-                    commonIconStyles as StyleProp<TextStyle>,
+                    commonIconStyles,
                     {left: 1},
                 ]}
                 testID={`${testID}.archive`}
@@ -155,7 +155,7 @@ const ChannelIcon = ({
             <CompassIcon
                 name='pencil-outline'
                 style={[
-                    commonIconStyles as StyleProp<TextStyle>,
+                    commonIconStyles,
                     {left: 2},
                 ]}
                 testID={`${testID}.draft`}
@@ -168,7 +168,7 @@ const ChannelIcon = ({
             <CompassIcon
                 name={iconName}
                 style={[
-                    commonIconStyles as StyleProp<TextStyle>,
+                    commonIconStyles,
                     {left: 0.5},
                 ]}
                 testID={sharedTestID}
@@ -179,7 +179,7 @@ const ChannelIcon = ({
             <CompassIcon
                 name='globe'
                 style={[
-                    commonIconStyles as StyleProp<TextStyle>,
+                    commonIconStyles,
                     {left: 1},
                 ]}
                 testID={`${testID}.public`}
@@ -190,7 +190,7 @@ const ChannelIcon = ({
             <CompassIcon
                 name='lock-outline'
                 style={[
-                    commonIconStyles as StyleProp<TextStyle>,
+                    commonIconStyles,
                     {left: 0.5},
                 ]}
                 testID={`${testID}.private`}

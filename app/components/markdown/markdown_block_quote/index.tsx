@@ -8,7 +8,7 @@ import CompassIcon from '@components/compass_icon';
 
 type MarkdownBlockQuoteProps = {
     continueBlock?: boolean;
-    iconStyle: ViewStyle | TextStyle;
+    iconStyle: StyleProp<Intersection<ViewStyle, TextStyle>>;
     children: ReactNode | ReactNode[];
 };
 
@@ -35,7 +35,7 @@ const MarkdownBlockQuote = ({children, continueBlock, iconStyle}: MarkdownBlockQ
                 <View style={style.icon}>
                     <CompassIcon
                         name='format-quote-open'
-                        style={iconStyle as StyleProp<TextStyle>}
+                        style={iconStyle}
                         size={20}
                     />
                 </View>

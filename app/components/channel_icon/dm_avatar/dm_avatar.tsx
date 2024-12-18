@@ -17,7 +17,7 @@ type Props = {
     authorId: string;
     author?: UserModel;
     isOnCenterBg?: boolean;
-    style: StyleProp<ViewStyle>;
+    style: StyleProp<Intersection<TextStyle, ViewStyle>>;
     size: number;
 }
 
@@ -58,7 +58,7 @@ const DmAvatar = ({
         return (
             <CompassIcon
                 name='archive-outline'
-                style={[styles.icon, style as StyleProp<TextStyle>, isOnCenterBg && styles.iconOnCenterBg]}
+                style={[styles.icon, style, isOnCenterBg && styles.iconOnCenterBg]}
                 size={24}
             />
         );

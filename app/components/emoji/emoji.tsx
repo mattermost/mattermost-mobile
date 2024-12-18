@@ -8,8 +8,6 @@ import {
     Platform,
     StyleSheet,
     Text,
-    type StyleProp,
-    type TextStyle,
 } from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
@@ -75,7 +73,7 @@ const Emoji = (props: EmojiProps) => {
     if (displayTextOnly || (!imageUrl && !assetImage && !unicode)) {
         return (
             <Text
-                style={[commonStyle as StyleProp<TextStyle>, textStyle]}
+                style={[commonStyle, textStyle]}
                 testID={testID}
             >
                 {literal}
@@ -93,7 +91,7 @@ const Emoji = (props: EmojiProps) => {
 
         return (
             <Text
-                style={[commonStyle as StyleProp<TextStyle>, textStyle, {fontSize: size, color: '#000'}]}
+                style={[commonStyle, textStyle, {fontSize: size, color: '#000'}]}
                 testID={testID}
             >
                 {code}

@@ -82,6 +82,7 @@ function Uploads({
     const errorHeight = useSharedValue(ERROR_HEIGHT_MIN);
     const containerHeight = useSharedValue(files.length ? CONTAINER_HEIGHT_MAX : CONTAINER_HEIGHT_MIN);
     const filesForGallery = useRef(files.filter((f) => !f.failed && !DraftUploadManager.isUploading(f.clientId!)));
+    const hasFiles = files.length > 0;
 
     const errorAnimatedStyle = useAnimatedStyle(() => {
         return {
@@ -112,12 +113,12 @@ function Uploads({
     }, [errorHeight, uploadFileError]);
 
     useEffect(() => {
-        if (files.length) {
+        if (hasFiles) {
             containerHeight.value = CONTAINER_HEIGHT_MAX;
             return;
         }
         containerHeight.value = CONTAINER_HEIGHT_MIN;
-    }, [containerHeight, files.length]);
+    }, [containerHeight, hasFiles]);
 
     const openGallery = useCallback((file: FileInfo) => {
         const items = filesForGallery.current.map((f) => fileToGalleryItem(f, currentUserId));

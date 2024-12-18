@@ -13,10 +13,6 @@ const LARGE_HEADER_TITLE_HEIGHT = 128;
 const HEADER_OFFSET = LARGE_HEADER_TITLE_HEIGHT - ViewConstants.DEFAULT_HEADER_HEIGHT;
 
 describe('useCollapsibleHeader', () => {
-    afterAll(() => {
-        // jest.resetAllMocks();
-    });
-
     const commonHookResponse = {
         largeHeight: LARGE_HEADER_TITLE_HEIGHT,
         scrollRef: {current: null},

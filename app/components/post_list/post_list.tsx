@@ -123,14 +123,7 @@ const PostList = ({
         return orderedPosts.findIndex((i) => i.type === 'start-of-new-messages');
     }, [orderedPosts]);
 
-    const isNewMessage = useMemo(() => {
-        if (!lastPostId) {
-            // Avoid flash when the channel loads without posts
-            // e.g. The first time we navigate to a channel
-            return false;
-        }
-        return posts[0]?.id !== lastPostId;
-    }, [lastPostId, posts]);
+    const isNewMessage = lastPostId ? posts[0]?.id !== lastPostId : false;
 
     useEffect(() => {
         const t = setTimeout(() => {

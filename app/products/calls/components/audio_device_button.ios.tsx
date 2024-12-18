@@ -12,7 +12,7 @@ import type {CurrentCall} from '@calls/types/calls';
 
 type Props = {
     pressableStyle: StyleProp<ViewStyle>;
-    iconStyle: StyleProp<ViewStyle>;
+    iconStyle: StyleProp<TextStyle>;
     buttonTextStyle: StyleProp<TextStyle>;
     currentCall: CurrentCall;
 }
@@ -33,7 +33,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
             <CompassIcon
                 name={'volume-high'}
                 size={32}
-                style={iconStyle as StyleProp<TextStyle>}
+                style={iconStyle}
             />
             <Text style={buttonTextStyle}>{speakerLabel}</Text>
         </Pressable>
