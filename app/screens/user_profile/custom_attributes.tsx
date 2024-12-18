@@ -48,7 +48,6 @@ const CustomAttributes = () => {
 const styles = StyleSheet.create({
     container: {
         marginTop: 12,
-        paddingHorizontal: 20,
     },
 });
 
