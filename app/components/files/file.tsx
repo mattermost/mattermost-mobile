@@ -130,6 +130,18 @@ const File = ({
         );
     };
 
+    const touchableWithPreview = (
+        <TouchableWithFeedback
+            onPress={handlePreviewPress}
+            disabled={isPressDisabled}
+            type={'opacity'}
+        >
+            <FileIcon
+                file={file}
+            />
+        </TouchableWithFeedback>
+    );
+
     let fileComponent;
     if (isVideo(file) && publicLinkEnabled) {
         const renderVideoFile = (
@@ -227,20 +239,8 @@ const File = ({
             </Animated.View>
         );
 
-        fileComponent = asCard ? renderCardWithImage(renderAudioFile) : renderAudioFile;
+        fileComponent = asCard ? renderCardWithImage(touchableWithPreview) : renderAudioFile;
     } else {
-        const touchableWithPreview = (
-            <TouchableWithFeedback
-                onPress={handlePreviewPress}
-                disabled={isPressDisabled}
-                type={'opacity'}
-            >
-                <FileIcon
-                    file={file}
-                />
-            </TouchableWithFeedback>
-        );
-
         fileComponent = renderCardWithImage(touchableWithPreview);
     }
     return fileComponent;
