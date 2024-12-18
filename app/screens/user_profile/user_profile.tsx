@@ -55,7 +55,7 @@ const SINGLE_OPTION_HEIGHT = 68;
 const LABEL_HEIGHT = 58;
 const EXTRA_HEIGHT = 60;
 const MANAGE_ICON_HEIGHT = 72;
-const CUSTOM_ATTRIBUTES_HEIGHT = 140; // Approximate height for 3 custom attributes
+const CUSTOM_ATTRIBUTES_HEIGHT = 200; // Height to show approximately 4-5 attributes
 
 const messages = defineMessages({
     manageMember: {

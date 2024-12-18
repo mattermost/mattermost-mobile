@@ -1,22 +1,40 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {FlatList, View, Text, StyleSheet, type ListRenderItem} from 'react-native';
+
+type CustomAttribute = {
+    id: string;
+    label: string;
+    value: string;
+};
 
 // Mock custom attributes - in real implementation these would come from the user model
-const MOCK_CUSTOM_ATTRIBUTES = [
-    { id: 'dept', label: 'Department', value: 'Engineering' },
-    { id: 'loc', label: 'Location', value: 'San Francisco' },
-    { id: 'emp', label: 'Employee ID', value: 'EMP123' },
-];
+const MOCK_CUSTOM_ATTRIBUTES: CustomAttribute[] = Array.from({length: 15}, (_, i) => ({
+    id: `attr_${i}`,
+    label: `Custom Field ${i + 1}`,
+    value: `Value ${i + 1}`,
+}));
 
 const CustomAttributes = () => {
+    const renderAttribute: ListRenderItem<CustomAttribute> = ({item}) => (
+        <View style={styles.attributeContainer}>
+            <Text style={styles.label}>{item.label}</Text>
+            <Text style={styles.value}>{item.value}</Text>
+        </View>
+    );
+
     return (
         <View style={styles.container}>
-            {MOCK_CUSTOM_ATTRIBUTES.map((attr) => (
-                <View key={attr.id} style={styles.attributeContainer}>
-                    <Text style={styles.label}>{attr.label}</Text>
-                    <Text style={styles.value}>{attr.value}</Text>
-                </View>
-            ))}
+            <FlatList
+                data={MOCK_CUSTOM_ATTRIBUTES}
+                renderItem={renderAttribute}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={true}
+                scrollEnabled={true}
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={10}
+                initialNumToRender={10}
+                windowSize={5}
+            />
         </View>
     );
 };
