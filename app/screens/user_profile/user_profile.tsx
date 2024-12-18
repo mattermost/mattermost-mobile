@@ -16,6 +16,7 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import ManageUserOptions, {DIVIDER_MARGIN} from './manage_user_options';
+import CustomAttributes from './custom_attributes';
 import UserProfileOptions, {type OptionsType} from './options';
 import UserProfileTitle, {HEADER_TEXT_HEIGHT} from './title';
 import UserInfo from './user_info';
@@ -54,6 +55,7 @@ const SINGLE_OPTION_HEIGHT = 68;
 const LABEL_HEIGHT = 58;
 const EXTRA_HEIGHT = 60;
 const MANAGE_ICON_HEIGHT = 72;
+const CUSTOM_ATTRIBUTES_HEIGHT = 140; // Approximate height for 3 custom attributes
 
 const messages = defineMessages({
     manageMember: {
@@ -145,7 +147,7 @@ const UserProfile = ({
             }
         }
 
-        const extraHeight = manageMode ? 0 : (EXTRA_HEIGHT - bottom);
+        const extraHeight = manageMode ? 0 : (EXTRA_HEIGHT - bottom + CUSTOM_ATTRIBUTES_HEIGHT);
 
         return [
             1,
@@ -189,16 +191,19 @@ const UserProfile = ({
                         userId={user.id}
                     />
                 }
-                {!manageMode &&
-                    <UserInfo
-                        localTime={localTime}
-                        showCustomStatus={showCustomStatus}
-                        showNickname={showNickname}
-                        showPosition={showPosition}
-                        showLocalTime={showLocalTime}
-                        user={user}
-                    />
-                }
+                {!manageMode && (
+                    <>
+                        <UserInfo
+                            localTime={localTime}
+                            showCustomStatus={showCustomStatus}
+                            showNickname={showNickname}
+                            showPosition={showPosition}
+                            showLocalTime={showLocalTime}
+                            user={user}
+                        />
+                        <CustomAttributes />
+                    </>
+                )}
                 {manageMode && channelId && (canManageAndRemoveMembers || canChangeMemberRoles) &&
                     <ManageUserOptions
                         canChangeMemberRoles={canChangeMemberRoles}
