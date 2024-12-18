@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {FlatList, View, StyleSheet, type ListRenderItem} from 'react-native';
 import {useIntl} from 'react-intl';
+import {FlatList, View, StyleSheet, type ListRenderItem} from 'react-native';
 
 import UserProfileLabel from './label';
 
@@ -39,6 +39,7 @@ const CustomAttributes = ({nickname, position, localTime}: Props) => {
             label: formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'}),
             value: localTime,
         }] : []),
+
         // Mock custom attributes - in real implementation these would come from the user model
         ...Array.from({length: 15}, (_, i) => ({
             id: `attr_${i}`,
@@ -74,6 +75,7 @@ const CustomAttributes = ({nickname, position, localTime}: Props) => {
 const styles = StyleSheet.create({
     container: {
         marginTop: 12,
+        flex: 1,
     },
 });
 
