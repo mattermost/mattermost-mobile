@@ -3,16 +3,16 @@ import {View, Text, StyleSheet} from 'react-native';
 
 // Mock custom attributes - in real implementation these would come from the user model
 const MOCK_CUSTOM_ATTRIBUTES = [
-    { label: 'Department', value: 'Engineering' },
-    { label: 'Location', value: 'San Francisco' },
-    { label: 'Employee ID', value: 'EMP123' },
+    { id: 'dept', label: 'Department', value: 'Engineering' },
+    { id: 'loc', label: 'Location', value: 'San Francisco' },
+    { id: 'emp', label: 'Employee ID', value: 'EMP123' },
 ];
 
 const CustomAttributes = () => {
     return (
         <View style={styles.container}>
-            {MOCK_CUSTOM_ATTRIBUTES.map((attr, index) => (
-                <View key={index} style={styles.attributeContainer}>
+            {MOCK_CUSTOM_ATTRIBUTES.map((attr) => (
+                <View key={attr.id} style={styles.attributeContainer}>
                     <Text style={styles.label}>{attr.label}</Text>
                     <Text style={styles.value}>{attr.value}</Text>
                 </View>
