@@ -123,7 +123,7 @@ function InteractiveDialog({
         base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
-    }, [intl, submitting, theme]);
+    }, [intl, submitLabel, submitting, theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -190,7 +190,7 @@ function InteractiveDialog({
         } else {
             close();
         }
-    }, [elements, values, intl, url, callbackId, state]);
+    }, [elements, url, callbackId, state, values, serverUrl, intl]);
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
@@ -219,7 +219,7 @@ function InteractiveDialog({
         return () => {
             unsubscribe.remove();
         };
-    }, [serverUrl, url, callbackId, state, handleSubmit, submitting]);
+    }, [serverUrl, url, callbackId, state, handleSubmit, submitting, componentId, notifyOnCancel]);
 
     useAndroidHardwareBackHandler(componentId, close);
 
@@ -246,9 +246,6 @@ function InteractiveDialog({
                 }
                 {Boolean(elements) && elements.map((e) => {
                     const value = secureGetFromRecord(values, e.name);
-                    if (value === undefined) {
-                        return null;
-                    }
                     return (
                         <DialogElement
                             key={'dialogelement' + e.name}
