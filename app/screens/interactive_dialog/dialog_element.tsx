@@ -49,7 +49,7 @@ type Props = {
     dataSource?: string;
     optional?: boolean;
     options?: PostActionOption[];
-    value: string|number|boolean|string[]|undefined;
+    value?: string|number|boolean|string[];
     onChange: (name: string, value: string|number|boolean|string[]) => void;
 }
 function DialogElement({
