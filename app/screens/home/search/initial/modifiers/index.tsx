@@ -54,9 +54,7 @@ const getModifiersSectionsData = (intl: IntlShape, teamId: string): ModifierItem
             term: 'From:',
             testID: 'search.modifier.from',
             description: formatMessage({id: 'mobile.search.modifier.from', defaultMessage: ' a specific user'}),
-        });
-
-        sectionsData.push({
+        }, {
             term: 'In:',
             testID: 'search.modifier.in',
             description: formatMessage({id: 'mobile.search.modifier.in', defaultMessage: ' a specific channel'}),
@@ -67,8 +65,7 @@ const getModifiersSectionsData = (intl: IntlShape, teamId: string): ModifierItem
         term: '-',
         testID: 'search.modifier.exclude',
         description: formatMessage({id: 'mobile.search.modifier.exclude', defaultMessage: ' exclude search terms'}),
-    });
-    sectionsData.push({
+    }, {
         term: '""',
         testID: 'search.modifier.phrases',
         description: formatMessage({id: 'mobile.search.modifier.phrases', defaultMessage: ' messages with phrases'}),
