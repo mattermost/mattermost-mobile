@@ -5,6 +5,7 @@ type PerformanceReportMeasure = {
     metric: string;
     value: number;
     timestamp: number;
+    label?: Record<string, string>;
 }
 
 type PerformanceReport = {
