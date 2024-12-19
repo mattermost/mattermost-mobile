@@ -70,7 +70,8 @@ function DialogElement({
     const testID = `InteractiveDialogElement.${name}`;
     const handleChange = useCallback((newValue: string | boolean | string[]) => {
         if (type === 'text' && subtype === 'number') {
-            onChange(name, parseInt(newValue as string, 10));
+            const number = parseInt(newValue as string, 10);
+            onChange(name, isNaN(number) ? '' : number);
             return;
         }
         onChange(name, newValue);
