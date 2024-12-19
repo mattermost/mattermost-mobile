@@ -10,7 +10,7 @@ export interface ClientChannelBookmarksMix {
     updateChannelBookmark(channelId: string, bookmark: ChannelBookmark, connectionId?: string): Promise<UpdateChannelBookmarkResponse>;
     updateChannelBookmarkSortOrder(channelId: string, bookmarkId: string, newSortOrder: number, connectionId?: string): Promise<ChannelBookmarkWithFileInfo[]>;
     deleteChannelBookmark(channelId: string, bookmarkId: string, connectionId?: string): Promise<ChannelBookmarkWithFileInfo>;
-    getChannelBookmarksForChannel(channelId: string, since: number, groupLabel?: string): Promise<ChannelBookmarkWithFileInfo[]>;
+    getChannelBookmarksForChannel(channelId: string, since: number, groupLabel?: RequestGroupLabel): Promise<ChannelBookmarkWithFileInfo[]>;
 }
 
 const ClientChannelBookmarks = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -57,7 +57,7 @@ const ClientChannelBookmarks = <TBase extends Constructor<ClientBase>>(superclas
         );
     }
 
-    getChannelBookmarksForChannel(channelId: string, since: number, groupLabel?: string) {
+    getChannelBookmarksForChannel(channelId: string, since: number, groupLabel?: RequestGroupLabel) {
         return this.doFetch(
             `${this.getChannelBookmarksRoute(channelId)}${buildQueryString({bookmarks_since: since})}`,
             {method: 'get', groupLabel},

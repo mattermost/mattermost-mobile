@@ -28,7 +28,7 @@ export type MyPreferencesRequest = {
     error?: unknown;
 };
 
-export const fetchMyPreferences = async (serverUrl: string, fetchOnly = false, groupLabel?: string): Promise<MyPreferencesRequest> => {
+export const fetchMyPreferences = async (serverUrl: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<MyPreferencesRequest> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -84,7 +84,7 @@ export const savePostPreference = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const savePreference = async (serverUrl: string, preferences: PreferenceType[], prepareRecordsOnly = false, groupLabel?: string) => {
+export const savePreference = async (serverUrl: string, preferences: PreferenceType[], prepareRecordsOnly = false, groupLabel?: RequestGroupLabel) => {
     try {
         if (!preferences.length) {
             return {preferences: []};
@@ -141,7 +141,7 @@ export const deleteSavedPost = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const openChannelIfNeeded = async (serverUrl: string, channelId: string, groupLabel?: string) => {
+export const openChannelIfNeeded = async (serverUrl: string, channelId: string, groupLabel?: RequestGroupLabel) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const channel = await getChannelById(database, channelId);
@@ -156,7 +156,7 @@ export const openChannelIfNeeded = async (serverUrl: string, channelId: string, 
     }
 };
 
-export const openAllUnreadChannels = async (serverUrl: string, groupLabel?: string) => {
+export const openAllUnreadChannels = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const channels = await queryAllUnreadDMsAndGMsIds(database).fetch();
@@ -168,7 +168,7 @@ export const openAllUnreadChannels = async (serverUrl: string, groupLabel?: stri
     }
 };
 
-const openChannels = async (serverUrl: string, channels: ChannelModel[], groupLabel?: string) => {
+const openChannels = async (serverUrl: string, channels: ChannelModel[], groupLabel?: RequestGroupLabel) => {
     const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
     const userId = await getCurrentUserId(database);
 

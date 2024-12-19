@@ -17,7 +17,7 @@ export type RolesRequest = {
 
 export const fetchRolesIfNeeded = async (
     serverUrl: string, updatedRoles: string[],
-    fetchOnly = false, force = false, groupLabel?: string,
+    fetchOnly = false, force = false, groupLabel?: RequestGroupLabel,
 ): Promise<RolesRequest> => {
     if (!updatedRoles.length) {
         return {roles: []};
@@ -70,7 +70,7 @@ export const fetchRolesIfNeeded = async (
 
 export const fetchRoles = async (
     serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: ChannelMembership[],
-    user?: UserProfile, fetchOnly = false, force = false, groupLabel?: string,
+    user?: UserProfile, fetchOnly = false, force = false, groupLabel?: RequestGroupLabel,
 ) => {
     const rolesToFetch = new Set<string>(user?.roles.split(' ') || []);
 

@@ -43,7 +43,7 @@ export type ProfilesInChannelRequest = {
     error?: unknown;
 }
 
-export const fetchMe = async (serverUrl: string, fetchOnly = false, groupLabel?: string): Promise<MyUserRequest> => {
+export const fetchMe = async (serverUrl: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<MyUserRequest> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -98,7 +98,7 @@ export const refetchCurrentUser = async (serverUrl: string, currentUserId: strin
 
 export async function fetchProfilesInChannel(
     serverUrl: string, channelId: string, excludeUserId?: string, options?: GetUsersOptions,
-    fetchOnly = false, groupLabel?: string,
+    fetchOnly = false, groupLabel?: RequestGroupLabel,
 ): Promise<ProfilesInChannelRequest> {
     try {
         const client = NetworkManager.getClient(serverUrl);
@@ -134,7 +134,7 @@ export async function fetchProfilesInChannel(
     }
 }
 
-export async function fetchProfilesInGroupChannels(serverUrl: string, groupChannelIds: string[], fetchOnly = false, groupLabel?: string): Promise<ProfilesPerChannelRequest> {
+export async function fetchProfilesInGroupChannels(serverUrl: string, groupChannelIds: string[], fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<ProfilesPerChannelRequest> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -199,7 +199,7 @@ export async function fetchProfilesInGroupChannels(serverUrl: string, groupChann
 
 export async function fetchProfilesPerChannels(
     serverUrl: string, channelIds: string[], excludeUserId?: string,
-    fetchOnly = false, groupLabel?: string,
+    fetchOnly = false, groupLabel?: RequestGroupLabel,
 ): Promise<ProfilesPerChannelRequest> {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -250,7 +250,7 @@ export async function fetchProfilesPerChannels(
     }
 }
 
-export const updateMe = async (serverUrl: string, user: Partial<UserProfile>, groupLabel?: string) => {
+export const updateMe = async (serverUrl: string, user: Partial<UserProfile>, groupLabel?: RequestGroupLabel) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -428,7 +428,7 @@ export const fetchUserByIdBatched = async (serverUrl: string, userId: string) =>
     usersByIdBatch.timeout = setTimeout(processBatch, TIME_TO_BATCH);
 };
 
-export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetchOnly = false, groupLabel?: string) => {
+export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetchOnly = false, groupLabel?: RequestGroupLabel) => {
     if (!userIds.length) {
         return {users: [], existingUsers: []};
     }
@@ -632,7 +632,7 @@ export const fetchMissingProfilesByUsernames = async (serverUrl: string, usernam
     return {users};
 };
 
-export async function updateAllUsersSince(serverUrl: string, since: number, fetchOnly = false, groupLabel?: string) {
+export async function updateAllUsersSince(serverUrl: string, since: number, fetchOnly = false, groupLabel?: RequestGroupLabel) {
     if (!since) {
         return {users: []};
     }
@@ -807,7 +807,7 @@ export const buildProfileImageUrlFromUser = (serverUrl: string, user: UserModel 
     return buildProfileImageUrl(serverUrl, user.id, lastPictureUpdate);
 };
 
-export const autoUpdateTimezone = async (serverUrl: string, groupLabel?: string) => {
+export const autoUpdateTimezone = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
     let database;
     try {
         const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

@@ -3,6 +3,7 @@
 
 import {DeviceEventEmitter, Platform} from 'react-native';
 
+import {CollectNetworkMetrics} from '@assets/config.json';
 import {Events} from '@constants';
 import {t} from '@i18n';
 import {setServerCredentials} from '@init/credentials';
@@ -29,6 +30,11 @@ type GroupData = {
     completionFlag: boolean;
     completionTimer?: NodeJS.Timeout;
 }
+
+type CategorizedRequests = {
+    parallel: ClientResponseMetrics[];
+    sequential: ClientResponseMetrics[];
+  };
 
 export default class ClientTracking {
     apiClient: APIClientInterface;
@@ -63,7 +69,7 @@ export default class ClientTracking {
         return headers;
     }
 
-    initTrackGroup(groupLabel: string) {
+    initTrackGroup(groupLabel: RequestGroupLabel) {
         if (!this.requestGroups.has(groupLabel)) {
             this.requestGroups.set(groupLabel, {
                 activeCount: 0,
@@ -76,7 +82,7 @@ export default class ClientTracking {
         }
     }
 
-    trackRequest(groupLabel: string, url: string, metrics?: ClientResponseMetrics) {
+    trackRequest(groupLabel: RequestGroupLabel, url: string, metrics?: ClientResponseMetrics) {
         this.initTrackGroup(groupLabel);
 
         const group = this.requestGroups.get(groupLabel)!;
@@ -93,32 +99,110 @@ export default class ClientTracking {
         group.totalCompressedSize += metrics?.compressedSize ?? 0;
     }
 
-    incrementRequestCount(groupLabel: string) {
+    getAverageLatency(groupLabel: RequestGroupLabel): number {
+        const groupData = this.requestGroups.get(groupLabel);
+        if (!groupData) {
+            return 100;
+        }
+
+        const urlData = Object.entries(groupData.urls);
+        const sumLatency = urlData.reduce((result, url) => (result + (url[1].metrics?.latency ?? 0)), 0);
+        return sumLatency / urlData.length;
+    }
+
+    categorizeRequests(groupLabel: RequestGroupLabel): CategorizedRequests {
+        const parallel: ClientResponseMetrics[] = [];
+        const sequential: ClientResponseMetrics[] = [];
+        const groupData = this.requestGroups.get(groupLabel);
+        if (!groupData) {
+            return {parallel, sequential};
+        }
+
+        // Sort requests by start time
+        const requestsMetrics = Object.entries(groupData.urls).map((e) => e[1].metrics).filter((m) => m != null);
+        requestsMetrics.sort((a, b) => a.startTime - b.startTime);
+
+        let lastEndTime = 0;
+
+        for (const metrics of requestsMetrics) {
+            if (metrics.startTime < lastEndTime) {
+                // Overlapping request -> Parallel
+                parallel.push(metrics);
+            } else {
+                // Non-overlapping request -> Sequential
+                sequential.push(metrics);
+            }
+
+            // Update the last end time
+            lastEndTime = Math.max(lastEndTime, metrics.endTime);
+        }
+
+        return {parallel, sequential};
+    }
+
+    calculateAverageSpeedWithCategories = (
+        categorizedRequests: CategorizedRequests,
+        elapsedTimeInSeconds: number, // Observed total elapsed time in seconds
+    ): { averageSpeedMbps: number; effectiveLatency: number } => {
+        const {parallel, sequential} = categorizedRequests;
+
+        // Step 1: Calculate total data size in bits
+        const totalDataBits = [...parallel, ...sequential].reduce((sum, req) => sum + (req.compressedSize * 8), 0);
+
+        // Step 2: Calculate effective latency
+        const parallelLatencies = parallel.map((req) => req.latency);
+        const sequentialLatencies = sequential.map((req) => req.latency);
+
+        const effectiveParallelLatency = Math.max(...parallelLatencies, 0);
+        const effectiveSequentialLatency = sequentialLatencies.reduce((sum, latency) => sum + latency, 0);
+
+        const effectiveLatency = effectiveParallelLatency + effectiveSequentialLatency;
+
+        // Step 3: Calculate data transfer time
+        const dataTransferTime = elapsedTimeInSeconds - (effectiveLatency / 1000);
+
+        // Handle edge case: if data transfer time is zero or negative
+        if (dataTransferTime <= 0) {
+            return {averageSpeedMbps: 0, effectiveLatency: 0};
+        }
+
+        // Step 4: Calculate average speed
+        const averageSpeedBps = totalDataBits / dataTransferTime; // Speed in bps
+        const averageSpeedMbps = averageSpeedBps / 1_000_000; // Convert to Mbps
+
+        return {
+            averageSpeedMbps,
+            effectiveLatency,
+        };
+    };
+
+    incrementRequestCount(groupLabel: RequestGroupLabel) {
         this.initTrackGroup(groupLabel);
 
         const group = this.requestGroups.get(groupLabel)!;
         group.activeCount += 1;
     }
 
-    decrementRequestCount(groupLabel: string) {
+    decrementRequestCount(groupLabel: RequestGroupLabel) {
         const group = this.requestGroups.get(groupLabel);
         if (group) {
             group.activeCount -= 1;
 
             if (group.activeCount <= 0 && !group.completionFlag) {
                 this.clearCompletionTimer(groupLabel);
+                const latency = this.getAverageLatency(groupLabel);
                 group.completionTimer = setTimeout(() => {
                     if (this.allRequestsCompleted(groupLabel)) {
                         group.completionFlag = true;
                         this.handleRequestCompletion(groupLabel);
                         this.clearCompletionTimer(groupLabel);
                     }
-                }, 100); // Adjust delay as needed (e.g., 100ms) should we set this based on latency or something?
+                }, latency);
             }
         }
     }
 
-    clearCompletionTimer(groupLabel: string) {
+    clearCompletionTimer(groupLabel: RequestGroupLabel) {
         const group = this.requestGroups.get(groupLabel);
         if (group?.completionTimer) {
             clearTimeout(group.completionTimer);
@@ -126,7 +210,7 @@ export default class ClientTracking {
         }
     }
 
-    handleRequestCompletion(groupLabel: string) {
+    handleRequestCompletion(groupLabel: RequestGroupLabel) {
         const group = this.requestGroups.get(groupLabel);
         if (group) {
             const duration = Date.now() - group.startTime;
@@ -138,28 +222,36 @@ export default class ClientTracking {
         }
     }
 
-    allRequestsCompleted(groupLabel: string): boolean {
+    allRequestsCompleted(groupLabel: RequestGroupLabel): boolean {
         const group = this.requestGroups.get(groupLabel);
         return group ? group.activeCount <= 0 : true;
     }
 
-    sendTelemetryEvent(groupLabel: string, groupData: GroupData, duration: number) {
+    sendTelemetryEvent(groupLabel: RequestGroupLabel, groupData: GroupData, duration: number) {
         const urls = Object.keys(groupData.urls);
         const urlData = Object.entries(groupData.urls);
         const dupe = urlData.filter((u) => u[1].count > 1);
-        const urlCount = urlData.reduce((result, url) => (result + url[1].count), 0);
-        const sumLatency = urlData.reduce((result, url) => (result + (url[1].metrics?.latency ?? 0)), 0);
-        const latency = sumLatency / urlCount;
+        const latency = this.getAverageLatency(groupLabel);
+        const categorizedRequests = this.categorizeRequests(groupLabel);
+        const elapsedTimeInSeconds = duration / 1000;
+        const result = this.calculateAverageSpeedWithCategories(categorizedRequests, elapsedTimeInSeconds);
+
         logInfo(`Telemetry event on ${Platform.OS} for server ${this.apiClient.baseUrl}
             Group "${groupLabel}"
-            requesting ${urls.length} urls 
+            total requests ${urls.length} urls
+            parallel requests: ${categorizedRequests.parallel.length} urls
+            sequential requests: ${categorizedRequests.sequential.length} urls
             total Compressed size of: ${getFormattedFileSize(groupData.totalCompressedSize)}
             total size of: ${getFormattedFileSize(groupData.totalSize)}
-            elapsed time: ${duration / 1000} seconds
-            average latency: ${latency} ms`);
+            elapsed time: ${elapsedTimeInSeconds} seconds
+            average request latency: ${latency} ms
+            Effective Latency: ${result.effectiveLatency} ms,
+            Average Speed: ${result.averageSpeedMbps.toFixed(4)} Mbps
+            `,
+        );
 
         if (dupe.length) {
-            logDebug('Duplicate URLs:\n', dupe.map((d) => `${d[0]} ${JSON.stringify(d[1])}`).join('\n'));
+            logDebug(`Duplicate URLs:\n${dupe.map((d, i) => `${i + 1} - ${d[0]} ${JSON.stringify(d[1])}`).join('\n')}`);
         }
 
         // Integrate with telemetry framework here
@@ -208,14 +300,14 @@ export default class ClientTracking {
                 })};
         }
 
-        if (groupLabel) {
+        if (groupLabel && CollectNetworkMetrics) {
             this.incrementRequestCount(groupLabel);
         }
 
         try {
             const response = await request!(url, this.buildRequestOptions(options));
             const headers: ClientHeaders = response.headers || {};
-            if (groupLabel) {
+            if (groupLabel && CollectNetworkMetrics) {
                 this.trackRequest(groupLabel, url, response.metrics);
             }
             const serverVersion = semverFromServerVersion(
@@ -255,7 +347,7 @@ export default class ClientTracking {
                 details: error,
             });
         } finally {
-            if (groupLabel) {
+            if (groupLabel && CollectNetworkMetrics) {
                 this.decrementRequestCount(groupLabel);
             }
         }

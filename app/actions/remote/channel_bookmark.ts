@@ -11,7 +11,7 @@ import {logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
-export async function fetchChannelBookmarks(serverUrl: string, channelId: string, fetchOnly = false, groupLabel?: string) {
+export async function fetchChannelBookmarks(serverUrl: string, channelId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

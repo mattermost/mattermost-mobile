@@ -157,7 +157,7 @@ export const CallNotification = ({
     const onContainerPress = useCallback(async () => {
         if (incomingCall.serverUrl !== serverUrl) {
             await DatabaseManager.setActiveServerDatabase(incomingCall.serverUrl);
-            await WebsocketManager.initializeClient(incomingCall.serverUrl, 'calls');
+            await WebsocketManager.initializeClient(incomingCall.serverUrl, 'Server Switch');
         }
         switchToChannelById(incomingCall.serverUrl, incomingCall.channelID);
     }, [incomingCall, serverUrl]);

@@ -36,17 +36,17 @@ import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 
-export async function handleFirstConnect(serverUrl: string, groupLabel?: string) {
+export async function handleFirstConnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     setExtraSessionProps(serverUrl, groupLabel);
     autoUpdateTimezone(serverUrl, groupLabel);
     return doReconnect(serverUrl, groupLabel);
 }
 
-export async function handleReconnect(serverUrl: string) {
-    return doReconnect(serverUrl, 'reconnection');
+export async function handleReconnect(serverUrl: string, groupLabel: BaseRequestGroupLabel = 'WebSocket Reconnect') {
+    return doReconnect(serverUrl, groupLabel);
 }
 
-async function doReconnect(serverUrl: string, groupLabel?: string) {
+async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return new Error('cannot find server database');
@@ -82,13 +82,6 @@ async function doReconnect(serverUrl: string, groupLabel?: string) {
 
     await setLastFullSync(operator, now);
 
-    const tabletDevice = isTablet();
-    const isActiveServer = (await getActiveServerUrl()) === serverUrl;
-    if (isActiveServer && tabletDevice && initialChannelId === currentChannelId) {
-        await markChannelAsRead(serverUrl, initialChannelId, false, groupLabel);
-        markChannelAsViewed(serverUrl, initialChannelId);
-    }
-
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
     setTeamLoading(serverUrl, false);
 
@@ -112,7 +105,7 @@ async function doReconnect(serverUrl: string, groupLabel?: string) {
     return undefined;
 }
 
-async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: string) {
+async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGroupLabel) {
     try {
         const isActiveServer = (await getActiveServerUrl()) === serverUrl;
         if (!isActiveServer) {
@@ -146,7 +139,7 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: string) {
         }
 
         if (currentChannelId && (isChannelScreenMounted || tabletDevice)) {
-            await fetchPostsForChannel(serverUrl, currentChannelId, false, groupLabel);
+            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel);
             markChannelAsRead(serverUrl, currentChannelId, false, groupLabel);
             if (!EphemeralStore.wasNotificationTapped()) {
                 markChannelAsViewed(serverUrl, currentChannelId, true);
