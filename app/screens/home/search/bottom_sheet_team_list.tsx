@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 
 import TeamList from '@components/team_list';
@@ -30,11 +30,13 @@ export default function BottomSheetTeamList({teams, title, setTeamId, teamId, cr
         dismissBottomSheet();
     }, [setTeamId]);
 
-    // teamList is a copy of teams to avoid modifying the original array
-    const teamList = [...teams];
-    if (crossTeamSearchEnabled) {
-        teamList.unshift({id: ALL_TEAMS_ID, displayName: intl.formatMessage({id: 'mobile.search.team.all_teams', defaultMessage: 'All teams'})} as TeamModel);
-    }
+    const teamList = useMemo(() => {
+        const list = [...teams];
+        if (crossTeamSearchEnabled) {
+            list.unshift({id: ALL_TEAMS_ID, displayName: intl.formatMessage({id: 'mobile.search.team.all_teams', defaultMessage: 'All teams'})} as TeamModel);
+        }
+        return list;
+    }, [teams, crossTeamSearchEnabled, intl]);
 
     return (
         <BottomSheetContent
