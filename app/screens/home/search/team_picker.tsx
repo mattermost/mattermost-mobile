@@ -8,6 +8,7 @@ import {Text, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {ALL_TEAMS_ID} from '@constants/team';
 import {useTheme} from '@context/theme';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet} from '@screens/navigation';
@@ -16,8 +17,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import BottomSheetTeamList from './bottom_sheet_team_list';
-
-import {ALL_TEAMS_ID} from '.';
 
 import type TeamModel from '@typings/database/models/servers/team';
 

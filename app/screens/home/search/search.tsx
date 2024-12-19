@@ -18,6 +18,7 @@ import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
+import {ALL_TEAMS_ID} from '@constants/team';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -31,8 +32,6 @@ import {TabTypes, type TabType} from '@utils/search';
 import Initial from './initial';
 import Results from './results';
 import Header from './results/header';
-
-import {ALL_TEAMS_ID} from '.';
 
 import type {SearchRef} from '@components/search';
 import type PostModel from '@typings/database/models/servers/post';

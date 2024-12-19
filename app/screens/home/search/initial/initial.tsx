@@ -3,7 +3,7 @@
 
 import React, {type Dispatch, type RefObject, type SetStateAction} from 'react';
 
-import {ALL_TEAMS_ID} from '..';
+import {ALL_TEAMS_ID} from '@constants/team';
 
 import Modifiers from './modifiers';
 import RecentSearches from './recent_searches';

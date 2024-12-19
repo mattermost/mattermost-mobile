@@ -7,12 +7,11 @@ import {View} from 'react-native';
 import Animated, {type SharedValue, useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
+import {ALL_TEAMS_ID} from '@constants/team';
 import {useTheme} from '@context/theme';
 import TeamPicker from '@screens/home/search/team_picker';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import {ALL_TEAMS_ID} from '../..';
 
 import Modifier, {type ModifierItem} from './modifier';
 import ShowMoreButton from './show_more';

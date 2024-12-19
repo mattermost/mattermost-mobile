@@ -3,12 +3,11 @@
 
 import React from 'react';
 
+import {ALL_TEAMS_ID} from '@constants/team';
 import {bottomSheet} from '@screens/navigation';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import TeamPicker from './team_picker';
-
-import {ALL_TEAMS_ID} from '.';
 
 import type {TeamModel} from '@database/models/server';
 

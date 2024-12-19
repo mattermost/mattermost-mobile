@@ -4,10 +4,9 @@
 import React from 'react';
 import {useSharedValue} from 'react-native-reanimated';
 
+import {ALL_TEAMS_ID} from '@constants/team';
 import TeamPicker from '@screens/home/search/team_picker';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
-
-import {ALL_TEAMS_ID} from '../..';
 
 import Modifiers from './index';
 

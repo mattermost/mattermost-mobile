@@ -5,11 +5,10 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import TeamList from '@components/team_list';
+import {ALL_TEAMS_ID} from '@constants/team';
 import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
-
-import {ALL_TEAMS_ID} from '.';
 
 import type TeamModel from '@typings/database/models/servers/team';
 
