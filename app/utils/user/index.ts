@@ -321,6 +321,10 @@ export function filterProfilesMatchingTerm(users: UserProfile[], term: string): 
     });
 }
 
+export const filterDeactivatedProfiles = (users: UserProfile[]) => {
+    return users.filter((u) => isDeactivated(u) === false);
+};
+
 export function getNotificationProps(user?: UserModel) {
     if (user && user.notifyProps) {
         return user.notifyProps;
