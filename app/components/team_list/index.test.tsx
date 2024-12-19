@@ -21,10 +21,6 @@ describe('TeamList', () => {
         {id: 'team1', displayName: 'Team 1'} as TeamModel,
         {id: 'team2', displayName: 'Team 2'} as TeamModel,
     ];
-    beforeAll(async () => {
-        const server = await TestHelper.setupServerDatabase();
-        database = server.database;
-    });
 
     it('should call onPress when a team is pressed', () => {
         const onPress = jest.fn();
