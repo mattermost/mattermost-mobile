@@ -25,11 +25,14 @@ const NO_TEAMS_HEIGHT = 392;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        teamContainer: {
+        teamPicker: {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'flex-end',
             width: '100%',
+        },
+        container: {
+            flex: 1,
         },
         teamName: {
             color: theme.centerChannelColor,
@@ -95,9 +98,9 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
                     onPress={handleTeamChange}
                     type='opacity'
                     testID='team_picker.button'
-                    style={styles.teamContainer}
+                    style={styles.teamPicker}
                 >
-                    <View style={{flex: 1}}>
+                    <View style={styles.container}>
                         <Text
                             id={selectedTeam.id}
                             numberOfLines={1}
