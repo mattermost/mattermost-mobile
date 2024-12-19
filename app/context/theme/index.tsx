@@ -76,6 +76,10 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
     return (<Provider value={theme}>{children}</Provider>);
 };
 
+export const CustomThemeProvider = ({theme, children}: {theme: Theme; children: React.ReactNode}) => {
+    return (<Provider value={theme}>{children}</Provider>);
+};
+
 export function withTheme<T extends WithThemeProps>(Component: ComponentType<T>): ComponentType<T> {
     return function ThemeComponent(props) {
         return (
