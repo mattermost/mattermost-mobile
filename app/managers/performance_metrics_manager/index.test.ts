@@ -39,7 +39,7 @@ describe('performance_metrics_manager', () => {
     const expectedUrl = `${serverUrl}/api/v4/client_perf`;
     let PerformanceMetricsManager = new PerformanceMetricsManagerClass();
 
-    beforeEach(() => {
+    beforeEach(async () => {
         jest.useFakeTimers({doNotFake: [
             'cancelAnimationFrame',
             'cancelIdleCallback',
@@ -54,9 +54,16 @@ describe('performance_metrics_manager', () => {
             'setImmediate',
             'setInterval',
         ]}).setSystemTime(new Date(TEST_EPOCH));
+
+        NetworkManager.createClient(serverUrl);
+        const {operator} = await TestHelper.setupServerDatabase(serverUrl);
+        await operator.handleConfigs({configs: [{id: 'EnableClientMetrics', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
     });
 
-    afterEach(() => {
+    afterEach(async () => {
+        NetworkManager.invalidateClient(serverUrl);
+        await TestHelper.tearDown();
+
         jest.clearAllMocks();
 
         jest.useRealTimers();
@@ -71,10 +78,6 @@ describe('performance_metrics_manager', () => {
         };
 
         beforeEach(async () => {
-            NetworkManager.createClient(serverUrl);
-            const {operator} = await TestHelper.setupServerDatabase(serverUrl);
-            await operator.handleConfigs({configs: [{id: 'EnableClientMetrics', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
-
             PerformanceMetricsManager = new PerformanceMetricsManagerClass();
 
             const mockHasRegisteredLoad = {hasRegisteredLoad: false};
@@ -84,8 +87,6 @@ describe('performance_metrics_manager', () => {
             jest.mocked(RNUtils.getHasRegisteredLoad).mockImplementation(() => mockHasRegisteredLoad);
         });
         afterEach(async () => {
-            NetworkManager.invalidateClient(serverUrl);
-            await TestHelper.tearDown();
             performance.clearMarks();
         });
 
@@ -178,15 +179,7 @@ describe('performance_metrics_manager', () => {
         beforeEach(async () => {
             AppState.currentState = 'active';
 
-            NetworkManager.createClient(serverUrl);
-            const {operator} = await TestHelper.setupServerDatabase(serverUrl);
-            await operator.handleConfigs({configs: [{id: 'EnableClientMetrics', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
             PerformanceMetricsManager = new PerformanceMetricsManagerClass();
-        });
-
-        afterEach(async () => {
-            NetworkManager.invalidateClient(serverUrl);
-            await TestHelper.tearDown();
         });
 
         it('forces send on app state change to inactive, or anything other than active', async () => {
@@ -214,9 +207,6 @@ describe('performance_metrics_manager', () => {
             PerformanceMetricsManager = new PerformanceMetricsManagerClass();
         });
 
-        afterEach(() => {
-            jest.clearAllMocks();
-        });
         it('measures time to interaction correctly', () => {
             PerformanceMetricsManager.startTimeToInteraction();
             jest.advanceTimersByTime(100);
@@ -232,9 +222,6 @@ describe('performance_metrics_manager', () => {
 
     describe('network request metrics', () => {
         beforeEach(async () => {
-            NetworkManager.createClient(serverUrl);
-            const {operator} = await TestHelper.setupServerDatabase(serverUrl);
-            await operator.handleConfigs({configs: [{id: 'EnableClientMetrics', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
             PerformanceMetricsManager = new PerformanceMetricsManagerClass();
         });
 
@@ -301,7 +288,7 @@ describe('performance_metrics_manager', () => {
         afterEach(async () => {
             NetworkManager.invalidateClient(serverUrl1);
             NetworkManager.invalidateClient(serverUrl2);
-            await TestHelper.tearDown();
+
             performance.clearMarks();
         });
 
