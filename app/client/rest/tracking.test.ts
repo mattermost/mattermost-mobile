@@ -59,7 +59,7 @@ jest.mock('@managers/performance_metrics_manager', () => ({
     collectNetworkRequestData: jest.fn(),
 }));
 
-describe('ClientTraking', () => {
+describe('ClientTracking', () => {
     const apiClientMock = {
         baseUrl: 'https://example.com',
         get: jest.fn(),
