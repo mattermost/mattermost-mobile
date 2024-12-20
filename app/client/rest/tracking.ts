@@ -264,7 +264,7 @@ export default class ClientTracking {
             [NetworkRequestMetrics.AverageSpeed, averageSpeedMbps],
             [NetworkRequestMetrics.EffectiveLatency, effectiveLatency],
             [NetworkRequestMetrics.ElapsedTime, elapsedTimeInSeconds],
-            [NetworkRequestMetrics.Latency, effectiveLatency],
+            [NetworkRequestMetrics.Latency, latency],
             [NetworkRequestMetrics.TotalCompressedSize, totalCompressedSize],
             [NetworkRequestMetrics.TotalParallelRequests, parallel.length],
             [NetworkRequestMetrics.TotalRequests, urls.length],
