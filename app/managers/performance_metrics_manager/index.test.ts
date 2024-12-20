@@ -11,10 +11,11 @@ import {logWarning} from '@utils/log';
 
 import NetworkManager from '../network_manager';
 
+import {NetworkRequestMetrics} from './constant';
 import {testExports as batcherTestExports} from './performance_metrics_batcher';
 import {getBaseReportRequest} from './test_utils';
 
-import {NetworkRequestMetrics, testExports} from '.';
+import {testExports} from '.';
 
 const PerformanceMetricsManagerClass = testExports.PerformanceMetricsManager;
 const {

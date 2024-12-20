@@ -22,3 +22,8 @@ type PerformanceReport = {
     counters: PerformanceReportMeasure[];
     histograms: PerformanceReportMeasure[];
 }
+
+type NetworkRequestDataOtherInfo = {
+    serverUrl: string;
+    groupLabel: RequestGroupLabel;
+}

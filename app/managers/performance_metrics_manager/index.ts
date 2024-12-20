@@ -9,26 +9,10 @@ import {logDebug, logWarning} from '@utils/log';
 
 import Batcher from './performance_metrics_batcher';
 
+import type {NetworkRequestMetrics} from './constant';
 import type {MarkOptions} from 'react-native-performance/lib/typescript/performance';
 
 type Target = 'HOME' | 'CHANNEL' | 'THREAD' | undefined;
-
-export enum NetworkRequestMetrics {
-    AverageSpeed = 'mobile_network_requests_average_speed',
-    EffectiveLatency = 'mobile_network_requests_effective_latency',
-    ElapsedTime = 'mobile_network_requests_elapsed_time',
-    Latency = 'mobile_network_requests_latency',
-    TotalCompressedSize = 'mobile_network_requests_total_compressed_size',
-    TotalParallelRequests = 'mobile_network_requests_total_parallel_requests',
-    TotalRequests = 'mobile_network_requests_total_requests',
-    TotalSequentialRequests = 'mobile_network_requests_total_sequential_requests',
-    TotalSize = 'mobile_network_requests_total_size',
-}
-
-type NetworkRequestDataOtherInfo = {
-    serverUrl: string;
-    groupLabel: RequestGroupLabel;
-}
 
 type MetricName = 'mobile_channel_switch' |
     'mobile_team_switch';

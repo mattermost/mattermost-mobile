@@ -1,12 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
 import LocalConfig from '@assets/config.json';
+import {Events} from '@constants';
 import test_helper from '@test/test_helper';
 
 import * as ClientConstants from './constants';
 import ClientTracking from './tracking';
 
+import type ClientError from './error';
 import type {APIClientInterface, ClientResponseMetrics} from '@mattermost/react-native-network-client';
 
 jest.mock('react-native', () => ({
@@ -49,6 +53,10 @@ jest.mock('@utils/server', () => ({
 
 jest.mock('@init/credentials', () => ({
     setServerCredentials: jest.fn(),
+}));
+
+jest.mock('@managers/performance_metrics_manager', () => ({
+    collectNetworkRequestData: jest.fn(),
 }));
 
 describe('ClientTraking', () => {
@@ -213,6 +221,92 @@ describe('ClientTraking', () => {
         await expect(client.doFetchWithTracking('https://example.com/api', options)).rejects.toThrow('Received invalid response from the server.');
     });
 
+    it('should handle non-ok response with error details', async () => {
+        apiClientMock.get.mockResolvedValue({
+            ok: false,
+            data: {
+                message: 'Custom error message',
+                id: 'error_id_123',
+            },
+            code: 400,
+        });
+
+        const options = {
+            method: 'GET',
+            groupLabel: 'Cold Start' as RequestGroupLabel,
+        };
+
+        try {
+            await client.doFetchWithTracking('https://example.com/api', options);
+            fail('Expected error to be thrown');
+        } catch (error: unknown) {
+            const clientError = error as ClientError;
+
+            expect((clientError.details as {message: string}).message).toBe('Custom error message');
+            expect((clientError.details as {server_error_id: string}).server_error_id).toBe('error_id_123');
+            expect((clientError.details as {status_code: string}).status_code).toBe(400);
+        }
+    });
+
+    it('should handle non-ok response without error details', async () => {
+        apiClientMock.get.mockResolvedValue({
+            ok: false,
+            data: {},
+            code: 500,
+        });
+
+        const options = {
+            method: 'GET',
+            groupLabel: 'Cold Start' as RequestGroupLabel,
+        };
+
+        try {
+            await client.doFetchWithTracking('https://example.com/api', options);
+            fail('Expected error to be thrown');
+        } catch (error: unknown) {
+            const clientError = error as ClientError;
+
+            expect((clientError.details as {message: string}).message).toBe('Response with status code 500');
+            expect((clientError.details as {status_code: string}).status_code).toBe(500);
+        }
+    });
+
+    it('should handle response with bearer token header', async () => {
+        apiClientMock.get.mockResolvedValue({
+            ok: true,
+            data: {success: true},
+            headers: {
+                Token: 'new_bearer_token',
+            },
+        });
+
+        const options = {
+            method: 'GET',
+            groupLabel: 'Cold Start' as RequestGroupLabel,
+        };
+
+        await client.doFetchWithTracking('https://example.com/api', options);
+        expect(client.requestHeaders[ClientConstants.HEADER_AUTH]).toBe(`${ClientConstants.HEADER_BEARER} new_bearer_token`);
+    });
+
+    it('should handle response with lowercase bearer token header', async () => {
+        apiClientMock.get.mockResolvedValue({
+            ok: true,
+            data: {success: true},
+            headers: {
+                token: 'new_lowercase_token',
+            },
+        });
+
+        const options = {
+            method: 'GET',
+            groupLabel: 'Cold Start' as RequestGroupLabel,
+        };
+
+        await client.doFetchWithTracking('https://example.com/api', options);
+        expect(client.requestHeaders[ClientConstants.HEADER_AUTH]).toBe(`${ClientConstants.HEADER_BEARER} new_lowercase_token`);
+    });
+
     it('should call increment and decrement the same number of times as doFetchWithTracking, and handleRequestCompletion only once', async () => {
         const incrementSpy = jest.spyOn(client, 'incrementRequestCount');
         const decrementSpy = jest.spyOn(client, 'decrementRequestCount');
@@ -251,6 +345,84 @@ describe('ClientTraking', () => {
         expect(handleRequestCompletionSpy).toHaveBeenCalledTimes(1);
         expect(incrementSpy).toHaveBeenCalledTimes(3);
         expect(decrementSpy).toHaveBeenCalledTimes(3);
+    });
+
+    it('should handle invalid HTTP method', async () => {
+        const options = {
+            method: 'INVALID' as string,
+            groupLabel: 'Cold Start' as RequestGroupLabel,
+        };
+
+        const result = await client.doFetchWithTracking('https://example.com/api', options) as unknown as {error: string};
+        expect(result.error).toEqual(new Error('Invalid request method'));
+    });
+
+    it('should handle server version changes without cache control', async () => {
+        apiClientMock.get.mockResolvedValue({
+            ok: true,
+            data: {success: true},
+            headers: {
+                'x-version-id': '5.30.0',
+            },
+        });
+
+        await client.doFetchWithTracking('https://example.com/api', {
+            method: 'GET',
+            groupLabel: 'Cold Start',
+        });
+
+        expect(client.serverVersion).toBe('5.30.0');
+        expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(
+            Events.SERVER_VERSION_CHANGED,
+            {serverUrl: 'https://example.com', serverVersion: '5.30.0'},
+        );
+    });
+
+    it('should not update server version when cache control present', async () => {
+        client.serverVersion = '5.30.0';
+        apiClientMock.get.mockResolvedValue({
+            ok: true,
+            data: {success: true},
+            headers: {
+                'x-version-id': '5.31.0',
+                'Cache-Control': 'no-cache',
+            },
+        });
+
+        await client.doFetchWithTracking('https://example.com/api', {
+            method: 'GET',
+            groupLabel: 'Cold Start',
+        });
+
+        expect(client.serverVersion).toBe('5.30.0'); // Should not change from previous test
+    });
+
+    it('should handle zero transfer time in speed calculation', async () => {
+        client.initTrackGroup('Cold Start');
+        const group = client.requestGroups.get('Cold Start')!;
+
+        // Set up metrics where transfer time would be zero
+        group.urls = {
+            'https://example.com/api': {
+                count: 1,
+                metrics: {
+                    latency: 1000,
+                    startTime: Date.now(),
+                    endTime: Date.now() + 1000,
+                    speedInMbps: 0,
+                    size: 1000,
+                    compressedSize: 500,
+                } as unknown as ClientResponseMetrics,
+            },
+        };
+
+        const result = client.calculateAverageSpeedWithCategories(
+            {parallel: [], sequential: [group.urls['https://example.com/api'].metrics!]},
+            1, // 1 second elapsed
+        );
+
+        expect(result.averageSpeedMbps).toBe(0);
+        expect(result.effectiveLatency).toBe(0);
     });
 
     it('should track duplicate requests correctly and log duplicate details', async () => {
