@@ -75,13 +75,16 @@ describe('ClientTracking', () => {
         LocalConfig.CollectNetworkMetrics = true;
     });
 
-    afterAll(() => {
-        LocalConfig.CollectNetworkMetrics = false;
+    beforeEach(() => {
+        client = new ClientTracking(apiClientMock as unknown as APIClientInterface);
     });
 
-    beforeEach(() => {
+    afterEach(() => {
         jest.clearAllMocks();
-        client = new ClientTracking(apiClientMock as unknown as APIClientInterface);
+    });
+
+    afterAll(() => {
+        LocalConfig.CollectNetworkMetrics = false;
     });
 
     it('should set bearer token', () => {
@@ -379,7 +382,8 @@ describe('ClientTracking', () => {
     });
 
     it('should not update server version when cache control present', async () => {
-        client.serverVersion = '5.30.0';
+        client.serverVersion = '5.20.0';
+
         apiClientMock.get.mockResolvedValue({
             ok: true,
             data: {success: true},
@@ -394,7 +398,7 @@ describe('ClientTracking', () => {
             groupLabel: 'Cold Start',
         });
 
-        expect(client.serverVersion).toBe('5.30.0'); // Should not change from previous test
+        expect(client.serverVersion).toBe('5.20.0');
     });
 
     it('should handle zero transfer time in speed calculation', async () => {
