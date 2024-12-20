@@ -87,6 +87,7 @@ const UserProfile = ({
     userIconOverride,
     usernameOverride,
     hideGuestTags,
+    enableCustomAttributes,
 }: Props) => {
     const {formatMessage, locale} = useIntl();
     const serverUrl = useServerUrl();
@@ -199,6 +200,7 @@ const UserProfile = ({
                             showPosition={showPosition}
                             showLocalTime={showLocalTime}
                             user={user}
+                            enableCustomAttributes={enableCustomAttributes}
                         />
                     </>
                 )}

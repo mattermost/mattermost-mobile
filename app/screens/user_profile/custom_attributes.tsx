@@ -17,9 +17,10 @@ type Props = {
     nickname?: string;
     position?: string;
     localTime?: string;
+    enableCustomAttributes?: boolean;
 }
 
-const CustomAttributes = ({nickname, position, localTime}: Props) => {
+const CustomAttributes = ({nickname, position, localTime, enableCustomAttributes}: Props) => {
     const {formatMessage} = useIntl();
 
     // Combine standard and custom attributes
@@ -40,12 +41,12 @@ const CustomAttributes = ({nickname, position, localTime}: Props) => {
             value: localTime,
         }] : []),
 
-        // Mock custom attributes - in real implementation these would come from the user model
-        ...Array.from({length: 15}, (_, i) => ({
+        // Only show custom attributes if the feature flag is enabled
+        ...(enableCustomAttributes ? Array.from({length: 15}, (_, i) => ({
             id: `attr_${i}`,
             label: `Custom Field ${i + 1}`,
             value: `Value ${i + 1}`,
-        })),
+        })) : []),
     ];
     const renderAttribute: ListRenderItem<CustomAttribute> = ({item}) => (
         <UserProfileLabel

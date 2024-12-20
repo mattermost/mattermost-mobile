@@ -15,9 +15,10 @@ type Props = {
     showNickname: boolean;
     showPosition: boolean;
     user: UserModel;
+    enableCustomAttributes?: boolean;
 }
 
-const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user}: Props) => {
+const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user, enableCustomAttributes}: Props) => {
     const customStatus = getUserCustomStatus(user);
 
     return (
@@ -27,6 +28,7 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
                 nickname={showNickname ? user.nickname : undefined}
                 position={showPosition ? user.position : undefined}
                 localTime={showLocalTime ? localTime : undefined}
+                enableCustomAttributes={enableCustomAttributes}
             />
         </>
     );
