@@ -27,6 +27,9 @@ import {
     updateChannelsDisplayName,
     showUnreadChannelsOnly,
     updateDmGmDisplayName,
+    storeAllMyChannels,
+    markChannelAsViewed,
+    updateMyChannelLastFetchedAt,
 } from './channel';
 
 import type {ChannelModel, MyChannelModel, SystemModel} from '@database/models/server';
@@ -1037,6 +1040,187 @@ describe('showUnreadChannelsOnly', () => {
         expect(models?.length).toBe(1);
         expect(models![0].id).toBe(SYSTEM_IDENTIFIERS.ONLY_UNREADS);
         expect(models![0].value).toBe(true);
+    });
+});
+
+describe('storeAllMyChannels', () => {
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        delete_at: 0,
+    } as Channel;
+    const channelMember: ChannelMembership = {
+        id: 'id',
+        user_id: 'userid',
+        channel_id: channelId,
+        msg_count: 0,
+    } as ChannelMembership;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('handle not found database', async () => {
+        const {models, error} = await storeAllMyChannels('foo', [channel], [channelMember], false, false);
+        expect(models).toBeUndefined();
+        expect(error).toBeTruthy();
+    });
+
+    it('handle no channels', async () => {
+        const {models, error} = await storeAllMyChannels(serverUrl, [], [], false, false);
+        expect(error).toBeUndefined();
+        expect(models).toBeDefined();
+        expect(models!.length).toBe(0);
+    });
+
+    it('store all my channels', async () => {
+        const {models: prepModels, error: prepError} = await storeAllMyChannels(serverUrl, [channel], [channelMember], false, true);
+        expect(prepError).toBeUndefined();
+        expect(prepModels).toBeDefined();
+        expect(prepModels!.length).toBe(5); // Channel, channel info, member, settings and my channel
+
+        const {models, error} = await storeAllMyChannels(serverUrl, [channel], [channelMember], false, false);
+        expect(error).toBeUndefined();
+        expect(models).toBeDefined();
+        expect(models!.length).toBe(5);
+    });
+});
+
+describe('markChannelAsViewed', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        delete_at: 0,
+    } as Channel;
+    const channelMember: ChannelMembership = {
+        id: 'id',
+        user_id: 'userid',
+        channel_id: channelId,
+        msg_count: 0,
+        last_viewed_at: 0,
+    } as ChannelMembership;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('handle not found database', async () => {
+        const {member, error} = await markChannelAsViewed('foo', channelId, false, false);
+        expect(member).toBeUndefined();
+        expect(error).toBeTruthy();
+    });
+
+    it('handle no member', async () => {
+        const {member, error} = await markChannelAsViewed(serverUrl, channelId, false, false);
+        expect(error).toBe('not a member');
+        expect(member).toBeUndefined();
+    });
+
+    it('mark channel as viewed with only counts', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const {member, error} = await markChannelAsViewed(serverUrl, channelId, true, false);
+        expect(error).toBeUndefined();
+        expect(member).toBeDefined();
+        expect(member?.isUnread).toBe(false);
+        expect(member?.mentionsCount).toBe(0);
+        expect(member?.lastViewedAt).toBe(0); // Should not change when onlyCounts is true
+    });
+
+    it('mark channel as viewed fully', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const {member, error} = await markChannelAsViewed(serverUrl, channelId, false, false);
+        expect(error).toBeUndefined();
+        expect(member).toBeDefined();
+        expect(member?.isUnread).toBe(false);
+        expect(member?.mentionsCount).toBe(0);
+        expect(member?.lastViewedAt).toBeGreaterThan(0);
+    });
+});
+
+describe.only('updateMyChannelLastFetchedAt', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const teamId = 'tId1';
+    const channel: Channel = {
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        delete_at: 0,
+    } as Channel;
+    const channelMember: ChannelMembership = {
+        id: 'id',
+        user_id: 'userid',
+        channel_id: channelId,
+        msg_count: 0,
+    } as ChannelMembership;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+        jest.clearAllMocks();
+    });
+
+    it('handle not found database', async () => {
+        const {member, error} = await updateMyChannelLastFetchedAt('foo', channelId, 123, false);
+        expect(member).toBeUndefined();
+        expect(error).toBeTruthy();
+    });
+
+    it('handle no member', async () => {
+        const {member, error} = await updateMyChannelLastFetchedAt(serverUrl, channelId, 123, false);
+        expect(error).toBe('not a member');
+        expect(member).toBeUndefined();
+    });
+
+    it('update last fetched at', async () => {
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+
+        const timestamp = Date.now();
+        const {member, error} = await updateMyChannelLastFetchedAt(serverUrl, channelId, timestamp, false);
+        expect(error).toBeUndefined();
+        expect(member).toBeDefined();
+        expect(member?.lastFetchedAt).toBe(timestamp);
+    });
+
+    it.only('does not update if timestamp is older', async () => {
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        const last_fetched_at = Date.now();
+        console.log('last_fetched_at', last_fetched_at);
+        const memberWithNewerTimestamp = {...channelMember, last_fetched_at};
+        await operator.handleMyChannel({channels: [channel], myChannels: [memberWithNewerTimestamp], prepareRecordsOnly: false});
+
+        const olderTimestamp = Date.now() - 1000;
+        const {member, error} = await updateMyChannelLastFetchedAt(serverUrl, channelId, olderTimestamp, false);
+        expect(error).toBeUndefined();
+        expect(member).toBeUndefined();
     });
 });
 
