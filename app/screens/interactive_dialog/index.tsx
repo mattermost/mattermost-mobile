@@ -123,7 +123,7 @@ function InteractiveDialog({
         base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
-    }, [intl, submitting, theme]);
+    }, [intl, submitLabel, submitting, theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -140,10 +140,16 @@ function InteractiveDialog({
 
     const handleSubmit = useCallback(async () => {
         const newErrors: Errors = {};
+        const submission = {...values};
         let hasErrors = false;
         if (elements) {
             elements.forEach((elem) => {
-                const newError = checkDialogElementForError(elem, secureGetFromRecord(values, elem.name));
+                // Delete empty number fields before submissions
+                if (elem.type === 'text' && elem.subtype === 'number' && secureGetFromRecord(submission, elem.name) === '') {
+                    delete submission[elem.name];
+                }
+
+                const newError = checkDialogElementForError(elem, secureGetFromRecord(submission, elem.name));
                 if (newError) {
                     newErrors[elem.name] = intl.formatMessage({id: newError.id, defaultMessage: newError.defaultMessage}, newError.values);
                     hasErrors = true;
@@ -161,7 +167,7 @@ function InteractiveDialog({
             url,
             callback_id: callbackId,
             state,
-            submission: values,
+            submission,
         } as DialogSubmission;
 
         setSubmitting(true);
@@ -190,7 +196,7 @@ function InteractiveDialog({
         } else {
             close();
         }
-    }, [elements, values, intl, url, callbackId, state]);
+    }, [elements, url, callbackId, state, values, serverUrl, intl]);
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
@@ -219,7 +225,7 @@ function InteractiveDialog({
         return () => {
             unsubscribe.remove();
         };
-    }, [serverUrl, url, callbackId, state, handleSubmit, submitting]);
+    }, [serverUrl, url, callbackId, state, handleSubmit, submitting, componentId, notifyOnCancel]);
 
     useAndroidHardwareBackHandler(componentId, close);
 
@@ -246,9 +252,6 @@ function InteractiveDialog({
                 }
                 {Boolean(elements) && elements.map((e) => {
                     const value = secureGetFromRecord(values, e.name);
-                    if (value === undefined) {
-                        return null;
-                    }
                     return (
                         <DialogElement
                             key={'dialogelement' + e.name}

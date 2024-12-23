@@ -10,16 +10,21 @@ type DialogError = {
 };
 
 export function checkDialogElementForError(elem: DialogElement, value: any): DialogError | undefined | null {
-    if (!value && !elem.optional) {
-        return {
-            id: 'interactive_dialog.error.required',
-            defaultMessage: 'This field is required.',
-        };
+    const fieldRequiredError = {
+        id: 'interactive_dialog.error.required',
+        defaultMessage: 'This field is required.',
+    };
+
+    if (typeof value === 'undefined' && !elem.optional) {
+        return fieldRequiredError;
     }
 
     const type = elem.type;
 
     if (type === 'text' || type === 'textarea') {
+        if (value === '' && !elem.optional) {
+            return fieldRequiredError;
+        }
         if (value && value.length < elem.min_length) {
             return {
                 id: 'interactive_dialog.error.too_short',
