@@ -20,6 +20,7 @@ type Props = {
     iconBackgroundColor?: string;
     selectedTeamId?: string;
     onPress: (teamId: string) => void;
+    hideIcon?: boolean;
 }
 
 export const ITEM_HEIGHT = 56;
@@ -50,7 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function TeamListItem({team, textColor, iconTextColor, iconBackgroundColor, selectedTeamId, onPress}: Props) {
+export default function TeamListItem({team, textColor, iconTextColor, iconBackgroundColor, selectedTeamId, onPress, hideIcon}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -68,17 +69,19 @@ export default function TeamListItem({team, textColor, iconTextColor, iconBackgr
             type='opacity'
             style={styles.touchable}
         >
-            <View style={styles.icon_container}>
-                <TeamIcon
-                    id={team.id}
-                    displayName={displayName}
-                    lastIconUpdate={lastTeamIconUpdateAt}
-                    selected={false}
-                    textColor={iconTextColor || theme.centerChannelColor}
-                    backgroundColor={iconBackgroundColor || changeOpacity(theme.centerChannelColor, 0.16)}
-                    testID={`${teamListItemTestId}.team_icon`}
-                />
-            </View>
+            {!hideIcon &&
+                <View style={styles.icon_container}>
+                    <TeamIcon
+                        id={team.id}
+                        displayName={displayName}
+                        lastIconUpdate={lastTeamIconUpdateAt}
+                        selected={false}
+                        textColor={iconTextColor || theme.centerChannelColor}
+                        backgroundColor={iconBackgroundColor || changeOpacity(theme.centerChannelColor, 0.16)}
+                        testID={`${teamListItemTestId}.team_icon`}
+                    />
+                </View>
+            }
             <Text
                 style={[styles.text, Boolean(textColor) && {color: textColor}]}
                 numberOfLines={1}
