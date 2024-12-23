@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 // Import necessary dependencies and functions
-import * as Sentry from '@sentry/react-native'; // Importing Sentry as module mock
+import Sentry from '@sentry/react-native'; // Importing Sentry as module mock
 import {Platform} from 'react-native';
 
 import Config from '@assets/config.json';
@@ -21,7 +21,9 @@ jest.mock('@sentry/react-native', () => ({
     addBreadcrumb: jest.fn(),
     setContext: jest.fn(),
     ReactNativeTracing: jest.fn(),
-    ReactNativeNavigationInstrumentation: jest.fn(),
+    reactNativeNavigationIntegration: jest.fn().mockImplementation(() => ({
+        name: 'reactNativeNavigation',
+    })),
 }));
 
 jest.mock('@assets/config.json', () => ({
@@ -107,7 +109,7 @@ describe('initializeSentry function', () => {
             attachStacktrace: true, // Adjust based on your actual logic
             enableCaptureFailedRequests: false,
             integrations: [
-                expect.any(Sentry.ReactNativeTracing),
+                {name: 'reactNativeNavigation'},
             ],
             beforeSend: expect.any(Function),
         });

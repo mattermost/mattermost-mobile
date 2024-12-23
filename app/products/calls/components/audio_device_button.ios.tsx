@@ -12,7 +12,7 @@ import type {CurrentCall} from '@calls/types/calls';
 
 type Props = {
     pressableStyle: StyleProp<ViewStyle>;
-    iconStyle: StyleProp<ViewStyle>;
+    iconStyle: StyleProp<TextStyle>;
     buttonTextStyle: StyleProp<TextStyle>;
     currentCall: CurrentCall;
 }

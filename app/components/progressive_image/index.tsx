@@ -9,7 +9,6 @@ import Animated from 'react-native-reanimated';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 type Props = ProgressiveImageProps & {
@@ -55,14 +54,14 @@ const ProgressiveImage = ({
     if (isBackgroundImage && imageUri) {
         return (
             <View style={[styles.defaultImageContainer, style]}>
-                <AnimatedImageBackground
+                <ImageBackground
                     key={id}
                     source={{uri: imageUri}}
                     contentFit='cover'
-                    style={[StyleSheet.absoluteFill, imageStyle]}
+                    style={[StyleSheet.absoluteFill, imageStyle as StyleProp<ViewStyle>]}
                 >
                     {children}
-                </AnimatedImageBackground>
+                </ImageBackground>
             </View>
         );
     }

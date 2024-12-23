@@ -10,10 +10,6 @@ jest.mock('expo-application', () => ({
     applicationId: 'com.example.rnbeta',
 }));
 
-jest.mock('expo-crypto', () => ({
-    randomUUID: jest.fn(() => '12345678-1234-1234-1234-1234567890ab'),
-}));
-
 jest.mock('react-intl', () => ({
     createIntl: jest.fn((config) => config),
 }));

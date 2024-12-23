@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Pressable, Text, View} from 'react-native';
 import Permissions from 'react-native-permissions';
@@ -99,6 +99,10 @@ const MessageBar = ({type, onDismiss}: Props) => {
     const style = getStyleSheet(callsTheme);
     const warning = type === Calls.MessageBarType.CallQuality;
 
+    const onPress = useCallback(() => {
+        Permissions.openSettings();
+    }, []);
+
     let message = '';
     let icon = <></>;
     switch (type) {
@@ -129,7 +133,7 @@ const MessageBar = ({type, onDismiss}: Props) => {
     return (
         <View style={[style.outerContainer, warning && style.outerContainerWarning]}>
             <Pressable
-                onPress={Permissions.openSettings}
+                onPress={onPress}
                 style={[style.innerContainer, warning && style.innerContainerWarning]}
             >
                 <View style={style.iconContainer}>

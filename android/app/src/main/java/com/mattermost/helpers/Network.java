@@ -21,7 +21,7 @@ public class Network {
     private static final Promise emptyPromise = new ResolvePromise();
 
     public static void init(Context context) {
-        final ReactApplicationContext reactContext = (ApiClientModuleImpl.context == null) ? new ReactApplicationContext(context) : ApiClientModuleImpl.context;
+        final ReactApplicationContext reactContext = (ApiClientModuleImpl.context == null) ? (ReactApplicationContext) context.getApplicationContext() : ApiClientModuleImpl.context;
         clientModule = new ApiClientModuleImpl(reactContext);
         createClientOptions();
     }

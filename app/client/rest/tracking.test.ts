@@ -141,7 +141,7 @@ describe('ClientTraking', () => {
         group.urls = {
             'https://example.com/api': {
                 count: 2,
-                metrics: {latency: 200, networkType: 'Wi-Fi', tlsCipherSuite: 'none', tlsVersion: 'none', isCached: false, httpVersion: 'h2', compressedSize: 10 * 1024, size: 6 * 1024 * 1024, connectionTime: 0},
+                metrics: {latency: 200, networkType: 'Wi-Fi', tlsCipherSuite: 'none', tlsVersion: 'none', isCached: false, httpVersion: 'h2', compressedSize: 10 * 1024, size: 6 * 1024 * 1024, connectionTime: 0, startTime: 0, endTime: 100, speedInMbps: 1},
             },
         };
 
