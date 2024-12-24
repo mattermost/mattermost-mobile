@@ -7,6 +7,8 @@ import {CollectNetworkMetrics} from '@assets/config.json';
 import {Events} from '@constants';
 import {t} from '@i18n';
 import {setServerCredentials} from '@init/credentials';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
+import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
 import {getFormattedFileSize} from '@utils/file';
 import {logDebug, logInfo} from '@utils/log';
 import {semverFromServerVersion} from '@utils/server';
@@ -247,13 +249,14 @@ export default class ClientTracking {
     }
 
     sendTelemetryEvent(groupLabel: RequestGroupLabel, groupData: GroupData, duration: number) {
-        const urls = Object.keys(groupData.urls);
-        const urlData = Object.entries(groupData.urls);
+        const {totalCompressedSize, totalSize, urls: groupedUrls} = groupData;
+        const urls = Object.keys(groupedUrls);
+        const urlData = Object.entries(groupedUrls);
         const dupe = urlData.filter((u) => u[1].count > 1);
         const latency = this.getAverageLatency(groupLabel);
         const {parallelGroups, maxConcurrency} = this.categorizeRequests(groupLabel);
         const elapsedTimeInSeconds = duration / 1000;
-        const result = this.calculateAverageSpeedWithCategories(parallelGroups, elapsedTimeInSeconds);
+        const {averageSpeedMbps, effectiveLatency} = this.calculateAverageSpeedWithCategories(parallelGroups, elapsedTimeInSeconds);
 
         logInfo(`Telemetry event on ${Platform.OS} for server ${this.apiClient.baseUrl}
             Group "${groupLabel}"
@@ -265,8 +268,8 @@ export default class ClientTracking {
             total size of: ${getFormattedFileSize(groupData.totalSize)}
             elapsed time: ${elapsedTimeInSeconds} seconds (${duration} ms)
             average request latency: ${latency} ms
-            Effective Latency: ${result.effectiveLatency} ms,
-            Average Speed: ${result.averageSpeedMbps.toFixed(4)} Mbps
+            Effective Latency: ${effectiveLatency} ms,
+            Average Speed: ${averageSpeedMbps.toFixed(4)} Mbps
             `,
         );
 
@@ -274,7 +277,24 @@ export default class ClientTracking {
             logDebug(`Duplicate URLs:\n${dupe.map((d, i) => `${i + 1} - ${d[0]} ${JSON.stringify(d[1])}`).join('\n')}`);
         }
 
-        // Integrate with telemetry framework here
+        const {collectNetworkRequestData} = PerformanceMetricsManager;
+
+        const commonArguments = {serverUrl: this.apiClient.baseUrl, groupLabel};
+        const metricsData: Array<[NetworkRequestMetrics, number]> = [
+            [NetworkRequestMetrics.AverageSpeed, averageSpeedMbps],
+            [NetworkRequestMetrics.EffectiveLatency, effectiveLatency],
+            [NetworkRequestMetrics.ElapsedTime, elapsedTimeInSeconds],
+            [NetworkRequestMetrics.Latency, latency],
+            [NetworkRequestMetrics.TotalCompressedSize, totalCompressedSize],
+            [NetworkRequestMetrics.TotalParallelRequests, parallel.length],
+            [NetworkRequestMetrics.TotalRequests, urls.length],
+            [NetworkRequestMetrics.TotalSequentialRequests, sequential.length],
+            [NetworkRequestMetrics.TotalSize, totalSize],
+        ];
+
+        metricsData.forEach(([metric, value]) => {
+            collectNetworkRequestData(metric, value, commonArguments);
+        });
     }
 
     buildRequestOptions(options: ClientOptions): RequestOptions {
