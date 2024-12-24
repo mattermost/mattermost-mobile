@@ -103,7 +103,7 @@ class AppsManager {
         }
     };
 
-    fetchBindings = async (serverUrl: string, channelId: string, forThread = false, groupLabel?: string) => {
+    fetchBindings = async (serverUrl: string, channelId: string, forThread = false, groupLabel?: RequestGroupLabel) => {
         try {
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             const userId = await getCurrentUserId(database);
@@ -135,13 +135,14 @@ class AppsManager {
         }
     };
 
-    refreshAppBindings = async (serverUrl: string, groupLabel?: string) => {
+    refreshAppBindings = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
         try {
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const appsEnabled = (await getConfig(database))?.FeatureFlagAppsEnabled === 'true';
+            const appsEnabled = await this.isAppsEnabled(serverUrl);
             if (!appsEnabled) {
                 this.getEnabledSubject(serverUrl).next(false);
                 this.clearServer(serverUrl);
+                return;
             }
 
             const channelId = await getCurrentChannelId(database);

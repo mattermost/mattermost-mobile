@@ -22,6 +22,9 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
     // sure we don't do this by skipping the load metric here.
     PerformanceMetricsManager.skipLoadMetric();
 
+    // But still we want to log the TTI
+    PerformanceMetricsManager.startTimeToInteraction();
+
     try {
         const clData = await fetchConfigAndLicense(serverUrl, false);
         if (clData.error) {
@@ -31,7 +34,7 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
         const credentials = await getServerCredentials(serverUrl);
         if (credentials?.token) {
             WebsocketManager.createClient(serverUrl, credentials.token);
-            await WebsocketManager.initializeClient(serverUrl, 'login');
+            await WebsocketManager.initializeClient(serverUrl, 'Login');
         }
 
         return {};
