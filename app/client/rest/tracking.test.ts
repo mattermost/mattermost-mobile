@@ -609,61 +609,192 @@ describe('ClientTracking', () => {
         );
     });
 
-    it('should calculate average speed and effective latency for multiple parallel groups', () => {
-        const baseTime = Date.now();
+    describe('Request Categorization and Speed Calculations', () => {
+        it('should create multiple parallel groups for non-overlapping requests', () => {
+            client.initTrackGroup('Cold Start');
+            const group = client.requestGroups.get('Cold Start')!;
+            const baseTime = Date.now();
 
-        // Create test parallel groups with known data sizes and timings
-        const parallelGroups: ParallelGroup[] = [
-            {
-                startTime: baseTime,
-                endTime: baseTime + 1000,
-                latency: 200,
-                requests: [
-                    {
-                        latency: 200,
+            // First parallel group (2 concurrent requests)
+            group.urls = {
+                'https://example.com/api1': {
+                    count: 1,
+                    metrics: {
+                        latency: 100,
+                        startTime: baseTime,
+                        endTime: baseTime + 200,
+                        size: 1000,
+                        compressedSize: 500,
+                    } as ClientResponseMetrics,
+                },
+                'https://example.com/api2': {
+                    count: 1,
+                    metrics: {
+                        latency: 150,
+                        startTime: baseTime + 50,
+                        endTime: baseTime + 250,
+                        size: 1000,
+                        compressedSize: 500,
+                    } as ClientResponseMetrics,
+                },
+
+                // Second parallel group (3 concurrent requests)
+                'https://example.com/api3': {
+                    count: 1,
+                    metrics: {
+                        latency: 120,
+                        startTime: baseTime + 300,
+                        endTime: baseTime + 500,
+                        size: 1000,
+                        compressedSize: 500,
+                    } as ClientResponseMetrics,
+                },
+                'https://example.com/api4': {
+                    count: 1,
+                    metrics: {
+                        latency: 180,
+                        startTime: baseTime + 320,
+                        endTime: baseTime + 520,
+                        size: 1000,
+                        compressedSize: 500,
+                    } as ClientResponseMetrics,
+                },
+                'https://example.com/api5': {
+                    count: 1,
+                    metrics: {
+                        latency: 160,
+                        startTime: baseTime + 340,
+                        endTime: baseTime + 540,
+                        size: 1000,
+                        compressedSize: 500,
+                    } as ClientResponseMetrics,
+                },
+            };
+
+            const result = client.categorizeRequests('Cold Start');
+
+            // Verify parallel groups
+            expect(result.parallelGroups).toHaveLength(2);
+            expect(result.maxConcurrency).toBe(3);
+
+            // First group should have 2 requests
+            expect(result.parallelGroups[0].requests).toHaveLength(2);
+            expect(result.parallelGroups[0].latency).toBe(150); // Max latency of first group
+
+            // Second group should have 3 requests
+            expect(result.parallelGroups[1].requests).toHaveLength(3);
+            expect(result.parallelGroups[1].latency).toBe(180); // Max latency of second group
+        });
+
+        it('should handle overlapping parallel groups correctly', () => {
+            client.initTrackGroup('Cold Start');
+            const group = client.requestGroups.get('Cold Start')!;
+            const baseTime = Date.now();
+
+            group.urls = {
+
+                // First request starts early and ends late
+                'https://example.com/api1': {
+                    count: 1,
+                    metrics: {
+                        latency: 500,
                         startTime: baseTime,
                         endTime: baseTime + 1000,
-                        compressedSize: 1000000, // 1MB
+                        size: 1000,
+                        compressedSize: 500,
                     } as ClientResponseMetrics,
-                    {
-                        latency: 150,
+                },
+
+                // These requests start during the first request
+                'https://example.com/api2': {
+                    count: 1,
+                    metrics: {
+                        latency: 200,
                         startTime: baseTime + 100,
-                        endTime: baseTime + 900,
-                        compressedSize: 500000, // 0.5MB
+                        endTime: baseTime + 300,
+                        size: 1000,
+                        compressedSize: 500,
                     } as ClientResponseMetrics,
-                ],
-            },
-            {
-                startTime: baseTime + 1100,
-                endTime: baseTime + 2000,
-                latency: 300,
-                requests: [
-                    {
-                        latency: 300,
-                        startTime: baseTime + 1100,
-                        endTime: baseTime + 2000,
-                        compressedSize: 2000000, // 2MB
+                },
+                'https://example.com/api3': {
+                    count: 1,
+                    metrics: {
+                        latency: 200,
+                        startTime: baseTime + 200,
+                        endTime: baseTime + 400,
+                        size: 1000,
+                        compressedSize: 500,
                     } as ClientResponseMetrics,
-                    {
-                        latency: 250,
-                        startTime: baseTime + 1200,
-                        endTime: baseTime + 1900,
-                        compressedSize: 1500000, // 1.5MB
-                    } as ClientResponseMetrics,
-                ],
-            },
-        ];
+                },
+            };
 
-        // Total compressed size: 5MB (5,000,000 bytes)
-        // Total elapsed time: 2 seconds
-        // Total effective latency: 500ms (200ms + 300ms)
-        const result = client.calculateAverageSpeedWithCategories(parallelGroups, 2);
+            const result = client.categorizeRequests('Cold Start');
 
-        // Expected average speed:
-        // Total bits = 5,000,000 * 8 = 40,000,000 bits
-        // Data transfer time = 2 seconds - (500ms / 1000) = 1.5 seconds
-        // Speed = 40,000,000 / 1.5 = 26,666,666.67 bps = 26.67 Mbps
-        expect(result.averageSpeedMbps).toBeCloseTo(26.67, 1);
-        expect(result.effectiveLatency).toBe(500); // Sum of max latencies from each group
+            // Should create a single parallel group since all requests overlap
+            expect(result.parallelGroups).toHaveLength(1);
+            expect(result.maxConcurrency).toBe(3);
+
+            // The group should contain all 3 requests
+            expect(result.parallelGroups[0].requests).toHaveLength(3);
+            expect(result.parallelGroups[0].latency).toBe(500); // Should take the max latency
+        });
+
+        it('should calculate average speed and effective latency for multiple parallel groups', () => {
+            const baseTime = Date.now();
+
+            // Create test parallel groups with known data sizes and timings
+            const parallelGroups: ParallelGroup[] = [
+                {
+                    startTime: baseTime,
+                    endTime: baseTime + 1000,
+                    latency: 200,
+                    requests: [
+                        {
+                            latency: 200,
+                            startTime: baseTime,
+                            endTime: baseTime + 1000,
+                            compressedSize: 1000000, // 1MB
+                        } as ClientResponseMetrics,
+                        {
+                            latency: 150,
+                            startTime: baseTime + 100,
+                            endTime: baseTime + 900,
+                            compressedSize: 500000, // 0.5MB
+                        } as ClientResponseMetrics,
+                    ],
+                },
+                {
+                    startTime: baseTime + 1100,
+                    endTime: baseTime + 2000,
+                    latency: 300,
+                    requests: [
+                        {
+                            latency: 300,
+                            startTime: baseTime + 1100,
+                            endTime: baseTime + 2000,
+                            compressedSize: 2000000, // 2MB
+                        } as ClientResponseMetrics,
+                        {
+                            latency: 250,
+                            startTime: baseTime + 1200,
+                            endTime: baseTime + 1900,
+                            compressedSize: 1500000, // 1.5MB
+                        } as ClientResponseMetrics,
+                    ],
+                },
+            ];
+
+            // Total compressed size: 5MB (5,000,000 bytes)
+            // Total elapsed time: 2 seconds
+            // Total effective latency: 500ms (200ms + 300ms)
+            const result = client.calculateAverageSpeedWithCategories(parallelGroups, 2);
+
+            // Expected average speed:
+            // Total bits = 5,000,000 * 8 = 40,000,000 bits
+            // Data transfer time = 2 seconds - (500ms / 1000) = 1.5 seconds
+            // Speed = 40,000,000 / 1.5 = 26,666,666.67 bps = 26.67 Mbps
+            expect(result.averageSpeedMbps).toBeCloseTo(26.67, 1);
+            expect(result.effectiveLatency).toBe(500); // Sum of max latencies from each group
+        });
     });
 });
