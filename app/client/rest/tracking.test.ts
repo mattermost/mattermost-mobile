@@ -667,5 +667,22 @@ describe('ClientTracking', () => {
             expect(result.averageSpeedMbps).toBe(0);
             expect(result.effectiveLatency).toBe(0); // Should be 0 since data transfer time is 0/negative
         });
+
+        it('should return empty result when groupData is not found', () => {
+            // Try to categorize requests for a non-existent group
+            const result = client.categorizeRequests('Non Existent Group' as RequestGroupLabel);
+
+            // Verify empty result structure
+            expect(result.parallelGroups).toEqual([]);
+            expect(result.maxConcurrency).toBe(0);
+        });
+
+        it('should return default latency when groupData is not found', () => {
+            // Try to get average latency for a non-existent group
+            const result = client.getAverageLatency('Non Existent Group' as RequestGroupLabel);
+
+            // Should return default latency of 100ms
+            expect(result).toBe(100);
+        });
     });
 });
