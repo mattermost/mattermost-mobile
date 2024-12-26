@@ -45,6 +45,10 @@ type CategorizedRequestsResult = {
     maxConcurrency: number;
 };
 
+export const testExports = {
+    ParallelGroup: {} as ParallelGroup,
+};
+
 export default class ClientTracking {
     apiClient: APIClientInterface;
     csrfToken = '';
@@ -129,13 +133,11 @@ export default class ClientTracking {
             return emptyResult;
         }
 
-        // Sort requests by start time
         const requestsMetrics = Object.entries(groupData.urls).
             map((e) => e[1].metrics).
             filter((m) => m != null);
         requestsMetrics.sort((a, b) => a.startTime - b.startTime);
 
-        // Track groups of parallel requests by their end times
         const parallelGroups: ParallelGroup[] = [];
         let maxConcurrency = 0;
 
@@ -144,17 +146,16 @@ export default class ClientTracking {
             const groupIndex = parallelGroups.findIndex((g) => metrics.startTime <= g.endTime);
 
             if (groupIndex >= 0) {
-                // Add to existing parallel group
                 parallelGroups[groupIndex].requests.push(metrics);
 
                 // Any new request that starts after the MIN end time of the current group means either new request is a sequential request
-                // (after all the promise all requests have been satisfied) or
-                // the OS has reached the max number of parallel requests it can handle and just released a slot for the new request.
+                // (after all the promise all requests have been satisfied) or the OS has reached the max number of parallel requests
+                // it can handle and just released a slot for the new request.
                 parallelGroups[groupIndex].endTime = Math.min(parallelGroups[groupIndex].endTime, metrics.endTime);
                 parallelGroups[groupIndex].latency = Math.max(parallelGroups[groupIndex].latency, metrics.latency);
                 maxConcurrency = Math.max(maxConcurrency, parallelGroups[groupIndex].requests.length);
             } else {
-                // Start new sequential group
+                // Create a new parallel group
                 parallelGroups.push({
                     startTime: metrics.startTime,
                     endTime: metrics.endTime,
@@ -258,17 +259,17 @@ export default class ClientTracking {
         const elapsedTimeInSeconds = duration / 1000;
         const {averageSpeedMbps, effectiveLatency} = this.calculateAverageSpeedWithCategories(parallelGroups, elapsedTimeInSeconds);
 
-        logInfo(`Telemetry event on ${Platform.OS} for server ${this.apiClient.baseUrl}
-            Group "${groupLabel}"
-            total requests ${urls.length} urls
-            maxConcurrency: ${maxConcurrency}
-            parallel groups: ${parallelGroups.length}
-            requests in each group: ${parallelGroups.map((g) => g.requests.length).join(', ')}
-            total Compressed size of: ${getFormattedFileSize(groupData.totalCompressedSize)}
-            total size of: ${getFormattedFileSize(groupData.totalSize)}
-            elapsed time: ${elapsedTimeInSeconds} seconds (${duration} ms)
-            average request latency: ${latency} ms
-            Effective Latency: ${effectiveLatency} ms,
+        logInfo(`Telemetry Event on ${Platform.OS} for Server ${this.apiClient.baseUrl}
+            Group: "${groupLabel}"
+            Total Requests: ${urls.length} URLs
+            Max Concurrency: ${maxConcurrency}
+            Parallel Groups: ${parallelGroups.length}
+            Requests in Each Group: ${parallelGroups.map((g) => g.requests.length).join(', ')}
+            Total Compressed Size: ${getFormattedFileSize(groupData.totalCompressedSize)}
+            Total Size: ${getFormattedFileSize(groupData.totalSize)}
+            Elapsed Time: ${elapsedTimeInSeconds} seconds (${duration} ms)
+            Average Request Latency: ${latency} ms
+            Effective Latency: ${effectiveLatency} ms
             Average Speed: ${averageSpeedMbps.toFixed(4)} Mbps
             `,
         );
@@ -286,14 +287,18 @@ export default class ClientTracking {
             [NetworkRequestMetrics.ElapsedTime, elapsedTimeInSeconds],
             [NetworkRequestMetrics.Latency, latency],
             [NetworkRequestMetrics.TotalCompressedSize, totalCompressedSize],
-            [NetworkRequestMetrics.TotalParallelRequests, parallel.length],
             [NetworkRequestMetrics.TotalRequests, urls.length],
-            [NetworkRequestMetrics.TotalSequentialRequests, sequential.length],
+            [NetworkRequestMetrics.TotalSequentialRequests, parallelGroups.length],
             [NetworkRequestMetrics.TotalSize, totalSize],
         ];
 
         metricsData.forEach(([metric, value]) => {
             collectNetworkRequestData(metric, value, commonArguments);
+        });
+
+        // Send metrics for each parallel group
+        parallelGroups.forEach((group) => {
+            collectNetworkRequestData(NetworkRequestMetrics.TotalParallelRequests, group.requests.length, commonArguments);
         });
     }
 

@@ -8,10 +8,12 @@ import {Events} from '@constants';
 import test_helper from '@test/test_helper';
 
 import * as ClientConstants from './constants';
-import ClientTracking from './tracking';
+import ClientTracking, {testExports} from './tracking';
 
 import type ClientError from './error';
 import type {APIClientInterface, ClientResponseMetrics} from '@mattermost/react-native-network-client';
+
+type ParallelGroup = typeof testExports.ParallelGroup;
 
 jest.mock('react-native', () => ({
     DeviceEventEmitter: {
@@ -404,6 +406,7 @@ describe('ClientTracking', () => {
     it('should handle zero transfer time in speed calculation', async () => {
         client.initTrackGroup('Cold Start');
         const group = client.requestGroups.get('Cold Start')!;
+        const now = Date.now();
 
         // Set up metrics where transfer time would be zero
         group.urls = {
@@ -411,22 +414,35 @@ describe('ClientTracking', () => {
                 count: 1,
                 metrics: {
                     latency: 1000,
-                    startTime: Date.now(),
-                    endTime: Date.now() + 1000,
+                    startTime: now,
+                    endTime: now + 1000,
                     speedInMbps: 0,
+                    networkType: 'Wi-Fi',
+                    tlsCipherSuite: 'none',
+                    tlsVersion: 'none',
+                    isCached: false,
+                    httpVersion: 'h2',
                     size: 1000,
                     compressedSize: 500,
-                } as unknown as ClientResponseMetrics,
+                    connectionTime: 0,
+                } as ClientResponseMetrics,
             },
         };
 
+        const parallelGroups: ParallelGroup[] = [{
+            startTime: now,
+            endTime: now + 1000,
+            latency: 1000,
+            requests: [group.urls['https://example.com/api'].metrics!],
+        }];
+
         const result = client.calculateAverageSpeedWithCategories(
-            {parallel: [], sequential: [group.urls['https://example.com/api'].metrics!]},
+            parallelGroups,
             1, // 1 second elapsed
         );
 
         expect(result.averageSpeedMbps).toBe(0);
-        expect(result.effectiveLatency).toBe(0);
+        expect(result.effectiveLatency).toBe(0); // Should be 0 since data transfer time is 0/negative
     });
 
     it('should track duplicate requests correctly and log duplicate details', async () => {
