@@ -403,7 +403,7 @@ describe('ClientTracking', () => {
         expect(client.serverVersion).toBe('5.20.0');
     });
 
-    it('should handle zero transfer time in speed calculation', async () => {
+    it('should handle zero transfer time in speed calculation', () => {
         client.initTrackGroup('Cold Start');
         const group = client.requestGroups.get('Cold Start')!;
         const now = Date.now();
@@ -607,5 +607,63 @@ describe('ClientTracking', () => {
         expect(logDebugSpy).toHaveBeenCalledWith(
             expect.stringContaining('Duplicate URLs:\n1 - https://example.com/api'),
         );
+    });
+
+    it('should calculate average speed and effective latency for multiple parallel groups', () => {
+        const baseTime = Date.now();
+
+        // Create test parallel groups with known data sizes and timings
+        const parallelGroups: ParallelGroup[] = [
+            {
+                startTime: baseTime,
+                endTime: baseTime + 1000,
+                latency: 200,
+                requests: [
+                    {
+                        latency: 200,
+                        startTime: baseTime,
+                        endTime: baseTime + 1000,
+                        compressedSize: 1000000, // 1MB
+                    } as ClientResponseMetrics,
+                    {
+                        latency: 150,
+                        startTime: baseTime + 100,
+                        endTime: baseTime + 900,
+                        compressedSize: 500000, // 0.5MB
+                    } as ClientResponseMetrics,
+                ],
+            },
+            {
+                startTime: baseTime + 1100,
+                endTime: baseTime + 2000,
+                latency: 300,
+                requests: [
+                    {
+                        latency: 300,
+                        startTime: baseTime + 1100,
+                        endTime: baseTime + 2000,
+                        compressedSize: 2000000, // 2MB
+                    } as ClientResponseMetrics,
+                    {
+                        latency: 250,
+                        startTime: baseTime + 1200,
+                        endTime: baseTime + 1900,
+                        compressedSize: 1500000, // 1.5MB
+                    } as ClientResponseMetrics,
+                ],
+            },
+        ];
+
+        // Total compressed size: 5MB (5,000,000 bytes)
+        // Total elapsed time: 2 seconds
+        // Total effective latency: 500ms (200ms + 300ms)
+        const result = client.calculateAverageSpeedWithCategories(parallelGroups, 2);
+
+        // Expected average speed:
+        // Total bits = 5,000,000 * 8 = 40,000,000 bits
+        // Data transfer time = 2 seconds - (500ms / 1000) = 1.5 seconds
+        // Speed = 40,000,000 / 1.5 = 26,666,666.67 bps = 26.67 Mbps
+        expect(result.averageSpeedMbps).toBeCloseTo(26.67, 1);
+        expect(result.effectiveLatency).toBe(500); // Sum of max latencies from each group
     });
 });
