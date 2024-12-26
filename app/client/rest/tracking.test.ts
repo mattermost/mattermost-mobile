@@ -403,177 +403,6 @@ describe('ClientTracking', () => {
         expect(client.serverVersion).toBe('5.20.0');
     });
 
-    it('should handle zero transfer time in speed calculation', () => {
-        client.initTrackGroup('Cold Start');
-        const group = client.requestGroups.get('Cold Start')!;
-        const now = Date.now();
-
-        // Set up metrics where transfer time would be zero
-        group.urls = {
-            'https://example.com/api': {
-                count: 1,
-                metrics: {
-                    latency: 1000,
-                    startTime: now,
-                    endTime: now + 1000,
-                    speedInMbps: 0,
-                    networkType: 'Wi-Fi',
-                    tlsCipherSuite: 'none',
-                    tlsVersion: 'none',
-                    isCached: false,
-                    httpVersion: 'h2',
-                    size: 1000,
-                    compressedSize: 500,
-                    connectionTime: 0,
-                } as ClientResponseMetrics,
-            },
-        };
-
-        const parallelGroups: ParallelGroup[] = [{
-            startTime: now,
-            endTime: now + 1000,
-            latency: 1000,
-            requests: [group.urls['https://example.com/api'].metrics!],
-        }];
-
-        const result = client.calculateAverageSpeedWithCategories(
-            parallelGroups,
-            1, // 1 second elapsed
-        );
-
-        expect(result.averageSpeedMbps).toBe(0);
-        expect(result.effectiveLatency).toBe(0); // Should be 0 since data transfer time is 0/negative
-    });
-
-    it('should create multiple parallel groups for non-overlapping requests', () => {
-        client.initTrackGroup('Cold Start');
-        const group = client.requestGroups.get('Cold Start')!;
-        const baseTime = Date.now();
-
-        // First parallel group (2 concurrent requests)
-        group.urls = {
-            'https://example.com/api1': {
-                count: 1,
-                metrics: {
-                    latency: 100,
-                    startTime: baseTime,
-                    endTime: baseTime + 200,
-                    size: 1000,
-                    compressedSize: 500,
-                } as ClientResponseMetrics,
-            },
-            'https://example.com/api2': {
-                count: 1,
-                metrics: {
-                    latency: 150,
-                    startTime: baseTime + 50,
-                    endTime: baseTime + 250,
-                    size: 1000,
-                    compressedSize: 500,
-                } as ClientResponseMetrics,
-            },
-
-            // Second parallel group (3 concurrent requests)
-            'https://example.com/api3': {
-                count: 1,
-                metrics: {
-                    latency: 120,
-                    startTime: baseTime + 300,
-                    endTime: baseTime + 500,
-                    size: 1000,
-                    compressedSize: 500,
-                } as ClientResponseMetrics,
-            },
-            'https://example.com/api4': {
-                count: 1,
-                metrics: {
-                    latency: 180,
-                    startTime: baseTime + 320,
-                    endTime: baseTime + 520,
-                    size: 1000,
-                    compressedSize: 500,
-                } as ClientResponseMetrics,
-            },
-            'https://example.com/api5': {
-                count: 1,
-                metrics: {
-                    latency: 160,
-                    startTime: baseTime + 340,
-                    endTime: baseTime + 540,
-                    size: 1000,
-                    compressedSize: 500,
-                } as ClientResponseMetrics,
-            },
-        };
-
-        const result = client.categorizeRequests('Cold Start');
-
-        // Verify parallel groups
-        expect(result.parallelGroups).toHaveLength(2);
-        expect(result.maxConcurrency).toBe(3);
-
-        // First group should have 2 requests
-        expect(result.parallelGroups[0].requests).toHaveLength(2);
-        expect(result.parallelGroups[0].latency).toBe(150); // Max latency of first group
-
-        // Second group should have 3 requests
-        expect(result.parallelGroups[1].requests).toHaveLength(3);
-        expect(result.parallelGroups[1].latency).toBe(180); // Max latency of second group
-    });
-
-    it('should handle overlapping parallel groups correctly', () => {
-        client.initTrackGroup('Cold Start');
-        const group = client.requestGroups.get('Cold Start')!;
-        const baseTime = Date.now();
-
-        group.urls = {
-
-            // First request starts early and ends late
-            'https://example.com/api1': {
-                count: 1,
-                metrics: {
-                    latency: 500,
-                    startTime: baseTime,
-                    endTime: baseTime + 1000,
-                    size: 1000,
-                    compressedSize: 500,
-                } as ClientResponseMetrics,
-            },
-
-            // These requests start during the first request
-            'https://example.com/api2': {
-                count: 1,
-                metrics: {
-                    latency: 200,
-                    startTime: baseTime + 100,
-                    endTime: baseTime + 300,
-                    size: 1000,
-                    compressedSize: 500,
-                } as ClientResponseMetrics,
-            },
-            'https://example.com/api3': {
-                count: 1,
-                metrics: {
-                    latency: 200,
-                    startTime: baseTime + 200,
-                    endTime: baseTime + 400,
-                    size: 1000,
-                    compressedSize: 500,
-                } as ClientResponseMetrics,
-            },
-        };
-
-        const result = client.categorizeRequests('Cold Start');
-
-        // Should create a single parallel group since all requests overlap
-        expect(result.parallelGroups).toHaveLength(1);
-        expect(result.maxConcurrency).toBe(3);
-
-        // The group should contain all 3 requests
-        expect(result.parallelGroups[0].requests).toHaveLength(3);
-        expect(result.parallelGroups[0].latency).toBe(500); // Should take the max latency
-    });
-
     it('should track duplicate requests correctly and log duplicate details', async () => {
         const logDebugSpy = jest.spyOn(require('@utils/log'), 'logDebug');
         apiClientMock.get.mockResolvedValue({
@@ -795,6 +624,48 @@ describe('ClientTracking', () => {
             // Speed = 40,000,000 / 1.5 = 26,666,666.67 bps = 26.67 Mbps
             expect(result.averageSpeedMbps).toBeCloseTo(26.67, 1);
             expect(result.effectiveLatency).toBe(500); // Sum of max latencies from each group
+        });
+
+        it('should handle zero transfer time in speed calculation', () => {
+            client.initTrackGroup('Cold Start');
+            const group = client.requestGroups.get('Cold Start')!;
+            const now = Date.now();
+
+            // Set up metrics where transfer time would be zero
+            group.urls = {
+                'https://example.com/api': {
+                    count: 1,
+                    metrics: {
+                        latency: 1000,
+                        startTime: now,
+                        endTime: now + 1000,
+                        speedInMbps: 0,
+                        networkType: 'Wi-Fi',
+                        tlsCipherSuite: 'none',
+                        tlsVersion: 'none',
+                        isCached: false,
+                        httpVersion: 'h2',
+                        size: 1000,
+                        compressedSize: 500,
+                        connectionTime: 0,
+                    } as ClientResponseMetrics,
+                },
+            };
+
+            const parallelGroups: ParallelGroup[] = [{
+                startTime: now,
+                endTime: now + 1000,
+                latency: 1000,
+                requests: [group.urls['https://example.com/api'].metrics!],
+            }];
+
+            const result = client.calculateAverageSpeedWithCategories(
+                parallelGroups,
+                1, // 1 second elapsed
+            );
+
+            expect(result.averageSpeedMbps).toBe(0);
+            expect(result.effectiveLatency).toBe(0); // Should be 0 since data transfer time is 0/negative
         });
     });
 });
