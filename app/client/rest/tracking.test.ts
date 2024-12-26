@@ -438,6 +438,14 @@ describe('ClientTracking', () => {
         );
     });
 
+    it('should return true when checking allRequestsCompleted for non-existent group', () => {
+        // Try to check completion status for a non-existent group
+        const result = client.allRequestsCompleted('Non Existent Group' as RequestGroupLabel);
+
+        // Should return true since there are no pending requests
+        expect(result).toBe(true);
+    });
+
     describe('Request Categorization and Speed Calculations', () => {
         it('should create multiple parallel groups for non-overlapping requests', () => {
             client.initTrackGroup('Cold Start');
