@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
 import {DeviceEventEmitter} from 'react-native';
 
 import LocalConfig from '@assets/config.json';
@@ -576,6 +577,133 @@ describe('ClientTracking', () => {
             expect(result.parallelGroups[0].latency).toBe(500); // Should take the max latency
         });
 
+        it('should handle requests with latency extending beyond group end time', () => {
+            client.initTrackGroup('Cold Start');
+            const group = client.requestGroups.get('Cold Start')!;
+            const baseTime = Date.now();
+            const dataTransferTime = 200;
+
+            group.urls = {
+
+                // First request starts and ends quickly
+                'https://example.com/api1': {
+                    count: 1,
+                    metrics: {
+                        latency: 100,
+                        startTime: baseTime,
+                        endTime: baseTime + dataTransferTime + 100,
+                        size: 1000,
+                        compressedSize: 500,
+                    } as ClientResponseMetrics,
+                },
+
+                // Second request starts at same time but has much longer latency
+                'https://example.com/api2': {
+                    count: 1,
+                    metrics: {
+                        latency: 500, // Long latency
+                        startTime: baseTime,
+                        endTime: baseTime + dataTransferTime + 500, // Ends much later
+                        size: 1000,
+                        compressedSize: 500,
+                    } as ClientResponseMetrics,
+                },
+            };
+
+            const result = client.categorizeRequests('Cold Start');
+
+            // Should create a single parallel group
+            expect(result.parallelGroups).toHaveLength(1);
+            expect(result.maxConcurrency).toBe(2);
+
+            const group1 = result.parallelGroups[0];
+
+            // Group end time should be the earliest end time
+            expect(group1.endTime).toBe(baseTime + dataTransferTime + 100);
+
+            // But latency should be from the longest request
+            expect(group1.latency).toBe(500);
+        });
+
+        it('should handle requests with latency extending beyond group end time and separate parallel groups', () => {
+            client.initTrackGroup('Cold Start');
+            const group = client.requestGroups.get('Cold Start')!;
+            const baseTime = Date.now();
+            const dataTransferTime = 200;
+            const firstGroupMinEndTime = baseTime + dataTransferTime + 100;
+
+            group.urls = {
+
+                // First parallel group
+                'https://example.com/api1': {
+                    count: 1,
+                    metrics: {
+                        latency: 100,
+                        startTime: baseTime,
+                        endTime: firstGroupMinEndTime,
+                        size: 1000,
+                        compressedSize: 500,
+                    } as ClientResponseMetrics,
+                },
+                'https://example.com/api2': {
+                    count: 1,
+                    metrics: {
+                        latency: 500,
+                        startTime: baseTime,
+                        endTime: baseTime + dataTransferTime + 500,
+                        size: 1000,
+                        compressedSize: 500,
+                    } as ClientResponseMetrics,
+                },
+
+                // Second parallel group - starts after first group has ended
+                'https://example.com/api3': {
+                    count: 1,
+                    metrics: {
+                        latency: 300,
+                        startTime: firstGroupMinEndTime + 1, // Starts after first group
+                        endTime: firstGroupMinEndTime + dataTransferTime + 300,
+                        size: 1000,
+                        compressedSize: 500,
+                    } as ClientResponseMetrics,
+                },
+                'https://example.com/api4': {
+                    count: 1,
+                    metrics: {
+                        latency: 600,
+                        startTime: firstGroupMinEndTime + 1, // Starts with api3
+                        endTime: firstGroupMinEndTime + 100 + 600,
+                        size: 1000,
+                        compressedSize: 500,
+                    } as ClientResponseMetrics,
+                },
+            };
+
+            const result = client.categorizeRequests('Cold Start');
+
+            // Should create two parallel groups
+            expect(result.parallelGroups).toHaveLength(2);
+            expect(result.maxConcurrency).toBe(2);
+
+            const group1 = result.parallelGroups[0];
+            const group2 = result.parallelGroups[1];
+
+            // First group assertions
+            expect(group1.endTime).toBe(baseTime + dataTransferTime + 100);
+
+            // longest latency on the first group is 500, but the first group ends after 300ms, so the effective latency is only 300ms
+            expect(group1.latency).toBe(300);
+            expect(group1.requests).toHaveLength(2);
+
+            // Second group assertions
+            expect(group2.endTime).toBe(firstGroupMinEndTime + dataTransferTime + 300);
+
+            // second group min endTime after 500ms, but it's the last group to end, so the effective latency for the group
+            // is 600ms (longest latency)
+            expect(group2.latency).toBe(600);
+            expect(group2.requests).toHaveLength(2);
+        });
+
         it('should calculate average speed and effective latency for multiple parallel groups', () => {
             const baseTime = Date.now();
 
@@ -672,8 +800,8 @@ describe('ClientTracking', () => {
                 1, // 1 second elapsed
             );
 
-            expect(result.averageSpeedMbps).toBe(0);
-            expect(result.effectiveLatency).toBe(0); // Should be 0 since data transfer time is 0/negative
+            expect(result.averageSpeedMbps).toBe(0); // Should be 0 since data transfer time is 0/negative
+            expect(result.effectiveLatency).toBe(1000);
         });
 
         it('should return empty result when groupData is not found', () => {
@@ -694,3 +822,4 @@ describe('ClientTracking', () => {
         });
     });
 });
+/* eslint-enable max-lines */

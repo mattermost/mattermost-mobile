@@ -33,6 +33,14 @@ type GroupData = {
     completionTimer?: NodeJS.Timeout;
 }
 
+/**
+ * ParallelGroup
+ * @typedef {Object} ParallelGroup
+ * @property {number} startTime is the start time of all requests in the group
+ * @property {number} endTime is min end time of all requests in the group
+ * @property {number} latency is the max latency (in ms)
+ * @property {ClientResponseMetrics[]} requests is the list of requests in the group
+ */
 type ParallelGroup = {
     startTime: number;
     endTime: number;
@@ -141,19 +149,16 @@ export default class ClientTracking {
         const parallelGroups: ParallelGroup[] = [];
         let maxConcurrency = 0;
 
+        // First pass: group requests
         for (const metrics of requestsMetrics) {
-            // Find a parallel group this request belongs to
             const groupIndex = parallelGroups.findIndex((g) => metrics.startTime <= g.endTime);
 
             if (groupIndex >= 0) {
-                parallelGroups[groupIndex].requests.push(metrics);
-
-                // Any new request that starts after the MIN end time of the current group means either new request is a sequential request
-                // (after all the promise all requests have been satisfied) or the OS has reached the max number of parallel requests
-                // it can handle and just released a slot for the new request.
-                parallelGroups[groupIndex].endTime = Math.min(parallelGroups[groupIndex].endTime, metrics.endTime);
-                parallelGroups[groupIndex].latency = Math.max(parallelGroups[groupIndex].latency, metrics.latency);
-                maxConcurrency = Math.max(maxConcurrency, parallelGroups[groupIndex].requests.length);
+                const currentGroup = parallelGroups[groupIndex];
+                currentGroup.requests.push(metrics);
+                currentGroup.endTime = Math.min(currentGroup.endTime, metrics.endTime);
+                currentGroup.latency = Math.max(currentGroup.latency, metrics.latency);
+                maxConcurrency = Math.max(maxConcurrency, currentGroup.requests.length);
             } else {
                 // Create a new parallel group
                 parallelGroups.push({
@@ -163,6 +168,24 @@ export default class ClientTracking {
                     requests: [metrics],
                 });
             }
+        }
+
+        // Second pass: recalculate max latency for all groups (except the last)
+        // The max latency should only be considered up until the startTime of the next group
+        for (let i = 0; i < parallelGroups.length - 1; i++) {
+            const currentGroup = parallelGroups[i];
+            let maxGroupLatency = 0;
+
+            for (const metrics of currentGroup.requests) {
+                let currentLatency = metrics.latency;
+
+                if ((metrics.startTime + metrics.latency) > currentGroup.endTime) {
+                    currentLatency = currentGroup.endTime - metrics.startTime;
+                }
+                maxGroupLatency = Math.max(maxGroupLatency, currentLatency);
+            }
+
+            currentGroup.latency = maxGroupLatency;
         }
 
         return {parallelGroups, maxConcurrency};
@@ -177,15 +200,15 @@ export default class ClientTracking {
             return sum + group.requests.reduce((groupSum, req) => groupSum + (req.compressedSize * 8), 0);
         }, 0);
 
-        // Step 2: Calculate effective latency
+        // Step 2: Calculate effective latency (in ms)
         const effectiveLatency = parallelGroups.reduce((sum, group) => sum + group.latency, 0);
 
         // Step 3: Calculate data transfer time
         const dataTransferTime = elapsedTimeInSeconds - (effectiveLatency / 1000);
 
-        // Handle edge case: if data transfer time is zero or negative
+        // Handle edge case: if data transfer time is zero or negative.
         if (dataTransferTime <= 0) {
-            return {averageSpeedMbps: 0, effectiveLatency: 0};
+            return {averageSpeedMbps: 0, effectiveLatency};
         }
 
         // Step 4: Calculate average speed
