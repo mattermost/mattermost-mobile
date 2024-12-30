@@ -812,7 +812,7 @@
   "persistent_notifications.confirm.description": "멘션된 수신자는 메시지를 확인하거나 답장할 때까지 매 {interval, plural, one {minute} other {{interval} minutes}}마다 알림을 받게 됩니다.",
   "persistent_notifications.confirm.send": "보내기",
   "persistent_notifications.confirm.title": "지속적 알림 보내기",
-  "persistent_notifications.error.max_recipients.description": "최대 {max} 수신자에게 영구 알림을 보낼 수 있습니다. 메시지에 언급된 {count} 수신자가 있습니다. 멘션한 사람을 변경해야만 보낼 수 있습니다.",
+  "persistent_notifications.error.max_recipients.description": "최대 {max}명의 수신자에게 영구 알림을 보낼 수 있습니다. 메시지에 언급된 {count}명의 수신자가 있습니다. 참조한 사람을 변경해야만 보낼 수 있습니다.",
   "persistent_notifications.error.max_recipients.title": "수신자가 너무 많습니다",
   "persistent_notifications.error.no_mentions.description": "메시지에 멘션한 받는 사람이 없습니다. 지속적인 알림을 보내려면 멘션을 추가해야 합니다.",
   "persistent_notifications.error.no_mentions.title": "수신자는 @멘션되어야 합니다",
