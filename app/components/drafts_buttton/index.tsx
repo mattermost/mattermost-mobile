@@ -1,25 +1,128 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-/* eslint-disable max-nested-callbacks */
 
-import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {switchMap} from 'rxjs/operators';
+import React, {useCallback, useMemo} from 'react';
+import {Text, TouchableOpacity, View} from 'react-native';
 
-import {observeDraftCount} from '@queries/servers/drafts';
-import {observeCurrentChannelId, observeCurrentTeamId} from '@queries/servers/system';
+import {switchToGlobalDrafts} from '@actions/local/draft';
+import {
+    getStyleSheet as getChannelItemStyleSheet,
+    ROW_HEIGHT,
+} from '@components/channel_item/channel_item';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {HOME_PADDING} from '@constants/view';
+import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
-import DraftsButton from './drafts_button';
+type DraftListProps = {
+    currentChannelId: string;
+    shouldHighlighActive?: boolean;
+    draftsCount: number;
+};
 
-import type {WithDatabaseArgs} from '@typings/database/database';
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    icon: {
+        color: changeOpacity(theme.sidebarText, 0.5),
+        fontSize: 24,
+        marginRight: 12,
+    },
+    iconActive: {
+        color: theme.sidebarText,
+    },
+    iconInfo: {
+        color: changeOpacity(theme.centerChannelColor, 0.72),
+    },
+    text: {
+        flex: 1,
+    },
+    countContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    count: {
+        color: theme.sidebarText,
+        ...typography('Body', 75, 'SemiBold'),
+        opacity: 0.64,
+    },
+    opacity: {
+        opacity: 0.56,
+    },
+}));
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentTeamId = observeCurrentTeamId(database);
-    const draftsCount = currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))); // Observe draft count
-    return {
-        currentChannelId: observeCurrentChannelId(database),
-        draftsCount,
-    };
-});
+const DraftsButton: React.FC<DraftListProps> = ({
+    currentChannelId,
+    shouldHighlighActive = false,
+    draftsCount,
+}) => {
+    const theme = useTheme();
+    const styles = getChannelItemStyleSheet(theme);
+    const customStyles = getStyleSheet(theme);
+    const isTablet = useIsTablet();
 
-export default withDatabase(enhanced(DraftsButton));
+    const handlePress = useCallback(preventDoubleTap(() => {
+        switchToGlobalDrafts();
+    }), []);
 
+    const isActive = isTablet && shouldHighlighActive && !currentChannelId;
+
+    const [containerStyle, iconStyle, textStyle] = useMemo(() => {
+        const container = [
+            styles.container,
+            HOME_PADDING,
+            isActive && styles.activeItem,
+            isActive && {
+                paddingLeft: HOME_PADDING.paddingLeft - styles.activeItem.borderLeftWidth,
+            },
+            {minHeight: ROW_HEIGHT},
+        ];
+
+        const icon = [
+            customStyles.icon,
+            isActive && customStyles.iconActive,
+        ];
+
+        const text = [
+            customStyles.text,
+            styles.text,
+            isActive && styles.textActive,
+        ];
+
+        return [container, icon, text];
+    }, [customStyles, isActive, styles]);
+
+    return (
+        <TouchableOpacity
+            onPress={handlePress}
+            testID='channel_list.drafts.button'
+        >
+            <View style={containerStyle}>
+                <CompassIcon
+                    name='pencil-outline'
+                    style={iconStyle}
+                />
+                <FormattedText
+                    id='drafts'
+                    defaultMessage='Drafts'
+                    style={textStyle}
+                />
+                <View style={customStyles.countContainer}>
+                    <CompassIcon
+                        name='pencil-outline'
+                        size={14}
+                        color={theme.sidebarText}
+                        style={customStyles.opacity}
+                    />
+                    <Text style={customStyles.count}>{draftsCount}</Text>
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
+};
+
+export default DraftsButton;
