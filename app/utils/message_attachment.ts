@@ -18,7 +18,7 @@ export function isMessageAttachmentArray(v: unknown): v is MessageAttachment[] {
     return isArrayOf(v, isMessageAttachment);
 }
 
-function isPostActionOption(v: unknown): v is PostActionOption {
+export function isPostActionOption(v: unknown): v is PostActionOption {
     if (typeof v !== 'object' || !v) {
         return false;
     }
@@ -34,7 +34,7 @@ function isPostActionOption(v: unknown): v is PostActionOption {
     return true;
 }
 
-function isPostAction(v: unknown): v is PostAction {
+export function isPostAction(v: unknown): v is PostAction {
     if (typeof v !== 'object' || !v) {
         return false;
     }
@@ -86,7 +86,7 @@ function isPostAction(v: unknown): v is PostAction {
     return true;
 }
 
-function isMessageAttachmentField(v: unknown) {
+export function isMessageAttachmentField(v: unknown) {
     if (typeof v !== 'object') {
         return false;
     }
@@ -118,7 +118,7 @@ function isMessageAttachmentField(v: unknown) {
     return true;
 }
 
-function isMessageAttachment(v: unknown): v is MessageAttachment {
+export function isMessageAttachment(v: unknown): v is MessageAttachment {
     if (typeof v !== 'object' || !v) {
         return false;
     }
