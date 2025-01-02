@@ -4,9 +4,9 @@
 import TestHelper from '@test/test_helper';
 
 import {PER_PAGE_DEFAULT} from './constants';
-import {type ClientUsersMix} from './users';
 
 import type ClientBase from './base';
+import type {ClientUsersMix} from './users';
 
 describe('ClientUsers', () => {
     let client: ClientUsersMix & ClientBase;
