@@ -44,13 +44,13 @@ const serverUrl = 'http://example.com';
 const mockDatabase = {};
 const mockOperator = {database: mockDatabase, batchRecords: jest.fn()};
 const mockRoles = {roles: ['role1', 'role2']};
+const mockUser = {id: 'user_id', roles: 'role1 role2', locale: 'en'};
+const mockChannels = {channels: [{id: 'channel_id'}], memberships: [{channel_id: 'channel_id', roles: 'role1 role2'}]};
 
 describe('retryInitialTeamAndChannel', () => {
-    const mockUser = {id: 'user_id', roles: 'role1 role2', locale: 'en'};
     const mockConfigAndLicense = {config: {}, license: {}};
     const mockPreferences = {preferences: [{category: Preferences.CATEGORIES.TEAMS_ORDER, name: '', value: ''}]};
     const mockTeams = {teams: [{id: 'team_id'}], memberships: [{team_id: 'team_id', roles: 'role1 role2'}]};
-    const mockChannels = {channels: [{id: 'channel_id', team_id: 'team_id'}], memberships: [{channel_id: 'channel_id', roles: 'role1 role2'}]};
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -133,11 +133,9 @@ describe('retryInitialTeamAndChannel', () => {
 
 describe('retryInitialChannel', () => {
     const teamId = 'team_id';
-    const mockUser = {id: 'user_id', roles: 'role1 role2', locale: 'en'};
     const mockPreferences = [{category: Preferences.NAME_NAME_FORMAT, name: 'name', userId: 'user_id', value: 'value'}];
     const mockLicense = {};
     const mockConfig = {};
-    const mockChannels = {channels: [{id: 'channel_id'}], memberships: [{channel_id: 'channel_id', roles: 'role1 role2'}]};
     const mockInitialChannel = {id: 'channel_id'};
 
     beforeEach(() => {
