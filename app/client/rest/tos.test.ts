@@ -3,8 +3,6 @@
 
 import TestHelper from '@test/test_helper';
 
-import {PER_PAGE_DEFAULT} from './constants';
-
 import type ClientBase from './base';
 import type {ClientTosMix} from './tos';
 
