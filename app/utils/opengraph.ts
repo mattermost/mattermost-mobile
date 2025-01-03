@@ -70,7 +70,7 @@ export function getNearestPoint(pivotPoint: {height: number; width: number}, poi
     return nearestPoint as BestImage;
 }
 
-const fetchRaw = async (url: string) => {
+export const fetchRaw = async (url: string) => {
     try {
         const res = await fetch(url, {
             headers: {
@@ -91,7 +91,7 @@ const fetchRaw = async (url: string) => {
     }
 };
 
-const getFavIcon = (url: string, html: string) => {
+export const getFavIcon = (url: string, html: string) => {
     const getSize = (el: LinkRelIcon) => {
         return (el.sizes && el.sizes[0] && parseInt(el.sizes[0], 10)) || 0;
     };

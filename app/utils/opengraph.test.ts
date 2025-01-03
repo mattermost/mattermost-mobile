@@ -1,7 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getDistanceBW2Points, getNearestPoint} from './opengraph';
+import {getDistanceBW2Points, getNearestPoint, fetchRaw, getFavIcon, fetchOpenGraph} from './opengraph';
+
+let mockedFetch: jest.SpyInstance;
+
+beforeEach(() => {
+    mockedFetch = jest.spyOn(global, 'fetch');
+});
+
+afterEach(() => {
+    jest.clearAllMocks();
+});
 
 describe('Utility Functions', () => {
     describe('getDistanceBW2Points', () => {
@@ -59,6 +69,106 @@ describe('Utility Functions', () => {
             ] as never[];
             const nearestPoint = getNearestPoint(pivotPoint, points);
             expect(nearestPoint).toEqual({x: 2, y: 2});
+        });
+    });
+});
+
+describe('fetchRaw', () => {
+    it('should fetch raw HTML from a URL', async () => {
+        const mockResponse = {
+            ok: true,
+            text: jest.fn().mockResolvedValue('<html></html>'),
+        };
+        mockedFetch.mockResolvedValue(mockResponse as any);
+
+        const result = await fetchRaw('http://example.com');
+        expect(fetch).toHaveBeenCalledWith('http://example.com', {
+            headers: {
+                'User-Agent': 'OpenGraph',
+                'Cache-Control': 'no-cache',
+                Accept: '*/*',
+                Connection: 'keep-alive',
+            },
+        });
+        expect(result).toBe('<html></html>');
+    });
+
+    it('should return response if not ok', async () => {
+        const mockResponse = {
+            ok: false,
+        };
+        mockedFetch.mockResolvedValue(mockResponse as any);
+
+        const result = await fetchRaw('http://example.com');
+        expect(result).toBe(mockResponse);
+    });
+
+    it('should return error message on fetch failure', async () => {
+        const mockError = new Error('Network error');
+        mockedFetch.mockRejectedValue(mockError);
+
+        const result = await fetchRaw('http://example.com');
+        expect(result).toEqual({message: 'Network error'});
+    });
+});
+
+describe('getFavIcon', () => {
+    it('should return the largest favicon URL', () => {
+        const mockHtml = '<html><head><link rel="icon" href="/favicon-32x32.png" sizes="32x32"><link rel="icon" href="/favicon-16x16.png" sizes="16x16"></head></html>';
+        const result = getFavIcon('http://example.com', mockHtml);
+        expect(result).toBe('http://example.com/favicon-32x32.png');
+    });
+
+    it('should return default favicon URL if no icons found', () => {
+        const mockHtml = '<html><head></head></html>';
+        const result = getFavIcon('http://example.com', mockHtml);
+        expect(result).toBe('http://example.com/favicon.ico');
+    });
+});
+
+describe('fetchOpenGraph', () => {
+    it('should fetch OpenGraph data from a URL', async () => {
+        const mockHtml = '<html><head><title>Example</title><meta property="og:title" content="OpenGraph Title"><meta property="og:image" content="http://example.com/image.png"></head></html>';
+        const mockResponse = {
+            ok: true,
+            text: jest.fn().mockResolvedValue(mockHtml),
+        };
+        mockedFetch.mockResolvedValue(mockResponse as any);
+
+        const result = await fetchOpenGraph('http://example.com', true);
+        expect(result).toEqual({
+            link: 'http://example.com',
+            imageURL: 'http://example.com/image.png',
+            favIcon: 'http://example.com/favicon.ico',
+            title: 'OpenGraph Title',
+        });
+    });
+
+    it('should return error if fetchRaw fails', async () => {
+        const mockError = {message: 'Network error'};
+        mockedFetch.mockRejectedValue(mockError);
+
+        const result = await fetchOpenGraph('http://example.com');
+        expect(result).toEqual({
+            link: 'http://example.com',
+            error: new Error('Network error'),
+        });
+    });
+
+    it('should return default title if og:title is not found', async () => {
+        const mockHtml = '<html><head><title>Example</title></head></html>';
+        const mockResponse = {
+            ok: true,
+            text: jest.fn().mockResolvedValue(mockHtml),
+        };
+        mockedFetch.mockResolvedValue(mockResponse as any);
+
+        const result = await fetchOpenGraph('http://example.com');
+        expect(result).toEqual({
+            link: 'http://example.com',
+            imageURL: null,
+            favIcon: undefined,
+            title: 'Example',
         });
     });
 });
