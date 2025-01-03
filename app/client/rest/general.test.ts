@@ -79,7 +79,7 @@ describe('ClientGeneral', () => {
     });
 
     test('getTimezones', async () => {
-        const expectedUrl = `${client.getTimezonesRoute()}`;
+        const expectedUrl = client.getTimezonesRoute();
         const expectedOptions = {method: 'get'};
 
         await client.getTimezones();
@@ -158,7 +158,7 @@ describe('ClientGeneral', () => {
 
     test('sendPerformanceReport', async () => {
         const report = {start: 0, end: 1} as PerformanceReport;
-        const expectedUrl = `${client.getPerformanceRoute()}`;
+        const expectedUrl = client.getPerformanceRoute();
         const expectedOptions = {method: 'post', body: report};
 
         await client.sendPerformanceReport(report);
