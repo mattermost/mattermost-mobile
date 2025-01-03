@@ -19,7 +19,7 @@ describe('ClientTeams', () => {
 
     test('createTeam', async () => {
         const team = {id: 'team1', name: 'testteam'} as Team;
-        const expectedUrl = `${client.getTeamsRoute()}`;
+        const expectedUrl = client.getTeamsRoute();
         const expectedOptions = {method: 'post', body: team};
 
         await client.createTeam(team);
@@ -29,7 +29,7 @@ describe('ClientTeams', () => {
 
     test('deleteTeam', async () => {
         const teamId = 'team1';
-        const expectedUrl = `${client.getTeamRoute(teamId)}`;
+        const expectedUrl = client.getTeamRoute(teamId);
         const expectedOptions = {method: 'delete'};
 
         await client.deleteTeam(teamId);
@@ -39,7 +39,7 @@ describe('ClientTeams', () => {
 
     test('updateTeam', async () => {
         const team = {id: 'team1', name: 'testteam'} as Team;
-        const expectedUrl = `${client.getTeamRoute(team.id)}`;
+        const expectedUrl = client.getTeamRoute(team.id);
         const expectedOptions = {method: 'put', body: team};
 
         await client.updateTeam(team);
@@ -75,7 +75,7 @@ describe('ClientTeams', () => {
 
     test('getTeam', async () => {
         const teamId = 'team1';
-        const expectedUrl = `${client.getTeamRoute(teamId)}`;
+        const expectedUrl = client.getTeamRoute(teamId);
         const expectedOptions = {method: 'get'};
 
         await client.getTeam(teamId);
@@ -85,7 +85,7 @@ describe('ClientTeams', () => {
 
     test('getTeamByName', async () => {
         const teamName = 'team_name';
-        const expectedUrl = `${client.getTeamNameRoute(teamName)}`;
+        const expectedUrl = client.getTeamNameRoute(teamName);
         const expectedOptions = {method: 'get'};
 
         await client.getTeamByName(teamName);
@@ -140,7 +140,7 @@ describe('ClientTeams', () => {
     test('getTeamMember', async () => {
         const teamId = 'team1';
         const userId = 'user1';
-        const expectedUrl = `${client.getTeamMemberRoute(teamId, userId)}`;
+        const expectedUrl = client.getTeamMemberRoute(teamId, userId);
         const expectedOptions = {method: 'get'};
 
         await client.getTeamMember(teamId, userId);
@@ -208,7 +208,7 @@ describe('ClientTeams', () => {
     test('removeFromTeam', async () => {
         const teamId = 'team1';
         const userId = 'user1';
-        const expectedUrl = `${client.getTeamMemberRoute(teamId, userId)}`;
+        const expectedUrl = client.getTeamMemberRoute(teamId, userId);
         const expectedOptions = {method: 'delete'};
 
         await client.removeFromTeam(teamId, userId);

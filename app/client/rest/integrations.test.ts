@@ -80,7 +80,7 @@ describe('ClientIntegrations', () => {
         await client.addCommand(command);
 
         expect(client.doFetch).toHaveBeenCalledWith(
-            `${client.getCommandsRoute()}`,
+            client.getCommandsRoute(),
             {method: 'post', body: command},
         );
     });

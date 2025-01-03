@@ -37,7 +37,7 @@ describe('ClientChannels', () => {
 
     test('createChannel', async () => {
         const channel = {id: 'channel1', name: 'testchannel'} as Channel;
-        const expectedUrl = `${client.getChannelsRoute()}`;
+        const expectedUrl = client.getChannelsRoute();
         const expectedOptions = {method: 'post', body: channel};
 
         await client.createChannel(channel);
@@ -67,7 +67,7 @@ describe('ClientChannels', () => {
 
     test('deleteChannel', async () => {
         const channelId = 'channel1';
-        const expectedUrl = `${client.getChannelRoute(channelId)}`;
+        const expectedUrl = client.getChannelRoute(channelId);
         const expectedOptions = {method: 'delete'};
 
         await client.deleteChannel(channelId);
@@ -87,7 +87,7 @@ describe('ClientChannels', () => {
 
     test('updateChannel', async () => {
         const channel = {id: 'channel1', name: 'updatedchannel'} as Channel;
-        const expectedUrl = `${client.getChannelRoute(channel.id)}`;
+        const expectedUrl = client.getChannelRoute(channel.id);
         const expectedOptions = {method: 'put', body: channel};
 
         await client.updateChannel(channel);
@@ -139,7 +139,7 @@ describe('ClientChannels', () => {
 
     test('getChannel', async () => {
         const channelId = 'channel1';
-        const expectedUrl = `${client.getChannelRoute(channelId)}`;
+        const expectedUrl = client.getChannelRoute(channelId);
         const expectedOptions = {method: 'get'};
 
         await client.getChannel(channelId);
@@ -245,7 +245,7 @@ describe('ClientChannels', () => {
 
     test('getMyChannelMember', async () => {
         const channelId = 'channel1';
-        const expectedUrl = `${client.getChannelMemberRoute(channelId, 'me')}`;
+        const expectedUrl = client.getChannelMemberRoute(channelId, 'me');
         const expectedOptions = {method: 'get'};
 
         await client.getMyChannelMember(channelId);
@@ -292,7 +292,7 @@ describe('ClientChannels', () => {
     test('getChannelMember', async () => {
         const channelId = 'channel1';
         const userId = 'user1';
-        const expectedUrl = `${client.getChannelMemberRoute(channelId, userId)}`;
+        const expectedUrl = client.getChannelMemberRoute(channelId, userId);
         const expectedOptions = {method: 'get'};
 
         await client.getChannelMember(channelId, userId);
@@ -316,7 +316,7 @@ describe('ClientChannels', () => {
         const channelId = 'channel1';
         const postRootId = 'post1';
         const member = {user_id: userId, channel_id: channelId, post_root_id: postRootId};
-        const expectedUrl = `${client.getChannelMembersRoute(channelId)}`;
+        const expectedUrl = client.getChannelMembersRoute(channelId);
         const expectedOptions = {method: 'post', body: member};
 
         await client.addToChannel(userId, channelId, postRootId);
@@ -331,7 +331,7 @@ describe('ClientChannels', () => {
     test('removeFromChannel', async () => {
         const userId = 'user1';
         const channelId = 'channel1';
-        const expectedUrl = `${client.getChannelMemberRoute(channelId, userId)}`;
+        const expectedUrl = client.getChannelMemberRoute(channelId, userId);
         const expectedOptions = {method: 'delete'};
 
         await client.removeFromChannel(userId, channelId);

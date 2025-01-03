@@ -22,7 +22,7 @@ describe('ClientPosts', () => {
         await client.createPost(post);
 
         expect(client.doFetch).toHaveBeenCalledWith(
-            `${client.getPostsRoute()}`,
+            client.getPostsRoute(),
             {method: 'post', body: post, noRetry: true},
         );
     });
@@ -32,7 +32,7 @@ describe('ClientPosts', () => {
         await client.updatePost(post);
 
         expect(client.doFetch).toHaveBeenCalledWith(
-            `${client.getPostRoute(post.id)}`,
+            client.getPostRoute(post.id),
             {method: 'put', body: post},
         );
     });
@@ -42,7 +42,7 @@ describe('ClientPosts', () => {
         await client.getPost(postId);
 
         expect(client.doFetch).toHaveBeenCalledWith(
-            `${client.getPostRoute(postId)}`,
+            client.getPostRoute(postId),
             {method: 'get', groupLabel: undefined},
         );
     });
@@ -62,7 +62,7 @@ describe('ClientPosts', () => {
         await client.deletePost(postId);
 
         expect(client.doFetch).toHaveBeenCalledWith(
-            `${client.getPostRoute(postId)}`,
+            client.getPostRoute(postId),
             {method: 'delete'},
         );
     });
@@ -196,7 +196,7 @@ describe('ClientPosts', () => {
         await client.addReaction(userId, postId, emojiName);
 
         expect(client.doFetch).toHaveBeenCalledWith(
-            `${client.getReactionsRoute()}`,
+            client.getReactionsRoute(),
             {method: 'post', body: {user_id: userId, post_id: postId, emoji_name: emojiName}},
         );
     });

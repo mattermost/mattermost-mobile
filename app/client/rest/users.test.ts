@@ -52,7 +52,7 @@ describe('ClientUsers', () => {
 
     test('updateUser', async () => {
         const user = {id: 'user1', username: 'updateduser'} as UserProfile;
-        const expectedUrl = `${client.getUserRoute(user.id)}`;
+        const expectedUrl = client.getUserRoute(user.id);
         const expectedOptions = {method: 'put', body: user};
 
         await client.updateUser(user);
@@ -316,7 +316,7 @@ describe('ClientUsers', () => {
     });
 
     test('getMe', async () => {
-        const expectedUrl = `${client.getUserRoute('me')}`;
+        const expectedUrl = client.getUserRoute('me');
         const expectedOptions = {method: 'get'};
 
         await client.getMe();
@@ -326,7 +326,7 @@ describe('ClientUsers', () => {
 
     test('getUser', async () => {
         const userId = 'user1';
-        const expectedUrl = `${client.getUserRoute(userId)}`;
+        const expectedUrl = client.getUserRoute(userId);
         const expectedOptions = {method: 'get'};
 
         await client.getUser(userId);
