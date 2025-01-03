@@ -12,7 +12,7 @@ import type {ClientChannelsMix} from './channels';
 describe('ClientChannels', () => {
     let client: ClientChannelsMix & ClientBase;
 
-    beforeEach(() => {
+    beforeAll(() => {
         client = TestHelper.createClient();
         client.doFetch = jest.fn();
     });

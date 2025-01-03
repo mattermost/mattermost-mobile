@@ -11,7 +11,7 @@ import type {ClientUsersMix} from './users';
 describe('ClientUsers', () => {
     let client: ClientUsersMix & ClientBase;
 
-    beforeEach(() => {
+    beforeAll(() => {
         client = TestHelper.createClient();
         client.doFetch = jest.fn();
     });
