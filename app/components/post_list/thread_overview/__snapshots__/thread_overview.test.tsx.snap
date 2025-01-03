@@ -61,6 +61,14 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       onGestureHandlerStateChange={[Function]}
       onHandlerStateChange={[Function]}
       rippleColor={0}
+      style={
+        [
+          undefined,
+          {
+            "cursor": undefined,
+          },
+        ]
+      }
       testID="thread-overview.save.button"
       touchSoundDisabled={false}
     >
@@ -94,6 +102,14 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       onGestureHandlerStateChange={[Function]}
       onHandlerStateChange={[Function]}
       rippleColor={0}
+      style={
+        [
+          undefined,
+          {
+            "cursor": undefined,
+          },
+        ]
+      }
       testID="thread-overview.post_options.button"
       touchSoundDisabled={false}
     >

@@ -150,7 +150,7 @@ const ConnectionBanner = ({
         height.value = withTiming(visible ? ANNOUNCEMENT_BAR_HEIGHT : 0, {
             duration: 200,
         });
-    }, [visible]);
+    }, [height, visible]);
 
     const bannerStyle = useAnimatedStyle(() => ({
         height: height.value,

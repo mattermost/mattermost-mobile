@@ -15,7 +15,7 @@ import {isBetaApp} from '@utils/general';
 import {logError, logWarning} from './log';
 
 import type {Database} from '@nozbe/watermelondb';
-import type {Breadcrumb, Event} from '@sentry/types';
+import type {Breadcrumb, ErrorEvent} from '@sentry/types';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
@@ -41,7 +41,7 @@ export function initializeSentry() {
         environment: isBetaApp ? 'beta' : 'production',
         tracesSampleRate: isBetaApp ? 1.0 : 0.2,
         sampleRate: isBetaApp ? 1.0 : 0.2,
-        attachStacktrace: isBetaApp, // For Beta, stack traces are automatically attached to all messages logged
+        attachStacktrace: Boolean(isBetaApp), // For Beta, stack traces are automatically attached to all messages logged
     };
 
     const eventFilter = Array.isArray(Config.SentryOptions?.severityLevelFilter) ? Config.SentryOptions.severityLevelFilter : [];
@@ -55,16 +55,9 @@ export function initializeSentry() {
         ...sentryOptions,
         enableCaptureFailedRequests: false,
         integrations: [
-            new Sentry.ReactNativeTracing({
-
-                // Pass instrumentation to be used as `routingInstrumentation`
-                routingInstrumentation: new Sentry.ReactNativeNavigationInstrumentation(
-                    Navigation,
-                    {enableTabsInstrumentation: false},
-                ),
-            }),
+            Sentry.reactNativeNavigationIntegration({navigation: Navigation}),
         ],
-        beforeSend: (event: Event) => {
+        beforeSend: (event: ErrorEvent) => {
             if (isBetaApp || (event?.level && eventFilter.includes(event.level))) {
                 return event;
             }

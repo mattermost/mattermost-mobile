@@ -114,7 +114,7 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
     };
 
     const renderParagraph = ({children, first}: {children: ReactElement; first: boolean}) => {
-        const blockStyle: StyleProp<ViewStyle> = [styles.block];
+        const blockStyle: StyleProp<Intersection<TextStyle, ViewStyle>> = [styles.block];
         if (!first) {
             const blockS = getMarkdownBlockStyles(theme);
             blockStyle.push(blockS.adjacentParagraph);
