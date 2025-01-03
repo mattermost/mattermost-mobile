@@ -3,6 +3,8 @@
 
 import React, {type Dispatch, type RefObject, type SetStateAction} from 'react';
 
+import {ALL_TEAMS_ID} from '@constants/team';
+
 import Modifiers from './modifiers';
 import RecentSearches from './recent_searches';
 
@@ -22,9 +24,11 @@ type Props = {
     teamId: string;
     teamName: string;
     teams: TeamModel[];
+    crossTeamSearchEnabled: boolean;
 }
 
-const Initial = ({recentSearches, scrollEnabled, searchValue, setRecentValue, searchRef, teamId, teamName, teams, setTeamId, setSearchValue}: Props) => {
+const Initial = ({recentSearches, scrollEnabled, searchValue, setRecentValue, searchRef, teamId, teamName, teams, setTeamId, setSearchValue, crossTeamSearchEnabled}: Props) => {
+    const showRecentSearches = Boolean(recentSearches.length) && teamId !== ALL_TEAMS_ID;
     return (
         <>
             <Modifiers
@@ -35,8 +39,9 @@ const Initial = ({recentSearches, scrollEnabled, searchValue, setRecentValue, se
                 teamId={teamId}
                 teams={teams}
                 scrollEnabled={scrollEnabled}
+                crossTeamSearchEnabled={crossTeamSearchEnabled}
             />
-            {Boolean(recentSearches.length) &&
+            {showRecentSearches &&
                 <RecentSearches
                     recentSearches={recentSearches}
                     setRecentValue={setRecentValue}
