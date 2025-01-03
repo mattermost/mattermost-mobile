@@ -129,6 +129,25 @@ describe('retryInitialTeamAndChannel', () => {
         const result = await retryInitialTeamAndChannel(serverUrl);
         expect(result).toEqual({error: true});
     });
+
+    it('should return error when no default team is selected', async () => {
+        (selectDefaultTeam as jest.Mock).mockReturnValue(undefined);
+        const result = await retryInitialTeamAndChannel(serverUrl);
+        expect(fetchMyChannelsForTeam).not.toHaveBeenCalled();
+        expect(result).toEqual({error: true});
+    });
+
+    it('should log direct channels when DM channels exist', async () => {
+        (isDMorGM as jest.Mock).mockReturnValue(true);
+        await retryInitialTeamAndChannel(serverUrl);
+        expect(fetchMissingDirectChannelsInfo).toHaveBeenCalledWith(
+            serverUrl,
+            mockChannels.channels,
+            mockUser.locale,
+            expect.any(String),
+            mockUser.id,
+        );
+    });
 });
 
 describe('retryInitialChannel', () => {
@@ -199,7 +218,19 @@ describe('retryInitialChannel', () => {
     it('should fetch missing direct channels info if needed', async () => {
         (isDMorGM as jest.Mock).mockReturnValue(true);
         await retryInitialChannel(serverUrl, teamId);
-        expect(fetchMissingDirectChannelsInfo).toHaveBeenCalled();
+        expect(fetchMissingDirectChannelsInfo).toHaveBeenCalledWith(
+            serverUrl,
+            mockChannels.channels,
+            mockUser.locale,
+            expect.any(String),
+            mockUser.id,
+        );
+    });
+
+    it('should not fetch direct channels info when no DM channels exist', async () => {
+        (isDMorGM as jest.Mock).mockReturnValue(false);
+        await retryInitialChannel(serverUrl, teamId);
+        expect(fetchMissingDirectChannelsInfo).not.toHaveBeenCalled();
     });
 
     it('should fetch posts for the initial channel', async () => {
