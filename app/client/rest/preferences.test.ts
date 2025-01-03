@@ -6,7 +6,7 @@ import TestHelper from '@test/test_helper';
 import type ClientBase from './base';
 import type {ClientPreferencesMix} from './preferences';
 
-describe('ClientUsers', () => {
+describe('ClientPreferences', () => {
     let client: ClientPreferencesMix & ClientBase;
 
     beforeAll(() => {
