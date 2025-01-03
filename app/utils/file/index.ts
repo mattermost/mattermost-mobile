@@ -39,6 +39,7 @@ export const FileFilters = keyMirror({
     IMAGES: null,
     AUDIO: null,
     VIDEOS: null,
+    SVG: null,
 });
 export type FileFilter = keyof typeof FileFilters
 
@@ -106,6 +107,9 @@ export function filterFileExtensions(filter?: FileFilter): string {
             break;
         case FileFilters.VIDEOS:
             searchTerms = Files.VIDEO_TYPES;
+            break;
+        case FileFilters.SVG:
+            searchTerms = Files.SVG_TYPES;
             break;
         default:
             return '';

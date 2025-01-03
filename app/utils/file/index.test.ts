@@ -105,7 +105,8 @@ describe('Image utils', () => {
                 'irb', 'rs', 'scala', 'scm', 'sld', 'scss', 'st', 'sql', 'swift', 'ts', 'tex', 'vbnet', 'vb', 'bas', 'vbs', 'v', 'veo', 'xml',
                 'html', 'xhtml', 'rss', 'atom', 'xsl', 'plist', 'yaml'].map((e) => `ext:${e}`).join(' '));
             expect(filterFileExtensions('DOCUMENTS')).toEqual(['doc', 'docx', 'odt', 'pdf', 'txt', 'rtf'].map((e) => `ext:${e}`).join(' '));
-            expect(filterFileExtensions('IMAGES')).toEqual(['jpg', 'gif', 'bmp', 'png', 'jpeg', 'tiff', 'tif', 'svg', 'psd', 'xcf'].map((e) => `ext:${e}`).join(' '));
+            expect(filterFileExtensions('IMAGES')).toEqual(['jpg', 'gif', 'bmp', 'png', 'jpeg', 'tiff', 'tif', 'psd', 'xcf'].map((e) => `ext:${e}`).join(' '));
+            expect(filterFileExtensions('SVG')).toEqual(['svg'].map((e) => `ext:${e}`).join(' '));
             expect(filterFileExtensions('PRESENTATIONS')).toEqual(['ppt', 'pptx', 'odp'].map((e) => `ext:${e}`).join(' '));
             expect(filterFileExtensions('SPREADSHEETS')).toEqual(['xls', 'xlsx', 'csv', 'ods'].map((e) => `ext:${e}`).join(' '));
             expect(filterFileExtensions('VIDEOS')).toEqual(['mp4', 'avi', 'webm', 'mkv', 'wmv', 'mpg', 'mov', 'flv', 'ogm', 'mpeg'].map((e) => `ext:${e}`).join(' '));
