@@ -20,8 +20,8 @@ export interface ClientFilesMix {
         skipBytes?: number,
         isBookmark?: boolean,
     ) => () => void;
-    searchFiles: (teamId: string, terms: string) => Promise<FileSearchRequest>;
-    searchFilesWithParams: (teamId: string, FileSearchParams: string) => Promise<FileSearchRequest>;
+    searchFiles: (teamId: string, terms: string, isOrSearch: boolean) => Promise<FileSearchRequest>;
+    searchFilesWithParams: (teamId: string, FileSearchParams: FileSearchParams) => Promise<FileSearchRequest>;
 }
 
 const ClientFiles = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
