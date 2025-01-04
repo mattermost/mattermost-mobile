@@ -9,7 +9,7 @@ import {getTeamById} from '@queries/servers/team';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import CategoriesList from '.';
+import CategoriesList from './categories_list';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type Database from '@nozbe/watermelondb/Database';
@@ -35,6 +35,8 @@ describe('components/categories_list', () => {
             <CategoriesList
                 moreThanOneTeam={false}
                 hasChannels={true}
+                draftsCount={0}
+                currentChannelId=''
             />,
             {database},
         );
@@ -48,6 +50,8 @@ describe('components/categories_list', () => {
                 isCRTEnabled={true}
                 moreThanOneTeam={false}
                 hasChannels={true}
+                draftsCount={0}
+                currentChannelId=''
             />,
             {database},
         );
@@ -56,6 +60,20 @@ describe('components/categories_list', () => {
         });
         expect(wrapper.toJSON()).toBeTruthy();
         jest.useRealTimers();
+    });
+
+    it('should render channel list with Draft menu', () => {
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                isCRTEnabled={true}
+                moreThanOneTeam={false}
+                hasChannels={true}
+                draftsCount={1}
+                currentChannelId=''
+            />,
+            {database},
+        );
+        expect(wrapper.getByText('Drafts')).toBeTruthy();
     });
 
     it('should render team error', async () => {
@@ -69,6 +87,8 @@ describe('components/categories_list', () => {
             <CategoriesList
                 moreThanOneTeam={false}
                 hasChannels={true}
+                draftsCount={0}
+                currentChannelId=''
             />,
             {database},
         );
@@ -91,6 +111,8 @@ describe('components/categories_list', () => {
             <CategoriesList
                 moreThanOneTeam={true}
                 hasChannels={false}
+                draftsCount={0}
+                currentChannelId=''
             />,
             {database},
         );
