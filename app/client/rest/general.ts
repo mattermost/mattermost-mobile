@@ -14,21 +14,21 @@ type PoliciesResponse<T> = {
 }
 
 export interface ClientGeneralMix {
-    ping: (deviceId?: string, timeoutInterval?: number, groupLabel?: string) => Promise<any>;
+    ping: (deviceId?: string, timeoutInterval?: number, groupLabel?: RequestGroupLabel) => Promise<any>;
     logClientError: (message: string, level?: string) => Promise<any>;
-    getClientConfigOld: (groupLabel?: string) => Promise<ClientConfig>;
-    getClientLicenseOld: (groupLabel?: string) => Promise<ClientLicense>;
+    getClientConfigOld: (groupLabel?: RequestGroupLabel) => Promise<ClientConfig>;
+    getClientLicenseOld: (groupLabel?: RequestGroupLabel) => Promise<ClientLicense>;
     getTimezones: () => Promise<string[]>;
-    getGlobalDataRetentionPolicy: (groupLabel?: string) => Promise<GlobalDataRetentionPolicy>;
-    getTeamDataRetentionPolicies: (userId: string, page?: number, perPage?: number, groupLabel?: string) => Promise<PoliciesResponse<TeamDataRetentionPolicy>>;
-    getChannelDataRetentionPolicies: (userId: string, page?: number, perPage?: number, groupLabel?: string) => Promise<PoliciesResponse<ChannelDataRetentionPolicy>>;
-    getRolesByNames: (rolesNames: string[], groupLabel?: string) => Promise<Role[]>;
+    getGlobalDataRetentionPolicy: (groupLabel?: RequestGroupLabel) => Promise<GlobalDataRetentionPolicy>;
+    getTeamDataRetentionPolicies: (userId: string, page?: number, perPage?: number, groupLabel?: RequestGroupLabel) => Promise<PoliciesResponse<TeamDataRetentionPolicy>>;
+    getChannelDataRetentionPolicies: (userId: string, page?: number, perPage?: number, groupLabel?: RequestGroupLabel) => Promise<PoliciesResponse<ChannelDataRetentionPolicy>>;
+    getRolesByNames: (rolesNames: string[], groupLabel?: RequestGroupLabel) => Promise<Role[]>;
     getRedirectLocation: (urlParam: string) => Promise<Record<string, string>>;
     sendPerformanceReport: (batch: PerformanceReport) => Promise<{}>;
 }
 
 const ClientGeneral = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
-    ping = async (deviceId?: string, timeoutInterval?: number, groupLabel?: string) => {
+    ping = async (deviceId?: string, timeoutInterval?: number, groupLabel?: RequestGroupLabel) => {
         let url = `${this.urlVersion}/system/ping?time=${Date.now()}`;
         if (deviceId) {
             url = `${url}&device_id=${deviceId}`;
@@ -56,14 +56,14 @@ const ClientGeneral = <TBase extends Constructor<ClientBase>>(superclass: TBase)
         );
     };
 
-    getClientConfigOld = async (groupLabel?: string) => {
+    getClientConfigOld = async (groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.urlVersion}/config/client?format=old`,
             {method: 'get', groupLabel},
         );
     };
 
-    getClientLicenseOld = async (groupLabel?: string) => {
+    getClientLicenseOld = async (groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.urlVersion}/license/client?format=old`,
             {method: 'get', groupLabel},
@@ -77,28 +77,28 @@ const ClientGeneral = <TBase extends Constructor<ClientBase>>(superclass: TBase)
         );
     };
 
-    getGlobalDataRetentionPolicy = (groupLabel?: string) => {
+    getGlobalDataRetentionPolicy = (groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getGlobalDataRetentionRoute()}/policy`,
             {method: 'get', groupLabel},
         );
     };
 
-    getTeamDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT, groupLabel?: string) => {
+    getTeamDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getGranularDataRetentionRoute(userId)}/team_policies${buildQueryString({page, per_page: perPage})}`,
             {method: 'get', groupLabel},
         );
     };
 
-    getChannelDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT, groupLabel?: string) => {
+    getChannelDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getGranularDataRetentionRoute(userId)}/channel_policies${buildQueryString({page, per_page: perPage})}`,
             {method: 'get', groupLabel},
         );
     };
 
-    getRolesByNames = async (rolesNames: string[], groupLabel?: string) => {
+    getRolesByNames = async (rolesNames: string[], groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getRolesRoute()}/names`,
             {method: 'post', body: rolesNames, groupLabel},

@@ -109,7 +109,7 @@ class WebsocketManager {
         }
     };
 
-    public openAll = async (groupLabel?: string) => {
+    public openAll = async (groupLabel?: BaseRequestGroupLabel) => {
         let queued = 0;
         for await (const clientUrl of Object.keys(this.clients)) {
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();
@@ -148,7 +148,7 @@ class WebsocketManager {
         }
     };
 
-    public initializeClient = async (serverUrl: string, groupLabel = 'reconnection') => {
+    public initializeClient = async (serverUrl: string, groupLabel: BaseRequestGroupLabel = 'WebSocket Reconnect') => {
         const client: WebSocketClient = this.clients[serverUrl];
         clearTimeout(this.connectionTimerIDs[serverUrl]);
         delete this.connectionTimerIDs[serverUrl];
@@ -271,7 +271,7 @@ class WebsocketManager {
             }
             this.isBackgroundTimerRunning = false;
             if (this.netConnected) {
-                this.openAll('reconnection');
+                this.openAll('WebSocket Reconnect');
             }
 
             return;

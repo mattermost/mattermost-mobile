@@ -41,6 +41,13 @@ jest.mock('@utils/log', () => ({
 jest.mock('@mattermost/rnutils', () => ({
     getRealFilePath: jest.fn(),
     isRunningInSplitView: jest.fn().mockReturnValue({isSplit: false, isTablet: false}),
+    getConstants: jest.fn().mockReturnValue({
+        appGroupIdentifier: 'group.mattermost.rnbeta',
+        appGroupSharedDirectory: {
+            sharedDirectory: '',
+            databasePath: '',
+        },
+    }),
 }));
 
 describe('FilePickerUtil', () => {

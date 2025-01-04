@@ -7,10 +7,10 @@ import type {RTCIceServer} from 'react-native-webrtc';
 
 export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;
-    getCalls: (groupLabel?: string) => Promise<CallChannelState[]>;
+    getCalls: (groupLabel?: RequestGroupLabel) => Promise<CallChannelState[]>;
     getCallForChannel: (channelId: string) => Promise<CallChannelState>;
-    getCallsConfig: (groupLabel?: string) => Promise<CallsConfig>;
-    getVersion: (groupLabel?: string) => Promise<CallsVersion>;
+    getCallsConfig: (groupLabel?: RequestGroupLabel) => Promise<CallsConfig>;
+    getVersion: (groupLabel?: RequestGroupLabel) => Promise<CallsVersion>;
     enableChannelCalls: (channelId: string, enable: boolean) => Promise<CallChannelState>;
     endCall: (channelId: string) => Promise<ApiResp>;
     genTURNCredentials: () => Promise<RTCIceServer[]>;
@@ -38,7 +38,7 @@ const ClientCalls = (superclass: any) => class extends superclass {
         }
     };
 
-    getCalls = async (groupLabel?: string) => {
+    getCalls = async (groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getCallsRoute()}/channels?mobilev2=true`,
             {method: 'get', groupLabel},
@@ -52,14 +52,14 @@ const ClientCalls = (superclass: any) => class extends superclass {
         );
     };
 
-    getCallsConfig = async (groupLabel?: string) => {
+    getCallsConfig = async (groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getCallsRoute()}/config`,
             {method: 'get', groupLabel},
         ) as CallsConfig;
     };
 
-    getVersion = async (groupLabel?: string) => {
+    getVersion = async (groupLabel?: RequestGroupLabel) => {
         try {
             return this.doFetch(
                 `${this.getCallsRoute()}/version`,

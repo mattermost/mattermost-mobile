@@ -466,7 +466,7 @@ const CallScreen = ({
             await popTopScreen(Screens.THREAD);
         }
         await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
-        WebsocketManager.initializeClient(currentCall.serverUrl, 'calls');
+        WebsocketManager.initializeClient(currentCall.serverUrl, 'Server Switch');
         await goToScreen(Screens.THREAD, callThreadOptionTitle, {rootId: currentCall.threadId});
     }, [currentCall?.serverUrl, currentCall?.threadId, fromThreadScreen, componentId, callThreadOptionTitle]);
 
