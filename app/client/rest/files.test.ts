@@ -115,6 +115,21 @@ test('uploadAttachment', () => {
     expect(client.apiClient.upload).toHaveBeenCalledWith(client.getFilesRoute(), file.localPath, expectedDefaultOptions);
 });
 
+test('uploadAttachment throws error when file has no localPath', () => {
+    const file = {} as FileInfo;
+    const channelId = 'channel_id';
+
+    expect(() => {
+        client.uploadAttachment(
+            file,
+            channelId,
+            jest.fn(),
+            jest.fn(),
+            jest.fn(),
+        );
+    }).toThrow('file does not have local path defined');
+});
+
 test('searchFilesWithParams', async () => {
     const teamId = 'team_id';
     const params = {terms: 'search terms', is_or_search: true};
@@ -122,6 +137,16 @@ test('searchFilesWithParams', async () => {
     const expectedOptions = {method: 'post', body: params};
 
     await client.searchFilesWithParams(teamId, params);
+
+    expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+});
+
+test('searchFilesWithParams without teamId', async () => {
+    const params = {terms: 'search terms', is_or_search: true};
+    const expectedUrl = `${client.getFilesRoute()}/search`;
+    const expectedOptions = {method: 'post', body: params};
+
+    await client.searchFilesWithParams('', params);
 
     expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
 });
