@@ -15,7 +15,7 @@ import {popTopScreen} from '@screens/navigation';
 
 import DraftEmptyComponent from '../draft_empty_component';
 
-import DraftSwipeAction from './DraftSwipeAction';
+import DraftSwipeActions from './DraftSwipeActions';
 import DraftTooltip from './tooltip';
 
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -105,7 +105,7 @@ const GlobalDraftsList: React.FC<Props> = ({
                     <View
                         style={styles.swippeableContainer}
                     >
-                        <DraftSwipeAction
+                        <DraftSwipeActions
                             item={item}
                             location={location}
                             layoutWidth={layoutWidth}
@@ -115,7 +115,7 @@ const GlobalDraftsList: React.FC<Props> = ({
             );
         }
         return (
-            <DraftSwipeAction
+            <DraftSwipeActions
                 item={item}
                 location={location}
                 layoutWidth={layoutWidth}
