@@ -279,6 +279,7 @@ async function getImageMetadata(url: string) {
         width,
         format,
         frame_count: 1,
+        url,
     };
 }
 
@@ -291,13 +292,18 @@ export async function parseMarkdownImages(markdown: string, imageMetadata: Dicti
     const imageRegex = /!\[.*?\]\((([a-zA-Z][a-zA-Z\d+\-.]*):\/\/[^\s()<>]+(?:\([^\s()<>]+\))*)\)/g;
     const matches = Array.from(markdown.matchAll(imageRegex));
 
-    const promises = matches.map(async (match) => {
+    const promises = matches.reduce<Array<Promise<PostImage & {url: string}>>>((result, match) => {
         const imageUrl = match[1];
         if (isValidUrl(imageUrl)) {
-            const metadata = await getImageMetadata(imageUrl);
-            imageMetadata[imageUrl] = metadata;
+            result.push(getImageMetadata(imageUrl));
+        }
+        return result;
+    }, []);
+
+    const metadataArray = await Promise.all(promises);
+    metadataArray.forEach((metadata) => {
+        if (metadata) {
+            imageMetadata[metadata.url] = metadata;
         }
     });
-
-    await Promise.all(promises);
 }
