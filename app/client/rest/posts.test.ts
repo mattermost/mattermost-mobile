@@ -226,10 +226,19 @@ describe('ClientPosts', () => {
     test('searchPostsWithParams', async () => {
         const teamId = 'team_id';
         const params = {terms: 'search terms', is_or_search: false};
+
+        // Test with teamId
         await client.searchPostsWithParams(teamId, params);
 
         expect(client.doFetch).toHaveBeenCalledWith(
             `${client.getTeamRoute(teamId)}/posts/search`,
+            {method: 'post', body: params},
+        );
+
+        // Test without teamId
+        await client.searchPostsWithParams('', params);
+        expect(client.doFetch).toHaveBeenCalledWith(
+            `${client.getPostsRoute()}/search`,
             {method: 'post', body: params},
         );
     });
