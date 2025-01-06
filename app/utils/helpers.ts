@@ -182,12 +182,3 @@ export function areBothStringArraysEqual(a: string[], b: string[]) {
 
     return areBothEqual;
 }
-
-export function isValidUrl(url: string): boolean {
-    try {
-        const parsedUrl = new URL(url);
-        return Boolean(parsedUrl);
-    } catch {
-        return false;
-    }
-}

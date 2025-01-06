@@ -7,8 +7,9 @@ import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
 import {goToScreen} from '@screens/navigation';
-import {isTablet, isValidUrl} from '@utils/helpers';
+import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
+import {isParsableUrl} from '@utils/url';
 
 export const switchToGlobalDrafts = async () => {
     const isTablelDevice = isTablet();
@@ -294,7 +295,7 @@ export async function parseMarkdownImages(markdown: string, imageMetadata: Dicti
 
     const promises = matches.reduce<Array<Promise<PostImage & {url: string}>>>((result, match) => {
         const imageUrl = match[1];
-        if (isValidUrl(imageUrl)) {
+        if (isParsableUrl(imageUrl)) {
             result.push(getImageMetadata(imageUrl));
         }
         return result;
