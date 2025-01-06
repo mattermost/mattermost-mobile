@@ -775,6 +775,7 @@
   "mobile.server_upgrade.button": "Ok",
   "mobile.server_upgrade.description": "\nEn serveroppgradering kreves for å bruke Mattermost-appen. Spør systemadministratoren din for detaljer.\n",
   "mobile.server_upgrade.title": "Serveroppgradering er påkrevd",
+  "mobile.server_url.deeplink.emm.denied": "Denne appen styres av en EMM, og URL-en til DeepLink-serveren samsvarer ikke med den tillatte EMM-serveren",
   "mobile.server_url.empty": "Vennligst skriv inn en gyldig nettadresse for serveren",
   "mobile.server_url.invalid_format": "http:// аль эсвэл https:// гэж эхлэх ёстой",
   "mobile.session_expired.title": "Sesjon utløpt",
