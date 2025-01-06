@@ -45,7 +45,7 @@ const getStyles = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const SwipeableDraft: React.FC<Props> = ({
+const DraftSwipeAction: React.FC<Props> = ({
     item,
     location,
     layoutWidth,
@@ -127,4 +127,4 @@ const SwipeableDraft: React.FC<Props> = ({
     );
 };
 
-export default SwipeableDraft;
+export default DraftSwipeAction;
