@@ -356,12 +356,15 @@ describe('ClientUsers', () => {
 
     test('getProfilePictureUrl', () => {
         const userId = 'user1';
+
+        // Test with non-zero lastPictureUpdate
         const lastPictureUpdate = 123456;
-        const expectedUrl = `${client.getUserRoute(userId)}/image?_=${lastPictureUpdate}`;
+        let url = client.getProfilePictureUrl(userId, lastPictureUpdate);
+        expect(url).toBe(`${client.getUserRoute(userId)}/image?_=${lastPictureUpdate}`);
 
-        const result = client.getProfilePictureUrl(userId, lastPictureUpdate);
-
-        expect(result).toBe(expectedUrl);
+        // Test with zero lastPictureUpdate
+        url = client.getProfilePictureUrl(userId, 0);
+        expect(url).toBe(`${client.getUserRoute(userId)}/image`);
     });
 
     test('getDefaultProfilePictureUrl', () => {
