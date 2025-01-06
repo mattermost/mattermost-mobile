@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getDistanceBW2Points, getNearestPoint, fetchRaw, getFavIcon, fetchOpenGraph} from './opengraph';
+import {getDistanceBW2Points, getNearestPoint, fetchOpenGraph, testExports} from './opengraph';
+
+const {fetchRaw, getFavIcon} = testExports;
 
 let mockedFetch: jest.SpyInstance;
 
@@ -123,6 +125,24 @@ describe('getFavIcon', () => {
         const mockHtml = '<html><head></head></html>';
         const result = getFavIcon('http://example.com', mockHtml);
         expect(result).toBe('http://example.com/favicon.ico');
+    });
+
+    it('should handle shortcut icon rel attribute', () => {
+        const mockHtml = '<html><head><link rel="shortcut icon" href="/favicon.png"></head></html>';
+        const result = getFavIcon('http://example.com', mockHtml);
+        expect(result).toBe('http://example.com/favicon.png');
+    });
+
+    it('should handle absolute URLs in href', () => {
+        const mockHtml = '<html><head><link rel="icon" href="https://cdn.example.com/favicon.png"></head></html>';
+        const result = getFavIcon('http://example.com', mockHtml);
+        expect(result).toBe('https://cdn.example.com/favicon.png');
+    });
+
+    it('should handle icons without sizes attribute', () => {
+        const mockHtml = '<html><head><link rel="icon" href="/favicon.png"><link rel="icon" href="/favicon-32x32.png" sizes="32x32"></head></html>';
+        const result = getFavIcon('http://example.com', mockHtml);
+        expect(result).toBe('http://example.com/favicon-32x32.png');
     });
 });
 
