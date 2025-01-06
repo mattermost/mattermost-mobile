@@ -5,12 +5,11 @@ import {Preferences} from '@constants';
 
 import {
     getStatusColors,
-    isMessageAttachment,
     isMessageAttachmentArray,
-    isMessageAttachmentField,
-    isPostAction,
-    isPostActionOption,
+    testExports,
 } from './message_attachment';
+
+const {isMessageAttachment, isMessageAttachmentField, isPostAction, isPostActionOption} = testExports;
 
 describe('getStatusColors', () => {
     const mockTheme = Preferences.THEMES.denim;
