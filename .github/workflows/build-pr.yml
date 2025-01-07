@@ -56,7 +56,7 @@ jobs:
           MATCH_GIT_URL: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
           MATCH_PASSWORD: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
-        run: bundle exec fastlane ios build --env ios.pr
+        run: bundle exec fastlane ios build --env ios.pr; echo "${{ env.BRANCH_TO_BUILD }}"
         working-directory: ./fastlane
 
       - name: ci/upload-ios-pr-build
