@@ -35,8 +35,11 @@ describe('actions/remote/file', () => {
     };
 
     beforeEach(() => {
-        jest.clearAllMocks();
         (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('downloadFile', () => {
@@ -54,6 +57,22 @@ describe('actions/remote/file', () => {
                 '/path/to/file',
                 {timeoutInterval: DOWNLOAD_TIMEOUT},
             );
+        });
+
+        /**
+         * Not catching/handling the error thrown by the downloadFile function.
+         * It should be caught and handled by the caller of the function.
+         */
+        it('does not catch/handle download error', async () => {
+            const error = new Error('Download failed');
+            mockClient.getFileRoute.mockReturnValue('/files/file123');
+            mockClient.apiClient.download.mockRejectedValue(error);
+
+            try {
+                await downloadFile(serverUrl, 'file123', 'file:///path/to/file');
+            } catch (e) {
+                expect(e).toBe(error);
+            }
         });
     });
 
@@ -73,6 +92,22 @@ describe('actions/remote/file', () => {
                 '/path/to/image',
                 {timeoutInterval: DOWNLOAD_TIMEOUT},
             );
+        });
+
+        /**
+         * Not catching/handling the error thrown by the downloadFile function.
+         * It should be caught and handled by the caller of the function.
+         */
+        it('does not catch/handle download error', async () => {
+            const error = new Error('Download failed');
+            mockClient.getProfilePictureUrl.mockReturnValue('/users/user123/image');
+            mockClient.apiClient.download.mockRejectedValue(error);
+
+            try {
+                await downloadProfileImage(serverUrl, 'user123', 12345, 'file:///path/to/image');
+            } catch (e) {
+                expect(e).toBe(error);
+            }
         });
     });
 
