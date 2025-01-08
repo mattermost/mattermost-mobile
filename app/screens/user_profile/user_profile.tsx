@@ -154,6 +154,7 @@ const UserProfile = ({
 
         return [
             1,
+            bottomSheetSnapPoint(optionsCount, LABEL_HEIGHT) + title + extraHeight,
             bottomSheetSnapPoint(optionsCount, LABEL_HEIGHT) + title + extraHeight + customAttrHeight,
         ];
     }, [

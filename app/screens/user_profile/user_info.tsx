@@ -5,6 +5,7 @@ import React, {useEffect, useState} from 'react';
 
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@managers/network_manager';
+import {logDebug} from '@utils/log';
 import {getUserCustomStatus} from '@utils/user';
 
 import CustomAttributes from './custom_attributes';
@@ -22,10 +23,6 @@ type Props = {
     enableCustomAttributes?: boolean;
 }
 
-const matchingFieldAttribute = (id: string) => {
-    return (field: CustomProfileField) => field.id === id;
-};
-
 const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user, enableCustomAttributes}: Props) => {
     const customStatus = getUserCustomStatus(user);
     const serverUrl = useServerUrl();
@@ -37,13 +34,14 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
                 try {
                     const client = NetworkManager.getClient(serverUrl);
                     const fields = await client.getCustomProfileAttributeFields();
-                    const userData = await client.getUser(user.id, {cpa: true});
-
-                    if (userData.custom_profile_attributes) {
-                        const attributes = Object.entries(userData.custom_profile_attributes).map(([id, value]) => ({
-                            id,
-                            name: fields.find(matchingFieldAttribute(id))?.name || id,
-                            value: value.value,
+                    const attrValues = await client.getCustomProfileAttributeValues(user.id);
+                    logDebug('got fields: ', fields.length);
+                    logDebug('got values: ', attrValues.length);
+                    if (fields) {
+                        const attributes = fields.map((field) => ({
+                            id: field.id,
+                            name: field.name,
+                            value: attrValues[field.id] || '',
                         }));
                         setCustomAttributes(attributes);
                     }

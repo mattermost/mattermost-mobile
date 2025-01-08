@@ -37,6 +37,10 @@ type CustomProfileAttribute = {
     delete_at: number;
 }
 
+type CustomProfileAttributeSimple = {
+    [field_id: string]: string;
+}
+
 type UserProfile = {
     id: string;
     create_at: number;

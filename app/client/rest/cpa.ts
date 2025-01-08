@@ -5,12 +5,20 @@ import type ClientBase from './base';
 
 export interface ClientCustomAttributesMix {
     getCustomProfileAttributeFields: () => Promise<CustomProfileField[]>;
+    getCustomProfileAttributeValues: (userID: string) => Promise<CustomProfileAttributeSimple>;
 }
 
 const ClientCustomAttributes = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     getCustomProfileAttributeFields = async () => {
         return this.doFetch(
             `${this.getCPARoute()}/fields`,
+            {method: 'get'},
+        );
+    };
+
+    getCustomProfileAttributeValues = async (userID: string) => {
+        return this.doFetch(
+            `${this.getUserRoute(userID)}/custom_profile_attributes`,
             {method: 'get'},
         );
     };
