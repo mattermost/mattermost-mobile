@@ -6,6 +6,7 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import {Events} from '@constants';
 import {t} from '@i18n';
 import {setServerCredentials} from '@init/credentials';
+import {isErrorWithStatusCode} from '@utils/errors';
 import {getFormattedFileSize} from '@utils/file';
 import {logDebug, logInfo} from '@utils/log';
 import {semverFromServerVersion} from '@utils/server';
@@ -245,6 +246,7 @@ export default class ClientTracking {
                 url,
             });
         } catch (error) {
+            const status_code = isErrorWithStatusCode(error) ? error.status_code : undefined;
             throw new ClientError(this.apiClient.baseUrl, {
                 message: 'Received invalid response from the server.',
                 intl: {
@@ -253,6 +255,7 @@ export default class ClientTracking {
                 },
                 url,
                 details: error,
+                status_code,
             });
         } finally {
             if (groupLabel) {

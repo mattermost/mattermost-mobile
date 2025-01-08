@@ -195,7 +195,7 @@ describe('sessions', () => {
     });
 
     it('logout - base case', async () => {
-        const result = await logout(serverUrl, true, true, true);
+        const result = await logout(serverUrl, undefined, true, true, true);
         expect(result).toBeDefined();
         expect(result.data).toBeDefined();
     });

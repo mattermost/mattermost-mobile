@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import NetInfo from '@react-native-community/netinfo';
-import {DeviceEventEmitter, Platform} from 'react-native';
+import {Alert, DeviceEventEmitter, Platform} from 'react-native';
 
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -22,6 +22,7 @@ import {getCSRFFromCookie} from '@utils/security';
 import {loginEntry} from './entry';
 
 import type {LoginArgs} from '@typings/database/database';
+import type {IntlShape} from 'react-intl';
 
 const HTTP_UNAUTHORIZED = 401;
 
@@ -56,7 +57,7 @@ export const forceLogoutIfNecessary = async (serverUrl: string, err: unknown) =>
     const currentUserId = await getCurrentUserId(database);
 
     if (isErrorWithStatusCode(err) && err.status_code === HTTP_UNAUTHORIZED && isErrorWithUrl(err) && err.url?.indexOf('/login') === -1 && currentUserId) {
-        await logout(serverUrl);
+        await logout(serverUrl, undefined, true);
         return {error: null, logout: true};
     }
 
@@ -135,14 +136,44 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 };
 
-export const logout = async (serverUrl: string, skipServerLogout = false, removeServer = false, skipEvents = false) => {
+export const logout = async (serverUrl: string, intl: IntlShape | undefined, skipServerLogout = false, removeServer = false, skipEvents = false) => {
     if (!skipServerLogout) {
+        let loggedOut = false;
         try {
             const client = NetworkManager.getClient(serverUrl);
-            await client.logout();
+            const response = await client.logout();
+            if (response.status === 200) {
+                loggedOut = true;
+            }
         } catch (error) {
             // We want to log the user even if logging out from the server failed
             logWarning('An error occurred logging out from the server', serverUrl, getFullErrorMessage(error));
+        }
+
+        if (!loggedOut) {
+            const title = intl?.formatMessage({id: 'logout.fail.title', defaultMessage: 'Logout Failed'}) || 'Logout Failed';
+            const body = intl?.formatMessage({id: 'logout.fail.message', defaultMessage: 'We could not log you out of the server. If you log out now, data may continue to be accessible to this device once the device goes back online. Do you still want to continue?'}) || 'We could not log you out of the server. If you log out now, data may continue to be accessible to this device once the device goes back online. Do you still want to continue?';
+            const cancel = intl?.formatMessage({id: 'logout.fail.cancel', defaultMessage: 'Cancel'}) || 'Cancel';
+            const confirm = intl?.formatMessage({id: 'logout.fail.confirm', defaultMessage: 'Confirm'}) || 'Confirm';
+
+            Alert.alert(
+                title,
+                body,
+                [
+                    {
+                        text: cancel,
+                        style: 'cancel',
+                    },
+                    {
+                        text: confirm,
+                        onPress: async () => {
+                            logout(serverUrl, intl, true);
+                        },
+                    },
+                ],
+            );
+
+            return {data: false};
         }
     }
 

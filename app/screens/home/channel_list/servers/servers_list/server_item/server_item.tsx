@@ -181,7 +181,7 @@ const ServerItem = ({
 
     const logoutServer = async () => {
         Navigation.updateProps(Screens.HOME, {extra: undefined});
-        await logout(server.url);
+        await logout(server.url, intl);
 
         if (isActive) {
             dismissBottomSheet();
@@ -194,7 +194,7 @@ const ServerItem = ({
         const skipLogoutFromServer = server.lastActiveAt === 0;
         await dismissBottomSheet();
         Navigation.updateProps(Screens.HOME, {extra: undefined});
-        await logout(server.url, skipLogoutFromServer, true);
+        await logout(server.url, intl, skipLogoutFromServer, true);
     };
 
     const startTutorial = () => {

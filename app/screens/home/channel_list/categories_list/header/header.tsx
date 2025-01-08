@@ -171,8 +171,8 @@ const ChannelListHeader = ({
     }, [pushProxyStatus, intl]);
 
     const onLogoutPress = useCallback(() => {
-        alertServerLogout(serverDisplayName, () => logout(serverUrl), intl);
-    }, []);
+        alertServerLogout(serverDisplayName, () => logout(serverUrl, intl), intl);
+    }, [intl, serverDisplayName, serverUrl]);
 
     let header;
     if (displayName) {
