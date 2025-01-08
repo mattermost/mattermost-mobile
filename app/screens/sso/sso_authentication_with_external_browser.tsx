@@ -8,7 +8,6 @@ import {Linking, Platform, View} from 'react-native';
 import urlParse from 'url-parse';
 
 import {Sso} from '@constants';
-import NetworkManager from '@managers/network_manager';
 import {isErrorWithMessage} from '@utils/errors';
 import {isBetaApp} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

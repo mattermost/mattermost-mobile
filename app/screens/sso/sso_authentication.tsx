@@ -9,7 +9,6 @@ import {Linking, Platform, StyleSheet, View, type EventSubscription} from 'react
 import urlParse from 'url-parse';
 
 import {Sso} from '@constants';
-import NetworkManager from '@managers/network_manager';
 import {isBetaApp} from '@utils/general';
 
 import AuthError from './components/auth_error';
