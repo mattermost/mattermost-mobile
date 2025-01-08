@@ -75,8 +75,6 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl,
         if (resetErrors !== false) {
             setError('');
             setLoginError('');
-            NetworkManager.invalidateClient(serverUrl);
-            NetworkManager.createClient(serverUrl);
         }
         const parsedUrl = urlParse(loginUrl, true);
         const query: Record<string, string> = {

@@ -47,8 +47,6 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLogi
         if (resetErrors !== false) {
             setError('');
             setLoginError('');
-            NetworkManager.invalidateClient(serverUrl);
-            NetworkManager.createClient(serverUrl);
         }
         const parsedUrl = urlParse(loginUrl, true);
         const query: Record<string, string> = {
