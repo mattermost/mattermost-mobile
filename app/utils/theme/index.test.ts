@@ -48,6 +48,18 @@ describe('getKeyboardAppearanceFromTheme', () => {
         const keyboardAppearance = getKeyboardAppearanceFromTheme(themes.onyx);
         expect(keyboardAppearance).toBe('dark');
     });
+
+    it('should return "light" for a light theme', () => {
+        const theme = {centerChannelBg: '#ffffff'} as Theme;
+        const result = getKeyboardAppearanceFromTheme(theme);
+        expect(result).toBe('light');
+    });
+
+    it('should return "dark" for a dark theme', () => {
+        const theme = {centerChannelBg: '#000000'} as Theme;
+        const result = getKeyboardAppearanceFromTheme(theme);
+        expect(result).toBe('dark');
+    });
 });
 
 describe('getComponents', () => {
@@ -140,20 +152,6 @@ describe('setNavigationStackStyles', () => {
         jest.spyOn(NavigationStore, 'getScreensInStack').mockReturnValue([Screens.ABOUT]);
         setNavigationStackStyles(theme);
         expect(statusSpy).toHaveBeenCalledWith('light-content');
-    });
-});
-
-describe('getKeyboardAppearanceFromTheme', () => {
-    it('should return "light" for a light theme', () => {
-        const theme = {centerChannelBg: '#ffffff'} as Theme;
-        const result = getKeyboardAppearanceFromTheme(theme);
-        expect(result).toBe('light');
-    });
-
-    it('should return "dark" for a dark theme', () => {
-        const theme = {centerChannelBg: '#000000'} as Theme;
-        const result = getKeyboardAppearanceFromTheme(theme);
-        expect(result).toBe('dark');
     });
 });
 
