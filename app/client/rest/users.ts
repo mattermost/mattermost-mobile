@@ -251,9 +251,17 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getUser = async (userId: string) => {
+    getUser = async (userId: string, options: {cpa?: boolean} = {}) => {
+        const query = options.cpa ? '?cpa=1' : '';
         return this.doFetch(
-            `${this.getUserRoute(userId)}`,
+            `${this.getUserRoute(userId)}${query}`,
+            {method: 'get'},
+        );
+    };
+
+    getCustomProfileAttributeFields = async () => {
+        return this.doFetch(
+            `${this.getBaseRoute()}/custom_profile_attributes/fields`,
             {method: 'get'},
         );
     };
