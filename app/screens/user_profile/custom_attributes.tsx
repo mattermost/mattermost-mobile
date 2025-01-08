@@ -42,11 +42,7 @@ const CustomAttributes = ({nickname, position, localTime, enableCustomAttributes
         }] : []),
 
         // Only show custom attributes if the feature flag is enabled
-        ...(enableCustomAttributes ? Array.from({length: 15}, (_, i) => ({
-            id: `attr_${i}`,
-            label: `Custom Field ${i + 1}`,
-            value: `Value ${i + 1}`,
-        })) : []),
+        ...(enableCustomAttributes ? customAttributes : []),
     ];
     const renderAttribute: ListRenderItem<CustomAttribute> = ({item}) => (
         <UserProfileLabel
