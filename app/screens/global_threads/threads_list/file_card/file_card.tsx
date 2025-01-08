@@ -4,11 +4,11 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {Text, View} from 'react-native';
 
 import {buildFilePreviewUrl, buildFileThumbnailUrl} from '@actions/remote/file';
-import FileIcon from '@app/components/files/file_icon';
-import ProgressiveImage from '@app/components/progressive_image';
-import {useServerUrl} from '@app/context/server';
-import {FileTypes} from '@app/utils/file/constants';
+import FileIcon from '@components/files/file_icon';
+import ProgressiveImage from '@components/progressive_image';
+import {useServerUrl} from '@context/server';
 import {getFormat, getFormattedFileSize} from '@utils/file';
+import {FileTypes} from '@utils/file/constants';
 
 import {getStyleSheet} from './styles';
 
