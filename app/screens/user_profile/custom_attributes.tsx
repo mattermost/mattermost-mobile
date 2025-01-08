@@ -7,7 +7,7 @@ import {FlatList, View, StyleSheet, type ListRenderItem} from 'react-native';
 
 import UserProfileLabel from './label';
 
-type CustomAttribute = {
+export type CustomAttribute = {
     id: string;
     label: string;
     value: string;
