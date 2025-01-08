@@ -43,6 +43,19 @@ describe('gallery hooks', () => {
         expect(context.___diffs[name].prev).toBe(value);
     });
 
+    test('diff should return 0 for the same value', () => {
+        const context = {} as {___diffs?: any};
+        const name = 'test';
+        const value = 10;
+
+        diff(context, name, value);
+        const result = diff(context, name, value);
+
+        expect(result).toBe(0);
+        expect(context.___diffs[name].stash).toBe(0);
+        expect(context.___diffs[name].prev).toBe(value);
+    });
+
     describe('useCreateAnimatedGestureHandler', () => {
         const handlers = {
             onInit: jest.fn(),
@@ -163,6 +176,142 @@ describe('gallery hooks', () => {
             expect(context._shouldCancel).toBeUndefined();
             expect(context._shouldSkip).toBeUndefined();
         });
+
+        test('should skip handling event if shouldHandleEvent returns false', () => {
+            const context = {__initialized: false, _shouldSkip: undefined} as any;
+
+            handlers.shouldHandleEvent.mockReturnValueOnce(false);
+            (useSharedValue as jest.Mock).mockImplementationOnce(() => ({value: context}));
+
+            const {result} = renderHook(() => useCreateAnimatedGestureHandler(handlers));
+            const handler = result.current;
+            expect(handler).toBeInstanceOf(Function);
+
+            const event = {
+                nativeEvent: {
+                    state: 2,
+                    velocityX: 1,
+                    velocityY: 1,
+                },
+            };
+
+            act(() => {
+                handler(event.nativeEvent as any);
+            });
+
+            expect(handlers.shouldHandleEvent).toHaveBeenCalled();
+            expect(context._shouldSkip).toBe(true);
+        });
+
+        test('handles shouldCancel returning true', () => {
+            const context = {__initialized: true, _shouldSkip: false} as any;
+            handlers.shouldCancel.mockReturnValueOnce(true);
+            (useSharedValue as jest.Mock).mockImplementationOnce(() => ({value: context}));
+
+            const {result} = renderHook(() => useCreateAnimatedGestureHandler(handlers));
+            const handler = result.current;
+
+            const event = {
+                nativeEvent: {
+                    state: 4, // ACTIVE
+                    oldState: 2, // BEGAN
+                    velocityX: 0,
+                    velocityY: 0,
+                },
+            };
+
+            act(() => {
+                handler(event.nativeEvent as any);
+            });
+
+            expect(handlers.shouldCancel).toHaveBeenCalled();
+            expect(handlers.onEnd).toHaveBeenCalledWith(
+                event.nativeEvent,
+                context,
+                true, // cancelled = true
+            );
+            expect(handlers.onActive).not.toHaveBeenCalled();
+        });
+
+        test('skips event handling when context._shouldSkip is undefined', () => {
+            const context = {__initialized: true} as any;
+            (useSharedValue as jest.Mock).mockImplementationOnce(() => ({value: context}));
+
+            const {result} = renderHook(() => useCreateAnimatedGestureHandler(handlers));
+            const handler = result.current;
+
+            const event = {
+                nativeEvent: {
+                    state: 4, // ACTIVE
+                    oldState: 3, // CANCELLED
+                    velocityX: 0,
+                    velocityY: 0,
+                },
+            };
+
+            act(() => {
+                handler(event.nativeEvent as any);
+            });
+
+            expect(handlers.onEvent).not.toHaveBeenCalled();
+            expect(handlers.onActive).not.toHaveBeenCalled();
+        });
+
+        test('handles CANCELLED state when oldState is ACTIVE', () => {
+            const context = {__initialized: true, _shouldSkip: false} as any;
+            (useSharedValue as jest.Mock).mockImplementationOnce(() => ({value: context}));
+
+            const {result} = renderHook(() => useCreateAnimatedGestureHandler(handlers));
+            const handler = result.current;
+
+            const event = {
+                nativeEvent: {
+                    state: 3, // CANCELLED
+                    oldState: 4, // ACTIVE
+                    velocityX: 0,
+                    velocityY: 0,
+                },
+            };
+
+            act(() => {
+                handler(event.nativeEvent as any);
+            });
+
+            expect(handlers.onCancel).toHaveBeenCalled();
+            expect(handlers.onFinish).toHaveBeenCalledWith(
+                event.nativeEvent,
+                context,
+                true, // cancelled = true
+            );
+        });
+
+        test('handles FAILED state when oldState is ACTIVE', () => {
+            const context = {__initialized: true, _shouldSkip: false} as any;
+            (useSharedValue as jest.Mock).mockImplementationOnce(() => ({value: context}));
+
+            const {result} = renderHook(() => useCreateAnimatedGestureHandler(handlers));
+            const handler = result.current;
+
+            const event = {
+                nativeEvent: {
+                    state: 1, // FAILED
+                    oldState: 4, // ACTIVE
+                    velocityX: 0,
+                    velocityY: 0,
+                },
+            };
+
+            act(() => {
+                handler(event.nativeEvent as any);
+            });
+
+            expect(handlers.onFail).toHaveBeenCalled();
+            expect(handlers.onFinish).toHaveBeenCalledWith(
+                event.nativeEvent,
+                context,
+                true, // failed = true
+            );
+        });
     });
 
     test('useGalleryControls', () => {
@@ -180,6 +329,19 @@ describe('gallery hooks', () => {
         });
 
         expect(result.current.controlsHidden.value).toBe(false);
+    });
+
+    test('useGalleryControls does not update controlsHidden when same value is set', () => {
+        const mockWithTiming = jest.fn();
+        (useSharedValue as jest.Mock).mockImplementationOnce(() => ({value: true}));
+
+        const {result} = renderHook(() => useGalleryControls());
+
+        act(() => {
+            result.current.setControlsHidden(true);
+        });
+
+        expect(mockWithTiming).not.toHaveBeenCalled();
     });
 
     test('useGalleryItem', () => {
@@ -200,6 +362,31 @@ describe('gallery hooks', () => {
         expect(result.current.ref).toBeDefined();
         expect(result.current.styles).toBeDefined();
         expect(result.current.onGestureEvent).toBeInstanceOf(Function);
+
+        act(() => {
+            result.current.onGestureEvent();
+        });
+
+        expect(gallery.sharedValues.activeIndex.value).toBe(index);
+        expect(onPress).toHaveBeenCalledWith(identifier, index);
+    });
+
+    test('useGalleryItem updates activeIndex when onGestureEvent is triggered', () => {
+        const identifier = 'test';
+        const index = 0;
+        const onPress = jest.fn();
+        const gallery = {
+            sharedValues: {
+                opacity: {value: 1},
+                activeIndex: {value: 1}, // Initial value different from index
+            },
+            registerItem: jest.fn(),
+        };
+        (useGallery as jest.Mock).mockReturnValue(gallery);
+
+        const {result} = renderHook(() => useGalleryItem(identifier, index, onPress));
+
+        expect(result.current.styles.opacity).toBe(1);
 
         act(() => {
             result.current.onGestureEvent();
