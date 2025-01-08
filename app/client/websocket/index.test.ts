@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {WebSocketReadyState} from '@mattermost/react-native-network-client';
+import {WebSocketReadyState, getOrCreateWebSocketClient} from '@mattermost/react-native-network-client';
 
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -10,8 +10,6 @@ import {hasReliableWebsocket} from '@utils/config';
 import {logDebug, logInfo, logError, logWarning} from '@utils/log';
 
 import WebSocketClient from './index';
-
-const getOrCreateWebSocketClient = require('@mattermost/react-native-network-client').getOrCreateWebSocketClient;
 
 jest.mock('@mattermost/react-native-network-client', () => ({
     WebSocketReadyState: {
@@ -25,7 +23,7 @@ jest.mock('@queries/servers/system', () => ({
     getConfigValue: jest.fn(),
 }));
 
-const mockedGetConfigValue = getConfigValue as jest.MockedFunction<typeof getConfigValue>;
+const mockedGetConfigValue = jest.mocked(getConfigValue);
 
 jest.mock('@database/manager', () => ({
     serverDatabases: {},
@@ -42,7 +40,8 @@ jest.mock('@utils/config', () => ({
     hasReliableWebsocket: jest.fn(),
 }));
 
-const mockedHasReliableWebsocket = hasReliableWebsocket as jest.MockedFunction<typeof hasReliableWebsocket>;
+const mockedHasReliableWebsocket = jest.mocked(hasReliableWebsocket);
+const mockedGetOrCreateWebSocketClient = jest.mocked(getOrCreateWebSocketClient);
 
 describe('WebSocketClient', () => {
     let client: WebSocketClient;
@@ -61,7 +60,7 @@ describe('WebSocketClient', () => {
         readyState: WebSocketReadyState.OPEN,
     };
     const mockClient = {client: mockConn};
-    getOrCreateWebSocketClient.mockResolvedValue(mockClient);
+    mockedGetOrCreateWebSocketClient.mockResolvedValue(mockClient as any);
     mockedHasReliableWebsocket.mockReturnValue(false);
 
     beforeEach(() => {
@@ -76,6 +75,7 @@ describe('WebSocketClient', () => {
 
         await client.initialize();
 
+        expect(mockedGetOrCreateWebSocketClient).toHaveBeenCalledWith('wss://example.com/api/v4/websocket', {headers: {origin: 'wss://example.com'}, timeoutInterval: 30000});
         expect(logInfo).toHaveBeenCalledWith('websocket connecting to wss://example.com/api/v4/websocket');
     });
 
