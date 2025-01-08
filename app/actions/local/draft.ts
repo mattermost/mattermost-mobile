@@ -243,7 +243,7 @@ export async function updateDraftMarkdownImageMetadata({
         }
         return {draft};
     } catch (error) {
-        logError('Failed updateDraftImages', error);
+        logError('Failed updateDraftMarkdownImageMetadata', error);
         return {error};
     }
 }
@@ -252,25 +252,31 @@ async function getImageMetadata(url: string) {
     let height = 0;
     let width = 0;
     let format;
-    try {
-        await new Promise((resolve, reject) => {
-            Image.getSize(
-                url,
-                (imageWidth, imageHeight) => {
-                    width = imageWidth;
-                    height = imageHeight;
-                    resolve(null);
-                },
-                (error) => {
-                    logError('Failed to get image size', error);
-                    reject(error);
-                },
-            );
-        });
-    } catch (error) {
-        width = 0;
-        height = 0;
-    }
+    await new Promise((resolve) => {
+        Image.getSize(
+            url,
+            (imageWidth, imageHeight) => {
+                width = imageWidth;
+                height = imageHeight;
+                resolve(null);
+            },
+            (error) => {
+                logError('Failed getImageMetadata to get image size', error);
+            },
+        );
+    });
+
+    /**
+     * Regex Explanation:
+     * \.       - Matches a literal period (e.g., before "jpg").
+     * (\w+)    - Captures the file extension (letters, digits, or underscores).
+     * (?=\?|$) - Ensures the extension is followed by "?" or the end of the URL.
+     *
+     * * Example Matches:
+     * "https://example.com/image.jpg"         -> Matches "jpg"
+     * "https://example.com/image.png?size=1"  -> Matches "png"
+     * "https://example.com/file"              -> No match (no file extension).
+     */
     const match = url.match(/\.(\w+)(?=\?|$)/);
     if (match) {
         format = match[1];
