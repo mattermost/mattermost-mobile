@@ -1080,8 +1080,6 @@
   "unreads.empty.paragraph": "Apaga el filto de no leído para mostrar todos tus canales.",
   "unreads.empty.show_all": "Mostrar todo",
   "unreads.empty.title": "No hay más sin leer",
-  "unsupported_server.message": "Tu servidor {serverDisplayName}, está ejecutando una versión de servidor no soportada. Puede experimentar problemas de compatibilidad que causen fallos o errores severos que rompan la funcionalidad principal de la app. Por favor contacta a tu Administrador del Sistema para actualizar tu servidor Mattermost.",
-  "unsupported_server.title": "Versión de servidor no soportada",
   "user.edit_profile.email.auth_service": "El inicio de sesión se realiza a través de {service}. El correo no puede ser actualizado. La dirección de correo usara para las notificaciones es {email}.",
   "user.edit_profile.email.web_client": "El correo electrónico debe ser actualizado usando un cliente web o una aplicación de escritorio.",
   "user.edit_profile.profile_photo.change_photo": "Cambiar la foto de perfil",

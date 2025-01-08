@@ -127,7 +127,7 @@ describe('handleDeepLink', () => {
         const result = await handleDeepLink('https://existingserver.com/team/channels/town-square');
         expect(dismissAllModalsAndPopToRoot).toHaveBeenCalled();
         expect(DatabaseManager.setActiveServerDatabase).toHaveBeenCalledWith('https://existingserver.com');
-        expect(WebsocketManager.initializeClient).toHaveBeenCalledWith('https://existingserver.com');
+        expect(WebsocketManager.initializeClient).toHaveBeenCalledWith('https://existingserver.com', 'deeplink');
         expect(result).toEqual({error: false});
     });
 

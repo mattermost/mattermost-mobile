@@ -20,7 +20,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Base64;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -32,6 +31,7 @@ import androidx.core.graphics.drawable.IconCompat;
 import com.mattermost.rnbeta.*;
 import com.mattermost.rnutils.helpers.NotificationHelper;
 import com.nozbe.watermelondb.WMDatabase;
+import com.mattermost.turbolog.TurboLog;
 
 import java.io.IOException;
 import java.security.KeyFactory;
@@ -241,36 +241,36 @@ public class CustomPushNotificationHelper {
     public static boolean verifySignature(final Context context, String signature, String serverUrl, String ackId) {
         if (signature == null) {
             // Backward compatibility with old push proxies
-            Log.i("Mattermost Notifications Signature verification", "No signature in the notification");
+            TurboLog.Companion.i("Mattermost Notifications Signature verification", "No signature in the notification");
             return true;
         }
 
         if (serverUrl == null) {
-            Log.i("Mattermost Notifications Signature verification", "No server_url for server_id");
+            TurboLog.Companion.i("Mattermost Notifications Signature verification", "No server_url for server_id");
             return false;
         }
 
         DatabaseHelper dbHelper = DatabaseHelper.Companion.getInstance();
         if (dbHelper == null) {
-            Log.i("Mattermost Notifications Signature verification", "Cannot access the database");
+            TurboLog.Companion.i("Mattermost Notifications Signature verification", "Cannot access the database");
             return false;
         }
 
         WMDatabase db = getDatabaseForServer(dbHelper, context, serverUrl);
         if (db == null) {
-            Log.i("Mattermost Notifications Signature verification", "Cannot access the server database");
+            TurboLog.Companion.i("Mattermost Notifications Signature verification", "Cannot access the server database");
             return false;
         }
 
         if (signature.equals("NO_SIGNATURE")) {
             String version = queryConfigServerVersion(db);
             if (version == null) {
-                Log.i("Mattermost Notifications Signature verification", "No server version");
+                TurboLog.Companion.i("Mattermost Notifications Signature verification", "No server version");
                 return false;
             }
 
             if (!version.matches("[0-9]+(\\.[0-9]+)*")) {
-                Log.i("Mattermost Notifications Signature verification", "Invalid server version");
+                TurboLog.Companion.i("Mattermost Notifications Signature verification", "Invalid server version");
                 return false;
             }
 
@@ -324,7 +324,7 @@ public class CustomPushNotificationHelper {
             }
 
             if (rejected) {
-                Log.i("Mattermost Notifications Signature verification", "Server version should send signature");
+                TurboLog.Companion.i("Mattermost Notifications Signature verification", "Server version should send signature");
                 return false;
             }
 
@@ -334,7 +334,7 @@ public class CustomPushNotificationHelper {
 
         String signingKey = queryConfigSigningKey(db);
         if (signingKey == null) {
-            Log.i("Mattermost Notifications Signature verification", "No signing key");
+            TurboLog.Companion.i("Mattermost Notifications Signature verification", "No signing key");
             return false;
         }
 
@@ -345,17 +345,17 @@ public class CustomPushNotificationHelper {
 
             String storedDeviceToken = getDeviceToken(dbHelper);
             if (storedDeviceToken == null) {
-                Log.i("Mattermost Notifications Signature verification", "No device token stored");
+                TurboLog.Companion.i("Mattermost Notifications Signature verification", "No device token stored");
                 return false;
             }
             String[] tokenParts = storedDeviceToken.split(":", 2);
             if (tokenParts.length != 2) {
-                Log.i("Mattermost Notifications Signature verification", "Wrong stored device token format");
+                TurboLog.Companion.i("Mattermost Notifications Signature verification", "Wrong stored device token format");
                 return false;
             }
             String deviceToken = tokenParts[1].substring(0, tokenParts[1].length() -1 );
             if (deviceToken.isEmpty()) {
-                Log.i("Mattermost Notifications Signature verification", "Empty stored device token");
+                TurboLog.Companion.i("Mattermost Notifications Signature verification", "Empty stored device token");
                 return false;
             }
 
@@ -366,19 +366,19 @@ public class CustomPushNotificationHelper {
                     .build()
                     .parseSignedClaims(signature);
         } catch (MissingClaimException e) {
-            Log.i("Mattermost Notifications Signature verification", String.format("Missing claim: %s", e.getMessage()));
+            TurboLog.Companion.i("Mattermost Notifications Signature verification", String.format("Missing claim: %s", e.getMessage()));
             e.printStackTrace();
             return false;
         } catch (IncorrectClaimException e) {
-            Log.i("Mattermost Notifications Signature verification", String.format("Incorrect claim: %s", e.getMessage()));
+            TurboLog.Companion.i("Mattermost Notifications Signature verification", String.format("Incorrect claim: %s", e.getMessage()));
             e.printStackTrace();
             return false;
         } catch (JwtException e) {
-            Log.i("Mattermost Notifications Signature verification", String.format("Cannot verify JWT: %s", e.getMessage()));
+            TurboLog.Companion.i("Mattermost Notifications Signature verification", String.format("Cannot verify JWT: %s", e.getMessage()));
             e.printStackTrace();
             return false;
         } catch (Exception e) {
-            Log.i("Mattermost Notifications Signature verification", String.format("Exception while parsing JWT: %s", e.getMessage()));
+            TurboLog.Companion.i("Mattermost Notifications Signature verification", String.format("Exception while parsing JWT: %s", e.getMessage()));
             e.printStackTrace();
             return false;
         }
@@ -572,7 +572,7 @@ public class CustomPushNotificationHelper {
             Double lastUpdateAt = 0.0;
             if (!TextUtils.isEmpty(urlOverride)) {
                 Request request = new Request.Builder().url(urlOverride).build();
-                Log.i("ReactNative", String.format("Fetch override profile image %s", urlOverride));
+                TurboLog.Companion.i("ReactNative", String.format("Fetch override profile image %s", urlOverride));
                 response = client.newCall(request).execute();
             } else {
                 DatabaseHelper dbHelper = DatabaseHelper.Companion.getInstance();
@@ -594,7 +594,7 @@ public class CustomPushNotificationHelper {
 
                 bitmapCache.removeBitmap(userId, serverUrl);
                 String url = String.format("api/v4/users/%s/image", userId);
-                Log.i("ReactNative", String.format("Fetch profile image %s", url));
+                TurboLog.Companion.i("ReactNative", String.format("Fetch profile image %s", url));
                 response = Network.getSync(serverUrl, url, null);
             }
 

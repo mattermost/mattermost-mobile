@@ -53,7 +53,7 @@ import type {IntlShape} from 'react-intl';
 let connection: CallsConnection | null = null;
 export const getConnectionForTesting = () => connection;
 
-export const loadConfig = async (serverUrl: string, force = false) => {
+export const loadConfig = async (serverUrl: string, force = false, groupLabel?: string) => {
     const now = Date.now();
     const config = getCallsConfig(serverUrl);
 
@@ -66,7 +66,7 @@ export const loadConfig = async (serverUrl: string, force = false) => {
 
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const configs = await Promise.all([client.getCallsConfig(), client.getVersion()]);
+        const configs = await Promise.all([client.getCallsConfig(groupLabel), client.getVersion(groupLabel)]);
         const nextConfig = {...configs[0], version: configs[1], last_retrieved_at: now};
         setConfig(serverUrl, nextConfig);
         return {data: nextConfig};
@@ -77,11 +77,11 @@ export const loadConfig = async (serverUrl: string, force = false) => {
     }
 };
 
-export const loadCalls = async (serverUrl: string, userId: string) => {
+export const loadCalls = async (serverUrl: string, userId: string, groupLabel?: string) => {
     let resp: CallChannelState[] = [];
     try {
         const client = NetworkManager.getClient(serverUrl);
-        resp = await client.getCalls() || [];
+        resp = await client.getCalls(groupLabel) || [];
     } catch (error) {
         logDebug('error on loadCalls', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
@@ -104,7 +104,7 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
 
     // Batch load user models async because we'll need them later
     if (ids.size > 0) {
-        fetchUsersByIds(serverUrl, Array.from(ids));
+        fetchUsersByIds(serverUrl, Array.from(ids), false, groupLabel);
     }
 
     setCalls(serverUrl, userId, callsResults, enabledChannels);
@@ -192,11 +192,11 @@ export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: 
     return convertedCall;
 };
 
-export const loadConfigAndCalls = async (serverUrl: string, userId: string) => {
+export const loadConfigAndCalls = async (serverUrl: string, userId: string, groupLabel?: string) => {
     const res = await checkIsCallsPluginEnabled(serverUrl);
     if (res.data) {
-        loadConfig(serverUrl, true);
-        loadCalls(serverUrl, userId);
+        loadConfig(serverUrl, true, groupLabel);
+        loadCalls(serverUrl, userId, groupLabel);
     }
 };
 

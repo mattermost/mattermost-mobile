@@ -39,14 +39,14 @@ enum Direction {
     Down,
 }
 
-export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, isFromNotification = false) => {
+export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, isFromNotification = false, groupLabel?: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
     // Load thread before we open to the thread modal
-    fetchPostThread(serverUrl, rootId);
+    fetchPostThread(serverUrl, rootId, undefined, false, groupLabel);
 
     // Mark thread as read
     const isCRTEnabled = await getIsCRTEnabled(database);
@@ -71,7 +71,7 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
             if (currentChannelId === post?.channelId) {
                 AppsManager.copyMainBindingsToThread(serverUrl, currentChannelId);
             } else {
-                AppsManager.fetchBindings(serverUrl, post.channelId, true);
+                AppsManager.fetchBindings(serverUrl, post.channelId, true, groupLabel);
             }
         }
     }
@@ -214,6 +214,7 @@ export const fetchThreads = async (
     options: FetchThreadsOptions,
     direction?: Direction,
     pages?: number,
+    groupLabel?: string,
 ) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -243,7 +244,12 @@ export const fetchThreads = async (
         const {before, after, perPage = General.CRT_CHUNK_SIZE, deleted, unread, since, excludeDirect = false} = opts;
 
         currentPage++;
-        const {threads} = await client.getThreads(currentUser.id, teamId, before, after, perPage, deleted, unread, since, false, version, excludeDirect);
+        const {threads} = await client.getThreads(
+            currentUser.id, teamId,
+            before, after, perPage,
+            deleted, unread, since, false, version,
+            excludeDirect, groupLabel,
+        );
         if (threads.length) {
             // Mark all fetched threads as following
             for (const thread of threads) {
@@ -279,7 +285,10 @@ export const fetchThreads = async (
     return {error: false, threads: threadsData};
 };
 
-export const syncThreadsIfNeeded = async (serverUrl: string, isCRTEnabled: boolean, teams?: Team[], fetchOnly = false) => {
+export const syncThreadsIfNeeded = async (
+    serverUrl: string, isCRTEnabled: boolean, teams?: Team[],
+    fetchOnly = false, groupLabel?: string,
+) => {
     try {
         if (!isCRTEnabled) {
             return {models: []};
@@ -291,7 +300,7 @@ export const syncThreadsIfNeeded = async (serverUrl: string, isCRTEnabled: boole
 
         if (teams?.length) {
             for (const team of teams) {
-                promises.push(syncTeamThreads(serverUrl, team.id, {excludeDirect: true, fetchOnly: true}));
+                promises.push(syncTeamThreads(serverUrl, team.id, {excludeDirect: true, fetchOnly: true, groupLabel}));
             }
         }
 
@@ -304,10 +313,9 @@ export const syncThreadsIfNeeded = async (serverUrl: string, isCRTEnabled: boole
             }
         }
 
-        const flat = models.flat();
+        const flat = removeDuplicatesModels(models.flat());
         if (!fetchOnly && flat.length) {
-            const uniqueArray = removeDuplicatesModels(flat);
-            await operator.batchRecords(uniqueArray, 'syncThreadsIfNeeded');
+            await operator.batchRecords(flat, 'syncThreadsIfNeeded');
         }
 
         return {models: flat};
@@ -321,6 +329,7 @@ type SyncThreadOptions = {
     excludeDirect?: boolean;
     fetchOnly?: boolean;
     refresh?: boolean;
+    groupLabel?: string;
 }
 
 export const syncTeamThreads = async (
@@ -330,6 +339,7 @@ export const syncTeamThreads = async (
         excludeDirect = false,
         fetchOnly = false,
         refresh = false,
+        groupLabel,
     }: SyncThreadOptions = {},
 ) => {
     try {
@@ -355,6 +365,8 @@ export const syncTeamThreads = async (
                     teamId,
                     {unread: true, excludeDirect},
                     Direction.Down,
+                    undefined,
+                    groupLabel,
                 ),
                 fetchThreads(
                     serverUrl,
@@ -362,6 +374,7 @@ export const syncTeamThreads = async (
                     {excludeDirect},
                     undefined,
                     1,
+                    groupLabel,
                 ),
             ]);
             if (allUnreadThreads.error || latestThreads.error) {
@@ -389,6 +402,8 @@ export const syncTeamThreads = async (
                     teamId,
                     {unread: true, excludeDirect},
                     Direction.Down,
+                    undefined,
+                    groupLabel,
                 ),
                 fetchThreads(
                     serverUrl,
@@ -396,6 +411,7 @@ export const syncTeamThreads = async (
                     {deleted: true, since: refresh ? undefined : syncData.latest + 1, excludeDirect},
                     undefined,
                     1,
+                    groupLabel,
                 ),
             ]);
 

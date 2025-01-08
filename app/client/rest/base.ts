@@ -1,33 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
-
-import {Events, Calls} from '@constants';
-import {t} from '@i18n';
-import {setServerCredentials} from '@init/credentials';
-import {semverFromServerVersion} from '@utils/server';
+import {Calls} from '@constants';
 
 import * as ClientConstants from './constants';
-import ClientError from './error';
+import ClientTracking from './tracking';
 
-import type {
-    APIClientInterface,
-    ClientHeaders,
-    ClientResponse,
-    RequestOptions,
-} from '@mattermost/react-native-network-client';
+import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
-export default class ClientBase {
-    apiClient: APIClientInterface;
-    csrfToken = '';
-    requestHeaders: {[x: string]: string} = {};
-    serverVersion = '';
-    urlVersion = '/api/v4';
-    enableLogging = false;
-
+export default class ClientBase extends ClientTracking {
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
-        this.apiClient = apiClient;
+        super(apiClient);
 
         if (bearerToken) {
             this.setBearerToken(bearerToken);
@@ -54,31 +37,12 @@ export default class ClientBase {
         return this.apiClient.baseUrl + baseUrl;
     }
 
-    getRequestHeaders(requestMethod: string) {
-        const headers = {...this.requestHeaders};
-
-        if (this.csrfToken && requestMethod.toLowerCase() !== 'get') {
-            headers[ClientConstants.HEADER_X_CSRF_TOKEN] = this.csrfToken;
-        }
-
-        return headers;
-    }
-
     getWebSocketUrl = () => {
         return `${this.urlVersion}/websocket`;
     };
 
     setAcceptLanguage(locale: string) {
         this.requestHeaders[ClientConstants.HEADER_ACCEPT_LANGUAGE] = locale;
-    }
-
-    setBearerToken(bearerToken: string) {
-        this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
-        setServerCredentials(this.apiClient.baseUrl, bearerToken);
-    }
-
-    setCSRFToken(csrfToken: string) {
-        this.csrfToken = csrfToken;
     }
 
     // Routes
@@ -236,96 +200,6 @@ export default class ClientBase {
     }
 
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
-        let request;
-        const method = options.method?.toLowerCase();
-        switch (method) {
-            case 'get':
-                request = this.apiClient!.get;
-                break;
-            case 'put':
-                request = this.apiClient!.put;
-                break;
-            case 'post':
-                request = this.apiClient!.post;
-                break;
-            case 'patch':
-                request = this.apiClient!.patch;
-                break;
-            case 'delete':
-                request = this.apiClient!.delete;
-                break;
-            default:
-                throw new ClientError(this.apiClient.baseUrl, {
-                    message: 'Invalid request method',
-                    intl: {
-                        id: t('mobile.request.invalid_request_method'),
-                        defaultMessage: 'Invalid request method',
-                    },
-                    url,
-                });
-        }
-
-        const requestOptions: RequestOptions = {
-            body: options.body,
-            headers: this.getRequestHeaders(method),
-        };
-        if (options.noRetry) {
-            requestOptions.retryPolicyConfiguration = {
-                retryLimit: 0,
-            };
-        }
-        if (options.timeoutInterval) {
-            requestOptions.timeoutInterval = options.timeoutInterval;
-        }
-
-        if (options.headers) {
-            if (requestOptions.headers) {
-                requestOptions.headers = {
-                    ...requestOptions.headers,
-                    ...options.headers,
-                };
-            } else {
-                requestOptions.headers = options.headers;
-            }
-        }
-
-        let response: ClientResponse;
-        try {
-            response = await request!(url, requestOptions);
-        } catch (error) {
-            throw new ClientError(this.apiClient.baseUrl, {
-                message: 'Received invalid response from the server.',
-                intl: {
-                    id: t('mobile.request.invalid_response'),
-                    defaultMessage: 'Received invalid response from the server.',
-                },
-                url,
-                details: error,
-            });
-        }
-
-        const headers: ClientHeaders = response.headers || {};
-        const serverVersion = semverFromServerVersion(headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()]);
-        const hasCacheControl = Boolean(headers[ClientConstants.HEADER_CACHE_CONTROL] || headers[ClientConstants.HEADER_CACHE_CONTROL.toLowerCase()]);
-        if (serverVersion && !hasCacheControl && this.serverVersion !== serverVersion) {
-            this.serverVersion = serverVersion;
-            DeviceEventEmitter.emit(Events.SERVER_VERSION_CHANGED, {serverUrl: this.apiClient.baseUrl, serverVersion});
-        }
-
-        const bearerToken = headers[ClientConstants.HEADER_TOKEN] || headers[ClientConstants.HEADER_TOKEN.toLowerCase()];
-        if (bearerToken) {
-            this.setBearerToken(bearerToken);
-        }
-
-        if (response.ok) {
-            return returnDataOnly ? (response.data || {}) : response;
-        }
-
-        throw new ClientError(this.apiClient.baseUrl, {
-            message: response.data?.message as string || `Response with status code ${response.code}`,
-            server_error_id: response.data?.id as string,
-            status_code: response.code,
-            url,
-        });
+        return this.doFetchWithTracking(url, options, returnDataOnly);
     };
 }

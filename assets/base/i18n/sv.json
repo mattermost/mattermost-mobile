@@ -1162,8 +1162,6 @@
   "unreads.empty.paragraph": "Stäng av filtret för olästa meddelanden för att visa alla dina kanaler.",
   "unreads.empty.show_all": "Visa alla",
   "unreads.empty.title": "Inga fler olästa",
-  "unsupported_server.message": "Din server, {serverDisplayName}, kör en serverversion som inte stöds. Det innebär kompatibilitetsproblem som gör att användarna kan uppleva app-krascher eller allvarliga fel som gör att appen inte fungerar som den ska. Be din systemadministratör att uppgradera Mattermost-servern.",
-  "unsupported_server.title": "Osupporterad serverversion",
   "user.edit_profile.email.auth_service": "Inloggning sker via {service}. Mejladress kan inte uppdateras. Den mejladress som används för notifieringar är {email}.",
   "user.edit_profile.email.web_client": "Mejladress kan bara uppdateras via webben eller desktop-applikationen.",
   "user.edit_profile.profile_photo.change_photo": "Ändra profilbild",
