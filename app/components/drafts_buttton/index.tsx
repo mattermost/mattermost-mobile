@@ -20,7 +20,7 @@ import {typography} from '@utils/typography';
 
 type DraftListProps = {
     currentChannelId: string;
-    shouldHighlighActive?: boolean;
+    shouldHighlightActive?: boolean;
     draftsCount: number;
 };
 
@@ -57,7 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const DraftsButton: React.FC<DraftListProps> = ({
     currentChannelId,
-    shouldHighlighActive = false,
+    shouldHighlightActive = false,
     draftsCount,
 }) => {
     const theme = useTheme();
@@ -69,7 +69,7 @@ const DraftsButton: React.FC<DraftListProps> = ({
         switchToGlobalDrafts();
     }), []);
 
-    const isActive = isTablet && shouldHighlighActive && !currentChannelId;
+    const isActive = isTablet && shouldHighlightActive && !currentChannelId;
 
     const [containerStyle, iconStyle, textStyle] = useMemo(() => {
         const container = [

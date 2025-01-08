@@ -85,54 +85,51 @@ const DraftPostHeader: React.FC<Props> = ({
     const style = getStyleSheet(theme);
     const isChannelTypeDM = channel.type === General.DM_CHANNEL;
 
-    let headerComponent: ReactNode = null;
-    const profileComponent = draftReceiverUser ? <ProfileAvatar author={draftReceiverUser}/> : (
-        <View style={style.categoryIconContainer}>
-            <CompassIcon
-                color={changeOpacity(theme.centerChannelColor, 0.64)}
-                name='globe'
-                size={16}
+    const ChannelInfo = ({id, defaultMessage}: {id: string; defaultMessage: string}) => (
+        <View style={style.channelInfo}>
+            <FormattedText
+                id={id}
+                defaultMessage={defaultMessage}
+                style={style.category}
             />
-        </View>);
+            <View style={style.profileComponentContainer}>
+                {draftReceiverUser ? (
+                    <ProfileAvatar author={draftReceiverUser}/>
+                ) : (
+                    <View style={style.categoryIconContainer}>
+                        <CompassIcon
+                            color={changeOpacity(theme.centerChannelColor, 0.64)}
+                            name='globe'
+                            size={16}
+                        />
+                    </View>
+                )}
+            </View>
+        </View>
+    );
+
+    let headerComponent: ReactNode = null;
 
     if (rootId) {
         headerComponent = (
-            <View style={style.channelInfo}>
-                <FormattedText
-                    id='channel_info.thread_in'
-                    defaultMessage={'Thread in:'}
-                    style={style.category}
-                />
-                <View style={style.profileComponentContainer}>
-                    {profileComponent}
-                </View>
-            </View>
+            <ChannelInfo
+                id='channel_info.thread_in'
+                defaultMessage='Thread in:'
+            />
         );
     } else if (isChannelTypeDM) {
         headerComponent = (
-            <View style={style.channelInfo}>
-                <FormattedText
-                    id='channel_info.draft_to_user'
-                    defaultMessage={'To:'}
-                    style={style.category}
-                />
-                <View style={style.profileComponentContainer}>
-                    {profileComponent}
-                </View>
-            </View>
+            <ChannelInfo
+                id='channel_info.draft_to_user'
+                defaultMessage='To:'
+            />
         );
     } else {
         headerComponent = (
-            <View style={style.channelInfo}>
-                <FormattedText
-                    id='channel_info.draft_in_channel'
-                    defaultMessage={'In:'}
-                    style={style.category}
-                />
-                <View style={style.profileComponentContainer}>
-                    {profileComponent}
-                </View>
-            </View>
+            <ChannelInfo
+                id='channel_info.draft_in_channel'
+                defaultMessage='In:'
+            />
         );
     }
 
