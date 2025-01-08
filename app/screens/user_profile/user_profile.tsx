@@ -46,6 +46,7 @@ type Props = {
     userIconOverride?: string;
     usernameOverride?: string;
     hideGuestTags: boolean;
+    enableCustomAttributes: boolean;
 }
 
 const TITLE_HEIGHT = 118;
@@ -147,17 +148,20 @@ const UserProfile = ({
             }
         }
 
-        const extraHeight = manageMode ? 0 : (EXTRA_HEIGHT - bottom + CUSTOM_ATTRIBUTES_HEIGHT);
+        const extraHeight = manageMode ? 0 : (EXTRA_HEIGHT - bottom);
+
+        const customAttrHeight = enableCustomAttributes ? CUSTOM_ATTRIBUTES_HEIGHT : 0;
 
         return [
             1,
-            bottomSheetSnapPoint(optionsCount, LABEL_HEIGHT) + title + extraHeight,
+            bottomSheetSnapPoint(optionsCount, LABEL_HEIGHT) + title + extraHeight + customAttrHeight,
         ];
     }, [
         headerText, showUserProfileOptions, showCustomStatus,
         showNickname, showPosition, showLocalTime,
         manageMode, bottom, showOptions,
         canChangeMemberRoles, canManageAndRemoveMembers,
+        enableCustomAttributes,
     ]);
 
     useEffect(() => {

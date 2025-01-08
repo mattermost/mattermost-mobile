@@ -345,7 +345,7 @@ export async function fetchChannelCreator(serverUrl: string, channelId: string, 
         const currentUserId = await getCurrentUserId(database);
         const channel = await getChannelById(database, channelId);
         if (channel && channel.creatorId) {
-            const user = await client.getUser(channel.creatorId);
+            const user = await client.getUser(channel.creatorId, {});
 
             if (!fetchOnly) {
                 const modelPromises: Array<Promise<Model[]>> = [];

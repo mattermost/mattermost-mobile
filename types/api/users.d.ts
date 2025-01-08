@@ -25,6 +25,18 @@ type UserNotifyProps = {
     calls_mobile_notification_sound: string;
 };
 
+type CustomProfileAttribute = {
+    id: string;
+    target_id: string;
+    target_type: string;
+    group_id: string;
+    field_id: string;
+    value: string;
+    create_at: number;
+    update_at: number;
+    delete_at: number;
+}
+
 type UserProfile = {
     id: string;
     create_at: number;
@@ -52,6 +64,7 @@ type UserProfile = {
     status?: string;
     bot_description?: string;
     bot_last_icon_update?: number;
+    custom_profile_attributes?: CustomProfileAttribute[];
 };
 
 type UsersState = {

@@ -30,7 +30,7 @@ export interface ClientUsersMix {
     getProfilesInGroupChannels: (channelsIds: string[]) => Promise<{[x: string]: UserProfile[]}>;
     getProfilesNotInChannel: (teamId: string, channelId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getMe: () => Promise<UserProfile>;
-    getUser: (userId: string) => Promise<UserProfile>;
+    getUser: (userId: string, options: {cpa?: boolean}) => Promise<UserProfile>;
     getUserByUsername: (username: string) => Promise<UserProfile>;
     getUserByEmail: (email: string) => Promise<UserProfile>;
     getProfilePictureUrl: (userId: string, lastPictureUpdate: number) => string;
@@ -252,7 +252,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getUser = async (userId: string, options: {cpa?: boolean} = {}) => {
-        const query = options.cpa ? '?cpa=1' : '';
+        const query = options.cpa === undefined ? '' : buildQueryString({cpa: options.cpa});
         return this.doFetch(
             `${this.getUserRoute(userId)}${query}`,
             {method: 'get'},
@@ -261,7 +261,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
 
     getCustomProfileAttributeFields = async () => {
         return this.doFetch(
-            `${this.getBaseRoute()}/custom_profile_attributes/fields`,
+            `${this.getCPARoute()}/fields`,
             {method: 'get'},
         );
     };

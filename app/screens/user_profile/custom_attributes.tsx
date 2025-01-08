@@ -7,46 +7,40 @@ import {FlatList, View, StyleSheet, type ListRenderItem} from 'react-native';
 
 import UserProfileLabel from './label';
 
-export type CustomAttribute = {
-    id: string;
-    label: string;
-    value: string;
-};
-
 type Props = {
     nickname?: string;
     position?: string;
     localTime?: string;
-    enableCustomAttributes?: boolean;
+    customAttributes?: DisplayCustomAttribute[];
 }
 
-const CustomAttributes = ({nickname, position, localTime, enableCustomAttributes}: Props) => {
+const CustomAttributes = ({nickname, position, localTime, customAttributes}: Props) => {
     const {formatMessage} = useIntl();
 
     // Combine standard and custom attributes
     const attributes = [
         ...(nickname ? [{
             id: 'nickname',
-            label: formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'}),
+            name: formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'}),
             value: nickname,
         }] : []),
         ...(position ? [{
             id: 'position',
-            label: formatMessage({id: 'channel_info.position', defaultMessage: 'Position'}),
+            name: formatMessage({id: 'channel_info.position', defaultMessage: 'Position'}),
             value: position,
         }] : []),
         ...(localTime ? [{
             id: 'local_time',
-            label: formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'}),
+            name: formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'}),
             value: localTime,
         }] : []),
 
         // Only show custom attributes if the feature flag is enabled
-        ...(enableCustomAttributes ? customAttributes : []),
+        ...(customAttributes ?? []),
     ];
-    const renderAttribute: ListRenderItem<CustomAttribute> = ({item}) => (
+    const renderAttribute: ListRenderItem<DisplayCustomAttribute> = ({item}) => (
         <UserProfileLabel
-            title={item.label}
+            title={item.name}
             description={item.value}
             testID={`custom_attribute.${item.id}`}
         />

@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {useEffect, useState} from 'react';
-import {getUserCustomStatus} from '@utils/user';
+
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@managers/network_manager';
+import {getUserCustomStatus} from '@utils/user';
 
-import UserProfileCustomStatus from './custom_status';
 import CustomAttributes from './custom_attributes';
+import UserProfileCustomStatus from './custom_status';
 
 import type {UserModel} from '@database/models/server';
-import type {CustomAttribute} from './custom_attributes';
 
 type Props = {
     localTime?: string;
@@ -21,11 +22,14 @@ type Props = {
     enableCustomAttributes?: boolean;
 }
 
+const matchingFieldAttribute = (id: string) => {
+    return (field: CustomProfileField) => field.id === id;
+};
+
 const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user, enableCustomAttributes}: Props) => {
     const customStatus = getUserCustomStatus(user);
     const serverUrl = useServerUrl();
-    const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>([]);
-    const [attributeFields, setAttributeFields] = useState<{[key: string]: string}>({});
+    const [customAttributes, setCustomAttributes] = useState<DisplayCustomAttribute[]>([]);
 
     useEffect(() => {
         if (enableCustomAttributes) {
@@ -34,23 +38,17 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
                     const client = NetworkManager.getClient(serverUrl);
                     const fields = await client.getCustomProfileAttributeFields();
                     const userData = await client.getUser(user.id, {cpa: true});
-                    
-                    setAttributeFields(fields.reduce((acc: {[key: string]: string}, field: any) => {
-                        acc[field.id] = field.name;
-                        return acc;
-                    }, {}));
 
                     if (userData.custom_profile_attributes) {
                         const attributes = Object.entries(userData.custom_profile_attributes).map(([id, value]) => ({
                             id,
-                            label: fields.find((f: any) => f.id === id)?.name || id,
-                            value: value as string,
+                            name: fields.find(matchingFieldAttribute(id))?.name || id,
+                            value: value.value,
                         }));
                         setCustomAttributes(attributes);
                     }
                 } catch (error) {
-                    // Handle error appropriately
-                    console.error('Failed to fetch custom attributes:', error);
+                    setCustomAttributes([]);
                 }
             };
 
@@ -65,7 +63,7 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
                 nickname={showNickname ? user.nickname : undefined}
                 position={showPosition ? user.position : undefined}
                 localTime={showLocalTime ? localTime : undefined}
-                enableCustomAttributes={enableCustomAttributes}
+                customAttributes={enableCustomAttributes ? customAttributes : []}
             />
         </>
     );

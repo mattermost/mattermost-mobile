@@ -235,6 +235,10 @@ export default class ClientBase {
         return `${this.urlVersion}/client_perf`;
     }
 
+    getCPARoute() {
+        return `${this.urlVersion}/custom_profile_attributes`;
+    }
+
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
         let request;
         const method = options.method?.toLowerCase();
