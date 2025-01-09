@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
@@ -37,7 +37,7 @@ type Props = {
     currentUserId: string;
     channelType: ChannelType | undefined;
     postPriority: PostPriority;
-    clearDraft?: () => void;
+    clearDraft: () => void;
 }
 
 export const useHandleSendMessage = ({
@@ -61,7 +61,7 @@ export const useHandleSendMessage = ({
     const [sendingMessage, setSendingMessage] = useState(false);
     const [channelTimezoneCount, setChannelTimezoneCount] = useState(0);
 
-    const canSend = useCallback(() => {
+    const canSend = useMemo(() => {
         if (sendingMessage) {
             return false;
         }
@@ -82,7 +82,7 @@ export const useHandleSendMessage = ({
 
     const handleReaction = useCallback((emoji: string, add: boolean) => {
         handleReactionToLatestPost(serverUrl, emoji, add, rootId);
-        clearDraft?.();
+        clearDraft();
         setSendingMessage(false);
     }, [serverUrl, rootId, clearDraft]);
 
@@ -107,7 +107,7 @@ export const useHandleSendMessage = ({
 
         createPost(serverUrl, post, postFiles);
 
-        clearDraft?.();
+        clearDraft();
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
     }, [files, currentUserId, channelId, rootId, value, postPriority, serverUrl, clearDraft]);
@@ -126,7 +126,7 @@ export const useHandleSendMessage = ({
             const {handled, error} = await handleCallsSlashCommand(value.trim(), serverUrl, channelId, channelType ?? '', rootId, currentUserId, intl);
             if (handled) {
                 setSendingMessage(false);
-                clearDraft?.();
+                clearDraft();
                 return;
             }
             if (error) {
@@ -160,7 +160,7 @@ export const useHandleSendMessage = ({
             return;
         }
 
-        clearDraft?.();
+        clearDraft();
 
         if (data?.goto_location && !value.startsWith('/leave')) {
             handleGotoLocation(serverUrl, intl, data.goto_location);
@@ -182,7 +182,7 @@ export const useHandleSendMessage = ({
     }, [enableConfirmNotificationsToChannel, useChannelMentions, value, membersCount, sendCommand, showSendToAllOrChannelOrHereAlert, doSubmitMessage]);
 
     const handleSendMessage = useCallback(preventDoubleTap(() => {
-        if (!canSend()) {
+        if (!canSend) {
             return;
         }
 
@@ -218,6 +218,6 @@ export const useHandleSendMessage = ({
 
     return {
         handleSendMessage,
-        canSend: canSend(),
+        canSend,
     };
 };
