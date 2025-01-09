@@ -15,7 +15,7 @@ import {popTopScreen} from '@screens/navigation';
 
 import DraftEmptyComponent from '../draft_empty_component';
 
-import DraftSwipeActions from './DraftSwipeActions';
+import DraftSwipeActions from './draft_swipe_actions';
 import DraftTooltip from './tooltip';
 
 import type DraftModel from '@typings/database/models/servers/draft';

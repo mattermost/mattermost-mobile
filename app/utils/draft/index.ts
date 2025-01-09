@@ -9,7 +9,7 @@ import {CODE_REGEX} from '@constants/autocomplete';
 import {t} from '@i18n';
 
 import type {IntlShape, MessageDescriptor} from 'react-intl';
-import type {Swipeable} from 'react-native-gesture-handler';
+import type {SwipeableMethods} from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
 
 type AlertCallback = (value?: string) => void;
 
@@ -198,7 +198,7 @@ export function deleteDraftConfirmation({intl, serverUrl, channelId, rootId, swi
     serverUrl: string;
     channelId: string;
     rootId: string;
-    swipeable?: React.RefObject<Swipeable>;
+    swipeable?: React.RefObject<SwipeableMethods>;
 }) {
     const deleteDraft = async () => {
         removeDraft(serverUrl, channelId, rootId);
