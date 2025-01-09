@@ -40,6 +40,7 @@ describe('isParsableUrl', () => {
 
     it('should return false for invalid URLs', () => {
         expect(isParsableUrl('example')).toBe(false);
+        expect(isParsableUrl('example.com')).toBe(false); // Missing protocol
         expect(isParsableUrl('://example.com')).toBe(false);
         expect(isParsableUrl('http//example.com')).toBe(false);
         expect(isParsableUrl('')).toBe(false);
