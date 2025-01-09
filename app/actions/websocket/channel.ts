@@ -328,7 +328,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
             loadCallForChannel(serverUrl, channelId);
         } else {
-            const addedUser = getUserById(database, userId);
+            const addedUser = await getUserById(database, userId);
             if (!addedUser) {
                 // TODO Potential improvement https://mattermost.atlassian.net/browse/MM-40581
                 const {users} = await fetchUsersByIds(serverUrl, [userId], true);
