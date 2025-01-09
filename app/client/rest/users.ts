@@ -10,7 +10,7 @@ import type ClientBase from './base';
 
 export interface ClientUsersMix {
     createUser: (user: UserProfile, token: string, inviteId: string) => Promise<UserProfile>;
-    patchMe: (userPatch: Partial<UserProfile>) => Promise<UserProfile>;
+    patchMe: (userPatch: Partial<UserProfile>, groupLabel?: string) => Promise<UserProfile>;
     patchUser: (userPatch: Partial<UserProfile> & {id: string}) => Promise<UserProfile>;
     updateUser: (user: UserProfile) => Promise<UserProfile>;
     demoteUserToGuest: (userId: string) => Promise<any>;
@@ -21,15 +21,15 @@ export interface ClientUsersMix {
     loginById: (id: string, password: string, token?: string, deviceId?: string) => Promise<UserProfile>;
     logout: () => Promise<any>;
     getProfiles: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
-    getProfilesByIds: (userIds: string[], options?: Record<string, any>) => Promise<UserProfile[]>;
-    getProfilesByUsernames: (usernames: string[]) => Promise<UserProfile[]>;
+    getProfilesByIds: (userIds: string[], options?: Record<string, any>, groupLabel?: string) => Promise<UserProfile[]>;
+    getProfilesByUsernames: (usernames: string[], groupLabel?: string) => Promise<UserProfile[]>;
     getProfilesInTeam: (teamId: string, page?: number, perPage?: number, sort?: string, options?: Record<string, any>) => Promise<UserProfile[]>;
     getProfilesNotInTeam: (teamId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getProfilesWithoutTeam: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
-    getProfilesInChannel: (channelId: string, options?: GetUsersOptions) => Promise<UserProfile[]>;
-    getProfilesInGroupChannels: (channelsIds: string[]) => Promise<{[x: string]: UserProfile[]}>;
+    getProfilesInChannel: (channelId: string, options?: GetUsersOptions, groupLabel?: string) => Promise<UserProfile[]>;
+    getProfilesInGroupChannels: (channelsIds: string[], groupLabel?: string) => Promise<{[x: string]: UserProfile[]}>;
     getProfilesNotInChannel: (teamId: string, channelId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
-    getMe: () => Promise<UserProfile>;
+    getMe: (groupLabel?: string) => Promise<UserProfile>;
     getUser: (userId: string, options: {cpa?: boolean}) => Promise<UserProfile>;
     getUserByUsername: (username: string) => Promise<UserProfile>;
     getUserByEmail: (email: string) => Promise<UserProfile>;
@@ -38,10 +38,10 @@ export interface ClientUsersMix {
     autocompleteUsers: (name: string, teamId: string, channelId?: string, options?: Record<string, any>) => Promise<{users: UserProfile[]; out_of_channel?: UserProfile[]}>;
     getSessions: (userId: string) => Promise<Session[]>;
     checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
-    setExtraSessionProps: (deviceId: string, notificationsEnabled: boolean, version: string | null) => Promise<{}>;
+    setExtraSessionProps: (deviceId: string, notificationsEnabled: boolean, version: string | null, groupLabel?: string) => Promise<{}>;
     searchUsers: (term: string, options: SearchUserOptions) => Promise<UserProfile[]>;
     getStatusesByIds: (userIds: string[]) => Promise<UserStatus[]>;
-    getStatus: (userId: string) => Promise<UserStatus>;
+    getStatus: (userId: string, groupLabel?: string) => Promise<UserStatus>;
     updateStatus: (status: UserStatus) => Promise<UserStatus>;
     updateCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
     unsetCustomStatus: () => Promise<{status: string}>;
@@ -66,10 +66,10 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    patchMe = async (userPatch: Partial<UserProfile>) => {
+    patchMe = async (userPatch: Partial<UserProfile>, groupLabel?: string) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/patch`,
-            {method: 'put', body: userPatch},
+            {method: 'put', body: userPatch, groupLabel},
         );
     };
 
@@ -127,7 +127,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
             body.ldap_only = 'true';
         }
 
-        const {data} = await this.doFetch(
+        const resp = await this.doFetch(
             `${this.getUsersRoute()}/login`,
             {
                 method: 'post',
@@ -137,7 +137,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
             false,
         );
 
-        return data;
+        return resp?.data;
     };
 
     loginById = async (id: string, password: string, token = '', deviceId = '') => {
@@ -148,7 +148,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
             token,
         };
 
-        const {data} = await this.doFetch(
+        const resp = await this.doFetch(
             `${this.getUsersRoute()}/login`,
             {
                 method: 'post',
@@ -158,7 +158,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
             false,
         );
 
-        return data;
+        return resp?.data;
     };
 
     logout = async () => {
@@ -177,17 +177,17 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getProfilesByIds = async (userIds: string[], options = {}) => {
+    getProfilesByIds = async (userIds: string[], options = {}, groupLabel?: string) => {
         return this.doFetch(
             `${this.getUsersRoute()}/ids${buildQueryString(options)}`,
-            {method: 'post', body: userIds},
+            {method: 'post', body: userIds, groupLabel},
         );
     };
 
-    getProfilesByUsernames = async (usernames: string[]) => {
+    getProfilesByUsernames = async (usernames: string[], groupLabel?: string) => {
         return this.doFetch(
             `${this.getUsersRoute()}/usernames`,
-            {method: 'post', body: usernames},
+            {method: 'post', body: usernames, groupLabel},
         );
     };
 
@@ -217,18 +217,18 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getProfilesInChannel = async (channelId: string, options: GetUsersOptions) => {
+    getProfilesInChannel = async (channelId: string, options: GetUsersOptions, groupLabel?: string) => {
         const queryStringObj = {in_channel: channelId, ...options};
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString(queryStringObj)}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
-    getProfilesInGroupChannels = async (channelsIds: string[]) => {
+    getProfilesInGroupChannels = async (channelsIds: string[], groupLabel?: string) => {
         return this.doFetch(
             `${this.getUsersRoute()}/group_channels`,
-            {method: 'post', body: channelsIds},
+            {method: 'post', body: channelsIds, groupLabel},
         );
     };
 
@@ -244,10 +244,10 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getMe = async () => {
+    getMe = async (groupLabel?: string) => {
         return this.doFetch(
             `${this.getUserRoute('me')}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -333,7 +333,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    setExtraSessionProps = async (deviceId: string, deviceNotificationDisabled: boolean, version: string | null) => {
+    setExtraSessionProps = async (deviceId: string, deviceNotificationDisabled: boolean, version: string | null, groupLabel?: string) => {
         return this.doFetch(
             `${this.getUsersRoute()}/sessions/device`,
             {
@@ -343,6 +343,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
                     device_notification_disabled: deviceNotificationDisabled ? 'true' : 'false',
                     mobile_version: version || '',
                 },
+                groupLabel,
             },
         );
     };
@@ -361,10 +362,10 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getStatus = async (userId: string) => {
+    getStatus = async (userId: string, groupLabel?: string) => {
         return this.doFetch(
             `${this.getUserRoute(userId)}/status`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 

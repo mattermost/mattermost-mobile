@@ -161,14 +161,14 @@ export async function sendEmailInvitesToTeam(serverUrl: string, teamId: string, 
     }
 }
 
-export async function fetchMyTeams(serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> {
+export async function fetchMyTeams(serverUrl: string, fetchOnly = false, groupLabel?: string): Promise<MyTeamsRequest> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const [teams, memberships]: [Team[], TeamMembership[]] = await Promise.all([
-            client.getMyTeams(),
-            client.getMyTeamMembers(),
+            client.getMyTeams(groupLabel),
+            client.getMyTeamMembers(groupLabel),
         ]);
 
         if (!fetchOnly) {
@@ -207,14 +207,14 @@ export async function fetchMyTeams(serverUrl: string, fetchOnly = false): Promis
     }
 }
 
-export async function fetchMyTeam(serverUrl: string, teamId: string, fetchOnly = false): Promise<MyTeamsRequest> {
+export async function fetchMyTeam(serverUrl: string, teamId: string, fetchOnly = false, groupLabel?: string): Promise<MyTeamsRequest> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const [team, membership] = await Promise.all([
-            client.getTeam(teamId),
-            client.getTeamMember(teamId, 'me'),
+            client.getTeam(teamId, groupLabel),
+            client.getTeamMember(teamId, 'me', groupLabel),
         ]);
         if (!fetchOnly) {
             const modelPromises = prepareMyTeams(operator, [team], [membership]);
@@ -247,14 +247,14 @@ export const fetchAllTeams = async (serverUrl: string, page = 0, perPage = PER_P
     }
 };
 
-const recCanJoinTeams = async (client: Client, myTeamsIds: Set<string>, page: number): Promise<boolean> => {
-    const fetchedTeams = await client.getTeams(page, PER_PAGE_DEFAULT);
+const recCanJoinTeams = async (client: Client, myTeamsIds: Set<string>, page: number, groupLabel?: string): Promise<boolean> => {
+    const fetchedTeams = await client.getTeams(page, PER_PAGE_DEFAULT, false, groupLabel);
     if (fetchedTeams.find((t) => !myTeamsIds.has(t.id) && t.delete_at === 0)) {
         return true;
     }
 
     if (fetchedTeams.length === PER_PAGE_DEFAULT) {
-        return recCanJoinTeams(client, myTeamsIds, page + 1);
+        return recCanJoinTeams(client, myTeamsIds, page + 1, groupLabel);
     }
 
     return false;
@@ -298,7 +298,7 @@ export async function fetchTeamsForComponent(
     return {teams: alreadyLoaded, hasMore: false, page};
 }
 
-export const updateCanJoinTeams = async (serverUrl: string) => {
+export const updateCanJoinTeams = async (serverUrl: string, groupLabel?: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -306,7 +306,7 @@ export const updateCanJoinTeams = async (serverUrl: string) => {
         const myTeams = await queryMyTeams(database).fetch();
         const myTeamsIds = new Set(myTeams.map((m) => m.id));
 
-        const canJoin = await recCanJoinTeams(client, myTeamsIds, 0);
+        const canJoin = await recCanJoinTeams(client, myTeamsIds, 0, groupLabel);
 
         EphemeralStore.setCanJoinOtherTeams(serverUrl, canJoin);
         return {};
@@ -320,7 +320,7 @@ export const updateCanJoinTeams = async (serverUrl: string) => {
 
 export const fetchTeamsChannelsThreadsAndUnreadPosts = async (
     serverUrl: string, since: number, teams: Team[],
-    isCRTEnabled?: boolean, fetchOnly = false,
+    isCRTEnabled?: boolean, fetchOnly = false, groupLabel?: string,
 ) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -331,7 +331,7 @@ export const fetchTeamsChannelsThreadsAndUnreadPosts = async (
         for await (const myTeams of chunks) {
             const promises = [];
             for (const team of myTeams) {
-                promises.push(fetchMyChannelsForTeam(serverUrl, team.id, true, since, true, true, isCRTEnabled));
+                promises.push(fetchMyChannelsForTeam(serverUrl, team.id, true, since, true, true, isCRTEnabled, groupLabel));
             }
 
             const results = await Promise.all(promises);
@@ -356,8 +356,8 @@ export const fetchTeamsChannelsThreadsAndUnreadPosts = async (
                 }
             }
 
-            const unreadPromise = fetchPostsForUnreadChannels(serverUrl, channels, members, undefined, true);
-            const threadsPromise = syncThreadsIfNeeded(serverUrl, isCRTEnabled ?? false, myTeams, true);
+            const unreadPromise = fetchPostsForUnreadChannels(serverUrl, channels, members, undefined, true, groupLabel);
+            const threadsPromise = syncThreadsIfNeeded(serverUrl, isCRTEnabled ?? false, myTeams, true, groupLabel);
             const postPromises: [Promise<PostsForChannel[]>, Promise<{models?: Model[]; error?: unknown}>] = [
                 unreadPromise,
                 threadsPromise,
