@@ -334,6 +334,16 @@ describe('ClientUsers', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
+    test('getUser with custom profile attributes', async () => {
+        const userId = 'user1';
+        const expectedUrl = client.getUserRoute(userId);
+        const expectedOptions = {method: 'get', cpa: true};
+
+        await client.getUser(userId, {cpa: true});
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
     test('getUserByUsername', async () => {
         const username = 'testuser';
         const expectedUrl = `${client.getUsersRoute()}/username/${username}`;
