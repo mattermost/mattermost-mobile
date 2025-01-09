@@ -329,7 +329,7 @@ describe('ClientUsers', () => {
         const expectedUrl = client.getUserRoute(userId);
         const expectedOptions = {method: 'get'};
 
-        await client.getUser(userId);
+        await client.getUser(userId, {});
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
