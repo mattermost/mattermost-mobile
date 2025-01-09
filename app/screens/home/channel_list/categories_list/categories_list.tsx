@@ -56,6 +56,9 @@ const CategoriesList = ({
         if (isTablet) {
             tabletWidth.value = getTabletWidth(moreThanOneTeam);
         }
+
+        // tabletWidth is a sharedValue, so it's safe to ignore this warning
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isTablet, moreThanOneTeam]);
 
     const tabletStyle = useAnimatedStyle(() => {
@@ -68,6 +71,32 @@ const CategoriesList = ({
         return {maxWidth: withTiming(tabletWidth.value, {duration: 350})};
     }, [isTablet, width]);
 
+    const threadButtonComponent = useMemo(() => {
+        if (!isCRTEnabled) {
+            return null;
+        }
+
+        return (
+            <ThreadsButton
+                isOnHome={true}
+                shouldHighlighActive={true}
+            />
+        );
+    }, [isCRTEnabled]);
+
+    const draftsButtonComponent = useMemo(() => {
+        if (draftsCount > 0) {
+            return (
+                <DraftsButton
+                    draftsCount={draftsCount}
+                    currentChannelId={currentChannelId}
+                />
+            );
+        }
+
+        return null;
+    }, [currentChannelId, draftsCount]);
+
     const content = useMemo(() => {
         if (!hasChannels) {
             return (<LoadChannelsError/>);
@@ -76,22 +105,12 @@ const CategoriesList = ({
         return (
             <>
                 <SubHeader/>
-                {isCRTEnabled &&
-                    <ThreadsButton
-                        isOnHome={true}
-                        shouldHighlighActive={true}
-                    />
-                }
-                {draftsCount > 0 && (
-                    <DraftsButton
-                        draftsCount={draftsCount}
-                        currentChannelId={currentChannelId}
-                    />
-                )}
+                {threadButtonComponent}
+                {draftsButtonComponent}
                 <Categories/>
             </>
         );
-    }, [currentChannelId, draftsCount, hasChannels, isCRTEnabled]);
+    }, [draftsButtonComponent, hasChannels, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
