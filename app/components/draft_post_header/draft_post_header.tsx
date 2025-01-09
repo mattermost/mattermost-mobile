@@ -5,7 +5,7 @@ import React, {type ReactNode} from 'react';
 import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import ProfileAvatar from '@components/draft_post_header/ProfileAvatar';
+import ProfileAvatar from '@components/draft_post_header/profile_avatar';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {General} from '@constants';

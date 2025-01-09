@@ -7,7 +7,7 @@ import {updateDraftPriority} from '@actions/local/draft';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
-import SendDraft from '@screens/draft_options/send_draft/send_draft';
+import SendDraft from '@screens/draft_options/send_draft';
 
 import DraftInput from '../draft_input';
 
