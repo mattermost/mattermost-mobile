@@ -78,7 +78,7 @@ const GlobalDraftsList: React.FC<Props> = ({
             setTooltipVisible(true);
         });
 
-        // This effect is intended to run only on the first mount, so dependencies are omitted intentionally
+        // This effect is intended to run only on the first mount, so dependencies are omitted intentionally.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
