@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {useCallback, useEffect, useState} from 'react';
 import {InteractionManager, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -52,7 +51,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+const AnimatedFlatList = Animated.FlatList;
 const keyExtractor = (item: DraftModel) => item.id;
 
 const GlobalDraftsList: React.FC<Props> = ({
