@@ -5,7 +5,6 @@ import React, {useEffect, useState} from 'react';
 
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@managers/network_manager';
-import {logDebug} from '@utils/log';
 import {getUserCustomStatus} from '@utils/user';
 
 import CustomAttributes from './custom_attributes';
@@ -35,8 +34,6 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
                     const client = NetworkManager.getClient(serverUrl);
                     const fields = await client.getCustomProfileAttributeFields();
                     const attrValues = await client.getCustomProfileAttributeValues(user.id);
-                    logDebug('got fields: ', fields.length);
-                    logDebug('got values: ', attrValues.length);
                     if (fields) {
                         const attributes = fields.map((field) => ({
                             id: field.id,
@@ -45,7 +42,7 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
                         }));
                         setCustomAttributes(attributes);
                     }
-                } catch (error) {
+                } catch {
                     setCustomAttributes([]);
                 }
             };

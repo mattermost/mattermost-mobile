@@ -8,6 +8,15 @@ import {PER_PAGE_DEFAULT} from './constants';
 
 import type ClientBase from './base';
 
+/**
+ * Options for getUser
+ **/
+type GetUserOptions = {
+
+    /** add custom profile attributes that applies to the user **/
+    cpa?: boolean;
+};
+
 export interface ClientUsersMix {
     createUser: (user: UserProfile, token: string, inviteId: string) => Promise<UserProfile>;
     patchMe: (userPatch: Partial<UserProfile>, groupLabel?: string) => Promise<UserProfile>;
@@ -30,7 +39,7 @@ export interface ClientUsersMix {
     getProfilesInGroupChannels: (channelsIds: string[], groupLabel?: string) => Promise<{[x: string]: UserProfile[]}>;
     getProfilesNotInChannel: (teamId: string, channelId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getMe: (groupLabel?: string) => Promise<UserProfile>;
-    getUser: (userId: string, options: {cpa?: boolean}) => Promise<UserProfile>;
+    getUser: (userId: string, options: GetUserOptions) => Promise<UserProfile>;
     getUserByUsername: (username: string) => Promise<UserProfile>;
     getUserByEmail: (email: string) => Promise<UserProfile>;
     getProfilePictureUrl: (userId: string, lastPictureUpdate: number) => string;
@@ -251,7 +260,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getUser = async (userId: string, options: {cpa?: boolean} = {}) => {
+    getUser = async (userId: string, options: GetUserOptions = {}) => {
         const query = options.cpa === undefined ? '' : buildQueryString({cpa: options.cpa});
         return this.doFetch(
             `${this.getUserRoute(userId)}${query}`,
@@ -261,7 +270,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
 
     getCustomProfileAttributeFields = async () => {
         return this.doFetch(
-            `${this.getCPARoute()}/fields`,
+            `${this.getCustomProfileAttributesRoute()}/fields`,
             {method: 'get'},
         );
     };

@@ -25,18 +25,38 @@ type UserNotifyProps = {
     calls_mobile_notification_sound: string;
 };
 
+/**
+ * CustomProfileAttribute
+ * @description Value of a system property defined by a custom profile attribute field
+ **/
 type CustomProfileAttribute = {
+
+    /** server assigned id **/
     id: string;
+
+    /** id of the target element if empty it is a system property **/
     target_id: string;
+
+    /** type of element this is assigned to. Possible values user, post, card... if empty it is a system property **/
     target_type: string;
+
+    /** id of the group the field belongs to **/
     group_id: string;
+
+    /** field id this value is referring to **/
     field_id: string;
+
+    /** actual value **/
     value: string;
     create_at: number;
     update_at: number;
     delete_at: number;
 }
 
+/**
+ * CustomProfileAttributeSimple
+ * @description simpler type to display a field id with its value.
+ **/
 type CustomProfileAttributeSimple = {
     [field_id: string]: string;
 }

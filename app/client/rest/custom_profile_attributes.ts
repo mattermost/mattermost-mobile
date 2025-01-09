@@ -11,7 +11,7 @@ export interface ClientCustomAttributesMix {
 const ClientCustomAttributes = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     getCustomProfileAttributeFields = async () => {
         return this.doFetch(
-            `${this.getCPARoute()}/fields`,
+            `${this.getCustomProfileAttributesRoute()}/fields`,
             {method: 'get'},
         );
     };

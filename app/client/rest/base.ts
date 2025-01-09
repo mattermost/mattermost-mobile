@@ -199,7 +199,7 @@ export default class ClientBase extends ClientTracking {
         return `${this.urlVersion}/client_perf`;
     }
 
-    getCPARoute() {
+    getCustomProfileAttributesRoute() {
         return `${this.urlVersion}/custom_profile_attributes`;
     }
 
