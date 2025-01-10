@@ -126,8 +126,6 @@ exports[`Drafts Button calls switchToGlobalDrafts when pressed 1`] = `
 </View>
 `;
 
-exports[`Drafts Button does not render if draftsCount is 0 1`] = `null`;
-
 exports[`Drafts Button should render the drafts button component 1`] = `
 <View
   accessibilityState={
