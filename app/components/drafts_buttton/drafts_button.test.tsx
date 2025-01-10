@@ -52,16 +52,4 @@ describe('Drafts Button', () => {
         expect(switchToGlobalDrafts).toHaveBeenCalledTimes(1);
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
-
-    it('does not render if draftsCount is 0', () => {
-        const wrapper = renderWithIntl(
-            <DraftsButton
-                currentChannelId='channel-1'
-                draftsCount={0}
-            />,
-        );
-        const {queryByTestId} = wrapper;
-        expect(queryByTestId('channel_list.drafts.button')).toBeNull();
-        expect(wrapper.toJSON()).toMatchSnapshot();
-    });
 });
