@@ -28,6 +28,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
         color: theme.centerChannelColor,
         flex: 1,
+        marginLeft: 5,
+        height: '100%',
+        alignItems: 'flex-start',
         ...typography('Body', 100, 'SemiBold'),
     },
 }));
