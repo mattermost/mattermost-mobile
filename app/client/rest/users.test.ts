@@ -336,8 +336,8 @@ describe('ClientUsers', () => {
 
     test('getUser with custom profile attributes', async () => {
         const userId = 'user1';
-        const expectedUrl = client.getUserRoute(userId);
-        const expectedOptions = {method: 'get', cpa: true};
+        const expectedUrl = `${client.getUserRoute(userId)}?cpa=true`;
+        const expectedOptions = {method: 'get'};
 
         await client.getUser(userId, {cpa: true});
 

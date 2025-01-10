@@ -18,17 +18,17 @@ describe('CustomAttributes', () => {
         await client.getCustomProfileAttributeFields();
 
         expect(client.doFetch).toHaveBeenCalledWith(
-            client.getCustomProfileAttributesRoute(),
+            `${client.getCustomProfileAttributesRoute()}/fields`,
             {method: 'get'},
         );
     });
 
     test('getCustomProfileAttributeValues', async () => {
-        const userId = 'user_id';
+        const userId = 'user1';
         await client.getCustomProfileAttributeValues(userId);
 
         expect(client.doFetch).toHaveBeenCalledWith(
-            client.getUserRoute(userId),
+            `${client.getUserRoute(userId)}/custom_profile_attributes`,
             {method: 'get'},
         );
     });
