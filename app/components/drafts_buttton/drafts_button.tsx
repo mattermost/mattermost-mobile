@@ -99,7 +99,7 @@ const DraftsButton: React.FC<DraftListProps> = ({
     return (
         <TouchableOpacity
             onPress={handlePress}
-            testID='channel_list.drafts.button'
+            testID='channel_list.drafts.button' // Draft Section
         >
             <View style={containerStyle}>
                 <CompassIcon
@@ -118,7 +118,11 @@ const DraftsButton: React.FC<DraftListProps> = ({
                         color={theme.sidebarText}
                         style={customStyles.opacity}
                     />
-                    <Text style={customStyles.count}>{draftsCount}</Text>
+                    <Text
+                        testID='channel_list.drafts.count' // draft count list page
+                        style={customStyles.count}
+                    >{draftsCount}
+                    </Text>
                 </View>
             </View>
         </TouchableOpacity>

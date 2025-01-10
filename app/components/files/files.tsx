@@ -126,7 +126,10 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
         }
 
         return (
-            <View style={[styles.row, {width: portraitPostWidth}]}>
+            <View
+                testID='image.row'
+                style={[styles.row, {width: portraitPostWidth}]}
+            >
                 { renderItems(visibleImages, nonVisibleImagesCount, true) }
             </View>
         );
