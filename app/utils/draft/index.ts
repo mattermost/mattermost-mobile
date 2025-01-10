@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert, type AlertButton} from 'react-native';
+import {type SwipeableMethods} from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 import {parseMarkdownImages, removeDraft, updateDraftMarkdownImageMetadata, updateDraftMessage} from '@actions/local/draft';
 import {General} from '@constants';
@@ -9,7 +10,6 @@ import {CODE_REGEX} from '@constants/autocomplete';
 import {t} from '@i18n';
 
 import type {IntlShape, MessageDescriptor} from 'react-intl';
-import type {SwipeableMethods} from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
 
 type AlertCallback = (value?: string) => void;
 
