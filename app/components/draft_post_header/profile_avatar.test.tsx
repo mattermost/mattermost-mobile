@@ -23,7 +23,7 @@ const mockBuildAbsoluteUrl = require('@actions/remote/file').buildAbsoluteUrl;
 const mockBuildProfileImageUrlFromUser = require('@actions/remote/user').buildProfileImageUrlFromUser;
 const mockUseServerUrl = require('@context/server').useServerUrl;
 
-describe('Avatar Component', () => {
+describe('ProfileAvatar Component', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });

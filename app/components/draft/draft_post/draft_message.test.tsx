@@ -6,7 +6,7 @@ import React from 'react';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import DraftMessage from '.';
+import DraftMessage from './draft_message';
 
 import type {Database} from '@nozbe/watermelondb';
 import type DraftModel from '@typings/database/models/servers/draft';

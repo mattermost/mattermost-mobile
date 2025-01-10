@@ -11,8 +11,8 @@ import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {getUserTimezone} from '@utils/user';
 
-import Avatar from './avatar';
-import ChannelInfo from './channel_info';
+import DraftPostHeader from './draft_post_header';
+import ProfileAvatar from './profile_avatar';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
@@ -23,13 +23,13 @@ jest.mock('@context/theme', () => ({
 
 jest.mock('@components/formatted_text', () => jest.fn(() => null));
 jest.mock('@components/formatted_time', () => jest.fn(() => null));
-jest.mock('./avatar', () => jest.fn(() => null));
+jest.mock('./profile_avatar', () => jest.fn(() => null));
 jest.mock('@components/compass_icon', () => jest.fn(() => null));
 jest.mock('@utils/user', () => ({
     getUserTimezone: jest.fn(),
 }));
 
-describe('ChannelInfo Component', () => {
+describe('DraftPostHeader Component', () => {
     const mockTheme = {
         centerChannelColor: '#000000',
     };
@@ -51,7 +51,7 @@ describe('ChannelInfo Component', () => {
             isMilitaryTime: true,
         };
 
-        const wrapper = render(<ChannelInfo {...baseProps}/>);
+        const wrapper = render(<DraftPostHeader {...baseProps}/>);
         expect(CompassIcon).toHaveBeenCalledWith(
             expect.objectContaining({
                 name: 'globe',
@@ -79,7 +79,7 @@ describe('ChannelInfo Component', () => {
             currentUser: {timezone: 'UTC'} as unknown as UserModel,
             isMilitaryTime: true,
         };
-        const wrapper = render(<ChannelInfo {...baseProps}/>);
+        const wrapper = render(<DraftPostHeader {...baseProps}/>);
         expect(FormattedText).toHaveBeenCalledWith(
             expect.objectContaining({
                 id: 'channel_info.draft_in_channel',
@@ -106,7 +106,7 @@ describe('ChannelInfo Component', () => {
             currentUser: {timezone: 'UTC'} as unknown as UserModel,
             isMilitaryTime: true,
         };
-        const wrapper = render(<ChannelInfo {...baseProps}/>);
+        const wrapper = render(<DraftPostHeader {...baseProps}/>);
         const {getByTestId} = wrapper;
 
         expect(useTheme).toHaveBeenCalled();
@@ -131,9 +131,9 @@ describe('ChannelInfo Component', () => {
             currentUser: {timezone: 'UTC'} as unknown as UserModel,
             isMilitaryTime: true,
         };
-        const wrapper = render(<ChannelInfo {...baseProps}/>);
+        const wrapper = render(<DraftPostHeader {...baseProps}/>);
 
-        expect(Avatar).toHaveBeenCalledWith(
+        expect(ProfileAvatar).toHaveBeenCalledWith(
             expect.objectContaining({
                 author: baseProps.draftReceiverUser,
             }),
@@ -152,7 +152,7 @@ describe('ChannelInfo Component', () => {
             currentUser: {timezone: 'UTC'} as unknown as UserModel,
             isMilitaryTime: true,
         };
-        const wrapper = render(<ChannelInfo {...baseProps}/>);
+        const wrapper = render(<DraftPostHeader {...baseProps}/>);
         expect(CompassIcon).toHaveBeenCalledWith(
             expect.objectContaining({
                 name: 'globe',

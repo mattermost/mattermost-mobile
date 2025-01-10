@@ -5,7 +5,7 @@ import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import DraftEmptyComponent from '.';
+import DraftEmptyComponent from './draft_empty_component';
 
 describe('Draft Empty Component', () => {
     it('should match the snapshot', () => {

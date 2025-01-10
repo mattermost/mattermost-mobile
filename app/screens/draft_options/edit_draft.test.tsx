@@ -7,7 +7,7 @@ import {Screens} from '@constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import EditDraft from '.';
+import EditDraft from './edit_draft';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 

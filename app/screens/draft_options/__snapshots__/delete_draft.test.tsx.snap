@@ -1,0 +1,127 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DeleteDraft calls draftDeleteHandler when pressed 1`] = `
+<View
+  accessibilityState={
+    {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "alignItems": "center",
+      "display": "flex",
+      "flexDirection": "row",
+      "gap": 16,
+      "opacity": 1,
+      "paddingVertical": 12,
+    }
+  }
+  testID="delete_draft"
+>
+  <Icon
+    color="rgba(63,67,80,0.56)"
+    name="trash-can-outline"
+    size={24}
+    testID="trash-can-outline-icon"
+  />
+  <Text
+    style={
+      {
+        "color": "#3f4350",
+        "fontFamily": "OpenSans",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "lineHeight": 24,
+      }
+    }
+  >
+    Delete draft
+  </Text>
+</View>
+`;
+
+exports[`DeleteDraft should render the component 1`] = `
+<View
+  accessibilityState={
+    {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "alignItems": "center",
+      "display": "flex",
+      "flexDirection": "row",
+      "gap": 16,
+      "opacity": 1,
+      "paddingVertical": 12,
+    }
+  }
+  testID="delete_draft"
+>
+  <Icon
+    color="rgba(63,67,80,0.56)"
+    name="trash-can-outline"
+    size={24}
+    testID="trash-can-outline-icon"
+  />
+  <Text
+    style={
+      {
+        "color": "#3f4350",
+        "fontFamily": "OpenSans",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "lineHeight": 24,
+      }
+    }
+  >
+    Delete draft
+  </Text>
+</View>
+`;

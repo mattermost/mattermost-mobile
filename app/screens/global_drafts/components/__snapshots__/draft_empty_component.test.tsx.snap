@@ -11,8 +11,34 @@ exports[`Draft Empty Component should match the snapshot 1`] = `
   }
   testID="draft_empty_component"
 >
-  <Image
-    source={1}
+  <ViewManagerAdapter_ExpoImage
+    containerViewRef={"[React.ref]"}
+    contentFit="cover"
+    contentPosition={
+      {
+        "left": "50%",
+        "top": "50%",
+      }
+    }
+    nativeViewRef={"[React.ref]"}
+    onError={[Function]}
+    onLoad={[Function]}
+    onLoadStart={[Function]}
+    onProgress={[Function]}
+    placeholder={[]}
+    source={
+      [
+        {
+          "__packager_asset": true,
+          "height": 1,
+          "scale": 1,
+          "uri": "file://assets/full/path/to/directory/name.type",
+          "width": 1,
+        },
+      ]
+    }
+    style={{}}
+    transition={null}
   />
   <Text
     style={
@@ -56,8 +82,34 @@ exports[`Draft Empty Component should render empty draft message 1`] = `
   }
   testID="draft_empty_component"
 >
-  <Image
-    source={1}
+  <ViewManagerAdapter_ExpoImage
+    containerViewRef={"[React.ref]"}
+    contentFit="cover"
+    contentPosition={
+      {
+        "left": "50%",
+        "top": "50%",
+      }
+    }
+    nativeViewRef={"[React.ref]"}
+    onError={[Function]}
+    onLoad={[Function]}
+    onLoadStart={[Function]}
+    onProgress={[Function]}
+    placeholder={[]}
+    source={
+      [
+        {
+          "__packager_asset": true,
+          "height": 1,
+          "scale": 1,
+          "uri": "file://assets/full/path/to/directory/name.type",
+          "width": 1,
+        },
+      ]
+    }
+    style={{}}
+    transition={null}
   />
   <Text
     style={

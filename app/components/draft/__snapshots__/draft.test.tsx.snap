@@ -11,7 +11,7 @@ exports[`Draft should match the file count 1`] = `
     }
   }
   accessible={true}
-  focusable={false}
+  focusable={true}
   onClick={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
@@ -553,7 +553,7 @@ exports[`Draft should render the draft with channel info and draft message 1`] =
     }
   }
   accessible={true}
-  focusable={false}
+  focusable={true}
   onClick={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
@@ -721,7 +721,7 @@ exports[`Draft should render the draft with channel info and draft message for a
     }
   }
   accessible={true}
-  focusable={false}
+  focusable={true}
   onClick={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
@@ -889,7 +889,7 @@ exports[`Draft should render the draft with post priority 1`] = `
     }
   }
   accessible={true}
-  focusable={false}
+  focusable={true}
   onClick={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}

@@ -7,7 +7,7 @@ import {Screens} from '@constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import DeleteDraft from '.';
+import DeleteDraft from './delete_draft';
 
 jest.mock('@screens/navigation', () => ({
     dismissBottomSheet: jest.fn(),
