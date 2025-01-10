@@ -22,12 +22,12 @@ type Props = {
     enableCustomAttributes?: boolean;
 }
 
-const emptyList = [] as DisplayCustomAttribute[]; /** avoid re-renders **/
+const emptyList: DisplayCustomAttribute[] = []; /** avoid re-renders **/
 
 const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user, enableCustomAttributes}: Props) => {
     const customStatus = getUserCustomStatus(user);
     const serverUrl = useServerUrl();
-    const [customAttributes, setCustomAttributes] = useState<DisplayCustomAttribute[]>([]);
+    const [customAttributes, setCustomAttributes] = useState<DisplayCustomAttribute[]>(emptyList);
     const lastRequest = useRef(0);
 
     useEffect(() => {
@@ -43,7 +43,7 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
                     ]);
 
                     // ignore results if there was a newer request
-                    if (fields && lastRequest.current === reqTime) {
+                    if (fields && fields.length > 0 && lastRequest.current === reqTime) {
                         const attributes = fields.map((field) => {
                             if (attrValues[field.id]) {
                                 return ({
