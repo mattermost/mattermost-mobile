@@ -55,7 +55,6 @@ const SINGLE_OPTION_HEIGHT = 68;
 const LABEL_HEIGHT = 58;
 const EXTRA_HEIGHT = 60;
 const MANAGE_ICON_HEIGHT = 72;
-const CUSTOM_ATTRIBUTES_HEIGHT = 200; // Height to show approximately 4-5 attributes
 
 const messages = defineMessages({
     manageMember: {
@@ -150,12 +149,10 @@ const UserProfile = ({
 
         const extraHeight = manageMode ? 0 : (EXTRA_HEIGHT - bottom);
 
-        const customAttrHeight = enableCustomAttributes ? CUSTOM_ATTRIBUTES_HEIGHT : 0;
-
         return [
             1,
             bottomSheetSnapPoint(optionsCount, LABEL_HEIGHT) + title + extraHeight,
-            bottomSheetSnapPoint(optionsCount, LABEL_HEIGHT) + title + extraHeight + customAttrHeight,
+            '90%',
         ];
     }, [
         headerText, showUserProfileOptions, showCustomStatus,
