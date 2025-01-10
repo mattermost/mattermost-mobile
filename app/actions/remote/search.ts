@@ -139,7 +139,7 @@ export const searchFiles = async (serverUrl: string, teamId: string, params: Fil
             currentTeamId = await getCurrentTeamId(database);
         }
         const client = NetworkManager.getClient(serverUrl);
-        const result = await client.searchFiles(currentTeamId, params.terms);
+        const result = await client.searchFiles(currentTeamId, params.terms, false);
         const files = result?.file_infos ? Object.values(result.file_infos) : [];
         const [allChannelIds, allPostIds] = files.reduce<[Set<string>, Set<string>]>((acc, f) => {
             if (f.channel_id) {

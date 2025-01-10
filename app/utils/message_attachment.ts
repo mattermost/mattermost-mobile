@@ -18,7 +18,7 @@ export function isMessageAttachmentArray(v: unknown): v is MessageAttachment[] {
     return isArrayOf(v, isMessageAttachment);
 }
 
-function isPostActionOption(v: unknown): v is PostActionOption {
+export function isPostActionOption(v: unknown): v is PostActionOption {
     if (typeof v !== 'object' || !v) {
         return false;
     }
@@ -193,3 +193,10 @@ function isMessageAttachment(v: unknown): v is MessageAttachment {
 
     return true;
 }
+
+export const testExports = {
+    isMessageAttachment,
+    isMessageAttachmentField,
+    isPostAction,
+    isPostActionOption,
+};
