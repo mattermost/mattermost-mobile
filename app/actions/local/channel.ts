@@ -239,23 +239,26 @@ export async function resetMessageCount(serverUrl: string, channelId: string) {
     }
 }
 
-const resolveAndFlattenModels = async (operator: ServerDataOperator, modelPromises: Array<Promise<Model[]>>, description: string, prepareRecordsOnly: boolean) => {
-    const models = await Promise.all(modelPromises);
-    if (!models.length) {
-        return {models: []};
-    }
+const resolveAndFlattenModels = async (
+    operator: ServerDataOperator,
+    modelPromises: Array<Promise<Model[]>>,
+    description: string,
+    prepareRecordsOnly: boolean,
+) => {
+    try {
+        const models = await Promise.all(modelPromises);
+        const flattenedModels = models.flat();
 
-    const flattenedModels = models.flat();
+        if (prepareRecordsOnly || !flattenedModels.length) {
+            return {models: flattenedModels, error: undefined};
+        }
 
-    if (prepareRecordsOnly) {
-        return {models: flattenedModels};
-    }
-
-    if (flattenedModels.length) {
         await operator.batchRecords(flattenedModels, description);
+        return {models: flattenedModels, error: undefined};
+    } catch (error) {
+        logError('Failed resolveAndFlattenModels', {error, description});
+        return {models: [], error};
     }
-
-    return {models: flattenedModels, error: undefined};
 };
 
 export async function storeAllMyChannels(serverUrl: string, channels: Channel[], memberships: ChannelMembership[], isCRTEnabled: boolean, prepareRecordsOnly = false) {
@@ -268,7 +271,7 @@ export async function storeAllMyChannels(serverUrl: string, channels: Channel[],
 
         return resolveAndFlattenModels(operator, modelPromises, 'storeAllMyChannels', prepareRecordsOnly);
     } catch (error) {
-        logError('Failed storeAllMyChannels', error);
+        logError('Failed storeAllMyChannels', {error, serverUrl, channelsCount: channels.length});
         return {error, models: undefined};
     }
 }
