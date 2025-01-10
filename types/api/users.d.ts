@@ -88,7 +88,6 @@ type UserProfile = {
     status?: string;
     bot_description?: string;
     bot_last_icon_update?: number;
-    custom_profile_attributes?: CustomProfileAttribute[];
 };
 
 type UsersState = {

@@ -329,17 +329,7 @@ describe('ClientUsers', () => {
         const expectedUrl = client.getUserRoute(userId);
         const expectedOptions = {method: 'get'};
 
-        await client.getUser(userId, {});
-
-        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-    });
-
-    test('getUser with custom profile attributes', async () => {
-        const userId = 'user1';
-        const expectedUrl = `${client.getUserRoute(userId)}?cpa=true`;
-        const expectedOptions = {method: 'get'};
-
-        await client.getUser(userId, {cpa: true});
+        await client.getUser(userId);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });

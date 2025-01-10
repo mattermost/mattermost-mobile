@@ -14,50 +14,49 @@ type Props = {
     customAttributes?: DisplayCustomAttribute[];
 }
 
+const renderAttribute: ListRenderItem<DisplayCustomAttribute> = ({item}) => (
+    <UserProfileLabel
+        title={item.name}
+        description={item.value}
+        testID={`custom_attribute.${item.id}`}
+    />
+);
+
 const CustomAttributes = ({nickname, position, localTime, customAttributes}: Props) => {
     const {formatMessage} = useIntl();
 
     // Combine standard and custom attributes
-    const attributes = [
-        ...(nickname ? [{
+    const mergeAttributes = [
+        (nickname ? {
             id: 'nickname',
             name: formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'}),
             value: nickname,
-        }] : []),
-        ...(position ? [{
+        } : {}),
+        (position ? {
             id: 'position',
             name: formatMessage({id: 'channel_info.position', defaultMessage: 'Position'}),
             value: position,
-        }] : []),
-        ...(localTime ? [{
+        } : {}),
+        (localTime ? {
             id: 'local_time',
             name: formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'}),
             value: localTime,
-        }] : []),
+        } : {}),
 
-        // Only show custom attributes if the feature flag is enabled
         ...(customAttributes ?? []),
     ];
-    const renderAttribute: ListRenderItem<DisplayCustomAttribute> = ({item}) => (
-        <UserProfileLabel
-            title={item.name}
-            description={item.value}
-            testID={`custom_attribute.${item.id}`}
-        />
-    );
+
+    // remove any empty objects
+    const attributes = mergeAttributes.filter((v) => Object.entries(v).length !== 0);
 
     return (
         <View style={styles.container}>
             <FlatList
                 data={attributes}
                 renderItem={renderAttribute}
-                keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={true}
                 scrollEnabled={true}
                 removeClippedSubviews={true}
-                maxToRenderPerBatch={10}
-                initialNumToRender={10}
-                windowSize={5}
             />
         </View>
     );

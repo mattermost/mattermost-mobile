@@ -197,17 +197,15 @@ const UserProfile = ({
                     />
                 }
                 {!manageMode && (
-                    <>
-                        <UserInfo
-                            localTime={localTime}
-                            showCustomStatus={showCustomStatus}
-                            showNickname={showNickname}
-                            showPosition={showPosition}
-                            showLocalTime={showLocalTime}
-                            user={user}
-                            enableCustomAttributes={enableCustomAttributes}
-                        />
-                    </>
+                    <UserInfo
+                        localTime={localTime}
+                        showCustomStatus={showCustomStatus}
+                        showNickname={showNickname}
+                        showPosition={showPosition}
+                        showLocalTime={showLocalTime}
+                        user={user}
+                        enableCustomAttributes={enableCustomAttributes}
+                    />
                 )}
                 {manageMode && channelId && (canManageAndRemoveMembers || canChangeMemberRoles) &&
                     <ManageUserOptions
