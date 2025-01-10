@@ -115,7 +115,7 @@ describe('sanitizeUrl', () => {
     });
 
     test('should return sanitized URL using https', () => {
-        const url = 'https://example.com/';
+        const url = 'http://example.com/';
         const result = sanitizeUrl(url, false);
         expect(result).toBe('https://example.com');
     });
