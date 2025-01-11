@@ -7,7 +7,7 @@ index 4a1234f..f3e2308 100644
  
  @interface RNKeychainManager : NSObject <RCTBridgeModule>
 -
-+-(OSStatus)deleteCredentialsForServer:(NSString *)server;
++-(OSStatus)deleteCredentialsForServer:(NSString *)server withOptions:(NSDictionary * __nullable)options;
 +-(NSArray<NSString*>*)getAllServersForInternetPasswords;
  @end
 diff --git a/node_modules/react-native-keychain/ios/RNKeychainManager/RNKeychainManager.m b/node_modules/react-native-keychain/ios/RNKeychainManager/RNKeychainManager.m
