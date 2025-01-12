@@ -7,9 +7,9 @@ import {Text, TouchableHighlight, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
-import Markdown from '@app/components/markdown';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
+import Markdown from '@components/markdown';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
