@@ -18,6 +18,15 @@ export function isValidUrl(url = '') {
     return regex.test(url);
 }
 
+export function isParsableUrl(url: string): boolean {
+    try {
+        const parsedUrl = new URL(url);
+        return Boolean(parsedUrl);
+    } catch {
+        return false;
+    }
+}
+
 export function sanitizeUrl(url: string, useHttp = false) {
     let preUrl = urlParse(url, true);
     let protocol = useHttp ? 'http:' : preUrl.protocol;
