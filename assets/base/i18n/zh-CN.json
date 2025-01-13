@@ -1162,8 +1162,6 @@
   "unreads.empty.paragraph": "关闭未读状态过滤 显示您全部的频道。",
   "unreads.empty.show_all": "显示全部",
   "unreads.empty.title": "无更多的未读",
-  "unsupported_server.message": "您的服务器 {serverDisplayName}正在使用不支持的服务器版本。用户会将会遇到崩溃或者核心功能缺陷等兼容性问题。请联系您的系统管理升级您的Mattermost服务。",
-  "unsupported_server.title": "不支持的服务器版本",
   "user.edit_profile.email.auth_service": "登录发生于{service}. 不能更新电子邮件。用来发送通知的电子邮件是{email}。",
   "user.edit_profile.email.web_client": "邮件必须使用网页或桌面应用更新。",
   "user.edit_profile.profile_photo.change_photo": "更改简介照片",

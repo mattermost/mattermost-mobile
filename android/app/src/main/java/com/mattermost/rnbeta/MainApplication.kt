@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
-import android.util.Log
 import com.facebook.react.PackageList
 import com.facebook.react.ReactHost
 import com.facebook.react.ReactInstanceManager
@@ -20,6 +19,8 @@ import com.facebook.react.modules.network.OkHttpClientProvider
 import com.facebook.soloader.SoLoader
 import com.mattermost.networkclient.RCTOkHttpClientFactory
 import com.mattermost.rnshare.helpers.RealPathUtil
+import com.mattermost.turbolog.TurboLog
+import com.mattermost.turbolog.ConfigureOptions
 import com.nozbe.watermelondb.jsi.JSIInstaller
 import com.reactnativenavigation.NavigationApplication
 import com.wix.reactnativenotifications.RNNotificationsPackage
@@ -63,7 +64,9 @@ class MainApplication : NavigationApplication(), INotificationsApplication {
         // Delete any previous temp files created by the app
         val tempFolder = File(applicationContext.cacheDir, RealPathUtil.CACHE_DIR_NAME)
         RealPathUtil.deleteTempFiles(tempFolder)
-        Log.i("ReactNative", "Cleaning temp cache " + tempFolder.absolutePath)
+        TurboLog.configure(options = ConfigureOptions(logsDirectory = applicationContext.cacheDir.absolutePath + "/logs", logPrefix = applicationContext.packageName))
+
+        TurboLog.i("ReactNative", "Cleaning temp cache " + tempFolder.absolutePath)
 
         // Tells React Native to use our RCTOkHttpClientFactory which builds an OKHttpClient
         // with a cookie jar defined in APIClientModule and an interceptor to intercept all

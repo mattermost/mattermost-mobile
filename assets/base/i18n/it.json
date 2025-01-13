@@ -1004,8 +1004,6 @@
   "unreads.empty.paragraph": "Disattivare il filtro dei non letti per visualizzare tutti i canali.",
   "unreads.empty.show_all": "Mostra tutti",
   "unreads.empty.title": "Non più non letti",
-  "unsupported_server.message": "Your server, {serverDisplayName}, is running an unsupported server version. You may experience compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Please contact your System Administrator to upgrade your Mattermost server.",
-  "unsupported_server.title": "Versione del server non supportata",
   "user.edit_profile.email.auth_service": "L'accesso avviene tramite {service}. L'e-mail non può essere aggiornata. L'indirizzo e-mail utilizzato per le notifiche è {email}.",
   "user.edit_profile.email.web_client": "L'e-mail deve essere aggiornata utilizzando un client web o un'applicazione desktop.",
   "user.edit_profile.profile_photo.change_photo": "Cambiare la foto del profilo",

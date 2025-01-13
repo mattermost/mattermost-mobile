@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -18,6 +17,7 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 
 import com.mattermost.helpers.*;
+import com.mattermost.turbolog.TurboLog;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
 
@@ -82,22 +82,22 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
             public void resolve(@Nullable Object value) {
                 if (value != null) {
                     onReplySuccess(notificationId, message);
-                    Log.i("ReactNative", "Reply SUCCESS");
+                    TurboLog.Companion.i("ReactNative", "Reply SUCCESS");
                 } else {
-                    Log.i("ReactNative", "Reply FAILED resolved without value");
+                    TurboLog.Companion.i("ReactNative", "Reply FAILED resolved without value");
                     onReplyFailed(notificationId);
                 }
             }
 
             @Override
             public void reject(Throwable reason) {
-                Log.i("ReactNative", String.format("Reply FAILED exception %s", reason.getMessage()));
+                TurboLog.Companion.i("ReactNative", String.format("Reply FAILED exception %s", reason.getMessage()));
                 onReplyFailed(notificationId);
             }
 
             @Override
             public void reject(String code, String message) {
-                Log.i("ReactNative",
+                TurboLog.Companion.i("ReactNative",
                         String.format("Reply FAILED status %s BODY %s", code, message)
                 );
                 onReplyFailed(notificationId);
