@@ -78,6 +78,23 @@ describe('Header', () => {
         expect(onTabSelect).toHaveBeenCalledWith(TabTypes.FILES);
     });
 
+    it('should not render TeamPicker when there is only one team', () => {
+        const {queryByText} = renderWithIntlAndTheme(
+            <Header
+                teamId='team1'
+                setTeamId={setTeamId}
+                onTabSelect={onTabSelect}
+                onFilterChanged={onFilterChanged}
+                selectedTab={TabTypes.MESSAGES}
+                selectedFilter={FileFilters.ALL}
+                teams={[teams[0]]}
+                crossTeamSearchEnabled={false}
+            />,
+        );
+
+        expect(queryByText('Team 1')).toBeFalsy();
+    });
+
     it('should render TeamPicker when there are multiple teams', () => {
         const {getByText} = renderWithIntlAndTheme(
             <Header
