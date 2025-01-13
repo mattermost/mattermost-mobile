@@ -3,7 +3,8 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, View, StyleSheet, type ListRenderItem} from 'react-native';
+import {View, StyleSheet, type ListRenderItem} from 'react-native';
+import {FlatList} from 'react-native-gesture-handler';
 
 import UserProfileLabel from './label';
 
