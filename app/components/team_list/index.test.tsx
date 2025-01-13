@@ -35,20 +35,27 @@ describe('TeamList', () => {
         expect(onPress).toHaveBeenCalledWith('team1');
     });
 
-    it('should render loading component when loading is true', () => {
-        const {getByTestId} = renderWithEverything(
+    it.each([
+        {loading: true, shouldShow: true, label: 'should render loading component when loading is true'},
+        {loading: false, shouldShow: false, label: 'should not render loading component when loading is false'},
+    ])('$label', ({loading, shouldShow}) => {
+        const {queryByTestId} = renderWithEverything(
             <TeamList
                 teams={teams}
                 onPress={jest.fn()}
-                loading={true}
+                loading={loading}
             />,
             {database},
         );
-        expect(getByTestId('team_list.loading')).toBeTruthy();
+        if (shouldShow) {
+            expect(queryByTestId('team_list.loading')).toBeTruthy();
+        } else {
+            expect(queryByTestId('team_list.loading')).toBeNull();
+        }
     });
 
     it('should render separator after the first item when separatorAfterFirstItem is true', () => {
-        const {getByTestId} = renderWithEverything(
+        const {getByTestId, toJSON: componentToJSON} = renderWithEverything(
             <TeamList
                 teams={teams}
                 onPress={jest.fn()}
@@ -57,5 +64,8 @@ describe('TeamList', () => {
             {database},
         );
         expect(getByTestId('team_list.separator')).toBeTruthy();
+
+        // Snapshot to ensure things are in the correct order (separator after first item)
+        expect(componentToJSON()).toMatchSnapshot();
     });
 });
