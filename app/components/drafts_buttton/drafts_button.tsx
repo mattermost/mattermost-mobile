@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {DeviceEventEmitter, Text, TouchableOpacity, View} from 'react-native';
 
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import {
@@ -11,6 +11,8 @@ import {
 } from '@components/channel_item/channel_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {Events} from '@constants';
+import {DRAFT} from '@constants/screens';
 import {HOME_PADDING} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -19,7 +21,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type DraftListProps = {
-    currentChannelId: string;
     shouldHighlightActive?: boolean;
     draftsCount: number;
 };
@@ -56,7 +57,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const DraftsButton: React.FC<DraftListProps> = ({
-    currentChannelId,
     shouldHighlightActive = false,
     draftsCount,
 }) => {
@@ -66,10 +66,11 @@ const DraftsButton: React.FC<DraftListProps> = ({
     const isTablet = useIsTablet();
 
     const handlePress = useCallback(preventDoubleTap(() => {
+        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
         switchToGlobalDrafts();
     }), []);
 
-    const isActive = isTablet && shouldHighlightActive && !currentChannelId;
+    const isActive = isTablet && shouldHighlightActive;
 
     const [containerStyle, iconStyle, textStyle] = useMemo(() => {
         const container = [

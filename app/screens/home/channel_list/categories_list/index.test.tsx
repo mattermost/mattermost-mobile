@@ -36,7 +36,6 @@ describe('components/categories_list', () => {
                 moreThanOneTeam={false}
                 hasChannels={true}
                 draftsCount={0}
-                currentChannelId=''
             />,
             {database},
         );
@@ -51,7 +50,6 @@ describe('components/categories_list', () => {
                 moreThanOneTeam={false}
                 hasChannels={true}
                 draftsCount={0}
-                currentChannelId=''
             />,
             {database},
         );
@@ -69,7 +67,6 @@ describe('components/categories_list', () => {
                 moreThanOneTeam={false}
                 hasChannels={true}
                 draftsCount={1}
-                currentChannelId=''
             />,
             {database},
         );
@@ -88,7 +85,6 @@ describe('components/categories_list', () => {
                 moreThanOneTeam={false}
                 hasChannels={true}
                 draftsCount={0}
-                currentChannelId=''
             />,
             {database},
         );
@@ -112,7 +108,6 @@ describe('components/categories_list', () => {
                 moreThanOneTeam={true}
                 hasChannels={false}
                 draftsCount={0}
-                currentChannelId=''
             />,
             {database},
         );
