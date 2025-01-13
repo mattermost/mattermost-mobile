@@ -16,7 +16,6 @@ describe('Drafts Button', () => {
     it('should render the drafts button component', () => {
         const wrapper = renderWithIntl(
             <DraftsButton
-                currentChannelId='channel_id'
                 draftsCount={1}
             />,
         );
@@ -29,7 +28,6 @@ describe('Drafts Button', () => {
     it('should render the drafts button component with drafts count', () => {
         const wrapper = renderWithIntl(
             <DraftsButton
-                currentChannelId='channel_id'
                 draftsCount={23}
             />,
         );
@@ -43,7 +41,6 @@ describe('Drafts Button', () => {
     it('calls switchToGlobalDrafts when pressed', () => {
         const wrapper = renderWithIntl(
             <DraftsButton
-                currentChannelId='channel-1'
                 draftsCount={5}
             />,
         );
