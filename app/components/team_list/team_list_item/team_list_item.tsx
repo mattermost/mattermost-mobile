@@ -59,6 +59,8 @@ export default function TeamListItem({team, textColor, iconTextColor, iconBackgr
     const lastTeamIconUpdateAt = 'lastTeamIconUpdatedAt' in team ? team.lastTeamIconUpdatedAt : team.last_team_icon_update;
     const teamListItemTestId = `team_sidebar.team_list.team_list_item.${team.id}`;
 
+    const showIcon = !hideIcon;
+
     const handlePress = useCallback(() => {
         onPress(team.id);
     }, [team.id, onPress]);
@@ -69,7 +71,7 @@ export default function TeamListItem({team, textColor, iconTextColor, iconBackgr
             type='opacity'
             style={styles.touchable}
         >
-            {!hideIcon &&
+            {showIcon &&
                 <View style={styles.icon_container}>
                     <TeamIcon
                         id={team.id}
