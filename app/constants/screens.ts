@@ -21,6 +21,7 @@ export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
 export const CREATE_TEAM = 'CreateTeam';
 export const CUSTOM_STATUS = 'CustomStatus';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
+export const DRAFT = 'Draft';
 export const DRAFT_OPTIONS = 'DraftOptions';
 export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';

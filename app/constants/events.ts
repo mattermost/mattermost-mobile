@@ -32,4 +32,5 @@ export default keyMirror({
     CRT_TOGGLED: null,
     JOIN_CALL_BAR_VISIBLE: null,
     DRAFT_SWIPEABLE: null,
+    ACTIVE_SCREEN: null,
 });

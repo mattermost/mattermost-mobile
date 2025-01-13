@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {switchMap} from 'rxjs/operators';
 
 import {observeDraftCount} from '@queries/servers/drafts';
-import {observeCurrentChannelId, observeCurrentTeamId} from '@queries/servers/system';
+import {observeCurrentTeamId} from '@queries/servers/system';
 
 import CategoriesList from './categories_list';
 
@@ -15,7 +15,6 @@ const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
     const draftsCount = currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))); // Observe draft count
     return {
-        currentChannelId: observeCurrentChannelId(database),
         draftsCount,
     };
 });
