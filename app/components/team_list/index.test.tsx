@@ -55,7 +55,7 @@ describe('TeamList', () => {
     });
 
     it('should render separator after the first item when separatorAfterFirstItem is true', () => {
-        const {getByTestId, toJSON: componentToJSON} = renderWithEverything(
+        const {queryByTestId, getByTestId} = renderWithEverything(
             <TeamList
                 teams={teams}
                 onPress={jest.fn()}
@@ -63,9 +63,7 @@ describe('TeamList', () => {
             />,
             {database},
         );
-        expect(getByTestId('team_list.separator')).toBeTruthy();
-
-        // Snapshot to ensure things are in the correct order (separator after first item)
-        expect(componentToJSON()).toMatchSnapshot();
+        expect(getByTestId('team_list.separator-0')).toBeTruthy();
+        expect(queryByTestId('team_list.separator-1')).toBeNull();
     });
 });
