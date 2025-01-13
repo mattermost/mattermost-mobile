@@ -81,7 +81,7 @@ export default function TeamList({
                 {teamListItem}
                 <View
                     style={styles.separator}
-                    testID='team_list.separator'
+                    testID={`team_list.separator-${i}`}
                 />
             </>);
         }
