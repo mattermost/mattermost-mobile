@@ -112,20 +112,27 @@ describe('Header', () => {
         expect(getByText('Team 1')).toBeTruthy();
     });
 
-    it('should render the file type filter when the Files tab is selected', () => {
-        const {getByTestId} = renderWithIntlAndTheme(
+    it.each([
+        {selectedTab: TabTypes.FILES, shouldShowIcon: true, label: 'should render the file type filter when the Files tab is selected'},
+        {selectedTab: TabTypes.MESSAGES, shouldShowIcon: false, label: 'should not render the file type filter when the Messages tab is selected'},
+    ])('$label', ({selectedTab, shouldShowIcon}) => {
+        const {queryByTestId} = renderWithIntlAndTheme(
             <Header
                 teamId='team1'
                 setTeamId={setTeamId}
                 onTabSelect={onTabSelect}
                 onFilterChanged={onFilterChanged}
-                selectedTab={TabTypes.FILES}
+                selectedTab={selectedTab}
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
                 crossTeamSearchEnabled={false}
             />,
         );
 
-        expect(getByTestId('search.filters.file_type_icon')).toBeTruthy();
+        if (shouldShowIcon) {
+            expect(queryByTestId('search.filters.file_type_icon')).toBeTruthy();
+        } else {
+            expect(queryByTestId('search.filters.file_type_icon')).toBeFalsy();
+        }
     });
 });
