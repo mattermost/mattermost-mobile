@@ -4,9 +4,11 @@
 export const MULTI_SERVER = 'multiServerTutorial';
 export const PROFILE_LONG_PRESS = 'profileLongPressTutorial';
 export const EMOJI_SKIN_SELECTOR = 'emojiSkinSelectorTutorial';
+export const DRAFTS = 'draftsTutorial';
 
 export default {
     MULTI_SERVER,
     PROFILE_LONG_PRESS,
     EMOJI_SKIN_SELECTOR,
+    DRAFTS,
 };
