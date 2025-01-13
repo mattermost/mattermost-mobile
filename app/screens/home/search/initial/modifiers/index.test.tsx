@@ -24,13 +24,13 @@ describe('Modifiers', () => {
     const setTeamId = jest.fn();
     const teams = [{id: 'team1', displayName: 'Team 1'}, {id: 'team2', displayName: 'Team 2'}] as TeamModel[];
 
-    const renderComponent = (teamId = ALL_TEAMS_ID) => {
+    const renderComponent = (teamId = ALL_TEAMS_ID, teamList?: TeamModel[]) => {
         return renderWithIntlAndTheme(
             <Modifiers
                 setSearchValue={setSearchValue}
                 setTeamId={setTeamId}
                 teamId={teamId}
-                teams={teams}
+                teams={teamList || teams}
                 scrollEnabled={scrollEnabled}
                 searchRef={searchRef}
                 crossTeamSearchEnabled={true}
@@ -46,6 +46,11 @@ describe('Modifiers', () => {
     it('should render TeamPicker when there are multiple teams', () => {
         renderComponent();
         expect(TeamPicker).toHaveBeenCalled();
+    });
+
+    it('should not render TeamPicker when there is only one team', () => {
+        renderComponent(ALL_TEAMS_ID, [teams[0]]);
+        expect(TeamPicker).not.toHaveBeenCalled();
     });
 
     it('should render the From: and In: modifiers when a team is selected', () => {
