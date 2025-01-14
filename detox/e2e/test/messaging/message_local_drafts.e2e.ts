@@ -50,7 +50,7 @@ describe('Messaging - Message Draft', () => {
         await HomeScreen.logout();
     });
 
-    it('should be able to send the draft message from Draft screen', async () => {
+    it('MM-T5637 should be able to send the draft message from Draft screen', async () => {
         // # Open a channel screen and create a message draft
         const message = `Message ${getRandomId()}`;
         await openChannel(channelsCategory, testChannel);
@@ -63,7 +63,7 @@ describe('Messaging - Message Draft', () => {
         await DraftScreen.backButton.tap();
     });
 
-    it('should be able to swipe left and delete a draft message', async () => {
+    it('MM-T5638 should be able to swipe left and delete a draft message', async () => {
         // # Open a channel screen and create a message draft
         const message = `Message ${getRandomId()}`;
         await openChannel(channelsCategory, testChannel);
@@ -75,7 +75,7 @@ describe('Messaging - Message Draft', () => {
         await DraftScreen.backButton.tap();
     });
 
-    it('should be able to delete a draft message from long press Draft actions', async () => {
+    it('MM-T5638 should be able to delete a draft message from long press Draft actions', async () => {
         // # Open a channel screen and create a message draft
         const message = `Message ${getRandomId()}`;
         await openChannel(channelsCategory, testChannel);
@@ -87,7 +87,7 @@ describe('Messaging - Message Draft', () => {
         await DraftScreen.backButton.tap();
     });
 
-    it('should be able to Edit a draft message', async () => {
+    it('MM-T5636 should be able to Edit a draft message', async () => {
         // # Open a channel screen and create a message draft
         const FirstMessage = `Message ${getRandomId()}`;
         const SecondMessage = `Message ${getRandomId()}`;
@@ -109,7 +109,7 @@ describe('Messaging - Message Draft', () => {
         await DraftScreen.backButton.tap();
     });
 
-    it('should be able to verify drafts tab shows message priority "Important" and request acknowledgement', async () => {
+    it('MM-T5668 should be able to verify drafts tab shows message priority "Important" and request acknowledgement', async () => {
         // # Open a channel screen and create a message draft
         const message = `Message ${getRandomId()}`;
 
@@ -127,7 +127,7 @@ describe('Messaging - Message Draft', () => {
         await DraftScreen.backButton.tap();
     });
 
-    it('should be able to verify drafts tab shows message priority "Urgent" and persistent notification', async () => {
+    it('MM-T5668 should be able to verify drafts tab shows message priority "Urgent" and persistent notification', async () => {
         // # Open a channel screen and create a message draft
         const message = `Message ${getRandomId()}`;
 
