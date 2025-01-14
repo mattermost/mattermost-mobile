@@ -669,7 +669,7 @@ const handleEndCall = async (serverUrl: string, channelId: string, currentUserId
 export const hostMake = async (serverUrl: string, callId: string, newHostId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostMake(callId, newHostId);
+        return await client.hostMake(callId, newHostId);
     } catch (error) {
         logDebug('error on hostMake', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
@@ -680,7 +680,7 @@ export const hostMake = async (serverUrl: string, callId: string, newHostId: str
 export const hostMuteSession = async (serverUrl: string, callId: string, sessionId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostMute(callId, sessionId);
+        return await client.hostMute(callId, sessionId);
     } catch (error) {
         logDebug('error on hostMute', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
@@ -691,7 +691,7 @@ export const hostMuteSession = async (serverUrl: string, callId: string, session
 export const hostMuteOthers = async (serverUrl: string, callId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostMuteOthers(callId);
+        return await client.hostMuteOthers(callId);
     } catch (error) {
         logDebug('error on hostMuteOthers', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
@@ -702,7 +702,7 @@ export const hostMuteOthers = async (serverUrl: string, callId: string) => {
 export const hostStopScreenshare = async (serverUrl: string, callId: string, sessionId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostScreenOff(callId, sessionId);
+        return await client.hostScreenOff(callId, sessionId);
     } catch (error) {
         logDebug('error on hostStopScreenshare', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
@@ -713,7 +713,7 @@ export const hostStopScreenshare = async (serverUrl: string, callId: string, ses
 export const hostLowerHand = async (serverUrl: string, callId: string, sessionId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostLowerHand(callId, sessionId);
+        return await client.hostLowerHand(callId, sessionId);
     } catch (error) {
         logDebug('error on hostLowerHand', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
@@ -724,7 +724,7 @@ export const hostLowerHand = async (serverUrl: string, callId: string, sessionId
 export const hostRemove = async (serverUrl: string, callId: string, sessionId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostRemove(callId, sessionId);
+        return await client.hostRemove(callId, sessionId);
     } catch (error) {
         logDebug('error on hostRemove', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
