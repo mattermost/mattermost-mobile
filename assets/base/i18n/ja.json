@@ -1162,8 +1162,6 @@
   "unreads.empty.paragraph": "未読フィルタをオフにするとすべてのチャンネルが表示されます。",
   "unreads.empty.show_all": "すべてを表示",
   "unreads.empty.title": "未読をなくす",
-  "unsupported_server.message": "サーバー {serverDisplayName} のバージョンは既にサポートされておらず、ユーザーはアプリのクラッシュやアプリのコア機能を破壊する深刻な互換性の問題に直面する可能性があります。Mattermostサーバーをアップグレードするようシステム管理者に連絡してください。",
-  "unsupported_server.title": "サポートされていないサーバーバージョン",
   "user.edit_profile.email.auth_service": "{service} からログインしました。電子メールは更新できません。通知に使われる電子メールアドレスは {email} です。",
   "user.edit_profile.email.web_client": "電子メールアドレスはWebクライアント化デスクトップアプリから更新してください。",
   "user.edit_profile.profile_photo.change_photo": "プロフィール写真を変更する",

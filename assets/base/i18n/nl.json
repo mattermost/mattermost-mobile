@@ -1162,8 +1162,6 @@
   "unreads.empty.paragraph": "Schakel de ongelezen filter uit om al je kanalen te tonen.",
   "unreads.empty.show_all": "Alles tonen",
   "unreads.empty.title": "Geen verdere ongelezen berichten",
-  "unsupported_server.message": "Jouw server, {serverDisplayName}, draait een niet-ondersteunde serverversie. Je kan compatibiliteitsproblemen ervaren die crashes of ernstige bugs veroorzaken die de kernfunctionaliteit van de app aantasten. Neem contact op met jouw systeembeheerder om jouw Mattermost server te upgraden.",
-  "unsupported_server.title": "Niet-ondersteunde serverversie",
   "user.edit_profile.email.auth_service": "Inloggen gebeurt via {service}. E-mail kan niet worden bijgewerkt. Het voor meldingen gebruikte e-mailadres is {email}.",
   "user.edit_profile.email.web_client": "E-mail moet worden bijgewerkt met behulp van een webclient of desktoptoepassing.",
   "user.edit_profile.profile_photo.change_photo": "Profielfoto wijzigen",

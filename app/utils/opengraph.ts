@@ -188,3 +188,8 @@ export const fetchOpenGraph = async (url: string, includeFavIcon = false): Promi
         };
     }
 };
+
+export const testExports = {
+    fetchRaw,
+    getFavIcon,
+};
