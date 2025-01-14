@@ -61,7 +61,7 @@ const ClientCalls = (superclass: any) => class extends superclass {
 
     getVersion = async (groupLabel?: string) => {
         try {
-            return this.doFetch(
+            return await this.doFetch(
                 `${this.getCallsRoute()}/version`,
                 {method: 'get', groupLabel},
             );
