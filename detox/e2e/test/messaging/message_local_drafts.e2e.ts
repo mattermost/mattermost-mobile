@@ -45,11 +45,6 @@ describe('Messaging - Message Draft', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    afterEach(async () => {
-        // * Verify on channel list screen
-        await DraftScreen.backButton.tap();
-    });
-
     afterAll(async () => {
         // # Log out
         await HomeScreen.logout();
@@ -65,6 +60,7 @@ describe('Messaging - Message Draft', () => {
         await DraftScreen.draftTooltipCloseButton.tap();
         await DraftScreen.openDraftPostActions();
         await DraftScreen.sendDraft();
+        await DraftScreen.backButton.tap();
     });
 
     it('should be able to swipe left and delete a draft message', async () => {
@@ -76,6 +72,7 @@ describe('Messaging - Message Draft', () => {
         await ChannelListScreen.draftsButton.tap();
         await DraftScreen.swipeDraftPostLeft();
         await DraftScreen.deleteDraftPostFromSwipeActions();
+        await DraftScreen.backButton.tap();
     });
 
     it('should be able to delete a draft message from long press Draft actions', async () => {
@@ -87,6 +84,7 @@ describe('Messaging - Message Draft', () => {
         await ChannelListScreen.draftsButton.tap();
         await DraftScreen.openDraftPostActions();
         await DraftScreen.deleteDraftPostFromDraftActions();
+        await DraftScreen.backButton.tap();
     });
 
     it('should be able to Edit a draft message', async () => {
@@ -107,8 +105,8 @@ describe('Messaging - Message Draft', () => {
 
         // # Verify the draft message is updated
         await expect(element(by.text(SecondMessage))).toBeVisible();
-        await DraftScreen.openDraftPostActions();
-        await DraftScreen.deleteDraftPostFromDraftActions();
+        await cleanupDrafts();
+        await DraftScreen.backButton.tap();
     });
 
     it('should be able to verify drafts tab shows message priority "Important" and request acknowledgement', async () => {
@@ -118,13 +116,15 @@ describe('Messaging - Message Draft', () => {
         await openChannel(channelsCategory, testChannel);
         await createDraft(message, testChannel);
 
-        await element(by.id('channel.post_draft.quick_actions.post_priority_action')).tap();
-        await element(by.id('post_priority_picker_item.important')).tap();
-        await element(by.id('post_priority_picker_item.requested_ack.toggled.false.requested_ack')).tap();
-        await element(by.text('Apply')).tap();
+        await ChannelScreen.openPostPriorityPicker();
+        await ChannelScreen.clickPostPriorityImportantMessage();
+        await ChannelScreen.toggleRequestAckPostpriority();
+        await ChannelScreen.applyPostPrioritySettings();
         await verifyDraftonChannelList('1');
         await ChannelListScreen.draftsButton.tap();
-        await expect(element(by.id('drafts.requested_ack.icon'))).toBeVisible();
+        await expect(DraftScreen.requestACKIcon).toBeVisible();
+        await cleanupDrafts();
+        await DraftScreen.backButton.tap();
     });
 
     it('should be able to verify drafts tab shows message priority "Urgent" and persistent notification', async () => {
@@ -134,13 +134,14 @@ describe('Messaging - Message Draft', () => {
         await openChannel(channelsCategory, testChannel);
         await createDraft(message, testChannel);
 
-        await element(by.id('channel.post_draft.quick_actions.post_priority_action')).tap();
-        await element(by.id('post_priority_picker_item.urgent')).tap();
-        await element(by.id('post_priority_picker_item.persistent_notifications.toggled.undefined.persistent_notifications')).tap();
-        await element(by.text('Apply')).tap();
+        await ChannelScreen.openPostPriorityPicker();
+        await ChannelScreen.clickPostPriorityUrgentMessage();
+        await ChannelScreen.togglePersistentNotificationPostpriority();
+        await ChannelScreen.applyPostPrioritySettings();
         await verifyDraftonChannelList('1');
         await ChannelListScreen.draftsButton.tap();
-        await expect(element(by.id('drafts.persistent_notifications.icon'))).toBeVisible();
+        await expect(DraftScreen.persistentNotificationIcon).toBeVisible();
+        await DraftScreen.backButton.tap();
     });
 });
 
@@ -168,4 +169,10 @@ async function verifyDraftonChannelList(draftCount: string) {
     await ChannelScreen.back();
     await ChannelListScreen.draftsButton.toBeVisible();
     await expect(element(by.id(ChannelListScreen.testID.draftCountListScreen))).toHaveText(draftCount);
+}
+
+async function cleanupDrafts() {
+    // # Clean up drafts
+    await DraftScreen.openDraftPostActions();
+    await DraftScreen.deleteDraftPostFromDraftActions();
 }

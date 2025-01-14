@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// import {SettingsScreen} from '@support/ui/screen';
-// import {expect} from 'detox';
-
 import {Alert, NavigationHeader} from '@support/ui/component';
 import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
@@ -18,8 +15,12 @@ class DraftScreen {
         draftPost: 'draft_post',
         draftSendButton: 'send_draft_button',
         draftEmptyTitle: 'drafts.empty.title',
+        requestACKIcon: 'drafts.requested_ack.icon',
+        persistentNotificationIcon: 'drafts.persistent_notifications.icon',
     };
 
+    persistentNotificationIcon = element(by.id(this.testID.persistentNotificationIcon));
+    requestACKIcon = element(by.id(this.testID.requestACKIcon));
     editDraft = element(by.id(this.testID.editDraft));
     backButton = NavigationHeader.backButton;
     draftScreen = element(by.id(this.testID.draftScreen));
@@ -44,17 +45,19 @@ class DraftScreen {
         await this.draftPost.swipe('left');
     };
 
-    deleteDraftPostFromSwipeActions = async () => {
-        await expect(this.deleteDraftSwipeAction).toBeVisible();
-        await this.deleteDraftSwipeAction.tap();
+    deleteDraftPost = async (deleteAction: any) => {
+        await expect(deleteAction).toBeVisible();
+        await deleteAction.tap();
         await waitFor(Alert.deleteButton).toExist().withTimeout(timeouts.TEN_SEC);
         await Alert.deleteButton.tap();
     };
 
+    deleteDraftPostFromSwipeActions = async () => {
+        await this.deleteDraftPost(this.deleteDraftSwipeAction);
+    };
+
     deleteDraftPostFromDraftActions = async () => {
-        await this.deleteDraft.tap();
-        await waitFor(Alert.deleteButton).toExist().withTimeout(timeouts.TEN_SEC);
-        await Alert.deleteButton.tap();
+        await this.deleteDraftPost(this.deleteDraft);
     };
 
     sendDraft = async () => {
