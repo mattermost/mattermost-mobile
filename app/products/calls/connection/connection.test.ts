@@ -15,7 +15,16 @@ jest.mock('@mattermost/calls/lib');
 describe('newConnection', () => {
     const mockClient = {
         getWebSocketUrl: jest.fn(() => 'ws://localhost:8065'),
-        getCallsConfig: jest.fn(() => ({})),
+        getCallsConfig: jest.fn(() => ({
+            ICEServers: ['stun:stun.example.com'],
+            ICEServersConfigs: [{urls: ['stun:stun.example.com']}],
+            AllowEnableCalls: true,
+        })),
+        genTURNCredentials: jest.fn(() => Promise.resolve([{
+            urls: ['turn:turn.example.com'],
+            username: 'user',
+            credential: 'pass',
+        }])),
     };
 
     const mockRTCStats = {
@@ -80,6 +89,53 @@ describe('newConnection', () => {
         delete global.navigator;
 
         jest.resetAllMocks();
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should initialize connection with ICE servers', async () => {
+        const connection = await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            false,
+        );
+        expect(connection).toBeDefined();
+        expect(mockClient.getCallsConfig).toHaveBeenCalled();
+        expect(mockClient.genTURNCredentials).toHaveBeenCalled();
+    });
+
+    it('should handle mute/unmute correctly', async () => {
+        const connection = await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            true,
+        );
+
+        expect(connection.mute).toBeDefined();
+        expect(connection.unmute).toBeDefined();
+
+        connection.mute();
+        connection.unmute();
+    });
+
+    it('should handle disconnect', async () => {
+        const mockCloseCb = jest.fn();
+        const connection = await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            mockCloseCb,
+            () => {},
+            false,
+        );
+
+        connection.disconnect();
+        expect(mockCloseCb).toHaveBeenCalled();
     });
 
     it('collectICEStats', (done) => {
