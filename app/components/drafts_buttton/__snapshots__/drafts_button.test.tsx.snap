@@ -56,7 +56,7 @@ exports[`Drafts Button calls switchToGlobalDrafts when pressed 1`] = `
     }
   >
     <Icon
-      name="pencil-outline"
+      name="send-outline"
       style={
         [
           {
@@ -182,7 +182,7 @@ exports[`Drafts Button should render the drafts button component 1`] = `
     }
   >
     <Icon
-      name="pencil-outline"
+      name="send-outline"
       style={
         [
           {
@@ -308,7 +308,7 @@ exports[`Drafts Button should render the drafts button component with drafts cou
     }
   >
     <Icon
-      name="pencil-outline"
+      name="send-outline"
       style={
         [
           {
