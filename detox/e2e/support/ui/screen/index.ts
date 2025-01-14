@@ -15,6 +15,7 @@ import CreateDirectMessageScreen from './create_direct_message';
 import CreateOrEditChannelScreen from './create_or_edit_channel';
 import CustomStatusScreen from './custom_status';
 import DisplaySettingsScreen from './display_settings';
+import DraftScreen from './draft_screen';
 import EditPostScreen from './edit_post';
 import EditProfileScreen from './edit_profile';
 import EditServerScreen from './edit_server';
@@ -93,4 +94,5 @@ export {
     ThreadOptionsScreen,
     TimezoneDisplaySettingsScreen,
     UserProfileScreen,
+    DraftScreen,
 };

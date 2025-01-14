@@ -95,7 +95,7 @@ const Draft: React.FC<Props> = ({
             <View
                 style={style.container}
             >
-                <DraftPostHeader // Header 'In <Channel>'
+                <DraftPostHeader
                     channel={channel}
                     draftReceiverUser={draftReceiverUser}
                     rootId={draft.rootId}
@@ -104,7 +104,7 @@ const Draft: React.FC<Props> = ({
                 />
                 {showPostPriority && draft.metadata?.priority &&
                 <View style={style.postPriority}>
-                    <Header // Header post 'Priority'
+                    <Header
                         noMentionsError={false}
                         postPriority={draft.metadata?.priority}
                     />
