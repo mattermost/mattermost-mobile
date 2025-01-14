@@ -1044,8 +1044,6 @@
   "unreads.empty.paragraph": "Tắt bộ lọc chưa đọc để hiển thị tất cả các kênh của bạn.",
   "unreads.empty.show_all": "Hiển thị tất cả",
   "unreads.empty.title": "Đã đọc hết",
-  "unsupported_server.message": "Máy chủ của bạn, {serverDisplayName}, đang chạy phiên bản máy chủ không được hỗ trợ. Bạn có thể gặp sự cố tương thích gây ra sự cố hoặc lỗi nghiêm trọng phá vỡ chức năng cốt lõi của ứng dụng. Vui lòng liên hệ với Quản trị viên Hệ thống của bạn để nâng cấp máy chủ Mattermost của bạn.",
-  "unsupported_server.title": "Phiên bản máy chủ không được hỗ trợ",
   "user.edit_profile.email.auth_service": "Đăng nhập xảy ra thông qua {service}. Không thể cập nhật email. Địa chỉ email được sử dụng để nhận thông báo là {email}.",
   "user.edit_profile.email.web_client": "Email phải được cập nhật bằng ứng dụng web hoặc ứng dụng dành cho máy tính để bàn.",
   "user.edit_profile.profile_photo.change_photo": "Thay đổi ảnh hồ sơ",

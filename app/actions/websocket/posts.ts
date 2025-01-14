@@ -335,7 +335,7 @@ export async function handlePostAcknowledgementAdded(serverUrl: string, msg: Web
         if (!database) {
             return;
         }
-        const currentUserId = getCurrentUserId(database);
+        const currentUserId = await getCurrentUserId(database);
         if (EphemeralStore.isAcknowledgingPost(post_id) && currentUserId === user_id) {
             return;
         }
@@ -355,7 +355,7 @@ export async function handlePostAcknowledgementRemoved(serverUrl: string, msg: W
         if (!database) {
             return;
         }
-        const currentUserId = getCurrentUserId(database);
+        const currentUserId = await getCurrentUserId(database);
         if (EphemeralStore.isUnacknowledgingPost(post_id) && currentUserId === user_id) {
             return;
         }

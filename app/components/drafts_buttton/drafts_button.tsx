@@ -104,7 +104,7 @@ const DraftsButton: React.FC<DraftListProps> = ({
         >
             <View style={containerStyle}>
                 <CompassIcon
-                    name='pencil-outline'
+                    name='send-outline'
                     style={iconStyle}
                 />
                 <FormattedText

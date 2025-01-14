@@ -9,6 +9,7 @@ type ClientOptions = {
     noRetry?: boolean;
     timeoutInterval?: number;
     headers?: Record<string, any>;
+    groupLabel?: string;
 };
 
 type ClientErrorIntl =

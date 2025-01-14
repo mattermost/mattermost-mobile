@@ -377,4 +377,8 @@ export default class WebSocketClient {
     public getConnectionId(): string {
         return this.connectionId;
     }
+
+    public getServerSequence(): number {
+        return this.serverSequence;
+    }
 }
