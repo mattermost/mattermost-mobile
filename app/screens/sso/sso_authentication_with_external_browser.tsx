@@ -22,7 +22,6 @@ interface SSOWithRedirectURLProps {
     doSSOLogin: (bearerToken: string, csrfToken: string) => void;
     loginError: string;
     loginUrl: string;
-    serverUrl: string;
     setLoginError: (value: string) => void;
     theme: Theme;
 }
@@ -58,7 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl, serverUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
+const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
     const [error, setError] = useState<string>('');
     const [loginSuccess, setLoginSuccess] = useState(false);
     const style = getStyleSheet(theme);

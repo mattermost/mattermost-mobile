@@ -19,7 +19,6 @@ interface SSOAuthenticationProps {
     doSSOLogin: (bearerToken: string, csrfToken: string) => void;
     loginError: string;
     loginUrl: string;
-    serverUrl: string;
     setLoginError: (value: string) => void;
     theme: Theme;
 }
@@ -31,7 +30,7 @@ const style = StyleSheet.create({
     },
 });
 
-const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, serverUrl, setLoginError, theme}: SSOAuthenticationProps) => {
+const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, setLoginError, theme}: SSOAuthenticationProps) => {
     const [error, setError] = useState<string>('');
     const [loginSuccess, setLoginSuccess] = useState(false);
     const intl = useIntl();
