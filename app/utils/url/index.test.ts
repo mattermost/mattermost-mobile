@@ -16,6 +16,7 @@ import {
     getUrlAfterRedirect,
     getYouTubeVideoId,
     isImageLink,
+    isParsableUrl,
     isValidUrl,
     isYoutubeLink,
     normalizeProtocol,
@@ -405,5 +406,41 @@ describe('extractFilenameFromUrl', () => {
         const url = 'https://example.com/path/to/';
         const result = extractFilenameFromUrl(url);
         expect(result).toBe('');
+    });
+});
+
+describe('isParsableUrl', () => {
+    it('should return true for valid URLs', () => {
+        expect(isParsableUrl('http://example.com')).toBe(true);
+        expect(isParsableUrl('https://example.com')).toBe(true);
+        expect(isParsableUrl('https://example.com/path')).toBe(true);
+        expect(isParsableUrl('https://example.com:8080/path?query=1')).toBe(true);
+        expect(isParsableUrl('https://sub.domain.example.com')).toBe(true);
+        expect(isParsableUrl('ftp://example.com')).toBe(true);
+    });
+
+    it('should return false for invalid URLs', () => {
+        expect(isParsableUrl('example')).toBe(false);
+        expect(isParsableUrl('example.com')).toBe(false); // Missing protocol
+        expect(isParsableUrl('://example.com')).toBe(false);
+        expect(isParsableUrl('http//example.com')).toBe(false);
+        expect(isParsableUrl('')).toBe(false);
+    });
+
+    it('should return false for non-URL strings', () => {
+        expect(isParsableUrl('plain text')).toBe(false);
+        expect(isParsableUrl('12345')).toBe(false);
+    });
+
+    it('should handle URLs with special characters correctly', () => {
+        expect(isParsableUrl('https://example.com/path?query=value&other=value')).toBe(true);
+        expect(isParsableUrl('https://example.com/path#hash')).toBe(true);
+        expect(isParsableUrl('https://example.com:3000/path?query=1')).toBe(true);
+    });
+
+    it('should handle edge cases gracefully', () => {
+        expect(isParsableUrl('   ')).toBe(false);
+        expect(isParsableUrl(null as unknown as string)).toBe(false);
+        expect(isParsableUrl(undefined as unknown as string)).toBe(false);
     });
 });
