@@ -37,7 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingTop: 2,
     },
     paddingHorizontal: {
-        paddingHorizontal: 10,
+        paddingLeft: 10,
     },
 }));
 
