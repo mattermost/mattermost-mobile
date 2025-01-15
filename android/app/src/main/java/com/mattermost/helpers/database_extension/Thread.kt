@@ -10,6 +10,21 @@ import com.mattermost.helpers.mapCursor
 import com.nozbe.watermelondb.WMDatabase
 import org.json.JSONObject
 
+private fun getLastReplyAt(thread: ReadableMap): Double {
+    try {
+        var v = thread.getDouble("last_reply_at")
+        if (v == 0.0) {
+            val post = thread.getMap("post")
+            if (post != null) {
+                v = post.getDouble("create_at")
+            }
+        }
+        return v
+    } catch (e: NoSuchKeyException) {
+        return 0.0
+    }
+}
+
 internal fun insertThread(db: WMDatabase, thread: ReadableMap) {
     // These fields are not present when we extract threads from posts
     try {
@@ -18,16 +33,7 @@ internal fun insertThread(db: WMDatabase, thread: ReadableMap) {
         val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { 0 }
         val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { 0 }
         val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { 0 }
-        val lastReplyAt = try {
-            var v = thread.getDouble("last_reply_at")
-            if (v == 0.0) {
-                val post = thread.getMap("post")
-                if (post != null) {
-                    v = post.getDouble("create_at")
-                }
-            }
-            v
-        } catch (e: NoSuchKeyException) { 0 }
+        val lastReplyAt = getLastReplyAt(thread)
         val replyCount = try { thread.getInt("reply_count") } catch (e: NoSuchKeyException) { 0 }
 
         db.execute(
@@ -54,16 +60,7 @@ internal fun updateThread(db: WMDatabase, thread: ReadableMap, existingRecord: R
         val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { existingRecord.getDouble("last_viewed_at") }
         val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_replies") }
         val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_mentions") }
-        val lastReplyAt = try {
-            var v = thread.getDouble("last_reply_at")
-            if (v == 0.0) {
-                val post = thread.getMap("post")
-                if (post != null) {
-                    v = post.getDouble("create_at")
-                }
-            }
-            v
-        } catch (e: NoSuchKeyException) { 0 }
+        val lastReplyAt = getLastReplyAt(thread)
         val replyCount = try { thread.getInt("reply_count") } catch (e: NoSuchKeyException) { 0 }
 
         db.execute(
@@ -251,26 +248,14 @@ fun handleThreadInTeam(db: WMDatabase, thread: ReadableMap, teamId: String) {
 fun handleTeamThreadsSync(db: WMDatabase, threadList: ArrayList<ReadableMap>, teamIds: ArrayList<String>) {
     val sortedList = threadList.filter{ it.getBoolean("is_following") }
             .sortedBy {
-                var v = it.getDouble("last_reply_at")
+                var v = getLastReplyAt(it)
                 if (v == 0.0) {
-                    val post = it.getMap("post");
-                    if (post != null) {
-                        v = post.getDouble("create_at")
-                    } else {
-                        Log.d("Database", "Trying to add a thread with no replies and no post")
-                    }
+                    Log.d("Database", "Trying to add a thread with no replies and no post")
                 }
                 v
             }
             .map {
-                var v = it.getDouble("last_reply_at")
-                if (v == 0.0) {
-                    val post = it.getMap("post")
-                    if (post != null) {
-                        v = post.getDouble("create_at")
-                    }
-                }
-                v
+                getLastReplyAt(it)
             }
     if (sortedList.isEmpty()) {
         return;
