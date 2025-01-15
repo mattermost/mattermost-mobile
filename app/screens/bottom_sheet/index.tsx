@@ -179,6 +179,7 @@ const BottomSheet = ({
         return (
             <BottomSheetBackdrop
                 {...props}
+                disappearsOnIndex={0}
                 appearsOnIndex={1}
                 opacity={0.6}
             />
