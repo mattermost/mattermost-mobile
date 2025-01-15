@@ -224,6 +224,7 @@ const BottomSheet = ({
             keyboardBlurBehavior='restore'
             onClose={close}
             bottomInset={insets.bottom}
+            enableDynamicSizing={false}
         >
             <BottomSheetView style={styles.view}>
                 {renderContainerContent()}
