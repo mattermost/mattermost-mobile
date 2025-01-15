@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import BottomSheetM, {BottomSheetBackdrop, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
+import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
 import {ReduceMotion, type WithSpringConfig} from 'react-native-reanimated';
@@ -225,9 +225,9 @@ const BottomSheet = ({
             onClose={close}
             bottomInset={insets.bottom}
         >
-            <BottomSheetView style={styles.view}>
+            <View style={styles.view}>
                 {renderContainerContent()}
-            </BottomSheetView>
+            </View>
         </BottomSheetM>
     );
 };
