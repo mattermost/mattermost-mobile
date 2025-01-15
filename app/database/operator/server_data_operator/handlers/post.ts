@@ -262,8 +262,11 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
         const allFiles = await database.get<FileModel>(MM_TABLES.SERVER.FILE).query(Q.where('post_id', Q.oneOf(uniquePosts.map((p) => p.id)))).fetch();
         const receivedFilesSet = new Set(files.map((f) => f.id));
-        const removedFiles = allFiles.filter((f) => !receivedFilesSet.has(f.id)).map((f) => f.prepareDestroyPermanently());
-        batch.push(...removedFiles);
+        allFiles.forEach((f) => {
+            if (!receivedFilesSet.has(f.id)) {
+                batch.push(f.prepareDestroyPermanently());
+            }
+        });
 
         if (emojis.length) {
             const postEmojis = await this.handleCustomEmojis({emojis, prepareRecordsOnly: true});

@@ -6,7 +6,6 @@ import {renderHook, act} from '@testing-library/react-hooks';
 import {usePreventDoubleTap} from './utils';
 
 describe('usePreventDoubleTap', () => {
-    jest.useFakeTimers();
     const callback = jest.fn();
 
     it('should allow the first tap', () => {
@@ -36,6 +35,8 @@ describe('usePreventDoubleTap', () => {
     });
 
     it('should allow the tap after the delay', () => {
+        jest.useFakeTimers();
+
         const {result} = renderHook(() => usePreventDoubleTap(callback));
 
         act(() => {
@@ -56,6 +57,7 @@ describe('usePreventDoubleTap', () => {
         });
 
         expect(callback).toHaveBeenCalledTimes(2);
+        jest.useRealTimers();
     });
     it('should return the same result if the same callback is passed', () => {
         const {result, rerender} = renderHook(() => usePreventDoubleTap(callback));
