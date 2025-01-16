@@ -48,13 +48,6 @@ jobs:
                 key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                 restore-keys: ${{ runner.os }}-gradle-
 
-            # - name: Install Java
-            #   uses: actions/setup-java@v4
-            #   with:
-            #     java-version: "17"
-            #     distribution: "adopt"
-            #     cache: "gradle"
-
             - name: Validate Gradle wrapper
               uses: gradle/actions/wrapper-validation@v3
 
