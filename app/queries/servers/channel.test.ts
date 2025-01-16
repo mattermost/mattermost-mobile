@@ -276,7 +276,9 @@ describe('prepareMyChannelsForTeam', () => {
         (operator.handleMyChannel as jest.Mock).mockReturnValue(myChannelRecords);
         (operator.handleMyChannelSettings as jest.Mock).mockReturnValue(myChannelSettingsRecords);
 
+        query = jest.fn().mockResolvedValueOnce(Object.entries(allChannelsForTeam).map((c) => c[1])).mockResolvedValueOnce(Object.entries(allChannelsInfoForTeam).map((i) => i[1]));
         const result = await prepareMyChannelsForTeam(operator, teamId, channels, channelMembers, true);
+        query = jest.fn();
 
         expect(result).toEqual([channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords]);
         expect(operator.handleChannel).toHaveBeenCalledWith({channels, prepareRecordsOnly: true});
@@ -967,7 +969,7 @@ describe('Channel Functions', () => {
                     Q.where('team_id', teamId),
                     Q.where('delete_at', Q.eq(0)),
                     Q.where('type', General.OPEN_CHANNEL),
-                    Q.where('channel_id', Q.notEq('ignoreid')),
+                    Q.where('id', Q.notEq('ignoreid')),
                 ),
                 Q.sortBy('display_name', Q.asc),
             );

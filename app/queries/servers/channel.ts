@@ -81,37 +81,30 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
     return prepareChannels(operator, channels, channelInfos, memberships, memberships, isCRTEnabled);
 }
 
-export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean) => {
-    const {database} = operator;
-
-    const channelsQuery = queryAllChannelsForTeam(database, teamId);
-    const allChannelsForTeam = (await channelsQuery.fetch()).
-        reduce((map: Record<string, ChannelModel>, channel) => {
-            map[channel.id] = channel;
-            return map;
-        }, {});
-
-    const channelInfosQuery = queryAllChannelsInfoForTeam(database, teamId);
-    const allChannelsInfoForTeam = (await channelInfosQuery.fetch()).
-        reduce((map: Record<string, ChannelInfoModel>, info) => {
-            map[info.id] = info;
-            return map;
-        }, {});
-
+const buildChannelInfos = async (database: Database, channels: Channel[]) => {
     const channelInfos: ChannelInfo[] = [];
-    const memberships = channelMembers.map((cm) => {
-        return {...cm, id: cm.channel_id};
-    });
+
+    const channelsQuery = await queryAllChannels(database);
+    const storedChannelsMap = channelsQuery.reduce<Record<string, ChannelModel>>((map, channel) => {
+        map[channel.id] = channel;
+        return map;
+    }, {});
+
+    const channelInfosQuery = await queryAllChannelsInfo(database);
+    const storedChannelInfosMap = channelInfosQuery.reduce<Record<string, ChannelInfoModel>>((map, info) => {
+        map[info.id] = info;
+        return map;
+    }, {});
 
     for (const c of channels) {
-        const storedChannel = allChannelsForTeam[c.id];
+        const storedChannel = storedChannelsMap[c.id];
         let storedInfo: ChannelInfoModel | undefined;
         let member_count = 0;
         let guest_count = 0;
         let pinned_post_count = 0;
         let files_count = 0;
         if (storedChannel) {
-            storedInfo = allChannelsInfoForTeam[c.id];
+            storedInfo = storedChannelInfosMap[c.id];
             if (storedInfo) {
                 member_count = storedInfo.memberCount;
                 guest_count = storedInfo.guestCount;
@@ -130,6 +123,28 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
             files_count,
         });
     }
+
+    return channelInfos;
+};
+
+export const prepareAllMyChannels = async (operator: ServerDataOperator, channels: Channel[], channelMemberships: ChannelMembership[], isCRTEnabled?: boolean) => {
+    const {database} = operator;
+
+    const fetchedChannelIds = new Set(channels.map((c) => c.id));
+    const memberships = channelMemberships.filter((m) => fetchedChannelIds.has(m.channel_id)).map((m) => ({...m, id: m.channel_id}));
+
+    const channelInfos = await buildChannelInfos(database, channels);
+
+    return prepareChannels(operator, channels, channelInfos, channelMemberships, memberships, isCRTEnabled);
+};
+
+export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean) => {
+    const {database} = operator;
+
+    const channelInfos = await buildChannelInfos(database, channels);
+    const memberships = channelMembers.map((cm) => {
+        return {...cm, id: cm.channel_id};
+    });
 
     return prepareChannels(operator, channels, channelInfos, channelMembers, memberships, isCRTEnabled);
 };
@@ -316,7 +331,7 @@ export const getDefaultChannelForTeam = async (database: Database, teamId: strin
     ];
 
     if (ignoreId) {
-        clauses.push(Q.where('channel_id', Q.notEq(ignoreId)));
+        clauses.push(Q.where('id', Q.notEq(ignoreId)));
     }
 
     const myChannels = await database.get<ChannelModel>(CHANNEL).query(
