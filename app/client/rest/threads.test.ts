@@ -31,7 +31,7 @@ describe('ClientThreads', () => {
         const totalsOnly = true;
         const serverVersion = '6.0.0';
         const excludeDirect = true;
-        const groupLabel = 'group1';
+        const groupLabel = 'Cold Start';
         const queryStringObj = {
             extended: 'true',
             before,

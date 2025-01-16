@@ -39,7 +39,7 @@ enum Direction {
     Down,
 }
 
-export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, isFromNotification = false, groupLabel?: string) => {
+export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, isFromNotification = false, groupLabel?: RequestGroupLabel) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -214,7 +214,7 @@ export const fetchThreads = async (
     options: FetchThreadsOptions,
     direction?: Direction,
     pages?: number,
-    groupLabel?: string,
+    groupLabel?: RequestGroupLabel,
 ) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -287,7 +287,7 @@ export const fetchThreads = async (
 
 export const syncThreadsIfNeeded = async (
     serverUrl: string, isCRTEnabled: boolean, teams?: Team[],
-    fetchOnly = false, groupLabel?: string,
+    fetchOnly = false, groupLabel?: RequestGroupLabel,
 ) => {
     try {
         if (!isCRTEnabled) {
@@ -329,7 +329,7 @@ type SyncThreadOptions = {
     excludeDirect?: boolean;
     fetchOnly?: boolean;
     refresh?: boolean;
-    groupLabel?: string;
+    groupLabel?: RequestGroupLabel;
 }
 
 export const syncTeamThreads = async (
