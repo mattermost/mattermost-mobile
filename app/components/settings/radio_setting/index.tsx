@@ -30,7 +30,7 @@ type Props = {
     onChange: (value: string) => void;
     helpText?: string;
     errorText?: string;
-    value: string;
+    value?: string;
     testID: string;
 }
 function RadioSetting({

@@ -1162,8 +1162,6 @@
   "unreads.empty.paragraph": "Schalte den Filter für ungelesene Nachrichten aus, um alle deine Kanäle anzuzeigen.",
   "unreads.empty.show_all": "Zeige alle",
   "unreads.empty.title": "Keine weiteren ungelesenen Nachrichten",
-  "unsupported_server.message": "Auf deinem Server, {serverDisplayName}, läuft eine nicht unterstützte Serverversion. Es kann zu Kompatibilitätsproblemen kommen, die zu Abstürzen oder schwerwiegenden Fehlern führen, welche die Kernfunktionen der App beeinträchtigen. Bitte wende dich an deinen Systemadministrator, um deinen Mattermost-Server zu aktualisieren.",
-  "unsupported_server.title": "Nicht unterstützte Serverversion",
   "user.edit_profile.email.auth_service": "Anmeldung erfolgt durch {service}. E-Mail-Adresse kann nicht aktualisiert werden. Die E-Mail-Adresse zum Versand von Benachrichtigungen lautet {email}.",
   "user.edit_profile.email.web_client": "E-Mail muss im Web-Client oder der Desktop-App geändert werden.",
   "user.edit_profile.profile_photo.change_photo": "Profilfoto ändern",
