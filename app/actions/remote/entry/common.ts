@@ -394,7 +394,7 @@ async function restDeferredAppEntryActions(
     setTimeout(async () => {
         if (chData?.channels?.length && chData.memberships?.length && initialTeamId) {
             if (isCRTEnabled && initialTeamId) {
-                await syncTeamThreads(serverUrl, initialTeamId, false, false, groupLabel);
+                await syncTeamThreads(serverUrl, initialTeamId, {groupLabel});
             }
             fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, false, groupLabel);
         }
