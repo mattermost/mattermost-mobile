@@ -123,7 +123,7 @@ const DraftsButton: React.FC<DraftListProps> = ({
                         testID='channel_list.drafts.count'
                         style={customStyles.count}
                     >
-                    	{draftsCount}
+                        {draftsCount}
                     </Text>
                 </View>
             </View>
