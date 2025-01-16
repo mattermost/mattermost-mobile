@@ -1028,7 +1028,7 @@ exports[`<FormattedDate/> should render with timezone America/Sao_Paulo 1`] = `
 
 exports[`<FormattedDate/> should render with timezone America/Scoresbysund 1`] = `
 <Text>
-  10:01 AM
+  9:01 AM
 </Text>
 `;
 
@@ -1046,7 +1046,7 @@ exports[`<FormattedDate/> should render with timezone America/Tijuana 1`] = `
 
 exports[`<FormattedDate/> should render with timezone Antarctica/Casey 1`] = `
 <Text>
-  9:01 PM
+  6:01 PM
 </Text>
 `;
 
@@ -1082,7 +1082,7 @@ exports[`<FormattedDate/> should render with timezone Antarctica/McMurdo 1`] = `
 
 exports[`<FormattedDate/> should render with timezone Antarctica/Vostok 1`] = `
 <Text>
-  4:01 PM
+  3:01 PM
 </Text>
 `;
 
@@ -1442,6 +1442,6 @@ exports[`<FormattedDate/> should render with timezone Pacific/Fiji 1`] = `
 
 exports[`<FormattedDate/> should render with timezone undefined 1`] = `
 <Text>
-  12:01 PM
+  10:01 AM
 </Text>
 `;
