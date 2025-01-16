@@ -214,7 +214,7 @@ const MoreMessages = ({
         top.value = 0;
         resetMessageCount(serverUrl, channelId);
         pressed.current = false;
-    }, [serverUrl, channelId]);
+    }, [top, serverUrl, channelId]);
 
     const onPress = useCallback(() => {
         if (pressed.current) {
@@ -223,7 +223,7 @@ const MoreMessages = ({
 
         pressed.current = true;
         scrollToIndex(newMessageLineIndex, true);
-    }, [newMessageLineIndex]);
+    }, [newMessageLineIndex, scrollToIndex]);
 
     useDidUpdate(() => {
         setLoading(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));

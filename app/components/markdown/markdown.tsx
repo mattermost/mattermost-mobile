@@ -332,7 +332,7 @@ const Markdown = ({
 
         return (
             <View
-                style={containerStyle}
+                style={containerStyle as StyleProp<ViewStyle>}
                 testID='markdown_heading'
             >
                 <Text style={textStyle}>
