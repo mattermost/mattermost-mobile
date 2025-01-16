@@ -2,7 +2,7 @@
 
 exports[`<FormattedDate/> should default when timezone is not found 1`] = `
 <Text>
-  12:01 PM
+  10:01 AM
 </Text>
 `;
 
