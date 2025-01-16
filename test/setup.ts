@@ -31,6 +31,10 @@ jest.mock('expo-application', () => {
     };
 });
 
+jest.mock('expo-crypto', () => ({
+    randomUUID: jest.fn(() => '12345678-1234-1234-1234-1234567890ab'),
+}));
+
 jest.mock('expo-device', () => {
     return {
         deviceName: 'Device',
@@ -235,7 +239,6 @@ jest.mock('react-native-vector-icons', () => {
     };
 });
 
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
 jest.mock('react-native-localize', () => ({
@@ -392,7 +395,7 @@ jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
 jest.mock('react-native-haptic-feedback', () => {
-    const RNHF = jest.requireActual('react-native-haptic-feedback');
+    const RNHF = jest.requireActual('react-native-haptic-feedback/src/types');
     return {
         ...RNHF,
         trigger: () => '',
