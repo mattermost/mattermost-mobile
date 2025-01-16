@@ -9,12 +9,14 @@ import type DraftModel from '@typings/database/models/servers/draft';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 const {
     DRAFT,
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
+    SCHEDULED_POST,
 } = MM_TABLES.SERVER;
 
 /**
@@ -150,4 +152,34 @@ export const transformPostsInChannelRecord = ({action, database, value}: Transfo
         value,
         fieldsMapper,
     }) as Promise<PostsInChannelModel>;
+};
+
+/**
+ * transformPostRecords: Prepares records of the SERVER database 'ScheduledPosts' table for update or create actions.
+ */
+export const transformSchedulePostsRecord = ({action, database, value}: TransformerArgs): Promise<ScheduledPostModel> => {
+    const emptyFileInfo: FileInfo[] = [];
+    const emptyPostMetadata: PostMetadata = {};
+    const raw = value.raw as ScheduledPost;
+
+    const fieldsMapper = (scheduledPost: ScheduledPostModel) => {
+        scheduledPost._raw.id = scheduledPost.id;
+        scheduledPost.rootId = raw?.root_id ?? '';
+        scheduledPost.message = raw?.message ?? '';
+        scheduledPost.channelId = raw?.channel_id ?? '';
+        scheduledPost.files = raw?.files ?? emptyFileInfo;
+        scheduledPost.metadata = raw?.metadata ?? emptyPostMetadata;
+        scheduledPost.updateAt = raw.update_at ?? Date.now();
+        scheduledPost.scheduledAt = raw.scheduled_at;
+        scheduledPost.processedAt = raw.processed_at ?? 0;
+        scheduledPost.errorCode = raw.error_code ?? '';
+    };
+
+    return prepareBaseRecord({
+        action,
+        database,
+        tableName: SCHEDULED_POST,
+        value,
+        fieldsMapper,
+    }) as Promise<ScheduledPostModel>;
 };
