@@ -20,7 +20,8 @@ npm run inject-detox-settings
 
 ### Update `minSdkVersion` for `react-native-image-picker`
 
-On macOS machines, update the `minSdkVersion` of `react-native-image-picker` to 23 by running the following command from the root directory:
+On macOS machines, update the `minSdkVersion` of `react-native-image-picker` to 23 by running the following command from the root directory.
+This is required for Detox to build the test apk targeting android API 31 or higher.
 
 ```sh
 sed -i '' 's/minSdkVersion 21/minSdkVersion 23/' ./node_modules/react-native-image-picker/android/build.gradle

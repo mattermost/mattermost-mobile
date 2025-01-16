@@ -258,6 +258,13 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
+    getCustomProfileAttributeFields = async () => {
+        return this.doFetch(
+            `${this.getCustomProfileAttributesRoute()}/fields`,
+            {method: 'get'},
+        );
+    };
+
     getUserByUsername = async (username: string) => {
         return this.doFetch(
             `${this.getUsersRoute()}/username/${username}`,
