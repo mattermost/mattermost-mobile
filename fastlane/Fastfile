@@ -181,6 +181,11 @@ lane :configure do
     json['ShowOnboarding'] = true
   end
 
+  # Configure Show Onboarding
+  if ENV['COLLECT_NETWORK_METRICS'] == 'true'
+    json['CollectNetworkMetrics'] = true
+  end
+
   # Configure the auth schemes
   auth_scheme = ENV['APP_AUTH_SCHEME'].to_s.empty? ? 'mmauth' : ENV['APP_AUTH_SCHEME']
   auth_scheme_dev = ENV['APP_AUTH_SCHEME_BETA'].to_s.empty? ? 'mmauthbeta' : ENV['APP_AUTH_SCHEME_BETA']
