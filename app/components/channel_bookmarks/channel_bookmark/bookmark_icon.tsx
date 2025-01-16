@@ -3,7 +3,7 @@
 
 import {Image, type ImageStyle} from 'expo-image';
 import React, {useState, useCallback} from 'react';
-import {type StyleProp, type TextStyle, type ViewStyle} from 'react-native';
+import {type StyleProp, type TextStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
@@ -18,7 +18,7 @@ type Props = {
     iconSize: number;
     imageStyle?: StyleProp<ImageStyle>;
     imageUrl?: string;
-    genericStyle: StyleProp<ViewStyle>;
+    genericStyle: StyleProp<TextStyle>;
 }
 
 const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSize, imageStyle, imageUrl}: Props) => {
