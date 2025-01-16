@@ -1,0 +1,122 @@
+diff --git a/node_modules/react-native-keychain/ios/RNKeychainManager/RNKeychainManager.h b/node_modules/react-native-keychain/ios/RNKeychainManager/RNKeychainManager.h
+index 4a1234f..f3e2308 100644
+--- a/node_modules/react-native-keychain/ios/RNKeychainManager/RNKeychainManager.h
++++ b/node_modules/react-native-keychain/ios/RNKeychainManager/RNKeychainManager.h
+@@ -10,5 +10,6 @@
+ #import <React/RCTLog.h>
+ 
+ @interface RNKeychainManager : NSObject <RCTBridgeModule>
+-
++-(OSStatus)deleteCredentialsForServer:(NSString *)server withOptions:(NSDictionary * __nullable)options;
++-(NSArray<NSString*>*)getAllServersForInternetPasswords;
+ @end
+diff --git a/node_modules/react-native-keychain/ios/RNKeychainManager/RNKeychainManager.m b/node_modules/react-native-keychain/ios/RNKeychainManager/RNKeychainManager.m
+index 18e42ab..ff130ab 100644
+--- a/node_modules/react-native-keychain/ios/RNKeychainManager/RNKeychainManager.m
++++ b/node_modules/react-native-keychain/ios/RNKeychainManager/RNKeychainManager.m
+@@ -209,6 +209,36 @@ SecAccessControlCreateFlags accessControlValue(NSDictionary *options)
+   return 0;
+ }
+ 
++-(NSArray<NSString*>*)getAllServersForInternetPasswords
++{
++  NSMutableDictionary *query = [NSMutableDictionary dictionaryWithObjectsAndKeys:
++                                (__bridge id)kCFBooleanTrue, (__bridge id)kSecReturnAttributes,
++                                (__bridge id)kSecMatchLimitAll, (__bridge id)kSecMatchLimit,
++                                nil];
++  NSMutableArray<NSString*> *servers = [NSMutableArray<NSString*> new];
++
++  [query setObject:(__bridge id)kSecClassInternetPassword forKey:(__bridge id)kSecClass];
++  NSArray *result = nil;
++  CFTypeRef resultRef = NULL;
++  OSStatus osStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef*)&resultRef);
++  if (osStatus != noErr && osStatus != errSecItemNotFound) {
++    NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:osStatus userInfo:nil];
++    @throw error;
++  } else if (osStatus != errSecItemNotFound) {
++    result = (__bridge NSArray*)(resultRef);
++    if (result != NULL) {
++      for (id entry in result) {
++        NSString *serverData = [entry objectForKey:(__bridge NSString *)kSecAttrServer];
++        if (serverData != NULL) {
++          [servers addObject:serverData];
++        }
++      }
++    }
++  }
++  
++  return servers;
++}
++
+ - (void)insertKeychainEntry:(NSDictionary *)attributes
+                 withOptions:(NSDictionary * __nullable)options
+                    resolver:(RCTPromiseResolveBlock)resolve
+@@ -663,4 +693,14 @@ RCT_EXPORT_METHOD(getAllGenericPasswordServices:(RCTPromiseResolveBlock)resolve
+   }
+ }
+ 
++RCT_EXPORT_METHOD(getAllInternetPasswordServers:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
++{
++  @try {
++    NSArray *servers = [self getAllServersForInternetPasswords];
++    return resolve(servers);
++  } @catch (NSError *nsError) {
++    return rejectWithError(reject, nsError);
++  }
++}
++
+ @end
+diff --git a/node_modules/react-native-keychain/lib/typescript/index.d.ts b/node_modules/react-native-keychain/lib/typescript/index.d.ts
+index 43f2e2f..dcef782 100644
+--- a/node_modules/react-native-keychain/lib/typescript/index.d.ts
++++ b/node_modules/react-native-keychain/lib/typescript/index.d.ts
+@@ -73,6 +73,17 @@ export declare function resetGenericPassword(serviceOrOptions?: string | BaseOpt
+  * ```
+  */
+ export declare function getAllGenericPasswordServices(): Promise<string[]>;
++/**
++* Gets all `kSecAttrServer` values used in internet credentials for iOS.
++* @return {Promise<string[]>} Resolves to an array of strings
++*
++* @example
++* ```typescript
++* const servers = await Keychain.getAllInternetPasswordServers();
++* console.log('Servers:', servers);
++* ```
++*/
++export declare function getAllInternetPasswordServers(): Promise<string[]>;
+ /**
+  * Checks if internet credentials exist for the given server.
+  *
+diff --git a/node_modules/react-native-keychain/src/index.ts b/node_modules/react-native-keychain/src/index.ts
+index 7bfe371..3ac11b5 100644
+--- a/node_modules/react-native-keychain/src/index.ts
++++ b/node_modules/react-native-keychain/src/index.ts
+@@ -132,6 +132,27 @@ export function getAllGenericPasswordServices(): Promise<string[]> {
+   return RNKeychainManager.getAllGenericPasswordServices();
+ }
+ 
++/**
++* Gets all `kSecAttrServer` values used in internet credentials for iOS.
++* @return {Promise<string>} Resolves to an array of strings
++*
++* @example
++* ```typescript
++* const servers = await Keychain.getAllInternetPasswordServers();
++* console.log('Servers:', servers);
++* ```
++*/
++export async function getAllInternetPasswordServers(): Promise<string[]> {
++  if (Platform.OS !== 'ios') {
++    return Promise.reject(
++      new Error(
++        `getAllInternetPasswordServers() is not supported on ${Platform.OS}`
++      )
++    );
++  }
++  return RNKeychainManager.getAllInternetPasswordServers();
++}
++
+ /**
+  * Checks if internet credentials exist for the given server.
+  *
