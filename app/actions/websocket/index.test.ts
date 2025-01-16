@@ -56,6 +56,7 @@ describe('WebSocket Index Actions', () => {
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        jest.spyOn(DeviceEventEmitter, 'emit');
         await DatabaseManager.init([serverUrl]);
         DatabaseManager.serverDatabases[serverUrl] = {
             operator: {
