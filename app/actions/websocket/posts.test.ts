@@ -135,7 +135,7 @@ describe('WebSocket Post Actions', () => {
 
             mockedGetMyChannel.mockResolvedValueOnce(undefined);
             mockedFetchMyChannel.mockResolvedValue({teamId: 'team1', memberships: [{user_id: 'user1', channel_id: 'channel1'}]} as MyChannelsRequest);
-            mockedStoreMyChannelsForTeam.mockResolvedValue({models: [myChannelModel]});
+            mockedStoreMyChannelsForTeam.mockResolvedValue({models: [myChannelModel], error: undefined});
             mockedGetMyChannel.mockResolvedValueOnce(myChannelModel);
             mockedGetIsCRTEnabled.mockResolvedValue(false);
             mockedShouldIgnorePost.mockReturnValue(true);

@@ -22,7 +22,7 @@ export type DataRetentionPoliciesRequest = {
     error?: unknown;
 }
 
-export const fetchDataRetentionPolicy = async (serverUrl: string, fetchOnly = false, groupLabel?: string): Promise<DataRetentionPoliciesRequest> => {
+export const fetchDataRetentionPolicy = async (serverUrl: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<DataRetentionPoliciesRequest> => {
     const {data: globalPolicy, error: globalPolicyError} = await fetchGlobalDataRetentionPolicy(serverUrl, groupLabel);
     const {data: teamPolicies, error: teamPoliciesError} = await fetchAllGranularDataRetentionPolicies(serverUrl, undefined, undefined, undefined, groupLabel);
     const {data: channelPolicies, error: channelPoliciesError} = await fetchAllGranularDataRetentionPolicies(serverUrl, true);
@@ -45,7 +45,7 @@ export const fetchDataRetentionPolicy = async (serverUrl: string, fetchOnly = fa
     return data;
 };
 
-export const fetchGlobalDataRetentionPolicy = async (serverUrl: string, groupLabel?: string): Promise<{data?: GlobalDataRetentionPolicy; error?: unknown}> => {
+export const fetchGlobalDataRetentionPolicy = async (serverUrl: string, groupLabel?: RequestGroupLabel): Promise<{data?: GlobalDataRetentionPolicy; error?: unknown}> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const data = await client.getGlobalDataRetentionPolicy(groupLabel);
@@ -62,7 +62,7 @@ export const fetchAllGranularDataRetentionPolicies = async (
     isChannel = false,
     page = 0,
     policies: Array<TeamDataRetentionPolicy | ChannelDataRetentionPolicy> = [],
-    groupLabel?: string,
+    groupLabel?: RequestGroupLabel,
 ): Promise<{data?: Array<TeamDataRetentionPolicy | ChannelDataRetentionPolicy>; error?: unknown}> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
@@ -86,7 +86,7 @@ export const fetchAllGranularDataRetentionPolicies = async (
     }
 };
 
-export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false, groupLabel?: string): Promise<ConfigAndLicenseRequest> => {
+export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<ConfigAndLicenseRequest> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const [config, license]: [ClientConfig, ClientLicense] = await Promise.all([
