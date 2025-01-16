@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
 import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
