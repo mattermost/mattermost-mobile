@@ -300,7 +300,7 @@ export const syncThreadsIfNeeded = async (
 
         if (teams?.length) {
             for (const team of teams) {
-                promises.push(syncTeamThreads(serverUrl, team.id, true, true, groupLabel));
+                promises.push(syncTeamThreads(serverUrl, team.id, {excludeDirect: true, fetchOnly: true, groupLabel}));
             }
         }
 
@@ -325,9 +325,22 @@ export const syncThreadsIfNeeded = async (
     }
 };
 
+type SyncThreadOptions = {
+    excludeDirect?: boolean;
+    fetchOnly?: boolean;
+    refresh?: boolean;
+    groupLabel?: string;
+}
+
 export const syncTeamThreads = async (
-    serverUrl: string, teamId: string,
-    excludeDirect = false, fetchOnly = false, groupLabel?: string,
+    serverUrl: string,
+    teamId: string,
+    {
+        excludeDirect = false,
+        fetchOnly = false,
+        refresh = false,
+        groupLabel,
+    }: SyncThreadOptions = {},
 ) => {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -368,38 +381,55 @@ export const syncTeamThreads = async (
                 return {error: allUnreadThreads.error || latestThreads.error};
             }
 
-            const dedupe = new Set(latestThreads.threads?.map((t) => t.id));
-
             if (latestThreads.threads?.length) {
                 // We are fetching the threads for the first time. We get "latest" and "earliest" values.
+                // At this point we may receive threads without replies, so we also check the post.create_at timestamp.
                 const {earliestThread, latestThread} = getThreadsListEdges(latestThreads.threads);
-                syncDataUpdate.latest = latestThread.last_reply_at;
-                syncDataUpdate.earliest = earliestThread.last_reply_at;
+                syncDataUpdate.latest = latestThread.last_reply_at || latestThread.post.create_at;
+                syncDataUpdate.earliest = earliestThread.last_reply_at || earliestThread.post.create_at;
 
                 threads.push(...latestThreads.threads);
             }
             if (allUnreadThreads.threads?.length) {
+                const dedupe = new Set(latestThreads.threads?.map((t) => t.id));
                 const unread = allUnreadThreads.threads.filter((u) => !dedupe.has(u.id));
                 threads.push(...unread);
             }
         } else {
-            const allNewThreads = await fetchThreads(
-                serverUrl,
-                teamId,
-                {deleted: true, since: syncData.latest + 1, excludeDirect},
-                undefined,
-                undefined,
-                groupLabel,
-            );
+            const [allUnreadThreads, allNewThreads] = await Promise.all([
+                fetchThreads(
+                    serverUrl,
+                    teamId,
+                    {unread: true, excludeDirect},
+                    Direction.Down,
+                    undefined,
+                    groupLabel,
+                ),
+                fetchThreads(
+                    serverUrl,
+                    teamId,
+                    {deleted: true, since: refresh ? undefined : syncData.latest + 1, excludeDirect},
+                    undefined,
+                    1,
+                    groupLabel,
+                ),
+            ]);
+
             if (allNewThreads.error) {
                 return {error: allNewThreads.error};
             }
             if (allNewThreads.threads?.length) {
                 // As we are syncing, we get all new threads and we will update the "latest" value.
                 const {latestThread} = getThreadsListEdges(allNewThreads.threads);
-                syncDataUpdate.latest = latestThread.last_reply_at;
+                const latestDate = latestThread.last_reply_at || latestThread.post.create_at;
+                syncDataUpdate.latest = Math.max(syncData.latest, latestDate);
 
                 threads.push(...allNewThreads.threads);
+            }
+            if (allUnreadThreads.threads?.length) {
+                const dedupe = new Set(allNewThreads.threads?.map((t) => t.id));
+                const unread = allUnreadThreads.threads.filter((u) => !dedupe.has(u.id));
+                threads.push(...unread);
             }
         }
 

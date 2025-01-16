@@ -123,7 +123,7 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
                 id: post.id,
                 participants: post.participants,
                 reply_count: post.reply_count,
-                last_reply_at: post.last_reply_at,
+                last_reply_at: post.last_reply_at || post.create_at,
                 is_following: post.is_following,
                 lastFetchedAt: post.create_at,
             } as ThreadWithLastFetchedAt);
