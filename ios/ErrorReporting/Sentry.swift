@@ -15,8 +15,8 @@ func initSentryAppExt(){
         if(SENTRY_ENABLED=="true"){
           SentrySDK.start { options in
             options.dsn = SENTRY_DSN
-            options.enableAppHangTracking = true
-            options.enableCaptureFailedRequests = false
+            options.enableAppHangTracking = false
+            options.enableCaptureFailedRequests = true
           }
         }
     }

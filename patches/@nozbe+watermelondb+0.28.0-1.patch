@@ -1,21 +1,21 @@
 diff --git a/node_modules/@nozbe/watermelondb/Database/index.d.ts b/node_modules/@nozbe/watermelondb/Database/index.d.ts
-index 861ed06..d2d6527 100644
+index e6eefec..d3a7dc0 100644
 --- a/node_modules/@nozbe/watermelondb/Database/index.d.ts
 +++ b/node_modules/@nozbe/watermelondb/Database/index.d.ts
-@@ -88,6 +88,8 @@ export default class Database {
-   // Yes, this sucks and there should be some safety mechanisms or warnings. Please contribute!
-   unsafeResetDatabase(): Promise<void>
+@@ -93,6 +93,8 @@ export default class Database {
+   // has a significant performance impact so should only be enabled when debugging.
+   experimentalIsVerbose: boolean
  
 +  unsafeVacuum(): Promise<void>
-+
++  
    _ensureInWriter(diagnosticMethodName: string): void
  
    // (experimental) puts Database in a broken state
 diff --git a/node_modules/@nozbe/watermelondb/Database/index.js b/node_modules/@nozbe/watermelondb/Database/index.js
-index fa82516..de24ff2 100644
+index 9139dd4..aec45b5 100644
 --- a/node_modules/@nozbe/watermelondb/Database/index.js
 +++ b/node_modules/@nozbe/watermelondb/Database/index.js
-@@ -91,7 +91,9 @@ var Database = /*#__PURE__*/function () {
+@@ -92,7 +92,9 @@ var Database = exports.default = /*#__PURE__*/function () {
          var preparedState = record._preparedState;
          if (!preparedState) {
            (0, _common.invariant)('disposable' !== record._raw._status, "Cannot batch a disposable record");
@@ -26,22 +26,21 @@ index fa82516..de24ff2 100644
          }
          var raw = record._raw;
          var {
-@@ -122,6 +124,10 @@ var Database = /*#__PURE__*/function () {
+@@ -123,6 +125,9 @@ var Database = exports.default = /*#__PURE__*/function () {
            // subsequent changes to the record don't trip up the invariant
            // TODO: What if this fails?
            record._preparedState = null;
-+
 +          if ('update' === preparedState) {
 +            record.__original = null;
 +          }
          }
          if (!changeNotifications[table]) {
            changeNotifications[table] = [];
-@@ -379,6 +385,57 @@ var Database = /*#__PURE__*/function () {
-       }
+@@ -399,6 +404,57 @@ var Database = exports.default = /*#__PURE__*/function () {
      }.bind(this));
-   };
-+  _proto.unsafeVacuum = function unsafeVacuum() {
+   }
+ 
++  _proto.unsafeVacuum = function () {
 +    return new Promise(function ($return, $error) {
 +      var $Try_3_Finally = function ($Try_3_Exit) {
 +        return function ($Try_3_Value) {
@@ -75,7 +74,6 @@ index fa82516..de24ff2 100644
 +        } = this);
 +        ErrorAdapter = require('../adapters/error').default;
 +        this.adapter = new ErrorAdapter();
-+
 +        // Vacuum the database
 +        return Promise.resolve(adapter.unsafeVacuum()).then(function () {
 +          try {
@@ -92,11 +90,12 @@ index fa82516..de24ff2 100644
 +      }
 +    }.bind(this));
 +  };
-   _proto._ensureInWriter = function _ensureInWriter(diagnosticMethodName) {
-     (0, _common.invariant)(this._workQueue.isWriterRunning, "".concat(diagnosticMethodName, " can only be called from inside of a Writer. See docs for more details."));
-   }
++
+   // (experimental) if true, Models will print to console diagnostic information on every
+   // prepareCreate/Update/Delete call, as well as on commit (Database.batch() call). Note that this
+   // has a significant performance impact so should only be enabled when debugging.
 diff --git a/node_modules/@nozbe/watermelondb/Model/index.d.ts b/node_modules/@nozbe/watermelondb/Model/index.d.ts
-index 96114ec..ecfe3c1 100644
+index 96114ec..258bb92 100644
 --- a/node_modules/@nozbe/watermelondb/Model/index.d.ts
 +++ b/node_modules/@nozbe/watermelondb/Model/index.d.ts
 @@ -61,6 +61,8 @@ export default class Model {
@@ -104,20 +103,20 @@ index 96114ec..ecfe3c1 100644
    prepareUpdate(recordUpdater?: (_: this) => void): this
  
 +  cancelPrepareUpdate(): void
-+
++  
    prepareMarkAsDeleted(): this
  
    prepareDestroyPermanently(): this
 diff --git a/node_modules/@nozbe/watermelondb/Model/index.js b/node_modules/@nozbe/watermelondb/Model/index.js
-index dbfdf6e..2e63166 100644
+index a5b6815..18a21d8 100644
 --- a/node_modules/@nozbe/watermelondb/Model/index.js
 +++ b/node_modules/@nozbe/watermelondb/Model/index.js
-@@ -80,7 +80,17 @@ var Model = /*#__PURE__*/function () {
+@@ -101,7 +101,18 @@ var Model = exports.default = /*#__PURE__*/function () {
     */;
-   _proto.prepareUpdate = function prepareUpdate(recordUpdater = _noop.default) {
+   _proto.prepareUpdate = function (recordUpdater = _noop.default) {
      var _this = this;
--    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes. Update attempted for table ".concat(this.table, " and record ").concat(this.id, "."));
-+    // (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes. Update attempted for table ".concat(this.table, " and record ").concat(this.id, "."));
+-    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes (".concat(this.__debugName, ")"));
++    // (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes (".concat(this.__debugName, ")"));
 +    if ('deleted' === this._raw._status) {
 +      console.debug("Updating a deleted record in table " + _this.table);
 +      return this;
@@ -128,16 +127,16 @@ index dbfdf6e..2e63166 100644
 +    } else {
 +      this.__original = Object.assign({}, this._raw);
 +    }
++
      this.__ensureNotDisposable("Model.prepareUpdate()");
      this._isEditing = true;
  
-@@ -125,6 +135,21 @@ var Model = /*#__PURE__*/function () {
+@@ -147,6 +158,20 @@ var Model = exports.default = /*#__PURE__*/function () {
      }.bind(this));
    }
  
-+  _proto.cancelPrepareUpdate = function cancelPrepareUpdate() {
++  _proto.cancelPrepareUpdate = function () {
 +    var _this = this;
-+
 +    if ('test' !== process.env.NODE_ENV && 'undefined' !== typeof process && process) {
 +      (0, _invariant.default)('update' === _this._preparedState, "Cannot cancel an update on a model that has not been prepared in table " + _this.table);
 +    }
@@ -153,12 +152,12 @@ index dbfdf6e..2e63166 100644
    /**
     * Prepares record to be marked as deleted
     *
-@@ -173,7 +198,10 @@ var Model = /*#__PURE__*/function () {
+@@ -196,7 +221,10 @@ var Model = exports.default = /*#__PURE__*/function () {
     * @see {Database#batch}
     */;
-   _proto.prepareDestroyPermanently = function prepareDestroyPermanently() {
--    (0, _invariant.default)(!this._preparedState, "Cannot destroy permanently a record with pending changes");
-+    // (0, _invariant.default)(!this._preparedState, "Cannot destroy permanently a record with pending changes");
+   _proto.prepareDestroyPermanently = function () {
+-    (0, _invariant.default)(!this._preparedState, "Cannot destroy permanently record with pending changes (".concat(this.__debugName, ")"));
++    // (0, _invariant.default)(!this._preparedState, "Cannot destroy permanently record with pending changes (".concat(this.__debugName, ")"));
 +    if (this._preparedState) {
 +      console.debug("Deleting a record with pending changes in table " + this.table);
 +    }
@@ -179,28 +178,28 @@ index 51879c7..435ad72 100644
  
    getLocal(key: string): Promise<string | undefined>
 diff --git a/node_modules/@nozbe/watermelondb/adapters/compat.js b/node_modules/@nozbe/watermelondb/adapters/compat.js
-index 4a0b5ef..9b8ff13 100644
+index 138bc91..82c6311 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/compat.js
 +++ b/node_modules/@nozbe/watermelondb/adapters/compat.js
-@@ -76,6 +76,12 @@ var DatabaseAdapterCompat = /*#__PURE__*/function () {
+@@ -76,6 +76,12 @@ var DatabaseAdapterCompat = exports.default = /*#__PURE__*/function () {
        return _this11.underlyingAdapter.unsafeResetDatabase(callback);
      });
    };
-+  _proto.unsafeVacuum = function unsafeVacuum() {
++  _proto.unsafeVacuum = function () {
 +    var _this16 = this;
 +    return (0, _Result.toPromise)(function (callback) {
 +      return _this16.underlyingAdapter.unsafeVacuum(callback);
 +    });
 +  };
-   _proto.unsafeExecute = function unsafeExecute(work) {
+   _proto.unsafeExecute = function (work) {
      var _this12 = this;
      return (0, _Result.toPromise)(function (callback) {
 diff --git a/node_modules/@nozbe/watermelondb/adapters/error.js b/node_modules/@nozbe/watermelondb/adapters/error.js
-index 70a4c11..453dca2 100644
+index 83b5754..f023e14 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/error.js
 +++ b/node_modules/@nozbe/watermelondb/adapters/error.js
 @@ -13,7 +13,7 @@ var throwError = function (name) {
- var ErrorAdapter = /*#__PURE__*/function () {
+ var ErrorAdapter = exports.default = /*#__PURE__*/function () {
    function ErrorAdapter() {
      var _this = this;
 -    ['find', 'query', 'queryIds', 'count', 'batch', 'getDeletedRecords', 'destroyDeletedRecords', 'unsafeResetDatabase', 'getLocal', 'setLocal', 'removeLocal', 'testClone'].forEach(function (name) {
@@ -209,7 +208,7 @@ index 70a4c11..453dca2 100644
        _this[name] = function () {
          return throwError(name);
 diff --git a/node_modules/@nozbe/watermelondb/adapters/lokijs/common.d.ts b/node_modules/@nozbe/watermelondb/adapters/lokijs/common.d.ts
-index 5528dc1..0408198 100644
+index f8d179f..4b39cf9 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/lokijs/common.d.ts
 +++ b/node_modules/@nozbe/watermelondb/adapters/lokijs/common.d.ts
 @@ -13,6 +13,7 @@ export type WorkerExecutorType =
@@ -234,24 +233,24 @@ index e09fb14..51d42d9 100644
  
    getLocal(key: string, callback: ResultCallback<string | undefined>): void
 diff --git a/node_modules/@nozbe/watermelondb/adapters/lokijs/index.js b/node_modules/@nozbe/watermelondb/adapters/lokijs/index.js
-index 9d5ea84..aa8397d 100644
+index 08916f6..672fc29 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/lokijs/index.js
 +++ b/node_modules/@nozbe/watermelondb/adapters/lokijs/index.js
-@@ -105,6 +105,9 @@ var LokiJSAdapter = /*#__PURE__*/function () {
-   _proto.unsafeResetDatabase = function unsafeResetDatabase(callback) {
+@@ -105,6 +105,9 @@ var LokiJSAdapter = exports.default = /*#__PURE__*/function () {
+   _proto.unsafeResetDatabase = function (callback) {
      this._dispatcher.call('unsafeResetDatabase', [], callback);
    };
-+  _proto.unsafeVacuum = function unssafeVacuum(callback) {
++  _proto.unsafeVacuum = function (callback) {
 +    this._dispatcher.call('unsafeVacuum', [], callback);
 +  };
-   _proto.unsafeExecute = function unsafeExecute(operations, callback) {
+   _proto.unsafeExecute = function (operations, callback) {
      this._dispatcher.call('unsafeExecute', [operations], callback);
    };
 diff --git a/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseBridge.js b/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseBridge.js
-index ca35a79..7079572 100644
+index e7acc55..afc44d0 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseBridge.js
 +++ b/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseBridge.js
-@@ -33,7 +33,7 @@ var DatabaseBridge = /*#__PURE__*/function () {
+@@ -33,7 +33,7 @@ var DatabaseBridge = exports.default = /*#__PURE__*/function () {
          type: type,
          payload: payload
        } = action;
@@ -261,22 +260,22 @@ index ca35a79..7079572 100644
        } else {
          var response = this._driverAction(type).apply(void 0, (0, _toConsumableArray2.default)(payload));
 diff --git a/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseDriver.js b/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseDriver.js
-index ee89cff..04de604 100644
+index 85626c4..e448e9b 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseDriver.js
 +++ b/node_modules/@nozbe/watermelondb/adapters/lokijs/worker/DatabaseDriver.js
-@@ -216,6 +216,12 @@ var DatabaseDriver = /*#__PURE__*/function () {
+@@ -216,6 +216,12 @@ var DatabaseDriver = exports.default = /*#__PURE__*/function () {
      }.bind(this));
    }
  
-+  _proto.unsafeVacuum = function unsafeVacuum() {
++  _proto.unsafeVacuum = function () {
 +    return new Promise(function ($return, $error) {
 +      return Promise.resolve(0);
 +    }.bind(this));
-+  }
++  };
 +
    // *** LocalStorage ***
    ;
-   _proto.getLocal = function getLocal(key) {
+   _proto.getLocal = function (key) {
 diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
 index 88c43a0..cef8232 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
@@ -291,14 +290,14 @@ index 88c43a0..cef8232 100644
  
    getLocal(key: string, callback: ResultCallback<string | undefined>): void
 diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js
-index 985dbd6..bcc232d 100644
+index 0af2b6c..193d7e9 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js
 +++ b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js
-@@ -237,6 +237,14 @@ var SQLiteAdapter = /*#__PURE__*/function () {
+@@ -237,6 +237,14 @@ var SQLiteAdapter = exports.default = /*#__PURE__*/function () {
        callback(result);
      });
    };
-+  _proto.unsafeVacuum = function unsafeVacuum(callback) {
++  _proto.unsafeVacuum = function (callback) {
 +    this._dispatcher.call('unsafeVacuum', [], function (result) {
 +      if (result.value) {
 +        _common.logger.log('[SQLite] Database is now vacuumed');
@@ -306,45 +305,45 @@ index 985dbd6..bcc232d 100644
 +      callback(result);
 +    });
 +  };
-   _proto.unsafeExecute = function unsafeExecute(operations, callback) {
+   _proto.unsafeExecute = function (operations, callback) {
      if ('production' !== process.env.NODE_ENV) {
        (0, _common.invariant)(operations && 'object' === typeof operations && 1 === Object.keys(operations).length && (Array.isArray(operations.sqls) || 'string' === typeof operations.sqlString), "unsafeExecute expects an { sqls: [ [sql, [args..]], ... ] } or { sqlString: 'foo; bar' } object");
 diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/sqlite-node/DatabaseBridge.js b/node_modules/@nozbe/watermelondb/adapters/sqlite/sqlite-node/DatabaseBridge.js
-index a93b0a7..df63896 100644
+index 896e027..ce4866d 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/sqlite/sqlite-node/DatabaseBridge.js
 +++ b/node_modules/@nozbe/watermelondb/adapters/sqlite/sqlite-node/DatabaseBridge.js
 @@ -113,6 +113,14 @@ var DatabaseBridge = /*#__PURE__*/function () {
        });
      });
    };
-+  _proto.unsafeVacuum = function unsafeVacuum(tag, schema, schemaVersion, resolve, reject) {
++  _proto.unsafeVacuum = function (tag, schema, schemaVersion, resolve, reject) {
 +    this.withDriver(tag, resolve, reject, 'unsafeVacuum', function (driver) {
 +      return driver.unsafeVacuum({
 +        version: schemaVersion,
 +        sql: schema
 +      });
-+    });
++    }
 +  };
-   _proto.getLocal = function getLocal(tag, key, resolve, reject) {
+   _proto.getLocal = function (tag, key, resolve, reject) {
      this.withDriver(tag, resolve, reject, 'getLocal', function (driver) {
        return driver.getLocal(key);
 diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/sqlite-node/DatabaseDriver.js b/node_modules/@nozbe/watermelondb/adapters/sqlite/sqlite-node/DatabaseDriver.js
-index 483884c..c325299 100644
+index 40f7af6..97033b0 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/sqlite/sqlite-node/DatabaseDriver.js
 +++ b/node_modules/@nozbe/watermelondb/adapters/sqlite/sqlite-node/DatabaseDriver.js
 @@ -198,6 +198,10 @@ var DatabaseDriver = /*#__PURE__*/function () {
        _this5.database.userVersion = schema.version;
      });
    };
-+  _proto.unsafeVacuum = function unsafeVacuum() {
++  _proto.unsafeVacuum = function () {
 +    var _this5 = this;
 +    this.database.unsafeVacuum();
 +  };
-   _proto.migrate = function migrate(migrations) {
+   _proto.migrate = function (migrations) {
      var _this6 = this;
      var databaseVersion = this.database.userVersion;
 diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/type.d.ts b/node_modules/@nozbe/watermelondb/adapters/sqlite/type.d.ts
-index 16a8a71..ce6e743 100644
+index 5d1a321..bb7a195 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/sqlite/type.d.ts
 +++ b/node_modules/@nozbe/watermelondb/adapters/sqlite/type.d.ts
 @@ -45,6 +45,7 @@ export type SqliteDispatcherMethod =
@@ -356,10 +355,10 @@ index 16a8a71..ce6e743 100644
    | 'unsafeExecuteMultiple'
  
 diff --git a/node_modules/@nozbe/watermelondb/adapters/type.d.ts b/node_modules/@nozbe/watermelondb/adapters/type.d.ts
-index 027c366..5807e79 100644
+index 3a73e71..0e9395d 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/type.d.ts
 +++ b/node_modules/@nozbe/watermelondb/adapters/type.d.ts
-@@ -66,6 +66,9 @@ export interface DatabaseAdapter {
+@@ -67,6 +67,9 @@ export interface DatabaseAdapter {
    // Destroys the whole database, its schema, indexes, everything.
    unsafeResetDatabase(callback: ResultCallback<void>): void
  
@@ -595,16 +594,16 @@ index f0073c5..028031b 100644
      void executeMultiple(std::string sql);
  
 diff --git a/node_modules/@nozbe/watermelondb/native/shared/DatabaseBridge.cpp b/node_modules/@nozbe/watermelondb/native/shared/DatabaseBridge.cpp
-index ef0f23b..cb49ecd 100644
+index ef0f23b..d1a6742 100644
 --- a/node_modules/@nozbe/watermelondb/native/shared/DatabaseBridge.cpp
 +++ b/node_modules/@nozbe/watermelondb/native/shared/DatabaseBridge.cpp
-@@ -213,6 +213,18 @@ void Database::install(jsi::Runtime *runtime) {
-                 std::abort();
+@@ -75,7 +75,17 @@ void Database::install(jsi::Runtime *runtime) {
+                 databaseToDestroy->destroy();
              }
          });
+-
 +        createMethod(rt, adapter, "unsafeVacuum", 0, [database](jsi::Runtime &rt, const jsi::Value *args) {
 +            assert(database->initialized_);
-+
 +            try {
 +                database->unsafeVacuum();
 +                return jsi::Value::undefined();
@@ -614,9 +613,9 @@ index ef0f23b..cb49ecd 100644
 +                std::abort();
 +            }
 +        });
-         createMethod(rt, adapter, "unsafeClose", 0, [database](jsi::Runtime &rt, const jsi::Value *args) {
-             assert(database->initialized_);
-             database->destroy();
+         createMethod(rt, adapter, "initialize", 2, [database](jsi::Runtime &rt, const jsi::Value *args) {
+             jsi::String dbName = args[0].getString(rt);
+             int expectedVersion = (int)args[1].getNumber();
 diff --git a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.cpp b/node_modules/@nozbe/watermelondb/native/shared/Sqlite.cpp
 index e08153b..2fca075 100644
 --- a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.cpp
@@ -645,34 +644,32 @@ index 4fe52f1..a4a99da 100644
      sqlite3 *sqlite;
  
 diff --git a/node_modules/@nozbe/watermelondb/src/Database/index.js b/node_modules/@nozbe/watermelondb/src/Database/index.js
-index d4ca4e7..75c1f8e 100644
+index 6175192..3333e7c 100644
 --- a/node_modules/@nozbe/watermelondb/src/Database/index.js
 +++ b/node_modules/@nozbe/watermelondb/src/Database/index.js
-@@ -361,6 +361,24 @@ export default class Database {
+@@ -380,6 +380,22 @@ export default class Database {
      }
    }
  
 +  async unsafeVacuum(): Promise<void> {
-+    try {
-+      // Kill ability to call adapter methods during reset (to catch bugs if someone does this)
-+      const { adapter } = this
-+      const ErrorAdapter = require('../adapters/error').default
-+      this.adapter = (new ErrorAdapter(): any)
-+
-+      // Vacuum the database
-+      await adapter.unsafeVacuum()
-+
-+      // Restore working Database
-+      this._resetCount += 1
-+      this.adapter = adapter
-+    } finally {
-+      this._isBeingReset = false
-+    }
++  try {
++    // Kill ability to call adapter methods during reset (to catch bugs if someone does this)
++    const { adapter } = this
++    const ErrorAdapter = require('../adapters/error').default
++    this.adapter = (new ErrorAdapter(): any)
++    // Vacuum the database
++    await adapter.unsafeVacuum()
++    // Restore working Database
++    this._resetCount += 1
++    this.adapter = adapter
++  } finally {
++    this._isBeingReset = false
 +  }
++}
 +
-   _ensureInWriter(diagnosticMethodName: string): void {
-     invariant(
-       this._workQueue.isWriterRunning,
+   // (experimental) if true, Models will print to console diagnostic information on every
+   // prepareCreate/Update/Delete call, as well as on commit (Database.batch() call). Note that this
+   // has a significant performance impact so should only be enabled when debugging.
 diff --git a/node_modules/@nozbe/watermelondb/src/adapters/compat.js b/node_modules/@nozbe/watermelondb/src/adapters/compat.js
 index c5175c0..c8c0c17 100644
 --- a/node_modules/@nozbe/watermelondb/src/adapters/compat.js
@@ -701,20 +698,20 @@ index 9f1e847..cdd3af4 100644
        'setLocal',
        'removeLocal',
 diff --git a/node_modules/@nozbe/watermelondb/src/adapters/sqlite/index.js b/node_modules/@nozbe/watermelondb/src/adapters/sqlite/index.js
-index 72a5af9..908ef6d 100644
+index 72a5af9..d7871d9 100644
 --- a/node_modules/@nozbe/watermelondb/src/adapters/sqlite/index.js
 +++ b/node_modules/@nozbe/watermelondb/src/adapters/sqlite/index.js
 @@ -339,6 +339,19 @@ export default class SQLiteAdapter implements DatabaseAdapter {
      )
    }
  
-+  unsafeVacuum(callback: ResultCallback<void): void {
++  unsafeVacuum(callback: ResultCallback<
 +    this._dispatcher.call(
 +      'unsafeVacuum',
 +      [],
 +      (result) => {
 +        if (result.value) {
-+          logger.log('[SQLite] Database is vacuumed')
++          logger.log('[SQLite] Database 
 +        }
 +        callback(result)
 +      },
@@ -773,7 +770,7 @@ index 63c955f..4e2f43e 100644
    | 'unsafeExecuteMultiple'
  
 diff --git a/node_modules/@nozbe/watermelondb/src/adapters/type.js b/node_modules/@nozbe/watermelondb/src/adapters/type.js
-index 8929541..bc3f95d 100644
+index 8929541..b9a4174 100644
 --- a/node_modules/@nozbe/watermelondb/src/adapters/type.js
 +++ b/node_modules/@nozbe/watermelondb/src/adapters/type.js
 @@ -68,6 +68,8 @@ export interface DatabaseAdapter {
@@ -781,7 +778,7 @@ index 8929541..bc3f95d 100644
    unsafeResetDatabase(callback: ResultCallback<void>): void;
  
 +  unsafeVacuum(callback: ResultCallback<void>): void;
-+
++  
    // Performs work on the underlying database - see concrete DatabaseAdapter implementation for more details
    unsafeExecute(work: UnsafeExecuteOperations, callback: ResultCallback<void>): void;
  
