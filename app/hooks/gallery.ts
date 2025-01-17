@@ -212,7 +212,7 @@ export function useGalleryItem(
 ) {
     const gallery = useGallery(identifier);
     const ref = useAnimatedRef<any>();
-    const {opacity, activeIndex} = gallery!.sharedValues;
+    const {opacity, activeIndex} = gallery.sharedValues;
 
     const styles = useAnimatedStyle(() => {
         return {

@@ -35,7 +35,9 @@ export function processIsCRTEnabled(preferences: PreferenceModel[]|PreferenceTyp
 export const getThreadsListEdges = (threads: Thread[]) => {
     // Sort a clone of 'threads' array by last_reply_at
     const sortedThreads = [...threads].sort((a, b) => {
-        return a.last_reply_at - b.last_reply_at;
+        const aDate = a.last_reply_at || a.post.create_at;
+        const bDate = b.last_reply_at || b.post.create_at;
+        return aDate - bDate;
     });
 
     const earliestThread = sortedThreads[0];

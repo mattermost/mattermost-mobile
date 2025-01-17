@@ -1,5 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`<FormattedDate/> should default when timezone is not found 1`] = `
+<Text>
+  10:01 AM
+</Text>
+`;
+
 exports[`<FormattedDate/> should match snapshot for 'bg' locale and '{"dateStyle": "medium"}' format 1`] = `
 <Text>
   26.10.2024 г.
@@ -795,5 +801,647 @@ exports[`<FormattedDate/> should match snapshot for 'zh-TW' locale and 'undefine
 exports[`<FormattedDate/> should render with a manual user time 1`] = `
 <Text>
   Oct 26, 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Abidjan 1`] = `
+<Text>
+  10:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Addis_Ababa 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Algiers 1`] = `
+<Text>
+  11:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Blantyre 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Cairo 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Casablanca 1`] = `
+<Text>
+  11:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Ceuta 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Tripoli 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Windhoek 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Anchorage 1`] = `
+<Text>
+  2:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Anguilla 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Araguaina 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Argentina/Buenos_Aires 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Asuncion 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Bahia 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Bahia_Banderas 1`] = `
+<Text>
+  4:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Belize 1`] = `
+<Text>
+  4:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Bogota 1`] = `
+<Text>
+  5:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Boise 1`] = `
+<Text>
+  4:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Campo_Grande 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Caracas 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Chicago 1`] = `
+<Text>
+  5:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Chihuahua 1`] = `
+<Text>
+  4:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Creston 1`] = `
+<Text>
+  3:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Danmarkshavn 1`] = `
+<Text>
+  10:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Detroit 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Glace_Bay 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Godthab 1`] = `
+<Text>
+  9:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Havana 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Indiana/Marengo 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Los_Angeles 1`] = `
+<Text>
+  3:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Montevideo 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Noronha 1`] = `
+<Text>
+  8:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Regina 1`] = `
+<Text>
+  4:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Santa_Isabel 1`] = `
+<Text>
+  3:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Santiago 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Sao_Paulo 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Scoresbysund 1`] = `
+<Text>
+  9:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/St_Johns 1`] = `
+<Text>
+  7:31 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Tijuana 1`] = `
+<Text>
+  3:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/Casey 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/Davis 1`] = `
+<Text>
+  5:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/DumontDUrville 1`] = `
+<Text>
+  8:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/Macquarie 1`] = `
+<Text>
+  9:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/Mawson 1`] = `
+<Text>
+  3:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/McMurdo 1`] = `
+<Text>
+  11:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/Vostok 1`] = `
+<Text>
+  3:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Arctic/Longyearbyen 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Aden 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Amman 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Anadyr 1`] = `
+<Text>
+  10:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Baghdad 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Baku 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Beirut 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Brunei 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Chita 1`] = `
+<Text>
+  7:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Choibalsan 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Colombo 1`] = `
+<Text>
+  3:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Damascus 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Dhaka 1`] = `
+<Text>
+  4:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Dili 1`] = `
+<Text>
+  7:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Dubai 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Hong_Kong 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Irkutsk 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Jerusalem 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Kabul 1`] = `
+<Text>
+  2:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Kamchatka 1`] = `
+<Text>
+  10:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Karachi 1`] = `
+<Text>
+  3:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Kathmandu 1`] = `
+<Text>
+  3:46 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Kolkata 1`] = `
+<Text>
+  3:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Krasnoyarsk 1`] = `
+<Text>
+  5:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Nicosia 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Nicosia 2`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Novokuznetsk 1`] = `
+<Text>
+  5:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Pyongyang 1`] = `
+<Text>
+  7:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Rangoon 1`] = `
+<Text>
+  4:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Sakhalin 1`] = `
+<Text>
+  9:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Taipei 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Tbilisi 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Tehran 1`] = `
+<Text>
+  1:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Yekaterinburg 1`] = `
+<Text>
+  3:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Yerevan 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Atlantic/Canary 1`] = `
+<Text>
+  11:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Atlantic/Cape_Verde 1`] = `
+<Text>
+  9:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Australia/Adelaide 1`] = `
+<Text>
+  8:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Australia/Brisbane 1`] = `
+<Text>
+  8:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Australia/Currie 1`] = `
+<Text>
+  9:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Australia/Darwin 1`] = `
+<Text>
+  7:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Australia/Melbourne 1`] = `
+<Text>
+  9:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Etc/GMT+10 1`] = `
+<Text>
+  12:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Etc/GMT+11 1`] = `
+<Text>
+  11:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Etc/GMT+12 1`] = `
+<Text>
+  10:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Etc/GMT-12 1`] = `
+<Text>
+  10:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Etc/GMT-13 1`] = `
+<Text>
+  11:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Astrakhan 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Belgrade 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Guernsey 1`] = `
+<Text>
+  11:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Helsinki 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Isle_of_Man 1`] = `
+<Text>
+  11:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Istanbul 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Kaliningrad 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Kirov 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Sarajevo 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Indian/Mahe 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Pacific/Apia 1`] = `
+<Text>
+  11:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Pacific/Fiji 1`] = `
+<Text>
+  10:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone undefined 1`] = `
+<Text>
+  10:01 AM
 </Text>
 `;

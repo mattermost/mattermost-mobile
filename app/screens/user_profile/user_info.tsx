@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
-import {useIntl} from 'react-intl';
 
+import React, {useEffect, useRef, useState} from 'react';
+
+import {useServerUrl} from '@context/server';
+import NetworkManager from '@managers/network_manager';
 import {getUserCustomStatus} from '@utils/user';
 
+import CustomAttributes from './custom_attributes';
 import UserProfileCustomStatus from './custom_status';
-import UserProfileLabel from './label';
 
 import type {UserModel} from '@database/models/server';
 
@@ -17,36 +19,63 @@ type Props = {
     showNickname: boolean;
     showPosition: boolean;
     user: UserModel;
+    enableCustomAttributes?: boolean;
 }
 
-const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user}: Props) => {
-    const {formatMessage} = useIntl();
+const emptyList: DisplayCustomAttribute[] = []; /** avoid re-renders **/
+
+const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user, enableCustomAttributes}: Props) => {
     const customStatus = getUserCustomStatus(user);
+    const serverUrl = useServerUrl();
+    const [customAttributes, setCustomAttributes] = useState<DisplayCustomAttribute[]>(emptyList);
+    const lastRequest = useRef(0);
+
+    useEffect(() => {
+        if (enableCustomAttributes) {
+            const fetchData = async () => {
+                const reqTime = Date.now();
+                lastRequest.current = reqTime;
+                try {
+                    const client = NetworkManager.getClient(serverUrl);
+                    const [fields, attrValues] = await Promise.all([
+                        client.getCustomProfileAttributeFields(),
+                        client.getCustomProfileAttributeValues(user.id),
+                    ]);
+
+                    // ignore results if there was a newer request
+                    if (fields && fields.length > 0 && lastRequest.current === reqTime) {
+                        const attributes = fields.map((field) => {
+                            if (attrValues[field.id]) {
+                                return ({
+                                    id: field.id,
+                                    name: field.name,
+                                    value: attrValues[field.id] || '',
+                                } as DisplayCustomAttribute);
+                            }
+                            return {} as DisplayCustomAttribute; // this will be cleaned out in CustomAttributes along with the fixed attributes.
+                        });
+                        setCustomAttributes(attributes);
+                    }
+                } catch {
+                    setCustomAttributes(emptyList);
+                }
+            };
+
+            fetchData();
+        } else {
+            setCustomAttributes(emptyList);
+        }
+    }, [enableCustomAttributes, serverUrl, user.id]);
 
     return (
         <>
-            {showCustomStatus && <UserProfileCustomStatus customStatus={customStatus!}/> }
-            {showNickname &&
-                <UserProfileLabel
-                    description={user.nickname}
-                    testID='user_profile.nickname'
-                    title={formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'})}
-                />
-            }
-            {showPosition &&
-                <UserProfileLabel
-                    description={user.position}
-                    testID='user_profile.position'
-                    title={formatMessage({id: 'channel_info.position', defaultMessage: 'Position'})}
-                />
-            }
-            {showLocalTime &&
-                <UserProfileLabel
-                    description={localTime!}
-                    testID='user_profile.local_time'
-                    title={formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'})}
-                />
-            }
+            {showCustomStatus && <UserProfileCustomStatus customStatus={customStatus!}/>}
+            <CustomAttributes
+                nickname={showNickname ? user.nickname : undefined}
+                position={showPosition ? user.position : undefined}
+                localTime={showLocalTime ? localTime : undefined}
+                customAttributes={customAttributes}
+            />
         </>
     );
 };

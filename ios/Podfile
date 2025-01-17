@@ -12,7 +12,7 @@ require File.join(File.dirname(`node --print "require.resolve('expo/package.json
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
-platform :ios, min_ios_version_supported
+platform :ios, '15.1' #min_ios_version_supported
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -54,7 +54,7 @@ target 'Mattermost' do
   
     # installer.pods_project.targets.each do |target|
     #   target.build_configurations.each do |config|
-    #     config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.4'
+    #     config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
     #   end
     # end
   end
