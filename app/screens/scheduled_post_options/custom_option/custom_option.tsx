@@ -9,6 +9,7 @@ import {useTheme} from '@context/theme';
 import DateTimeSelector from '@screens/custom_status_clear_after/components/date_time_selector';
 import PickerOption from '@screens/post_priority_picker/components/picker_option';
 import {makeStyleSheetFromTheme} from "@utils/theme";
+import type {Moment} from "moment-timezone";
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -28,26 +29,28 @@ export function ScheduledPostCustomOption({userTimezone}: Props) {
     const intl = useIntl();
     const theme = useTheme();
 
-    const styles = getStyleSheet(theme);
-
+    const [selectedCustomTime, setSelectedCustomTime] = useState<Moment | null>(null);
     const [showDateTimePicker, setShowDateTimePicker] = useState(false);
 
     const onClick = useCallback(() => {
         setShowDateTimePicker((show) => !show);
     }, []);
 
-    console.log({showDateTimePicker, userTimezone});
+    const handleCustomTimeChange = useCallback((selectedTime: Moment) => {
+        setSelectedCustomTime(selectedTime);
+    }, []);
 
     return (
         <View>
             <PickerOption
                 key='scheduledPostOptionCustom'
                 label={intl.formatMessage({id: 'scheduled_post.picker.custom', defaultMessage: 'Custom Time'})}
+                // description={selectedCustomTime?.toLocaleString()}
                 action={onClick}
             />
             {showDateTimePicker && (
                 <DateTimeSelector
-                    handleChange={() => {}}
+                    handleChange={handleCustomTimeChange}
                     theme={theme}
                     timezone={userTimezone}
                 />

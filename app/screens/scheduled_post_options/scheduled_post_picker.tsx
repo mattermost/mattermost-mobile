@@ -16,6 +16,8 @@ import {typography} from '@utils/typography';
 
 import type UserModel from '@typings/database/models/servers/user';
 import {getTimezone} from "@utils/user";
+import type {BottomSheetFooterProps} from "@gorhom/bottom-sheet";
+import Footer from "@screens/post_priority_picker/footer";
 
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
@@ -100,6 +102,14 @@ export function ScheduledPostOptions({currentUser}: Props) {
         );
     };
 
+    const renderFooter = (props: BottomSheetFooterProps) => (
+        <Footer
+            {...props}
+            // onCancel={closeBottomSheet}
+            onSubmit={() => {}}
+        />
+    );
+
     return (
         <BottomSheet
             renderContent={renderContent}
@@ -107,6 +117,7 @@ export function ScheduledPostOptions({currentUser}: Props) {
             closeButtonId={SCHEDULED_POST_OPTIONS_BUTTON}
             snapPoints={snapPoints}
             testID='scheduled_post_options_bottom_sheet'
+            footerComponent={renderFooter}
         />
     );
 }
