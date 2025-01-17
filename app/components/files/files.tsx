@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -9,10 +9,10 @@ import {Events} from '@constants';
 import {GalleryInit} from '@context/gallery';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {getViewPortWidth} from '@utils/images';
-import {preventDoubleTap} from '@utils/tap';
 
 import File from './file';
 
@@ -49,29 +49,38 @@ const styles = StyleSheet.create({
     },
 });
 
-const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, location, postId, postProps, publicLinkEnabled}: FilesProps) => {
+const Files = ({
+    canDownloadFiles,
+    failed,
+    filesInfo,
+    isReplyPost,
+    layoutWidth,
+    location,
+    postId,
+    postProps,
+    publicLinkEnabled,
+}: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
     const isTablet = useIsTablet();
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(filesInfo, publicLinkEnabled);
-
-    const filesForGallery = useMemo(() => imageAttachments.concat(nonImageAttachments),
-        [imageAttachments, nonImageAttachments]);
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(filesInfo);
+    const [filesForGallery, setFilesForGallery] = useState(() => [...imageAttachments, ...nonImageAttachments]);
 
     const attachmentIndex = (fileId: string) => {
         return filesForGallery.findIndex((file) => file.id === fileId) || 0;
     };
 
-    const handlePreviewPress = preventDoubleTap((idx: number) => {
+    const handlePreviewPress = usePreventDoubleTap(useCallback((idx: number) => {
         const items = filesForGallery.map((f) => fileToGalleryItem(f, f.user_id, postProps));
         openGalleryAtIndex(galleryIdentifier, idx, items);
-    });
+    }, [filesForGallery, galleryIdentifier, postProps]));
 
-    const updateFileForGallery = (idx: number, file: FileInfo) => {
-        'worklet';
-        filesForGallery[idx] = file;
-    };
+    const updateFileForGallery = useCallback((idx: number, file: FileInfo) => {
+        const newFilesForGallery = [...filesForGallery];
+        newFilesForGallery[idx] = file;
+        setFilesForGallery(newFilesForGallery);
+    }, [filesForGallery]);
 
     const isSingleImage = useMemo(() => filesInfo.filter((f) => isImage(f) || isVideo(f)).length === 1, [filesInfo]);
 
@@ -79,6 +88,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
         let nonVisibleImagesCount: number;
         let container: StyleProp<ViewStyle> = items.length > 1 ? styles.container : undefined;
         const containerWithGutter = [container, styles.gutter];
+        const wrapperWidth = getViewPortWidth(isReplyPost, isTablet) - 6;
 
         return items.map((file, idx) => {
             if (moreImagesCount && idx === MAX_VISIBLE_ROW_IMAGES - 1) {
@@ -91,6 +101,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
             return (
                 <View
                     style={[container, styles.marginTop]}
+                    testID={`${file.id}-file-container`}
                     key={file.id}
                 >
                     <File
@@ -104,7 +115,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
                         nonVisibleImagesCount={nonVisibleImagesCount}
                         publicLinkEnabled={publicLinkEnabled}
                         updateFileForGallery={updateFileForGallery}
-                        wrapperWidth={layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 6)}
+                        wrapperWidth={layoutWidth || wrapperWidth}
                         inViewPort={inViewPort}
                     />
                 </View>
@@ -126,7 +137,10 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
         }
 
         return (
-            <View style={[styles.row, {width: portraitPostWidth}]}>
+            <View
+                style={[styles.row, {width: portraitPostWidth}]}
+                testID='image-row'
+            >
                 { renderItems(visibleImages, nonVisibleImagesCount, true) }
             </View>
         );
@@ -140,11 +154,18 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
         });
 
         return () => onScrollEnd.remove();
-    }, []);
+    }, [location, postId]);
+
+    useEffect(() => {
+        setFilesForGallery([...imageAttachments, ...nonImageAttachments]);
+    }, [imageAttachments, nonImageAttachments]);
 
     return (
         <GalleryInit galleryIdentifier={galleryIdentifier}>
-            <Animated.View style={[failed && styles.failed]}>
+            <Animated.View
+                testID='files-container'
+                style={failed ? styles.failed : undefined}
+            >
                 {renderImageRow()}
                 {renderItems(nonImageAttachments)}
             </Animated.View>
