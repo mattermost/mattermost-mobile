@@ -54,7 +54,7 @@ describe('WebSocket Index Actions', () => {
     const currentUserId = 'current-user-id';
     const currentTeamId = 'current-team-id';
     const currentChannelId = 'current-channel-id';
-    const groupLabel = 'group-label';
+    const groupLabel = 'DeepLink';
 
     beforeEach(async () => {
         jest.clearAllMocks();
