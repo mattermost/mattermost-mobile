@@ -94,7 +94,7 @@ const File = ({
         } else {
             onPress(index);
         }
-    }, [index]);
+    }, [index, onPress]);
 
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
 

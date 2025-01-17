@@ -76,7 +76,7 @@ const FileResults = ({
     const containerStyle = useMemo(() => ([paddingTop, {flexGrow: 1}]), [paddingTop]);
     const numOptions = getNumberFileMenuOptions(canDownloadFiles, publicLinkEnabled);
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos);
     const filesForGallery = useMemo(() => imageAttachments.concat(nonImageAttachments), [imageAttachments, nonImageAttachments]);
 
     const channelNames = useMemo(() => getChannelNamesWithID(fileChannels), [fileChannels]);
