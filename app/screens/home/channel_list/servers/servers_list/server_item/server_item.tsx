@@ -179,7 +179,7 @@ const ServerItem = ({
         setBadge({isUnread, mentions});
     };
 
-    const logoutServer = async () => {
+    const logoutServer = useCallback(async () => {
         Navigation.updateProps(Screens.HOME, {extra: undefined});
         await logout(server.url, intl);
 
@@ -188,14 +188,14 @@ const ServerItem = ({
         } else {
             DeviceEventEmitter.emit(Events.SWIPEABLE, '');
         }
-    };
+    }, [intl, isActive, server.url]);
 
-    const removeServer = async () => {
+    const removeServer = useCallback(async () => {
         const skipLogoutFromServer = server.lastActiveAt === 0;
         await dismissBottomSheet();
         Navigation.updateProps(Screens.HOME, {extra: undefined});
         await logout(server.url, intl, skipLogoutFromServer, true);
-    };
+    }, [intl, server.lastActiveAt, server.url]);
 
     const startTutorial = () => {
         viewRef.current?.measureInWindow((x, y, w, h) => {
@@ -222,7 +222,7 @@ const ServerItem = ({
                 setShowTutorial(true);
             });
         }
-    }, [showTutorial]);
+    }, [highlight, isTablet, tutorialWatched]);
 
     useLayoutEffect(() => {
         if (showTutorial && !tutorialShown.current) {
@@ -239,7 +239,7 @@ const ServerItem = ({
         }
 
         return style;
-    }, [isActive]);
+    }, [isActive, styles.active, styles.container]);
 
     const serverStyle = useMemo(() => {
         const style: StyleProp<ViewStyle> = [styles.row];
@@ -248,7 +248,7 @@ const ServerItem = ({
         }
 
         return style;
-    }, [server.lastActiveAt]);
+    }, [server.lastActiveAt, styles.offline, styles.row]);
 
     const handleLogin = useCallback(async () => {
         swipeable.current?.close();
@@ -275,7 +275,7 @@ const ServerItem = ({
 
         canReceiveNotifications(server.url, result.canReceiveNotifications as string, intl);
         loginToServer(theme, server.url, displayName, data.config!, data.license!);
-    }, [server, theme, intl]);
+    }, [server.url, intl, theme, displayName]);
 
     const handleDismissTutorial = useCallback(() => {
         swipeable.current?.close();
@@ -286,15 +286,15 @@ const ServerItem = ({
     const handleEdit = useCallback(() => {
         DeviceEventEmitter.emit(Events.SWIPEABLE, '');
         editServer(theme, server);
-    }, [server]);
+    }, [server, theme]);
 
     const handleLogout = useCallback(async () => {
         alertServerLogout(server.displayName, logoutServer, intl);
-    }, [isActive, intl, server]);
+    }, [server.displayName, logoutServer, intl]);
 
     const handleRemove = useCallback(() => {
         alertServerRemove(server.displayName, removeServer, intl);
-    }, [isActive, server, intl]);
+    }, [server.displayName, removeServer, intl]);
 
     const handleShowTutorial = useCallback(() => {
         swipeable.current?.openRight();
@@ -311,12 +311,12 @@ const ServerItem = ({
             await dismissBottomSheet();
             Navigation.updateProps(Screens.HOME, {extra: undefined});
             DatabaseManager.setActiveServerDatabase(server.url);
-            WebsocketManager.initializeClient(server.url, 'entry');
+            WebsocketManager.initializeClient(server.url, 'Server Switch');
             return;
         }
 
         handleLogin();
-    }, [server, isActive, theme, intl]);
+    }, [isActive, server.lastActiveAt, server.url, handleLogin]);
 
     const onSwipeableWillOpen = useCallback(() => {
         DeviceEventEmitter.emit(Events.SWIPEABLE, server.url);

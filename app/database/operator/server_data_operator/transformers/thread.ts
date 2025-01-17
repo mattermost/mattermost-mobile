@@ -33,8 +33,9 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
     const fieldsMapper = (thread: ThreadModel) => {
         thread._raw.id = isCreateAction ? (raw?.id ?? thread.id) : record.id;
 
-        // When post is individually fetched, we get last_reply_at as 0, so we use the record's value
-        thread.lastReplyAt = raw.last_reply_at || record?.lastReplyAt;
+        // When post is individually fetched, we get last_reply_at as 0, so we use the record's value.
+        // If there is no reply at, we default to the post's create_at
+        thread.lastReplyAt = raw.last_reply_at || record?.lastReplyAt || raw.post.create_at;
 
         thread.lastViewedAt = raw.last_viewed_at ?? record?.lastViewedAt ?? 0;
         thread.replyCount = raw.reply_count;

@@ -65,6 +65,7 @@ class LoginScreen {
         await this.usernameInput.replaceText(user.newUser.email);
         await this.passwordInput.tap();
         await this.passwordInput.replaceText(user.newUser.password);
+        await element(by.text(/^Log In to Your Account*$/)).tap();
         await this.signinButton.tap();
 
         await wait(timeouts.FOUR_SEC);

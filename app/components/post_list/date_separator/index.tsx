@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {type StyleProp, View, type ViewStyle} from 'react-native';
+import {type StyleProp, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import FormattedDate, {type FormattedDateFormat} from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
@@ -13,7 +13,7 @@ import {typography} from '@utils/typography';
 
 type DateSeparatorProps = {
     date: number | Date;
-    style?: StyleProp<ViewStyle>;
+    style?: StyleProp<Intersection<TextStyle, ViewStyle>>;
     timezone?: string | null;
 };
 
@@ -81,7 +81,7 @@ const DateSeparator = (props: DateSeparatorProps) => {
     const styles = getStyleSheet(theme);
 
     return (
-        <View style={[styles.container, props.style]}>
+        <View style={[styles.container, props.style as StyleProp<ViewStyle>]}>
             <View style={styles.line}/>
             <RecentDate
                 {...props}

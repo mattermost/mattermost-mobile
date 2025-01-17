@@ -46,6 +46,7 @@ type Props = {
     userIconOverride?: string;
     usernameOverride?: string;
     hideGuestTags: boolean;
+    enableCustomAttributes: boolean;
 }
 
 const TITLE_HEIGHT = 118;
@@ -86,6 +87,7 @@ const UserProfile = ({
     userIconOverride,
     usernameOverride,
     hideGuestTags,
+    enableCustomAttributes,
 }: Props) => {
     const {formatMessage, locale} = useIntl();
     const serverUrl = useServerUrl();
@@ -150,12 +152,14 @@ const UserProfile = ({
         return [
             1,
             bottomSheetSnapPoint(optionsCount, LABEL_HEIGHT) + title + extraHeight,
+            '90%',
         ];
     }, [
         headerText, showUserProfileOptions, showCustomStatus,
         showNickname, showPosition, showLocalTime,
         manageMode, bottom, showOptions,
         canChangeMemberRoles, canManageAndRemoveMembers,
+        enableCustomAttributes,
     ]);
 
     useEffect(() => {
@@ -189,7 +193,7 @@ const UserProfile = ({
                         userId={user.id}
                     />
                 }
-                {!manageMode &&
+                {!manageMode && (
                     <UserInfo
                         localTime={localTime}
                         showCustomStatus={showCustomStatus}
@@ -197,8 +201,9 @@ const UserProfile = ({
                         showPosition={showPosition}
                         showLocalTime={showLocalTime}
                         user={user}
+                        enableCustomAttributes={enableCustomAttributes}
                     />
-                }
+                )}
                 {manageMode && channelId && (canManageAndRemoveMembers || canChangeMemberRoles) &&
                     <ManageUserOptions
                         canChangeMemberRoles={canChangeMemberRoles}
