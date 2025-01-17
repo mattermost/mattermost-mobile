@@ -6,6 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
 import Channel from '@screens/channel';
+import GlobalDrafts from '@screens/global_drafts';
 import GlobalThreads from '@screens/global_threads';
 
 type SelectedView = {
@@ -22,6 +23,7 @@ type Props = {
 const ComponentsList: Record<string, React.ComponentType<any>> = {
     [Screens.CHANNEL]: Channel,
     [Screens.GLOBAL_THREADS]: GlobalThreads,
+    [Screens.GLOBAL_DRAFTS]: GlobalDrafts,
 };
 
 const channelScreen: SelectedView = {id: Screens.CHANNEL, Component: Channel};
