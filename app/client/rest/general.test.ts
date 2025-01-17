@@ -21,7 +21,7 @@ describe('ClientGeneral', () => {
     test('ping', async () => {
         const deviceId = 'device1';
         const timeoutInterval = 1000;
-        const groupLabel = 'group1';
+        const groupLabel = 'DeepLink';
         const expectedUrl = `${client.urlVersion}/system/ping?time=${Date.now()}&device_id=${deviceId}`;
         const expectedOptions = {method: 'get', timeoutInterval, groupLabel};
 
@@ -59,7 +59,7 @@ describe('ClientGeneral', () => {
     });
 
     test('getClientConfigOld', async () => {
-        const groupLabel = 'group1';
+        const groupLabel = 'Notification';
         const expectedUrl = `${client.urlVersion}/config/client?format=old`;
         const expectedOptions = {method: 'get', groupLabel};
 
@@ -69,7 +69,7 @@ describe('ClientGeneral', () => {
     });
 
     test('getClientLicenseOld', async () => {
-        const groupLabel = 'group1';
+        const groupLabel = 'Notification';
         const expectedUrl = `${client.urlVersion}/license/client?format=old`;
         const expectedOptions = {method: 'get', groupLabel};
 
@@ -88,7 +88,7 @@ describe('ClientGeneral', () => {
     });
 
     test('getGlobalDataRetentionPolicy', async () => {
-        const groupLabel = 'group1';
+        const groupLabel = 'Notification';
         const expectedUrl = `${client.getGlobalDataRetentionRoute()}/policy`;
         const expectedOptions = {method: 'get', groupLabel};
 
@@ -101,7 +101,7 @@ describe('ClientGeneral', () => {
         const userId = 'user1';
         const page = 1;
         const perPage = 10;
-        const groupLabel = 'group1';
+        const groupLabel = 'Notification';
         const expectedUrl = `${client.getGranularDataRetentionRoute(userId)}/team_policies${buildQueryString({page, per_page: perPage})}`;
         const expectedOptions = {method: 'get', groupLabel};
 
@@ -118,7 +118,7 @@ describe('ClientGeneral', () => {
         const userId = 'user1';
         const page = 1;
         const perPage = 10;
-        const groupLabel = 'group1';
+        const groupLabel = 'Notification';
         const expectedUrl = `${client.getGranularDataRetentionRoute(userId)}/channel_policies${buildQueryString({page, per_page: perPage})}`;
         const expectedOptions = {method: 'get', groupLabel};
 
@@ -133,7 +133,7 @@ describe('ClientGeneral', () => {
 
     test('getRolesByNames', async () => {
         const rolesNames = ['role1', 'role2'];
-        const groupLabel = 'group1';
+        const groupLabel = 'Notification';
         const expectedUrl = `${client.getRolesRoute()}/names`;
         const expectedOptions = {method: 'post', body: rolesNames, groupLabel};
 
