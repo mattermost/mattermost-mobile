@@ -290,7 +290,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@calls/screens/host_controls').default);
             break;
         case Screens.SCHEDULED_POST_OPTIONS:
-            screen = withServerDatabase(require('@screens/scheduled_post_options/scheduled_post_picker').default);
+            screen = withServerDatabase(require('@screens/scheduled_post_options').default);
             break;
     }
 
