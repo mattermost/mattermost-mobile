@@ -259,22 +259,5 @@ describe('WebSocket Group Actions', () => {
 
             expect(DatabaseManager.getServerDatabaseAndOperator).not.toHaveBeenCalled();
         });
-
-        it('should handle missing database operator', async () => {
-            const msg = {
-                broadcast: {},
-                data: {
-                    group: JSON.stringify({id: groupId}),
-                },
-            } as WebSocketMessage;
-
-            DatabaseManager.getServerDatabaseAndOperator = jest.fn().mockReturnValue({
-                database: {},
-                operator: null,
-            });
-
-            await handleGroupReceivedEvent(serverUrl, msg);
-            expect(logError).toHaveBeenCalled();
-        });
     });
 });

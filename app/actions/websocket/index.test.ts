@@ -94,9 +94,9 @@ describe('WebSocket Index Actions', () => {
             jest.mocked(getConfig).mockResolvedValue({Version: '9.0.0'} as ClientConfig);
             jest.mocked(isSupportedServerCalls).mockReturnValue(true);
 
-            const result = await handleFirstConnect(serverUrl, groupLabel);
+            const error = await handleFirstConnect(serverUrl, groupLabel);
 
-            expect(result).toBeUndefined();
+            expect(error).toBeUndefined();
             expect(entry).toHaveBeenCalled();
             expect(handleEntryAfterLoadNavigation).toHaveBeenCalled();
             expect(setLastFullSync).toHaveBeenCalled();
@@ -107,10 +107,10 @@ describe('WebSocket Index Actions', () => {
         it('should handle error when server database not found', async () => {
             DatabaseManager.serverDatabases = {};
 
-            const result = await handleFirstConnect(serverUrl) as any;
+            const error = await handleFirstConnect(serverUrl) as any;
 
-            expect(result).toBeInstanceOf(Error);
-            expect(result.message).toBe('cannot find server database');
+            expect(error).toBeInstanceOf(Error);
+            expect(error.message).toBe('cannot find server database');
         });
     });
 
@@ -145,9 +145,9 @@ describe('WebSocket Index Actions', () => {
             jest.mocked(isSupportedServerCalls).mockReturnValue(true);
             jest.mocked(getActiveServerUrl).mockResolvedValue(serverUrl);
 
-            const result = await handleReconnect(serverUrl);
+            const error = await handleReconnect(serverUrl);
 
-            expect(result).toBeUndefined();
+            expect(error).toBeUndefined();
             expect(entry).toHaveBeenCalled();
             expect(handleEntryAfterLoadNavigation).toHaveBeenCalled();
             expect(setLastFullSync).toHaveBeenCalled();
