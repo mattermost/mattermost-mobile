@@ -11,14 +11,13 @@ import PickerOption from '@screens/post_priority_picker/components/picker_option
 import {getTimezone} from '@utils/user';
 
 type Props = {
-    currentUser?: UserModel;
+    userTimezone: string;
     onSelectOption: (selectedTime: string) => void;
 }
 
-export function ScheduledPostCoreOptions({currentUser, onSelectOption}: Props) {
+export function ScheduledPostCoreOptions({userTimezone, onSelectOption}: Props) {
     const intl = useIntl();
 
-    const userTimezone = getTimezone(currentUser?.timezone);
     const now = moment().tz(userTimezone);
 
     const nextMonday = now.clone().isoWeekday(1).add(1, 'week').startOf('day').hour(9).minute(0);

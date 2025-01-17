@@ -15,6 +15,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type UserModel from '@typings/database/models/servers/user';
+import {getTimezone} from "@utils/user";
 
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
@@ -50,9 +51,11 @@ type Props = {
     serverUrl: string;
 }
 
-export function ScheduledPostOptions(props: Props) {
+export function ScheduledPostOptions({currentUser}: Props) {
     const isTablet = useIsTablet();
     const theme = useTheme();
+
+    const userTimezone = getTimezone(currentUser?.timezone);
 
     const style = getStyleSheet(theme);
 
@@ -61,7 +64,7 @@ export function ScheduledPostOptions(props: Props) {
 
         // we'll have 4 items max in here - max two for core options,
         // one for custom option and max one for user's previously selected option.
-        const numberOfItems = 4;
+        const numberOfItems = 8;
         const COMPONENT_HEIGHT = TITLE_HEIGHT + (numberOfItems * ITEM_HEIGHT) + bottomSheetAdjust;
         return [1, COMPONENT_HEIGHT];
     }, []);
@@ -85,10 +88,13 @@ export function ScheduledPostOptions(props: Props) {
                 }
                 <View style={style.optionsContainer}>
                     <ScheduledPostCoreOptions
+                        userTimezone={userTimezone}
                         onSelectOption={onSelectTime}
                     />
                     <View style={style.optionsSeparator}/>
-                    <ScheduledPostCustomOption/>
+                    <ScheduledPostCustomOption
+                        userTimezone={userTimezone}
+                    />
                 </View>
             </View>
         );

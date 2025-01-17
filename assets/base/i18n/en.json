@@ -971,6 +971,7 @@
   "post_priority.picker.label.urgent": "Urgent",
   "post_priority.picker.title": "Message priority",
   "scheduled_post.picker.title": "Schedule draft",
+  "scheduled_post.custom_time_picker.title": "Select date & time",
   "post.options.title": "Options",
   "post.reactions.title": "Reactions",
   "postList.scrollToBottom.newMessages": "New messages",

@@ -30,16 +30,16 @@ type AndroidMode = 'date' | 'time';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            flex: 1,
-            paddingTop: 10,
-            backgroundColor: theme.centerChannelBg,
+            // flex: 1,
+            // paddingTop: 10,
+            // backgroundColor: theme.centerChannelBg,
         },
         buttonContainer: {
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-evenly',
-            marginBottom: 10,
+            // flex: 1,
+            // flexDirection: 'row',
+            // alignItems: 'center',
+            // justifyContent: 'space-evenly',
+            // marginBottom: 10,
         },
     };
 });
@@ -52,6 +52,8 @@ const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme}: Props
     const [date, setDate] = useState<Moment>(minimumDate);
     const [mode, setMode] = useState<AndroidMode>('date');
     const [show, setShow] = useState<boolean>(false);
+
+    console.log({currentTime, minimumDate});
 
     const onChange = (_: DateTimePickerEvent, selectedDate: Date) => {
         const currentDate = selectedDate || date;
@@ -76,6 +78,8 @@ const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme}: Props
         showMode('time');
         handleChange(moment(date));
     };
+
+    console.log({show, mode});
 
     return (
         <View style={styles.container}>

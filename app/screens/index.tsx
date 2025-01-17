@@ -292,6 +292,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SCHEDULED_POST_OPTIONS:
             screen = withServerDatabase(require('@screens/scheduled_post_options').default);
             break;
+        case Screens.SCHEDULED_POST_CUSTOM_TIME_PICKER:
+            screen = withServerDatabase(require('@screens/scheduled_post_date_time_picker').default);
+            break;
     }
 
     if (screen) {

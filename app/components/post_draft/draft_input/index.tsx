@@ -27,7 +27,6 @@ import type {WithDatabaseArgs} from "@typings/database/database";
 import { useIsTablet } from '@hooks/device';
 import {openAsBottomSheet} from "@screens/navigation";
 import {Screens} from "@constants";
-import {SCHEDULED_POST_OPTIONS} from "@constants/screens";
 
 type Props = {
     testID?: string;
