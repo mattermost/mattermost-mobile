@@ -5,7 +5,6 @@ import {fetchGroupsForChannel, fetchGroupsForMember, fetchGroupsForTeam} from '@
 import DatabaseManager from '@database/manager';
 import {deleteGroupChannelById, deleteGroupMembershipById, deleteGroupTeamById} from '@queries/servers/group';
 import {generateGroupAssociationId} from '@utils/groups';
-import {logError} from '@utils/log';
 
 import {
     handleGroupReceivedEvent,
