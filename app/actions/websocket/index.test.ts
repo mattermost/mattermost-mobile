@@ -162,8 +162,8 @@ describe('WebSocket Index Actions', () => {
             jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['Channel']);
             await handleReconnect(serverUrl);
 
-            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, 'reconnection');
-            expect(markChannelAsRead).toHaveBeenCalledWith(serverUrl, currentChannelId, false, 'reconnection');
+            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, false, 'WebSocket Reconnect');
+            expect(markChannelAsRead).toHaveBeenCalledWith(serverUrl, currentChannelId, false, 'WebSocket Reconnect');
             expect(markChannelAsViewed).toHaveBeenCalledWith(serverUrl, currentChannelId, true);
         });
 
@@ -188,7 +188,7 @@ describe('WebSocket Index Actions', () => {
                     direction: 'down',
                 },
                 false,
-                'reconnection',
+                'WebSocket Reconnect',
             );
         });
 
