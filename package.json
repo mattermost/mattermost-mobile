@@ -159,6 +159,7 @@
     "nock": "13.5.4",
     "patch-package": "8.0.0",
     "react-devtools-core": "5.3.1",
+    "timezones.json": "1.7.1",
     "tough-cookie": "4.1.4",
     "ts-jest": "29.2.4",
     "typescript": "5.5.4",
