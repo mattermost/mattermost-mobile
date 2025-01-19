@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {throttle} from 'lodash';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     View,
@@ -97,60 +97,60 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
         setHasPaused(!hasPaused);
     };
 
-    const onDownloadPress = async () => {
+    const onDownloadPress = useCallback(async () => {
         if (!canDownloadFiles) {
             alertDownloadDocumentDisabled(intl);
             return;
         }
 
         toggleDownloadAndPreview(file);
-    };
+    }, [canDownloadFiles, intl, file, toggleDownloadAndPreview]);
 
-    const loadTimeInMinutes = (timeInSeconds: number) => {
+    const loadTimeInMinutes = useCallback((timeInSeconds: number) => {
         const minutes = Math.floor(timeInSeconds / 60);
         const seconds = Math.floor(timeInSeconds % 60);
         setTimeInMinutes(`${minutes}:${seconds.toString().padStart(2, '0')}`);
-    };
+    }, []);
 
-    const onLoad = (loadData: OnLoadData) => {
+    const onLoad = useCallback((loadData: OnLoadData) => {
         loadTimeInMinutes(loadData.duration);
         setDuration(loadData.duration);
-    };
+    }, [loadTimeInMinutes]);
 
-    const onProgress = (progressData: OnProgressData) => {
+    const onProgress = useCallback((progressData: OnProgressData) => {
         if (hasPaused) {
             return;
         }
         const {currentTime, playableDuration} = progressData;
         setProgress(currentTime / playableDuration);
         throttle(() => loadTimeInMinutes(currentTime), 1000)();
-    };
+    }, [hasPaused, loadTimeInMinutes]);
 
-    const onEnd = () => {
+    const onEnd = useCallback(() => {
         if (videoRef.current) {
             videoRef.current.seek(0);
         }
         setHasEnded(true);
-    };
+    }, []);
 
-    const onError = () => {
+    const onError = useCallback(() => {
         setHasError(true);
-    };
+    }, []);
 
-    const onSeek = (seekPosition: number) => {
+    const onSeek = useCallback((seekPosition: number) => {
         if (videoRef.current && duration > 0) {
             const newTime = seekPosition * duration;
             videoRef.current.seek(newTime);
             setProgress(seekPosition);
             throttle(() => loadTimeInMinutes(newTime), 100)();
         }
-    };
+    }, [duration, loadTimeInMinutes]);
 
-    const onAudioFocusChanged = ({hasAudioFocus}: {hasAudioFocus: boolean}) => {
+    const onAudioFocusChanged = useCallback(({hasAudioFocus}: {hasAudioFocus: boolean}) => {
         if (!hasAudioFocus) {
             setHasPaused(true);
         }
-    };
+    }, []);
 
     if (hasError) {
         return (
