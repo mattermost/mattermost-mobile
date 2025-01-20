@@ -472,7 +472,7 @@ describe('Actions.Calls', () => {
         // Test successful case
         await act(async () => {
             mockClient.getCallsConfig.mockReturnValueOnce({DefaultEnabled: true, AllowEnableCalls: true});
-            const successResult = await CallsActions.loadConfig('server1', false, 'calls');
+            const successResult = await CallsActions.loadConfig('server1', false, 'Server Switch');
             expect(successResult.data).toBeDefined();
             expect(mockClient.getCallsConfig).toHaveBeenCalledWith('calls');
             assert.equal(result.current.DefaultEnabled, true);
@@ -482,7 +482,7 @@ describe('Actions.Calls', () => {
         // Test successful retrival from cache
         await act(async () => {
             expect(mockClient.getCallsConfig).toHaveBeenCalledTimes(1);
-            const successResult = await CallsActions.loadConfig('server1', false, 'calls');
+            const successResult = await CallsActions.loadConfig('server1', false, 'Server Switch');
             expect(successResult.data).toBeDefined();
             expect(mockClient.getCallsConfig).toHaveBeenCalledTimes(1);
         });
@@ -490,7 +490,7 @@ describe('Actions.Calls', () => {
         // Test error case
         mockClient.getCallsConfig.mockRejectedValueOnce(forceLogoutError);
 
-        const errorResult = await CallsActions.loadConfig('server1', true, 'calls');
+        const errorResult = await CallsActions.loadConfig('server1', true, 'Server Switch');
         expect(errorResult.error).toBe(forceLogoutError);
         expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
     });

@@ -43,10 +43,10 @@ describe('ClientCalls', () => {
         });
 
         it('passes groupLabel when provided', async () => {
-            await client.getCalls('test-group');
+            await client.getCalls('Server Switch');
             expect(mockDoFetch).toHaveBeenCalledWith(
                 '/plugins/com.plugins.calls/channels?mobilev2=true',
-                {method: 'get', groupLabel: 'test-group'},
+                {method: 'get', groupLabel: 'Server Switch'},
             );
         });
     });
@@ -149,10 +149,10 @@ describe('ClientCalls', () => {
         });
 
         it('passes groupLabel when provided', async () => {
-            await client.getCallsConfig('test-group');
+            await client.getCallsConfig('Server Switch');
             expect(mockDoFetch).toHaveBeenCalledWith(
                 '/plugins/com.plugins.calls/config',
-                {method: 'get', groupLabel: 'test-group'},
+                {method: 'get', groupLabel: 'Server Switch'},
             );
         });
     });
@@ -167,10 +167,10 @@ describe('ClientCalls', () => {
         });
 
         it('passes groupLabel when provided', async () => {
-            await client.getVersion('test-group');
+            await client.getVersion('Server Switch');
             expect(mockDoFetch).toHaveBeenCalledWith(
                 '/plugins/com.plugins.calls/version',
-                {method: 'get', groupLabel: 'test-group'},
+                {method: 'get', groupLabel: 'Server Switch'},
             );
         });
 
