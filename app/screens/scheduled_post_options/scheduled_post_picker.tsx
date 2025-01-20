@@ -10,14 +10,13 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import ScheduledPostCoreOptions from '@screens/scheduled_post_options/core_options';
-import ScheduledPostCustomOption from '@screens/scheduled_post_options/custom_option';
+import ScheduledPostFooter from '@screens/scheduled_post_options/footer';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {getTimezone} from '@utils/user';
 
+import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type UserModel from '@typings/database/models/servers/user';
-import {getTimezone} from "@utils/user";
-import type {BottomSheetFooterProps} from "@gorhom/bottom-sheet";
-import ScheduledPostFooter from '@screens/scheduled_post_options/footer';
 
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
@@ -101,7 +100,6 @@ export function ScheduledPostOptions({currentUser}: Props) {
     const renderFooter = (props: BottomSheetFooterProps) => (
         <ScheduledPostFooter
             {...props}
-            // onCancel={closeBottomSheet}
             onSchedule={() => {}}
         />
     );

@@ -66,8 +66,8 @@ export function ScheduledPostCoreOptions({userTimezone, onSelectOption}: Props) 
     }, [now, onSelectOption]);
 
     const handleCustomTimeChange = useCallback((selectedTime: Moment) => {
-        // setSelectedCustomTime(selectedTime);
-    }, []);
+        onSelectOption(selectedTime.unix().toString());
+    }, [onSelectOption]);
 
     const optionMonday = (
         <PickerOption
