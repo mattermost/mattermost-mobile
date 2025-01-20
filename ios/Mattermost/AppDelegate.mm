@@ -37,7 +37,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
     NSArray<NSString*> *servers = [keychain getAllServersForInternetPasswords];
     NSLog(@"Servers %@", servers);
     for (NSString *server in servers) {
-      [keychain deleteCredentialsForServer:server];
+      [keychain deleteCredentialsForServer:server withOptions:nil];
     }
 
     [[NSUserDefaults standardUserDefaults] setValue:@YES forKey:@"FirstRun"];

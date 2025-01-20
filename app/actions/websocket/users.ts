@@ -92,7 +92,7 @@ export async function handleUserTypingEvent(serverUrl: string, msg: WebSocketMes
         const {users, existingUsers} = await fetchUsersByIds(serverUrl, [msg.data.user_id]);
         const user = users?.[0] || existingUsers?.[0];
 
-        const namePreference = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
+        const namePreference = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT)?.fetch();
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(namePreference, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         const currentUser = await getCurrentUser(database);
         const username = displayUsername(user, currentUser?.locale, teammateDisplayNameSetting);
