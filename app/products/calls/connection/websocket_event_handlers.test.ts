@@ -28,6 +28,7 @@ import {
     userLeftCall,
     userReacted,
 } from '@calls/state';
+import {type HostControlsLowerHandMsgData, type HostControlsMsgData, DefaultCallsConfig, DefaultCurrentCall, DefaultCall} from '@calls/types/calls';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 
@@ -59,7 +60,6 @@ import {
     handleUserDismissedNotification,
 } from './websocket_event_handlers';
 
-import type {HostControlsLowerHandMsgData, HostControlsMsgData} from '@calls/types/calls';
 import type {
     CallHostChangedData,
     CallJobStateData,
@@ -97,17 +97,29 @@ describe('websocket event handlers', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        (getCallsConfig as jest.Mock).mockReturnValue({version: {version: '0.21.0'}});
-        (getCurrentCall as jest.Mock).mockReturnValue({
+        jest.mocked(getCallsConfig).mockReturnValue({
+            ...DefaultCallsConfig,
+            version: {version: '0.21.0'},
+        });
+        jest.mocked(getCurrentCall).mockReturnValue({
+            ...DefaultCurrentCall,
             serverUrl,
             channelId,
             mySessionId: sessionId,
+            id: 'call-id',
+            startTime: Date.now(),
+            ownerId: 'owner-id',
+            hostId: 'host-id',
+            threadId: 'thread-id',
         });
     });
 
     describe('handleCallUserConnected/Disconnected (deprecated)', () => {
         it('should handle user connected for old version', () => {
-            (getCallsConfig as jest.Mock).mockReturnValue({version: {version: '0.20.0'}});
+            jest.mocked(getCallsConfig).mockReturnValue({
+                ...DefaultCallsConfig,
+                version: {version: '0.20.0'},
+            });
             handleCallUserConnected(serverUrl, {
                 broadcast: {channel_id: channelId},
                 data: {userID: userId},
@@ -117,7 +129,10 @@ describe('websocket event handlers', () => {
         });
 
         it('should not handle user connected for new version', () => {
-            (getCallsConfig as jest.Mock).mockReturnValue({version: {version: '0.21.0'}});
+            jest.mocked(getCallsConfig).mockReturnValue({
+                ...DefaultCallsConfig,
+                version: {version: '0.21.0'},
+            });
             handleCallUserConnected(serverUrl, {
                 broadcast: {channel_id: channelId},
                 data: {userID: userId},
@@ -127,7 +142,10 @@ describe('websocket event handlers', () => {
         });
 
         it('should handle user disconnected for old version', () => {
-            (getCallsConfig as jest.Mock).mockReturnValue({version: {version: '0.20.0'}});
+            jest.mocked(getCallsConfig).mockReturnValue({
+                ...DefaultCallsConfig,
+                version: {version: '0.20.0'},
+            });
             handleCallUserDisconnected(serverUrl, {
                 broadcast: {channel_id: channelId},
                 data: {userID: userId},
@@ -136,7 +154,10 @@ describe('websocket event handlers', () => {
         });
 
         it('should not handle user disconnected for new version', () => {
-            (getCallsConfig as jest.Mock).mockReturnValue({version: {version: '0.21.0'}});
+            jest.mocked(getCallsConfig).mockReturnValue({
+                ...DefaultCallsConfig,
+                version: {version: '0.21.0'},
+            });
             handleCallUserDisconnected(serverUrl, {
                 broadcast: {channel_id: channelId},
                 data: {userID: userId},
@@ -294,7 +315,10 @@ describe('websocket event handlers', () => {
 
     describe('handleCallUserReacted', () => {
         it('should handle user reaction for old version', () => {
-            (getCallsConfig as jest.Mock).mockReturnValue({version: {version: '0.20.0'}});
+            jest.mocked(getCallsConfig).mockReturnValue({
+                ...DefaultCallsConfig,
+                version: {version: '0.20.0'},
+            });
             const reactionData = {
                 user_id: userId,
                 session_id: sessionId,
@@ -320,7 +344,10 @@ describe('websocket event handlers', () => {
         });
 
         it('should handle user reaction for new version', () => {
-            (getCallsConfig as jest.Mock).mockReturnValue({version: {version: '0.21.0'}});
+            jest.mocked(getCallsConfig).mockReturnValue({
+                ...DefaultCallsConfig,
+                version: {version: '0.21.0'},
+            });
             const reactionData = {
                 user_id: userId,
                 session_id: sessionId,
@@ -406,7 +433,7 @@ describe('websocket event handlers', () => {
     describe('handleUserDismissedNotification', () => {
         it('should handle user dismissed notification for current user', async () => {
             const myUserId = 'my-user-id';
-            (getCurrentUserId as jest.Mock).mockResolvedValue(myUserId);
+            jest.mocked(getCurrentUserId).mockResolvedValue(myUserId);
 
             await handleUserDismissedNotification(serverUrl, {
                 broadcast: {channel_id: channelId},
@@ -421,7 +448,7 @@ describe('websocket event handlers', () => {
 
         it('should not handle user dismissed notification for other users', async () => {
             const myUserId = 'my-user-id';
-            (getCurrentUserId as jest.Mock).mockResolvedValue(myUserId);
+            jest.mocked(getCurrentUserId).mockResolvedValue(myUserId);
 
             await handleUserDismissedNotification(serverUrl, {
                 broadcast: {channel_id: channelId},
@@ -514,6 +541,7 @@ describe('websocket event handlers', () => {
     describe('handleCallState', () => {
         it('should handle call state', () => {
             const callState = {
+                ...DefaultCall,
                 id: 'call-id',
                 channelId,
                 startTime: Date.now(),
@@ -534,7 +562,7 @@ describe('websocket event handlers', () => {
                 },
             };
 
-            (createCallAndAddToIds as jest.Mock).mockReturnValue(callState);
+            jest.mocked(createCallAndAddToIds).mockReturnValue(callState);
 
             handleCallState(serverUrl, {
                 broadcast: {channel_id: channelId},

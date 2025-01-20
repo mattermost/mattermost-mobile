@@ -35,28 +35,28 @@ describe('Permissions', () => {
 
     describe('hasBluetoothPermission', () => {
         it('should return true when permission is granted', async () => {
-            (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.GRANTED);
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.GRANTED);
             const result = await hasBluetoothPermission();
             expect(result).toBe(true);
         });
 
         it('should request permission when denied', async () => {
-            (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.DENIED);
-            (Permissions.request as jest.Mock).mockResolvedValue(Permissions.RESULTS.GRANTED);
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.DENIED);
+            jest.mocked(Permissions.request).mockResolvedValue(Permissions.RESULTS.GRANTED);
             const result = await hasBluetoothPermission();
             expect(result).toBe(true);
             expect(Permissions.request).toHaveBeenCalled();
         });
 
         it('should return false when blocked', async () => {
-            (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.BLOCKED);
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.BLOCKED);
             const result = await hasBluetoothPermission();
             expect(result).toBe(false);
         });
 
         it('should handle Android permissions', async () => {
             Platform.select = jest.fn((options: Record<string, unknown>) => options.default);
-            (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.GRANTED);
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.GRANTED);
             await hasBluetoothPermission();
             expect(Permissions.check).toHaveBeenCalledWith(Permissions.PERMISSIONS.ANDROID.BLUETOOTH_CONNECT);
         });
@@ -64,28 +64,28 @@ describe('Permissions', () => {
 
     describe('hasMicrophonePermission', () => {
         it('should return true when permission is granted', async () => {
-            (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.GRANTED);
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.GRANTED);
             const result = await hasMicrophonePermission();
             expect(result).toBe(true);
         });
 
         it('should request permission when denied', async () => {
-            (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.DENIED);
-            (Permissions.request as jest.Mock).mockResolvedValue(Permissions.RESULTS.GRANTED);
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.DENIED);
+            jest.mocked(Permissions.request).mockResolvedValue(Permissions.RESULTS.GRANTED);
             const result = await hasMicrophonePermission();
             expect(result).toBe(true);
             expect(Permissions.request).toHaveBeenCalled();
         });
 
         it('should return false when blocked', async () => {
-            (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.BLOCKED);
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.BLOCKED);
             const result = await hasMicrophonePermission();
             expect(result).toBe(false);
         });
 
         it('should handle Android permissions', async () => {
             Platform.select = jest.fn((options: Record<string, unknown>) => options.default);
-            (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.GRANTED);
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.GRANTED);
             await hasMicrophonePermission();
             expect(Permissions.check).toHaveBeenCalledWith(Permissions.PERMISSIONS.ANDROID.RECORD_AUDIO);
         });

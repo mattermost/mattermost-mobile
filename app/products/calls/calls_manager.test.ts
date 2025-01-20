@@ -39,13 +39,13 @@ describe('CallsManager', () => {
         expect(AppState.addEventListener).toHaveBeenCalledTimes(2);
 
         // Test that the blur callback calls callsOnAppStateChange with 'inactive'
-        const blurCallback = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
-        blurCallback();
+        const blurCallback = jest.mocked(AppState.addEventListener).mock.calls[0][1];
+        blurCallback('inactive');
         expect(callsOnAppStateChange).toHaveBeenCalledWith('inactive');
 
         // Test that the focus callback calls callsOnAppStateChange with 'active'
-        const focusCallback = (AppState.addEventListener as jest.Mock).mock.calls[1][1];
-        focusCallback();
+        const focusCallback = jest.mocked(AppState.addEventListener).mock.calls[1][1];
+        focusCallback('active');
         expect(callsOnAppStateChange).toHaveBeenCalledWith('active');
     });
 });
