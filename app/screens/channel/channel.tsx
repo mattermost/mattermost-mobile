@@ -26,6 +26,7 @@ import useGMasDMNotice from './use_gm_as_dm_notice';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type {AvailableScreens} from '@typings/screens/navigation';
+import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 
 type ChannelProps = {
     channelId: string;
@@ -149,6 +150,8 @@ const Channel = ({
                             nativeID={channelId}
                         />
                     </View>
+                    {/*scheduled post indicator goes here*/}
+                    <ScheduledPostIndicator/>
                     <PostDraft
                         channelId={channelId}
                         testID='channel.post_draft'

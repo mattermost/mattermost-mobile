@@ -1214,5 +1214,7 @@
   "video.download": "Download video",
   "video.download_description": "This video must be downloaded to play it.",
   "video.failed_description": "An error occurred while trying to play the video.",
-  "your.servers": "Your servers"
+  "your.servers": "Your servers",
+  "scheduled_post.channel_indicator.single": "Message scheduled for {dateTime}.",
+  "scheduled_post.channel_indicator.multiple_in_channel": "{count} scheduled messages in channel."
 }
