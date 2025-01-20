@@ -217,8 +217,8 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             return result;
         }, new Set<string>());
 
+        const database: Database = this.database;
         if (deletedPostIds.size) {
-            const database: Database = this.database;
             const postsToDelete = await database.get<PostModel>(POST).query(Q.where('id', Q.oneOf(Array.from(deletedPostIds)))).fetch();
             if (postsToDelete.length) {
                 await database.write(async () => {
@@ -259,6 +259,14 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             const postFiles = await this.handleFiles({files, prepareRecordsOnly: true});
             batch.push(...postFiles);
         }
+
+        const allFiles = await database.get<FileModel>(MM_TABLES.SERVER.FILE).query(Q.where('post_id', Q.oneOf(uniquePosts.map((p) => p.id)))).fetch();
+        const receivedFilesSet = new Set(files.map((f) => f.id));
+        allFiles.forEach((f) => {
+            if (!receivedFilesSet.has(f.id)) {
+                batch.push(f.prepareDestroyPermanently());
+            }
+        });
 
         if (emojis.length) {
             const postEmojis = await this.handleCustomEmojis({emojis, prepareRecordsOnly: true});

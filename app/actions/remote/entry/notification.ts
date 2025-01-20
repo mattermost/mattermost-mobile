@@ -24,7 +24,7 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type PostModel from '@typings/database/models/servers/post';
 
-export async function pushNotificationEntry(serverUrl: string, notification: NotificationData, groupLabel?: string) {
+export async function pushNotificationEntry(serverUrl: string, notification: NotificationData, groupLabel?: BaseRequestGroupLabel) {
     // We only reach this point if we have a channel Id in the notification payload
     const channelId = notification.channel_id!;
     const rootId = notification.root_id!;
@@ -33,6 +33,9 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
+    PerformanceMetricsManager.startTimeToInteraction();
+
     const {database} = operator;
 
     const currentTeamId = await getCurrentTeamId(database);

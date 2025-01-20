@@ -167,7 +167,7 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string): O
             default: OptionsModalPresentationStyle.overCurrentContext,
         }),
         statusBar: {
-            backgroundColor: null,
+            backgroundColor: theme.sidebarBg,
             drawBehind: true,
             translucent: true,
         },
@@ -468,6 +468,7 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
         },
         statusBar: {
             style: isDark ? 'light' : 'dark',
+            backgroundColor: theme.sidebarBg,
         },
         topBar: {
             animate: true,
@@ -579,6 +580,7 @@ export function showModal(name: AvailableScreens, title: string, passProps = {},
         },
         statusBar: {
             visible: true,
+            backgroundColor: theme.sidebarBg,
         },
         topBar: {
             animate: true,

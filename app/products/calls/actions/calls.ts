@@ -53,7 +53,7 @@ import type {IntlShape} from 'react-intl';
 let connection: CallsConnection | null = null;
 export const getConnectionForTesting = () => connection;
 
-export const loadConfig = async (serverUrl: string, force = false, groupLabel?: string) => {
+export const loadConfig = async (serverUrl: string, force = false, groupLabel?: RequestGroupLabel) => {
     const now = Date.now();
     const config = getCallsConfig(serverUrl);
 
@@ -77,7 +77,7 @@ export const loadConfig = async (serverUrl: string, force = false, groupLabel?: 
     }
 };
 
-export const loadCalls = async (serverUrl: string, userId: string, groupLabel?: string) => {
+export const loadCalls = async (serverUrl: string, userId: string, groupLabel?: RequestGroupLabel) => {
     let resp: CallChannelState[] = [];
     try {
         const client = NetworkManager.getClient(serverUrl);
@@ -192,7 +192,7 @@ export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: 
     return convertedCall;
 };
 
-export const loadConfigAndCalls = async (serverUrl: string, userId: string, groupLabel?: string) => {
+export const loadConfigAndCalls = async (serverUrl: string, userId: string, groupLabel?: RequestGroupLabel) => {
     const res = await checkIsCallsPluginEnabled(serverUrl);
     if (res.data) {
         loadConfig(serverUrl, true, groupLabel);
