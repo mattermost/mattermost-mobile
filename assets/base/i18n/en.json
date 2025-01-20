@@ -1211,5 +1211,7 @@
   "video.failed_description": "An error occurred while trying to play the video.",
   "your.servers": "Your servers",
   "scheduled_post.picker.monday": "Monday at 9am",
-  "scheduled_post.picker.custom": "Custom Time"
+  "scheduled_post.picker.next_monday": "Next Monday at 9am",
+  "scheduled_post.picker.custom": "Custom Time",
+  "scheduled_post_options.confirm_button.text": "Schedule Draft"
 }

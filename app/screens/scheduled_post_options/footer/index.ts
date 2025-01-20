@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ScheduledPostCustomOption} from './custom_option';
+import {ScheduledPostFooter} from './scheduled_post_footer';
 
-export default ScheduledPostCustomOption;
+export default ScheduledPostFooter;

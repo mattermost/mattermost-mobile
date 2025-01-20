@@ -182,6 +182,7 @@ const OptionItem = ({
 
     let actionComponent;
     let radioComponent;
+    console.log({type, selected});
     if (type === OptionType.SELECT && selected) {
         actionComponent = (
             <CompassIcon

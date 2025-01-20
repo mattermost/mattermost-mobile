@@ -17,7 +17,7 @@ import {typography} from '@utils/typography';
 import type UserModel from '@typings/database/models/servers/user';
 import {getTimezone} from "@utils/user";
 import type {BottomSheetFooterProps} from "@gorhom/bottom-sheet";
-import Footer from "@screens/post_priority_picker/footer";
+import ScheduledPostFooter from '@screens/scheduled_post_options/footer';
 
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
@@ -66,7 +66,7 @@ export function ScheduledPostOptions({currentUser}: Props) {
 
         // we'll have 4 items max in here - max two for core options,
         // one for custom option and max one for user's previously selected option.
-        const numberOfItems = 8;
+        const numberOfItems = 11;
         const COMPONENT_HEIGHT = TITLE_HEIGHT + (numberOfItems * ITEM_HEIGHT) + bottomSheetAdjust;
         return [1, COMPONENT_HEIGHT];
     }, []);
@@ -93,20 +93,16 @@ export function ScheduledPostOptions({currentUser}: Props) {
                         userTimezone={userTimezone}
                         onSelectOption={onSelectTime}
                     />
-                    <View style={style.optionsSeparator}/>
-                    <ScheduledPostCustomOption
-                        userTimezone={userTimezone}
-                    />
                 </View>
             </View>
         );
     };
 
     const renderFooter = (props: BottomSheetFooterProps) => (
-        <Footer
+        <ScheduledPostFooter
             {...props}
             // onCancel={closeBottomSheet}
-            onSubmit={() => {}}
+            onSchedule={() => {}}
         />
     );
 

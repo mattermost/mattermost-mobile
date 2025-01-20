@@ -2,13 +2,30 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment/moment';
-import React from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
-import {UserModel} from '@database/models/server';
+import {useTheme} from '@context/theme';
+import DateTimeSelector from '@screens/custom_status_clear_after/components/date_time_selector';
 import PickerOption from '@screens/post_priority_picker/components/picker_option';
-import {getTimezone} from '@utils/user';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {Moment} from 'moment-timezone';
+
+const optionKeysOptionMonday = 'scheduledPostOptionMonday';
+const optionKeyOptionTomorrow = 'scheduledPostOptionTomorrow';
+const optionKeyOptionNextMonday = 'scheduledPostOptionNextMonday';
+const optionKeyOptionCustom = 'scheduledPostOptionCustom';
+
+const OPTIONS_SEPARATOR_HEIGHT = 1;
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    optionsSeparator: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+        height: OPTIONS_SEPARATOR_HEIGHT,
+    },
+}));
 
 type Props = {
     userTimezone: string;
@@ -17,35 +34,68 @@ type Props = {
 
 export function ScheduledPostCoreOptions({userTimezone, onSelectOption}: Props) {
     const intl = useIntl();
+    const theme = useTheme();
+
+    const style = getStyleSheet(theme);
+
+    const [selectedOption, setSelectedOptions] = useState<string>();
+    const [showDateTimePicker, setShowDateTimePicker] = useState(false);
 
     const now = moment().tz(userTimezone);
 
-    const nextMonday = now.clone().isoWeekday(1).add(1, 'week').startOf('day').hour(9).minute(0);
+    const handleSelectOption = useCallback((optionKey: string) => {
+        setSelectedOptions(optionKey);
+        setShowDateTimePicker(optionKey === optionKeyOptionCustom);
+
+        let selectedTime: Moment | undefined;
+        switch (optionKey) {
+            case optionKeyOptionNextMonday:
+            case optionKeysOptionMonday: {
+                selectedTime = now.clone().isoWeekday(1).add(1, 'week').startOf('day').hour(9).minute(0);
+                break;
+            }
+            case optionKeyOptionTomorrow: {
+                selectedTime = now.clone().add(1, 'day').startOf('day').hour(9).minute(0);
+                break;
+            }
+        }
+
+        if (selectedTime) {
+            onSelectOption(selectedTime.unix().toString());
+        }
+    }, [now, onSelectOption]);
+
+    const handleCustomTimeChange = useCallback((selectedTime: Moment) => {
+        // setSelectedCustomTime(selectedTime);
+    }, []);
+
     const optionMonday = (
         <PickerOption
-            key='scheduledPostOptionMonday'
+            key={optionKeysOptionMonday}
             label={intl.formatMessage({id: 'scheduled_post.picker.monday', defaultMessage: 'Monday at 9 AM'})}
-            action={onSelectOption}
-            value={nextMonday.unix().toString()}
+            action={handleSelectOption}
+            value={optionKeysOptionMonday}
+            selected={selectedOption === optionKeysOptionMonday}
         />
     );
 
-    const tomorrow = now.clone().add(1, 'day').startOf('day').hour(9).minute(0);
     const optionTomorrow = (
         <PickerOption
-            key='scheduledPostOptionTomorrow'
+            key={optionKeyOptionTomorrow}
             label={intl.formatMessage({id: 'scheduled_post.picker.tomorrow', defaultMessage: 'Tomorrow at 9 AM'})}
-            action={onSelectOption}
-            value={tomorrow.unix().toString()}
+            action={handleSelectOption}
+            value={optionKeyOptionTomorrow}
+            selected={selectedOption === optionKeyOptionTomorrow}
         />
     );
 
     const optionNextMonday = (
         <PickerOption
-            key='scheduledPostOptionNextMonday'
-            label={intl.formatMessage({id: 'scheduled_post.picker.monday', defaultMessage: 'Next Monday at 9 AM'})}
-            action={onSelectOption}
-            value={nextMonday.unix().toString()}
+            key={optionKeyOptionNextMonday}
+            label={intl.formatMessage({id: 'scheduled_post.picker.next_monday', defaultMessage: 'Next Monday at 9 AM'})}
+            action={handleSelectOption}
+            value={optionKeyOptionNextMonday}
+            selected={selectedOption === optionKeyOptionNextMonday}
         />
     );
 
@@ -76,6 +126,21 @@ export function ScheduledPostCoreOptions({userTimezone, onSelectOption}: Props) 
     return (
         <View>
             {options}
+            <View style={style.optionsSeparator}/>
+            <PickerOption
+                key={optionKeyOptionCustom}
+                label={intl.formatMessage({id: 'scheduled_post.picker.custom', defaultMessage: 'Custom Time'})}
+                action={handleSelectOption}
+                value={optionKeyOptionCustom}
+                selected={selectedOption === optionKeyOptionCustom}
+            />
+            {showDateTimePicker && (
+                <DateTimeSelector
+                    handleChange={handleCustomTimeChange}
+                    theme={theme}
+                    timezone={userTimezone}
+                />
+            )}
         </View>
     );
 }
