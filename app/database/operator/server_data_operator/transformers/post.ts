@@ -158,7 +158,6 @@ export const transformPostsInChannelRecord = ({action, database, value}: Transfo
  * transformPostRecords: Prepares records of the SERVER database 'ScheduledPosts' table for update or create actions.
  */
 export const transformSchedulePostsRecord = ({action, database, value}: TransformerArgs): Promise<ScheduledPostModel> => {
-    const emptyFileInfo: FileInfo[] = [];
     const emptyPostMetadata: PostMetadata = {};
     const raw = value.raw as ScheduledPost;
 
@@ -176,7 +175,7 @@ export const transformSchedulePostsRecord = ({action, database, value}: Transfor
             scheduledPost.metadata.priority = raw.priority;
         }
         scheduledPost.updateAt = raw.update_at ?? Date.now();
-        scheduledPost.scheduledAt = raw.scheduled_at;
+        scheduledPost.scheduledAt = raw.scheduled_at ?? Date.now();
         scheduledPost.processedAt = raw.processed_at ?? 0;
         scheduledPost.errorCode = raw.error_code ?? '';
     };
