@@ -248,6 +248,9 @@ describe('Actions.Calls', () => {
         });
     });
 
+    const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
+    const forceLogoutError = {status_code: 401};
+
     it('joinCall', async () => {
         // setup
         const {result} = renderHook(() => {
@@ -277,16 +280,13 @@ describe('Actions.Calls', () => {
         });
 
         // Test error case
-        const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-        const error = {status_code: 401};
-        newConnection.mockRejectedValueOnce(error);
-
+        newConnection.mockRejectedValueOnce(forceLogoutError);
         await act(async () => {
             await expect(CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
                 locale: 'en',
                 messages: {},
-            }))).resolves.toStrictEqual({error});
-            expect(forceLogout).toHaveBeenCalledWith('server1', error);
+            }))).resolves.toStrictEqual({error: forceLogoutError});
+            expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
         });
 
         // Test failure to connect case
@@ -427,14 +427,12 @@ describe('Actions.Calls', () => {
         });
 
         // Test error case
-        const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-        const error = {status_code: 401};
-        mockClient.getCalls = jest.fn().mockRejectedValueOnce(error);
+        mockClient.getCalls = jest.fn().mockRejectedValueOnce(forceLogoutError);
 
         await act(async () => {
             const errorResult = await CallsActions.loadCalls('server1', 'userId1');
-            expect(errorResult.error).toBe(error);
-            expect(forceLogout).toHaveBeenCalledWith('server1', error);
+            expect(errorResult.error).toBe(forceLogoutError);
+            expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
         });
     });
 
@@ -490,13 +488,11 @@ describe('Actions.Calls', () => {
         });
 
         // Test error case
-        const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-        const error = {status_code: 401};
-        mockClient.getCallsConfig.mockRejectedValueOnce(error);
+        mockClient.getCallsConfig.mockRejectedValueOnce(forceLogoutError);
 
         const errorResult = await CallsActions.loadConfig('server1', true, 'calls');
-        expect(errorResult.error).toBe(error);
-        expect(forceLogout).toHaveBeenCalledWith('server1', error);
+        expect(errorResult.error).toBe(forceLogoutError);
+        expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
     });
 
     it('enableChannelCalls', async () => {
@@ -513,14 +509,12 @@ describe('Actions.Calls', () => {
         });
 
         // Test error case
-        const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-        const error = {status_code: 401};
-        mockClient.enableChannelCalls.mockRejectedValueOnce(error);
+        mockClient.enableChannelCalls.mockRejectedValueOnce(forceLogoutError);
 
         await act(async () => {
             const errorResult = await CallsActions.enableChannelCalls('server1', 'channel-1', true);
-            expect(errorResult.error).toBe(error);
-            expect(forceLogout).toHaveBeenCalledWith('server1', error);
+            expect(errorResult.error).toBe(forceLogoutError);
+            expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
         });
     });
 
@@ -550,13 +544,11 @@ describe('Actions.Calls', () => {
             expect(needsRecordingErrorAlert).toHaveBeenCalled();
 
             // Test error case
-            const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-            const error = {status_code: 401};
-            mockClient.startCallRecording.mockRejectedValueOnce(error);
+            mockClient.startCallRecording.mockRejectedValueOnce(forceLogoutError);
 
             const errorResult = await CallsActions.startCallRecording('server1', 'channel-id');
-            expect(errorResult).toBe(error);
-            expect(forceLogout).toHaveBeenCalledWith('server1', error);
+            expect(errorResult).toBe(forceLogoutError);
+            expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
         });
     });
 
@@ -570,13 +562,11 @@ describe('Actions.Calls', () => {
             expect(needsRecordingWillBePostedAlert).toHaveBeenCalled();
 
             // Test error case
-            const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-            const error = {status_code: 401};
-            mockClient.stopCallRecording.mockRejectedValueOnce(error);
+            mockClient.stopCallRecording.mockRejectedValueOnce(forceLogoutError);
 
             const errorResult = await CallsActions.stopCallRecording('server1', 'channel-id');
-            expect(errorResult).toBe(error);
-            expect(forceLogout).toHaveBeenCalledWith('server1', error);
+            expect(errorResult).toBe(forceLogoutError);
+            expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
         });
     });
 
@@ -588,13 +578,11 @@ describe('Actions.Calls', () => {
         expect(mockClient.dismissCall).toHaveBeenCalledWith('channel-id');
 
         // Test error case
-        const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-        const error = {status_code: 401};
-        mockClient.dismissCall.mockRejectedValueOnce(error);
+        mockClient.dismissCall.mockRejectedValueOnce(forceLogoutError);
 
         const errorResult = await CallsActions.dismissIncomingCall('server1', 'channel-id');
-        expect(errorResult).toBe(error);
-        expect(forceLogout).toHaveBeenCalledWith('server1', error);
+        expect(errorResult).toBe(forceLogoutError);
+        expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
 
         // Test when ringing is disabled
         act(() => {
@@ -613,13 +601,11 @@ describe('Actions.Calls', () => {
         expect(mockClient.hostMake).toHaveBeenCalledWith('call1', 'user1');
 
         // Test error case
-        const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-        const error = {status_code: 401};
-        mockClient.hostMake.mockRejectedValueOnce(error);
+        mockClient.hostMake.mockRejectedValueOnce(forceLogoutError);
 
         const errorResult = await CallsActions.hostMake('server1', 'call1', 'user1');
-        expect(errorResult).toBe(error);
-        expect(forceLogout).toHaveBeenCalledWith('server1', error);
+        expect(errorResult).toBe(forceLogoutError);
+        expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
     });
 
     it('hostMuteSession', async () => {
@@ -629,13 +615,11 @@ describe('Actions.Calls', () => {
         expect(mockClient.hostMute).toHaveBeenCalledWith('call1', 'session1');
 
         // Test error case
-        const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-        const error = {status_code: 401};
-        mockClient.hostMute.mockRejectedValueOnce(error);
+        mockClient.hostMute.mockRejectedValueOnce(forceLogoutError);
 
         const errorResult = await CallsActions.hostMuteSession('server1', 'call1', 'session1');
-        expect(errorResult).toBe(error);
-        expect(forceLogout).toHaveBeenCalledWith('server1', error);
+        expect(errorResult).toBe(forceLogoutError);
+        expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
     });
 
     it('hostMuteOthers', async () => {
@@ -646,13 +630,11 @@ describe('Actions.Calls', () => {
             expect(mockClient.hostMuteOthers).toHaveBeenCalledWith('call1');
 
             // Test error case
-            const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-            const error = {status_code: 401};
-            mockClient.hostMuteOthers.mockRejectedValueOnce(error);
+            mockClient.hostMuteOthers.mockRejectedValueOnce(forceLogoutError);
 
             const errorResult = await CallsActions.hostMuteOthers('server1', 'call1');
-            expect(errorResult).toBe(error);
-            expect(forceLogout).toHaveBeenCalledWith('server1', error);
+            expect(errorResult).toBe(forceLogoutError);
+            expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
         });
     });
 
@@ -664,13 +646,11 @@ describe('Actions.Calls', () => {
             expect(mockClient.hostScreenOff).toHaveBeenCalledWith('call1', 'session1');
 
             // Test error case
-            const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-            const error = {status_code: 401};
-            mockClient.hostScreenOff.mockRejectedValueOnce(error);
+            mockClient.hostScreenOff.mockRejectedValueOnce(forceLogoutError);
 
             const errorResult = await CallsActions.hostStopScreenshare('server1', 'call1', 'session1');
-            expect(errorResult).toBe(error);
-            expect(forceLogout).toHaveBeenCalledWith('server1', error);
+            expect(errorResult).toBe(forceLogoutError);
+            expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
         });
     });
 
@@ -682,13 +662,11 @@ describe('Actions.Calls', () => {
             expect(mockClient.hostLowerHand).toHaveBeenCalledWith('call1', 'session1');
 
             // Test error case
-            const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-            const error = {status_code: 401};
-            mockClient.hostLowerHand.mockRejectedValueOnce(error);
+            mockClient.hostLowerHand.mockRejectedValueOnce(forceLogoutError);
 
             const errorResult = await CallsActions.hostLowerHand('server1', 'call1', 'session1');
-            expect(errorResult).toBe(error);
-            expect(forceLogout).toHaveBeenCalledWith('server1', error);
+            expect(errorResult).toBe(forceLogoutError);
+            expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
         });
     });
 
@@ -700,13 +678,11 @@ describe('Actions.Calls', () => {
             expect(mockClient.hostRemove).toHaveBeenCalledWith('call1', 'session1');
 
             // Test error case
-            const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-            const error = {status_code: 401};
-            mockClient.hostRemove.mockRejectedValueOnce(error);
+            mockClient.hostRemove.mockRejectedValueOnce(forceLogoutError);
 
             const errorResult = await CallsActions.hostRemove('server1', 'call1', 'session1');
-            expect(errorResult).toBe(error);
-            expect(forceLogout).toHaveBeenCalledWith('server1', error);
+            expect(errorResult).toBe(forceLogoutError);
+            expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
         });
     });
 
@@ -1006,14 +982,12 @@ describe('Actions.Calls', () => {
         });
 
         // Test error case
-        const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-        const error = {status_code: 401};
-        mockClient.getCallForChannel.mockRejectedValueOnce(error);
+        mockClient.getCallForChannel.mockRejectedValueOnce(forceLogoutError);
 
         await act(async () => {
             const errorResult = await CallsActions.loadCallForChannel('server1', 'channel-1');
-            expect(errorResult.error).toBe(error);
-            expect(forceLogout).toHaveBeenCalledWith('server1', error);
+            expect(errorResult.error).toBe(forceLogoutError);
+            expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
         });
     });
 
@@ -1045,13 +1019,11 @@ describe('Actions.Calls', () => {
         expect(disabledResult.data).toBe(false);
 
         // Test error case
-        const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-        const error = {status_code: 401};
-        mockClient.getPluginsManifests = jest.fn().mockRejectedValueOnce(error);
+        mockClient.getPluginsManifests = jest.fn().mockRejectedValueOnce(forceLogoutError);
 
         const errorResult = await CallsActions.checkIsCallsPluginEnabled('server1');
-        expect(errorResult.error).toBe(error);
-        expect(forceLogout).toHaveBeenCalledWith('server1', error);
+        expect(errorResult.error).toBe(forceLogoutError);
+        expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
     });
 
     it('canEndCall', async () => {
@@ -1227,12 +1199,10 @@ describe('Actions.Calls', () => {
         expect(mockClient.endCall).toHaveBeenCalledWith('channel-1');
 
         // Test error case
-        const forceLogout = require('@actions/remote/session').forceLogoutIfNecessary;
-        const error = {status_code: 401};
-        mockClient.endCall.mockRejectedValueOnce(error);
+        mockClient.endCall.mockRejectedValueOnce(forceLogoutError);
 
-        await expect(CallsActions.endCall('server1', 'channel-1')).rejects.toBe(error);
-        expect(forceLogout).toHaveBeenCalledWith('server1', error);
+        await expect(CallsActions.endCall('server1', 'channel-1')).rejects.toBe(forceLogoutError);
+        expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
     });
 
     it('setPreferredAudioRoute', async () => {
