@@ -23,6 +23,9 @@ declare class ScheduledPostModel extends Model {
     /** root_id : The root_id will be empty most of the time unless the scheduled post is created inside a thread */
     rootId: string;
 
+    /** files : The files field will hold an array of files object that have not yet been uploaded and persisted within the FILE table */
+    files: FileInfo[];
+
     metadata?: PostMetadata;
 
     /** update_at : The timestamp to when this scheduled post was last updated on the server */

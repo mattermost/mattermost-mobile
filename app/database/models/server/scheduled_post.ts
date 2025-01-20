@@ -5,7 +5,7 @@ import {field, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import {identity} from '@utils/helpers';
+import {identity, safeParseJSON} from '@utils/helpers';
 
 import type ScheduledPostModelInterface from '@typings/database/models/servers/scheduled_post';
 
@@ -33,6 +33,9 @@ export default class ScheduledPostModel extends Model implements ScheduledPostMo
 
     /** message : The scheduled post message */
     @field('message') message!: string;
+
+    /** files : The files field will hold an array of file objects that have not yet been uploaded and persisted within the FILE table */
+    @json('files', safeParseJSON) files!: FileInfo[];
 
     /** root_id : The root_id will be empty most of the time unless the scheduled post is created inside the thread */
     @field('root_id') rootId!: string;
