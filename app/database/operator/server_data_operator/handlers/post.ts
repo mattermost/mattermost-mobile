@@ -11,17 +11,19 @@ import {
     transformPostInThreadRecord,
     transformPostRecord,
     transformPostsInChannelRecord,
+    transformSchedulePostsRecord,
 } from '@database/operator/server_data_operator/transformers/post';
 import {getRawRecordPairs, getUniqueRawsBy, getValidRecordsForUpdate} from '@database/operator/utils/general';
 import {createPostsChain, getPostListEdges} from '@database/operator/utils/post';
 import FileModel from '@typings/database/models/servers/file';
+import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {safeParseJSON} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 
 import type ServerDataOperatorBase from '.';
 import type Database from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
-import type {HandleDraftArgs, HandleFilesArgs, HandlePostsArgs, RecordPair} from '@typings/database/database';
+import type {HandleDraftArgs, HandleFilesArgs, HandlePostsArgs, HandleScheduledPostsArgs, RecordPair} from '@typings/database/database';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -33,11 +35,13 @@ const {
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
+    SCHEDULED_POST,
 } = MM_TABLES.SERVER;
 
 type PostActionType = keyof typeof ActionType.POSTS;
 
 export interface PostHandlerMix {
+    handleScheduledPosts: ({scheduledPosts, prepareRecordsOnly}: HandleScheduledPostsArgs) => Promise<ScheduledPostModel[]>;
     handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Promise<DraftModel[]>;
     handleFiles: ({files, prepareRecordsOnly}: HandleFilesArgs) => Promise<FileModel[]>;
     handlePosts: ({actionType, order, posts, previousPostId, prepareRecordsOnly}: HandlePostsArgs) => Promise<Model[]>;
@@ -104,6 +108,115 @@ export const exportedForTest = {
 };
 
 const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
+    /**
+     * handleScheduledPosts: Handler responsible for the Create/Update operations occurring the SchedulePost table from the 'Server' schema
+     * @param {HandleScheduledPostsArgs} ScheduledPostsArgs
+     * @param {boolean} draftsArgs.prepareRecordsOnly
+     * @returns {Promise<Model[]>}
+     */
+    handleScheduledPosts = async ({scheduledPosts, prepareRecordsOnly = true}: HandleScheduledPostsArgs): Promise<Model[]> => {
+        if (!scheduledPosts?.length) {
+            logWarning(
+                'An empty or undefined "scheduledPosts" array has been passed to the handleScheduledPosts method',
+            );
+            return [];
+        }
+
+        const files: FileInfo[] = [];
+
+        for (const post of scheduledPosts) {
+            if (post?.metadata && Object.keys(post?.metadata).length > 0) {
+                const data = safeParseJSON(post.metadata) as PostMetadata;
+
+                if (data.files) {
+                    files.push(...data.files);
+                    delete data.files;
+                }
+
+                post.metadata = data;
+            }
+        }
+
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: scheduledPosts, key: 'id'});
+
+        const preparedScheduledPosts = await this.handleRecords({
+            fieldName: 'id',
+            buildKeyRecordBy: (raw) => raw.id,
+            transformer: transformSchedulePostsRecord,
+            prepareRecordsOnly,
+            createOrUpdateRawValues,
+            tableName: SCHEDULED_POST,
+        }, 'handleScheduledPosts');
+
+        const batch: Model[] = [...preparedScheduledPosts];
+
+        if (files.length) {
+            const scheduledPostFiles = await this.handleFiles({files, prepareRecordsOnly: true});
+            batch.push(...scheduledPostFiles);
+        }
+
+        if (batch.length && !prepareRecordsOnly) {
+            await this.batchRecords(batch, 'handleScheduledPosts');
+        }
+
+        return batch;
+    };
+
+    handleReceiveAllScheduledPosts = async (scheduledPosts: ScheduledPost[], prepareRecordsOnly = false): Promise<Model[]> => {
+        if (!scheduledPosts?.length) {
+            // Remove all the scheduled post from the local db
+            logWarning(
+                'An empty or undefined "scheduledPosts" array has been passed to the handleReceiveAllScheduledPostsOfTeam method',
+            );
+            return [];
+        }
+
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: scheduledPosts, key: 'id'}) as ScheduledPost[];
+        const database: Database = this.database;
+
+        const idsFromServer = new Set(scheduledPosts.map((post) => post.id));
+        const existingScheduledPosts = await database.get<ScheduledPostModel>(SCHEDULED_POST).query().fetch();
+
+        const deletedScheduledPostIds = existingScheduledPosts.filter((post) => !idsFromServer.has(post.id)).reduce((result, post) => {
+            result.add(post.id);
+            return result;
+        }, new Set<string>());
+
+        if (deletedScheduledPostIds.size) {
+            const scheduledPostTodDelete = await database.get<ScheduledPostModel>(SCHEDULED_POST).query(Q.where('id', Q.oneOf(Array.from(deletedScheduledPostIds)))).fetch();
+            if (scheduledPostTodDelete.length) {
+                await database.write(async () => {
+                    const promises = scheduledPostTodDelete.map((p) => p.destroyPermanently());
+                    await Promise.all(promises);
+                });
+            }
+        }
+
+        const processedScheduledPosts = await this.processRecords({
+            createOrUpdateRawValues,
+            deleteRawValues: [],
+            tableName: SCHEDULED_POST,
+            fieldName: 'id',
+            shouldUpdate: (e: ScheduledPostModel, n: ScheduledPost) => n.update_at > e.updateAt,
+        });
+
+        const preparedScheduledPosts = await this.prepareRecords({
+            createRaws: processedScheduledPosts.createRaws,
+            updateRaws: processedScheduledPosts.updateRaws,
+            deleteRaws: processedScheduledPosts.deleteRaws,
+            transformer: transformSchedulePostsRecord,
+            tableName: SCHEDULED_POST,
+        });
+
+        const batch: Model[] = [...preparedScheduledPosts];
+
+        if (batch.length && !prepareRecordsOnly) {
+            await this.batchRecords(batch, 'handleReceiveAllScheduledPosts');
+        }
+
+        return batch;
+    };
+
     /**
      * handleDraft: Handler responsible for the Create/Update operations occurring the Draft table from the 'Server' schema
      * @param {HandleDraftArgs} draftsArgs
