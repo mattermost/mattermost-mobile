@@ -22,6 +22,10 @@ import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
 import {openAsBottomSheet} from '@screens/navigation';
+import {
+    CURRENT_CALL_BAR_HEIGHT,
+    JOIN_CALL_BAR_HEIGHT,
+} from '@constants/view';
 
 import {useTryCallsFunction, usePermissionsChecker, useCallsAdjustment, useHostControlsAvailable, useHostMenus} from './hooks';
 
@@ -169,13 +173,13 @@ describe('Calls Hooks', () => {
         it('includes current call bar height', () => {
             (useCurrentCall as jest.Mock).mockReturnValue({id: 'call1', channelId: 'channel1'});
             const {result} = renderHook(() => useCallsAdjustment('server1', 'channel1'));
-            expect(result.current).toBe(68); // CURRENT_CALL_BAR_HEIGHT + 8 padding
+            expect(result.current).toBe(CURRENT_CALL_BAR_HEIGHT+8);
         });
 
         it('includes join call banner height', () => {
             (useChannelsWithCalls as jest.Mock).mockReturnValue({channel1: true});
             const {result} = renderHook(() => useCallsAdjustment('server1', 'channel1'));
-            expect(result.current).toBe(48); // JOIN_CALL_BAR_HEIGHT + 8 padding
+            expect(result.current).toBe(JOIN_CALL_BAR_HEIGHT+8);
         });
     });
 
