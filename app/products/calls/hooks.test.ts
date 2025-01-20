@@ -17,15 +17,15 @@ import {
     useIncomingCalls,
 } from '@calls/state';
 import {Screens} from '@constants';
+import {
+    CURRENT_CALL_BAR_HEIGHT,
+    JOIN_CALL_BAR_HEIGHT,
+} from '@constants/view';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
 import {openAsBottomSheet} from '@screens/navigation';
-import {
-    CURRENT_CALL_BAR_HEIGHT,
-    JOIN_CALL_BAR_HEIGHT,
-} from '@constants/view';
 
 import {useTryCallsFunction, usePermissionsChecker, useCallsAdjustment, useHostControlsAvailable, useHostMenus} from './hooks';
 
@@ -173,13 +173,13 @@ describe('Calls Hooks', () => {
         it('includes current call bar height', () => {
             (useCurrentCall as jest.Mock).mockReturnValue({id: 'call1', channelId: 'channel1'});
             const {result} = renderHook(() => useCallsAdjustment('server1', 'channel1'));
-            expect(result.current).toBe(CURRENT_CALL_BAR_HEIGHT+8);
+            expect(result.current).toBe(CURRENT_CALL_BAR_HEIGHT + 8);
         });
 
         it('includes join call banner height', () => {
             (useChannelsWithCalls as jest.Mock).mockReturnValue({channel1: true});
             const {result} = renderHook(() => useCallsAdjustment('server1', 'channel1'));
-            expect(result.current).toBe(JOIN_CALL_BAR_HEIGHT+8);
+            expect(result.current).toBe(JOIN_CALL_BAR_HEIGHT + 8);
         });
     });
 
@@ -239,7 +239,7 @@ describe('Calls Hooks', () => {
             });
         });
 
-        it('opens host controls for admin user', async () => {
+        it('opens host controls when admin', async () => {
             (getCurrentUser as jest.Mock).mockResolvedValueOnce({
                 roles: 'system_admin',
             });
@@ -255,7 +255,7 @@ describe('Calls Hooks', () => {
             }));
         });
 
-        it('opens user profile for self when host', async () => {
+        it('opens host controls when host and clicking another profile', async () => {
             (useCurrentCall as jest.Mock).mockReturnValue({
                 myUserId: 'user1',
                 hostId: 'user1',
