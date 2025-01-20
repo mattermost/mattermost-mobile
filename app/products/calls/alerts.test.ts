@@ -133,6 +133,23 @@ describe('alerts', () => {
             );
         });
 
+        it('should not show recording alert twice', () => {
+            const mockAlert = jest.spyOn(Alert, 'alert');
+            recordingAlert(true, false, intl as any);
+
+            expect(mockAlert).toHaveBeenCalledWith(
+                'You are recording',
+                'Consider letting everyone know that this meeting is being recorded.',
+                [{
+                    text: 'Dismiss',
+                }],
+            );
+
+            mockAlert.mockClear();
+            recordingAlert(true, false, intl as any);
+            expect(mockAlert).not.toHaveBeenCalled();
+        });
+
         it('shows participant recording alert', () => {
             const mockAlert = jest.spyOn(Alert, 'alert');
             recordingAlert(false, false, intl as any);
