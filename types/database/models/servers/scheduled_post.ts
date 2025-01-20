@@ -5,33 +5,36 @@ import type {Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
 
 /**
- * The Draft model represents  the draft state of messages in Direct/Group messages and in channels
+ * The ScheduledPost model represents the Scheduled Post state of messages in Direct/Group messages and in channels
  */
 declare class ScheduledPostModel extends Model {
-    /** table (name) : Draft */
+    /** table (name) : ScheduledPost */
     static table: string;
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
-    /** channel_id : The foreign key pointing to the channel in which the draft was made */
+    /** channel_id : The foreign key pointing to the channel in which the scheduled post was made */
     channelId: string;
 
-    /** message : The draft message */
+    /** message : The schedule post message */
     message: string;
 
-    /** root_id : The root_id will be empty most of the time unless the draft relates to a draft reply of a thread */
+    /** root_id : The root_id will be empty most of the time unless the scheduled post is created inside a thread */
     rootId: string;
 
     metadata?: PostMetadata;
 
-    /** update_at : The timestamp to when this post was last updated on the server */
+    /** update_at : The timestamp to when this scheduled post was last updated on the server */
     updateAt: number;
 
+    /** scheduled_at : The timestamp when the schedule post is scheduled at */
     scheduledAt: number;
 
+    /** processed_at : The timestamp when the schedule post is processed at */
     processedAt: number;
 
+    /** error_code : The reason message if the schedule post failed */
     errorCode: string;
 }
 
