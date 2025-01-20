@@ -5,7 +5,7 @@ import {field, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import {identity} from '@utils/helpers';
+import {identity, safeParseJSON} from '@utils/helpers';
 
 import type ScheduledPostModelInterface from '@typings/database/models/servers/scheduled_post';
 

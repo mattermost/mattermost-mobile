@@ -28,6 +28,7 @@ type Draft = {
 
 type ScheduledPost = Draft & {
     id: string;
+    priority?: PostPriority;
     scheduled_at: number;
     processed_at: number;
     error_code: string;

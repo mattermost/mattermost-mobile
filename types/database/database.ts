@@ -295,6 +295,7 @@ export type HandleDraftArgs = PrepareOnly & {
 };
 
 export type HandleScheduledPostsArgs = PrepareOnly & {
+  actionType: string;
   scheduledPosts?: ScheduledPost[];
 };
 
