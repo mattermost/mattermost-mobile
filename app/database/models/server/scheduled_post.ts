@@ -12,7 +12,7 @@ import type ScheduledPostModelInterface from '@typings/database/models/servers/s
 const {CHANNEL, POST, SCHEDULED_POST} = MM_TABLES.SERVER;
 
 /**
- * The Draft model represents  the draft state of messages in Direct/Group messages and in channels
+ * The Scheduled post model represents a scheduled post anywhere in Mattermost - channels, DMs, or GMs.
  */
 export default class ScheduledPostModel extends Model implements ScheduledPostModelInterface {
     /** table (name) : SchedulePost */
