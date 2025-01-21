@@ -181,7 +181,7 @@ lane :configure do
     json['ShowOnboarding'] = true
   end
 
-  # Configure Show Onboarding
+  # Collect network request information with different request group (notifications, login, cold start, etc)
   if ENV['COLLECT_NETWORK_METRICS'] == 'true'
     json['CollectNetworkMetrics'] = true
   end
