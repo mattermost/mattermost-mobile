@@ -139,6 +139,7 @@ export function ScheduledPostCoreOptions({userTimezone, onSelectOption}: Props) 
                     handleChange={handleCustomTimeChange}
                     theme={theme}
                     timezone={userTimezone}
+                    showInitially='date'
                 />
             )}
         </View>

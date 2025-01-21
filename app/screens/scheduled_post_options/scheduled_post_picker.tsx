@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {Platform, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -56,6 +56,8 @@ export function ScheduledPostOptions({currentUser}: Props) {
     const isTablet = useIsTablet();
     const theme = useTheme();
 
+    const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
     const userTimezone = getTimezone(currentUser?.timezone);
 
     const style = getStyleSheet(theme);
@@ -70,9 +72,13 @@ export function ScheduledPostOptions({currentUser}: Props) {
         return [1, COMPONENT_HEIGHT];
     }, []);
 
-    const onSelectTime = useCallback((selectedTime: string) => {
-        console.log({selectedTime});
+    const onSelectTime = useCallback((selectedValue: string) => {
+        setSelectedTime(selectedValue);
     }, []);
+
+    const onSchedule = useCallback(() => {
+        console.log({selectedTime});
+    }, [selectedTime]);
 
     const renderContent = () => {
         return (
@@ -100,7 +106,7 @@ export function ScheduledPostOptions({currentUser}: Props) {
     const renderFooter = (props: BottomSheetFooterProps) => (
         <ScheduledPostFooter
             {...props}
-            onSchedule={() => {}}
+            onSchedule={onSchedule}
         />
     );
 
