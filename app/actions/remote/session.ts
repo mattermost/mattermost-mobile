@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import NetInfo from '@react-native-community/netinfo';
-import {Alert, DeviceEventEmitter, Platform} from 'react-native';
+import {Alert, DeviceEventEmitter, Platform, type AlertButton} from 'react-native';
 
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -57,7 +57,7 @@ export const forceLogoutIfNecessary = async (serverUrl: string, err: unknown) =>
     const currentUserId = await getCurrentUserId(database);
 
     if (isErrorWithStatusCode(err) && err.status_code === HTTP_UNAUTHORIZED && isErrorWithUrl(err) && err.url?.indexOf('/login') === -1 && currentUserId) {
-        await logout(serverUrl, undefined, true);
+        await logout(serverUrl, undefined, {skipServerLogout: true});
         return {error: null, logout: true};
     }
 
@@ -136,7 +136,22 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 };
 
-export const logout = async (serverUrl: string, intl: IntlShape | undefined, skipServerLogout = false, removeServer = false, skipEvents = false) => {
+type LogoutOptions = {
+    skipServerLogout?: boolean;
+    removeServer?: boolean;
+    skipEvents?: boolean;
+    logoutOnAlert?: boolean;
+};
+
+export const logout = async (
+    serverUrl: string,
+    intl: IntlShape | undefined,
+    {
+        skipServerLogout = false,
+        removeServer = false,
+        skipEvents = false,
+        logoutOnAlert = false,
+    }: LogoutOptions = {}) => {
     if (!skipServerLogout) {
         let loggedOut = false;
         try {
@@ -152,28 +167,29 @@ export const logout = async (serverUrl: string, intl: IntlShape | undefined, ski
 
         if (!loggedOut) {
             const title = intl?.formatMessage({id: 'logout.fail.title', defaultMessage: 'Logout Failed'}) || 'Logout Failed';
-            const body = intl?.formatMessage({id: 'logout.fail.message', defaultMessage: 'We could not log you out of the server. If you log out now, data may continue to be accessible to this device once the device goes back online. Do you still want to continue?'}) || 'We could not log you out of the server. If you log out now, data may continue to be accessible to this device once the device goes back online. Do you still want to continue?';
+
+            const body = logoutOnAlert ?
+                intl?.formatMessage({id: 'logout.fail.message.forced', defaultMessage: 'We could not log you out of the server. Data may continue to be accessible to this device once the device goes back online.'}) || 'We could not log you out of the server. Data may continue to be accessible to this device once the device goes back online.' :
+                intl?.formatMessage({id: 'logout.fail.message', defaultMessage: 'We could not log you out of the server. If you log out now, data may continue to be accessible to this device once the device goes back online. Do you still want to continue?'}) || 'We could not log you out of the server. If you log out now, data may continue to be accessible to this device once the device goes back online. Do you still want to continue?';
             const cancel = intl?.formatMessage({id: 'logout.fail.cancel', defaultMessage: 'Cancel'}) || 'Cancel';
             const confirm = intl?.formatMessage({id: 'logout.fail.confirm', defaultMessage: 'Confirm'}) || 'Confirm';
 
+            const buttons: AlertButton[] = logoutOnAlert ? [] : [{text: cancel, style: 'cancel'}];
+            buttons.push({
+                text: confirm,
+                onPress: logoutOnAlert ? undefined : async () => {
+                    logout(serverUrl, intl, {skipServerLogout: true});
+                },
+            });
             Alert.alert(
                 title,
                 body,
-                [
-                    {
-                        text: cancel,
-                        style: 'cancel',
-                    },
-                    {
-                        text: confirm,
-                        onPress: async () => {
-                            logout(serverUrl, intl, true);
-                        },
-                    },
-                ],
+                buttons,
             );
 
-            return {data: false};
+            if (!logoutOnAlert) {
+                return {data: false};
+            }
         }
     }
 

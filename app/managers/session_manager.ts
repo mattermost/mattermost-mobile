@@ -187,7 +187,7 @@ class SessionManager {
 
     private onSessionExpired = async (serverUrl: string) => {
         this.terminatingSessionUrl.add(serverUrl);
-        await logout(serverUrl, undefined, true, false, true);
+        await logout(serverUrl, undefined, {skipServerLogout: true, skipEvents: true});
         await this.terminateSession(serverUrl, false);
 
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();

@@ -191,10 +191,10 @@ const ServerItem = ({
     }, [intl, isActive, server.url]);
 
     const removeServer = useCallback(async () => {
-        const skipLogoutFromServer = server.lastActiveAt === 0;
+        const skipServerLogout = server.lastActiveAt === 0;
         await dismissBottomSheet();
         Navigation.updateProps(Screens.HOME, {extra: undefined});
-        await logout(server.url, intl, skipLogoutFromServer, true);
+        await logout(server.url, intl, {skipServerLogout, removeServer: true});
     }, [intl, server.lastActiveAt, server.url]);
 
     const startTutorial = () => {
