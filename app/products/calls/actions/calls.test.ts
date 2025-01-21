@@ -474,7 +474,7 @@ describe('Actions.Calls', () => {
             mockClient.getCallsConfig.mockReturnValueOnce({DefaultEnabled: true, AllowEnableCalls: true});
             const successResult = await CallsActions.loadConfig('server1', false, 'Server Switch');
             expect(successResult.data).toBeDefined();
-            expect(mockClient.getCallsConfig).toHaveBeenCalledWith('calls');
+            expect(mockClient.getCallsConfig).toHaveBeenCalledWith('Server Switch');
             assert.equal(result.current.DefaultEnabled, true);
             assert.equal(result.current.AllowEnableCalls, true);
         });
