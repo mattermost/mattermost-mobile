@@ -19,8 +19,8 @@ export default schemaMigrations({migrations: [
                 columns: [
                     {name: 'channel_id', type: 'string', isIndexed: true},
                     {name: 'message', type: 'string'},
-                    {name: 'files', type: 'string', isOptional: true},
-                    {name: 'root_id', type: 'string'},
+                    {name: 'files', type: 'string'},
+                    {name: 'root_id', type: 'string', isIndexed: true},
                     {name: 'metadata', type: 'string', isOptional: true},
                     {name: 'update_at', type: 'number'},
                     {name: 'scheduled_at', type: 'number'},
