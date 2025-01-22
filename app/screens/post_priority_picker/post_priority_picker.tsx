@@ -194,6 +194,7 @@ const PostPriorityPicker = ({
                                 type='toggle'
                                 selected={data.requested_ack}
                                 descriptionNumberOfLines={2}
+                                value='requested_ack'
                             />
                         </View>
                         {displayPersistentNotifications && (
@@ -211,6 +212,7 @@ const PostPriorityPicker = ({
                                     type='toggle'
                                     selected={data.persistent_notifications}
                                     descriptionNumberOfLines={2}
+                                    value='persistent_notifications'
                                 />
                             </View>
                         )}

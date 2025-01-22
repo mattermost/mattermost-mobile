@@ -54,7 +54,10 @@ const PostPriorityLabel = ({label}: Props) => {
         labelText = intl.formatMessage({id: 'post_priority.label.important', defaultMessage: 'IMPORTANT'});
     }
     return (
-        <View style={containerStyle}>
+        <View
+            testID={`${label}_post_priority_label`}
+            style={containerStyle}
+        >
             <CompassIcon
                 name={iconName}
                 style={style.icon}
