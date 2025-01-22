@@ -17,6 +17,8 @@ import {getTimezone} from '@utils/user';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type UserModel from '@typings/database/models/servers/user';
+import {createScheduledPost} from '@actions/remote/scheduled_post';
+import {useServerUrl} from '@context/server';
 
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
@@ -55,6 +57,7 @@ type Props = {
 export function ScheduledPostOptions({currentUser}: Props) {
     const isTablet = useIsTablet();
     const theme = useTheme();
+    const serverUrl = useServerUrl();
 
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
@@ -76,8 +79,8 @@ export function ScheduledPostOptions({currentUser}: Props) {
         setSelectedTime(selectedValue);
     }, []);
 
-    const onSchedule = useCallback(() => {
-        console.log({selectedTime});
+    const onSchedule = useCallback(async () => {
+
     }, [selectedTime]);
 
     const renderContent = () => {

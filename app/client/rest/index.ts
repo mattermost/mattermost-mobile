@@ -26,6 +26,7 @@ import ClientTos, {type ClientTosMix} from './tos';
 import ClientUsers, {type ClientUsersMix} from './users';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
+import ClientScheduledPost, {type ClientScheduledPostMix} from '@client/rest/scheduled_post';
 
 interface Client extends ClientBase,
     ClientAppsMix,
@@ -46,7 +47,8 @@ interface Client extends ClientBase,
     ClientCallsMix,
     ClientPluginsMix,
     ClientNPSMix,
-    ClientCustomAttributesMix
+    ClientCustomAttributesMix,
+    ClientScheduledPostMix
 {}
 
 class Client extends mix(ClientBase).with(
@@ -69,6 +71,7 @@ class Client extends mix(ClientBase).with(
     ClientPlugins,
     ClientNPS,
     ClientCustomAttributes,
+    ClientScheduledPost,
 ) {
     // eslint-disable-next-line no-useless-constructor
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
