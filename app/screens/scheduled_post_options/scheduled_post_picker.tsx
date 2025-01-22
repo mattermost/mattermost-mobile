@@ -4,8 +4,10 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {Platform, View} from 'react-native';
 
+import {createScheduledPost} from '@actions/remote/scheduled_post';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
@@ -51,11 +53,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     currentUser?: UserModel;
     serverUrl: string;
+    onSchedule: (schedulingInfo: SchedulingInfo) => void;
 }
 
-export function ScheduledPostOptions({currentUser}: Props) {
+export function ScheduledPostOptions({currentUser, onSchedule}: Props) {
     const isTablet = useIsTablet();
     const theme = useTheme();
+    const serverUrl = useServerUrl();
 
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
@@ -74,10 +78,18 @@ export function ScheduledPostOptions({currentUser}: Props) {
         setSelectedTime(selectedValue);
     }, []);
 
-    const onSchedule = useCallback(async () => {
-        // TODO - to be implemented later
-        logInfo('Schedule post', selectedTime);
-    }, [selectedTime]);
+    const handleOnSchedule = useCallback(async () => {
+        if (!selectedTime) {
+            logInfo('ScheduledPostOptions', 'No time selected');
+            return;
+        }
+
+        const schedulingInfo: SchedulingInfo = {
+            scheduled_at: parseInt(selectedTime, 10),
+        };
+
+        onSchedule(schedulingInfo);
+    }, [onSchedule, selectedTime]);
 
     const renderContent = () => {
         return (
@@ -105,7 +117,7 @@ export function ScheduledPostOptions({currentUser}: Props) {
     const renderFooter = (props: BottomSheetFooterProps) => (
         <ScheduledPostFooter
             {...props}
-            onSchedule={onSchedule}
+            onSchedule={handleOnSchedule}
         />
     );
 

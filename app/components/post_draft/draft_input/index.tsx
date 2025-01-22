@@ -48,7 +48,7 @@ type Props = {
     cursorPosition: number;
 
     // Send Handler
-    sendMessage: () => void;
+    sendMessage: (schedulingInfo?: SchedulingInfo) => void;
     canSend: boolean;
     maxMessageLength: number;
 
@@ -164,13 +164,15 @@ function DraftInput({
         postPriority,
     });
 
-    const handleSendMessage = useCallback(async () => {
+    // LOL
+    const handleSendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
+        console.log('handleSendMessage', {schedulingInfo});
         if (persistentNotificationsEnabled) {
             persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
         } else {
-            sendMessage();
+            sendMessage(schedulingInfo);
         }
-    }, [serverUrl, mentionsList, persistentNotificationsEnabled, persistentNotificationMaxRecipients, sendMessage, value, channelType]);
+    }, [persistentNotificationsEnabled, serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType]);
 
     const handleShowScheduledPostOptions = useCallback(() => {
         if (!scheduledPostsEnabled) {
@@ -187,9 +189,10 @@ function DraftInput({
             title,
             props: {
                 closeButtonId: SCHEDULED_POST_PICKER_BUTTON,
+                onSchedule: handleSendMessage,
             },
         });
-    }, [intl, isTablet, scheduledPostsEnabled, theme]);
+    }, [handleSendMessage, intl, isTablet, scheduledPostsEnabled, theme]);
 
     const sendActionDisabled = !canSend || noMentionsError;
 

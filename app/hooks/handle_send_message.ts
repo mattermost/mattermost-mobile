@@ -16,12 +16,15 @@ import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
+import * as PostUtils from '@utils/post';
 import {isReactionMatch} from '@utils/emoji/helpers';
 import {getFullErrorMessage} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import {createScheduledPost} from '@actions/remote/scheduled_post';
+import {scheduledPostFromPost} from '@utils/post';
 
 type Props = {
     value: string;
@@ -86,7 +89,7 @@ export const useHandleSendMessage = ({
         setSendingMessage(false);
     }, [serverUrl, rootId, clearDraft]);
 
-    const doSubmitMessage = useCallback(() => {
+    const doSubmitMessage = useCallback((schedulingInfo?: SchedulingInfo) => {
         const postFiles = files.filter((f) => !f.failed);
         const post = {
             user_id: currentUserId,
@@ -105,7 +108,11 @@ export const useHandleSendMessage = ({
             };
         }
 
-        createPost(serverUrl, post, postFiles);
+        if (schedulingInfo) {
+            createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo));
+        } else {
+            createPost(serverUrl, post, postFiles, schedulingInfo);
+        }
 
         clearDraft();
         setSendingMessage(false);
@@ -167,21 +174,22 @@ export const useHandleSendMessage = ({
         }
     }, [value, userIsOutOfOffice, serverUrl, intl, channelId, rootId, clearDraft, channelType, currentUserId]);
 
-    const sendMessage = useCallback(() => {
+    const sendMessage = useCallback((schedulingInfo?: SchedulingInfo) => {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
         const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(value);
         const toHere = DraftUtils.textContainsAtHere(value);
 
-        if (value.indexOf('/') === 0) {
+        if (value.indexOf('/') === 0 && !schedulingInfo) {
             sendCommand();
         } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
             showSendToAllOrChannelOrHereAlert(membersCount, toHere && !toAllOrChannel);
+            // LOL - handle this branch to include scheduling info
         } else {
-            doSubmitMessage();
+            doSubmitMessage(schedulingInfo);
         }
     }, [enableConfirmNotificationsToChannel, useChannelMentions, value, membersCount, sendCommand, showSendToAllOrChannelOrHereAlert, doSubmitMessage]);
 
-    const handleSendMessage = useCallback(preventDoubleTap(() => {
+    const handleSendMessage = useCallback(preventDoubleTap((schedulingInfo?: SchedulingInfo) => {
         if (!canSend) {
             return;
         }
@@ -201,12 +209,12 @@ export const useHandleSendMessage = ({
             };
             const accept = () => {
                 // Files are filtered on doSubmitMessage
-                sendMessage();
+                sendMessage(schedulingInfo);
             };
 
             DraftUtils.alertAttachmentFail(intl, accept, cancel);
         } else {
-            sendMessage();
+            sendMessage(schedulingInfo);
         }
     }), [canSend, value, handleReaction, files, sendMessage, customEmojis]);
 

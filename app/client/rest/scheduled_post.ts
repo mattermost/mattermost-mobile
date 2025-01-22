@@ -9,7 +9,9 @@ export interface ClientScheduledPostMix {
 
 const ClientScheduledPost = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     createScheduledPost = async (schedulePost: ScheduledPost, connectionId?: string) => {
-        return this.doFetch(
+        console.log('XXXXXXXXXXXXXXXXXXXXXXXX');
+
+        const x = this.doFetch(
             this.getScheduledPostRoute(),
             {
                 method: 'post',
@@ -17,6 +19,9 @@ const ClientScheduledPost = <TBase extends Constructor<ClientBase>>(superclass: 
                 headers: {'Connection-Id': connectionId},
             },
         );
+
+        console.log({x});
+        return x;
     };
 };
 

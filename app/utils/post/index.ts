@@ -252,3 +252,10 @@ export async function sendMessageWithAlert({title, channelName, intl, sendMessag
         buttons,
     );
 }
+
+export function scheduledPostFromPost(post: Post, schedulingInfo: SchedulingInfo): ScheduledPost {
+    return {
+        ...post,
+        scheduled_at: schedulingInfo.scheduled_at,
+    };
+}
