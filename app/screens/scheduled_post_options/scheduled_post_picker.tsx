@@ -11,14 +11,13 @@ import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import ScheduledPostCoreOptions from '@screens/scheduled_post_options/core_options';
 import ScheduledPostFooter from '@screens/scheduled_post_options/footer';
+import {logInfo} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type UserModel from '@typings/database/models/servers/user';
-import {createScheduledPost} from '@actions/remote/scheduled_post';
-import {useServerUrl} from '@context/server';
 
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
@@ -57,7 +56,6 @@ type Props = {
 export function ScheduledPostOptions({currentUser}: Props) {
     const isTablet = useIsTablet();
     const theme = useTheme();
-    const serverUrl = useServerUrl();
 
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
@@ -67,9 +65,6 @@ export function ScheduledPostOptions({currentUser}: Props) {
 
     const snapPoints = useMemo(() => {
         const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
-
-        // we'll have 4 items max in here - max two for core options,
-        // one for custom option and max one for user's previously selected option.
         const numberOfItems = 11;
         const COMPONENT_HEIGHT = TITLE_HEIGHT + (numberOfItems * ITEM_HEIGHT) + bottomSheetAdjust;
         return [1, COMPONENT_HEIGHT];
@@ -80,7 +75,8 @@ export function ScheduledPostOptions({currentUser}: Props) {
     }, []);
 
     const onSchedule = useCallback(async () => {
-
+        // TODO - to be implemented later
+        logInfo('Schedule post', selectedTime);
     }, [selectedTime]);
 
     const renderContent = () => {

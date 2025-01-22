@@ -1,14 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
+import {observeConfigBooleanValue} from '@queries/servers/system';
+import {openAsBottomSheet} from '@screens/navigation';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -21,12 +26,7 @@ import Uploads from '../uploads';
 import Header from './header';
 
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
-import {observeConfigBooleanValue} from "@queries/servers/system";
-import {withDatabase, withObservables} from "@nozbe/watermelondb/react";
-import type {WithDatabaseArgs} from "@typings/database/database";
-import { useIsTablet } from '@hooks/device';
-import {openAsBottomSheet} from "@screens/navigation";
-import {Screens} from "@constants";
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 type Props = {
     testID?: string;
