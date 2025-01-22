@@ -971,8 +971,6 @@
   "post_priority.picker.label.standard": "Standard",
   "post_priority.picker.label.urgent": "Urgent",
   "post_priority.picker.title": "Message priority",
-  "scheduled_post.picker.title": "Schedule draft",
-  "scheduled_post.custom_time_picker.title": "Select date & time",
   "post.options.title": "Options",
   "post.reactions.title": "Reactions",
   "postList.scrollToBottom.newMessages": "New messages",
@@ -989,6 +987,12 @@
   "requested_ack.title": "Request Acknowledgements",
   "saved_messages.empty.paragraph": "To save something for later, long-press on a message and choose Save from the menu. Saved messages are only visible to you.",
   "saved_messages.empty.title": "No saved messages yet",
+  "scheduled_post_options.confirm_button.text": "Schedule Draft",
+  "scheduled_post.picker.custom": "Custom Time",
+  "scheduled_post.picker.monday": "Monday at 9am",
+  "scheduled_post.picker.next_monday": "Next Monday at 9am",
+  "scheduled_post.picker.title": "Schedule draft",
+  "scheduled_post.picker.tomorrow": "Tomorrow at 9 AM",
   "screen.channel_files.header.recent_files": "Recent Files",
   "screen.channel_files.results.filter.title": "Filter by file type",
   "screen.mentions.subtitle": "Messages you've been mentioned in",
@@ -1209,9 +1213,5 @@
   "video.download": "Download video",
   "video.download_description": "This video must be downloaded to play it.",
   "video.failed_description": "An error occurred while trying to play the video.",
-  "your.servers": "Your servers",
-  "scheduled_post.picker.monday": "Monday at 9am",
-  "scheduled_post.picker.next_monday": "Next Monday at 9am",
-  "scheduled_post.picker.custom": "Custom Time",
-  "scheduled_post_options.confirm_button.text": "Schedule Draft"
+  "your.servers": "Your servers"
 }
