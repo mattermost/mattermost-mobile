@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     Text,
     TouchableWithoutFeedback,
+    type GestureResponderEvent,
 } from 'react-native';
 import Video, {type OnLoadData, type OnProgressData, type VideoRef} from 'react-native-video';
 
@@ -152,6 +153,10 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
         }
     }, []);
 
+    const stopPropagation = useCallback((e: GestureResponderEvent) => {
+        e.stopPropagation();
+    }, []);
+
     if (hasError) {
         return (
             <FormattedText
@@ -163,9 +168,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
 
     return (
         <TouchableWithoutFeedback
-            onPress={(e) => {
-                e.stopPropagation();
-            }}
+            onPress={stopPropagation}
         >
             <View style={style.audioFileWrapper}>
                 <TouchableOpacity
