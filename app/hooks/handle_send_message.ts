@@ -73,8 +73,8 @@ export const useHandleSendMessage = ({
         }
 
         if (files.length) {
-            const loadingComplete = !files.some((file) => DraftUploadManager.isUploading(file.clientId!));
-            return loadingComplete;
+            const hasUploadingFiles = files.some((file) => file.loading || DraftUploadManager.isUploading(file.clientId!));
+            return !hasUploadingFiles;
         }
 
         return messageLength > 0;
