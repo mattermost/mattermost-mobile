@@ -18,6 +18,8 @@ import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
+import {dismissBottomSheet} from '@screens/navigation';
+import {usePreventDoubleTap} from '@hooks/utils';
 
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
@@ -50,13 +52,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     currentUserTimezone?: UserTimezone | null;
-    onSchedule: (schedulingInfo: SchedulingInfo) => void;
+    onSchedule: (schedulingInfo: SchedulingInfo) => Promise<void>;
 }
 
 export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     const isTablet = useIsTablet();
     const theme = useTheme();
 
+    const [isScheduling, setIsScheduling] = useState(false);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const userTimezone = getTimezone(currentUserTimezone);
 
@@ -75,18 +78,21 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
         setSelectedTime(selectedValue);
     }, []);
 
-    const handleOnSchedule = useCallback(async () => {
+    const handleOnSchedule = usePreventDoubleTap(useCallback(async () => {
         if (!selectedTime) {
             logInfo('ScheduledPostOptions', 'No time selected');
             return;
         }
 
+        setIsScheduling(true);
         const schedulingInfo: SchedulingInfo = {
             scheduled_at: parseInt(selectedTime, 10),
         };
 
-        onSchedule(schedulingInfo);
-    }, [onSchedule, selectedTime]);
+        await onSchedule(schedulingInfo);
+        setIsScheduling(false);
+        await dismissBottomSheet();
+    }, [onSchedule, selectedTime]));
 
     const renderContent = () => {
         return (
@@ -115,6 +121,7 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
         <ScheduledPostFooter
             {...props}
             onSchedule={handleOnSchedule}
+            isScheduling={isScheduling}
         />
     );
 

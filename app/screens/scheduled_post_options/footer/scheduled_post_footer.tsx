@@ -8,6 +8,7 @@ import {Platform, TouchableOpacity, View} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import Updating from '@screens/edit_profile/components/updating';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -45,17 +46,38 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginLeft: 8,
         paddingVertical: BUTTON_PADDING,
     },
+    disabledApplyButton: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+    },
     applyButtonText: {
         color: theme.buttonColor,
         ...typography('Body', 200, 'SemiBold'),
+    },
+    applyButtonProcessingText: {
+        color: changeOpacity(theme.centerChannelColor, 0.32),
+        ...typography('Body', 200, 'SemiBold'),
+    },
+    schedulingButtonContentWrapper: {
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
+        gap: 12,
+    },
+    spinner: {
+        position: 'relative',
     },
 }));
 
 type Props = BottomSheetFooterProps & {
     onSchedule: () => void;
+    isScheduling: boolean;
 }
 
-export function ScheduledPostFooter({onSchedule, ...props}: Props) {
+export function ScheduledPostFooter({onSchedule, isScheduling, ...props}: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
@@ -68,13 +90,32 @@ export function ScheduledPostFooter({onSchedule, ...props}: Props) {
         >
             <TouchableOpacity
                 onPress={onSchedule}
-                style={style.applyButton}
+                style={isScheduling ? {...style.applyButton, ...style.disabledApplyButton} : style.applyButton}
+                disabled={isScheduling}
             >
-                <FormattedText
-                    id='scheduled_post_options.confirm_button.text'
-                    defaultMessage='Schedule Draft'
-                    style={style.applyButtonText}
-                />
+                {
+                    isScheduling &&
+                    (
+                        <View style={style.schedulingButtonContentWrapper}>
+                            <View style={{position: 'relative', height: '100%', width: 20}}>
+                                <Updating/>
+                            </View>
+                            <FormattedText
+                                id='scheduled_post_options.confirm_button.processing.text'
+                                defaultMessage='Scheduling'
+                                style={style.applyButtonProcessingText}
+                            />
+                        </View>
+                    )
+                }
+                {
+                    !isScheduling &&
+                    <FormattedText
+                        id='scheduled_post_options.confirm_button.text'
+                        defaultMessage='Schedule Draft'
+                        style={style.applyButtonText}
+                    />
+                }
             </TouchableOpacity>
         </View>
     );

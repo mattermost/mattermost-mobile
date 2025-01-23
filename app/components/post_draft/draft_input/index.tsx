@@ -48,7 +48,7 @@ type Props = {
     cursorPosition: number;
 
     // Send Handler
-    sendMessage: (schedulingInfo?: SchedulingInfo) => void;
+    sendMessage: (schedulingInfo?: SchedulingInfo) => Promise<void>;
     canSend: boolean;
     maxMessageLength: number;
 
@@ -165,12 +165,13 @@ function DraftInput({
     });
 
     // LOL
-    const handleSendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
-        console.log('handleSendMessage', {schedulingInfo});
+    const handleSendMessage = useCallback(async (schedulingInfoParam?: SchedulingInfo) => {
+        const schedulingInfo = (schedulingInfoParam && 'scheduled_at' in schedulingInfoParam) ? schedulingInfoParam : undefined;
+
         if (persistentNotificationsEnabled) {
-            persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
+            await persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
         } else {
-            sendMessage(schedulingInfo);
+            await sendMessage(schedulingInfo);
         }
     }, [persistentNotificationsEnabled, serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType]);
 

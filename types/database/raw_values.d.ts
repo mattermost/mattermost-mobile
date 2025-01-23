@@ -29,8 +29,8 @@ type Draft = {
 type ScheduledPost = Draft & {
     id: string;
     scheduled_at: number;
-    processed_at: number;
-    error_code: string;
+    processed_at?: number;
+    error_code?: string;
 }
 
 type MyTeam = {

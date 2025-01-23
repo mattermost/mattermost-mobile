@@ -9,6 +9,7 @@ import {getChannelTimezones} from '@actions/remote/channel';
 import {executeCommand, handleGotoLocation} from '@actions/remote/command';
 import {createPost} from '@actions/remote/post';
 import {handleReactionToLatestPost} from '@actions/remote/reactions';
+import {createScheduledPost} from '@actions/remote/scheduled_post';
 import {setStatus} from '@actions/remote/user';
 import {handleCallsSlashCommand} from '@calls/actions';
 import {Events, Screens} from '@constants';
@@ -16,15 +17,12 @@ import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
-import * as PostUtils from '@utils/post';
 import {isReactionMatch} from '@utils/emoji/helpers';
 import {getFullErrorMessage} from '@utils/errors';
-import {preventDoubleTap} from '@utils/tap';
+import {scheduledPostFromPost} from '@utils/post';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import {createScheduledPost} from '@actions/remote/scheduled_post';
-import {scheduledPostFromPost} from '@utils/post';
 
 type Props = {
     value: string;
@@ -89,7 +87,7 @@ export const useHandleSendMessage = ({
         setSendingMessage(false);
     }, [serverUrl, rootId, clearDraft]);
 
-    const doSubmitMessage = useCallback((schedulingInfo?: SchedulingInfo) => {
+    const doSubmitMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
         const postFiles = files.filter((f) => !f.failed);
         const post = {
             user_id: currentUserId,
@@ -109,9 +107,9 @@ export const useHandleSendMessage = ({
         }
 
         if (schedulingInfo) {
-            createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo));
+            await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo));
         } else {
-            createPost(serverUrl, post, postFiles, schedulingInfo);
+            await createPost(serverUrl, post, postFiles);
         }
 
         clearDraft();
@@ -125,7 +123,7 @@ export const useHandleSendMessage = ({
             setSendingMessage(false);
         };
 
-        DraftUtils.alertChannelWideMention(intl, notifyAllMessage, doSubmitMessage, cancel);
+        DraftUtils.alertChannelWideMention(intl, notifyAllMessage, () => doSubmitMessage(), cancel);
     }, [intl, channelTimezoneCount, doSubmitMessage]);
 
     const sendCommand = useCallback(async () => {
@@ -174,7 +172,7 @@ export const useHandleSendMessage = ({
         }
     }, [value, userIsOutOfOffice, serverUrl, intl, channelId, rootId, clearDraft, channelType, currentUserId]);
 
-    const sendMessage = useCallback((schedulingInfo?: SchedulingInfo) => {
+    const sendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
         const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(value);
         const toHere = DraftUtils.textContainsAtHere(value);
@@ -183,15 +181,16 @@ export const useHandleSendMessage = ({
             sendCommand();
         } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
             showSendToAllOrChannelOrHereAlert(membersCount, toHere && !toAllOrChannel);
+
             // LOL - handle this branch to include scheduling info
         } else {
-            doSubmitMessage(schedulingInfo);
+            await doSubmitMessage(schedulingInfo);
         }
     }, [enableConfirmNotificationsToChannel, useChannelMentions, value, membersCount, sendCommand, showSendToAllOrChannelOrHereAlert, doSubmitMessage]);
 
-    const handleSendMessage = useCallback(preventDoubleTap((schedulingInfo?: SchedulingInfo) => {
+    const handleSendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
         if (!canSend) {
-            return;
+            return Promise.resolve();
         }
 
         setSendingMessage(true);
@@ -199,7 +198,7 @@ export const useHandleSendMessage = ({
         const match = isReactionMatch(value, customEmojis);
         if (match && !files.length) {
             handleReaction(match.emoji, match.add);
-            return;
+            return Promise.resolve();
         }
 
         const hasFailedAttachments = files.some((f) => f.failed);
@@ -214,9 +213,11 @@ export const useHandleSendMessage = ({
 
             DraftUtils.alertAttachmentFail(intl, accept, cancel);
         } else {
-            sendMessage(schedulingInfo);
+            await sendMessage(schedulingInfo);
         }
-    }), [canSend, value, handleReaction, files, sendMessage, customEmojis]);
+
+        return Promise.resolve();
+    }, [canSend, value, customEmojis, files, handleReaction, intl, sendMessage]);
 
     useEffect(() => {
         getChannelTimezones(serverUrl, channelId).then(({channelTimezones}) => {

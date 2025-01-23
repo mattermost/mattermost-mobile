@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -55,10 +56,12 @@ function SendButton({
 
     const buttonColor = disabled ? changeOpacity(theme.buttonColor, 0.5) : theme.buttonColor;
 
+    const sendMessageWithDoubleTapHandling = usePreventDoubleTap(sendMessage);
+
     return (
         <TouchableWithFeedback
             testID={sendButtonTestID}
-            onPress={sendMessage}
+            onPress={sendMessageWithDoubleTapHandling}
             style={style.sendButtonContainer}
             type={'opacity'}
             disabled={disabled}
