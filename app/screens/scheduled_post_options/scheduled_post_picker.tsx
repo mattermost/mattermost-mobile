@@ -8,7 +8,9 @@ import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import BottomSheet from '@screens/bottom_sheet';
+import {dismissBottomSheet} from '@screens/navigation';
 import ScheduledPostCoreOptions from '@screens/scheduled_post_options/core_options';
 import ScheduledPostFooter from '@screens/scheduled_post_options/footer';
 import {FOOTER_HEIGHT} from '@screens/scheduled_post_options/footer/scheduled_post_footer';
@@ -18,8 +20,6 @@ import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
-import {dismissBottomSheet} from '@screens/navigation';
-import {usePreventDoubleTap} from '@hooks/utils';
 
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
