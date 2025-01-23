@@ -6,6 +6,7 @@ import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
+import {getFormattedTime} from '@components/formatted_time';
 import {useTheme} from '@context/theme';
 import DateTimeSelector from '@screens/custom_status_clear_after/components/date_time_selector';
 import PickerOption from '@screens/post_priority_picker/components/picker_option';
@@ -29,10 +30,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     userTimezone: string;
+    isMilitaryTime: boolean;
     onSelectOption: (selectedTime: string) => void;
 }
 
-export function ScheduledPostCoreOptions({userTimezone, onSelectOption}: Props) {
+export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelectOption}: Props) {
     const intl = useIntl();
     const theme = useTheme();
 
@@ -69,10 +71,16 @@ export function ScheduledPostCoreOptions({userTimezone, onSelectOption}: Props) 
         onSelectOption(selectedTime.unix().toString());
     }, [onSelectOption]);
 
+    const nineAmTime = moment().
+        tz(userTimezone).
+        set({hour: 9, minute: 0, second: 0, millisecond: 0}).
+        valueOf();
+    const formattedTimeString = getFormattedTime(isMilitaryTime, userTimezone, nineAmTime);
+
     const optionMonday = (
         <PickerOption
             key={optionKeysOptionMonday}
-            label={intl.formatMessage({id: 'scheduled_post.picker.monday', defaultMessage: 'Monday at 9 AM'})}
+            label={intl.formatMessage({id: 'scheduled_post.picker.monday', defaultMessage: 'Monday at {9amTime}'}, {'9amTime': formattedTimeString})}
             action={handleSelectOption}
             value={optionKeysOptionMonday}
             selected={selectedOption === optionKeysOptionMonday}
@@ -82,7 +90,7 @@ export function ScheduledPostCoreOptions({userTimezone, onSelectOption}: Props) 
     const optionTomorrow = (
         <PickerOption
             key={optionKeyOptionTomorrow}
-            label={intl.formatMessage({id: 'scheduled_post.picker.tomorrow', defaultMessage: 'Tomorrow at 9 AM'})}
+            label={intl.formatMessage({id: 'scheduled_post.picker.tomorrow', defaultMessage: 'Tomorrow at {9amTime}'}, {'9amTime': formattedTimeString})}
             action={handleSelectOption}
             value={optionKeyOptionTomorrow}
             selected={selectedOption === optionKeyOptionTomorrow}
@@ -92,7 +100,7 @@ export function ScheduledPostCoreOptions({userTimezone, onSelectOption}: Props) 
     const optionNextMonday = (
         <PickerOption
             key={optionKeyOptionNextMonday}
-            label={intl.formatMessage({id: 'scheduled_post.picker.next_monday', defaultMessage: 'Next Monday at 9 AM'})}
+            label={intl.formatMessage({id: 'scheduled_post.picker.next_monday', defaultMessage: 'Next Monday at {9amTime}'}, {'9amTime': formattedTimeString})}
             action={handleSelectOption}
             value={optionKeyOptionNextMonday}
             selected={selectedOption === optionKeyOptionNextMonday}
