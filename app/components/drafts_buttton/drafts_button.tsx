@@ -119,7 +119,12 @@ const DraftsButton: React.FC<DraftListProps> = ({
                         color={theme.sidebarText}
                         style={customStyles.opacity}
                     />
-                    <Text style={customStyles.count}>{draftsCount}</Text>
+                    <Text
+                        testID='channel_list.drafts.count'
+                        style={customStyles.count}
+                    >
+                        {draftsCount}
+                    </Text>
                 </View>
             </View>
         </TouchableOpacity>

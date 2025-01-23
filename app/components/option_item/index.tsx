@@ -214,7 +214,7 @@ const OptionItem = ({
                 value={selected}
                 trackColor={trackColor}
                 thumbColor={thumbColor}
-                testID={`${testID}.toggled.${selected}`}
+                testID={`${testID}.toggled.${selected}.${value}`}
             />
         );
     } else if (type === OptionType.ARROW) {
