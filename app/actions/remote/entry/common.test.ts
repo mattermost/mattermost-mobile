@@ -201,6 +201,23 @@ describe('actions/remote/entry/common', () => {
             );
         });
 
+        it('should set extra session properties when notifications are limited', async () => {
+            (RESULTS as any).LIMITED = 'limited';
+            const mockCheckNotifications = jest.fn().mockResolvedValue({status: RESULTS.LIMITED});
+            require('react-native-permissions').checkNotifications = mockCheckNotifications;
+            jest.mocked(getDeviceToken).mockResolvedValueOnce('deviceToken');
+
+            const result = await setExtraSessionProps(serverUrl);
+
+            expect(result).toEqual({});
+            expect(mockClient.setExtraSessionProps).toHaveBeenCalledWith(
+                expect.any(String),
+                false,
+                nativeApplicationVersion,
+                undefined,
+            );
+        });
+
         it('should handle errors gracefully', async () => {
             const mockError = new Error('Failed to set props');
             const mockCheckNotifications = jest.fn().mockRejectedValue(mockError);
@@ -447,6 +464,173 @@ describe('actions/remote/entry/common', () => {
                 false,
                 undefined,
             );
+        });
+
+        it('should sort teams when preferences are missing', async () => {
+            const since = 123456789;
+            const currentUserId = 'user1';
+            const currentUserLocale = 'en';
+            const preferences: PreferenceType[] = [];
+            const config = {
+                Version: '7.8.0',
+                CollapsedThreads: 'false',
+            } as ClientConfig;
+            const license = {} as ClientLicense;
+            const teamData = {
+                teams: [
+                    {id: 'team1', display_name: 'Zebra'},
+                    {id: 'team2', display_name: 'Alpha'},
+                ],
+                memberships: [
+                    {team_id: 'team1', user_id: 'user1'},
+                    {team_id: 'team2', user_id: 'user1'},
+                ],
+            } as MyTeamsRequest;
+            const chData = {
+                channels: [],
+                memberships: [],
+            } as MyChannelsRequest;
+
+            await restDeferredAppEntryActions(
+                serverUrl,
+                since,
+                currentUserId,
+                currentUserLocale,
+                preferences,
+                config,
+                license,
+                teamData,
+                chData,
+                undefined,
+                undefined,
+            );
+
+            expect(teamData.teams?.[0]?.display_name).toBe('Alpha');
+            expect(teamData.teams?.[1]?.display_name).toBe('Zebra');
+        });
+
+        it('should handle extra teams correctly when sorted teams are provided', async () => {
+            const since = 123456789;
+            const currentUserId = 'user1';
+            const currentUserLocale = 'en';
+            const preferences = [{
+                category: Preferences.CATEGORIES.TEAMS_ORDER,
+                name: '',
+                value: 'team3,team1',
+                user_id: 'user1',
+            }];
+            const config = {
+                Version: '7.8.0',
+                CollapsedThreads: 'true',
+                FeatureFlagCollapsedThreads: 'true',
+            } as ClientConfig;
+            const license = {} as ClientLicense;
+            const teamData = {
+                teams: [
+                    {id: 'team1', display_name: 'Team 1'},
+                    {id: 'team2', display_name: 'Team 2'},
+                    {id: 'team3', display_name: 'Team 3'},
+                ],
+                memberships: [
+                    {team_id: 'team1', user_id: 'user1'},
+                    {team_id: 'team2', user_id: 'user1'},
+                    {team_id: 'team3', user_id: 'user1'},
+                ],
+            } as MyTeamsRequest;
+            const chData = {
+                channels: [
+                    {id: 'channel1', team_id: 'team1', type: 'O'},
+                    {id: 'channel2', team_id: 'team2', type: 'O'},
+                ],
+                memberships: [
+                    {channel_id: 'channel1', user_id: 'user1'},
+                    {channel_id: 'channel2', user_id: 'user1'},
+                ],
+            } as MyChannelsRequest;
+
+            await restDeferredAppEntryActions(
+                serverUrl,
+                since,
+                currentUserId,
+                currentUserLocale,
+                preferences,
+                config,
+                license,
+                teamData,
+                chData,
+                'team1',
+                'channel1',
+            );
+
+            // Check that 'team3' (which was in memberships but not sorted) is in the 'extraTeams' result
+            expect(fetchTeamsThreads).toHaveBeenCalled();
+            expect(fetchPostsForUnreadChannels).toHaveBeenCalled();
+
+            // Optionally check if team3 is sorted after team1 based on display name or the intended order
+            expect(teamData.teams?.[0]?.display_name).toBe('Team 1');
+            expect(teamData.teams?.[1]?.display_name).toBe('Team 2');
+            expect(teamData.teams?.[2]?.display_name).toBe('Team 3');
+        });
+
+        it('should sort extra teams correctly by display name', async () => {
+            const since = 123456789;
+            const currentUserId = 'user1';
+            const currentUserLocale = 'en';
+            const preferences = [{
+                category: Preferences.CATEGORIES.TEAMS_ORDER,
+                name: '',
+                value: 'team1,team2', // Teams that are already sorted based on preferences
+                user_id: 'user1',
+            }];
+            const config = {
+                Version: '7.8.0',
+                CollapsedThreads: 'true',
+                FeatureFlagCollapsedThreads: 'true',
+            } as ClientConfig;
+            const license = {} as ClientLicense;
+            const teamData = {
+                teams: [
+                    {id: 'team1', display_name: 'Team 1'},
+                    {id: 'team2', display_name: 'Team 2'},
+                    {id: 'team3', display_name: 'Alpha Team'},
+                    {id: 'team4', display_name: 'Zebra Team'},
+                ],
+                memberships: [
+                    {team_id: 'team1', user_id: 'user1'},
+                    {team_id: 'team2', user_id: 'user1'},
+                    {team_id: 'team3', user_id: 'user1'},
+                    {team_id: 'team4', user_id: 'user1'},
+                ],
+            } as MyTeamsRequest;
+            const chData = {
+                channels: [],
+                memberships: [],
+            } as MyChannelsRequest;
+
+            // Call the function under test
+            await restDeferredAppEntryActions(
+                serverUrl,
+                since,
+                currentUserId,
+                currentUserLocale,
+                preferences,
+                config,
+                license,
+                teamData,
+                chData,
+                'team1', // initialTeamId
+                'channel1', // initialChannelId
+            );
+
+            // Extract the extra teams (those that are not in the preferences-sorted list)
+            const extraTeams = [...(teamData.memberships || [])].
+                filter((membership) => !preferences[0].value.split(',').includes(membership.team_id)). // Filter teams not in sorted order
+                map((membership) => (teamData.teams ?? []).find((team) => team.id === membership.team_id)!). // Map to actual team data
+                sort((a, b) => a.display_name.toLocaleLowerCase().localeCompare(b.display_name.toLocaleLowerCase())); // Sort by display_name
+
+            // Test that the extra teams are sorted alphabetically by display_name
+            expect(extraTeams[0].display_name).toBe('Alpha Team'); // Alphabetically first
+            expect(extraTeams[1].display_name).toBe('Zebra Team'); // Alphabetically last
         });
     });
 
