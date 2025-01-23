@@ -11,13 +11,13 @@ import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import ScheduledPostCoreOptions from '@screens/scheduled_post_options/core_options';
 import ScheduledPostFooter from '@screens/scheduled_post_options/footer';
+import {FOOTER_HEIGHT} from '@screens/scheduled_post_options/footer/scheduled_post_footer';
 import {logInfo} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
-import type UserModel from '@typings/database/models/servers/user';
 
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
@@ -49,24 +49,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
-    currentUser?: UserModel;
+    currentUserTimezone?: UserTimezone | null;
     serverUrl: string;
 }
 
-export function ScheduledPostOptions({currentUser}: Props) {
+export function ScheduledPostOptions({currentUserTimezone}: Props) {
     const isTablet = useIsTablet();
     const theme = useTheme();
 
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
-
-    const userTimezone = getTimezone(currentUser?.timezone);
+    const userTimezone = getTimezone(currentUserTimezone);
 
     const style = getStyleSheet(theme);
 
     const snapPoints = useMemo(() => {
         const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
-        const numberOfItems = 11;
-        const COMPONENT_HEIGHT = TITLE_HEIGHT + (numberOfItems * ITEM_HEIGHT) + bottomSheetAdjust;
+
+        // iOS needs higher number of items to accommodate space for inline date-time picker
+        const numberOfItems = Platform.select({ios: 9, default: 3});
+        const COMPONENT_HEIGHT = TITLE_HEIGHT + (numberOfItems * ITEM_HEIGHT) + FOOTER_HEIGHT + bottomSheetAdjust;
         return [1, COMPONENT_HEIGHT];
     }, []);
 

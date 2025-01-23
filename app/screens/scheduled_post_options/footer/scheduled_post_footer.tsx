@@ -14,6 +14,8 @@ import {typography} from '@utils/typography';
 const BUTTON_PADDING = 15;
 const FOOTER_PADDING = 20;
 const FOOTER_PADDING_BOTTOM_TABLET_ADJUST = 20;
+const TEXT_HEIGHT = 24; // typography 200 line height
+export const FOOTER_HEIGHT = (FOOTER_PADDING * 2) + (BUTTON_PADDING * 2) + TEXT_HEIGHT;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
