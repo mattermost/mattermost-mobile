@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {throttle} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -11,11 +10,13 @@ import {
     TouchableWithoutFeedback,
     type GestureResponderEvent,
 } from 'react-native';
-import Video, {type OnLoadData, type OnProgressData, type VideoRef} from 'react-native-video';
+import Video, {type OnLoadData, type OnProgressData, type OnVideoErrorData, type VideoRef} from 'react-native-video';
 
 import {useTheme} from '@context/theme';
 import {useDownloadFileAndPreview} from '@hooks/files';
+import useThrottled from '@hooks/throttled';
 import {alertDownloadDocumentDisabled} from '@utils/document';
+import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -118,14 +119,17 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
         setDuration(loadData.duration);
     }, [loadTimeInMinutes]);
 
+    const throttledLoadTimeOneSecond = useThrottled(loadTimeInMinutes, 1000);
+    const throttledLoadTime100Milliseconds = useThrottled(loadTimeInMinutes, 100);
+
     const onProgress = useCallback((progressData: OnProgressData) => {
         if (hasPaused) {
             return;
         }
         const {currentTime, playableDuration} = progressData;
         setProgress(currentTime / playableDuration);
-        throttle(() => loadTimeInMinutes(currentTime), 1000)();
-    }, [hasPaused, loadTimeInMinutes]);
+        throttledLoadTimeOneSecond(currentTime);
+    }, [hasPaused, throttledLoadTimeOneSecond]);
 
     const onEnd = useCallback(() => {
         if (videoRef.current) {
@@ -134,8 +138,9 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
         setHasEnded(true);
     }, []);
 
-    const onError = useCallback(() => {
+    const onError = useCallback(({error}: OnVideoErrorData) => {
         setHasError(true);
+        logDebug((error && typeof error === 'object' && 'errorString' in error) ? error.errorString : error);
     }, []);
 
     const onSeek = useCallback((seekPosition: number) => {
@@ -143,9 +148,9 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
             const newTime = seekPosition * duration;
             videoRef.current.seek(newTime);
             setProgress(seekPosition);
-            throttle(() => loadTimeInMinutes(newTime), 100)();
+            throttledLoadTime100Milliseconds(newTime);
         }
-    }, [duration, loadTimeInMinutes]);
+    }, [duration, throttledLoadTime100Milliseconds]);
 
     const onAudioFocusChanged = useCallback(({hasAudioFocus}: {hasAudioFocus: boolean}) => {
         if (!hasAudioFocus) {
