@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {type ReactNode} from 'react';
-import {StyleSheet, type TextStyle, View, type ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 
 type MarkdownBlockQuoteProps = {
     continueBlock?: boolean;
-    iconStyle: ViewStyle | TextStyle;
+    iconStyle: StyleProp<Intersection<ViewStyle, TextStyle>>;
     children: ReactNode | ReactNode[];
 };
 

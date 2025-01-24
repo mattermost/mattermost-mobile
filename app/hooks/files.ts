@@ -59,33 +59,32 @@ const getFileInfo = async (serverUrl: string, bookmarks: ChannelBookmarkModel[],
     }
 };
 
-export const useImageAttachments = (filesInfo: FileInfo[], publicLinkEnabled: boolean) => {
+export const useImageAttachments = (filesInfo: FileInfo[]) => {
     const serverUrl = useServerUrl();
     return useMemo(() => {
         return filesInfo.reduce(({images, nonImages}: {images: FileInfo[]; nonImages: FileInfo[]}, file) => {
             const imageFile = isImage(file);
             const videoFile = isVideo(file);
             const audioFile = isAudio(file);
-            if (imageFile || (videoFile && publicLinkEnabled)) {
+
+            if (imageFile || videoFile || audioFile) {
                 let uri;
                 if (file.localPath) {
                     uri = file.localPath;
                 } else {
-                    uri = (isGif(file) || videoFile) ? buildFileUrl(serverUrl, file.id!) : buildFilePreviewUrl(serverUrl, file.id!);
+                    // If no local path and no id, we skip the image
+                    if (!file.id) {
+                        return {images, nonImages};
+                    }
+                    uri = (isGif(file) || videoFile) ? buildFileUrl(serverUrl, file.id) : buildFilePreviewUrl(serverUrl, file.id);
                 }
                 images.push({...file, uri});
             } else {
-                let uri = file.uri;
-                if (videoFile || audioFile) {
-                    // fallback if public links are not enabled
-                    uri = buildFileUrl(serverUrl, file.id!);
-                }
-
-                nonImages.push({...file, uri});
+                nonImages.push({...file});
             }
             return {images, nonImages};
         }, {images: [], nonImages: []});
-    }, [filesInfo, publicLinkEnabled]);
+    }, [filesInfo, serverUrl]);
 };
 
 export const useChannelBookmarkFiles = (bookmarks: ChannelBookmarkModel[], publicLinkEnabled: boolean) => {

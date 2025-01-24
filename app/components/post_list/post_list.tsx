@@ -117,20 +117,13 @@ const PostList = ({
     const serverUrl = useServerUrl();
     const orderedPosts = useMemo(() => {
         return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location === Screens.THREAD, savedPostIds);
-    }, [posts, lastViewedAt, showNewMessageLine, currentTimezone, currentUsername, shouldShowJoinLeaveMessages, location, savedPostIds]);
+    }, [posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location, savedPostIds]);
 
     const initialIndex = useMemo(() => {
         return orderedPosts.findIndex((i) => i.type === 'start-of-new-messages');
     }, [orderedPosts]);
 
-    const isNewMessage = useMemo(() => {
-        if (!lastPostId) {
-            // Avoid flash when the channel loads without posts
-            // e.g. The first time we navigate to a channel
-            return false;
-        }
-        return posts[0]?.id !== lastPostId;
-    }, [posts[0]?.id, lastPostId]);
+    const isNewMessage = lastPostId ? posts[0]?.id !== lastPostId : false;
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -266,7 +259,6 @@ const PostList = ({
             case 'user-activity': {
                 const postProps = {
                     currentUsername,
-                    key: item.value,
                     postId: item.value,
                     location,
                     style: styles.container,
@@ -275,7 +267,11 @@ const PostList = ({
                     theme,
                 };
 
-                return (<CombinedUserActivity {...postProps}/>);
+                return (
+                    <CombinedUserActivity
+                        {...postProps}
+                        key={item.value}
+                    />);
             }
             default: {
                 const post = item.value.currentPost;
@@ -289,7 +285,6 @@ const PostList = ({
                     highlight: highlightedId === post.id,
                     highlightPinnedOrSaved,
                     isSaved,
-                    key: post.id,
                     location,
                     nextPost,
                     post,
@@ -300,10 +295,15 @@ const PostList = ({
                     testID: `${testID}.post`,
                 };
 
-                return (<Post {...postProps}/>);
+                return (
+                    <Post
+                        {...postProps}
+                        key={post.id}
+                    />
+                );
             }
         }
-    }, [appsEnabled, currentTimezone, customEmojiNames, highlightPinnedOrSaved, isCRTEnabled, isPostAcknowledgementEnabled, shouldRenderReplyButton, theme]);
+    }, [appsEnabled, currentTimezone, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
         listRef.current?.scrollToIndex({

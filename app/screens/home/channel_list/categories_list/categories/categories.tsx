@@ -3,10 +3,12 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, StyleSheet, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
+import {Events} from '@constants';
+import {CHANNEL} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {useTeamSwitch} from '@hooks/team_switch';
@@ -69,6 +71,7 @@ const Categories = ({
     const [initiaLoad, setInitialLoad] = useState(!categoriesToShow.length);
 
     const onChannelSwitch = useCallback(async (c: Channel | ChannelModel) => {
+        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, CHANNEL);
         PerformanceMetricsManager.startMetric('mobile_channel_switch');
         switchToChannelById(serverUrl, c.id);
     }, [serverUrl]);
