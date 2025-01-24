@@ -107,7 +107,7 @@ export const useHandleSendMessage = ({
         }
 
         if (schedulingInfo) {
-            await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles));
+            await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority));
         } else {
             await createPost(serverUrl, post, postFiles);
         }

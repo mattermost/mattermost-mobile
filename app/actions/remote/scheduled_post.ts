@@ -8,7 +8,7 @@ import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
-export async function createScheduledPost(serverUrl: string, schedulePost: ScheduledPost, files: FileInfo[] = [], connectionId?: string, fetchOnly = false) {
+export async function createScheduledPost(serverUrl: string, schedulePost: ScheduledPost, connectionId?: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
