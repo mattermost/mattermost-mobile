@@ -76,7 +76,7 @@ export const useImageAttachments = (filesInfo: FileInfo[]) => {
                     if (!file.id) {
                         return {images, nonImages};
                     }
-                    uri = (isGif(file) || videoFile) ? buildFileUrl(serverUrl, file.id) : buildFilePreviewUrl(serverUrl, file.id);
+                    uri = (isGif(file) || videoFile || audioFile) ? buildFileUrl(serverUrl, file.id) : buildFilePreviewUrl(serverUrl, file.id);
                 }
                 images.push({...file, uri});
             } else {
