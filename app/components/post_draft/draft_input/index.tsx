@@ -169,7 +169,8 @@ function DraftInput({
         const schedulingInfo = (schedulingInfoParam && 'scheduled_at' in schedulingInfoParam) ? schedulingInfoParam : undefined;
 
         if (persistentNotificationsEnabled) {
-            await persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
+            const sendMessageWithScheduledPost = () => sendMessage(schedulingInfo);
+            await persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessageWithScheduledPost, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
         } else {
             await sendMessage(schedulingInfo);
         }

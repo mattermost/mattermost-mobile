@@ -107,7 +107,7 @@ export const useHandleSendMessage = ({
         }
 
         if (schedulingInfo) {
-            await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo));
+            await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles));
         } else {
             await createPost(serverUrl, post, postFiles);
         }
@@ -117,13 +117,13 @@ export const useHandleSendMessage = ({
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
     }, [files, currentUserId, channelId, rootId, value, postPriority, serverUrl, clearDraft]);
 
-    const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean) => {
+    const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);
         const cancel = () => {
             setSendingMessage(false);
         };
 
-        DraftUtils.alertChannelWideMention(intl, notifyAllMessage, () => doSubmitMessage(), cancel);
+        DraftUtils.alertChannelWideMention(intl, notifyAllMessage, () => doSubmitMessage(schedulingInfo), cancel);
     }, [intl, channelTimezoneCount, doSubmitMessage]);
 
     const sendCommand = useCallback(async () => {
@@ -180,9 +180,7 @@ export const useHandleSendMessage = ({
         if (value.indexOf('/') === 0 && !schedulingInfo) {
             sendCommand();
         } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
-            showSendToAllOrChannelOrHereAlert(membersCount, toHere && !toAllOrChannel);
-
-            // LOL - handle this branch to include scheduling info
+            showSendToAllOrChannelOrHereAlert(membersCount, toHere && !toAllOrChannel, schedulingInfo);
         } else {
             await doSubmitMessage(schedulingInfo);
         }

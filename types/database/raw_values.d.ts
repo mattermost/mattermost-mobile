@@ -31,6 +31,8 @@ type ScheduledPost = Draft & {
     scheduled_at: number;
     processed_at?: number;
     error_code?: string;
+    priority?: PostPriority;
+    file_ids?: string[];
 }
 
 type MyTeam = {
