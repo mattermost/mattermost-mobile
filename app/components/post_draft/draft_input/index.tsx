@@ -164,7 +164,6 @@ function DraftInput({
         postPriority,
     });
 
-    // LOL
     const handleSendMessage = useCallback(async (schedulingInfoParam?: SchedulingInfo) => {
         const schedulingInfo = (schedulingInfoParam && 'scheduled_at' in schedulingInfoParam) ? schedulingInfoParam : undefined;
 

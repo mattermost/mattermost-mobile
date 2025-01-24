@@ -123,7 +123,11 @@ export const useHandleSendMessage = ({
             setSendingMessage(false);
         };
 
-        DraftUtils.alertChannelWideMention(intl, notifyAllMessage, () => doSubmitMessage(schedulingInfo), cancel);
+        // Creating a wrapper function to pass the schedulingInfo to the doSubmitMessage function as the accepted
+        // function signature causes conflict.\
+        // TODO for later - change alert message if this is a scheduled post
+        const doSubmitMessageScheduledPostWrapper = () => doSubmitMessage(schedulingInfo);
+        DraftUtils.alertChannelWideMention(intl, notifyAllMessage, doSubmitMessageScheduledPostWrapper, cancel);
     }, [intl, channelTimezoneCount, doSubmitMessage]);
 
     const sendCommand = useCallback(async () => {
@@ -178,6 +182,7 @@ export const useHandleSendMessage = ({
         const toHere = DraftUtils.textContainsAtHere(value);
 
         if (value.indexOf('/') === 0 && !schedulingInfo) {
+            // Don't execute slash command when scheduling message
             sendCommand();
         } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
             showSendToAllOrChannelOrHereAlert(membersCount, toHere && !toAllOrChannel, schedulingInfo);

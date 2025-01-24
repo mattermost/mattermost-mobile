@@ -56,12 +56,12 @@ function SendButton({
 
     const buttonColor = disabled ? changeOpacity(theme.buttonColor, 0.5) : theme.buttonColor;
 
-    const sendMessageWithDoubleTapHandling = usePreventDoubleTap(sendMessage);
+    const sendMessageWithDoubleTapPrevention = usePreventDoubleTap(sendMessage);
 
     return (
         <TouchableWithFeedback
             testID={sendButtonTestID}
-            onPress={sendMessageWithDoubleTapHandling}
+            onPress={sendMessageWithDoubleTapPrevention}
             style={style.sendButtonContainer}
             type={'opacity'}
             disabled={disabled}

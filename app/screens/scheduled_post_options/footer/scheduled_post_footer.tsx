@@ -47,6 +47,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingVertical: BUTTON_PADDING,
     },
     disabledApplyButton: {
+        alignItems: 'center',
+        borderRadius: 4,
+        flex: 1,
+        marginLeft: 8,
+        paddingVertical: BUTTON_PADDING,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
     },
     applyButtonText: {
@@ -90,7 +95,7 @@ export function ScheduledPostFooter({onSchedule, isScheduling, ...props}: Props)
         >
             <TouchableOpacity
                 onPress={onSchedule}
-                style={isScheduling ? {...style.applyButton, ...style.disabledApplyButton} : style.applyButton}
+                style={isScheduling ? style.disabledApplyButton : style.applyButton}
                 disabled={isScheduling}
             >
                 {
