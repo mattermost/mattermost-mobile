@@ -4,13 +4,13 @@
 import {throttle} from 'lodash';
 import {useMemo, useRef} from 'react';
 
-const useThrottled = <T extends any[]>(callback: (...args: T) => void, time: number) => {
+const useThrottled = (callback: Function, time: number) => {
     const callbackRef = useRef(callback);
 
     callbackRef.current = callback;
 
     return useMemo(
-        () => throttle((...args: T) => callbackRef.current(...args), time),
+        () => throttle((...args: unknown[]) => callbackRef.current(...args), time),
         [time],
     );
 };
