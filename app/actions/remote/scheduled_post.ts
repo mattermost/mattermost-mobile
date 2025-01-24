@@ -21,14 +21,17 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
         return {error};
     }
 
+    let response;
     try {
-        await client.createScheduledPost(schedulePost, connectionId);
+        console.log('AAAA');
+        response = await client.createScheduledPost(schedulePost, connectionId);
     } catch (error) {
+        console.log('BBB');
         logError('error on createScheduledPost', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
-        return {error};
+        return {error: getFullErrorMessage(error)};
     }
 
     // TODO - record scheduled post in database here
-    return {data: true};
+    return {data: true, response};
 }

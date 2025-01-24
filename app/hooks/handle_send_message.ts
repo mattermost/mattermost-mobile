@@ -106,15 +106,19 @@ export const useHandleSendMessage = ({
             };
         }
 
+        let response;
         if (schedulingInfo) {
-            await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority));
+            response = await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority));
+            console.log('CCC', {response});
         } else {
-            await createPost(serverUrl, post, postFiles);
+            response = await createPost(serverUrl, post, postFiles);
         }
 
         clearDraft();
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
+
+        return response;
     }, [files, currentUserId, channelId, rootId, value, postPriority, serverUrl, clearDraft]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
@@ -187,8 +191,10 @@ export const useHandleSendMessage = ({
         } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
             showSendToAllOrChannelOrHereAlert(membersCount, toHere && !toAllOrChannel, schedulingInfo);
         } else {
-            await doSubmitMessage(schedulingInfo);
+            return doSubmitMessage(schedulingInfo);
         }
+
+        return Promise.resolve();
     }, [enableConfirmNotificationsToChannel, useChannelMentions, value, membersCount, sendCommand, showSendToAllOrChannelOrHereAlert, doSubmitMessage]);
 
     const handleSendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
@@ -216,7 +222,7 @@ export const useHandleSendMessage = ({
 
             DraftUtils.alertAttachmentFail(intl, accept, cancel);
         } else {
-            await sendMessage(schedulingInfo);
+            return sendMessage(schedulingInfo);
         }
 
         return Promise.resolve();

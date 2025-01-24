@@ -48,7 +48,7 @@ type Props = {
     cursorPosition: number;
 
     // Send Handler
-    sendMessage: (schedulingInfo?: SchedulingInfo) => Promise<void>;
+    sendMessage: (schedulingInfo?: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>;
     canSend: boolean;
     maxMessageLength: number;
 
@@ -171,7 +171,7 @@ function DraftInput({
             const sendMessageWithScheduledPost = () => sendMessage(schedulingInfo);
             await persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessageWithScheduledPost, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
         } else {
-            await sendMessage(schedulingInfo);
+            return sendMessage(schedulingInfo);
         }
     }, [persistentNotificationsEnabled, serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType]);
 
