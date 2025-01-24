@@ -46,9 +46,10 @@ const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSiz
             />
         );
     } else if (emoji) {
+        const sanitizedEmoji = emoji.replace(/:/g, '');
         return (
             <Emoji
-                emojiName={emoji!}
+                emojiName={sanitizedEmoji!}
                 size={emojiSize}
                 textStyle={emojiStyle}
             />
