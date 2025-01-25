@@ -32,6 +32,7 @@ const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSiz
     if (file && !emoji && !hasImageError) {
         return (
             <FileIcon
+                testID='bookmark-file-icon'
                 file={file}
                 iconSize={iconSize}
                 smallImage={true}
@@ -40,6 +41,7 @@ const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSiz
     } else if (imageUrl && !emoji && !hasImageError) {
         return (
             <Image
+                testID='bookmark-image'
                 source={{uri: imageUrl}}
                 style={imageStyle}
                 onError={handleImageError}
@@ -49,7 +51,8 @@ const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSiz
         const sanitizedEmoji = emoji.replace(/:/g, '');
         return (
             <Emoji
-                emojiName={sanitizedEmoji!}
+                testID='bookmark-emoji'
+                emojiName={sanitizedEmoji}
                 size={emojiSize}
                 textStyle={emojiStyle}
             />
@@ -62,6 +65,7 @@ const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSiz
             size={22}
             color={theme.centerChannelColor}
             style={genericStyle}
+            testID='bookmark-generic-icon'
         />
     );
 };
