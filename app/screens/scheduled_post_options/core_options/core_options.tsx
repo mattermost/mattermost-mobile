@@ -53,11 +53,11 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
         switch (optionKey) {
             case optionKeyOptionNextMonday:
             case optionKeysOptionMonday: {
-                selectedTime = now.clone().isoWeekday(1).subtract(1, 'week').startOf('day').hour(9).minute(0);
+                selectedTime = now.clone().isoWeekday(1).add(1, 'week').startOf('day').hour(9).minute(0);
                 break;
             }
             case optionKeyOptionTomorrow: {
-                selectedTime = now.clone().subtract(1, 'day').startOf('day').hour(9).minute(0);
+                selectedTime = now.clone().add(1, 'day').startOf('day').hour(9).minute(0);
                 break;
             }
         }
