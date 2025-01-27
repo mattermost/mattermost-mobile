@@ -112,51 +112,62 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
      * handleScheduledPosts: Handler responsible for the Create/Update operations occurring the SchedulePost table from the 'Server' schema
      * @param {HandleScheduledPostsArgs} ScheduledPostsArgs
      * @param {boolean} draftsArgs.prepareRecordsOnly
-     * @returns {Promise<Model[]>}
+     * @returns {Promise<ScheduledPostModel[]>}
      */
     handleScheduledPosts = async ({actionType, scheduledPosts, prepareRecordsOnly}: HandleScheduledPostsArgs): Promise<ScheduledPostModel[]> => {
         const database: Database = this.database;
-
-        if (!scheduledPosts?.length && actionType === ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS) {
-            await database.write(async () => {
-                const scheduledPostCollection = database.get<ScheduledPostModel>(SCHEDULED_POST);
-                await scheduledPostCollection.query().destroyAllPermanently();
-            });
-            return [];
-        }
+        const scheduledPostToDelete: ScheduledPostModel[] = [];
+        const scheduledPostToCreateAndUpdate: ScheduledPostModel[] = [];
 
         if (!scheduledPosts?.length) {
-            logWarning(
-                'An empty or undefined "scheduledPosts" array has been passed to the handleScheduledPosts method',
-            );
-            return [];
+            if (actionType === ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS) {
+                const scheduledPostCollection = database.get<ScheduledPostModel>(SCHEDULED_POST);
+                scheduledPostToDelete.push(...await scheduledPostCollection.query().fetch());
+            } else {
+                logWarning('An empty or undefined "scheduledPosts" array has been passed to the handleScheduledPosts method');
+                return [];
+            }
         }
 
-        if (actionType === ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST) {
-            const deletedScheduledPostIds = scheduledPosts.map((post) => post.id);
-            await this._deleteScheduledPostByIds(deletedScheduledPostIds);
-            return [];
+        switch (actionType) {
+            case ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST: {
+                const toDeleteIds = scheduledPosts?.map((post) => post.id) || [];
+                if (toDeleteIds.length > 0) {
+                    scheduledPostToDelete.push(...await this._deleteScheduledPostByIds(toDeleteIds, true));
+                }
+                break;
+            }
+
+            case ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST: {
+                const createOrUpdateRawValues = getUniqueRawsBy({raws: scheduledPosts ?? [], key: 'id'}) as ScheduledPost[];
+                scheduledPostToCreateAndUpdate.push(...await this._createOrUpdateScheduledPost(createOrUpdateRawValues, true));
+                break;
+            }
+
+            case ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS: {
+                const idsFromServer = new Set(scheduledPosts?.map((post) => post.id) || []);
+                const existingScheduledPosts = await database.get<ScheduledPostModel>(SCHEDULED_POST).query().fetch();
+
+                const deletedScheduledPostIds = existingScheduledPosts.
+                    filter((post) => !idsFromServer.has(post.id)).
+                    map((post) => post.id);
+
+                if (deletedScheduledPostIds.length > 0) {
+                    scheduledPostToDelete.push(...await this._deleteScheduledPostByIds(deletedScheduledPostIds, true));
+                }
+
+                const createOrUpdateRawValues = getUniqueRawsBy({raws: scheduledPosts ?? [], key: 'id'}) as ScheduledPost[];
+                scheduledPostToCreateAndUpdate.push(...await this._createOrUpdateScheduledPost(createOrUpdateRawValues, true));
+                break;
+            }
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: scheduledPosts, key: 'id'}) as ScheduledPost[];
-
-        if (actionType === ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST) {
-            return this._createOrUpdateScheduledPost(createOrUpdateRawValues, prepareRecordsOnly);
+        const batch: ScheduledPostModel[] = [...scheduledPostToDelete, ...scheduledPostToCreateAndUpdate];
+        if (!prepareRecordsOnly && batch.length) {
+            await this.batchRecords(batch, 'handleScheduledPosts');
         }
 
-        const idsFromServer = new Set(scheduledPosts.map((post) => post.id));
-        const existingScheduledPosts = await database.get<ScheduledPostModel>(SCHEDULED_POST).query().fetch();
-
-        const deletedScheduledPostIds = existingScheduledPosts.filter((post) => !idsFromServer.has(post.id)).reduce((result, post) => {
-            result.add(post.id);
-            return result;
-        }, new Set<string>());
-
-        if (deletedScheduledPostIds.size) {
-            this._deleteScheduledPostByIds(Array.from(deletedScheduledPostIds));
-        }
-
-        return this._createOrUpdateScheduledPost(createOrUpdateRawValues, prepareRecordsOnly);
+        return batch;
     };
 
     _createOrUpdateScheduledPost = async (scheduledPosts: ScheduledPost[], prepareRecordsOnly = false): Promise<ScheduledPostModel[]> => {
@@ -183,15 +194,34 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         return preparedScheduledPosts;
     };
 
-    _deleteScheduledPostByIds = async (scheduledPostIds: string[]) => {
+    _deleteScheduledPostByIds = async (scheduledPostIds: string[], prepareRecordsOnly = false): Promise<ScheduledPostModel[]> => {
         const database: Database = this.database;
-        const scheduledPostTodDelete = await database.get<ScheduledPostModel>(SCHEDULED_POST).query(Q.where('id', Q.oneOf(scheduledPostIds))).fetch();
-        if (scheduledPostTodDelete.length) {
-            await database.write(async () => {
-                const promises = scheduledPostTodDelete.map((p) => p.destroyPermanently());
-                await Promise.all(promises);
-            });
+        const scheduledPostToDelete = await database.get<ScheduledPostModel>(SCHEDULED_POST).query(Q.where('id', Q.oneOf(scheduledPostIds))).fetch();
+        const deleteRawValues: ScheduledPost[] = [];
+        for await (const post of scheduledPostToDelete) {
+            const schedulePost = await post.toApi(database);
+            deleteRawValues.push(schedulePost);
         }
+        const processedScheduledPosts = await this.processRecords({
+            createOrUpdateRawValues: [],
+            deleteRawValues,
+            tableName: SCHEDULED_POST,
+            fieldName: 'id',
+        });
+
+        const preparedScheduledPosts = await this.prepareRecords({
+            createRaws: processedScheduledPosts.createRaws,
+            updateRaws: processedScheduledPosts.updateRaws,
+            deleteRaws: processedScheduledPosts.deleteRaws,
+            transformer: transformSchedulePostsRecord,
+            tableName: SCHEDULED_POST,
+        }) as ScheduledPostModel[];
+
+        if (preparedScheduledPosts.length && !prepareRecordsOnly) {
+            await this.batchRecords(preparedScheduledPosts, '_deleteScheduledPostByIds');
+        }
+
+        return preparedScheduledPosts;
     };
 
     /**
