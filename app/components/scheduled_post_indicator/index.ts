@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {map} from 'rxjs/operators';
 
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import {ScheduledPostIndicator} from './scheduled_post_indicator';
-
-import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {map} from 'rxjs/operators';
-import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 
 const enhance = withObservables([], ({database}) => {
     const currentUser = observeCurrentUser(database);

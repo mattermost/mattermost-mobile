@@ -11,6 +11,7 @@ import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} f
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
+import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
@@ -26,7 +27,6 @@ import useGMasDMNotice from './use_gm_as_dm_notice';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 
 type ChannelProps = {
     channelId: string;

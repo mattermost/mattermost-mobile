@@ -2,14 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, View} from 'react-native';
 import {FormattedMessage} from 'react-intl';
-import FormattedTime from '@components/formatted_time';
-import {getUserTimezone} from '@utils/user';
-import type UserModel from '@typings/database/models/servers/user';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {useTheme} from '@context/theme';
+import {Text, View} from 'react-native';
+
 import CompassIcon from '@components/compass_icon';
+import FormattedTime from '@components/formatted_time';
+import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getUserTimezone} from '@utils/user';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -43,7 +45,7 @@ export function ScheduledPostIndicator({currentUser, isMilitaryTime}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const [scheduledPostCount, setScheduledPostCount] = React.useState(125);
+    const [scheduledPostCount] = React.useState(125);
 
     let scheduledPostText: React.ReactNode;
 
