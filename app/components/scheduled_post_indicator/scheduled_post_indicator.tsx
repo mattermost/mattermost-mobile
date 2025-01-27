@@ -8,8 +8,8 @@ import FormattedTime from '@components/formatted_time';
 import {getUserTimezone} from '@utils/user';
 import type UserModel from '@typings/database/models/servers/user';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 import {useTheme} from '@context/theme';
+import CompassIcon from '@components/compass_icon';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -18,6 +18,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 12,
             paddingHorizontal: 16,
             color: changeOpacity(theme.centerChannelColor, 0.72),
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+        },
+        text: {
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+            fontSize: 14,
+        },
+        link: {
+            color: theme.linkColor,
+            fontSize: 14,
         },
     };
 });
@@ -31,15 +43,13 @@ export function ScheduledPostIndicator({currentUser, isMilitaryTime}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const [scheduledPostCount, setScheduledPostCount] = React.useState(1);
-
-    if (scheduledPostCount === 0) {
-        return null;
-    }
+    const [scheduledPostCount, setScheduledPostCount] = React.useState(125);
 
     let scheduledPostText: React.ReactNode;
 
-    if (scheduledPostCount === 1) {
+    if (scheduledPostCount <= 0) {
+        return null;
+    } else if (scheduledPostCount === 1) {
         const dateTime = (
             <FormattedTime
                 timezone={getUserTimezone(currentUser)}
@@ -58,6 +68,16 @@ export function ScheduledPostIndicator({currentUser, isMilitaryTime}: Props) {
                 }}
             />
         );
+    } else {
+        scheduledPostText = (
+            <FormattedMessage
+                id='scheduled_post.channel_indicator.multiple'
+                defaultMessage='{count} scheduled messages in channel.'
+                values={{
+                    count: scheduledPostCount,
+                }}
+            />
+        );
     }
 
     return (
@@ -65,12 +85,20 @@ export function ScheduledPostIndicator({currentUser, isMilitaryTime}: Props) {
             className='ScheduledPostIndicator'
             style={styles.container}
         >
-            <Text>
+            <CompassIcon
+                color={changeOpacity(theme.centerChannelColor, 0.6)}
+                name='clock-send-outline'
+                size={18}
+            />
+            <Text style={styles.text}>
                 {scheduledPostText}
-                <FormattedMessage
-                    id='scheduled_post.channel_indicator.link_to_scheduled_posts.text'
-                    defaultMessage='See all.'
-                />
+                {' '}
+                <Text style={styles.link}>
+                    <FormattedMessage
+                        id='scheduled_post.channel_indicator.link_to_scheduled_posts.text'
+                        defaultMessage='See all.'
+                    />
+                </Text>
             </Text>
         </View>
     );
