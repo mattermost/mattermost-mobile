@@ -115,8 +115,6 @@ const SnackBar = ({
         config = SNACK_BAR_CONFIG[barType];
     } else {
         config = {
-            id: 'non_existing_message_id',
-            defaultMessage: customMessage,
             iconName: DEFAULT_ICON,
             canUndo: false,
             type,

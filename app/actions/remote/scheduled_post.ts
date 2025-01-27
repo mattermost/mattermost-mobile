@@ -23,10 +23,8 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
 
     let response;
     try {
-        console.log('AAAA');
         response = await client.createScheduledPost(schedulePost, connectionId);
     } catch (error) {
-        console.log('BBB');
         logError('error on createScheduledPost', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error: getFullErrorMessage(error)};

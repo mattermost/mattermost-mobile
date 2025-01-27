@@ -3,7 +3,6 @@
 
 import React, {useCallback, useMemo, useState} from 'react';
 import {Platform, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
@@ -100,8 +99,6 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
         } else {
             await dismissBottomSheet();
         }
-
-        console.log('HHH');
     }, [onSchedule, selectedTime]));
 
     const renderContent = () => {

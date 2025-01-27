@@ -170,9 +170,9 @@ function DraftInput({
         if (persistentNotificationsEnabled) {
             const sendMessageWithScheduledPost = () => sendMessage(schedulingInfo);
             await persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessageWithScheduledPost, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
-        } else {
-            return sendMessage(schedulingInfo);
+            return Promise.resolve();
         }
+        return sendMessage(schedulingInfo);
     }, [persistentNotificationsEnabled, serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType]);
 
     const handleShowScheduledPostOptions = useCallback(() => {

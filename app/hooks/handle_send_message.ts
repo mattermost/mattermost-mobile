@@ -109,7 +109,6 @@ export const useHandleSendMessage = ({
         let response;
         if (schedulingInfo) {
             response = await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority));
-            console.log('CCC', {response});
         } else {
             response = await createPost(serverUrl, post, postFiles);
         }
