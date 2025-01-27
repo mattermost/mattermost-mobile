@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {Screens} from '@constants';
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {SNACK_BAR_TYPE, type SnackBarConfig} from '@constants/snack_bar';
 import {showOverlay} from '@screens/navigation';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -12,6 +12,9 @@ export type ShowSnackBarArgs = {
     onAction?: () => void;
     sourceScreen?: AvailableScreens;
     messageValues?: Record<string, PrimitiveType>;
+    autoClose?: boolean; // default is true
+    customMessage?: string;
+    type?: SnackBarConfig['type'];
 };
 
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {
@@ -52,5 +55,14 @@ export const showThreadFollowingSnackbar = (following: boolean, onAction: () => 
     return showSnackBar({
         onAction,
         barType: following ? SNACK_BAR_TYPE.FOLLOW_THREAD : SNACK_BAR_TYPE.UNFOLLOW_THREAD,
+    });
+};
+
+export const showScheduledPostCreationErrorSnackbar = (errorMessage: string) => {
+    return showSnackBar({
+        barType: SNACK_BAR_TYPE.SCHEDULED_POST_CREATION_ERROR,
+        customMessage: errorMessage,
+        autoClose: false,
+        type: 'error',
     });
 };

@@ -3,6 +3,7 @@
 
 import React, {useCallback, useMemo, useState} from 'react';
 import {Platform, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
@@ -15,34 +16,17 @@ import ScheduledPostCoreOptions from '@screens/scheduled_post_options/core_optio
 import ScheduledPostFooter from '@screens/scheduled_post_options/footer';
 import {FOOTER_HEIGHT} from '@screens/scheduled_post_options/footer/scheduled_post_footer';
 import {logInfo} from '@utils/log';
+import {showScheduledPostCreationErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
-import Toast from '@components/toast';
-import {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from '@components/selected_chip';
 
-const FOOTER_PADDING = 20;
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
 const TITLE_HEIGHT = 54;
 const ITEM_HEIGHT = 48;
-
-
-const BUTTON_HEIGHT = 48;
-const CHIP_HEIGHT_WITH_MARGIN = USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN;
-const EXPOSED_CHIP_HEIGHT = 0.33 * USER_CHIP_HEIGHT;
-const MAX_CHIP_ROWS = 2;
-const SCROLL_MARGIN_TOP = 20;
-const SCROLL_MARGIN_BOTTOM = 12;
-const USERS_CHIPS_MAX_HEIGHT = (CHIP_HEIGHT_WITH_MARGIN * MAX_CHIP_ROWS) + EXPOSED_CHIP_HEIGHT;
-const SCROLL_MAX_HEIGHT = USERS_CHIPS_MAX_HEIGHT + SCROLL_MARGIN_TOP + SCROLL_MARGIN_BOTTOM;
-const PANEL_MAX_HEIGHT = SCROLL_MAX_HEIGHT + BUTTON_HEIGHT;
-const MARGIN_BOTTOM = 20;
-const TOAST_BOTTOM_MARGIN = 24;
 
 export const SCHEDULED_POST_OPTIONS_BUTTON = 'close-scheduled-post-options';
 
@@ -65,10 +49,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     optionsSeparator: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         height: OPTIONS_SEPARATOR_HEIGHT,
-    },
-    toast: {
-        backgroundColor: theme.errorTextColor,
-        position: 'absolute',
     },
 }));
 
@@ -115,21 +95,14 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
         setIsScheduling(false);
 
         if (response?.error) {
-            console.log({errorMessage: response.error as string});
+            const errorMessage = response.error as string;
+            showScheduledPostCreationErrorSnackbar(errorMessage);
+        } else {
+            await dismissBottomSheet();
         }
 
-        await dismissBottomSheet();
+        console.log('HHH');
     }, [onSchedule, selectedTime]));
-
-    const insets = useSafeAreaInsets();
-
-    const animatedToastStyle = useAnimatedStyle(() => {
-        return {
-            bottom: TOAST_BOTTOM_MARGIN + insets.bottom,
-            opacity: withTiming(1),
-            position: 'absolute',
-        };
-    }, [insets.bottom]);
 
     const renderContent = () => {
         return (
@@ -155,27 +128,11 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     };
 
     const renderFooter = (props: BottomSheetFooterProps) => (
-        <View
-            style={{backgroundColor: theme.centerChannelBg,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
-            borderTopWidth: 1,
-            paddingTop: FOOTER_PADDING,
-            flexDirection: 'row',
-            paddingHorizontal: 20,
-                paddingBottom: Platform.select({ios: (isTablet ? 0 : 0), default: FOOTER_PADDING})
-        }}>
-            {/*<Toast*/}
-            {/*    animatedStyle={animatedToastStyle}*/}
-            {/*    iconName={'check'}*/}
-            {/*    style={style.toast}*/}
-            {/*    message={'Hello world'}*/}
-            {/*/>*/}
-            <ScheduledPostFooter
-                {...props}
-                onSchedule={handleOnSchedule}
-                isScheduling={isScheduling}
-            />
-        </View>
+        <ScheduledPostFooter
+            {...props}
+            onSchedule={handleOnSchedule}
+            isScheduling={isScheduling}
+        />
     );
 
     return (
