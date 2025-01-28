@@ -63,6 +63,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: 40,
             margin: 4,
         },
+        audioFile: {
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
     };
 });
 
@@ -231,7 +236,7 @@ const File = ({
         );
     } else if (isAudio(file)) {
         const renderAudioFile = (
-            <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
+            <Animated.View style={[styles, asCard ? style.imageVideo : style.audioFile]}>
                 <AudioFile
                     file={file}
                     canDownloadFiles={canDownloadFiles}
