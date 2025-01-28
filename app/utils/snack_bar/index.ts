@@ -12,7 +12,13 @@ export type ShowSnackBarArgs = {
     onAction?: () => void;
     sourceScreen?: AvailableScreens;
     messageValues?: Record<string, PrimitiveType>;
-    autoClose?: boolean; // default is true
+
+    /**
+     * If true, the snackbar will stay open until manually closed by clicking the close button.
+     * default is false
+     */
+    keepOpen?: boolean;
+
     customMessage?: string;
     type?: SnackBarConfig['type'];
 };
@@ -62,7 +68,7 @@ export const showScheduledPostCreationErrorSnackbar = (errorMessage: string) => 
     return showSnackBar({
         barType: SNACK_BAR_TYPE.SCHEDULED_POST_CREATION_ERROR,
         customMessage: errorMessage,
-        autoClose: false,
+        keepOpen: true,
         type: 'error',
     });
 };

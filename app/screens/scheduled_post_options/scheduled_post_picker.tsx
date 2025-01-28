@@ -14,7 +14,7 @@ import {dismissBottomSheet} from '@screens/navigation';
 import ScheduledPostCoreOptions from '@screens/scheduled_post_options/core_options';
 import ScheduledPostFooter from '@screens/scheduled_post_options/footer';
 import {FOOTER_HEIGHT} from '@screens/scheduled_post_options/footer/scheduled_post_footer';
-import {logInfo} from '@utils/log';
+import {logDebug} from '@utils/log';
 import {showScheduledPostCreationErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -81,7 +81,7 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
 
     const handleOnSchedule = usePreventDoubleTap(useCallback(async () => {
         if (!selectedTime) {
-            logInfo('ScheduledPostOptions', 'No time selected');
+            logDebug('ScheduledPostOptions', 'No time selected');
             return;
         }
 
