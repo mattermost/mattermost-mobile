@@ -13,17 +13,26 @@ import {getUserTimezone} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
+const WRAPPER_HEIGHT = 40;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
+        wrapper: {
+            height: WRAPPER_HEIGHT,
+        },
         container: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             paddingVertical: 12,
+            paddingBottom: 20,
             paddingHorizontal: 16,
             color: changeOpacity(theme.centerChannelColor, 0.72),
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             gap: 12,
+            position: 'absolute',
+            top: 0,
+            width: '100%',
         },
         text: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
@@ -39,9 +48,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 type Props = {
     currentUser?: UserModel;
     isMilitaryTime: boolean;
+    isThread?: boolean;
 }
 
-export function ScheduledPostIndicator({currentUser, isMilitaryTime}: Props) {
+export function ScheduledPostIndicator({currentUser, isMilitaryTime, isThread}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -71,7 +81,15 @@ export function ScheduledPostIndicator({currentUser, isMilitaryTime}: Props) {
             />
         );
     } else {
-        scheduledPostText = (
+        scheduledPostText = isThread ? (
+            <FormattedMessage
+                id='scheduled_post.channel_indicator.thread.multiple'
+                defaultMessage='{count} scheduled messages in thread.'
+                values={{
+                    count: scheduledPostCount,
+                }}
+            />
+        ) : (
             <FormattedMessage
                 id='scheduled_post.channel_indicator.multiple'
                 defaultMessage='{count} scheduled messages in channel.'
@@ -85,23 +103,25 @@ export function ScheduledPostIndicator({currentUser, isMilitaryTime}: Props) {
     return (
         <View
             className='ScheduledPostIndicator'
-            style={styles.container}
+            style={styles.wrapper}
         >
-            <CompassIcon
-                color={changeOpacity(theme.centerChannelColor, 0.6)}
-                name='clock-send-outline'
-                size={18}
-            />
-            <Text style={styles.text}>
-                {scheduledPostText}
-                {' '}
-                <Text style={styles.link}>
-                    <FormattedMessage
-                        id='scheduled_post.channel_indicator.link_to_scheduled_posts.text'
-                        defaultMessage='See all.'
-                    />
+            <View style={styles.container}>
+                <CompassIcon
+                    color={changeOpacity(theme.centerChannelColor, 0.6)}
+                    name='clock-send-outline'
+                    size={18}
+                />
+                <Text style={styles.text}>
+                    {scheduledPostText}
+                    {' '}
+                    <Text style={styles.link}>
+                        <FormattedMessage
+                            id='scheduled_post.channel_indicator.link_to_scheduled_posts.text'
+                            defaultMessage='See all.'
+                        />
+                    </Text>
                 </Text>
-            </Text>
+            </View>
         </View>
     );
 }
