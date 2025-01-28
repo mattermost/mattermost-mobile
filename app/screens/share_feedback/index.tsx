@@ -170,14 +170,14 @@ const ShareFeedback = ({
                                     emphasis={'tertiary'}
                                     onPress={onPressNo}
                                     text={intl.formatMessage({id: 'share_feedback.button.no', defaultMessage: 'No, thanks'})}
-                                    backgroundStyle={styles.leftButton}
+                                    buttonContainerStyle={styles.leftButton}
                                 />
                                 <Button
                                     theme={theme}
                                     size={'lg'}
                                     onPress={onPressYes}
                                     text={intl.formatMessage({id: 'share_feedback.button.yes', defaultMessage: 'Yes'})}
-                                    backgroundStyle={styles.rightButton}
+                                    buttonContainerStyle={styles.rightButton}
                                 />
                             </View>
                         </View>
