@@ -3,16 +3,16 @@
 
 import {Image} from 'expo-image';
 import React, {type Dispatch, type SetStateAction, useCallback, useState} from 'react';
-import {StyleSheet, Text, useWindowDimensions, View} from 'react-native';
-import {RectButton, TouchableWithoutFeedback} from 'react-native-gesture-handler';
+import {useIntl} from 'react-intl';
+import {StyleSheet, Text, TouchableWithoutFeedback, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@constants';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {calculateDimensions} from '@utils/images';
-import {changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 const styles = StyleSheet.create({
@@ -20,7 +20,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         flex: 1,
-        maxWidth: 600,
     },
     filename: {
         color: '#FFF',
@@ -59,10 +58,12 @@ type Props = {
 const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideControls, posterUri, setDownloading, width}: Props) => {
     const [hasPoster, setHasPoster] = useState(false);
     const [loadPosterError, setLoadPosterError] = useState(false);
+    const dimensions = useWindowDimensions();
+    const intl = useIntl();
 
     const handleDownload = useCallback(() => {
         setDownloading(true);
-    }, []);
+    }, [setDownloading]);
 
     const handlePosterSet = useCallback(() => {
         setHasPoster(true);
@@ -72,11 +73,9 @@ const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideCont
         setLoadPosterError(true);
     }, []);
 
-    const dimensions = useWindowDimensions();
-    const imageDimensions = calculateDimensions(height, width, dimensions.width);
-
     let poster;
     if (posterUri && !loadPosterError) {
+        const imageDimensions = calculateDimensions(height, width, dimensions.width);
         poster = (
             <Image
                 source={{uri: posterUri}}
@@ -96,7 +95,10 @@ const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideCont
     }
 
     return (
-        <TouchableWithoutFeedback onPress={onShouldHideControls}>
+        <TouchableWithoutFeedback
+            onPress={onShouldHideControls}
+            style={styles.container}
+        >
             <Animated.View style={styles.container}>
                 {poster}
                 <Text
@@ -114,20 +116,15 @@ const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideCont
                             style={styles.unsupported}
                         />
                     </View>
-                    <RectButton
-                        enabled={!isDownloading}
-                        exclusive={true}
+                    <Button
+                        disabled={isDownloading}
                         onPress={handleDownload}
-                        rippleColor={changeOpacity('#fff', 0.16)}
-                    >
-                        <View style={buttonBackgroundStyle(Preferences.THEMES.onyx, 'lg', 'primary', isDownloading ? 'disabled' : 'default')}>
-                            <FormattedText
-                                defaultMessage='Download'
-                                id='video.download'
-                                style={buttonTextStyle(Preferences.THEMES.onyx, 'lg', 'primary', isDownloading ? 'disabled' : 'default')}
-                            />
-                        </View>
-                    </RectButton>
+                        theme={Preferences.THEMES.onyx}
+                        size={'lg'}
+                        textStyle={buttonTextStyle(Preferences.THEMES.onyx, 'lg', 'primary', isDownloading ? 'disabled' : 'default')}
+                        text={intl.formatMessage({id: 'video.download', defaultMessage: 'Download video'})}
+                        backgroundStyle={buttonBackgroundStyle(Preferences.THEMES.onyx, 'lg', 'primary', isDownloading ? 'disabled' : 'default')}
+                    />
                 </View>
                 }
                 {!isRemote &&
