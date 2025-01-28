@@ -31,7 +31,7 @@ type LogoutCallbackArg = {
     removeServer: boolean;
 }
 
-class SessionManager {
+export class SessionManager {
     private previousAppState: AppStateStatus;
     private scheduling = false;
     private terminatingSessionUrl = new Set<string>();
