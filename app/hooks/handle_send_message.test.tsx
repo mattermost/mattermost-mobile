@@ -12,6 +12,7 @@ import {createPost} from '@actions/remote/post';
 import {handleCallsSlashCommand} from '@calls/actions';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
+import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
 
 import {useHandleSendMessage} from './handle_send_message';
@@ -161,6 +162,8 @@ describe('useHandleSendMessage', () => {
             ...defaultProps,
             files: [{clientId: 'file1', loading: true, failed: false}],
         };
+
+        jest.spyOn(DraftUploadManager, 'isUploading').mockReturnValueOnce(true);
 
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
         expect(result.current.canSend).toBe(false);
