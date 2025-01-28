@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Dimensions} from 'react-native';
+import RNUtils from '@mattermost/rnutils';
 
 import {IMAGE_MAX_HEIGHT} from '@constants/image';
 
@@ -11,10 +11,8 @@ import {
     isGifTooLarge,
 } from './index';
 
-jest.mock('react-native', () => ({
-    Dimensions: {
-        get: jest.fn(() => ({width: 800, height: 600})),
-    },
+jest.mock('@mattermost/rnutils', () => ({
+    getWindowDimensions: jest.fn(() => ({width: 800, height: 600})),
 }));
 
 jest.mock('@constants/image', () => ({
@@ -100,7 +98,7 @@ describe('calculateDimensions', () => {
 
 describe('getViewPortWidth', () => {
     beforeEach(() => {
-        (Dimensions.get as jest.Mock).mockReturnValue({width: 800, height: 600});
+        (RNUtils.getWindowDimensions as jest.Mock).mockReturnValue({width: 800, height: 600});
     });
 
     it('should calculate viewport width for normal post', () => {

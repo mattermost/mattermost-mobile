@@ -95,7 +95,7 @@ const SnackBar = ({
     componentId,
     onAction,
     sourceScreen,
-    autoClose = true,
+    keepOpen,
     customMessage,
     type,
 }: SnackBarProps) => {
@@ -240,7 +240,7 @@ const SnackBar = ({
     useEffect(() => {
         mounted.current = true;
 
-        if (autoClose) {
+        if (!keepOpen) {
             baseTimer.current = setTimeout(() => {
                 dismissSnackBar();
             }, 3000);
@@ -250,7 +250,7 @@ const SnackBar = ({
             stopTimers();
             mounted.current = false;
         };
-    }, [autoClose, dismissSnackBar]);
+    }, [keepOpen, dismissSnackBar]);
 
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {
@@ -318,9 +318,7 @@ const SnackBar = ({
                                 </TouchableOpacity>
                             )}
                             {
-
-                                // Button to manually close the snack bar if auto close is disabled
-                                !autoClose &&
+                                keepOpen &&
                                 <TouchableOpacity onPress={dismissSnackBar}>
                                     <CompassIcon
                                         color={theme.buttonColor}

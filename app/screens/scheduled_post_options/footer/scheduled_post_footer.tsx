@@ -75,6 +75,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     spinner: {
         position: 'relative',
     },
+    updatingIcon: {
+        position: 'relative',
+        height: '100%',
+        width: 20,
+    },
 }));
 
 type Props = BottomSheetFooterProps & {
@@ -99,10 +104,9 @@ export function ScheduledPostFooter({onSchedule, isScheduling, ...props}: Props)
                 disabled={isScheduling}
             >
                 {
-                    isScheduling &&
-                    (
+                    isScheduling ? (
                         <View style={style.schedulingButtonContentWrapper}>
-                            <View style={{position: 'relative', height: '100%', width: 20}}>
+                            <View style={style.updatingIcon}>
                                 <Updating/>
                             </View>
                             <FormattedText
@@ -111,15 +115,13 @@ export function ScheduledPostFooter({onSchedule, isScheduling, ...props}: Props)
                                 style={style.applyButtonProcessingText}
                             />
                         </View>
+                    ) : (
+                        <FormattedText
+                            id='scheduled_post_options.confirm_button.text'
+                            defaultMessage='Schedule Draft'
+                            style={style.applyButtonText}
+                        />
                     )
-                }
-                {
-                    !isScheduling &&
-                    <FormattedText
-                        id='scheduled_post_options.confirm_button.text'
-                        defaultMessage='Schedule Draft'
-                        style={style.applyButtonText}
-                    />
                 }
             </TouchableOpacity>
         </View>

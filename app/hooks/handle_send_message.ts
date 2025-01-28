@@ -24,6 +24,12 @@ import {confirmOutOfOfficeDisabled} from '@utils/user';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
+export type CreateResponse = {
+    data?: boolean;
+    error?: unknown;
+    response?: Post | ScheduledPost;
+}
+
 type Props = {
     value: string;
     channelId: string;
@@ -87,7 +93,7 @@ export const useHandleSendMessage = ({
         setSendingMessage(false);
     }, [serverUrl, rootId, clearDraft]);
 
-    const doSubmitMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
+    const doSubmitMessage = useCallback(async (schedulingInfo?: SchedulingInfo): Promise<CreateResponse> => {
         const postFiles = files.filter((f) => !f.failed);
         const post = {
             user_id: currentUserId,
@@ -106,7 +112,7 @@ export const useHandleSendMessage = ({
             };
         }
 
-        let response;
+        let response: CreateResponse;
         if (schedulingInfo) {
             response = await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority));
         } else {
