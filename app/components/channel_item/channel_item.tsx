@@ -52,7 +52,6 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     text: {
         color: theme.sidebarText,
-        ...typography('Body', 200),
     },
     highlight: {
         color: theme.sidebarUnreadText,
