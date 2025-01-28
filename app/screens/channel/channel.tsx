@@ -150,7 +150,6 @@ const Channel = ({
                             nativeID={channelId}
                         />
                     </View>
-                    {/*scheduled post indicator goes here*/}
                     <ScheduledPostIndicator/>
                     <PostDraft
                         channelId={channelId}
