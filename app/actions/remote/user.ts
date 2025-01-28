@@ -26,6 +26,7 @@ import {forceLogoutIfNecessary} from './session';
 
 import type {Model} from '@nozbe/watermelondb';
 import type UserModel from '@typings/database/models/servers/user';
+import type {CustomAttribute, CustomAttributeSet} from '@typings/screens/edit_profile';
 
 export type MyUserRequest = {
     user?: UserProfile;
@@ -876,5 +877,48 @@ export const getAllSupportedTimezones = async (serverUrl: string) => {
     } catch (error) {
         logDebug('error on getAllSupportedTimezones', getFullErrorMessage(error));
         return [];
+    }
+};
+
+export const fetchCustomAttributes = async (serverUrl: string, userId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const [fields, attrValues] = await Promise.all([
+            client.getCustomProfileAttributeFields(),
+            client.getCustomProfileAttributeValues(userId),
+        ]);
+
+        if (fields?.length > 0) {
+            const attributes: Record<string, CustomAttribute> = {};
+            fields.forEach((field) => {
+                attributes[field.id] = {
+                    id: field.id,
+                    name: field.name,
+                    value: attrValues[field.id] || '',
+                };
+            });
+            return {attributes, undefined};
+        }
+        return {attributes: {} as Record<string, CustomAttribute>};
+    } catch (error) {
+        logDebug('error on fetchCustomAttributes', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {attributes: {} as Record<string, CustomAttribute>, error};
+    }
+};
+
+export const updateCustomAttributes = async (serverUrl: string, attributes: CustomAttributeSet) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const values: CustomProfileAttributeSimple = {};
+        Object.keys(attributes).forEach((field) => {
+            values[field] = attributes[field].value;
+        });
+        await client.updateCustomProfileAttributeValues(values);
+        return {success: true, error: undefined};
+    } catch (error) {
+        logDebug('error on updateCustomAttributes', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error, success: false};
     }
 };
