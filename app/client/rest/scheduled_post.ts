@@ -1,10 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type ClientBase from '@client/rest/base';
+import {buildQueryString} from '@utils/helpers';
+
+import type ClientBase from './base';
 
 export interface ClientScheduledPostMix {
     createScheduledPost(schedulePost: ScheduledPost, connectionId?: string): Promise<ScheduledPost>;
+    getScheduledPostsForTeam(teamId: string, includeDirectChannels: boolean, groupLabel?: RequestGroupLabel): Promise<FetchScheduledPostsResponse>;
+    deleteScheduledPost(scheduledPostId: string, connectionId?: string): Promise<ScheduledPost>;
 }
 
 const ClientScheduledPost = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -18,6 +22,23 @@ const ClientScheduledPost = <TBase extends Constructor<ClientBase>>(superclass: 
             },
         );
     };
+
+    getScheduledPostsForTeam(teamId: string, includeDirectChannels = false, groupLabel?: RequestGroupLabel) {
+        return this.doFetch(
+            `${this.getScheduledPostRoute()}/team/${teamId}${buildQueryString({includeDirectChannels})}`,
+            {method: 'get', groupLabel},
+        );
+    }
+
+    deleteScheduledPost(scheduledPostId: string, connectionId = '') {
+        return this.doFetch(
+            `${this.getScheduledPostActionsRoute()}/${scheduledPostId}`,
+            {
+                method: 'delete',
+                headers: {'Connection-Id': connectionId},
+            },
+        );
+    }
 };
 
 export default ClientScheduledPost;
