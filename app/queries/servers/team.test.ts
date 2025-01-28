@@ -42,12 +42,102 @@ import {
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 
+const BASE_TEAM = {
+    create_at: 0,
+    update_at: 0,
+    delete_at: 0,
+    description: '',
+    email: '',
+    type: 'O',
+    company_name: '',
+    allowed_domains: '',
+    invite_id: '',
+    allow_open_invite: false,
+    scheme_id: '',
+    group_constrained: null,
+    last_team_icon_update: 0,
+};
+
+const BASE_CHANNEL = {
+    create_at: 0,
+    update_at: 0,
+    delete_at: 0,
+    display_name: '',
+    name: '',
+    header: '',
+    purpose: '',
+    last_post_at: 0,
+    total_msg_count: 0,
+    extra_update_at: 0,
+    creator_id: '',
+    scheme_id: null,
+    group_constrained: null,
+    shared: false,
+};
+
+const BASE_USER = {
+    create_at: 0,
+    update_at: 0,
+    delete_at: 0,
+    auth_service: '',
+    email: '',
+    nickname: '',
+    first_name: '',
+    last_name: '',
+    position: '',
+    notify_props: {
+        auto_responder_active: undefined,
+        auto_responder_message: undefined,
+        channel: 'true',
+        comments: 'any',
+        desktop: 'mention',
+        desktop_notification_sound: undefined,
+        desktop_sound: 'true',
+        email: 'true',
+        first_name: 'true',
+        mark_unread: undefined,
+        mention_keys: '',
+        highlight_keys: '',
+        push: 'mention',
+        push_status: 'ooo',
+        user_id: undefined,
+        push_threads: undefined,
+        email_threads: undefined,
+        calls_desktop_sound: 'true',
+        calls_notification_sound: '',
+        calls_mobile_sound: '',
+        calls_mobile_notification_sound: '',
+    },
+};
+
 describe('Team Queries', () => {
     const serverUrl = 'baseHandler.test.com';
     const teamId = 'team1';
 
     let database: Database;
     let operator: ServerDataOperator;
+
+    const createTestTeam = (id: string, name = 'team1', displayName = 'Team 1') => ({
+        ...BASE_TEAM,
+        id,
+        name,
+        display_name: displayName,
+    } as Team);
+
+    const createTestChannel = (id: string, _teamId: string) => ({
+        ...BASE_CHANNEL,
+        id,
+        team_id: _teamId,
+        type: 'O',
+    } as Channel);
+
+    const createTestUser = (id: string, username: string, roles = 'system_user', locale = 'en') => ({
+        ...BASE_USER,
+        id,
+        username,
+        roles,
+        locale,
+    } as UserProfile);
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
@@ -72,24 +162,7 @@ describe('Team Queries', () => {
                 prepareRecordsOnly: false,
             });
             await operator.handleTeam({
-                teams: [{
-                    id: teamId,
-                    display_name: 'Team 1',
-                    name: 'team1',
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    description: '',
-                    email: '',
-                    type: 'O',
-                    company_name: '',
-                    allowed_domains: '',
-                    invite_id: '',
-                    allow_open_invite: false,
-                    scheme_id: '',
-                    group_constrained: null,
-                    last_team_icon_update: 0,
-                }],
+                teams: [createTestTeam(teamId)],
                 prepareRecordsOnly: false,
             });
 
@@ -105,34 +178,11 @@ describe('Team Queries', () => {
             await operator.handleMyChannel({
                 myChannels: [{
                     id: channelId,
-                    roles: '',
-                    channel_id: '',
-                    user_id: '',
-                    last_viewed_at: 0,
-                    msg_count: 0,
-                    mention_count: 0,
-                    last_update_at: 0,
+                    channel_id: channelId,
+                    user_id: 'user1',
                     notify_props: {},
-                }],
-                channels: [{
-                    id: channelId,
-                    team_id: teamId,
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    type: 'O',
-                    display_name: '',
-                    name: '',
-                    header: '',
-                    purpose: '',
-                    last_post_at: 0,
-                    total_msg_count: 0,
-                    extra_update_at: 0,
-                    creator_id: '',
-                    scheme_id: null,
-                    group_constrained: null,
-                    shared: false,
-                }],
+                } as ChannelMembership],
+                channels: [createTestChannel(channelId, teamId)],
                 prepareRecordsOnly: false,
             });
 
@@ -287,24 +337,7 @@ describe('Team Queries', () => {
 
         it('should return team for existing id', async () => {
             await operator.handleTeam({
-                teams: [{
-                    id: teamId,
-                    display_name: 'Team 1',
-                    name: 'team1',
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    description: '',
-                    email: '',
-                    type: 'O',
-                    company_name: '',
-                    allowed_domains: '',
-                    invite_id: '',
-                    allow_open_invite: false,
-                    scheme_id: '',
-                    group_constrained: null,
-                    last_team_icon_update: 0,
-                }],
+                teams: [createTestTeam(teamId)],
                 prepareRecordsOnly: false,
             });
 
@@ -340,24 +373,7 @@ describe('Team Queries', () => {
         it('should return team for existing name', async () => {
             const teamName = 'team1';
             await operator.handleTeam({
-                teams: [{
-                    id: 'id1',
-                    display_name: 'Team 1',
-                    name: teamName,
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    description: '',
-                    email: '',
-                    type: 'O',
-                    company_name: '',
-                    allowed_domains: '',
-                    invite_id: '',
-                    allow_open_invite: false,
-                    scheme_id: '',
-                    group_constrained: null,
-                    last_team_icon_update: 0,
-                }],
+                teams: [createTestTeam(teamId, teamName)],
                 prepareRecordsOnly: false,
             });
 
@@ -451,24 +467,7 @@ describe('Team Queries', () => {
     describe('observeTeam', () => {
         it('should observe team changes', (done) => {
             operator.handleTeam({
-                teams: [{
-                    id: teamId,
-                    display_name: 'Team 1',
-                    name: 'team1',
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    description: '',
-                    email: '',
-                    type: 'O',
-                    company_name: '',
-                    allowed_domains: '',
-                    invite_id: '',
-                    allow_open_invite: false,
-                    scheme_id: '',
-                    group_constrained: null,
-                    last_team_icon_update: 0,
-                }],
+                teams: [createTestTeam(teamId)],
                 prepareRecordsOnly: false,
             }).then(() => {
                 observeTeam(database, teamId).subscribe((team) => {
@@ -521,42 +520,8 @@ describe('Team Queries', () => {
             const teamIds = ['team1', 'team2'];
             await operator.handleTeam({
                 teams: [
-                    {
-                        id: teamIds[0],
-                        display_name: 'Team 1',
-                        name: 'team1',
-                        create_at: 0,
-                        update_at: 0,
-                        delete_at: 0,
-                        description: '',
-                        email: '',
-                        type: 'O',
-                        company_name: '',
-                        allowed_domains: '',
-                        invite_id: '',
-                        allow_open_invite: false,
-                        scheme_id: '',
-                        group_constrained: null,
-                        last_team_icon_update: 0,
-                    },
-                    {
-                        id: teamIds[1],
-                        display_name: 'Team 2',
-                        name: 'team2',
-                        create_at: 0,
-                        update_at: 0,
-                        delete_at: 0,
-                        description: '',
-                        email: '',
-                        type: 'O',
-                        company_name: '',
-                        allowed_domains: '',
-                        invite_id: '',
-                        allow_open_invite: false,
-                        scheme_id: '',
-                        group_constrained: null,
-                        last_team_icon_update: 0,
-                    },
+                    createTestTeam(teamIds[0], 'team1', 'Team 1'),
+                    createTestTeam(teamIds[1], 'team2', 'Team 2'),
                 ],
                 prepareRecordsOnly: false,
             });
@@ -574,78 +539,10 @@ describe('Team Queries', () => {
 
             await operator.handleTeam({
                 teams: [
-                    {
-                        id: excludeIds[0],
-                        display_name: 'Team 1',
-                        name: 'team1',
-                        create_at: 0,
-                        update_at: 0,
-                        delete_at: 0,
-                        description: '',
-                        email: '',
-                        type: 'O',
-                        company_name: '',
-                        allowed_domains: '',
-                        invite_id: '',
-                        allow_open_invite: false,
-                        scheme_id: '',
-                        group_constrained: null,
-                        last_team_icon_update: 0,
-                    },
-                    {
-                        id: excludeIds[1],
-                        display_name: 'Team 2',
-                        name: 'team2',
-                        create_at: 0,
-                        update_at: 0,
-                        delete_at: 0,
-                        description: '',
-                        email: '',
-                        type: 'O',
-                        company_name: '',
-                        allowed_domains: '',
-                        invite_id: '',
-                        allow_open_invite: false,
-                        scheme_id: '',
-                        group_constrained: null,
-                        last_team_icon_update: 0,
-                    },
-                    {
-                        id: includeIds[0],
-                        display_name: 'Team 3',
-                        name: 'team3',
-                        create_at: 0,
-                        update_at: 0,
-                        delete_at: 0,
-                        description: '',
-                        email: '',
-                        type: 'O',
-                        company_name: '',
-                        allowed_domains: '',
-                        invite_id: '',
-                        allow_open_invite: false,
-                        scheme_id: '',
-                        group_constrained: null,
-                        last_team_icon_update: 0,
-                    },
-                    {
-                        id: includeIds[1],
-                        display_name: 'Team 4',
-                        name: 'team4',
-                        create_at: 0,
-                        update_at: 0,
-                        delete_at: 0,
-                        description: '',
-                        email: '',
-                        type: 'O',
-                        company_name: '',
-                        allowed_domains: '',
-                        invite_id: '',
-                        allow_open_invite: false,
-                        scheme_id: '',
-                        group_constrained: null,
-                        last_team_icon_update: 0,
-                    },
+                    createTestTeam(excludeIds[0], 'team1', 'Team 1'),
+                    createTestTeam(excludeIds[1], 'team2', 'Team 2'),
+                    createTestTeam(includeIds[0], 'team3', 'Team 3'),
+                    createTestTeam(includeIds[1], 'team4', 'Team 4'),
                 ],
                 prepareRecordsOnly: false,
             });
@@ -787,44 +684,7 @@ describe('Team Queries', () => {
 
             // Create user with French locale
             await operator.handleUsers({
-                users: [{
-                    id: 'me',
-                    locale: 'fr',
-                    roles: 'system_user',
-                    username: 'me',
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    auth_service: '',
-                    email: '',
-                    nickname: '',
-                    first_name: '',
-                    last_name: '',
-                    position: '',
-                    notify_props: {
-                        auto_responder_active: undefined,
-                        auto_responder_message: undefined,
-                        channel: 'true',
-                        comments: 'any',
-                        desktop: 'mention',
-                        desktop_notification_sound: undefined,
-                        desktop_sound: 'true',
-                        email: 'true',
-                        first_name: 'true',
-                        mark_unread: undefined,
-                        mention_keys: '',
-                        highlight_keys: '',
-                        push: 'mention',
-                        push_status: 'ooo',
-                        user_id: undefined,
-                        push_threads: undefined,
-                        email_threads: undefined,
-                        calls_desktop_sound: 'true',
-                        calls_notification_sound: '',
-                        calls_mobile_sound: '',
-                        calls_mobile_notification_sound: '',
-                    },
-                }],
+                users: [createTestUser('me', 'me', 'system_user', 'fr')],
                 prepareRecordsOnly: false,
             });
 
@@ -916,24 +776,7 @@ describe('Team Queries', () => {
 
         it('should return default team if no history', async () => {
             await operator.handleTeam({
-                teams: [{
-                    id: teamId,
-                    display_name: 'Team 1',
-                    name: 'team1',
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    description: '',
-                    email: '',
-                    type: 'O',
-                    company_name: '',
-                    allowed_domains: '',
-                    invite_id: '',
-                    allow_open_invite: false,
-                    scheme_id: '',
-                    group_constrained: null,
-                    last_team_icon_update: 0,
-                }],
+                teams: [createTestTeam(teamId)],
                 prepareRecordsOnly: false,
             });
             await operator.handleMyTeam({
@@ -1001,24 +844,7 @@ describe('Team Queries', () => {
 
             // Create team and basic relations
             await operator.handleTeam({
-                teams: [{
-                    id: teamId,
-                    display_name: 'Team 1',
-                    name: 'team1',
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    description: '',
-                    email: '',
-                    type: 'O',
-                    company_name: '',
-                    allowed_domains: '',
-                    invite_id: '',
-                    allow_open_invite: false,
-                    scheme_id: '',
-                    group_constrained: null,
-                    last_team_icon_update: 0,
-                }],
+                teams: [createTestTeam(teamId)],
                 prepareRecordsOnly: false,
             });
             await operator.handleMyTeam({
@@ -1073,25 +899,7 @@ describe('Team Queries', () => {
 
             // Add channels
             await operator.handleChannel({
-                channels: [{
-                    id: channelId,
-                    team_id: teamId,
-                    type: 'O',
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    display_name: '',
-                    name: '',
-                    header: '',
-                    purpose: '',
-                    last_post_at: 0,
-                    total_msg_count: 0,
-                    extra_update_at: 0,
-                    creator_id: '',
-                    scheme_id: null,
-                    group_constrained: null,
-                    shared: false,
-                }],
+                channels: [createTestChannel(channelId, teamId)],
                 prepareRecordsOnly: false,
             });
 
@@ -1102,24 +910,7 @@ describe('Team Queries', () => {
 
         it('should handle failed relation fetches', async () => {
             await operator.handleTeam({
-                teams: [{
-                    id: teamId,
-                    display_name: 'Team 1',
-                    name: 'team1',
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    description: '',
-                    email: '',
-                    type: 'O',
-                    company_name: '',
-                    allowed_domains: '',
-                    invite_id: '',
-                    allow_open_invite: false,
-                    scheme_id: '',
-                    group_constrained: null,
-                    last_team_icon_update: 0,
-                }],
+                teams: [createTestTeam(teamId)],
                 prepareRecordsOnly: false,
             });
 
@@ -1131,24 +922,7 @@ describe('Team Queries', () => {
         it('should handle failed children fetches', async () => {
             // Create team but make relations throw errors by using invalid IDs
             await operator.handleTeam({
-                teams: [{
-                    id: teamId,
-                    display_name: 'Team 1',
-                    name: 'team1',
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    description: '',
-                    email: '',
-                    type: 'O',
-                    company_name: '',
-                    allowed_domains: '',
-                    invite_id: '',
-                    allow_open_invite: false,
-                    scheme_id: '',
-                    group_constrained: null,
-                    last_team_icon_update: 0,
-                }],
+                teams: [createTestTeam(teamId)],
                 prepareRecordsOnly: false,
             });
             await operator.handleTeamMemberships({
@@ -1180,24 +954,7 @@ describe('Team Queries', () => {
         it('should query team by name', async () => {
             const teamName = 'team1';
             await operator.handleTeam({
-                teams: [{
-                    id: 'id1',
-                    display_name: 'Team 1',
-                    name: teamName,
-                    create_at: 0,
-                    update_at: 0,
-                    delete_at: 0,
-                    description: '',
-                    email: '',
-                    type: 'O',
-                    company_name: '',
-                    allowed_domains: '',
-                    invite_id: '',
-                    allow_open_invite: false,
-                    scheme_id: '',
-                    group_constrained: null,
-                    last_team_icon_update: 0,
-                }],
+                teams: [createTestTeam(teamId, teamName)],
                 prepareRecordsOnly: false,
             });
 
@@ -1249,24 +1006,7 @@ describe('Team Queries', () => {
                     prepareRecordsOnly: false,
                 }),
                 operator.handleTeam({
-                    teams: [{
-                        id: teamId,
-                        display_name: 'Team 1',
-                        name: 'team1',
-                        create_at: 0,
-                        update_at: 0,
-                        delete_at: 0,
-                        description: '',
-                        email: '',
-                        type: 'O',
-                        company_name: '',
-                        allowed_domains: '',
-                        invite_id: '',
-                        allow_open_invite: false,
-                        scheme_id: '',
-                        group_constrained: null,
-                        last_team_icon_update: 0,
-                    }],
+                    teams: [createTestTeam(teamId)],
                     prepareRecordsOnly: false,
                 }),
             ]).then(() => {
