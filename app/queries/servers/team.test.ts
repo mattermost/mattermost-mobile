@@ -269,9 +269,10 @@ describe('Team Queries', () => {
 
             const result = await addChannelToTeamHistory(operator, teamId, channelId);
             expect(result.length).toBeGreaterThan(0);
+            expect(result[0].channelIds[0]).toEqual(channelId);
         });
 
-        it('should not add GLOBAL_THREADS to team history', async () => {
+        it('should add GLOBAL_THREADS to team history but skip channel check', async () => {
             const channelId = Screens.GLOBAL_THREADS;
 
             const result = await addChannelToTeamHistory(operator, teamId, channelId);
