@@ -26,10 +26,13 @@ import {
     moreThan5minAgo,
     hasSpecialMentions,
     persistentNotificationsConfirmation,
+    scheduledPostFromPost,
 } from '.';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import {mockFileInfo} from '@test/api_mocks/file';
+import {mockedPosts} from '@database/operator/utils/mock';
 
 jest.mock('@actions/local/post', () => ({
     getUsersCountFromMentions: jest.fn(),
@@ -580,6 +583,56 @@ describe('post utils', () => {
             const time = Date.now() - toMilliseconds({minutes: 4});
             const result = moreThan5minAgo(time);
             expect(result).toBe(false);
+        });
+    });
+
+    describe('scheduledPostFromPost', () => {
+        const post: Post = mockedPosts.posts[mockedPosts.order[0]];
+
+        const schedulingInfo: SchedulingInfo = {
+            scheduled_at: Date.now() + 10000,
+        };
+
+        const postPriority: PostPriority = {
+            priority: 'important',
+        };
+
+        const postFiles: FileInfo[] = [
+            mockFileInfo({id: 'fileid1'}),
+            mockFileInfo({id: 'fileid2'}),
+        ];
+
+        it('should create a scheduled post with the given scheduling info', () => {
+            const result: ScheduledPost = scheduledPostFromPost(post, schedulingInfo);
+            expect(result.scheduled_at).toBe(schedulingInfo.scheduled_at);
+        });
+
+        it('should include the post priority if provided', () => {
+            const result: ScheduledPost = scheduledPostFromPost(post, schedulingInfo, postPriority);
+            expect(result.priority).toBe(postPriority);
+        });
+
+        it('should include the file IDs if post files are provided', () => {
+            const result: ScheduledPost = scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles);
+            expect(result.file_ids).toEqual(['fileid1', 'fileid2']);
+        });
+
+        it('should include the post files if provided', () => {
+            const result: ScheduledPost = scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles);
+            expect(result.files).toEqual(postFiles);
+        });
+
+        it('should return a scheduled post with the same properties as the original post', () => {
+            const result: ScheduledPost = scheduledPostFromPost(post, schedulingInfo);
+            expect(result.id).toBe(post.id);
+            expect(result.message).toBe(post.message);
+            expect(result.channel_id).toBe(post.channel_id);
+            expect(result.create_at).toBe(post.create_at);
+            expect(result.update_at).toBe(post.update_at);
+            expect(result.delete_at).toBe(post.delete_at);
+            expect(result.user_id).toBe(post.user_id);
+            expect(result.type).toBe(post.type);
+            expect(result.props).toEqual(post.props);
         });
     });
 });

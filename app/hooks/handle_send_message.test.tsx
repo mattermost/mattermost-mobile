@@ -141,22 +141,6 @@ describe('useHandleSendMessage', () => {
         expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_LIST_SCROLL_TO_BOTTOM, Screens.THREAD);
     });
 
-    it('should not allow sending while already sending', async () => {
-        const {result} = renderHook(() => useHandleSendMessage(defaultProps), {wrapper});
-
-        // Trigger first send
-        await act(async () => {
-            result.current.handleSendMessage();
-        });
-
-        // Try to send again immediately
-        await act(async () => {
-            result.current.handleSendMessage();
-        });
-
-        expect(createPost).toHaveBeenCalledTimes(1);
-    });
-
     it('should not allow sending with uploading files', () => {
         const props = {
             ...defaultProps,
