@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, fireEvent} from '@testing-library/react-native';
+import {act} from '@testing-library/react-native';
 import React from 'react';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
@@ -39,6 +39,10 @@ describe('components/post_list/PostList', () => {
     const fetchPostsSpy = jest.spyOn(postFunctions, 'fetchPosts');
     const fetchPostThreadSpy = jest.spyOn(postFunctions, 'fetchPostThread');
     const removePostSpy = jest.spyOn(localPostFunctions, 'removePost');
+    const unrelatedNativeEventsAttributes = {
+        contentSize: {height: 1000, width: 100},
+        layoutMeasurement: {height: 100, width: 100},
+    };
 
     beforeAll(async () => {
         const server = await TestHelper.setupServerDatabase();
@@ -166,29 +170,6 @@ describe('components/post_list/PostList', () => {
         });
 
         expect(removePostSpy).toHaveBeenCalledWith(serverUrl, ephemeralPost);
-    });
-
-    it('shows scroll to end button when scrolled past threshold', () => {
-        const {getByTestId} = renderWithEverything(
-            <PostList {...baseProps}/>,
-            {database, serverUrl},
-        );
-        const flatList = getByTestId('post_list.flat_list');
-
-        act(() => {
-            fireEvent.scroll(flatList, {
-                nativeEvent: {
-                    contentOffset: {
-                        y: 161,
-                        x: 0,
-                    },
-                    contentSize: {height: 1000, width: 100},
-                    layoutMeasurement: {height: 100, width: 100},
-                },
-            });
-        });
-
-        expect(getByTestId('scroll-to-end-view')).toBeTruthy();
     });
 
     it('handles scroll to bottom event', () => {
@@ -352,7 +333,7 @@ describe('components/post_list/PostList', () => {
         expect(getByTestId('post_list.combined_user_activity')).toBeTruthy();
     });
 
-    it('handles scroll events and updates scroll to end button visibility I', () => {
+    it('handles scroll events and not show scroll-to-end button', () => {
         const posts = Array.from({length: 5}, (_, i) =>
             mockPostModel({id: `post-${i}`, createAt: Date.now() + i}),
         );
@@ -367,13 +348,11 @@ describe('components/post_list/PostList', () => {
 
         const flatList = getByTestId('post_list.flat_list');
 
-        // which moves to content offset
         act(() => {
             flatList.props.onScroll({
                 nativeEvent: {
                     contentOffset: {y: 0},
-                    contentSize: {height: 1000, width: 100},
-                    layoutMeasurement: {height: 100, width: 100},
+                    ...unrelatedNativeEventsAttributes,
                 },
             });
         });
@@ -396,7 +375,7 @@ describe('components/post_list/PostList', () => {
             {database, serverUrl},
         );
 
-        // a new post added to the top of the list
+        // a new post added
         const newPosts = [mockPostModel({createAt: Date.now() + 200}), ...posts];
 
         rerender(
@@ -407,13 +386,12 @@ describe('components/post_list/PostList', () => {
 
         const flatList = getByTestId('post_list.flat_list');
 
-        // which moves to content offset
+        // which causes the content offset to shift
         act(() => {
             flatList.props.onScroll({
                 nativeEvent: {
                     contentOffset: {y: 200},
-                    contentSize: {height: 1000, width: 100},
-                    layoutMeasurement: {height: 100, width: 100},
+                    ...unrelatedNativeEventsAttributes,
                 },
             });
         });
@@ -421,12 +399,12 @@ describe('components/post_list/PostList', () => {
         expect(scrollToEndView.props).toHaveProperty('showScrollToEndBtn', true);
         expect(scrollToEndView.props).toHaveProperty('isNewMessage', true);
 
+        // if user post an image, scroll to bottom being called to push offset to 0, which causes the "New Messages" message to disappear
         act(() => {
             flatList.props.onScroll({
                 nativeEvent: {
                     contentOffset: {y: 0},
-                    contentSize: {height: 1000, width: 100},
-                    layoutMeasurement: {height: 100, width: 100},
+                    ...unrelatedNativeEventsAttributes,
                 },
             });
         });
