@@ -94,7 +94,7 @@ const ChannelBookmarkAddOrEdit = ({
                 enabled,
             }],
         });
-    }, [formatMessage, theme]);
+    }, [componentId, formatMessage, theme.sidebarHeaderTextColor]);
 
     const setBookmarkToSave = useCallback((b?: ChannelBookmark) => {
         enableSaveButton((b?.type === 'link' && Boolean(b?.link_url)) || (b?.type === 'file' && Boolean(b.file_id)));
