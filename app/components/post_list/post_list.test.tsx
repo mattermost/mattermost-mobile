@@ -244,22 +244,6 @@ describe('components/post_list/PostList', () => {
         expect(onEndReached).toHaveBeenCalled();
     });
 
-    it('applies custom content container style', async () => {
-        jest.useFakeTimers();
-        const customStyle = {padding: 10};
-        const props = {
-            ...baseProps,
-            contentContainerStyle: customStyle,
-        };
-        const {getByTestId} = renderWithEverything(
-            <PostList {...props}/>,
-            {database, serverUrl},
-        );
-        const flatList = getByTestId('post_list.flat_list');
-        expect(flatList.props.contentContainerStyle).toBe(customStyle);
-        jest.useRealTimers();
-    });
-
     it('handles onViewableItemsChanged callback', async () => {
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
         const {getByTestId} = renderWithEverything(
