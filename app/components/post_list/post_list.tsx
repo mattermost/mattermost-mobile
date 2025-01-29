@@ -193,8 +193,6 @@ const PostList = ({
         const {y} = event.nativeEvent.contentOffset;
         const isThresholdReached = y > CONTENT_OFFSET_THRESHOLD;
 
-        // console.log({y, isThresholdReached, showScrollToEndBtn, lastPostId, firstIdInPosts});
-
         if (isThresholdReached !== showScrollToEndBtn) {
             setShowScrollToEndBtn(isThresholdReached);
         }
@@ -253,7 +251,6 @@ const PostList = ({
     }, []);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
-        // console.log({item, type: item.type, testID});
         switch (item.type) {
             case 'start-of-new-messages':
                 return (
