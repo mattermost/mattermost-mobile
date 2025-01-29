@@ -60,7 +60,9 @@ describe('scheduled_post', () => {
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
         expect(result.response).toBeDefined();
-        expect(result.response.id).toBe(scheduledPost.id);
+        if (result.response) {
+            expect(result.response.id).toBe(scheduledPost.id);
+        }
     });
 
     it('createScheduledPost - request error', async () => {

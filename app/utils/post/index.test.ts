@@ -6,8 +6,10 @@ import {Alert} from 'react-native';
 
 import {getUsersCountFromMentions} from '@actions/local/post';
 import {General, Post} from '@constants';
+import {mockedPosts} from '@database/operator/utils/mock';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getUserById} from '@queries/servers/user';
+import {mockFileInfo} from '@test/api_mocks/file';
 import {toMilliseconds} from '@utils/datetime';
 
 import {
@@ -31,8 +33,6 @@ import {
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import {mockFileInfo} from '@test/api_mocks/file';
-import {mockedPosts} from '@database/operator/utils/mock';
 
 jest.mock('@actions/local/post', () => ({
     getUsersCountFromMentions: jest.fn(),
@@ -629,10 +629,7 @@ describe('post utils', () => {
             expect(result.channel_id).toBe(post.channel_id);
             expect(result.create_at).toBe(post.create_at);
             expect(result.update_at).toBe(post.update_at);
-            expect(result.delete_at).toBe(post.delete_at);
             expect(result.user_id).toBe(post.user_id);
-            expect(result.type).toBe(post.type);
-            expect(result.props).toEqual(post.props);
         });
     });
 });

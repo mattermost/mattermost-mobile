@@ -9,6 +9,8 @@ type SchedulingInfo = {
 
 type ScheduledPost = Draft & SchedulingInfo &{
     id: string;
+    create_at?: number;
     priority?: PostPriority;
     file_ids?: string[];
+    user_id: string;
 }
