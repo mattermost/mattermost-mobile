@@ -171,12 +171,11 @@ export default class ClientBase extends ClientTracking {
         return `${this.urlVersion}/redirect_location`;
     }
 
-    // Route use for delete/patch scheduled posts
     getScheduledPostActionsRoute() {
         return `${this.getPostsRoute()}/schedule`;
     }
 
-    getScheduledPostRoute() {
+    getTeamAndDirectChannelScheduledPostsRoute() {
         return `${this.getPostsRoute()}/scheduled`;
     }
 
