@@ -59,7 +59,6 @@ type Props = {
 export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     const isTablet = useIsTablet();
     const theme = useTheme();
-
     const [isScheduling, setIsScheduling] = useState(false);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const userTimezone = getTimezone(currentUserTimezone);
