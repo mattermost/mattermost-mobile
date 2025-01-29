@@ -59,19 +59,60 @@ describe('Preference Queries', () => {
             const records = await prepareMyPreferences(operator, preferences);
             expect(records.length).toBe(2);
             expect(records[0].name).toBe('name_format');
+            expect(records[0]._preparedState).toBe('create');
+
+            expect(records[1].name).toBe('theme');
+            expect(records[1]._preparedState).toBe('create');
         });
 
         it('should handle sync flag', async () => {
+            const oldValue = 'username';
+            const newValue = 'username-new';
+
             const preferences = [{
                 user_id: 'user1',
                 category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
                 name: 'name_format',
-                value: 'username',
+                value: newValue,
             }];
 
-            const records = await prepareMyPreferences(operator, preferences, true);
-            expect(records.length).toBe(1);
-            expect(records[0].name).toBe('name_format');
+            await operator.handlePreferences({
+                preferences: [
+                    {
+                        user_id: 'user1',
+                        category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
+                        name: 'name_format',
+                        value: oldValue,
+                    },
+
+                    // with sync, this record will be deleted since it's not in the preferences array
+                    {
+                        user_id: 'user1',
+                        category: Preferences.CATEGORIES.THEME,
+                        name: 'theme',
+                        value: '{"type":"dark"}',
+                    },
+                ],
+                prepareRecordsOnly: false,
+            });
+
+            await database.write(async () => {
+                const records = await prepareMyPreferences(operator, preferences, true);
+
+                expect(records[0]._preparedState).toBe('update');
+                expect(records[1]._preparedState).toBe('destroyPermanently');
+
+                // without this, the test will fail because of this error:
+                // Diagnostic error: record.prepareUpdate was called on Preference#xxxx but wasn't sent to batch() synchronously -- this is bad!
+                await database.batch(...records);
+            });
+
+            const storedPrefs = await queryDisplayNamePreferences(database).fetch();
+            expect(storedPrefs.length).toBe(1);
+            expect(storedPrefs[0].value).toEqual(newValue);
+
+            const themePrefs = await queryThemePreferences(database).fetch();
+            expect(themePrefs.length).toBe(0);
         });
     });
 
@@ -90,6 +131,12 @@ describe('Preference Queries', () => {
                         category: CATEGORIES_TO_KEEP.ADVANCED_SETTINGS,
                         name: 'test2',
                         value: 'value2',
+                    },
+                    {
+                        user_id: 'user1',
+                        category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
+                        name: 'name_format',
+                        value: 'username',
                     },
                 ],
                 prepareRecordsOnly: false,
