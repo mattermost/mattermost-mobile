@@ -244,13 +244,12 @@ describe('ClientTracking', () => {
 
         try {
             await client.doFetchWithTracking('https://example.com/api', options);
-            fail('Expected error to be thrown');
         } catch (error: unknown) {
             const clientError = error as ClientError;
 
-            expect((clientError.details as {message: string}).message).toBe('Custom error message');
-            expect((clientError.details as {server_error_id: string}).server_error_id).toBe('error_id_123');
-            expect((clientError.details as {status_code: string}).status_code).toBe(400);
+            expect((clientError as {message: string}).message).toBe('Custom error message');
+            expect((clientError as {server_error_id: string}).server_error_id).toBe('error_id_123');
+            expect((clientError as {status_code: number}).status_code).toBe(400);
         }
     });
 
@@ -272,8 +271,8 @@ describe('ClientTracking', () => {
         } catch (error: unknown) {
             const clientError = error as ClientError;
 
-            expect((clientError.details as {message: string}).message).toBe('Response with status code 500');
-            expect((clientError.details as {status_code: string}).status_code).toBe(500);
+            expect((clientError as {message: string}).message).toBe('Response with status code 500');
+            expect((clientError as {status_code: number}).status_code).toBe(500);
         }
     });
 

@@ -17,7 +17,7 @@ import {useAvoidKeyboard} from '@hooks/device';
 import {t} from '@i18n';
 import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {getFullErrorMessage, isErrorWithMessage, isServerError} from '@utils/errors';
+import {getFullErrorMessage, getServerError, isErrorWithMessage, isServerError} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
@@ -117,14 +117,17 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
         resetToHome({extra, launchError: hasError, launchType, serverUrl});
     };
 
-    const checkLoginResponse = (data: LoginActionResponse) => {
-        let errorId = '';
-        const loginError = data.error;
-        if (isServerError(loginError) && loginError.server_error_id) {
-            errorId = loginError.server_error_id;
+    const isMFAError = (loginError: unknown): boolean => {
+        const serverError = getServerError(loginError);
+        if (serverError) {
+            return MFA_EXPECTED_ERRORS.includes(serverError);
         }
+        return false;
+    };
 
-        if (data.failed && MFA_EXPECTED_ERRORS.includes(errorId)) {
+    const checkLoginResponse = (data: LoginActionResponse) => {
+        const loginError = data.error;
+        if (data.failed && isMFAError(data.error)) {
             goToMfa();
             setIsLoading(false);
             return false;
