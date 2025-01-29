@@ -13,6 +13,7 @@ type Props = {
     testID: string;
     disabled: boolean;
     sendMessage: () => void;
+    showScheduledPostOptions: () => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -39,6 +40,7 @@ function SendButton({
     testID,
     disabled,
     sendMessage,
+    showScheduledPostOptions,
 }: Props) {
     const theme = useTheme();
     const sendButtonTestID = disabled ? `${testID}.send.button.disabled` : `${testID}.send.button`;
@@ -60,6 +62,7 @@ function SendButton({
             style={style.sendButtonContainer}
             type={'opacity'}
             disabled={disabled}
+            onLongPress={showScheduledPostOptions}
         >
             <View style={viewStyle}>
                 <CompassIcon
