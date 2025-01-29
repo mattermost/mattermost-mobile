@@ -10,7 +10,11 @@ import {DeviceContext} from '@context/device';
 
 import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-const utilsEmitter = new NativeEventEmitter(RNUtils);
+let utilsEmitter = new NativeEventEmitter(RNUtils);
+
+export function testSetUtilsEmitter(emitter: NativeEventEmitter) {
+    utilsEmitter = emitter;
+}
 
 export function useSplitView() {
     const {isSplit} = React.useContext(DeviceContext);
