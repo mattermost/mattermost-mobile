@@ -9,9 +9,9 @@ import {Events} from '@constants';
 import test_helper from '@test/test_helper';
 
 import * as ClientConstants from './constants';
+import ClientError from './error';
 import ClientTracking, {testExports} from './tracking';
 
-import type ClientError from './error';
 import type {APIClientInterface, ClientResponseMetrics} from '@mattermost/react-native-network-client';
 
 type ParallelGroup = typeof testExports.ParallelGroup;
@@ -245,6 +245,8 @@ describe('ClientTracking', () => {
         try {
             await client.doFetchWithTracking('https://example.com/api', options);
         } catch (error: unknown) {
+            expect(error).toBeInstanceOf(ClientError);
+
             const clientError = error as ClientError;
 
             expect((clientError as {message: string}).message).toBe('Custom error message');
