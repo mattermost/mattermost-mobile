@@ -52,17 +52,6 @@ jobs:
                 key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                 restore-keys: ${{ runner.os }}-gradle-
 
-            # - name: Validate Gradle wrapper
-            #   uses: gradle/actions/wrapper-validation@v3
-
-            # - name: Inject Detox settings
-            #   run: cd detox && npm run e2e:android-inject-settings
-
-            # - name: Update minSdkVersion for react-native-image-picker
-            #   run: |
-            #     sed -i 's/minSdkVersion 21/minSdkVersion 23/' ./node_modules/react-native-image-picker/android/build.gradle
-            #     cat ./node_modules/react-native-image-picker/android/build.gradle | grep minSdkVersion
-
             - name: Detox build
               run: |
                 cd detox
@@ -86,36 +75,11 @@ jobs:
           with:
             ref: ${{ github.event.pull_request.head.sha }}
 
-        # - name: Download APK artifact
-        #   uses: actions/download-artifact@v4
-        #   with:
-        #     name: android-build-apk-${{ github.run_id }}
-        #     path: android/app/build/outputs/apk/
-
-        # *****************************************************
-
-
-        - name: Download artifact
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: |
-            curl -L -H "Authorization: token $GITHUB_TOKEN" \
-                -H "Accept: application/vnd.github.v3+json" \
-                https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2508537192/zip \
-                --output android/app/build/outputs/apk/artifact.zip
-
-        - name: Unzip artifact
-          run: unzip android/app/build/outputs/apk/artifact.zip -d android/app/build/outputs/apk
-
-        - name: List unzipped files
-          run: ls -la android/app/build/outputs/apk
-
-        - name: Cleanup
-          run: |
-            find android/app/build -type f
-            rm android/app/build/outputs/apk/artifact.zip
-
-        # *****************************************************
+        - name: Download APK artifact
+          uses: actions/download-artifact@v4
+          with:
+            name: android-build-apk-${{ github.run_id }}
+            path: android/app/build/outputs/apk/
 
         - name: Install Dependencies
           run: |
