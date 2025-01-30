@@ -90,7 +90,7 @@ jobs:
         - name: Install Emulator Dependencies
           run: |
             sudo apt-get update
-            sudo apt-get install -y libpulse0 libnss3 libxcomposite1 libxcursor1 libxi6 libxtst6 libasound2 libatk1.0-0 libgtk-3-0
+            sudo apt-get install -y libpulse0 libnss3 libxcomposite1 libxcursor1 libxi6 libxtst6 libasound2t64 libatk1.0-0 libgtk-3-0
 
         - name: Cache Gradle dependencies
           uses: actions/cache@v4
