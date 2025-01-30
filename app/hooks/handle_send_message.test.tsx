@@ -343,6 +343,87 @@ describe('useHandleSendMessage', () => {
         );
     });
 
+    it('should handle scheduled post creation', async () => {
+        const schedulingInfo = {
+            scheduled_at: 1234567890,
+            timezone: 'UTC',
+        };
+
+        const props = {
+            ...defaultProps,
+            value: 'scheduled message',
+        };
+
+        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        await act(async () => {
+            await result.current.handleSendMessage(schedulingInfo);
+        });
+
+        expect(createScheduledPost).toHaveBeenCalledWith(
+            'https://server.com',
+            expect.objectContaining({
+                message: 'scheduled message',
+                scheduled_at: 1234567890,
+            }),
+        );
+        expect(defaultProps.clearDraft).toHaveBeenCalled();
+    });
+
+    it('should handle failed post creation', async () => {
+        jest.mocked(createPost).mockResolvedValueOnce({
+            error: new Error('Failed to create post'),
+        });
+
+        const props = {
+            ...defaultProps,
+            value: 'test message',
+        };
+
+        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        await act(async () => {
+            const response = await result.current.handleSendMessage();
+            expect(response?.error).toBeDefined();
+        });
+    });
+
+    it('should fetch and handle channel timezones', async () => {
+        jest.mocked(getChannelTimezones).mockResolvedValueOnce({
+            channelTimezones: ['UTC', 'America/New_York'],
+        });
+
+        const props = {
+            ...defaultProps,
+            value: '@channel message',
+            enableConfirmNotificationsToChannel: true,
+            useChannelMentions: true,
+            membersCount: 25,
+        };
+
+        renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        expect(getChannelTimezones).toHaveBeenCalledWith(
+            'https://server.com',
+            'channel-id',
+        );
+    });
+
+    it('should not allow sending during message submission', () => {
+        const props = {
+            ...defaultProps,
+            value: 'test message',
+        };
+
+        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        act(() => {
+            result.current.handleSendMessage();
+        });
+
+        expect(result.current.canSend).toBe(false);
+    });
+
     it('should handle channel-wide mentions confirmation', async () => {
         jest.spyOn(DraftUtils, 'textContainsAtAllAtChannel').mockReturnValue(true);
         jest.spyOn(DraftUtils, 'alertChannelWideMention');
@@ -363,5 +444,62 @@ describe('useHandleSendMessage', () => {
 
         expect(DraftUtils.alertChannelWideMention).toHaveBeenCalled();
         expect(createPost).not.toHaveBeenCalled();
+    });
+    it('should include post priority metadata', async () => {
+        const props = {
+            ...defaultProps,
+            value: 'priority message',
+            postPriority: {
+                priority: 'urgent',
+                requested_ack: true,
+                persistent_notifications: true,
+            },
+        };
+
+        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        await act(async () => {
+            await result.current.handleSendMessage();
+        });
+
+        expect(createPost).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.objectContaining({
+                metadata: {
+                    priority: {
+                        priority: 'urgent',
+                        requested_ack: true,
+                        persistent_notifications: true,
+                    },
+                },
+            }),
+            [],
+        );
+    });
+
+    it('should not include priority metadata for replies', async () => {
+        const props = {
+            ...defaultProps,
+            value: 'reply message',
+            rootId: 'some-root-id',
+            postPriority: {
+                priority: 'urgent',
+                requested_ack: true,
+            },
+        };
+
+        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        await act(async () => {
+            await result.current.handleSendMessage();
+        });
+
+        expect(createPost).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.not.objectContaining({
+                metadata: expect.anything(),
+            }),
+            [],
+        );
     });
 });
