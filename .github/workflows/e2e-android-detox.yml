@@ -135,11 +135,11 @@ jobs:
 
         - name: Install required SDK components
           run: |
-            sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "emulator" "system-images;android-31;default;x86_64"
+            sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "emulator" "system-images;android-31;google_apis;x86_64"
 
         - name: Create AVD
           run: |
-            echo "no" | avdmanager create avd --force --name detox_pixel_4_xl_api_31 --package "system-images;android-31;default;x86_64" --device "pixel_4_xl"
+            echo "no" | avdmanager create avd --force --name detox_pixel_4_xl_api_31 --package "system-images;android-31;google_apis;x86_64" --device "pixel_4_xl"
 
         - name: Start emulator
           run: |
