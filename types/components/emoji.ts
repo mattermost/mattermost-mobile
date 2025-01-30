@@ -16,7 +16,7 @@ export type EmojiProps = {
     size?: number;
     textStyle?: StyleProp<TextStyle>;
     imageStyle?: StyleProp<ImageStyle>;
-    commonStyle?: StyleProp<EmojiCommonStyle>;
+    commonStyle?: StyleProp<Intersection<TextStyle, EmojiCommonStyle>>;
     customEmojis: CustomEmojiModel[];
     testID?: string;
 }

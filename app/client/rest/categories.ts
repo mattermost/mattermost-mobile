@@ -4,14 +4,14 @@
 import type ClientBase from './base';
 
 export interface ClientCategoriesMix {
-    getCategories: (userId: string, teamId: string, groupLabel?: string) => Promise<CategoriesWithOrder>;
+    getCategories: (userId: string, teamId: string, groupLabel?: RequestGroupLabel) => Promise<CategoriesWithOrder>;
     getCategoriesOrder: (userId: string, teamId: string) => Promise<string[]>;
     getCategory: (userId: string, teamId: string, categoryId: string) => Promise<Category>;
     updateChannelCategories: (userId: string, teamId: string, categories: CategoryWithChannels[]) => Promise<CategoriesWithOrder>;
 }
 
 const ClientCategories = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
-    getCategories = async (userId: string, teamId: string, groupLabel?: string) => {
+    getCategories = async (userId: string, teamId: string, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getCategoriesRoute(userId, teamId)}`,
             {method: 'get', groupLabel},

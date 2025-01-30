@@ -22,7 +22,6 @@ describe('SSO with redirect url', () => {
         intl: {},
         loginError: '',
         loginUrl: '',
-        serverUrl: 'http://localhost:8065',
         setLoginError: jest.fn(),
         theme: Preferences.THEMES.denim,
     };

@@ -274,7 +274,7 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>(({
                     >
                         {label}
                     </Animated.Text>
-                    <View style={textInputContainerStyles}>
+                    <View style={textInputContainerStyles as StyleProp<ViewStyle>}>
                         {chipsValues && chipsValues?.length > 0 && chipsValues.map((chipValue) => (
                             <SelectedChip
                                 key={chipValue}

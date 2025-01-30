@@ -293,6 +293,7 @@
   "custom_status.suggestions.working_from_home": "Working from home",
   "date_separator.today": "Today",
   "date_separator.yesterday": "Yesterday",
+  "date.unknown": "Unknown",
   "default_skin_tone": "Default Skin Tone",
   "display_settings.clock.military": "24-hour",
   "display_settings.clock.standard": "12-hour",

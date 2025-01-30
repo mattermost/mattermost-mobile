@@ -22,12 +22,12 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetch(serverUrl: Str
                 }
             }
 
-            override fun reject(code: String, message: String) {
+            override fun reject(code: String, message: String?) {
                 cont.resumeWith(Result.failure(IOException("Unexpected code $code $message")))
             }
 
-            override fun reject(reason: Throwable?) {
-                cont.resumeWith(Result.failure(IOException("Unexpected code $reason")))
+            override fun reject(throwable: Throwable) {
+                cont.resumeWith(Result.failure(IOException("Unexpected code $throwable")))
             }
         })
     }
@@ -41,12 +41,12 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetchWithPost(server
                 cont.resumeWith(Result.success(response))
             }
 
-            override fun reject(code: String, message: String) {
+            override fun reject(code: String, message: String?) {
                 cont.resumeWith(Result.failure(IOException("Unexpected code $code $message")))
             }
 
-            override fun reject(reason: Throwable?) {
-                cont.resumeWith(Result.failure(IOException("Unexpected code $reason")))
+            override fun reject(throwable: Throwable) {
+                cont.resumeWith(Result.failure(IOException("Unexpected code $throwable")))
             }
         })
     }
