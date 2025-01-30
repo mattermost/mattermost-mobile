@@ -21,6 +21,7 @@ import {createScheduledPost} from '@actions/remote/scheduled_post';
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 
 jest.mock('@actions/remote/post');
+jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/channel', () => ({
     getChannelTimezones: jest.fn().mockResolvedValue({channelTimezones: []}),
 }));
@@ -345,6 +346,9 @@ describe('useHandleSendMessage', () => {
     });
 
     it('should handle scheduled post creation', async () => {
+        const mockCreateScheduledPost = jest.mocked(createScheduledPost);
+        mockCreateScheduledPost.mockResolvedValueOnce({data: true});
+
         const schedulingInfo = {
             scheduled_at: 1234567890,
             timezone: 'UTC',
@@ -361,7 +365,7 @@ describe('useHandleSendMessage', () => {
             await result.current.handleSendMessage(schedulingInfo);
         });
 
-        expect(createScheduledPost).toHaveBeenCalledWith(
+        expect(mockCreateScheduledPost).toHaveBeenCalledWith(
             'https://server.com',
             expect.objectContaining({
                 message: 'scheduled message',
