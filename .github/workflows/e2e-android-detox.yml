@@ -16,69 +16,69 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    # build-android-apk:
-    #     # if: github.event.label.name == 'E2E Android tests for PR'
-    #     runs-on: ubuntu-latest-8-cores
-    #     env:
-    #         ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
-    #     steps:
-    #         - name: Prune Docker to free up space
-    #           run: docker system prune -af
+    build-android-apk:
+        # if: github.event.label.name == 'E2E Android tests for PR'
+        runs-on: ubuntu-latest-8-cores
+        env:
+            ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+        steps:
+            - name: Prune Docker to free up space
+              run: docker system prune -af
 
-    #         - name: Remove npm Temporary Files
-    #           run: |
-    #            rm -rf ~/.npm/_cacache
+            - name: Remove npm Temporary Files
+              run: |
+               rm -rf ~/.npm/_cacache
 
-    #         - name: ci/checkout-repo
-    #           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-    #           with:
-    #             ref: ${{ github.event.pull_request.head.sha }}
+            - name: ci/checkout-repo
+              uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+              with:
+                ref: ${{ github.event.pull_request.head.sha }}
 
-    #         - name: ci/prepare-android-build
-    #           uses: ./.github/actions/prepare-android-build
-    #           env:
-    #             STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
-    #             STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
-    #             STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
-    #             MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+            - name: ci/prepare-android-build
+              uses: ./.github/actions/prepare-android-build
+              env:
+                STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+                STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+                STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+                MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
-    #         - name: Install Dependencies
-    #           run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
+            - name: Install Dependencies
+              run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
       
-    #         - name: Cache Gradle dependencies
-    #           uses: actions/cache@v4
-    #           with:
-    #             path: ~/.gradle/caches/modules-2/
-    #             key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-    #             restore-keys: ${{ runner.os }}-gradle-
+            - name: Cache Gradle dependencies
+              uses: actions/cache@v4
+              with:
+                path: ~/.gradle/caches/modules-2/
+                key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+                restore-keys: ${{ runner.os }}-gradle-
 
-    #         # - name: Validate Gradle wrapper
-    #         #   uses: gradle/actions/wrapper-validation@v3
+            # - name: Validate Gradle wrapper
+            #   uses: gradle/actions/wrapper-validation@v3
 
-    #         # - name: Inject Detox settings
-    #         #   run: cd detox && npm run e2e:android-inject-settings
+            # - name: Inject Detox settings
+            #   run: cd detox && npm run e2e:android-inject-settings
 
-    #         # - name: Update minSdkVersion for react-native-image-picker
-    #         #   run: |
-    #         #     sed -i 's/minSdkVersion 21/minSdkVersion 23/' ./node_modules/react-native-image-picker/android/build.gradle
-    #         #     cat ./node_modules/react-native-image-picker/android/build.gradle | grep minSdkVersion
+            # - name: Update minSdkVersion for react-native-image-picker
+            #   run: |
+            #     sed -i 's/minSdkVersion 21/minSdkVersion 23/' ./node_modules/react-native-image-picker/android/build.gradle
+            #     cat ./node_modules/react-native-image-picker/android/build.gradle | grep minSdkVersion
 
-    #         - name: Detox build
-    #           run: |
-    #             cd detox
-    #             npm install
-    #             npm install -g detox-cli
-    #             npm run e2e:android-build
+            - name: Detox build
+              run: |
+                cd detox
+                npm install
+                npm install -g detox-cli
+                npm run e2e:android-build
 
-    #         - name: ci/upload-android-pr-build
-    #           uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-    #           with:
-    #             name: android-build-apk-${{ github.run_id }}
-    #             path: "android/app/build/outputs/apk/**/app-*.apk"
+            - name: ci/upload-android-pr-build
+              uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+              with:
+                name: android-build-apk-${{ github.run_id }}
+                path: "android/app/build/outputs/apk/**/app-*.apk"
 
     run-android-tests:
       # if: github.event.label.name == 'E2E Android tests for PR'
-      # needs: build-android-apk
+      needs: build-android-apk
       runs-on: ubuntu-latest-8-cores
       steps:
         - name: ci/checkout-repo
