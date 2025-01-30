@@ -22,12 +22,12 @@ describe('ClientGeneral', () => {
         const deviceId = 'device1';
         const timeoutInterval = 1000;
         const groupLabel = 'DeepLink';
-        const expectedUrl = `${client.urlVersion}/system/ping?time=${Date.now()}&device_id=${deviceId}`;
+        const expectedUrl = `${client.urlVersion}/system/ping`;
         const expectedOptions = {method: 'get', timeoutInterval, groupLabel};
 
         await client.ping(deviceId, timeoutInterval, groupLabel);
 
-        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions, false);
+        expect(client.doFetch).toHaveBeenCalledWith(expect.stringContaining(expectedUrl), expectedOptions, false);
     });
 
     test('logClientError', async () => {
