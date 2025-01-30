@@ -122,23 +122,34 @@ jobs:
             key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
             restore-keys: ${{ runner.os }}-gradle-
 
-        - name: Set up Android SDK
-          uses: android-actions/setup-android@v3
-  
-        - name: Start Android Emulator
-          uses: reactivecircus/android-emulator-runner@v2
+        - name: Install Node.js
+          uses: actions/setup-node@v3
           with:
-            api-level: 31
-            arch: x86_64
-            profile: pixel_4_xl
-            avd-name: detox_pixel_4_xl_api_31
-            emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-            disable-animations: true
-            emulator-boot-timeout: 600
-            script: |
-              adb devices
-              echo "Emulator started and ready for testing."
-      
+            node-version: '16'
+
+        - name: Install Android SDK
+          uses: android-actions/setup-android@v3
+
+        - name: Accept licenses
+          run: yes | sdkmanager --licenses
+
+        - name: Install required SDK components
+          run: |
+            sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "emulator" "system-images;android-31;default;x86_64"
+
+        - name: Create AVD
+          run: |
+            echo "no" | avdmanager create avd --force --name detox_pixel_4_xl_api_31 --package "system-images;android-31;default;x86_64" --device "pixel_4_xl"
+
+        - name: Start emulator
+          run: |
+            emulator -avd detox_pixel_4_xl_api_31 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
+            adb wait-for-device
+            while [[ "$(adb shell getprop sys.boot_completed)" != "1" ]]; do
+              sleep 2
+            done
+            echo "Emulator is ready."
+
         - name: Run Detox tests
           run: |
             cd detox
