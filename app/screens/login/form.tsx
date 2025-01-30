@@ -126,15 +126,16 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     };
 
     const checkLoginResponse = (data: LoginActionResponse) => {
-        if (data.failed && isMFAError(data.error)) {
+        const {failed, error: loginError} = data;
+        if (failed && isMFAError(loginError)) {
             goToMfa();
             setIsLoading(false);
             return false;
         }
 
-        if (data.failed && data.error) {
+        if (failed && loginError) {
             setIsLoading(false);
-            setError(getLoginErrorMessage(data.error));
+            setError(getLoginErrorMessage(loginError));
             return false;
         }
 
