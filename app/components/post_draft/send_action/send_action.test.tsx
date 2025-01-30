@@ -1,16 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
 import React from 'react';
 
+import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
+
 import SendAction from './index';
+import {act} from '@testing-library/react-hooks';
 
 describe('components/post_draft/send_action', () => {
     const baseProps = {
         disabled: false,
-        onPress: jest.fn(),
+        sendMessage: jest.fn(),
         testID: 'test_id',
+        showScheduledPostOptions: jest.fn(),
     };
 
     it('should match snapshot', () => {
@@ -25,11 +28,11 @@ describe('components/post_draft/send_action', () => {
         const {getByTestId} = renderWithIntl(
             <SendAction
                 {...baseProps}
-                onPress={onPress}
+                sendMessage={onPress}
             />,
         );
 
-        const button = getByTestId('test_id');
+        const button = getByTestId('test_id.send.button');
         fireEvent.press(button);
 
         expect(onPress).toHaveBeenCalledTimes(1);
@@ -40,15 +43,15 @@ describe('components/post_draft/send_action', () => {
         const {getByTestId} = renderWithIntl(
             <SendAction
                 {...baseProps}
-                onPress={onPress}
+                sendMessage={onPress}
             />,
         );
 
-        const button = getByTestId('test_id');
-        
+        const button = getByTestId('test_id.send.button');
+
         // First tap
         fireEvent.press(button);
-        
+
         // Second tap immediately after
         fireEvent.press(button);
 
@@ -62,20 +65,23 @@ describe('components/post_draft/send_action', () => {
         const {getByTestId} = renderWithIntl(
             <SendAction
                 {...baseProps}
-                onPress={onPress}
+                sendMessage={onPress}
             />,
         );
 
-        const button = getByTestId('test_id');
-        
+        const button = getByTestId('test_id.send.button');
+
         // First tap
-        fireEvent.press(button);
-        
-        // Advance timers past debounce period
-        jest.advanceTimersByTime(400);
-        
-        // Second tap after debounce
-        fireEvent.press(button);
+        act(() => {
+            fireEvent.press(button);
+        });
+
+        expect(onPress).toHaveBeenCalledTimes(1);
+
+        act(() => {
+            jest.advanceTimersByTime(750);
+            fireEvent.press(button);
+        });
 
         expect(onPress).toHaveBeenCalledTimes(2);
         jest.useRealTimers();
@@ -87,11 +93,11 @@ describe('components/post_draft/send_action', () => {
             <SendAction
                 {...baseProps}
                 disabled={true}
-                onPress={onPress}
+                sendMessage={onPress}
             />,
         );
 
-        const button = getByTestId('test_id');
+        const button = getByTestId('test_id.send.button.disabled');
         fireEvent.press(button);
 
         expect(onPress).not.toHaveBeenCalled();
