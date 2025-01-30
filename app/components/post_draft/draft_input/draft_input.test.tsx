@@ -5,17 +5,17 @@ import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
 import {Screens} from '@constants';
+import {PostPriorityType} from '@constants/post';
+import NetworkManager from '@managers/network_manager';
 import {openAsBottomSheet} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 import {persistentNotificationsConfirmation} from '@utils/post';
 
 import DraftInput from './draft_input';
-import type {Database} from '@nozbe/watermelondb';
-import TestHelper from '@test/test_helper';
-import type ServerDataOperator from '@database/operator/server_data_operator';
-import NetworkManager from '@managers/network_manager';
-import {PostPriorityType} from '@constants/post';
 
+import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Database} from '@nozbe/watermelondb';
 
 const SERVER_URL = 'https://appv1.mattermost.com';
 

@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act} from '@testing-library/react-hooks';
 import React from 'react';
 
 import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
 
 import SendAction from './index';
-import {act} from '@testing-library/react-hooks';
 
 describe('components/post_draft/send_action', () => {
     const baseProps = {
