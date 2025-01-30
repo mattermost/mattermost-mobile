@@ -16,6 +16,7 @@ import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
 
 import {useHandleSendMessage} from './handle_send_message';
+import {createScheduledPost} from '@actions/remote/scheduled_post';
 
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 
