@@ -86,14 +86,47 @@ jobs:
           with:
             ref: ${{ github.event.pull_request.head.sha }}
 
-        - name: Download APK artifact
-          uses: actions/download-artifact@v4
-          with:
-            name: android-build-apk-${{ github.run_id }}
-            path: android/app/build/outputs/apk/
+        # - name: Download APK artifact
+        #   uses: actions/download-artifact@v4
+        #   with:
+        #     name: android-build-apk-${{ github.run_id }}
+        #     path: android/app/build/outputs/apk/
+
+        # *****************************************************
+
+
+        - name: Download artifact
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            curl -L -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2508537192/zip \
+                --output android/app/build/outputs/apk/artifact.zip
+
+        - name: Unzip artifact
+          run: unzip android/app/build/outputs/apk/artifact.zip -d android/app/build/outputs/apk
+
+        - name: List unzipped files
+          run: ls -la android/app/build/outputs/apk
+
+        - name: Cleanup
+          run: |
+            find android/app/build -type f
+            rm android/app/build/outputs/apk/artifact.zip
+
+        # *****************************************************
 
         - name: Install Dependencies
-          run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
+          run: |
+            sudo apt-get clean
+            sudo apt-get update
+            sudo apt-get install -y default-jdk
+
+        - name: Install Emulator Dependencies
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y libpulse0 libnss3 libxcomposite1 libxcursor1 libxi6 libxtst6 libasound2 libatk1.0-0 libgtk-3-0
 
         - name: Cache Gradle dependencies
           uses: actions/cache@v4
@@ -108,10 +141,13 @@ jobs:
         - name: Start Android Emulator
           uses: reactivecircus/android-emulator-runner@v2
           with:
-            api-level: 31 # Matches the API level in your Detox configuration
-            arch: x86_64 # Architecture of the emulator
-            profile: pixel_4_xl # Matches the device profile in your Detox configuration
-            avd-name: detox_pixel_4_xl_api_31 # Matches the avdName in your Detox configuration
+            api-level: 31
+            arch: x86_64
+            profile: pixel_4_xl
+            avd-name: detox_pixel_4_xl_api_31
+            emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -accel off
+            disable-animations: true
+            emulator-boot-timeout: 600
             script: |
               adb devices
               echo "Emulator started and ready for testing."
