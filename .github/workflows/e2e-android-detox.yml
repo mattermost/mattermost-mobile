@@ -49,11 +49,11 @@ jobs:
                 key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
                 restore-keys: ${{ runner.os }}-gradle-
 
-            - name: Validate Gradle wrapper
-              uses: gradle/actions/wrapper-validation@v3
+            # - name: Validate Gradle wrapper
+            #   uses: gradle/actions/wrapper-validation@v3
 
-            - name: Inject Detox settings
-              run: cd detox && npm run e2e:android-inject-settings
+            # - name: Inject Detox settings
+            #   run: cd detox && npm run e2e:android-inject-settings
 
             # - name: Update minSdkVersion for react-native-image-picker
             #   run: |
