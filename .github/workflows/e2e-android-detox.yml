@@ -1,6 +1,9 @@
 name: Detox E2E Android Tests PR
 
 on:
+    push:
+      branches:
+        - test_android_e2e
     pull_request:
       branches:
         - main
