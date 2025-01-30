@@ -12,7 +12,6 @@ import {
     resetMomentLocale,
     getTranslations,
     getLocalizedMessage,
-    t,
     DEFAULT_LOCALE,
 } from './index';
 
@@ -200,12 +199,6 @@ describe('i18n', () => {
             expect(getLocalizedMessage('en', '')).toBe('');
             expect(getLocalizedMessage('en', undefined as unknown as string)).toBe('');
             expect(getLocalizedMessage('en', null as unknown as string)).toBe('');
-        });
-    });
-
-    describe('t function', () => {
-        it('returns the input string', () => {
-            expect(t('test')).toBe('test');
         });
     });
 });
