@@ -1,0 +1,359 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Channel should match snapshot 1`] = `
+<View
+  style={
+    {
+      "height": "100%",
+      "position": "absolute",
+      "width": "100%",
+    }
+  }
+>
+  <RNCSafeAreaView
+    edges={
+      {
+        "bottom": "off",
+        "left": "additive",
+        "right": "additive",
+        "top": "off",
+      }
+    }
+    mode="margin"
+    onLayout={[Function]}
+    style={
+      {
+        "flex": 1,
+      }
+    }
+    testID="channel.screen"
+  >
+    <View
+      style={
+        [
+          {
+            "backgroundColor": "#1e325c",
+            "position": "absolute",
+            "width": "100%",
+            "zIndex": 10,
+          },
+          {
+            "height": 44,
+            "maxHeight": 208,
+            "minHeight": 44,
+          },
+        ]
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "backgroundColor": "#1e325c",
+              "flexDirection": "row",
+              "justifyContent": "flex-start",
+              "paddingHorizontal": 16,
+              "zIndex": 10,
+            },
+            {
+              "height": 44,
+              "paddingTop": 0,
+            },
+          ]
+        }
+      >
+        <View
+          style={
+            {
+              "bottom": 0,
+              "height": "100%",
+              "justifyContent": "center",
+              "paddingLeft": 16,
+              "position": "absolute",
+              "zIndex": 5,
+            }
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            hitSlop={
+              {
+                "bottom": 20,
+                "left": 20,
+                "right": 20,
+                "top": 20,
+              }
+            }
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "opacity": 1,
+              }
+            }
+            testID="navigation.header.back"
+          >
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                }
+              }
+            >
+              <Icon
+                color="#ffffff"
+                name="arrow-back-ios"
+                size={24}
+              />
+              <View
+                style={
+                  {
+                    "minWidth": 24,
+                  }
+                }
+              />
+            </View>
+          </View>
+        </View>
+        <View
+          style={
+            [
+              {
+                "alignItems": "center",
+                "bottom": 0,
+                "flex": undefined,
+                "height": "100%",
+                "justifyContent": "center",
+                "left": 16,
+                "paddingHorizontal": 60,
+                "position": "absolute",
+                "width": "100%",
+                "zIndex": 1,
+              },
+              {
+                "marginLeft": undefined,
+              },
+            ]
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": false,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "opacity": 1,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                }
+              }
+            >
+              <Text
+                ellipsizeMode="tail"
+                numberOfLines={1}
+                style={
+                  [
+                    {
+                      "color": "#ffffff",
+                      "fontFamily": "Metropolis-SemiBold",
+                      "fontSize": 18,
+                      "fontWeight": "600",
+                      "lineHeight": 24,
+                    },
+                    {
+                      "opacity": 1,
+                    },
+                  ]
+                }
+                testID="navigation.header.title"
+              />
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                    "justifyContent": "center",
+                    "left": undefined,
+                  }
+                }
+              >
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={
+                    {
+                      "color": "rgba(255,255,255,0.72)",
+                      "fontFamily": "OpenSans",
+                      "fontSize": 12,
+                      "fontWeight": "400",
+                      "height": 13,
+                      "lineHeight": 12,
+                      "marginBottom": 8,
+                      "marginTop": 2,
+                    }
+                  }
+                  testID="navigation.header.subtitle"
+                >
+                  View info
+                </Text>
+                <Icon
+                  color="rgba(255,255,255,0.72)"
+                  name="chevron-right"
+                  size={14}
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "bottom": 0,
+              "flexDirection": "row",
+              "height": "100%",
+              "justifyContent": "flex-end",
+              "position": "absolute",
+              "right": 16,
+              "zIndex": 2,
+            }
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            hitSlop={
+              {
+                "bottom": 5,
+                "left": 5,
+                "right": 5,
+                "top": 20,
+              }
+            }
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "opacity": 1,
+              }
+            }
+            testID="channel_header.channel_quick_actions.button"
+          >
+            <Icon
+              color="#ffffff"
+              name="dots-horizontal"
+              size={24}
+            />
+          </View>
+        </View>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "top": 44,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#1e325c",
+            "height": 40,
+            "position": "absolute",
+            "width": "100%",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "backgroundColor": "#ffffff",
+              "borderTopLeftRadius": 12,
+              "borderTopRightRadius": 12,
+              "flex": 1,
+            }
+          }
+        />
+      </View>
+    </View>
+  </RNCSafeAreaView>
+</View>
+`;

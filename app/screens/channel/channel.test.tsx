@@ -1,13 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {screen} from '@testing-library/react-native';
 import React from 'react';
-import {act, screen} from '@testing-library/react-native';
-import {Navigation} from 'react-native-navigation';
 
-import {storeLastViewedChannelIdAndServer} from '@actions/app/global';
 import {useChannelSwitch} from '@hooks/channel_switch';
-import {useIsTablet} from '@hooks/device';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';

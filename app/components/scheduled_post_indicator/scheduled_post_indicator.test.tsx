@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import {render, screen} from '@testing-library/react-native';
+import {screen} from '@testing-library/react-native';
 import React from 'react';
 
 import NetworkManager from '@managers/network_manager';
@@ -36,7 +36,7 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('should render single scheduled post indicator correctly', async () => {
-        const {getByTestId, getByText} = renderWithEverything(
+        const {getByText} = renderWithEverything(
             <ScheduledPostIndicator
                 isThread={false}
                 scheduledPostCount={1}
@@ -84,7 +84,7 @@ describe('components/scheduled_post_indicator', () => {
             prepareRecordsOnly: false,
         });
 
-        const {getByTestId} = renderWithEverything(
+        renderWithEverything(
             <ScheduledPostIndicator
                 scheduledPostCount={1}
             />,
@@ -104,7 +104,7 @@ describe('components/scheduled_post_indicator', () => {
             prepareRecordsOnly: false,
         });
 
-        const {getByTestId} = renderWithEverything(
+        renderWithEverything(
             <ScheduledPostIndicator
                 scheduledPostCount={1}
             />,
@@ -116,7 +116,7 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('handles missing current user', async () => {
-        const {getByTestId} = renderWithEverything(
+        renderWithEverything(
             <ScheduledPostIndicator
                 scheduledPostCount={1}
             />,
