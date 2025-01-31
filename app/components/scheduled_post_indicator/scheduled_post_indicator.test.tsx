@@ -6,16 +6,17 @@ import {fireEvent, render, screen} from '@testing-library/react-native';
 import React from 'react';
 
 import {Preferences} from '@constants';
-import {createTestDatabase} from '@test/test.database';
-import {addPreferencesToServer} from '@test/preferences.test';
+
 
 import ScheduledPostIndicator from './';
+import TestHelper from '@test/test_helper';
 
 describe('components/scheduled_post_indicator', () => {
     let database: Database;
 
     beforeAll(async () => {
-        database = await createTestDatabase();
+        const server = await TestHelper.setupServerDatabase();
+        database = server.database;
     });
 
     it('should render single scheduled post indicator correctly', async () => {
