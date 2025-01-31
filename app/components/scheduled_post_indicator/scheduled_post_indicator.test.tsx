@@ -37,12 +37,12 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('should render single scheduled post indicator correctly', async () => {
-        const {getByTestId, getByText} = render(
+        const {getByTestId, getByText} = renderWithEverything(
             <ScheduledPostIndicator
                 database={database}
                 isThread={false}
-            />, 
-            {database},
+            />,
+            {database}
         );
 
         await screen.findByTestId('scheduled_post_indicator_single_time');
@@ -51,11 +51,12 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('should render multiple scheduled posts indicator for channel', async () => {
-        const {getByText} = render(
+        const {getByText} = renderWithEverything(
             <ScheduledPostIndicator
                 database={database}
                 isThread={false}
             />,
+            {database}
         );
 
         expect(getByText(/125 scheduled messages in channel./)).toBeTruthy();
@@ -63,11 +64,12 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('should render multiple scheduled posts indicator for thread', async () => {
-        const {getByText} = render(
+        const {getByText} = renderWithEverything(
             <ScheduledPostIndicator
                 database={database}
                 isThread={true}
             />,
+            {database}
         );
 
         expect(getByText(/125 scheduled messages in thread./)).toBeTruthy();
@@ -114,10 +116,11 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('handles missing current user', async () => {
-        const {getByTestId} = render(
+        const {getByTestId} = renderWithEverything(
             <ScheduledPostIndicator
                 database={database}
             />,
+            {database}
         );
 
         const timeElement = await screen.findByTestId('scheduled_post_indicator_single_time');
