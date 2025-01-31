@@ -306,6 +306,7 @@ const SnackBar = ({
                             message={message}
                             style={toastStyle}
                             textStyle={styles.text}
+                            testID='toast'
                         >
                             {config.canUndo && onAction && (
                                 <TouchableOpacity onPress={onUndoPressHandler}>
@@ -319,7 +320,10 @@ const SnackBar = ({
                             )}
                             {
                                 keepOpen &&
-                                <TouchableOpacity onPress={dismissSnackBar}>
+                                <TouchableOpacity
+                                    onPress={dismissSnackBar}
+                                    testID='close-button'
+                                >
                                     <CompassIcon
                                         color={theme.buttonColor}
                                         name={'close'}

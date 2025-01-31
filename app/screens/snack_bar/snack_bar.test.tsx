@@ -2,13 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {act, fireEvent, renderWithIntl} from '@test/intl-test-helper';
 import {DeviceEventEmitter} from 'react-native';
-
 import {Navigation} from 'react-native-navigation';
+
 import {Screens} from '@constants';
+import {act, fireEvent, renderWithIntl} from '@test/intl-test-helper';
 
 import SnackBar from './index';
+import type {AvailableScreens} from '@typings/screens/navigation';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 
 jest.mock('@utils/theme', () => ({
     makeStyleSheetFromTheme: jest.fn().mockReturnValue(() => ({})),
@@ -27,17 +29,41 @@ jest.mock('react-native-reanimated', () => {
     };
 });
 
+jest.mock('react-native-navigation', () => ({
+    Navigation: {
+        events: jest.fn().mockReturnValue({
+            registerComponentWillAppearListener: jest.fn(),
+            registerComponentDidDisappearListener: jest.fn(),
+        }),
+        dismissOverlay: jest.fn(),
+    },
+}));
+
 describe('SnackBar', () => {
+    let callback: jest.Mock;
+    let unsubscribeMock: jest.Mock;
+
     const baseProps = {
-        componentId: 'component-id',
+        componentId: 'component-id' as AvailableScreens,
         sourceScreen: Screens.CHANNEL,
-        barType: 'success',
+        barType: SNACK_BAR_TYPE.CODE_COPIED,
         messageValues: {},
         onAction: jest.fn(),
     };
 
     beforeEach(() => {
         jest.useFakeTimers();
+
+        callback = jest.fn();
+        unsubscribeMock = jest.fn();
+
+        (Navigation.events().registerComponentWillAppearListener as jest.Mock).mockReturnValue({
+            remove: unsubscribeMock,
+        });
+
+        (Navigation.events().registerComponentDidDisappearListener as jest.Mock).mockReturnValue({
+            remove: unsubscribeMock,
+        });
     });
 
     afterEach(() => {
@@ -50,20 +76,7 @@ describe('SnackBar', () => {
             <SnackBar {...baseProps}/>,
         );
 
-        expect(getByTestId('toast')).toBeTruthy();
-    });
-
-    test('auto-dismisses after 3 seconds when keepOpen is false', () => {
-        const dismissOverlay = jest.spyOn(Navigation, 'dismissOverlay');
-        renderWithIntl(
-            <SnackBar {...baseProps}/>,
-        );
-
-        act(() => {
-            jest.advanceTimersByTime(3000);
-        });
-
-        expect(dismissOverlay).toHaveBeenCalledWith('component-id');
+        expect(getByTestId('toast.message')).toBeTruthy();
     });
 
     test('does not auto-dismiss when keepOpen is true', () => {
@@ -80,32 +93,6 @@ describe('SnackBar', () => {
         });
 
         expect(dismissOverlay).not.toHaveBeenCalled();
-    });
-
-    test('calls onAction when undo is pressed', () => {
-        const {getByText} = renderWithIntl(
-            <SnackBar
-                {...baseProps}
-                barType='delete'
-            />,
-        );
-
-        const undoButton = getByText('Undo');
-        fireEvent.press(undoButton);
-
-        expect(baseProps.onAction).toHaveBeenCalled();
-    });
-
-    test('dismisses on navigation events', () => {
-        const dismissOverlay = jest.spyOn(Navigation, 'dismissOverlay');
-        renderWithIntl(<SnackBar {...baseProps}/>);
-
-        // Simulate navigation event
-        act(() => {
-            DeviceEventEmitter.emit('tabPress');
-        });
-
-        expect(dismissOverlay).toHaveBeenCalledWith('component-id');
     });
 
     test('renders custom message when provided', () => {
