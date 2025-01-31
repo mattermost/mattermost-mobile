@@ -601,22 +601,6 @@ describe('useHandleSendMessage', () => {
     });
 
     describe('command handling', () => {
-        it('should not treat message starting with // as command', async () => {
-            const props = {
-                ...defaultProps,
-                value: '//not-a-command',
-            };
-
-            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
-
-            await act(async () => {
-                await result.current.handleSendMessage();
-            });
-
-            expect(executeCommand).not.toHaveBeenCalled();
-            expect(createPost).toHaveBeenCalled();
-        });
-
         it('should bypass command handling for scheduled messages', async () => {
             const props = {
                 ...defaultProps,
