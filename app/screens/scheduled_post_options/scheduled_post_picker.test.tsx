@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, fireEvent} from '@testing-library/react-native';
+import {act, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 
 import {renderWithEverything} from '@test/intl-test-helper';
 import {dismissBottomSheet} from '@screens/navigation';
+import {showScheduledPostCreationErrorSnackbar} from '@utils/snack_bar';
 
 import {ScheduledPostOptions} from './scheduled_post_picker';
 
@@ -13,91 +14,139 @@ jest.mock('@screens/navigation', () => ({
     dismissBottomSheet: jest.fn(),
 }));
 
-describe('components/scheduled_post_picker', () => {
+jest.mock('@utils/snack_bar', () => ({
+    showScheduledPostCreationErrorSnackbar: jest.fn(),
+}));
+
+describe('ScheduledPostOptions', () => {
+    const baseProps = {
+        onSchedule: jest.fn().mockResolvedValue({data: true}),
+    };
+
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.useFakeTimers();
     });
 
-    it('should render', () => {
-        const onSchedule = jest.fn();
-        const wrapper = renderWithEverything(
-            <ScheduledPostOptions
-                onSchedule={onSchedule}
-            />,
-        );
-        expect(wrapper.toJSON()).toBeTruthy();
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
-    it('should render with timezone', () => {
-        const onSchedule = jest.fn();
+    it('displays correct title and initial state', () => {
+        renderWithEverything(<ScheduledPostOptions {...baseProps}/>);
+        
+        expect(screen.getByText('Schedule draft')).toBeTruthy();
+        expect(screen.getByTestId('scheduled_post_options_bottom_sheet')).toBeTruthy();
+        expect(screen.getByText('Schedule')).toBeTruthy();
+    });
+
+    it('handles timezone correctly', () => {
         const timezone = {
             automaticTimezone: 'America/New_York',
             manualTimezone: 'America/New_York',
             useAutomaticTimezone: true,
         };
 
-        const wrapper = renderWithEverything(
+        renderWithEverything(
             <ScheduledPostOptions
+                {...baseProps}
                 currentUserTimezone={timezone}
-                onSchedule={onSchedule}
             />,
         );
-        expect(wrapper.toJSON()).toBeTruthy();
+
+        // Verify timezone-specific options are present
+        expect(screen.getByText(/Today at/)).toBeTruthy();
+        expect(screen.getByText(/Tomorrow at/)).toBeTruthy();
     });
 
-    it('should not schedule when no time selected', async () => {
-        const onSchedule = jest.fn();
-        const wrapper = renderWithEverything(
-            <ScheduledPostOptions
-                onSchedule={onSchedule}
-            />,
-        );
+    it('prevents scheduling without time selection', async () => {
+        renderWithEverything(<ScheduledPostOptions {...baseProps}/>);
 
-        const scheduleButton = wrapper.getByText('Schedule');
+        const scheduleButton = screen.getByText('Schedule');
         await fireEvent.press(scheduleButton);
 
-        expect(onSchedule).not.toHaveBeenCalled();
+        expect(baseProps.onSchedule).not.toHaveBeenCalled();
         expect(dismissBottomSheet).not.toHaveBeenCalled();
     });
 
-    it('should handle successful scheduling', async () => {
+    it('handles successful scheduling flow', async () => {
         const onSchedule = jest.fn().mockResolvedValue({data: true});
-        const wrapper = renderWithEverything(
+        renderWithEverything(
             <ScheduledPostOptions
+                {...baseProps}
                 onSchedule={onSchedule}
             />,
         );
 
-        // Simulate time selection (you'll need to adjust this based on your actual UI)
-        const timeOption = wrapper.getByText('Today at 12:00 PM');
+        // Select a time option
+        const timeOption = screen.getByText(/Today at/);
         await fireEvent.press(timeOption);
 
-        const scheduleButton = wrapper.getByText('Schedule');
+        // Press schedule button
+        const scheduleButton = screen.getByText('Schedule');
         await fireEvent.press(scheduleButton);
 
+        // Verify scheduling flow
         expect(onSchedule).toHaveBeenCalledWith(expect.objectContaining({
             scheduled_at: expect.any(Number),
         }));
         expect(dismissBottomSheet).toHaveBeenCalled();
     });
 
-    it('should handle scheduling error', async () => {
-        const error = 'Scheduling failed';
+    it('handles scheduling errors correctly', async () => {
+        const error = 'Network error';
         const onSchedule = jest.fn().mockResolvedValue({error});
-        const wrapper = renderWithEverything(
+        renderWithEverything(
             <ScheduledPostOptions
+                {...baseProps}
                 onSchedule={onSchedule}
             />,
         );
 
-        // Simulate time selection
-        const timeOption = wrapper.getByText('Today at 12:00 PM');
+        // Select time and attempt to schedule
+        const timeOption = screen.getByText(/Today at/);
         await fireEvent.press(timeOption);
-
-        const scheduleButton = wrapper.getByText('Schedule');
+        
+        const scheduleButton = screen.getByText('Schedule');
         await fireEvent.press(scheduleButton);
 
+        // Verify error handling
         expect(onSchedule).toHaveBeenCalled();
+        expect(showScheduledPostCreationErrorSnackbar).toHaveBeenCalledWith(error);
         expect(dismissBottomSheet).not.toHaveBeenCalled();
+    });
+
+    it('updates UI state during scheduling', async () => {
+        const slowSchedule = jest.fn().mockImplementation(() => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({data: true});
+                }, 1000);
+            });
+        });
+
+        renderWithEverything(
+            <ScheduledPostOptions
+                {...baseProps}
+                onSchedule={slowSchedule}
+            />,
+        );
+
+        // Start scheduling process
+        const timeOption = screen.getByText(/Today at/);
+        await fireEvent.press(timeOption);
+        
+        const scheduleButton = screen.getByText('Schedule');
+        await fireEvent.press(scheduleButton);
+
+        // Verify loading state
+        expect(scheduleButton.props.disabled).toBe(true);
+
+        // Fast-forward timers and verify completion
+        act(() => {
+            jest.runAllTimers();
+        });
+
+        expect(dismissBottomSheet).toHaveBeenCalled();
     });
 });
