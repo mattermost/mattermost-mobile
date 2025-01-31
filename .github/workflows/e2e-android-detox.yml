@@ -68,7 +68,7 @@ jobs:
     run-android-tests:
       # if: github.event.label.name == 'E2E Android tests for PR'
       # needs: build-android-apk
-      runs-on: macos-14
+      runs-on: macos-14-arm64
       steps:
         - name: ci/checkout-repo
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -122,17 +122,24 @@ jobs:
         - name: Accept Android Licenses
           run: yes | sdkmanager --licenses
 
-        - name: Install required SDK components
+        - name: Create AVD (if not exists)
           run: |
-            sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "emulator" "system-images;android-31;google_apis;arm64-v8a"
+            AVD_NAME="detox_pixel_4_xl_api_31"
+            if ! emulator -list-avds | grep -q "$AVD_NAME"; then
+              echo "Creating new AVD..."
+              echo "no" | avdmanager create avd --force --name "$AVD_NAME" --package "system-images;android-31;default;arm64-v8a" --device "pixel_4_xl"
+            else
+              echo "AVD already exists."
+            fi
 
-        - name: Create AVD
+        - name: Start Emulator with Correct Binary
           run: |
-            echo "no" | avdmanager create avd --force --name detox_pixel_4_xl_api_31_arm --package "system-images;android-31;google_apis;arm64-v8a" --device "pixel_4_xl"
-  
-        - name: Start emulator
-          run: |
-            emulator -avd detox_pixel_4_xl_api_31_arm -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot &
+            AVD_NAME="detox_pixel_4_xl_api_31"
+            EMULATOR_PATH="$ANDROID_HOME/emulator/emulator"
+
+            echo "Starting emulator with binary: $EMULATOR_PATH"
+            "$EMULATOR_PATH" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot &
+
             adb wait-for-device
             while [[ "$(adb shell getprop sys.boot_completed)" != "1" ]]; do
               sleep 2
