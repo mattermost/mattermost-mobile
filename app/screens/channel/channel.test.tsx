@@ -89,14 +89,15 @@ describe('Channel', () => {
     });
 
     it('renders channel screen correctly', async () => {
+        let wrapper;
         await act(async () => {
-            renderWithEverything(
+            wrapper = renderWithEverything(
                 <Channel {...getBaseProps()}/>,
                 {database},
             );
         });
 
-        expect(screen.getByTestId('channel.screen')).toBeTruthy();
+        expect(wrapper.getByTestId('channel.screen')).toBeTruthy();
         expect(storeLastViewedChannelIdAndServer).toHaveBeenCalledWith(getBaseProps().channelId);
         expect(Navigation.events().registerComponentListener).toHaveBeenCalled();
     });
