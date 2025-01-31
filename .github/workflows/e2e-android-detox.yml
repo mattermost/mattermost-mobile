@@ -128,40 +128,36 @@ jobs:
             distribution: 'temurin'
             java-version: '17'
 
-        - name: Restart ADB
+        - name: Install Android Dependencies
           run: |
-            adb kill-server
-            adb start-server
-            adb devices
+            echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "emulator"
 
-        - name: Install Android SDK and AOSP Emulator
+        - name: Start Android Emulator
+          uses: reactivecircus/android-emulator-runner@v2
+          with:
+            api-level: 31
+            target: google_apis
+            arch: x86_64
+            profile: pixel_4
+            disable-animations: true
+            avd-name: ${{ env.AVD_NAME }}
+            script: echo "Emulator is ready"
+
+        - name: Verify Emulator is Running
+          run: adb devices
+
+        - name: Wait for Emulator to Fully Boot
           run: |
-            echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install emulator
-            echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "system-images;android-${SDK_VERSION};google_apis;x86_64"
-            echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-            $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n ${AVD_NAME} -d pixel --package "system-images;android-${SDK_VERSION};google_apis;x86_64"
-
-        - name: Start AOSP Emulator
-          run: |
-            nohup $ANDROID_HOME/emulator/emulator -avd ${AVD_NAME} \
-              -no-audio -no-window -no-snapshot -gpu off -accel off -cores 2 > emulator.log 2>&1 &
-
-            echo "Waiting for emulator to start..."
-            timeout=600 # Increased timeout to 10 minutes
-            while [[ $(adb devices | grep emulator | wc -l) -eq 0 ]]; do
+            timeout=300  # 5 minutes max
+            while [[ -z $(adb shell getprop sys.boot_completed) ]]; do
               sleep 5
               timeout=$((timeout - 5))
               if [[ $timeout -le 0 ]]; then
-                echo "Emulator failed to start within time limit."
-                cat emulator.log
+                echo "Emulator failed to boot within time limit."
                 exit 1
               fi
             done
-            echo "Emulator is up and running."
-            adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
-            adb shell settings put global window_animation_scale 0
-            adb shell settings put global transition_animation_scale 0
-            adb shell settings put global animator_duration_scale 0
+            echo "Emulator fully booted."
 
         - name: Run Detox tests
           run: |
