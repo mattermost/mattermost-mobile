@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Model} from '@nozbe/watermelondb';
-import {render, waitFor} from '@testing-library/react-native';
+import {Database} from '@nozbe/watermelondb';
+import {fireEvent, render, screen} from '@testing-library/react-native';
 import React from 'react';
 
 import {Preferences} from '@constants';
@@ -18,6 +18,43 @@ describe('components/scheduled_post_indicator', () => {
         database = await createTestDatabase();
     });
 
+    it('should render single scheduled post indicator correctly', async () => {
+        const {getByTestId, getByText} = render(
+            <ScheduledPostIndicator
+                database={database}
+                isThread={false}
+            />,
+        );
+
+        await screen.findByTestId('scheduled_post_indicator_single_time');
+        expect(getByText(/Message scheduled for/)).toBeTruthy();
+        expect(getByText(/See all./)).toBeTruthy();
+    });
+
+    it('should render multiple scheduled posts indicator for channel', async () => {
+        const {getByText} = render(
+            <ScheduledPostIndicator
+                database={database}
+                isThread={false}
+            />,
+        );
+
+        expect(getByText(/125 scheduled messages in channel./)).toBeTruthy();
+        expect(getByText(/See all./)).toBeTruthy();
+    });
+
+    it('should render multiple scheduled posts indicator for thread', async () => {
+        const {getByText} = render(
+            <ScheduledPostIndicator
+                database={database}
+                isThread={true}
+            />,
+        );
+
+        expect(getByText(/125 scheduled messages in thread./)).toBeTruthy();
+        expect(getByText(/See all./)).toBeTruthy();
+    });
+
     it('renders with military time when preference is set', async () => {
         await addPreferencesToServer(database, [{
             category: Preferences.CATEGORY_DISPLAY_SETTINGS,
@@ -31,11 +68,8 @@ describe('components/scheduled_post_indicator', () => {
             />,
         );
 
-        await waitFor(() => {
-            const timeElement = getByTestId('scheduled_post_indicator_single_time');
-            expect(timeElement).toBeTruthy();
-            // Would check for 24-hour format, but actual time formatting is tested elsewhere
-        });
+        const timeElement = await screen.findByTestId('scheduled_post_indicator_single_time');
+        expect(timeElement).toBeTruthy();
     });
 
     it('renders with 12-hour time when preference is not set', async () => {
@@ -51,11 +85,8 @@ describe('components/scheduled_post_indicator', () => {
             />,
         );
 
-        await waitFor(() => {
-            const timeElement = getByTestId('scheduled_post_indicator_single_time');
-            expect(timeElement).toBeTruthy();
-            // Would check for 12-hour format, but actual time formatting is tested elsewhere
-        });
+        const timeElement = await screen.findByTestId('scheduled_post_indicator_single_time');
+        expect(timeElement).toBeTruthy();
     });
 
     it('handles missing current user', async () => {
@@ -65,9 +96,7 @@ describe('components/scheduled_post_indicator', () => {
             />,
         );
 
-        await waitFor(() => {
-            const timeElement = getByTestId('scheduled_post_indicator_single_time');
-            expect(timeElement).toBeTruthy();
-        });
+        const timeElement = await screen.findByTestId('scheduled_post_indicator_single_time');
+        expect(timeElement).toBeTruthy();
     });
 });
