@@ -141,23 +141,11 @@ jobs:
             profile: pixel_4
             disable-animations: true
             avd-name: ${{ env.AVD_NAME }}
+            emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
             script: echo "Emulator is ready"
 
         - name: Verify Emulator is Running
           run: adb devices
-
-        - name: Wait for Emulator to Fully Boot
-          run: |
-            timeout=300  # 5 minutes max
-            while [[ -z $(adb shell getprop sys.boot_completed) ]]; do
-              sleep 5
-              timeout=$((timeout - 5))
-              if [[ $timeout -le 0 ]]; then
-                echo "Emulator failed to boot within time limit."
-                exit 1
-              fi
-            done
-            echo "Emulator fully booted."
 
         - name: Run Detox tests
           run: |
