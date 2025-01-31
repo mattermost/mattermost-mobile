@@ -126,6 +126,12 @@ jobs:
           run: |
             sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "emulator" "system-images;android-31;default;arm64-v8a"
 
+        - name: Manually Install Emulator Dependencies
+          run: |
+            sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+            brew install qt
+            echo "QT_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
+
         - name: Install Emulator Separately
           run: |
             sdkmanager "emulator"
