@@ -5,12 +5,17 @@ import {act, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 import Animated from 'react-native-reanimated';
 
+import {useIsTablet} from '@hooks/device';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import {ScheduledPostFooter} from './scheduled_post_footer';
 
 import type Database from '@nozbe/watermelondb/Database';
+
+jest.mock('@hooks/device', () => ({
+    useIsTablet: jest.fn().mockReturnValue(false),
+}));
 
 describe('ScheduledPostFooter', () => {
     const baseProps = {
@@ -67,6 +72,19 @@ describe('ScheduledPostFooter', () => {
         fireEvent.press(scheduleButton);
 
         expect(onSchedule).toHaveBeenCalled();
+    });
+
+    it('renders correctly for tablet', () => {
+        (useIsTablet as jest.Mock).mockReturnValueOnce(true);
+        
+        renderWithEverything(
+            <ScheduledPostFooter
+                {...baseProps}
+            />,
+            {database},
+        );
+
+        expect(screen.getByTestId('scheduled_post_create_button')).toBeTruthy();
     });
 
     it('prevents scheduling when already in progress', () => {
