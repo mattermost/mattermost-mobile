@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, screen} from '@testing-library/react-native';
 import React from 'react';
+import {act, screen} from '@testing-library/react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {storeLastViewedChannelIdAndServer} from '@actions/app/global';
@@ -10,9 +10,11 @@ import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {renderWithEverything} from '@test/intl-test-helper';
-
+import TestHelper from '@test/test_helper';
 
 import Channel from './channel';
+
+import type Database from '@nozbe/watermelondb/Database';
 
 jest.mock('@actions/app/global', () => ({
     storeLastViewedChannelIdAndServer: jest.fn(),
@@ -41,8 +43,8 @@ jest.mock('react-native-navigation', () => ({
     },
 }));
 
-describe('Channel', () => {
-    const baseProps = {
+function getBaseProps() {
+    return {
         channelId: 'channel-id',
         componentId: 'component-id',
         showJoinCallBanner: false,
@@ -57,28 +59,46 @@ describe('Channel', () => {
         hasGMasDMFeature: true,
         includeBookmarkBar: false,
     };
+}
+
+describe('Channel', () => {
+    let database: Database;
+
+    beforeAll(async () => {
+        const server = await TestHelper.setupServerDatabase();
+        database = server.database;
+    });
 
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
+    it('should match snapshot', async () => {
+        const wrapper = await renderWithEverything(
+            <Channel {...getBaseProps()}/>,
+            {database}
+        );
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
     it('renders channel screen correctly', async () => {
-        const {database} = await renderWithEverything(
-            <Channel {...baseProps}/>,
+        await renderWithEverything(
+            <Channel {...getBaseProps()}/>,
+            {database}
         );
 
         expect(screen.getByTestId('channel.screen')).toBeTruthy();
-        expect(storeLastViewedChannelIdAndServer).toHaveBeenCalledWith(baseProps.channelId);
+        expect(storeLastViewedChannelIdAndServer).toHaveBeenCalledWith(getBaseProps().channelId);
         expect(Navigation.events().registerComponentListener).toHaveBeenCalled();
-        expect(database).toBeTruthy();
     });
 
     it('shows floating call container when in a call', async () => {
+        const props = getBaseProps();
+        props.isInACall = true;
+
         await renderWithEverything(
-            <Channel
-                {...baseProps}
-                isInACall={true}
-            />,
+            <Channel {...props}/>,
+            {database}
         );
 
         // Wait for posts to render
@@ -90,11 +110,12 @@ describe('Channel', () => {
     });
 
     it('shows floating call container with join banner', async () => {
+        const props = getBaseProps();
+        props.showJoinCallBanner = true;
+
         await renderWithEverything(
-            <Channel
-                {...baseProps}
-                showJoinCallBanner={true}
-            />,
+            <Channel {...props}/>,
+            {database}
         );
 
         // Wait for posts to render
@@ -109,11 +130,12 @@ describe('Channel', () => {
         const mockedIsTablet = jest.mocked(useIsTablet);
         mockedIsTablet.mockReturnValue(true);
 
+        const props = getBaseProps();
+        props.isTabletView = true;
+
         await renderWithEverything(
-            <Channel
-                {...baseProps}
-                isTabletView={true}
-            />,
+            <Channel {...props}/>,
+            {database}
         );
 
         expect(screen.getByTestId('channel.screen')).toBeTruthy();
@@ -124,7 +146,8 @@ describe('Channel', () => {
         mockedTeamSwitch.mockReturnValue(true);
 
         await renderWithEverything(
-            <Channel {...baseProps}/>,
+            <Channel {...getBaseProps()}/>,
+            {database}
         );
 
         expect(screen.queryByTestId('channel.post_draft')).toBeNull();
@@ -135,7 +158,8 @@ describe('Channel', () => {
         mockedChannelSwitch.mockReturnValue(true);
 
         await renderWithEverything(
-            <Channel {...baseProps}/>,
+            <Channel {...getBaseProps()}/>,
+            {database}
         );
 
         expect(screen.queryByTestId('channel.post_draft')).toBeNull();
