@@ -21,6 +21,7 @@ jest.mock('@actions/app/global', () => ({
 
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn().mockReturnValue(false),
+    useAppState: jest.fn().mockReturnValue(false),
 }));
 
 jest.mock('@hooks/channel_switch', () => ({
