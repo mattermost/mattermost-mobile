@@ -3,6 +3,7 @@
 
 import {act, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
+import Animated from 'react-native-reanimated';
 
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -15,6 +16,7 @@ describe('ScheduledPostFooter', () => {
     const baseProps = {
         onSchedule: jest.fn(),
         isScheduling: false,
+        animatedFooterPosition: new Animated.Value(0),
     };
     let database: Database;
 
