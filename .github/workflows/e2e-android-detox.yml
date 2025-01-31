@@ -68,7 +68,7 @@ jobs:
     run-android-tests:
       # if: github.event.label.name == 'E2E Android tests for PR'
       # needs: build-android-apk
-      runs-on: macos-14
+      runs-on: macos-13
 
       env:
         SDK_VERSION: 31
@@ -138,8 +138,7 @@ jobs:
         - name: Start AOSP Emulator
           run: |
             nohup $ANDROID_HOME/emulator/emulator -avd ${AVD_NAME} \
-              -no-audio -no-window -no-snapshot -gpu off -accel off \
-              -cores 2 > emulator.log 2>&1 &
+              -no-audio -no-window -no-snapshot -gpu off -accel off -cores 2 > emulator.log 2>&1 &
 
             echo "Waiting for emulator to start..."
             timeout=600 # Increased timeout to 10 minutes
