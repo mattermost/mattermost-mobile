@@ -131,18 +131,38 @@ jobs:
         - name: Install Android Dependencies
           run: |
             echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "emulator"
+            echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "system-images;android-31;google_apis;x86_64"
+            echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+
+        - name: Create Android Emulator
+          run: |
+            $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd \
+              -n ${{ env.AVD_NAME }} \
+              -k "system-images;android-31;google_apis;x86_64" \
+              -d pixel
 
         - name: Start Android Emulator
-          uses: reactivecircus/android-emulator-runner@v2
-          with:
-            api-level: 31
-            target: google_apis
-            arch: x86_64
-            profile: pixel_4
-            disable-animations: true
-            avd-name: ${{ env.AVD_NAME }}
-            emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-            script: echo "Emulator is ready"
+          run: |
+            nohup $ANDROID_HOME/emulator/emulator -avd ${{ env.AVD_NAME }} \
+              -no-audio -no-window -no-snapshot -gpu swiftshader_indirect \
+              -cores 2 -accel off > emulator.log 2>&1 &
+  
+            echo "Waiting for emulator to start..."
+            timeout=600 # 10 minutes timeout
+            while [[ $(adb devices | grep emulator | wc -l) -eq 0 ]]; do
+              sleep 5
+              timeout=$((timeout - 5))
+              if [[ $timeout -le 0 ]]; then
+                echo "Emulator failed to start within time limit."
+                cat emulator.log
+                exit 1
+              fi
+            done
+            echo "Emulator is up and running."
+            adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
+            adb shell settings put global window_animation_scale 0
+            adb shell settings put global transition_animation_scale 0
+            adb shell settings put global animator_duration_scale 0
 
         - name: Verify Emulator is Running
           run: adb devices
