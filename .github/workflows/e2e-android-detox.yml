@@ -137,13 +137,13 @@ jobs:
         - name: Install Android SDK and AOSP Emulator
           run: |
             echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install emulator
-            echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "system-images;android-${SDK_VERSION};default;${ARCH}"
+            echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "system-images;android-${SDK_VERSION};google_apis;${ARCH}"
             echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-            $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n ${AVD_NAME} -d pixel --package "system-images;android-${SDK_VERSION};default;${ARCH}"
+            $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n ${AVD_NAME} -d pixel --package "system-images;android-${SDK_VERSION};google_apis;${ARCH}"
 
         - name: Start AOSP Emulator
           run: |
-            nohup $ANDROID_HOME/emulator/emulator -avd ${AVD_NAME} -no-audio -no-window -no-snapshot -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
+            nohup $ANDROID_HOME/emulator/emulator -avd ${AVD_NAME} -no-audio -no-snapshot -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
             echo "Waiting for emulator to start..."
             timeout=600 # 10 minutes timeout
             while [[ $(adb devices | grep emulator | wc -l) -eq 0 ]]; do
@@ -160,7 +160,7 @@ jobs:
             adb shell settings put global window_animation_scale 0
             adb shell settings put global transition_animation_scale 0
             adb shell settings put global animator_duration_scale 0
-
+    
         - name: Run Detox tests
           run: |
             cd detox
