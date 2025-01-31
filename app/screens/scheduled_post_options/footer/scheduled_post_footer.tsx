@@ -102,6 +102,7 @@ export function ScheduledPostFooter({onSchedule, isScheduling, ...props}: Props)
                 onPress={onSchedule}
                 style={isScheduling ? style.disabledApplyButton : style.applyButton}
                 disabled={isScheduling}
+                testID='scheduled_post_create_button'
             >
                 {
                     isScheduling ? (

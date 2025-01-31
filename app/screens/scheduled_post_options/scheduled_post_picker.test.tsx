@@ -4,15 +4,13 @@
 import {act, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 
-import {renderWithEverything} from '@test/intl-test-helper';
 import {dismissBottomSheet} from '@screens/navigation';
+import {ScheduledPostOptions} from '@screens/scheduled_post_options/scheduled_post_picker';
+import {renderWithEverything} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 import {showScheduledPostCreationErrorSnackbar} from '@utils/snack_bar';
 
-
 import type Database from '@nozbe/watermelondb/Database';
-import TestHelper from '@test/test_helper';
-import {ScheduledPostOptions} from '@screens/scheduled_post_options/scheduled_post_picker';
-
 
 jest.mock('@screens/navigation', () => ({
     dismissBottomSheet: jest.fn(),
@@ -90,6 +88,8 @@ describe('ScheduledPostOptions', () => {
 
     it('handles successful scheduling flow', () => {
         const onSchedule = jest.fn().mockResolvedValue({data: true});
+        jest.spyOn(Date, 'now').mockImplementation(() => 1735693200000); //1st Jan 2025, Wednesday 12:00 AM (New year!!!)
+
         renderWithEverything(
             <ScheduledPostOptions
                 {...baseProps}
@@ -99,9 +99,9 @@ describe('ScheduledPostOptions', () => {
         );
 
         // Select a time option and schedule
-        const timeOption = screen.getByText(/Today at/);
+        const timeOption = screen.getByText(/Monday at/);
         fireEvent.press(timeOption);
-        
+
         const scheduleButton = screen.getByTestId('scheduled_post_create_button');
         fireEvent.press(scheduleButton);
 
@@ -128,7 +128,7 @@ describe('ScheduledPostOptions', () => {
         );
 
         // Select time and attempt to schedule
-        const timeOption = screen.getByText(/Today at/);
+        const timeOption = screen.getByText(/Monday at/);
         fireEvent.press(timeOption);
 
         const scheduleButton = screen.getByTestId('scheduled_post_create_button');
@@ -149,7 +149,7 @@ describe('ScheduledPostOptions', () => {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({data: true});
-                }, 100);
+                }, 5000);
             });
         });
 
@@ -162,14 +162,13 @@ describe('ScheduledPostOptions', () => {
         );
 
         // Start scheduling process
-        const timeOption = screen.getByText(/Today at/);
+        const timeOption = screen.getByText(/Monday at/);
         fireEvent.press(timeOption);
 
-        const scheduleButton = screen.getByTestId('scheduled_post_create_button');
-        fireEvent.press(scheduleButton);
+        fireEvent.press(screen.getByTestId('scheduled_post_create_button'));
 
         // Verify loading state
-        expect(scheduleButton.props.disabled).toBe(true);
+        expect(screen.getByTestId('scheduled_post_create_button')).toBeDisabled();
 
         // Fast-forward timers and verify completion
         act(() => {
