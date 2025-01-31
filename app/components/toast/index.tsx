@@ -18,7 +18,7 @@ type ToastProps = {
     message?: string;
     style?: StyleProp<ViewStyle>;
     textStyle?: StyleProp<TextStyle>;
-    testId?: string;
+    testID?: string;
 }
 
 export const TOAST_HEIGHT = 56;
@@ -53,7 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Toast = ({animatedStyle, children, style, iconName, message, textStyle, testId}: ToastProps) => {
+const Toast = ({animatedStyle, children, style, iconName, message, textStyle, testID}: ToastProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dim = useWindowDimensions();
@@ -67,7 +67,7 @@ const Toast = ({animatedStyle, children, style, iconName, message, textStyle, te
     return (
         <Animated.View
             style={[styles.center, animatedStyle]}
-            testID={testId}
+            testID={testID}
         >
             <Animated.View style={containerStyle}>
                 {Boolean(iconName) &&

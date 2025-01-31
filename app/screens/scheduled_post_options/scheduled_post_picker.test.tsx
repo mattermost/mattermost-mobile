@@ -55,12 +55,6 @@ describe('ScheduledPostOptions', () => {
     });
 
     it('handles timezone correctly', () => {
-        const timezone = {
-            automaticTimezone: 'America/New_York',
-            manualTimezone: 'America/New_York',
-            useAutomaticTimezone: true,
-        };
-
         jest.spyOn(Date, 'now').mockImplementation(() => 1735693200000); //1st Jan 2025, Wednesday 12:00 AM (New year!!!)
 
         renderWithEverything(

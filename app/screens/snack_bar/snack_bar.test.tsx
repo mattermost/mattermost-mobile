@@ -2,15 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {DeviceEventEmitter} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {Screens} from '@constants';
-import {act, fireEvent, renderWithIntl} from '@test/intl-test-helper';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {act, renderWithIntl} from '@test/intl-test-helper';
 
 import SnackBar from './index';
+
 import type {AvailableScreens} from '@typings/screens/navigation';
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 
 jest.mock('@utils/theme', () => ({
     makeStyleSheetFromTheme: jest.fn().mockReturnValue(() => ({})),
