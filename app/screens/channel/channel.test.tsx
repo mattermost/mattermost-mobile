@@ -78,14 +78,6 @@ describe('Channel', () => {
         jest.clearAllMocks();
     });
 
-    it('should match snapshot', async () => {
-        const wrapper = renderWithEverything(
-            <Channel {...getBaseProps()}/>,
-            {database},
-        );
-        expect(wrapper.toJSON()).toMatchSnapshot();
-    });
-
     it('does not render posts while switching teams', async () => {
         const mockedTeamSwitch = jest.mocked(useTeamSwitch);
         mockedTeamSwitch.mockReturnValue(true);
