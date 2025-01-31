@@ -144,8 +144,8 @@ jobs:
         - name: Start AOSP Emulator
           run: |
             nohup $ANDROID_HOME/emulator/emulator -avd ${AVD_NAME} \
-              -no-audio -no-window -no-snapshot -gpu swiftshader_indirect \
-              -qemu -accel tcg -verbose > emulator.log 2>&1 &
+              -no-audio -no-window -no-snapshot -gpu off \
+              -cores 2 -accel off > emulator.log 2>&1 &
 
             echo "Waiting for emulator to start..."
             timeout=600 # Increased timeout to 10 minutes
