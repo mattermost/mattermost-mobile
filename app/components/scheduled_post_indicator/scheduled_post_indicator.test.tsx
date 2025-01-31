@@ -2,22 +2,38 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import {fireEvent, render, screen} from '@testing-library/react-native';
+import {render, screen} from '@testing-library/react-native';
 import React from 'react';
 
 import {Preferences} from '@constants';
+import NetworkManager from '@managers/network_manager';
+import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
-
 
 import ScheduledPostIndicator from './';
-import TestHelper from '@test/test_helper';
+
+import type ServerDataOperator from '@database/operator/server_data_operator';
+
+const SERVER_URL = 'https://appv1.mattermost.com';
+
+// this is needed when using the useServerUrl hook
+jest.mock('@context/server', () => ({
+    useServerUrl: jest.fn(() => SERVER_URL),
+}));
 
 describe('components/scheduled_post_indicator', () => {
     let database: Database;
+    let operator: ServerDataOperator;
 
-    beforeAll(async () => {
-        const server = await TestHelper.setupServerDatabase();
+    beforeEach(async () => {
+        const server = await TestHelper.setupServerDatabase(SERVER_URL);
         database = server.database;
+        operator = server.operator;
+    });
+
+    afterEach(async () => {
+        await TestHelper.tearDown();
+        NetworkManager.invalidateClient(SERVER_URL);
     });
 
     it('should render single scheduled post indicator correctly', async () => {
@@ -25,7 +41,8 @@ describe('components/scheduled_post_indicator', () => {
             <ScheduledPostIndicator
                 database={database}
                 isThread={false}
-            />,
+            />, 
+            {database},
         );
 
         await screen.findByTestId('scheduled_post_indicator_single_time');
@@ -58,17 +75,19 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('renders with military time when preference is set', async () => {
-        await TestHelper.setPreference(
-            database,
-            Preferences.CATEGORY_DISPLAY_SETTINGS,
-            'use_military_time',
-            'true'
-        );
+        await operator.handleConfigs({
+            configs: [
+                {id: 'use_military_time', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
 
-        const {getByTestId} = render(
+        const {getByTestId} = renderWithEverything(
             <ScheduledPostIndicator
                 database={database}
             />,
+            {database},
         );
 
         const timeElement = await screen.findByTestId('scheduled_post_indicator_single_time');
@@ -76,14 +95,15 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('renders with 12-hour time when preference is not set', async () => {
-        await TestHelper.setPreference(
-            database,
-            Preferences.CATEGORY_DISPLAY_SETTINGS,
-            'use_military_time',
-            'false'
-        );
+        await operator.handleConfigs({
+            configs: [
+                {id: 'use_military_time', value: 'false'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
 
-        const {getByTestId} = render(
+        const {getByTestId} = renderWithEverything(
             <ScheduledPostIndicator
                 database={database}
             />,
