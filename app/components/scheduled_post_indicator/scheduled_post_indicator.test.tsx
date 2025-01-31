@@ -5,7 +5,6 @@ import {Database} from '@nozbe/watermelondb';
 import {render, screen} from '@testing-library/react-native';
 import React from 'react';
 
-import {Preferences} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -39,10 +38,10 @@ describe('components/scheduled_post_indicator', () => {
     it('should render single scheduled post indicator correctly', async () => {
         const {getByTestId, getByText} = renderWithEverything(
             <ScheduledPostIndicator
-                database={database}
                 isThread={false}
+                scheduledPostCount={1}
             />,
-            {database}
+            {database},
         );
 
         await screen.findByTestId('scheduled_post_indicator_single_time');
@@ -53,26 +52,26 @@ describe('components/scheduled_post_indicator', () => {
     it('should render multiple scheduled posts indicator for channel', async () => {
         const {getByText} = renderWithEverything(
             <ScheduledPostIndicator
-                database={database}
                 isThread={false}
+                scheduledPostCount={10}
             />,
-            {database}
+            {database},
         );
 
-        expect(getByText(/125 scheduled messages in channel./)).toBeTruthy();
+        expect(getByText(/10 scheduled messages in channel./)).toBeTruthy();
         expect(getByText(/See all./)).toBeTruthy();
     });
 
     it('should render multiple scheduled posts indicator for thread', async () => {
         const {getByText} = renderWithEverything(
             <ScheduledPostIndicator
-                database={database}
                 isThread={true}
+                scheduledPostCount={10}
             />,
-            {database}
+            {database},
         );
 
-        expect(getByText(/125 scheduled messages in thread./)).toBeTruthy();
+        expect(getByText(/10 scheduled messages in thread./)).toBeTruthy();
         expect(getByText(/See all./)).toBeTruthy();
     });
 
@@ -87,7 +86,7 @@ describe('components/scheduled_post_indicator', () => {
 
         const {getByTestId} = renderWithEverything(
             <ScheduledPostIndicator
-                database={database}
+                scheduledPostCount={1}
             />,
             {database},
         );
@@ -107,8 +106,9 @@ describe('components/scheduled_post_indicator', () => {
 
         const {getByTestId} = renderWithEverything(
             <ScheduledPostIndicator
-                database={database}
+                scheduledPostCount={1}
             />,
+            {database},
         );
 
         const timeElement = await screen.findByTestId('scheduled_post_indicator_single_time');
@@ -118,9 +118,9 @@ describe('components/scheduled_post_indicator', () => {
     it('handles missing current user', async () => {
         const {getByTestId} = renderWithEverything(
             <ScheduledPostIndicator
-                database={database}
+                scheduledPostCount={1}
             />,
-            {database}
+            {database},
         );
 
         const timeElement = await screen.findByTestId('scheduled_post_indicator_single_time');

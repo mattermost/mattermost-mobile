@@ -150,7 +150,8 @@ const Channel = ({
                             nativeID={channelId}
                         />
                     </View>
-                    <ScheduledPostIndicator/>
+                    {/*This count is hardcoded but will be removed during integration work*/}
+                    <ScheduledPostIndicator scheduledPostCount={10}/>
                     <PostDraft
                         channelId={channelId}
                         testID='channel.post_draft'

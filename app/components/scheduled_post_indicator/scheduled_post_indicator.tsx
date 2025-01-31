@@ -49,13 +49,12 @@ type Props = {
     currentUser?: UserModel;
     isMilitaryTime: boolean;
     isThread?: boolean;
+    scheduledPostCount?: number;
 }
 
-export function ScheduledPostIndicator({currentUser, isMilitaryTime, isThread}: Props) {
+export function ScheduledPostIndicator({currentUser, isMilitaryTime, isThread, scheduledPostCount = 0}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
-    const [scheduledPostCount] = React.useState(125);
 
     let scheduledPostText: React.ReactNode;
 
