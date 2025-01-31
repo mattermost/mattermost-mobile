@@ -119,31 +119,28 @@ jobs:
         - name: Install Android SDK
           uses: android-actions/setup-android@v3
 
-        - name: Accept licenses
+        - name: Accept Android Licenses
           run: yes | sdkmanager --licenses
 
-        - name: Install required SDK components
+        - name: Use Pre-installed SDK & Emulator
           run: |
-            sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "emulator" "system-images;android-31;default;arm64-v8a"
+            echo "Using pre-installed Android SDK at: $ANDROID_HOME"
+            sdkmanager --list | grep "installed"
 
-        - name: Manually Install Emulator Dependencies
+        - name: Create AVD (if not exists)
           run: |
-            sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
-            brew install qt
-            echo "QT_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
+            AVD_NAME="detox_pixel_4_xl_api_31"
+            if ! emulator -list-avds | grep -q "$AVD_NAME"; then
+              echo "Creating new AVD..."
+              echo "no" | avdmanager create avd --force --name "$AVD_NAME" --package "system-images;android-31;default;arm64-v8a" --device "pixel_4_xl"
+            else
+              echo "AVD already exists."
+            fi
 
-        - name: Install Emulator Separately
+        - name: Start Emulator
           run: |
-            sdkmanager "emulator"
-            echo "Emulator installed successfully."
-
-        - name: Create AVD
-          run: |
-            echo "no" | avdmanager create avd --force --name detox_pixel_4_xl_api_31 --package "system-images;android-31;default;arm64-v8a" --device "pixel_4_xl"
-
-        - name: Start emulator
-          run: |
-            emulator -avd detox_pixel_4_xl_api_31 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot &
+            AVD_NAME="detox_pixel_4_xl_api_31"
+            emulator -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot &
             adb wait-for-device
             while [[ "$(adb shell getprop sys.boot_completed)" != "1" ]]; do
               sleep 2
