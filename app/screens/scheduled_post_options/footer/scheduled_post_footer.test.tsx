@@ -4,7 +4,6 @@
 import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 
-import {useBottomSheetInternal} from '@gorhom/bottom-sheet';
 import {useIsTablet} from '@hooks/device';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -12,7 +11,6 @@ import TestHelper from '@test/test_helper';
 import {ScheduledPostFooter} from './scheduled_post_footer';
 
 import type Database from '@nozbe/watermelondb/Database';
-
 
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn().mockReturnValue(false),
@@ -61,6 +59,8 @@ describe('ScheduledPostFooter', () => {
 
     it('renders correctly in initial state', () => {
         renderWithEverything(
+
+            // @ts-expect-error: TS2741 - ignoring missing renaaimated props
             <ScheduledPostFooter {...baseProps}/>,
             {database},
         );
@@ -72,6 +72,8 @@ describe('ScheduledPostFooter', () => {
 
     it('renders correctly in scheduling state', () => {
         renderWithEverything(
+
+            // @ts-expect-error: TS2741 - ignoring missing renaaimated props
             <ScheduledPostFooter
                 {...baseProps}
                 isScheduling={true}
@@ -86,6 +88,8 @@ describe('ScheduledPostFooter', () => {
     it('handles schedule button press', () => {
         const onSchedule = jest.fn();
         renderWithEverything(
+
+            // @ts-expect-error: TS2741 - ignoring missing renaaimated props
             <ScheduledPostFooter
                 {...baseProps}
                 onSchedule={onSchedule}
@@ -103,6 +107,8 @@ describe('ScheduledPostFooter', () => {
         (useIsTablet as jest.Mock).mockReturnValueOnce(true);
 
         renderWithEverything(
+
+            // @ts-expect-error: TS2741 - ignoring missing renaaimated props
             <ScheduledPostFooter
                 {...baseProps}
             />,
@@ -115,6 +121,8 @@ describe('ScheduledPostFooter', () => {
     it('prevents scheduling when already in progress', () => {
         const onSchedule = jest.fn();
         renderWithEverything(
+
+            // @ts-expect-error: TS2741 - ignoring missing renaaimated props
             <ScheduledPostFooter
                 {...baseProps}
                 onSchedule={onSchedule}
