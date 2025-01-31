@@ -4,6 +4,7 @@
 import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 
+import {useBottomSheetInternal} from '@gorhom/bottom-sheet';
 import {useIsTablet} from '@hooks/device';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -15,6 +16,16 @@ import type Database from '@nozbe/watermelondb/Database';
 
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn().mockReturnValue(false),
+}));
+
+jest.mock('@gorhom/bottom-sheet', () => ({
+    ...jest.requireActual('@gorhom/bottom-sheet'),
+    useBottomSheetInternal: jest.fn().mockReturnValue({
+        animatedIndex: {value: 1},
+        animatedPosition: {value: 0},
+        shouldHandleKeyboardEvents: false,
+    }),
+    BottomSheetFooter: ({children}: {children: React.ReactNode}) => children,
 }));
 
 jest.mock('react-native-reanimated', () => ({
