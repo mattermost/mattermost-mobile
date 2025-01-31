@@ -40,7 +40,6 @@ jest.mock('react-native-navigation', () => ({
 }));
 
 describe('SnackBar', () => {
-    let callback: jest.Mock;
     let unsubscribeMock: jest.Mock;
 
     const baseProps = {
@@ -53,14 +52,11 @@ describe('SnackBar', () => {
 
     beforeEach(() => {
         jest.useFakeTimers();
-
-        callback = jest.fn();
         unsubscribeMock = jest.fn();
 
         (Navigation.events().registerComponentWillAppearListener as jest.Mock).mockReturnValue({
             remove: unsubscribeMock,
         });
-
         (Navigation.events().registerComponentDidDisappearListener as jest.Mock).mockReturnValue({
             remove: unsubscribeMock,
         });
