@@ -85,6 +85,11 @@ describe('Channel', () => {
             <Channel {...getBaseProps()}/>,
             {database},
         );
+        
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+        
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
