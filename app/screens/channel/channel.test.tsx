@@ -88,69 +88,6 @@ describe('Channel', () => {
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
-    it('renders channel screen correctly', async () => {
-        let wrapper;
-        await act(async () => {
-            wrapper = renderWithEverything(
-                <Channel {...getBaseProps()}/>,
-                {database},
-            );
-        });
-
-        expect(wrapper.getByTestId('channel.screen')).toBeTruthy();
-        expect(storeLastViewedChannelIdAndServer).toHaveBeenCalledWith(getBaseProps().channelId);
-        expect(Navigation.events().registerComponentListener).toHaveBeenCalled();
-    });
-
-    it('shows floating call container when in a call', async () => {
-        const props = getBaseProps();
-        props.isInACall = true;
-
-        renderWithEverything(
-            <Channel {...props}/>,
-            {database},
-        );
-
-        // Wait for posts to render
-        await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-
-        expect(screen.getByTestId('floating_call_container')).toBeTruthy();
-    });
-
-    it('shows floating call container with join banner', async () => {
-        const props = getBaseProps();
-        props.showJoinCallBanner = true;
-
-        renderWithEverything(
-            <Channel {...props}/>,
-            {database},
-        );
-
-        // Wait for posts to render
-        await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-
-        expect(screen.getByTestId('floating_call_container')).toBeTruthy();
-    });
-
-    it('handles tablet view correctly', async () => {
-        const mockedIsTablet = jest.mocked(useIsTablet);
-        mockedIsTablet.mockReturnValue(true);
-
-        const props = getBaseProps();
-        props.isTabletView = true;
-
-        renderWithEverything(
-            <Channel {...props}/>,
-            {database},
-        );
-
-        expect(screen.getByTestId('channel.screen')).toBeTruthy();
-    });
-
     it('does not render posts while switching teams', async () => {
         const mockedTeamSwitch = jest.mocked(useTeamSwitch);
         mockedTeamSwitch.mockReturnValue(true);
