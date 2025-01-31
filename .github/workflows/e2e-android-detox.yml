@@ -73,19 +73,13 @@ jobs:
       env:
         SDK_VERSION: 31
         AVD_NAME: "detox_pixel_4_xl_api_31"
-        ARCH: "arm64-v8a"
+        ARCH: "x86_64"
 
       steps:
         - name: ci/checkout-repo
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
           with:
             ref: ${{ github.event.pull_request.head.sha }}
-
-        - name: Set up JDK 8
-          uses: actions/setup-java@v3
-          with:
-            java-version: '8'
-            distribution: 'zulu'
 
         # - name: Download APK artifact
         #   uses: actions/download-artifact@v4
@@ -137,15 +131,15 @@ jobs:
         - name: Install Android SDK and AOSP Emulator
           run: |
             echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install emulator
-            echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "system-images;android-${SDK_VERSION};google_apis_playstore;${ARCH}"
+            echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "system-images;android-${SDK_VERSION};google_apis;x86_64"
             echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-            $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n ${AVD_NAME} -d pixel --package "system-images;android-${SDK_VERSION};google_apis_playstore;${ARCH}"
+            $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n ${AVD_NAME} -d pixel --package "system-images;android-${SDK_VERSION};google_apis;x86_64"
 
         - name: Start AOSP Emulator
           run: |
             nohup $ANDROID_HOME/emulator/emulator -avd ${AVD_NAME} \
-              -no-audio -no-window -no-snapshot -gpu off \
-              -cores 2 -accel off > emulator.log 2>&1 &
+              -no-audio -no-window -no-snapshot -gpu off -accel off \
+              -cores 2 > emulator.log 2>&1 &
 
             echo "Waiting for emulator to start..."
             timeout=600 # Increased timeout to 10 minutes
