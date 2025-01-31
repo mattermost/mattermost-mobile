@@ -9,6 +9,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {getChannelTimezones} from '@actions/remote/channel';
 import {executeCommand, handleGotoLocation} from '@actions/remote/command';
 import {createPost} from '@actions/remote/post';
+import {createScheduledPost} from '@actions/remote/scheduled_post';
 import {handleCallsSlashCommand} from '@calls/actions';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -16,7 +17,6 @@ import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
 
 import {useHandleSendMessage} from './handle_send_message';
-import {createScheduledPost} from '@actions/remote/scheduled_post';
 
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 
