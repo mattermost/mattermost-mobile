@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, fireEvent, screen} from '@testing-library/react-native';
+import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
-import Animated from 'react-native-reanimated';
 
 import {useIsTablet} from '@hooks/device';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -13,15 +12,30 @@ import {ScheduledPostFooter} from './scheduled_post_footer';
 
 import type Database from '@nozbe/watermelondb/Database';
 
+
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn().mockReturnValue(false),
+}));
+
+jest.mock('react-native-reanimated', () => ({
+    Easing: {
+        bezier: jest.fn(),
+        out: jest.fn(),
+    },
+    runOnJS: jest.fn((fn) => fn),
+    useAnimatedRef: jest.fn(() => ({})),
+    useAnimatedStyle: jest.fn((fn) => fn()),
+    useEvent: jest.fn(),
+    useSharedValue: jest.fn(),
+    withTiming: jest.fn(),
+    addWhitelistedUIProps: jest.fn(),
+    createAnimatedComponent: jest.fn(),
 }));
 
 describe('ScheduledPostFooter', () => {
     const baseProps = {
         onSchedule: jest.fn(),
         isScheduling: false,
-        animatedFooterPosition: new Animated.Value(0),
     };
     let database: Database;
 
@@ -76,7 +90,7 @@ describe('ScheduledPostFooter', () => {
 
     it('renders correctly for tablet', () => {
         (useIsTablet as jest.Mock).mockReturnValueOnce(true);
-        
+
         renderWithEverything(
             <ScheduledPostFooter
                 {...baseProps}
