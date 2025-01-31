@@ -6,6 +6,7 @@ import {fireEvent, render, screen} from '@testing-library/react-native';
 import React from 'react';
 
 import {Preferences} from '@constants';
+import TestHelper from '@test/test_helper';
 
 
 import ScheduledPostIndicator from './';
@@ -57,11 +58,12 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('renders with military time when preference is set', async () => {
-        await addPreferencesToServer(database, [{
-            category: Preferences.CATEGORY_DISPLAY_SETTINGS,
-            name: 'use_military_time',
-            value: 'true',
-        }]);
+        await TestHelper.setPreference(
+            database,
+            Preferences.CATEGORY_DISPLAY_SETTINGS,
+            'use_military_time',
+            'true'
+        );
 
         const {getByTestId} = render(
             <ScheduledPostIndicator
@@ -74,11 +76,12 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('renders with 12-hour time when preference is not set', async () => {
-        await addPreferencesToServer(database, [{
-            category: Preferences.CATEGORY_DISPLAY_SETTINGS,
-            name: 'use_military_time',
-            value: 'false',
-        }]);
+        await TestHelper.setPreference(
+            database,
+            Preferences.CATEGORY_DISPLAY_SETTINGS,
+            'use_military_time',
+            'false'
+        );
 
         const {getByTestId} = render(
             <ScheduledPostIndicator
