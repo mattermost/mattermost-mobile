@@ -104,17 +104,6 @@ jobs:
             find android/app/build -type f
             rm android/app/build/outputs/apk/artifact.zip
 
-        # - name: Install Dependencies
-        #   run: |
-        #     sudo apt-get clean
-        #     sudo apt-get update
-        #     sudo apt-get install -y default-jdk
-
-        # - name: Install Emulator Dependencies
-        #   run: |
-        #     sudo apt-get update
-        #     sudo apt-get install -y libpulse0 libnss3 libxcomposite1 libxcursor1 libxi6 libxtst6 libasound2t64 libatk1.0-0 libgtk-3-0
-
         - name: Cache Gradle dependencies
           uses: actions/cache@v4
           with:
@@ -135,15 +124,20 @@ jobs:
 
         - name: Install required SDK components
           run: |
-            sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "emulator" "system-images;android-31;google_apis;x86_64"
+            sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "emulator" "system-images;android-31;default;arm64-v8a"
+
+        - name: Install Emulator Separately
+          run: |
+            sdkmanager "emulator"
+            echo "Emulator installed successfully."
 
         - name: Create AVD
           run: |
-            echo "no" | avdmanager create avd --force --name detox_pixel_4_xl_api_31 --package "system-images;android-31;google_apis;x86_64" --device "pixel_4_xl"
+            echo "no" | avdmanager create avd --force --name detox_pixel_4_xl_api_31 --package "system-images;android-31;default;arm64-v8a" --device "pixel_4_xl"
 
         - name: Start emulator
           run: |
-            emulator -avd detox_pixel_4_xl_api_31 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
+            emulator -avd detox_pixel_4_xl_api_31 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot &
             adb wait-for-device
             while [[ "$(adb shell getprop sys.boot_completed)" != "1" ]]; do
               sleep 2
