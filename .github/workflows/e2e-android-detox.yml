@@ -68,7 +68,7 @@ jobs:
     run-android-tests:
       # if: github.event.label.name == 'E2E Android tests for PR'
       # needs: build-android-apk
-      runs-on: macos-14-arm64
+      runs-on: macos-14
       steps:
         - name: ci/checkout-repo
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -114,32 +114,27 @@ jobs:
         - name: Install Node.js
           uses: actions/setup-node@v3
           with:
-            node-version: '16'
+            node-version: '18'
 
-        - name: Install Android SDK
-          uses: android-actions/setup-android@v3
+        - name: Set up Android environment
+          run: |
+            echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+            echo "PATH=$ANDROID_HOME/emulator:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
 
-        - name: Accept Android Licenses
+        - name: Accept licenses
           run: yes | sdkmanager --licenses
 
-        - name: Create AVD (if not exists)
+        - name: Install required SDK components
           run: |
-            AVD_NAME="detox_pixel_4_xl_api_31"
-            if ! emulator -list-avds | grep -q "$AVD_NAME"; then
-              echo "Creating new AVD..."
-              echo "no" | avdmanager create avd --force --name "$AVD_NAME" --package "system-images;android-31;default;arm64-v8a" --device "pixel_4_xl"
-            else
-              echo "AVD already exists."
-            fi
+            sdkmanager "system-images;android-34;google_apis;arm64-v8a"
 
-        - name: Start Emulator with Correct Binary
+        - name: Create AVD
           run: |
-            AVD_NAME="detox_pixel_4_xl_api_31"
-            EMULATOR_PATH="$ANDROID_HOME/emulator/emulator"
+            echo "no" | avdmanager create avd --force --name detox_pixel_4_xl_api_34_arm --package "system-images;android-34;google_apis;arm64-v8a" --device "pixel_4_xl"
 
-            echo "Starting emulator with binary: $EMULATOR_PATH"
-            "$EMULATOR_PATH" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot &
-
+        - name: Start emulator
+          run: |
+            emulator -avd detox_pixel_4_xl_api_34_arm -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot &
             adb wait-for-device
             while [[ "$(adb shell getprop sys.boot_completed)" != "1" ]]; do
               sleep 2
