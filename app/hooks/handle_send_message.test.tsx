@@ -507,4 +507,135 @@ describe('useHandleSendMessage', () => {
             [],
         );
     });
+
+    describe('message length validation', () => {
+        it('should not allow empty messages', () => {
+            const props = {
+                ...defaultProps,
+                value: '',
+            };
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+            expect(result.current.canSend).toBe(false);
+        });
+
+        it('should not allow whitespace-only messages', () => {
+            const props = {
+                ...defaultProps,
+                value: '   ',
+            };
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+            expect(result.current.canSend).toBe(false);
+        });
+
+        it('should allow messages within length limit', () => {
+            const props = {
+                ...defaultProps,
+                value: 'valid message',
+                maxMessageLength: 100,
+            };
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+            expect(result.current.canSend).toBe(true);
+        });
+    });
+
+    describe('file upload handling', () => {
+        it('should allow sending when all files are uploaded', () => {
+            jest.spyOn(DraftUploadManager, 'isUploading').mockReturnValue(false);
+            const props = {
+                ...defaultProps,
+                value: 'message with files',
+                files: [{clientId: 'file1', loading: false}],
+            };
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+            expect(result.current.canSend).toBe(true);
+        });
+
+        it('should block sending during file upload', () => {
+            jest.spyOn(DraftUploadManager, 'isUploading').mockReturnValue(true);
+            const props = {
+                ...defaultProps,
+                value: 'message with uploading file',
+                files: [{clientId: 'file1', loading: true}],
+            };
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+            expect(result.current.canSend).toBe(false);
+        });
+    });
+
+    describe('channel mentions handling', () => {
+        it('should bypass mention confirmation when disabled', async () => {
+            const props = {
+                ...defaultProps,
+                value: '@channel message',
+                enableConfirmNotificationsToChannel: false,
+                membersCount: 25,
+            };
+
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+            await act(async () => {
+                await result.current.handleSendMessage();
+            });
+
+            expect(createPost).toHaveBeenCalled();
+            expect(DraftUtils.alertChannelWideMention).not.toHaveBeenCalled();
+        });
+
+        it('should bypass mention confirmation for small channels', async () => {
+            const props = {
+                ...defaultProps,
+                value: '@channel message',
+                enableConfirmNotificationsToChannel: true,
+                membersCount: 5,
+            };
+
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+            await act(async () => {
+                await result.current.handleSendMessage();
+            });
+
+            expect(createPost).toHaveBeenCalled();
+            expect(DraftUtils.alertChannelWideMention).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('command handling', () => {
+        it('should not treat message starting with // as command', async () => {
+            const props = {
+                ...defaultProps,
+                value: '//not-a-command',
+            };
+
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+            await act(async () => {
+                await result.current.handleSendMessage();
+            });
+
+            expect(executeCommand).not.toHaveBeenCalled();
+            expect(createPost).toHaveBeenCalled();
+        });
+
+        it('should bypass command handling for scheduled messages', async () => {
+            const props = {
+                ...defaultProps,
+                value: '/away',
+            };
+
+            const schedulingInfo = {
+                scheduled_at: 1234567890,
+                timezone: 'UTC',
+            };
+
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+            await act(async () => {
+                await result.current.handleSendMessage(schedulingInfo);
+            });
+
+            expect(executeCommand).not.toHaveBeenCalled();
+            expect(createScheduledPost).toHaveBeenCalled();
+        });
+    });
 });
