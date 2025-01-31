@@ -79,7 +79,7 @@ jobs:
           uses: actions/setup-java@v3
           with:
             java-version: '8'
-            distribution: 'adopt'
+            distribution: 'zulu'
 
         # - name: Download APK artifact
         #   uses: actions/download-artifact@v4
