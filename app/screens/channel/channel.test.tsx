@@ -10,7 +10,7 @@ import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {renderWithEverything} from '@test/intl-test-helper';
-import {Channel as ChannelType} from '@typings/database/models/servers/channel';
+
 
 import Channel from './channel';
 
@@ -75,7 +75,7 @@ describe('Channel', () => {
 
     it('shows floating call container when in a call', async () => {
         await renderWithEverything(
-            <Channel 
+            <Channel
                 {...baseProps}
                 isInACall={true}
             />,
@@ -91,7 +91,7 @@ describe('Channel', () => {
 
     it('shows floating call container with join banner', async () => {
         await renderWithEverything(
-            <Channel 
+            <Channel
                 {...baseProps}
                 showJoinCallBanner={true}
             />,
@@ -110,7 +110,7 @@ describe('Channel', () => {
         mockedIsTablet.mockReturnValue(true);
 
         await renderWithEverything(
-            <Channel 
+            <Channel
                 {...baseProps}
                 isTabletView={true}
             />,
