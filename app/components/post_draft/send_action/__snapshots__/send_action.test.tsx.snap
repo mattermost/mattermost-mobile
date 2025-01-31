@@ -1,0 +1,60 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/post_draft/send_action should match snapshot 1`] = `
+<View
+  accessibilityState={
+    {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": false,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "justifyContent": "flex-end",
+      "opacity": 1,
+      "paddingRight": 8,
+    }
+  }
+  testID="test_id.send.button"
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#1c58d9",
+        "borderRadius": 4,
+        "height": 32,
+        "justifyContent": "center",
+        "width": 80,
+      }
+    }
+  >
+    <Icon
+      color="#ffffff"
+      name="send"
+      size={24}
+    />
+  </View>
+</View>
+`;
