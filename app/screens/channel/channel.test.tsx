@@ -15,6 +15,7 @@ import TestHelper from '@test/test_helper';
 import Channel from './channel';
 
 import type Database from '@nozbe/watermelondb/Database';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 jest.mock('@actions/app/global', () => ({
     storeLastViewedChannelIdAndServer: jest.fn(),
@@ -33,6 +34,12 @@ jest.mock('@hooks/team_switch', () => ({
     useTeamSwitch: jest.fn().mockReturnValue(false),
 }));
 
+jest.mock('@react-native-camera-roll/camera-roll', () => ({
+    CameraRoll: {
+        save: jest.fn().mockResolvedValue('path'),
+    },
+}));
+
 jest.mock('react-native-navigation', () => ({
     Navigation: {
         events: jest.fn().mockReturnValue({
@@ -46,7 +53,7 @@ jest.mock('react-native-navigation', () => ({
 function getBaseProps() {
     return {
         channelId: 'channel-id',
-        componentId: 'component-id',
+        componentId: 'component-id' as AvailableScreens,
         showJoinCallBanner: false,
         isInACall: false,
         isCallsEnabledInChannel: true,
@@ -74,17 +81,17 @@ describe('Channel', () => {
     });
 
     it('should match snapshot', async () => {
-        const wrapper = await renderWithEverything(
+        const wrapper = renderWithEverything(
             <Channel {...getBaseProps()}/>,
-            {database}
+            {database},
         );
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     it('renders channel screen correctly', async () => {
-        await renderWithEverything(
+        renderWithEverything(
             <Channel {...getBaseProps()}/>,
-            {database}
+            {database},
         );
 
         expect(screen.getByTestId('channel.screen')).toBeTruthy();
@@ -96,9 +103,9 @@ describe('Channel', () => {
         const props = getBaseProps();
         props.isInACall = true;
 
-        await renderWithEverything(
+        renderWithEverything(
             <Channel {...props}/>,
-            {database}
+            {database},
         );
 
         // Wait for posts to render
@@ -113,9 +120,9 @@ describe('Channel', () => {
         const props = getBaseProps();
         props.showJoinCallBanner = true;
 
-        await renderWithEverything(
+        renderWithEverything(
             <Channel {...props}/>,
-            {database}
+            {database},
         );
 
         // Wait for posts to render
@@ -133,9 +140,9 @@ describe('Channel', () => {
         const props = getBaseProps();
         props.isTabletView = true;
 
-        await renderWithEverything(
+        renderWithEverything(
             <Channel {...props}/>,
-            {database}
+            {database},
         );
 
         expect(screen.getByTestId('channel.screen')).toBeTruthy();
@@ -145,9 +152,9 @@ describe('Channel', () => {
         const mockedTeamSwitch = jest.mocked(useTeamSwitch);
         mockedTeamSwitch.mockReturnValue(true);
 
-        await renderWithEverything(
+        renderWithEverything(
             <Channel {...getBaseProps()}/>,
-            {database}
+            {database},
         );
 
         expect(screen.queryByTestId('channel.post_draft')).toBeNull();
@@ -157,9 +164,9 @@ describe('Channel', () => {
         const mockedChannelSwitch = jest.mocked(useChannelSwitch);
         mockedChannelSwitch.mockReturnValue(true);
 
-        await renderWithEverything(
+        renderWithEverything(
             <Channel {...getBaseProps()}/>,
-            {database}
+            {database},
         );
 
         expect(screen.queryByTestId('channel.post_draft')).toBeNull();
