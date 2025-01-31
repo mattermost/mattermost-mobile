@@ -78,17 +78,17 @@ describe('ScheduledPostOptions', () => {
         expect(screen.getByText(/Tomorrow at/)).toBeTruthy();
     });
 
-    it('prevents scheduling without time selection', async () => {
+    it('prevents scheduling without time selection', () => {
         renderWithEverything(<ScheduledPostOptions {...baseProps}/>, {database});
 
         const scheduleButton = screen.getByTestId('scheduled_post_create_button');
-        await fireEvent.press(scheduleButton);
+        fireEvent.press(scheduleButton);
 
-        // expect(baseProps.onSchedule).not.toHaveBeenCalled();
+        expect(baseProps.onSchedule).not.toHaveBeenCalled();
         expect(dismissBottomSheet).not.toHaveBeenCalled();
     });
 
-    it('handles successful scheduling flow', async () => {
+    it('handles successful scheduling flow', () => {
         const onSchedule = jest.fn().mockResolvedValue({data: true});
         renderWithEverything(
             <ScheduledPostOptions
@@ -98,13 +98,16 @@ describe('ScheduledPostOptions', () => {
             {database},
         );
 
-        // Select a time option
+        // Select a time option and schedule
         const timeOption = screen.getByText(/Today at/);
-        await fireEvent.press(timeOption);
-
-        // Press schedule button
+        fireEvent.press(timeOption);
+        
         const scheduleButton = screen.getByTestId('scheduled_post_create_button');
-        await fireEvent.press(scheduleButton);
+        fireEvent.press(scheduleButton);
+
+        act(() => {
+            jest.runAllTimers();
+        });
 
         // Verify scheduling flow
         expect(onSchedule).toHaveBeenCalledWith(expect.objectContaining({
@@ -113,7 +116,7 @@ describe('ScheduledPostOptions', () => {
         expect(dismissBottomSheet).toHaveBeenCalled();
     });
 
-    it('handles scheduling errors correctly', async () => {
+    it('handles scheduling errors correctly', () => {
         const error = 'Network error';
         const onSchedule = jest.fn().mockResolvedValue({error});
         renderWithEverything(
@@ -126,10 +129,14 @@ describe('ScheduledPostOptions', () => {
 
         // Select time and attempt to schedule
         const timeOption = screen.getByText(/Today at/);
-        await fireEvent.press(timeOption);
+        fireEvent.press(timeOption);
 
         const scheduleButton = screen.getByTestId('scheduled_post_create_button');
-        await fireEvent.press(scheduleButton);
+        fireEvent.press(scheduleButton);
+
+        act(() => {
+            jest.runAllTimers();
+        });
 
         // Verify error handling
         expect(onSchedule).toHaveBeenCalled();
@@ -137,12 +144,12 @@ describe('ScheduledPostOptions', () => {
         expect(dismissBottomSheet).not.toHaveBeenCalled();
     });
 
-    it('updates UI state during scheduling', async () => {
+    it('updates UI state during scheduling', () => {
         const slowSchedule = jest.fn().mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({data: true});
-                }, 1000);
+                }, 100);
             });
         });
 
@@ -156,10 +163,10 @@ describe('ScheduledPostOptions', () => {
 
         // Start scheduling process
         const timeOption = screen.getByText(/Today at/);
-        await fireEvent.press(timeOption);
+        fireEvent.press(timeOption);
 
         const scheduleButton = screen.getByTestId('scheduled_post_create_button');
-        await fireEvent.press(scheduleButton);
+        fireEvent.press(scheduleButton);
 
         // Verify loading state
         expect(scheduleButton.props.disabled).toBe(true);
