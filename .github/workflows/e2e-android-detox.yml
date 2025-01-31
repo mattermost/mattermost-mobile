@@ -143,7 +143,7 @@ jobs:
 
         - name: Start AOSP Emulator
           run: |
-            nohup $ANDROID_HOME/emulator/emulator -avd ${AVD_NAME} -no-audio -no-window -no-snapshot -gpu swiftshader_indirect -verbose > emulator.log 2>&1 &
+            nohup $ANDROID_HOME/emulator/emulator -avd ${AVD_NAME} -no-audio -no-window -no-snapshot -gpu swiftshader_indirect -accel off -verbose > emulator.log 2>&1 &
             echo "Waiting for emulator to start..."
             timeout=300 # 5 minutes timeout
             while [[ $(adb devices | grep emulator | wc -l) -eq 0 ]]; do
