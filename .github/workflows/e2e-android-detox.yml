@@ -152,16 +152,16 @@ jobs:
               -k "system-images;android-31;google_apis;x86_64" \
               --force \
               --device "pixel_2"
-    
+
             # Start ADB server first
             $ANDROID_HOME/platform-tools/adb start-server
-    
+
             # Export required environment variables
             export QEMU_AUDIO_DRV=none
             export ANDROID_SDK_ROOT=$ANDROID_HOME
             
             # Start emulator with specific configurations
-            $ANDROID_HOME/emulator/emulator \
+            nohup $ANDROID_HOME/emulator/emulator \
               -avd ${{ env.AVD_NAME }} \
               -no-window \
               -no-snapshot \
@@ -172,11 +172,22 @@ jobs:
               -gpu swiftshader_indirect \
               -memory 4096 \
               -accel off \
-              -cores 2 &
-    
+              -cores 2 > emulator.log 2>&1 &
+
             # Wait for device to be available first
-            adb wait-for-device
-    
+            echo "Waiting for emulator to start..."
+            timeout=600 # 10 minutes timeout
+            while [[ $(adb devices | grep emulator | wc -l) -eq 0 ]]; do
+              sleep 5
+              timeout=$((timeout - 5))
+              if [[ $timeout -le 0 ]]; then
+                echo "Emulator failed to start within time limit."
+                cat emulator.log
+                exit 1
+              fi
+            done
+            echo "Emulator is up and running."
+
             # More robust boot completion check
             BOOT_COMPLETE=false
             for i in {1..60}; do
@@ -184,34 +195,32 @@ jobs:
                 BOOT_COMPLETE=true
                 break
               fi
-              
+
               # Check ADB server status and restart if needed
               if ! adb get-state 1>/dev/null 2>&1; then
                 echo "ADB server not responding, restarting..."
                 adb kill-server
                 adb start-server
               fi
-              
+
               echo "Waiting for boot complete... ($i/60)"
               sleep 5
             done
-    
+
             if [ "$BOOT_COMPLETE" = false ]; then
               echo "Failed to boot emulator"
               adb logcat -d
               exit 1
             fi
-    
+
             # Additional device setup
             adb shell settings put global window_animation_scale 0
             adb shell settings put global transition_animation_scale 0
             adb shell settings put global animator_duration_scale 0
 
-            # Run tests 
             cd detox
             npm install
             npm run e2e:android-test -- about.e2e.ts
-
         # - name: Run Detox tests
         #   run: |
         #     cd detox
