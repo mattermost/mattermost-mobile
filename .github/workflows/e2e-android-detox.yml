@@ -71,7 +71,7 @@ jobs:
       runs-on: ubuntu-latest-8-cores
 
       env:
-        SDK_VERSION: 31
+        SDK_VERSION: 34
         AVD_NAME: "detox_pixel_4_xl_api_31"
         ARCH: "x86_64"
         ANDROID_HOME: /usr/local/lib/android/sdk
@@ -122,6 +122,12 @@ jobs:
           run: |
             find android/app/build -type f
             rm android/app/build/outputs/apk/artifact.zip
+
+        - name: Install Required Android System Image
+          run: |
+            echo "Installing Android System Image..."
+            sdkmanager --install "system-images;android-34;google_apis;x86_64" --sdk_root=$ANDROID_HOME
+            sdkmanager --licenses --sdk_root=$ANDROID_HOME
 
         - name: Start Server
           run: |
