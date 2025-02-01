@@ -68,13 +68,18 @@ jobs:
     run-android-tests:
       # if: github.event.label.name == 'E2E Android tests for PR'
       # needs: build-android-apk
-      runs-on: macos-13
+      runs-on: ubuntu-latest-8-cores
 
       env:
         SDK_VERSION: 31
         AVD_NAME: "detox_pixel_4_xl_api_31"
         ARCH: "x86_64"
-
+        ANDROID_HOME: /usr/local/lib/android/sdk
+        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+        ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/27.2.12479018
+        ADB_INSTALL_TIMEOUT: 10
+        DETOX_LOGLEVEL: trace
+  
       steps:
         - name: ci/checkout-repo
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -118,139 +123,45 @@ jobs:
             find android/app/build -type f
             rm android/app/build/outputs/apk/artifact.zip
 
-        - name: Cache Gradle dependencies
-          uses: actions/cache@v4
-          with:
-            path: ~/.gradle/caches/modules-2/
-            key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-            restore-keys: ${{ runner.os }}-gradle-
-
-        - name: Setup Android SDK and ADB
+        - name: Start Server
           run: |
-            # Accept licenses first
-            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+            npm run start &
 
-            # Install required packages
-            echo "Installing system image..."
-            $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install \
-              "system-images;android-31;google_apis;x86_64" \
-              "platform-tools" \
-              "platforms;android-31" \
-              "emulator"
-            
-            # More aggressive cleanup of ADB and port 5037
-            echo "Cleaning up ADB processes..."
-            ps aux | grep adb | grep -v grep | awk '{print $2}' | xargs kill -9 || true
-            lsof -ti:5037 | xargs kill -9 || true
-
-            # Remove ADB server files
-            rm -f $HOME/.android/adb.pid
-            rm -f $HOME/.android/adb.log
-
-            # Wait for port to be fully released
-            sleep 5
-
-            # Start fresh ADB server
-            sudo $ANDROID_HOME/platform-tools/adb start-server
-
-            # Verify ADB is running properly
-            $ANDROID_HOME/platform-tools/adb devices
-
-        - name: Create and start emulator
+        - name: Install Dependencies
           run: |
-            # Create AVD
-            echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd \
-              -n ${{ env.AVD_NAME }} \
-              -k "system-images;android-31;google_apis;x86_64" \
-              --force \
-              --device "pixel_2"
-
-            # Double check ADB server status
-            echo "Ensuring ADB server is running properly..."
-            $ANDROID_HOME/platform-tools/adb kill-server || true
-            sleep 2
-            sudo $ANDROID_HOME/platform-tools/adb start-server
-
-            # Export required environment variables
-            export QEMU_AUDIO_DRV=none
-            export ANDROID_SDK_ROOT=$ANDROID_HOME
-            
-            # Start emulator with specific configurations
-            echo "Starting emulator..."
-            nohup $ANDROID_HOME/emulator/emulator \
-              -avd ${{ env.AVD_NAME }} \
-              -no-window \
-              -no-snapshot \
-              -no-audio \
-              -no-boot-anim \
-              -camera-back none \
-              -camera-front none \
-              -gpu swiftshader_indirect \
-              -memory 4096 \
-              -accel off \
-              -cores 2 > emulator.log 2>&1 &
-
-            # Initial wait for emulator process
-            sleep 5
-
-            # Wait for device to be available
-            echo "Waiting for emulator to start..."
-            timeout=600 # 10 minutes timeout
-            while true; do
-              if [[ $(adb devices | grep -w "device" | wc -l) -gt 0 ]]; then
-                echo "Emulator detected!"
-                break
-              fi
-
-              timeout=$((timeout - 5))
-              if [[ $timeout -le 0 ]]; then
-                echo "Emulator failed to start within time limit."
-                echo "Emulator log:"
-                cat emulator.log
-                echo "ADB devices output:"
-                adb devices
-                echo "Process list:"
-                ps aux | grep emulator
-                exit 1
-              fi
-
-              # Check if adb server is still running
-              if ! pgrep -f "adb" > /dev/null; then
-                echo "ADB server died, restarting..."
-                sudo $ANDROID_HOME/platform-tools/adb start-server
-              fi
-
-              sleep 5
-              echo "Still waiting... ($timeout seconds remaining)"
-            done
-
-            # Boot completion check
-            echo "Checking boot completion..."
-            BOOT_COMPLETE=false
-            for i in {1..60}; do
-              if adb shell getprop sys.boot_completed 2>&1 | grep -q '1'; then
-                BOOT_COMPLETE=true
-                break
-              fi
-              
-              echo "Waiting for boot complete... ($i/60)"
-              sleep 5
-            done
-            
-            if [ "$BOOT_COMPLETE" = false ]; then
-              echo "Failed to boot emulator"
-              echo "Emulator log:"
-              cat emulator.log
-              echo "System log:"
-              adb logcat -d
-              exit 1
-            fi
-            
-            # Additional device setup
-            adb shell settings put global window_animation_scale 0
-            adb shell settings put global transition_animation_scale 0
-            adb shell settings put global animator_duration_scale 0
-            
             cd detox
             npm install
-            npm run e2e:android-test -- about.e2e.ts
+
+        - name: Create & Start Android Emulator
+          run: |
+            echo "Creating AVD..."
+            $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n $AVD_NAME -k "system-images;android-34;google_apis;x86_64" --device "pixel_6" --force
+
+            echo "Starting emulator..."
+            nohup $ANDROID_HOME/emulator/emulator -avd $AVD_NAME -no-audio -no-boot-anim -no-window -gpu swiftshader_indirect -camera-back none -camera-front none -timezone UTC > emulator.log 2>&1 &
+
+            echo "Waiting for emulator to start..."
+            adb wait-for-device shell 'timeout 300 sh -c "while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;"'
+
+            echo "Emulator started successfully!"
+
+        - name: Run Detox E2E Tests
+          run: |
+            cd detox
+            npm run e2e:android -- about.e2e.ts
+
+        - name: Capture Logs on Failure
+          if: failure()
+          run: |
+            echo "Emulator Logs:"
+            cat emulator.log
+            echo "ADB Logcat Output:"
+            adb logcat -d > logcat_output.txt
+            cat logcat_output.txt
+
+        - name: Upload Logs on Failure
+          if: failure()
+          uses: actions/upload-artifact@v4
+          with:
+            name: detox-logs
+            path: logcat_output.txt
