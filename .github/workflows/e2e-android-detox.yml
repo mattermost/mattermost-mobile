@@ -126,9 +126,9 @@ jobs:
         - name: Install Required Android System Image
           run: |
             echo "Installing Android System Image..."
-            sdkmanager --install "system-images;android-34;google_apis;x86_64" --sdk_root=$ANDROID_HOME
-            sdkmanager --licenses --sdk_root=$ANDROID_HOME
-
+            /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-34;google_apis;x86_64" --sdk_root=$ANDROID_HOME
+            /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$ANDROID_HOME
+  
         - name: Start Server
           run: |
             npm run start &
