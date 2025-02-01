@@ -129,6 +129,12 @@ jobs:
             /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-34;google_apis;x86_64" --sdk_root=$ANDROID_HOME
             /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$ANDROID_HOME
   
+        - name: Add ADB to PATH
+          run: |
+            echo "Adding ADB to PATH..."
+            echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+            echo "PATH updated: $PATH"
+
         - name: Start Server
           run: |
             npm run start &
@@ -147,7 +153,7 @@ jobs:
             nohup $ANDROID_HOME/emulator/emulator -avd $AVD_NAME -no-audio -no-boot-anim -no-window -gpu swiftshader_indirect -camera-back none -camera-front none -timezone UTC > emulator.log 2>&1 &
 
             echo "Waiting for emulator to start..."
-            adb wait-for-device shell 'timeout 300 sh -c "while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;"'
+            /usr/local/lib/android/sdk/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
 
             echo "Emulator started successfully!"
 
