@@ -138,9 +138,10 @@ jobs:
               "platforms;android-31" \
               "emulator"
             
-            # Kill any existing ADB server
+            # Kill any existing ADB server and free port 5037
             $ANDROID_HOME/platform-tools/adb kill-server || true
-            
+            lsof -ti:5037 | xargs kill -9 || true
+
             # Start ADB server as root
             sudo $ANDROID_HOME/platform-tools/adb start-server
 
