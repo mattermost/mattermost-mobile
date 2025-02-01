@@ -127,6 +127,7 @@ jobs:
           run: |
             echo "Installing Android System Image..."
             /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-34;google_apis;x86_64" --sdk_root=$ANDROID_HOME
+            /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" --sdk_root=$ANDROID_HOME
             /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$ANDROID_HOME
   
         - name: Add ADB to PATH
@@ -134,6 +135,11 @@ jobs:
             echo "Adding ADB to PATH..."
             echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
             echo "PATH updated: $PATH"
+
+        - name: Verify ADB Installation
+          run: |
+            ls -la /usr/local/lib/android/sdk/platform-tools/
+            /usr/local/lib/android/sdk/platform-tools/adb version
 
         - name: Start Server
           run: |
