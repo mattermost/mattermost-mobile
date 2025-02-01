@@ -153,10 +153,19 @@ jobs:
         - name: Create & Start Android Emulator
           run: |
             echo "Creating AVD..."
-            $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n $AVD_NAME -k "system-images;android-34;google_apis;x86_64" --device "pixel_6" --force
+            export ANDROID_AVD_HOME=$HOME/.android/avd
+
+            # Ensure system image is installed
+            /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-34;google_apis;x86_64" --sdk_root=$ANDROID_HOME
+
+            # Create the AVD if it doesn't exist
+            echo no | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n ${{ env.AVD_NAME }} -k "system-images;android-34;google_apis;x86_64" --device "pixel_6" --force
+
+            # List available AVDs for debugging
+            $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list avd
 
             echo "Starting emulator..."
-            nohup $ANDROID_HOME/emulator/emulator -avd $AVD_NAME -no-audio -no-boot-anim -no-window -gpu swiftshader_indirect -camera-back none -camera-front none -timezone UTC > emulator.log 2>&1 &
+            nohup $ANDROID_HOME/emulator/emulator -avd ${{ env.AVD_NAME }} -no-audio -no-boot-anim -no-window -gpu swiftshader_indirect -camera-back none -camera-front none -timezone UTC > emulator.log 2>&1 &
 
             echo "Waiting for emulator to start..."
             timeout 300 /usr/local/lib/android/sdk/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
