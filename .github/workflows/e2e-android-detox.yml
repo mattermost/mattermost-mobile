@@ -125,44 +125,92 @@ jobs:
             key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
             restore-keys: ${{ runner.os }}-gradle-
 
-        - name: Create AVD and generate snapshot for caching
-          uses: reactivecircus/android-emulator-runner@v2
-          with:
-            api-level: 31
-            target: google_apis
-            arch: x86_64
-            profile: Nexus 6
-            cores: 2
-            ram-size: 4096M
-            heap-size: 2048M
-            disk-size: 4096M
-            script: echo "Created AVD snapshot."
-            emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
-            disable-animations: true
-            avd-name: ${{ env.AVD_NAME }}
+        - name: Setup Android SDK
+          run: |
+            # Accept licenses first
+            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+            
+            # Install required packages
+            echo "Installing system image..."
+            $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install \
+              "system-images;android-31;google_apis;x86_64" \
+              "platform-tools" \
+              "platforms;android-31" \
+              "emulator"
+            
+            # Kill any existing ADB server
+            $ANDROID_HOME/platform-tools/adb kill-server || true
+            
+            # Start ADB server as root
+            sudo $ANDROID_HOME/platform-tools/adb start-server
 
-        - name: Run Detox Tests
-          uses: reactivecircus/android-emulator-runner@v2
-          with:
-            api-level: 31
-            target: google_apis
-            arch: x86_64
-            profile: Nexus 6
-            cores: 2
-            ram-size: 4096M
-            heap-size: 2048M
-            disk-size: 4096M
-            script: |
-              adb shell settings put global window_animation_scale 0
-              adb shell settings put global transition_animation_scale 0
-              adb shell settings put global animator_duration_scale 0
-              cd detox
-              npm install
-              npm install -g detox-cli
-              npm run e2e:android-test -- about.e2e.ts
-            emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
-            disable-animations: true
-            avd-name: ${{ env.AVD_NAME }}
+        - name: Create and start emulator
+          run: |
+            # Create AVD
+            echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd \
+              -n ${{ env.AVD_NAME }} \
+              -k "system-images;android-31;google_apis;x86_64" \
+              --force \
+              --device "pixel_2"
+    
+            # Start ADB server first
+            $ANDROID_HOME/platform-tools/adb start-server
+    
+            # Export required environment variables
+            export QEMU_AUDIO_DRV=none
+            export ANDROID_SDK_ROOT=$ANDROID_HOME
+            
+            # Start emulator with specific configurations
+            $ANDROID_HOME/emulator/emulator \
+              -avd ${{ env.AVD_NAME }} \
+              -no-window \
+              -no-snapshot \
+              -no-audio \
+              -no-boot-anim \
+              -camera-back none \
+              -camera-front none \
+              -gpu swiftshader_indirect \
+              -memory 4096 \
+              -accel off \
+              -cores 2 &
+    
+            # Wait for device to be available first
+            adb wait-for-device
+    
+            # More robust boot completion check
+            BOOT_COMPLETE=false
+            for i in {1..60}; do
+              if adb shell getprop sys.boot_completed 2>&1 | grep -q '1'; then
+                BOOT_COMPLETE=true
+                break
+              fi
+              
+              # Check ADB server status and restart if needed
+              if ! adb get-state 1>/dev/null 2>&1; then
+                echo "ADB server not responding, restarting..."
+                adb kill-server
+                adb start-server
+              fi
+              
+              echo "Waiting for boot complete... ($i/60)"
+              sleep 5
+            done
+    
+            if [ "$BOOT_COMPLETE" = false ]; then
+              echo "Failed to boot emulator"
+              adb logcat -d
+              exit 1
+            fi
+    
+            # Additional device setup
+            adb shell settings put global window_animation_scale 0
+            adb shell settings put global transition_animation_scale 0
+            adb shell settings put global animator_duration_scale 0
+
+            # Run tests 
+            cd detox
+            npm install
+            npm run e2e:android-test -- about.e2e.ts
 
         # - name: Run Detox tests
         #   run: |
