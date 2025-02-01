@@ -159,14 +159,17 @@ jobs:
             nohup $ANDROID_HOME/emulator/emulator -avd $AVD_NAME -no-audio -no-boot-anim -no-window -gpu swiftshader_indirect -camera-back none -camera-front none -timezone UTC > emulator.log 2>&1 &
 
             echo "Waiting for emulator to start..."
-            /usr/local/lib/android/sdk/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
+            timeout 300 /usr/local/lib/android/sdk/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
 
             echo "Emulator started successfully!"
 
-        - name: Run Detox E2E Tests
-          run: |
             cd detox
             npm run e2e:android -- about.e2e.ts
+
+        # - name: Run Detox E2E Tests
+        #   run: |
+        #     cd detox
+        #     npm run e2e:android -- about.e2e.ts
 
         - name: Capture Logs on Failure
           if: failure()
