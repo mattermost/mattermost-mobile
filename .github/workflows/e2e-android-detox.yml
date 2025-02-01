@@ -125,11 +125,17 @@ jobs:
             key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
             restore-keys: ${{ runner.os }}-gradle-
 
+        - name: Kill Existing ADB Processes
+          run: |
+            adb kill-server || true
+            lsof -ti:5037 | xargs kill -9 || true
+            sleep 10  # Give some time for the port to free up
+            
         - name: Setup Android SDK
           run: |
             # Accept licenses first
             yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-            
+
             # Install required packages
             echo "Installing system image..."
             $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install \
@@ -222,9 +228,3 @@ jobs:
             cd detox
             npm install
             npm run e2e:android-test -- about.e2e.ts
-        # - name: Run Detox tests
-        #   run: |
-        #     cd detox
-        #     npm install
-        #     npm install -g detox-cli
-        #     npm run e2e:android-test -- about.e2e.ts
