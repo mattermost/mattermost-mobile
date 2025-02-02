@@ -91,142 +91,147 @@ jobs:
                 path: "android/app/build/**/*"
 
     detox-android-e2e:
-        runs-on: ubuntu-latest-8-cores
-        # needs: build-android-apk
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      runs-on: ubuntu-latest-8-cores
+      # needs: build-android-apk
+      env:
+        ANDROID_HOME: /usr/local/lib/android/sdk
+        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
 
-        steps:
-          - name: ci/checkout-repo
-            uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-            with:
-              ref: ${{ github.event.pull_request.head.sha }}
+      steps:
+        - name: ci/checkout-repo
+          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+          with:
+            ref: ${{ github.event.pull_request.head.sha }}
 
-          - name: Install Dependencies
-            run: sudo apt-get update && sudo apt-get install -y libpulse0
+        - name: Install Dependencies
+          run: sudo apt-get update && sudo apt-get install -y libpulse0
 
-          - name: Enable KVM
-            run: |
-              echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-              sudo udevadm control --reload-rules
-              sudo udevadm trigger --name-match=kvm
+        - name: Enable KVM
+          run: |
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm
 
-          - name: ci/prepare-android-build
-            uses: ./.github/actions/prepare-android-build
-            env:
-              STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
-              STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
-              STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
-              MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+        - name: ci/prepare-android-build
+          uses: ./.github/actions/prepare-android-build
+          env:
+            STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+            STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+            STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+            MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
-          # - name: Download android build files
-          #   uses: actions/download-artifact@v4
-          #   with:
-          #     name: android-build-files-${{ github.run_id }}
-          #     path: android/app/build
+        - name: Install Dependencies
+          run: |
+            cd detox
+            npm install
 
-          - name: Install Dependencies
-            run: |
-              cd detox
-              npm install
+        - name: Create destination path
+          run: mkdir -p android/app/build
 
-          - name: Create destination path
-            run: mkdir -p android/app/build
+        - name: Download artifact
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            curl -L -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2523423750/zip \
+              --output android/app/build/artifact.zip
 
-          - name: Download artifact
-            env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            run: |
-              curl -L -H "Authorization: token $GITHUB_TOKEN" \
-                  -H "Accept: application/vnd.github.v3+json" \
-                  https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2523423750/zip \
-                  --output android/app/build/artifact.zip
+        - name: Unzip artifact
+          run: unzip android/app/build/artifact.zip -d android/app/build
 
-          - name: Unzip artifact
-            run: unzip android/app/build/artifact.zip -d android/app/build
+        - name: List files
+          run: |
+            find android/app/build -type f
 
-          # - name: Cleanup
-          #   run: |
-          #     find android/app/build -type f
-          #     rm android/app/build/outputs/apk/artifact.zip
+        - name: Set up Android SDK
+          run: |
+            export ANDROID_HOME=/usr/local/lib/android/sdk
+            export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
+            echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+            echo "PATH=$PATH" >> $GITHUB_ENV
 
-          - name: Set up Android SDK
-            run: |
-              export ANDROID_HOME=/usr/local/lib/android/sdk
-              export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
-              echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-              echo "PATH=$PATH" >> $GITHUB_ENV
+        - name: Install scrot, ffmpeg, and Xvfb
+          run: sudo apt-get install -y scrot ffmpeg xvfb
 
-          - name: Install scrot, ffmpeg, and Xvfb
-            run: sudo apt-get install -y scrot ffmpeg xvfb
+        - name: Start Xvfb
+          run: |
+            Xvfb :99 -screen 0 1920x1080x24 &
+            export DISPLAY=:99
+            echo "DISPLAY=:99" >> $GITHUB_ENV
 
-          - name: Start Xvfb
-            run: |
-              Xvfb :99 -screen 0 1920x1080x24 &
-              export DISPLAY=:99
-              echo "DISPLAY=:99" >> $GITHUB_ENV
+        - name: Start Video Recording
+          run: |
+            ffmpeg -video_size 1920x1080 -framerate 25 -f x11grab -i :99.0 -codec:v libx264 -preset ultrafast -qp 0 screen_recording.mp4 &
+            echo $! > ffmpeg_pid.txt
 
-          - name: Start Video Recording
-            run: |
-              ffmpeg -video_size 1920x1080 -framerate 25 -f x11grab -i :99.0 -codec:v libx264 -preset ultrafast -qp 0 screen_recording.mp4 &
-              echo $! > ffmpeg_pid.txt
+        - name: Accept Android licenses
+          run: |
+            yes | sdkmanager --licenses || true
 
-          - name: Accept Android licenses
-            run: |
-              yes | sdkmanager --licenses || true
+        - name: Install Android system image
+          run: |
+            sdkmanager "system-images;android-33;default;x86_64"  # Use x86_64 for KVM
+            sdkmanager "platform-tools" "emulator"
 
-          - name: Install Android system image
-            run: |
-              sdkmanager "system-images;android-33;default;x86_64"  # Use x86_64 for KVM
-              sdkmanager "platform-tools" "emulator"
+        - name: Create and start Android emulator
+          run: |
+            cd detox
+            chmod +x ./create_android_emulator.sh
+            ./create_android_emulator.sh
 
-          - name: Create and start Android emulator
-            run: |
-              cd detox
-              chmod +x ./create_android_emulator.sh
-              ./create_android_emulator.sh
+        - name: Generate Report Path
+          id: s3
+          run: |
+            path="${{ github.run_id }}/${{ github.sha }}"
+            echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
 
-          - name: Generate Report Path
-            id: s3
-            run: |
-              path="${{ github.run_id }}/${{ github.sha }}"
-              echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
-    
-          - name: Save report Detox Dependencies
-            id: report-link
-            run: |
-              cd detox
-              npm run e2e:save-report
-            env:
-              DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-              DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-              IOS: false
-              BUILD_ID: ${{ github.run_id }}
-              REPORT_PATH: ${{ steps.s3.outputs.path }}
-              ## These are needed for the MM Webhook report
-              COMMIT_HASH: ${{ github.sha }}
-              BRANCH: ${{ github.ref }}
+        - name: Save report Detox Dependencies
+          id: report-link
+          run: |
+            cd detox
+            npm run e2e:save-report
+          env:
+            DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+            DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+            IOS: false
+            BUILD_ID: ${{ github.run_id }}
+            REPORT_PATH: ${{ steps.s3.outputs.path }}
+            ## These are needed for the MM Webhook report
+            COMMIT_HASH: ${{ github.sha }}
+            BRANCH: ${{ github.ref }}
 
-          - name: Take Screenshot on Failure
-            if: failure()
-            run: scrot failure_screenshot.png
+        - name: Take Screenshot on Failure
+          if: failure()
+          run: scrot failure_screenshot.png
 
-          - name: Upload Screenshot on Failure
-            if: failure()
-            uses: actions/upload-artifact@v4
-            with:
-              name: failure-screenshot
-              path: failure_screenshot.png
+        - name: Upload Screenshot on Failure
+          if: failure()
+          uses: actions/upload-artifact@v4
+          with:
+            name: failure-screenshot
+            path: failure_screenshot.png
 
-          - name: Stop Android emulator
-            if: always()  # Ensure the emulator is stopped even if the tests fail
-            run: |
-              adb emu kill
+        - name: Stop Video Recording
+          if: always()
+          run: |
+            kill $(cat ffmpeg_pid.txt)
 
-          - name: Upload android Test Report
-            if: always()
-            uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-            with:
-              name: android-results-${{ github.run_id }}
-              path: detox/artifacts/
+        - name: Upload Video Recording
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: screen-recording
+            path: screen_recording.mp4
+
+        - name: Stop Android emulator
+          if: always()  # Ensure the emulator is stopped even if the tests fail
+          run: |
+            adb emu kill
+
+        - name: Upload android Test Report
+          if: always()
+          uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+          with:
+            name: android-results-${{ github.run_id }}
+            path: detox/artifacts/
