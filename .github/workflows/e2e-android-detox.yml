@@ -240,8 +240,8 @@ jobs:
 
           - name: Create and start Android emulator
             run: |
-              chmod +x ./detox/create_emulator.sh
-              ./detox/create_emulator.sh
+              chmod +x ./detox/create_android_emulator.sh
+              ./detox/create_android_emulator.sh
 
           - name: Stop Android emulator
             if: always()  # Ensure the emulator is stopped even if the tests fail
