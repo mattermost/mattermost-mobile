@@ -39,8 +39,8 @@ else
 fi
 
 echo "*********************"
-ls -la $ANDROID_AVD_HOME
-ls -la /home/runner/.android/avd
+file /usr/local/lib/android/sdk/emulator/qemu/linux-x86_64/qemu-system-x86_64
+ldd /usr/local/lib/android/sdk/emulator/qemu/linux-x86_64/qemu-system-x86_64
 echo "*********************"
 
 # Start the emulator
@@ -48,7 +48,7 @@ echo "Starting the emulator..."
 
 if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
     echo "Starting the emulator with KVM..."
-    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu auto -accel on -qemu -m 2048 -cores 4
+    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu auto -accel on -qemu -m 4096
 else
     emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu off -verbose -qemu -vnc :0
 fi
