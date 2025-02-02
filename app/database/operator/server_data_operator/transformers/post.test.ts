@@ -141,13 +141,11 @@ describe('***  POST Prepare Records Test ***', () => {
                     channel_id: 'channel_id',
                     root_id: '',
                     message: 'schedule post message',
-                    files: undefined,
                     user_id: 'user_id',
                     processed_at: 0,
                     scheduled_at: 1223456789,
                     update_at: 0,
                     error_code: '',
-                    metadata: undefined,
                 } as ScheduledPost,
             },
         });
