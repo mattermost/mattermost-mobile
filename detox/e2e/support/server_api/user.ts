@@ -25,6 +25,9 @@ import {getResponseFromError} from './common';
  * @return {Object} returns {user, status} on success or {error, status} on error
  */
 export const apiAdminLogin = (baseUrl: string): any => {
+    // eslint-disable-next-line no-console
+    console.log('In apiAdminLogin *************************', baseUrl, adminUsername, adminPassword);
+
     return apiLogin(baseUrl, {
         username: adminUsername,
         password: adminPassword,
