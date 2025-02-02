@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Reference: Download Android (AOSP) Emulators - https://github.com/wix/Detox/blob/master/docs/guide/android-dev-env.md#android-aosp-emulators
 # sdkmanager "system-images;android-31;default;arm64-v8a"
 # sdkmanager --licenses
@@ -41,6 +40,9 @@ else
     sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${CPU_ARCH_FAMILY}/|g" $NAME/config.ini
     sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${NAME}/pixel_4_xl_skin|g" $NAME/config.ini
 
+    # Set the number of CPU cores in config.ini
+    echo "hw.cpu.ncore=5" >> $NAME/config.ini
+
     echo "Android virtual device successfully created: ${NAME}"
 fi
 
@@ -57,7 +59,7 @@ echo "Starting the emulator..."
 
 if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
     echo "Starting the emulator with KVM..."
-    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu swiftshader_indirect -accel on -qemu -m 4096 -cores 5 &
+    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu swiftshader_indirect -accel on -qemu -m 4096 &
 else
     emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu guest -verbose -qemu -vnc :0
 fi
