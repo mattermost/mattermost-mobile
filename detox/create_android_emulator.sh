@@ -40,8 +40,13 @@ fi
 
 # Start the emulator
 echo "Starting the emulator..."
-emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu off -verbose -qemu -vnc :0
 
+if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
+    echo "Starting the emulator with KVM..."
+    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu auto -accel on -qemu -m 2048 -cores 4
+else
+    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu off -verbose -qemu -vnc :0
+fi
 
 # Run tests
 npm run e2e:android-test -- about.e2e.ts

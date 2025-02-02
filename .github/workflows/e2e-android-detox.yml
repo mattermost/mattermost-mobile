@@ -235,7 +235,7 @@ jobs:
 
           - name: Set up Android SDK
             run: |
-              export ANDROID_HOME=$HOME/Library/Android/sdk
+              export ANDROID_HOME=/usr/local/lib/android/sdk
               export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
               echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
               echo "PATH=$PATH" >> $GITHUB_ENV
@@ -246,7 +246,7 @@ jobs:
 
           - name: Install Android system image
             run: |
-              sdkmanager "system-images;android-31;default;arm64-v8a"
+              sdkmanager "system-images;android-31;default;x86_64"  # Use x86_64 for KVM
               sdkmanager "platform-tools" "emulator"
 
           - name: Create and start Android emulator
