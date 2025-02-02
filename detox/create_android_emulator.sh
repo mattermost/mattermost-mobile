@@ -37,3 +37,12 @@ else
 
     echo "Android virtual device successfully created: ${NAME}"
 fi
+
+# Start the emulator
+echo "Starting the emulator..."
+emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu off -verbose -qemu -vnc :0
+
+
+# Run tests
+cd detox
+npm run e2e:android-test -- about.e2e.ts
