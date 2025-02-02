@@ -7,6 +7,7 @@ import {
     transformPostInThreadRecord,
     transformPostRecord,
     transformPostsInChannelRecord,
+    transformSchedulePostsRecord,
 } from '@database/operator/server_data_operator/transformers/post';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 
@@ -122,5 +123,36 @@ describe('***  POST Prepare Records Test ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.table).toBe('PostsInChannel');
+    });
+
+    it('=> transformScheduledPostRecord: should return an array of type ScheduledPost', async () => {
+        expect.assertions(3);
+
+        const database = await createTestConnection({databaseName: 'post_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await transformSchedulePostsRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'schedule_post_id',
+                    channel_id: 'channel_id',
+                    root_id: '',
+                    message: 'schedule post message',
+                    files: undefined,
+                    user_id: 'user_id',
+                    processed_at: 0,
+                    scheduled_at: 1223456789,
+                    update_at: 0,
+                    error_code: '',
+                    metadata: undefined,
+                } as ScheduledPost,
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.table).toBe('ScheduledPost');
     });
 });
