@@ -38,6 +38,11 @@ else
     echo "Android virtual device successfully created: ${NAME}"
 fi
 
+echo "*********************"
+ls -la $ANDROID_AVD_HOME
+ls -la /home/runner/.android/avd
+echo "*********************"
+
 # Start the emulator
 echo "Starting the emulator..."
 

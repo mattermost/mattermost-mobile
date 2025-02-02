@@ -78,10 +78,9 @@ jobs:
             with:
               ref: ${{ github.event.pull_request.head.sha }}
 
-          - name: Debug AVD Location
+          - name: Create AVD Location
             run: |
-              ls -la $ANDROID_AVD_HOME
-              ls -la /home/runner/.android/avd
+              mkdir -p $ANDROID_AVD_HOME
 
           - name: Enable KVM
             run: |
