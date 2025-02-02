@@ -3,12 +3,13 @@
 
 const platform = process.env.IOS === 'true' ? 'ios' : 'android';
 const shard = process.env.CI_NODE_INDEX ? process.env.CI_NODE_INDEX : '';
+const testTimeout = process.env.CI ? 300000 : 120000;
 
 module.exports = {
     setupFilesAfterEnv: ['./test/setup.ts'],
     maxWorkers: 1,
     testSequencer: './custom_sequencer.js',
-    testTimeout: 120000,
+    testTimeout,
     rootDir: '.',
     testMatch: ['<rootDir>/test/**/*.e2e.ts'],
     transform: {
