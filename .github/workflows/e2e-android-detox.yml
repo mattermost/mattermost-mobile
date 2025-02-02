@@ -182,13 +182,19 @@ jobs:
             path: logcat_output.txt
 
     detox-android-e2e:
-        runs-on: macos-latest  # Best runner for Android emulator on macOS (M1 supported)
+        runs-on: ubuntu-latest-8-cores
 
         steps:
           - name: ci/checkout-repo
             uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
             with:
               ref: ${{ github.event.pull_request.head.sha }}
+
+          - name: Enable KVM
+            run: |
+              echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+              sudo udevadm control --reload-rules
+              sudo udevadm trigger --name-match=kvm
 
           - name: ci/prepare-android-build
             uses: ./.github/actions/prepare-android-build
