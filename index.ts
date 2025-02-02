@@ -4,7 +4,6 @@
 import TurboLogger from '@mattermost/react-native-turbo-log';
 import {LogBox, Platform, UIManager} from 'react-native';
 import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
-import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 
@@ -30,8 +29,10 @@ if (__DEV__) {
     ]);
 
     // Ignore all notifications if running e2e
-    const isRunningE2e = RUNNING_E2E === 'true';
-    logInfo(`RUNNING_E2E: ${RUNNING_E2E}, isRunningE2e: ${isRunningE2e}`);
+    // eslint-disable-next-line no-process-env
+    const isRunningE2e = process.env.RUNNING_E2E === 'true';
+    // eslint-disable-next-line no-process-env
+    logInfo(`RUNNING_E2E: ${process.env.RUNNING_E2E}, isRunningE2e: ${isRunningE2e}`);
     if (isRunningE2e) {
         LogBox.ignoreAllLogs(true);
     }

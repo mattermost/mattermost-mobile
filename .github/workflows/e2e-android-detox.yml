@@ -34,6 +34,7 @@ env:
   TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
   WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
   FAILURE_MESSAGE: "Something has failed"
+  RUNNING_E2E: "true"
 
 concurrency:
     group: "${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}"
@@ -41,7 +42,7 @@ concurrency:
 
 jobs:
     build-android-apk:
-        if: github.event.label.name == 'E2E Android tests for PR' && false
+        # if: github.event.label.name == 'E2E Android tests for PR'
         runs-on: ubuntu-latest-8-cores
         env:
             ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
@@ -86,11 +87,12 @@ jobs:
             - name: ci/upload-android-pr-build
               uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
               with:
-                name: android-build-apk-${{ github.run_id }}
-                path: "android/app/build/outputs/apk/**/app-*.apk"
+                name: android-build-files-${{ github.run_id }}
+                path: "android/app/build/**/*"
 
     detox-android-e2e:
         runs-on: ubuntu-latest-8-cores
+        needs: build-android-apk
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
@@ -118,30 +120,36 @@ jobs:
               STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
               MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
+          - name: Download android build files
+            uses: actions/download-artifact@v4
+            with:
+              name: android-build-files-${{ github.run_id }}
+              path: android/app/build
+
           - name: Install Dependencies
             run: |
               cd detox
               npm install
 
-          - name: Create destination path
-            run: mkdir -p android/app/build/outputs/apk
+          # - name: Create destination path
+          #   run: mkdir -p android/app/build
 
-          - name: Download artifact
-            env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            run: |
-              curl -L -H "Authorization: token $GITHUB_TOKEN" \
-                  -H "Accept: application/vnd.github.v3+json" \
-                  https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2508660502/zip \
-                  --output android/app/build/outputs/apk/artifact.zip
+          # - name: Download artifact
+          #   env:
+          #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          #   run: |
+          #     curl -L -H "Authorization: token $GITHUB_TOKEN" \
+          #         -H "Accept: application/vnd.github.v3+json" \
+          #         https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2508660502/zip \
+          #         --output android/app/build/artifact.zip
 
-          - name: Unzip artifact
-            run: unzip android/app/build/outputs/apk/artifact.zip -d android/app/build/outputs/apk
+          # - name: Unzip artifact
+          #   run: unzip android/app/build/artifact.zip -d android/app/build
 
-          - name: Cleanup
-            run: |
-              find android/app/build -type f
-              rm android/app/build/outputs/apk/artifact.zip
+          # - name: Cleanup
+          #   run: |
+          #     find android/app/build -type f
+          #     rm android/app/build/outputs/apk/artifact.zip
 
           - name: Set up Android SDK
             run: |
