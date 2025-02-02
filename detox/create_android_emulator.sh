@@ -76,6 +76,12 @@ while true; do
     sleep 10
 done
 
+# Start the server
+cd ..
+npm run start &
+sleep 120
+
 # Run tests
 echo "Running tests..."
+cd detox
 npm run e2e:android-test -- about.e2e.ts
