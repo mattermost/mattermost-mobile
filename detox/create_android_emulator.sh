@@ -11,8 +11,10 @@ SDK_VERSION=31
 NAME="detox_pixel_4_xl_api_${SDK_VERSION}"
 
 # Set ANDROID_AVD_HOME to the current directory
-export ANDROID_AVD_HOME=$(pwd)/.android/avd
-mkdir -p $ANDROID_AVD_HOME
+if [[ "$CI" == "true" ]]; then
+    export ANDROID_AVD_HOME=$(pwd)/.android/avd
+    mkdir -p $ANDROID_AVD_HOME
+fi
 
 if emulator -list-avds | grep -q $NAME; then
     echo "'${NAME}' Android virtual device already exists."
@@ -55,33 +57,35 @@ echo "Starting the emulator..."
 
 if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
     echo "Starting the emulator with KVM..."
-    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu auto -accel on -qemu -m 4096 &
+    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu swiftshader_indirect -accel on -qemu -m 4096 &
 else
-    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu auto -verbose -qemu -vnc :0 &
+    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu guest -verbose -qemu -vnc :0
 fi
 
-# Wait for the emulator to boot
-echo "Waiting for the emulator to boot..."
-adb wait-for-device
+if [[ "$CI" == "true" ]]; then
+    # Wait for the emulator to boot
+    echo "Waiting for the emulator to boot..."
+    adb wait-for-device
 
-# Check if the emulator is fully booted
-echo "Checking if the emulator is fully booted..."
-while true; do
-    boot_completed=$(adb shell getprop sys.boot_completed | tr -d '\r')
-    if [[ "$boot_completed" == "1" ]]; then
-        echo "Emulator is fully booted."
-        break
-    fi
-    echo "Waiting for emulator to boot..."
-    sleep 10
-done
+    # Check if the emulator is fully booted
+    echo "Checking if the emulator is fully booted..."
+    while true; do
+        boot_completed=$(adb shell getprop sys.boot_completed | tr -d '\r')
+        if [[ "$boot_completed" == "1" ]]; then
+            echo "Emulator is fully booted."
+            break
+        fi
+        echo "Waiting for emulator to boot..."
+        sleep 10
+    done
+fi
 
 # Start the server
 cd ..
 npm run start &
-sleep 120
+sleep 180
 
 # Run tests
 echo "Running tests..."
 cd detox
-npm run e2e:android-test -- about.e2e.ts
+npm run e2e:android-test
