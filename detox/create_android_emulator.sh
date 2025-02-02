@@ -10,6 +10,10 @@ set -o pipefail
 SDK_VERSION=31
 NAME="detox_pixel_4_xl_api_${SDK_VERSION}"
 
+# Set ANDROID_AVD_HOME to the current directory
+export ANDROID_AVD_HOME=$(pwd)/.android/avd
+mkdir -p $ANDROID_AVD_HOME
+
 if emulator -list-avds | grep -q $NAME; then
     echo "'${NAME}' Android virtual device already exists."
 else
@@ -35,13 +39,20 @@ else
     sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${CPU_ARCH_FAMILY}/|g" $NAME/config.ini
     sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${NAME}/pixel_4_xl_skin|g" $NAME/config.ini
 
+    # Move AVD configuration files to ANDROID_AVD_HOME
+    mv $NAME.ini $ANDROID_AVD_HOME/
+    mv $NAME.avd $ANDROID_AVD_HOME/
+
     echo "Android virtual device successfully created: ${NAME}"
 fi
 
-echo "*********************"
-file /usr/local/lib/android/sdk/emulator/qemu/linux-x86_64/qemu-system-x86_64
-ldd /usr/local/lib/android/sdk/emulator/qemu/linux-x86_64/qemu-system-x86_64
-echo "*********************"
+# Kill existing ADB server
+echo "Killing existing ADB server..."
+adb kill-server
+
+# Start ADB server
+echo "Starting ADB server..."
+adb start-server
 
 # Start the emulator
 echo "Starting the emulator..."
@@ -52,6 +63,22 @@ if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
 else
     emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu off -verbose -qemu -vnc :0
 fi
+
+# Wait for the emulator to boot
+echo "Waiting for the emulator to boot..."
+adb wait-for-device
+
+# Check if the emulator is fully booted
+echo "Checking if the emulator is fully booted..."
+while true; do
+    boot_completed=$(adb shell getprop sys.boot_completed | tr -d '\r')
+    if [[ "$boot_completed" == "1" ]]; then
+        echo "Emulator is fully booted."
+        break
+    fi
+    echo "Waiting for emulator to boot..."
+    sleep 10
+done
 
 # Run tests
 npm run e2e:android-test -- about.e2e.ts

@@ -70,17 +70,12 @@ jobs:
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-          ANDROID_AVD_HOME: /home/runner/.android/avd
 
         steps:
           - name: ci/checkout-repo
             uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
             with:
               ref: ${{ github.event.pull_request.head.sha }}
-
-          - name: Create AVD Location
-            run: |
-              mkdir -p $ANDROID_AVD_HOME
 
           - name: Install Dependencies
             run: sudo apt-get update && sudo apt-get install -y libpulse0
