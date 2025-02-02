@@ -238,10 +238,16 @@ jobs:
             run: |
               yes | sdkmanager --licenses || true
 
+          - name: Install Android system image
+            run: |
+              sdkmanager "system-images;android-31;default;arm64-v8a"
+              sdkmanager "platform-tools" "emulator"
+
           - name: Create and start Android emulator
             run: |
-              chmod +x ./detox/create_android_emulator.sh
-              ./detox/create_android_emulator.sh
+              cd detox
+              chmod +x ./create_android_emulator.sh
+              ./create_android_emulator.sh
 
           - name: Stop Android emulator
             if: always()  # Ensure the emulator is stopped even if the tests fail
