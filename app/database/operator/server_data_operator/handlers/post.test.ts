@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
 import {Database, Q} from '@nozbe/watermelondb';
 
@@ -10,9 +11,11 @@ import {buildDraftKey} from '@database/operator/server_data_operator/comparators
 import {transformDraftRecord, transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 import {createPostsChain} from '@database/operator/utils/post';
 
+import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
+
 import {exportedForTest} from './post';
 
-import type ServerDataOperator from '..';
+import type ServerDataOperator from '@database/operator/server_data_operator/index';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 
 Q.sortBy = jest.fn().mockImplementation((field) => {
@@ -20,8 +23,10 @@ Q.sortBy = jest.fn().mockImplementation((field) => {
 });
 describe('*** Operator: Post Handlers tests ***', () => {
     let operator: ServerDataOperator;
+    let database: Database;
 
     let posts: Post[] = [];
+    let scheduledPosts: ScheduledPost[] = [];
     beforeEach(async () => {
         posts = [
             {
@@ -170,8 +175,40 @@ describe('*** Operator: Post Handlers tests ***', () => {
             },
         ];
 
+        scheduledPosts = [
+            {
+                id: 'scheduled_post_id',
+                channel_id: 'channel_id',
+                root_id: '',
+                message: 'test scheduled post',
+                files: [],
+                metadata: undefined,
+                priority: undefined,
+                scheduled_at: 123,
+                user_id: 'user_id',
+                processed_at: 0,
+                update_at: 456,
+                error_code: '',
+            },
+            {
+                id: 'scheduled_post_id_2',
+                channel_id: 'channel_id',
+                root_id: '',
+                message: 'test scheduled post 2',
+                files: [],
+                metadata: undefined,
+                priority: undefined,
+                scheduled_at: 123,
+                user_id: 'user_id',
+                processed_at: 0,
+                update_at: 456,
+                error_code: '',
+            },
+        ];
+
         await DatabaseManager.init(['baseHandler.test.com']);
         operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
+        database = DatabaseManager.serverDatabases['baseHandler.test.com']!.database;
     });
 
     afterEach(async () => {
@@ -536,6 +573,70 @@ describe('*** Operator: Post Handlers tests ***', () => {
         files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
         expect(files).toHaveLength(1);
         expect(files[0].id).toBe('another-file-id');
+    });
+
+    it('should return empty array when scheduledPosts is empty and actionType is not RECEIVED_ALL_SCHEDULED_POSTS', async () => {
+        const result = await operator.handleScheduledPosts(
+            {
+                actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                scheduledPosts: [],
+                prepareRecordsOnly: false,
+            });
+        expect(result).toEqual([]);
+    });
+
+    it('HandleScheduledPosts: should write to the ScheduledPost table', async () => {
+        const spyOnBatchRecords = jest.spyOn(operator, 'processRecords');
+
+        await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+            scheduledPosts,
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnBatchRecords).toHaveBeenCalledWith({
+            createOrUpdateRawValues: scheduledPosts,
+            deleteRawValues: [],
+            tableName: 'ScheduledPost',
+            fieldName: 'id',
+            shouldUpdate: shouldUpdateScheduledPostRecord,
+        });
+    });
+
+    it('HandleScheduledPosts: should delete from the ScheduledPost table', async () => {
+        expect.assertions(1);
+        const spyOnBatchRecords = jest.spyOn(operator, 'processRecords');
+
+        await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+            scheduledPosts,
+            prepareRecordsOnly: false,
+        });
+
+        await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
+            scheduledPosts: [scheduledPosts[0]],
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnBatchRecords).toHaveBeenCalledTimes(2);
+    });
+
+    it('HandleScheduledPosts: should delete all the schedule post from the database when action is RECEIVED_ALL_SCHEDULED_POSTS', async () => {
+        jest.spyOn(database, 'get').mockImplementation(() => ({
+            query: jest.fn().mockReturnValue({
+                fetch: jest.fn().mockResolvedValue(scheduledPosts),
+            }),
+        }) as any);
+
+        const spyOnBatchRecords = jest.spyOn(operator, 'batchRecords');
+        await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS,
+            scheduledPosts: [],
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnBatchRecords).toHaveBeenCalledWith(scheduledPosts, 'handleScheduledPosts');
     });
 });
 

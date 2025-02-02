@@ -20,6 +20,8 @@ import ScheduledPostModel from '@typings/database/models/servers/scheduled_post'
 import {safeParseJSON} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 
+import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
+
 import type ServerDataOperatorBase from '.';
 import type Database from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
@@ -145,6 +147,9 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             }
 
             case ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS: {
+                if (!scheduledPosts?.length) {
+                    break;
+                }
                 const idsFromServer = new Set(scheduledPosts?.map((post) => post.id) || []);
                 const existingScheduledPosts = await database.get<ScheduledPostModel>(SCHEDULED_POST).query().fetch();
 
@@ -176,7 +181,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             deleteRawValues: [],
             tableName: SCHEDULED_POST,
             fieldName: 'id',
-            shouldUpdate: (e: ScheduledPostModel, n: ScheduledPost) => n.update_at > e.updateAt,
+            shouldUpdate: shouldUpdateScheduledPostRecord,
         });
 
         const preparedScheduledPosts = await this.prepareRecords({
@@ -196,9 +201,9 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
     _deleteScheduledPostByIds = async (scheduledPostIds: string[], prepareRecordsOnly = false): Promise<ScheduledPostModel[]> => {
         const database: Database = this.database;
-        const scheduledPostToDelete = await database.get<ScheduledPostModel>(SCHEDULED_POST).query(Q.where('id', Q.oneOf(scheduledPostIds))).fetch();
+        const scheduledPostsToDelete = await database.get<ScheduledPostModel>(SCHEDULED_POST).query(Q.where('id', Q.oneOf(scheduledPostIds))).fetch();
         const deleteRawValues: ScheduledPost[] = [];
-        for await (const post of scheduledPostToDelete) {
+        for await (const post of scheduledPostsToDelete) {
             const schedulePost = await post.toApi(database);
             deleteRawValues.push(schedulePost);
         }
