@@ -39,10 +39,6 @@ else
     sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${CPU_ARCH_FAMILY}/|g" $NAME/config.ini
     sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${NAME}/pixel_4_xl_skin|g" $NAME/config.ini
 
-    # Move AVD configuration files to ANDROID_AVD_HOME
-    mv $NAME.ini $ANDROID_AVD_HOME/
-    mv $NAME.avd $ANDROID_AVD_HOME/
-
     echo "Android virtual device successfully created: ${NAME}"
 fi
 
@@ -59,9 +55,9 @@ echo "Starting the emulator..."
 
 if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
     echo "Starting the emulator with KVM..."
-    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu auto -accel on -qemu -m 4096
+    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu auto -accel on -qemu -m 4096 &
 else
-    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu off -verbose -qemu -vnc :0
+    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu off -verbose -qemu -vnc :0 &
 fi
 
 # Wait for the emulator to boot
@@ -81,4 +77,5 @@ while true; do
 done
 
 # Run tests
+echo "Running tests..."
 npm run e2e:android-test -- about.e2e.ts
