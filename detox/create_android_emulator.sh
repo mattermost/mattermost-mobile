@@ -87,12 +87,32 @@ if [[ "$CI" == "true" ]]; then
     echo "Installing the app..."
     cd ..
     adb install -r android/app/build/outputs/apk/debug/app-debug.apk
-fi
 
-# Start the server
-echo "Starting the server..."
-npm run start &
-sleep 120
+    # Verify the app is installed
+    echo "Verifying the app is installed..."
+    adb shell pm list packages | grep "com.mattermost.rnbeta" && echo "App is installed." || echo "App is not installed."
+
+    # Start the server
+    echo "Starting the server..."
+    npm run start &
+
+    # Wait for the server to be ready
+    timeout=120
+    interval=5
+    elapsed=0
+
+    while ! nc -z localhost 8081; do
+        if [[ $elapsed -ge $timeout ]]; then
+            echo "Server did not start within 3 minutes."
+            exit 1
+        fi
+        echo "Waiting for the server to be ready..."
+        sleep $interval
+        elapsed=$((elapsed + interval))
+    done
+
+    echo "Server is ready."
+fi
 
 # Run tests
 echo "Running tests..."
