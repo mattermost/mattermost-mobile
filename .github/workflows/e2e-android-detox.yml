@@ -146,10 +146,10 @@ jobs:
           - name: Unzip artifact
             run: unzip android/app/build/artifact.zip -d android/app/build
 
-          - name: Cleanup
-            run: |
-              find android/app/build -type f
-              rm android/app/build/outputs/apk/artifact.zip
+          # - name: Cleanup
+          #   run: |
+          #     find android/app/build -type f
+          #     rm android/app/build/outputs/apk/artifact.zip
 
           - name: Set up Android SDK
             run: |
