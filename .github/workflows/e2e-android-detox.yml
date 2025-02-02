@@ -131,6 +131,14 @@ jobs:
               echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
               echo "PATH=$PATH" >> $GITHUB_ENV
 
+          - name: Install scrot and ffmpeg
+            run: sudo apt-get install -y scrot ffmpeg
+
+          - name: Start Video Recording
+            run: |
+              ffmpeg -video_size 1920x1080 -framerate 25 -f x11grab -i :0.0 -codec:v libx264 -preset ultrafast -qp 0 screen_recording.mp4 &
+              echo $! > ffmpeg_pid.txt
+
           - name: Accept Android licenses
             run: |
               yes | sdkmanager --licenses || true
@@ -145,6 +153,28 @@ jobs:
               cd detox
               chmod +x ./create_android_emulator.sh
               ./create_android_emulator.sh
+
+          - name: Take Screenshot on Failure
+            if: failure()
+            run: scrot failure_screenshot.png
+
+          - name: Stop Video Recording
+            run: |
+              kill $(cat ffmpeg_pid.txt)
+              rm ffmpeg_pid.txt
+
+          - name: Upload Screenshot on Failure
+            if: failure()
+            uses: actions/upload-artifact@v4
+            with:
+              name: failure-screenshot
+              path: failure_screenshot.png
+
+          - name: Upload Video Recording
+            uses: actions/upload-artifact@v4
+            with:
+              name: screen-recording
+              path: screen_recording.mp4
 
           - name: Stop Android emulator
             if: always()  # Ensure the emulator is stopped even if the tests fail
