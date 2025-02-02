@@ -170,7 +170,7 @@ jobs:
 
           - name: Install Android system image
             run: |
-              sdkmanager "system-images;android-31;default;x86_64"  # Use x86_64 for KVM
+              sdkmanager "system-images;android-33;default;x86_64"  # Use x86_64 for KVM
               sdkmanager "platform-tools" "emulator"
 
           - name: Create and start Android emulator

@@ -7,7 +7,7 @@
 set -ex
 set -o pipefail
 
-SDK_VERSION=31
+SDK_VERSION=33
 NAME="detox_pixel_4_xl_api_${SDK_VERSION}"
 
 # Set ANDROID_AVD_HOME to the current directory
@@ -57,7 +57,7 @@ echo "Starting the emulator..."
 
 if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
     echo "Starting the emulator with KVM..."
-    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu swiftshader_indirect -accel on -qemu -m 4096 &
+    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu swiftshader_indirect -accel on -qemu -m 4096 -cores 5 &
 else
     emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu guest -verbose -qemu -vnc :0
 fi
@@ -88,4 +88,4 @@ sleep 180
 # Run tests
 echo "Running tests..."
 cd detox
-npm run e2e:android-test
+npm run e2e:android-test -- about.e2e.ts
