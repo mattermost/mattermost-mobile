@@ -11,6 +11,30 @@ on:
       types:
         - labeled
 
+env:
+  AWS_REGION: "us-east-1"
+  ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+  COMMIT_HASH: ${{ github.sha }}
+  DEVICE_NAME: ${{ inputs.ios_device_name }}
+  DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
+  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+  HEADLESS: "true"
+  TYPE: ${{ inputs.run-type }}
+  PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
+  SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
+  SITE_2_URL: "https://mobile-e2e-site-2.test.mattermost.cloud"
+  SITE_3_URL: "https://mobile-e2e-site-3.test.mattermost.cloud"
+  ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
+  JIRA_PROJECT_KEY: "MM"
+  ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+  ZEPHYR_FOLDER_ID: "3233873"
+  TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+  WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+  FAILURE_MESSAGE: "Something has failed"
+
 concurrency:
     group: "${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}"
     cancel-in-progress: true
@@ -160,6 +184,27 @@ jobs:
               chmod +x ./create_android_emulator.sh
               ./create_android_emulator.sh
 
+          - name: Generate Report Path
+            id: s3
+            run: |
+              path="${{ github.run_id }}/${{ github.sha }}"
+              echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
+    
+          - name: Save report Detox Dependencies
+            id: report-link
+            run: |
+              cd detox
+              npm run e2e:save-report
+            env:
+              DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+              DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+              IOS: false
+              BUILD_ID: ${{ github.run_id }}
+              REPORT_PATH: ${{ steps.s3.outputs.path }}
+              ## These are needed for the MM Webhook report
+              COMMIT_HASH: ${{ github.sha }}
+              BRANCH: ${{ github.ref }}
+              
           - name: Take Screenshot on Failure
             if: failure()
             run: scrot failure_screenshot.png
