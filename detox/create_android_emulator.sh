@@ -117,4 +117,4 @@ fi
 # Run tests
 echo "Running tests..."
 cd detox
-npm run e2e:android-test -- about.e2e.ts
+npm run e2e:android-test --loglevel -- about.e2e.ts

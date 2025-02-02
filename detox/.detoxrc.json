@@ -52,7 +52,10 @@
     },
     "android.emu.debug": {
       "device": "android.emulator",
-      "app": "android.debug"
+      "app": "android.debug",
+      "launchArgs": {
+        "timeout": 120000
+      }
     },
     "android.emu.release": {
       "device": "android.emulator",

@@ -27,11 +27,7 @@ import {apiUploadFile, getResponseFromError} from './common';
  * @param {string} baseUrl - the base server URL
  */
 export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {
-    // eslint-disable-next-line no-console
-    console.log('IN  apiCheckSystemHealth *************************');
     const {data} = await apiPingServerStatus(baseUrl);
-    // eslint-disable-next-line no-console
-    console.log('apiPingServerStatus *************************', data.status);
 
     jestExpect(data.status).toEqual('OK');
     jestExpect(data.database_status).toEqual('OK');
@@ -91,8 +87,6 @@ export const apiGetConfig = async (baseUrl: string): Promise<any> => {
  * @return {Object} returns {data} on success or {error, status} on error
  */
 export const apiPingServerStatus = async (baseUrl: string): Promise<any> => {
-    // eslint-disable-next-line no-console
-    console.log('IN  apiPingServerStatus *************************');
     try {
         const response = await client.get(`${baseUrl}/api/v4/system/ping?get_server_status=true`);
         return {data: response.data};
