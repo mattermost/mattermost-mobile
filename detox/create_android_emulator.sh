@@ -44,5 +44,4 @@ emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu off -ve
 
 
 # Run tests
-cd detox
 npm run e2e:android-test -- about.e2e.ts
