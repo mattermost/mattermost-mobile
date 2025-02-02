@@ -65,134 +65,23 @@ jobs:
                 name: android-build-apk-${{ github.run_id }}
                 path: "android/app/build/outputs/apk/**/app-*.apk"
 
-    run-android-tests:
-      if: github.event.label.name == 'E2E Android tests for PR' && false
-      # needs: build-android-apk
-      runs-on: ubuntu-latest-8-cores
-
-      env:
-        SDK_VERSION: 34
-        AVD_NAME: "detox_pixel_4_xl_api_31"
-        ARCH: "x86_64"
-        ANDROID_HOME: /usr/local/lib/android/sdk
-        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/27.2.12479018
-        ADB_INSTALL_TIMEOUT: 10
-        DETOX_LOGLEVEL: trace
-  
-      steps:
-        - name: ci/checkout-repo
-          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-          with:
-            ref: ${{ github.event.pull_request.head.sha }}
-
-        - name: ci/prepare-android-build
-          uses: ./.github/actions/prepare-android-build
-          env:
-            STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
-            STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
-            STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
-            MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
-
-        # - name: Download APK artifact
-        #   uses: actions/download-artifact@v4
-        #   with:
-        #     name: android-build-apk-13046110009
-        #     path: android/app/build/outputs/apk/
-
-        - name: Start Server
-          run: |
-            npm run start &
-
-        - name: Install Dependencies
-          run: |
-            cd detox
-            npm install
-
-        - name: Create destination path
-          run: mkdir -p android/app/build/outputs/apk
-
-        - name: Download artifact
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: |
-            curl -L -H "Authorization: token $GITHUB_TOKEN" \
-                -H "Accept: application/vnd.github.v3+json" \
-                https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2508660502/zip \
-                --output android/app/build/outputs/apk/artifact.zip
-
-        - name: Unzip artifact
-          run: unzip android/app/build/outputs/apk/artifact.zip -d android/app/build/outputs/apk
-
-        - name: Cleanup
-          run: |
-            find android/app/build -type f
-            rm android/app/build/outputs/apk/artifact.zip
-  
-        - name: Add ADB to PATH
-          run: |
-            echo "Adding ADB to PATH..."
-            echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-            echo "PATH updated: $PATH"
-
-        - name: Verify ADB Installation
-          run: |
-            ls -la /usr/local/lib/android/sdk/platform-tools/
-            /usr/local/lib/android/sdk/platform-tools/adb version
-
-        - name: Create & Start Android Emulator
-          run: |
-            echo "Creating AVD..."
-            export ANDROID_AVD_HOME=$HOME/.android/avd
-
-            # Ensure system image is installed
-            /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-34;google_apis;x86_64" --sdk_root=$ANDROID_HOME
-
-            # Create the AVD if it doesn't exist
-            echo no | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n ${{ env.AVD_NAME }} -k "system-images;android-34;google_apis;x86_64" --device "pixel_6" --force
-
-            # List available AVDs for debugging
-            $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list avd
-
-            echo "Starting emulator..."
-            nohup $ANDROID_HOME/emulator/emulator -avd ${{ env.AVD_NAME }} -no-audio -no-boot-anim -no-window -gpu swiftshader_indirect -camera-back none -camera-front none -timezone UTC > emulator.log 2>&1 &
-
-            echo "Waiting for emulator to start..."
-            timeout 300 /usr/local/lib/android/sdk/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
-
-            echo "Emulator started successfully!"
-
-            cd detox
-            npm run e2e:android -- about.e2e.ts
-
-        - name: Capture Logs on Failure
-          if: failure()
-          run: |
-            echo "Emulator Logs:"
-            cat emulator.log
-            echo "ADB Logcat Output:"
-            adb logcat -d > logcat_output.txt
-            cat logcat_output.txt
-
-        - name: Upload Logs on Failure
-          if: failure()
-          uses: actions/upload-artifact@v4
-          with:
-            name: detox-logs
-            path: logcat_output.txt
-
     detox-android-e2e:
         runs-on: ubuntu-latest-8-cores
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-          PATH: /usr/local/lib/android/sdk/platform-tools:/usr/local/lib/android/sdk/emulator:/usr/local/lib/android/sdk/cmdline-tools/latest/bin:$PATH
-
         steps:
           - name: ci/checkout-repo
             uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
             with:
               ref: ${{ github.event.pull_request.head.sha }}
+
+          - name: Set up Android SDK paths
+            run: |
+              echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
+              echo "/usr/local/lib/android/sdk/emulator" >> $GITHUB_PATH
+              echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+              echo "*********"
+              echo $GITHUB_PATH
+              echo "*********"
+              echo $PATH
 
           - name: Enable KVM
             run: |
