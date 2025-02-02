@@ -82,10 +82,17 @@ if [[ "$CI" == "true" ]]; then
     done
 fi
 
+if [[ "$CI" == "true" ]]; then
+    # Install the app
+    echo "Installing the app..."
+    cd ..
+    adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+fi
+
 # Start the server
-cd ..
+echo "Starting the server..."
 npm run start &
-sleep 180
+sleep 120
 
 # Run tests
 echo "Running tests..."
