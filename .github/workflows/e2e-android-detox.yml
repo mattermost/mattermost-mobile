@@ -131,12 +131,18 @@ jobs:
               echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
               echo "PATH=$PATH" >> $GITHUB_ENV
 
-          - name: Install scrot and ffmpeg
-            run: sudo apt-get install -y scrot ffmpeg
+          - name: Install scrot, ffmpeg, and Xvfb
+            run: sudo apt-get install -y scrot ffmpeg xvfb
+
+          - name: Start Xvfb
+            run: |
+              Xvfb :99 -screen 0 1920x1080x24 &
+              export DISPLAY=:99
+              echo "DISPLAY=:99" >> $GITHUB_ENV
 
           - name: Start Video Recording
             run: |
-              ffmpeg -video_size 1920x1080 -framerate 25 -f x11grab -i :0.0 -codec:v libx264 -preset ultrafast -qp 0 screen_recording.mp4 &
+              ffmpeg -video_size 1920x1080 -framerate 25 -f x11grab -i :99.0 -codec:v libx264 -preset ultrafast -qp 0 screen_recording.mp4 &
               echo $! > ffmpeg_pid.txt
 
           - name: Accept Android licenses
