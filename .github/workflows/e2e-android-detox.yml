@@ -67,21 +67,22 @@ jobs:
 
     detox-android-e2e:
         runs-on: ubuntu-latest-8-cores
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+          ANDROID_AVD_HOME: /home/runner/.android/avd
+          PATH: /usr/local/lib/android/sdk/platform-tools:/usr/local/lib/android/sdk/emulator:/usr/local/lib/android/sdk/cmdline-tools/latest/bin:$PATH
+
         steps:
           - name: ci/checkout-repo
             uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
             with:
               ref: ${{ github.event.pull_request.head.sha }}
 
-          - name: Set up Android SDK paths
+          - name: Debug AVD Location
             run: |
-              echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-              echo "/usr/local/lib/android/sdk/emulator" >> $GITHUB_PATH
-              echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
-              echo "*********"
-              echo $GITHUB_PATH
-              echo "*********"
-              echo $PATH
+              ls -la $ANDROID_AVD_HOME
+              ls -la /home/runner/.android/avd
 
           - name: Enable KVM
             run: |
