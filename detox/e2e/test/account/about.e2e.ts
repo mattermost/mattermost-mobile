@@ -28,6 +28,8 @@ describe('Account - Settings - About', () => {
     let testUser: any;
 
     beforeAll(async () => {
+        // eslint-disable-next-line no-console
+        console.log('-----------------------siteOneUrl  ', siteOneUrl);
         const {license} = await System.apiGetClientLicense(siteOneUrl);
         isLicensed = license.IsLicensed === 'true';
         const {user} = await Setup.apiInit(siteOneUrl);

@@ -97,7 +97,7 @@ jobs:
           - name: Start Server
             run: |
               npm run start &
-              sleep 120
+              sleep 240
 
           - name: Install Dependencies
             run: |
@@ -165,6 +165,7 @@ jobs:
             run: scrot failure_screenshot.png
 
           - name: Stop Video Recording
+            if: failure()
             run: |
               kill $(cat ffmpeg_pid.txt)
               rm ffmpeg_pid.txt
