@@ -42,7 +42,7 @@ concurrency:
 
 jobs:
     build-android-apk:
-        # if: github.event.label.name == 'E2E Android tests for PR'
+        if: github.event.label.name == 'E2E Android tests for PR'
         runs-on: ubuntu-latest-8-cores
         env:
             ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
@@ -92,7 +92,7 @@ jobs:
 
     detox-android-e2e:
         runs-on: ubuntu-latest-8-cores
-        needs: build-android-apk
+        # needs: build-android-apk
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
@@ -120,36 +120,36 @@ jobs:
               STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
               MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
-          - name: Download android build files
-            uses: actions/download-artifact@v4
-            with:
-              name: android-build-files-${{ github.run_id }}
-              path: android/app/build
+          # - name: Download android build files
+          #   uses: actions/download-artifact@v4
+          #   with:
+          #     name: android-build-files-${{ github.run_id }}
+          #     path: android/app/build
 
           - name: Install Dependencies
             run: |
               cd detox
               npm install
 
-          # - name: Create destination path
-          #   run: mkdir -p android/app/build
+          - name: Create destination path
+            run: mkdir -p android/app/build
 
-          # - name: Download artifact
-          #   env:
-          #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          #   run: |
-          #     curl -L -H "Authorization: token $GITHUB_TOKEN" \
-          #         -H "Accept: application/vnd.github.v3+json" \
-          #         https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2508660502/zip \
-          #         --output android/app/build/artifact.zip
+          - name: Download artifact
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            run: |
+              curl -L -H "Authorization: token $GITHUB_TOKEN" \
+                  -H "Accept: application/vnd.github.v3+json" \
+                  https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2523423750/zip \
+                  --output android/app/build/artifact.zip
 
-          # - name: Unzip artifact
-          #   run: unzip android/app/build/artifact.zip -d android/app/build
+          - name: Unzip artifact
+            run: unzip android/app/build/artifact.zip -d android/app/build
 
-          # - name: Cleanup
-          #   run: |
-          #     find android/app/build -type f
-          #     rm android/app/build/outputs/apk/artifact.zip
+          - name: Cleanup
+            run: |
+              find android/app/build -type f
+              rm android/app/build/outputs/apk/artifact.zip
 
           - name: Set up Android SDK
             run: |
