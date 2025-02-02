@@ -97,6 +97,7 @@ jobs:
           - name: Start Server
             run: |
               npm run start &
+              sleep 120
 
           - name: Install Dependencies
             run: |
@@ -149,3 +150,10 @@ jobs:
             if: always()  # Ensure the emulator is stopped even if the tests fail
             run: |
               adb emu kill
+
+          - name: Upload android Test Report
+            if: always()
+            uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+            with:
+              name: android-results-${{ github.run_id }}
+              path: detox/artifacts/

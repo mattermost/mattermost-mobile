@@ -57,7 +57,7 @@ if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
     echo "Starting the emulator with KVM..."
     emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu auto -accel on -qemu -m 4096 &
 else
-    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu off -verbose -qemu -vnc :0 &
+    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu auto -verbose -qemu -vnc :0 &
 fi
 
 # Wait for the emulator to boot
