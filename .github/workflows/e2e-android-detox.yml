@@ -21,7 +21,7 @@ env:
   DEVICE_NAME: ${{ inputs.ios_device_name }}
   DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
-  HEADLESS: "true"
+  HEADLESS: "false"
   TYPE: ${{ inputs.run-type }}
   PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
   SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
@@ -104,7 +104,10 @@ jobs:
             ref: ${{ github.event.pull_request.head.sha }}
 
         - name: Install Dependencies
-          run: sudo apt-get update && sudo apt-get install -y libpulse0
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y libpulse0
+            sudo apt-get install -y scrot ffmpeg xvfb
 
         - name: Enable KVM
           run: |
@@ -138,11 +141,9 @@ jobs:
               --output android/app/build/artifact.zip
 
         - name: Unzip artifact
-          run: unzip android/app/build/artifact.zip -d android/app/build
-
-        - name: List files
           run: |
-            find android/app/build -type f
+            unzip android/app/build/artifact.zip -d android/app/build
+            rm -rf android/app/build/artifact.zip
 
         - name: Set up Android SDK
           run: |
@@ -151,19 +152,11 @@ jobs:
             echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
             echo "PATH=$PATH" >> $GITHUB_ENV
 
-        - name: Install scrot, ffmpeg, and Xvfb
-          run: sudo apt-get install -y scrot ffmpeg xvfb
-
         - name: Start Xvfb
           run: |
             Xvfb :99 -screen 0 1920x1080x24 &
             export DISPLAY=:99
             echo "DISPLAY=:99" >> $GITHUB_ENV
-
-        - name: Start Video Recording
-          run: |
-            ffmpeg -video_size 1920x1080 -framerate 25 -f x11grab -i :99.0 -codec:v libx264 -preset ultrafast -qp 0 screen_recording.mp4 &
-            echo $! > ffmpeg_pid.txt
 
         - name: Accept Android licenses
           run: |
@@ -171,7 +164,7 @@ jobs:
 
         - name: Install Android system image
           run: |
-            sdkmanager "system-images;android-33;default;x86_64"  # Use x86_64 for KVM
+            sdkmanager "system-images;android-33;default;x86_64"
             sdkmanager "platform-tools" "emulator"
 
         - name: Create and start Android emulator
@@ -211,18 +204,6 @@ jobs:
           with:
             name: failure-screenshot
             path: failure_screenshot.png
-
-        - name: Stop Video Recording
-          if: always()
-          run: |
-            kill $(cat ffmpeg_pid.txt)
-
-        - name: Upload Video Recording
-          if: always()
-          uses: actions/upload-artifact@v4
-          with:
-            name: screen-recording
-            path: screen_recording.mp4
 
         - name: Stop Android emulator
           if: always()  # Ensure the emulator is stopped even if the tests fail
