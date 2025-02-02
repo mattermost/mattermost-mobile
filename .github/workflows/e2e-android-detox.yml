@@ -226,11 +226,17 @@ jobs:
             run: |
               find android/app/build -type f
               rm android/app/build/outputs/apk/artifact.zip
-    
+
+          - name: Set up Android SDK
+            run: |
+              export ANDROID_HOME=$HOME/Library/Android/sdk
+              export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
+              echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+              echo "PATH=$PATH" >> $GITHUB_ENV
 
           - name: Accept Android licenses
             run: |
-              yes | sdkmanager --licenses
+              yes | sdkmanager --licenses || true
 
           - name: Create and start Android emulator
             run: |
