@@ -3,8 +3,18 @@
 
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {forceLogoutIfNecessary} from '@actions/remote/session';
+import {logError} from '@utils/log';
 
 import {createScheduledPost} from './scheduled_post';
+
+jest.mock('@utils/log', () => ({
+    logError: jest.fn(),
+}));
+
+jest.mock('@actions/remote/session', () => ({
+    forceLogoutIfNecessary: jest.fn(),
+}));
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -49,6 +59,8 @@ describe('scheduled_post', () => {
         const result = await createScheduledPost('foo', scheduledPost);
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
+        expect(logError).not.toHaveBeenCalled();
+        expect(forceLogoutIfNecessary).not.toHaveBeenCalled();
     });
 
     it('createScheduledPost - base case', async () => {
@@ -64,9 +76,14 @@ describe('scheduled_post', () => {
     });
 
     it('createScheduledPost - request error', async () => {
-        mockClient.createScheduledPost.mockImplementationOnce(jest.fn(throwFunc));
+        const error = new Error('error');
+        mockClient.createScheduledPost.mockImplementationOnce(jest.fn(() => {
+            throw error;
+        }));
         const result = await createScheduledPost(serverUrl, scheduledPost);
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
+        expect(logError).toHaveBeenCalledWith('error on createScheduledPost', error.message);
+        expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
     });
 });
