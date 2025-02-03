@@ -136,6 +136,7 @@ describe('DraftInput', () => {
             fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
             expect(openAsBottomSheet).toHaveBeenCalledWith(expect.objectContaining({
                 screen: Screens.SCHEDULED_POST_OPTIONS,
+                closeButtonId: 'close-scheduled-post-picker',
             }));
             expect(baseProps.sendMessage).not.toHaveBeenCalled();
         });
