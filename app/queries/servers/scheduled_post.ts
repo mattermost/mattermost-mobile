@@ -13,16 +13,9 @@ export const queryScheduledPostsForTeam = (database: Database, teamId: string, i
     return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
         Q.on(CHANNEL,
             Q.or(
-                Q.and(
-                    Q.where('team_id', teamId),
-                    Q.or(
-                        Q.where('type', 'O'),
-                        Q.where('type', 'P'),
-                    ),
-                ),
+                Q.where('team_id', teamId),
                 ...(includeDirectChannelPosts ? [
-                    Q.where('type', 'D'), // Direct messages
-                    Q.where('type', 'G'), // Group messages
+                    Q.where('team_id', ''), // Direct messages
                 ] : []),
             ),
         ),
