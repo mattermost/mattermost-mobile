@@ -11,24 +11,30 @@ const {ARTIFACTS_DIR} = require('./constants');
 
 const MAX_FAILED_TITLES = 5;
 
-function convertXmlToJson(xml) {
-    const platform = process.env.IOS === 'true' ? 'ios' : 'android';
+function convertXmlToJson(xml, platform) {
     const jsonFile = `${ARTIFACTS_DIR}/${platform}-junit.json`;
 
-    // Convert XML to JSON
-    xml2js.parseString(xml, {mergeAttrs: true}, (err, result) => {
-        if (err) {
-            throw err;
-        }
+    return new Promise((resolve, reject) => {
+        // Convert XML to JSON
+        xml2js.parseString(xml, {mergeAttrs: true}, (parseErr, result) => {
+            if (parseErr) {
+                reject(parseErr);
+                return;
+            }
 
-        // Convert result to a JSON string
-        const json = JSON.stringify(result, null, 4);
+            // Convert result to a JSON string
+            const json = JSON.stringify(result, null, 4);
 
-        // Save JSON in a file
-        fse.writeFileSync(jsonFile, json);
+            // Save JSON in a file
+            fse.writeJson(jsonFile, json, (err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(readJsonFromFile(jsonFile));
+            });
+        });
     });
-
-    return readJsonFromFile(jsonFile);
 }
 
 function getAllTests(testSuites) {
