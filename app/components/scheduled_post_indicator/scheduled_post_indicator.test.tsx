@@ -76,11 +76,15 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('renders with military time when preference is set', async () => {
-        await operator.handleConfigs({
-            configs: [
-                {id: 'use_military_time', value: 'true'},
+        await operator.handlePreferences({
+            preferences: [
+                {
+                    user_id: 'user_1',
+                    category: 'display_settings',
+                    name: 'use_military_time',
+                    value: 'true',
+                },
             ],
-            configsToDelete: [],
             prepareRecordsOnly: false,
         });
 
@@ -98,11 +102,15 @@ describe('components/scheduled_post_indicator', () => {
     });
 
     it('renders with 12-hour time when preference is not set', async () => {
-        await operator.handleConfigs({
-            configs: [
-                {id: 'use_military_time', value: 'false'},
+        await operator.handlePreferences({
+            preferences: [
+                {
+                    user_id: 'user_1',
+                    category: 'display_settings',
+                    name: 'use_military_time',
+                    value: 'true',
+                },
             ],
-            configsToDelete: [],
             prepareRecordsOnly: false,
         });
 
