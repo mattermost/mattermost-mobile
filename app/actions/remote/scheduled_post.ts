@@ -50,6 +50,7 @@ export async function fetchScheduledPosts(serverUrl: string, teamId: string, inc
                 actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
                 scheduledPosts,
                 prepareRecordsOnly: false,
+                includeDirectChannelPosts: includeDirectChannels,
             });
         }
 
