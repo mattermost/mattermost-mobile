@@ -45,8 +45,8 @@ describe('components/scheduled_post_indicator', () => {
         );
 
         await screen.findByTestId('scheduled_post_indicator_single_time');
-        expect(getByText(/Message scheduled for/)).toBeTruthy();
-        expect(getByText(/See all./)).toBeTruthy();
+        expect(getByText(/Message scheduled for/)).toBeVisible();
+        expect(getByText(/See all./)).toBeVisible();
     });
 
     it('should render multiple scheduled posts indicator for channel', async () => {
@@ -58,8 +58,8 @@ describe('components/scheduled_post_indicator', () => {
             {database},
         );
 
-        expect(getByText(/10 scheduled messages in channel./)).toBeTruthy();
-        expect(getByText(/See all./)).toBeTruthy();
+        expect(getByText(/10 scheduled messages in channel./)).toBeVisible();
+        expect(getByText(/See all./)).toBeVisible();
     });
 
     it('should render multiple scheduled posts indicator for thread', async () => {
@@ -71,8 +71,8 @@ describe('components/scheduled_post_indicator', () => {
             {database},
         );
 
-        expect(getByText(/10 scheduled messages in thread./)).toBeTruthy();
-        expect(getByText(/See all./)).toBeTruthy();
+        expect(getByText(/10 scheduled messages in thread./)).toBeVisible();
+        expect(getByText(/See all./)).toBeVisible();
     });
 
     it('renders with military time when preference is set', async () => {
@@ -84,15 +84,17 @@ describe('components/scheduled_post_indicator', () => {
             prepareRecordsOnly: false,
         });
 
-        renderWithEverything(
+        const {getByText, findByTestId} = renderWithEverything(
             <ScheduledPostIndicator
                 scheduledPostCount={1}
             />,
             {database},
         );
 
-        const timeElement = await screen.findByTestId('scheduled_post_indicator_single_time');
-        expect(timeElement).toBeTruthy();
+        const timeElement = await findByTestId('scheduled_post_indicator_single_time');
+        expect(timeElement).toBeVisible();
+
+        expect(getByText(/19:41/)).toBeVisible();
     });
 
     it('renders with 12-hour time when preference is not set', async () => {
@@ -104,26 +106,29 @@ describe('components/scheduled_post_indicator', () => {
             prepareRecordsOnly: false,
         });
 
-        renderWithEverything(
+        const {getByText, findByTestId} = renderWithEverything(
             <ScheduledPostIndicator
                 scheduledPostCount={1}
             />,
             {database},
         );
 
-        const timeElement = await screen.findByTestId('scheduled_post_indicator_single_time');
-        expect(timeElement).toBeTruthy();
+        const timeElement = await findByTestId('scheduled_post_indicator_single_time');
+        expect(timeElement).toBeVisible();
+
+        expect(getByText(/7:41/)).toBeVisible();
     });
 
     it('handles missing current user', async () => {
-        renderWithEverything(
+        const {getByText, findByTestId} = renderWithEverything(
             <ScheduledPostIndicator
                 scheduledPostCount={1}
             />,
             {database},
         );
 
-        const timeElement = await screen.findByTestId('scheduled_post_indicator_single_time');
-        expect(timeElement).toBeTruthy();
+        const timeElement = await findByTestId('scheduled_post_indicator_single_time');
+        expect(timeElement).toBeVisible();
+        expect(getByText(/Message scheduled for/)).toBeVisible();
     });
 });

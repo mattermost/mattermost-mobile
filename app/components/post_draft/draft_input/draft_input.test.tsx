@@ -140,12 +140,12 @@ describe('DraftInput', () => {
 
             const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
             fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
-            
+
             expect(openAsBottomSheet).toHaveBeenCalledWith(expect.objectContaining({
                 screen: Screens.SCHEDULED_POST_OPTIONS,
                 closeButtonId: 'close-scheduled-post-picker',
             }));
-            
+
             // Verify sendMessage was called with the scheduled time
             expect(baseProps.sendMessage).toHaveBeenCalledWith(scheduledTime);
         });

@@ -150,7 +150,8 @@ const Channel = ({
                             nativeID={channelId}
                         />
                     </View>
-                    {/*This count is hardcoded but will be removed during integration work*/}
+                    {/* eslint-disable-next-line no-warning-comments */}
+                    {/*TODO: This count is hardcoded but will be removed during integration work*/}
                     <ScheduledPostIndicator scheduledPostCount={10}/>
                     <PostDraft
                         channelId={channelId}

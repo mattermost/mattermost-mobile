@@ -58,14 +58,18 @@ export function ScheduledPostIndicator({currentUser, isMilitaryTime, isThread, s
 
     let scheduledPostText: React.ReactNode;
 
-    if (scheduledPostCount <= 0) {
+    if (scheduledPostCount === 0) {
         return null;
     } else if (scheduledPostCount === 1) {
+        // eslint-disable-next-line no-warning-comments
+        //TODO: remove this hardcoded value with actual value
+        const value = 1738611689000;
+
         const dateTime = (
             <FormattedTime
                 timezone={getUserTimezone(currentUser)}
                 isMilitaryTime={isMilitaryTime}
-                value={1768902936000}
+                value={value}
                 testID='scheduled_post_indicator_single_time'
             />
         );
