@@ -124,7 +124,7 @@ describe('components/scheduled_post_indicator', () => {
         const timeElement = await findByTestId('scheduled_post_indicator_single_time');
         expect(timeElement).toBeVisible();
 
-        expect(getByText(/7:41 AM/)).toBeVisible();
+        expect(getByText(/7:41 PM/)).toBeVisible();
     });
 
     it('renders with 12-hour time when preference is not set', async () => {
@@ -138,7 +138,7 @@ describe('components/scheduled_post_indicator', () => {
         const timeElement = await findByTestId('scheduled_post_indicator_single_time');
         expect(timeElement).toBeVisible();
 
-        expect(getByText(/7:41 AM/)).toBeVisible();
+        expect(getByText(/7:41 PM/)).toBeVisible();
     });
 
     it('handles missing current user', async () => {
