@@ -15,6 +15,8 @@ import {
 } from '@database/operator/server_data_operator/transformers/post';
 import {getRawRecordPairs, getUniqueRawsBy, getValidRecordsForUpdate} from '@database/operator/utils/general';
 import {createPostsChain, getPostListEdges} from '@database/operator/utils/post';
+import {queryScheduledPostsForTeam} from '@queries/servers/scheduled_post';
+import {getCurrentTeamId} from '@queries/servers/system';
 import FileModel from '@typings/database/models/servers/file';
 import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {safeParseJSON} from '@utils/helpers';
@@ -121,10 +123,12 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         const scheduledPostToDelete: ScheduledPostModel[] = [];
         const scheduledPostToCreateAndUpdate: ScheduledPostModel[] = [];
 
+        const currentTeamId = await getCurrentTeamId(database);
+
         if (!scheduledPosts?.length) {
             if (actionType === ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS) {
-                const scheduledPostCollection = database.get<ScheduledPostModel>(SCHEDULED_POST);
-                scheduledPostToDelete.push(...await scheduledPostCollection.query().fetch());
+                const scheduledPostQuery = queryScheduledPostsForTeam(database, currentTeamId);
+                scheduledPostToDelete.push(...await scheduledPostQuery.fetch());
             } else {
                 logWarning('An empty or undefined "scheduledPosts" array has been passed to the handleScheduledPosts method');
                 return [];
@@ -151,7 +155,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                     break;
                 }
                 const idsFromServer = new Set(scheduledPosts?.map((post) => post.id) || []);
-                const existingScheduledPosts = await database.get<ScheduledPostModel>(SCHEDULED_POST).query().fetch();
+                const existingScheduledPosts = await queryScheduledPostsForTeam(database, currentTeamId).fetch();
 
                 const deletedScheduledPostIds = existingScheduledPosts.
                     filter((post) => !idsFromServer.has(post.id)).

@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
 import {Database, Q} from '@nozbe/watermelondb';
 
@@ -9,6 +10,7 @@ import DatabaseManager from '@database/manager';
 import {buildDraftKey} from '@database/operator/server_data_operator/comparators';
 import {transformDraftRecord, transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 import {createPostsChain} from '@database/operator/utils/post';
+import * as ScheduledPostQueries from '@queries/servers/scheduled_post';
 
 import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
 
@@ -22,7 +24,6 @@ Q.sortBy = jest.fn().mockImplementation((field) => {
 });
 describe('*** Operator: Post Handlers tests ***', () => {
     let operator: ServerDataOperator;
-    let database: Database;
 
     let posts: Post[] = [];
     let scheduledPosts: ScheduledPost[] = [];
@@ -201,7 +202,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
         await DatabaseManager.init(['baseHandler.test.com']);
         operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
-        database = DatabaseManager.serverDatabases['baseHandler.test.com']!.database;
     });
 
     afterEach(async () => {
@@ -580,7 +580,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
     it('HandleScheduledPosts: should write to the ScheduledPost table', async () => {
         const spyOnBatchRecords = jest.spyOn(operator, 'processRecords');
-
         await operator.handleScheduledPosts({
             actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
             scheduledPosts,
@@ -597,32 +596,21 @@ describe('*** Operator: Post Handlers tests ***', () => {
     });
 
     it('HandleScheduledPosts: should delete from the ScheduledPost table', async () => {
-        expect.assertions(1);
         const spyOnBatchRecords = jest.spyOn(operator, 'processRecords');
-
-        await operator.handleScheduledPosts({
-            actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
-            scheduledPosts,
-            prepareRecordsOnly: false,
-        });
-
         await operator.handleScheduledPosts({
             actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
             scheduledPosts: [scheduledPosts[0]],
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnBatchRecords).toHaveBeenCalledTimes(2);
+        expect(spyOnBatchRecords).toHaveBeenCalledTimes(1);
     });
 
     it('HandleScheduledPosts: should delete all the schedule post from the database when action is RECEIVED_ALL_SCHEDULED_POSTS', async () => {
-        jest.spyOn(database, 'get').mockImplementation(() => ({
-            query: jest.fn().mockReturnValue({
-                fetch: jest.fn().mockResolvedValue(scheduledPosts),
-            }),
-        }) as any);
-
         const spyOnBatchRecords = jest.spyOn(operator, 'batchRecords');
+        jest.spyOn(ScheduledPostQueries, 'queryScheduledPostsForTeam').mockReturnValue({
+            fetch: jest.fn().mockResolvedValue(scheduledPosts),
+        } as any);
         await operator.handleScheduledPosts({
             actionType: ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS,
             scheduledPosts: [],
