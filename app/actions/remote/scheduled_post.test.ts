@@ -142,6 +142,7 @@ describe('fetch and delete scheduled posts', () => {
 
     it('fetch Schedule post - handle scheduled post enabled', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
+        jest.spyOn(operator, 'handleScheduledPosts').mockResolvedValueOnce([]);
         const result = await fetchScheduledPosts(serverUrl, 'bar');
         expect(result).toBeDefined();
         expect(result.scheduledPosts).toEqual(scheduledPostsResponse.bar);
@@ -162,6 +163,7 @@ describe('fetch and delete scheduled posts', () => {
     });
 
     it('delete Schedule post - handle scheduled post enabled', async () => {
+        jest.spyOn(operator, 'handleScheduledPosts').mockResolvedValueOnce([]);
         const result = await deleteScheduledPost(serverUrl, 'scheduled_post_id');
         expect(result).toBeDefined();
         expect(result.scheduledPost).toEqual(scheduledPostsResponse.bar[0]);
