@@ -123,10 +123,7 @@ describe('DraftInput', () => {
         });
 
         it('opens scheduled post options on long press and verify action', async () => {
-            const mockedOpenAsBottomSheet = jest.mocked(openAsBottomSheet).mockImplementation(({props}) => props!.onSchedule({scheduled_at: 100} as SchedulingInfo));
-            jest.mock('@screens/navigation', () => ({
-                openAsBottomSheet: mockedOpenAsBottomSheet,
-            }));
+            jest.mocked(openAsBottomSheet).mockImplementation(({props}) => props!.onSchedule({scheduled_at: 100} as SchedulingInfo));
 
             // make this a re-usable function
             await operator.handleConfigs({
@@ -143,8 +140,6 @@ describe('DraftInput', () => {
                 screen: Screens.SCHEDULED_POST_OPTIONS,
                 closeButtonId: 'close-scheduled-post-picker',
             }));
-            expect(baseProps.sendMessage).toHaveBeenCalled();
-            expect(mockedOpenAsBottomSheet).toHaveBeenCalled();
             expect(baseProps.sendMessage).toHaveBeenCalledWith({scheduled_at: 100});
         });
 
