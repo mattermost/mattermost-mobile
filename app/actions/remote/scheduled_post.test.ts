@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {logError} from '@utils/log';
 
 import {createScheduledPost} from './scheduled_post';
@@ -30,10 +30,6 @@ const scheduledPost = {
     message: 'Test message',
     scheduled_at: Date.now() + 10000,
 } as ScheduledPost;
-
-const throwFunc = () => {
-    throw Error('error');
-};
 
 const mockClient = {
     createScheduledPost: jest.fn(() => ({...scheduledPost})),
