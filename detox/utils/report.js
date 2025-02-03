@@ -14,10 +14,16 @@ const MAX_FAILED_TITLES = 5;
 function convertXmlToJson(xml, platform) {
     const jsonFile = `${ARTIFACTS_DIR}/${platform}-junit.json`;
 
+    console.log('=============== xml', xml);
     return new Promise((resolve, reject) => {
+        console.log('=============== In promise', xml);
+
         // Convert XML to JSON
         xml2js.parseString(xml, {mergeAttrs: true}, (parseErr, result) => {
+            console.log('------------- in xml2js', result);
+
             if (parseErr) {
+                console.log('=============== parseErr', parseErr);
                 reject(parseErr);
                 return;
             }
@@ -25,12 +31,17 @@ function convertXmlToJson(xml, platform) {
             // Convert result to a JSON string
             const json = JSON.stringify(result, null, 4);
 
+            console.log('============= json', json);
+
             // Save JSON in a file
             fse.writeJson(jsonFile, json, (err) => {
                 if (err) {
+                    console.log('=============== err', err);
                     reject(err);
                     return;
                 }
+
+                console.log('=============== jsonFile', jsonFile);
                 resolve(json);
             });
         });
