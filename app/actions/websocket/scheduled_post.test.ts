@@ -86,16 +86,12 @@ describe('handleDeleteScheduledPost', () => {
             prepareRecordsOnly: false,
         });
 
-        const spyOnProcessRecords = jest.spyOn(operator, 'processRecords');
-
         const scheduledPost = scheduledPosts[0];
 
-        await handleDeleteScheduledPost(serverUrl, {data: {scheduled_post: JSON.stringify(scheduledPost)}} as WebSocketMessage) as {models: ScheduledPostModel[]};
-        expect(spyOnProcessRecords).toHaveBeenLastCalledWith({
-            createOrUpdateRawValues: [],
-            deleteRawValues: [scheduledPosts[0]],
-            tableName: 'ScheduledPost',
-            fieldName: 'id',
-        });
+        const deletedRecord = await handleDeleteScheduledPost(serverUrl, {data: {scheduled_post: JSON.stringify(scheduledPost)}} as WebSocketMessage) as {models: ScheduledPostModel[]};
+        expect(deletedRecord).toBeTruthy();
+        expect(deletedRecord.models).toBeTruthy();
+        expect(deletedRecord.models.length).toBe(1);
+        expect(deletedRecord.models[0].id).toBe(scheduledPost.id);
     });
 });
