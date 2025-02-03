@@ -106,6 +106,8 @@ const saveReport = async () => {
     const xml = fse.readFileSync(combinedFilePath);
     const {testsuites} = convertXmlToJson(xml);
 
+    console.log('**************** Tests:', testsuites.tests);
+
     // Generate short summary, write to file and then send report via webhook
     const allTests = getAllTests(testsuites);
     const summary = generateShortSummary(allTests);

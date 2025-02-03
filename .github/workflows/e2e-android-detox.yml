@@ -35,6 +35,7 @@ env:
   WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
   FAILURE_MESSAGE: "Something has failed"
   RUNNING_E2E: "true"
+  IOS: "false"
 
 concurrency:
     group: "${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}"

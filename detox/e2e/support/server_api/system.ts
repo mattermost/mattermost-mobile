@@ -28,7 +28,6 @@ import {apiUploadFile, getResponseFromError} from './common';
  */
 export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {
     const {data} = await apiPingServerStatus(baseUrl);
-
     jestExpect(data.status).toEqual('OK');
     jestExpect(data.database_status).toEqual('OK');
     jestExpect(data.filestore_status).toEqual('OK');

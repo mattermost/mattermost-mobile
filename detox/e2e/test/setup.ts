@@ -10,9 +10,6 @@ beforeAll(async () => {
     await User.apiAdminLogin(siteOneUrl);
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
 
-    // Add wait time before launching the app
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-
     await device.launchApp({
         newInstance: true,
         launchArgs: {detoxPrintBusyIdleResources: 'YES'},
