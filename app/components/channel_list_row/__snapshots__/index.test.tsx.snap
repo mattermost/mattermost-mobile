@@ -1,0 +1,572 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/channel_list_row should be selected 1`] = `
+<View
+  style={
+    {
+      "paddingVertical": 9,
+    }
+  }
+>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "opacity": 1,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+      testID="ChannelListRow.channel"
+    >
+      <Icon
+        name="circle-multiple-outline"
+        size={20}
+        style={
+          {
+            "color": "rgba(63,67,80,0.56)",
+            "padding": 2,
+          }
+        }
+      />
+      <View
+        style={
+          {
+            "flexDirection": "column",
+            "marginLeft": 16,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#3f4350",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            }
+          }
+          testID="ChannelListRow.channel.display_name"
+        >
+          channel
+        </Text>
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            {
+              "color": "rgba(63,67,80,0.64)",
+              "fontFamily": "OpenSans",
+              "fontSize": 12,
+              "fontWeight": "400",
+              "lineHeight": 16,
+            }
+          }
+        >
+          My purpose
+        </Text>
+      </View>
+      <View>
+        <Icon
+          color="#1c58d9"
+          name="check-circle"
+          size={28}
+        />
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`components/channel_list_row should match snapshot with delete_at filled in 1`] = `
+<View
+  style={
+    {
+      "paddingVertical": 9,
+    }
+  }
+>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "opacity": 1,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+      testID="ChannelListRow.channel"
+    >
+      <Icon
+        name="archive-outline"
+        size={20}
+        style={
+          {
+            "color": "rgba(63,67,80,0.56)",
+            "padding": 2,
+          }
+        }
+      />
+      <View
+        style={
+          {
+            "flexDirection": "column",
+            "marginLeft": 16,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#3f4350",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            }
+          }
+          testID="ChannelListRow.channel.display_name"
+        >
+          channel
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`components/channel_list_row should match snapshot with open channel icon 1`] = `
+<View
+  style={
+    {
+      "paddingVertical": 9,
+    }
+  }
+>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "opacity": 1,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+      testID="ChannelListRow.channel"
+    >
+      <Icon
+        name="circle-multiple-outline"
+        size={20}
+        style={
+          {
+            "color": "rgba(63,67,80,0.56)",
+            "padding": 2,
+          }
+        }
+      />
+      <View
+        style={
+          {
+            "flexDirection": "column",
+            "marginLeft": 16,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#3f4350",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            }
+          }
+          testID="ChannelListRow.channel.display_name"
+        >
+          channel
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`components/channel_list_row should match snapshot with private channel icon 1`] = `
+<View
+  style={
+    {
+      "paddingVertical": 9,
+    }
+  }
+>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "opacity": 1,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+      testID="ChannelListRow.channel"
+    >
+      <Icon
+        name="circle-multiple-outline"
+        size={20}
+        style={
+          {
+            "color": "rgba(63,67,80,0.56)",
+            "padding": 2,
+          }
+        }
+      />
+      <View
+        style={
+          {
+            "flexDirection": "column",
+            "marginLeft": 16,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#3f4350",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            }
+          }
+          testID="ChannelListRow.channel.display_name"
+        >
+          channel
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`components/channel_list_row should match snapshot with purpose filled in 1`] = `
+<View
+  style={
+    {
+      "paddingVertical": 9,
+    }
+  }
+>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "opacity": 1,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+      testID="ChannelListRow.channel"
+    >
+      <Icon
+        name="circle-multiple-outline"
+        size={20}
+        style={
+          {
+            "color": "rgba(63,67,80,0.56)",
+            "padding": 2,
+          }
+        }
+      />
+      <View
+        style={
+          {
+            "flexDirection": "column",
+            "marginLeft": 16,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#3f4350",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            }
+          }
+          testID="ChannelListRow.channel.display_name"
+        >
+          channel
+        </Text>
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            {
+              "color": "rgba(63,67,80,0.64)",
+              "fontFamily": "OpenSans",
+              "fontSize": 12,
+              "fontWeight": "400",
+              "lineHeight": 16,
+            }
+          }
+        >
+          My purpose
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`components/channel_list_row should match snapshot with shared filled in 1`] = `
+<View
+  style={
+    {
+      "paddingVertical": 9,
+    }
+  }
+>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "opacity": 1,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+      testID="ChannelListRow.channel"
+    >
+      <Icon
+        name="circle-multiple-outline"
+        size={20}
+        style={
+          {
+            "color": "rgba(63,67,80,0.56)",
+            "padding": 2,
+          }
+        }
+      />
+      <View
+        style={
+          {
+            "flexDirection": "column",
+            "marginLeft": 16,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#3f4350",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            }
+          }
+          testID="ChannelListRow.channel.display_name"
+        >
+          channel
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
+`;
