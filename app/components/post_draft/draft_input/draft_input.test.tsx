@@ -95,7 +95,7 @@ describe('DraftInput', () => {
         it('sends message on press', () => {
             const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
             fireEvent.press(getByTestId('draft_input.send_action.send.button'));
-            expect(baseProps.sendMessage).toHaveBeenCalled();
+            expect(baseProps.sendMessage).toHaveBeenCalledWith(undefined);
         });
 
         it('opens scheduled post options on long press', async () => {
