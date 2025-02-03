@@ -76,18 +76,43 @@ describe('DraftInput', () => {
     });
 
     describe('Rendering', () => {
-        it('renders base components', async () => {
-            const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
-            expect(getByTestId('draft_input')).toBeVisible();
-            expect(getByTestId('draft_input.post.input')).toBeVisible();
-            expect(getByTestId('draft_input.quick_actions')).toBeVisible();
-            expect(getByTestId('draft_input.send_action.send.button')).toBeVisible();
+        it('renders all required components', async () => {
+            const {getByTestId, queryByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
+            
+            // Main container
+            const container = getByTestId('draft_input');
+            expect(container).toBeVisible();
+            
+            // Input field
+            const input = getByTestId('draft_input.post.input');
+            expect(input).toBeVisible();
+            expect(input).toHaveProp('maxLength', 4000);
+            
+            // Quick actions
+            const quickActions = getByTestId('draft_input.quick_actions');
+            expect(quickActions).toBeVisible();
+            
+            // Send button
+            const sendButton = getByTestId('draft_input.send_action.send.button');
+            expect(sendButton).toBeVisible();
+            expect(sendButton).not.toBeDisabled();
+            
+            // Should not show disabled send button
+            const disabledSend = queryByTestId('draft_input.send_action.send.button.disabled');
+            expect(disabledSend).toBeNull();
         });
 
-        it('shows upload error when present', () => {
-            const props = {...baseProps, uploadFileError: 'Error message'};
-            const {getByText} = renderWithEverything(<DraftInput {...props}/>, {database});
-            expect(getByText('Error message')).toBeVisible();
+        it('shows upload error with correct message', () => {
+            const errorMsg = 'Test error message';
+            const props = {...baseProps, uploadFileError: errorMsg};
+            const {getByText, getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            
+            const error = getByText(errorMsg);
+            expect(error).toBeVisible();
+            
+            // Error should be within uploads section
+            const uploadsSection = getByTestId('uploads');
+            expect(uploadsSection).toContainElement(error);
         });
     });
 
