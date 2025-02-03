@@ -88,6 +88,11 @@ export type HandlePostsArgs = {
   previousPostId?: string;
   posts?: Post[];
   prepareRecordsOnly?: boolean;
+
+  // For backwards compatibility, we need to check whether the posts
+  // are coming from a thread updated event, since those events do not
+  // include metadata, which will lead to remove all files from the post.
+  isThreadUpdatedEvent?: boolean;
 };
 
 export type HandleThreadsArgs = {

@@ -436,7 +436,7 @@ export const syncTeamThreads = async (
         const models: Model[] = [];
 
         if (threads.length) {
-            const {error, models: threadModels = []} = await processReceivedThreads(serverUrl, threads, teamId, true);
+            const {error, models: threadModels = []} = await processReceivedThreads(serverUrl, threads, teamId, false, true);
             if (error) {
                 return {error};
             }
@@ -494,7 +494,7 @@ export const loadEarlierThreads = async (serverUrl: string, teamId: string, last
         const threads = fetchedThreads.threads || [];
 
         if (threads?.length) {
-            const {error, models: threadModels = []} = await processReceivedThreads(serverUrl, threads, teamId, true);
+            const {error, models: threadModels = []} = await processReceivedThreads(serverUrl, threads, teamId, false, true);
             if (error) {
                 return {error};
             }

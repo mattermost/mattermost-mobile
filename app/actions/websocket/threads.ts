@@ -19,7 +19,7 @@ export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocket
 
         // Mark it as following
         thread.is_following = true;
-        processReceivedThreads(serverUrl, [thread], teamId);
+        processReceivedThreads(serverUrl, [thread], teamId, true);
     } catch (error) {
         // Do nothing
     }

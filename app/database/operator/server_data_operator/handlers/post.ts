@@ -40,7 +40,7 @@ type PostActionType = keyof typeof ActionType.POSTS;
 export interface PostHandlerMix {
     handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Promise<DraftModel[]>;
     handleFiles: ({files, prepareRecordsOnly}: HandleFilesArgs) => Promise<FileModel[]>;
-    handlePosts: ({actionType, order, posts, previousPostId, prepareRecordsOnly}: HandlePostsArgs) => Promise<Model[]>;
+    handlePosts: ({actionType, order, posts, previousPostId, prepareRecordsOnly, isThreadUpdatedEvent}: HandlePostsArgs) => Promise<Model[]>;
     handlePostsInChannel: (posts: Post[]) => Promise<void>;
     handlePostsInThread: (rootPosts: PostsInThread[]) => Promise<void>;
 
@@ -141,7 +141,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
      * @param {boolean | undefined} handlePosts.prepareRecordsOnly
      * @returns {Promise<Model[]>}
      */
-    handlePosts = async ({actionType, order, posts, previousPostId = '', prepareRecordsOnly = false}: HandlePostsArgs): Promise<Model[]> => {
+    handlePosts = async ({actionType, order, posts, previousPostId = '', prepareRecordsOnly = false, isThreadUpdatedEvent = false}: HandlePostsArgs): Promise<Model[]> => {
         const tableName = POST;
 
         // We rely on the posts array; if it is empty, we stop processing
@@ -260,13 +260,17 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             batch.push(...postFiles);
         }
 
-        const allFiles = await database.get<FileModel>(MM_TABLES.SERVER.FILE).query(Q.where('post_id', Q.oneOf(uniquePosts.map((p) => p.id)))).fetch();
-        const receivedFilesSet = new Set(files.map((f) => f.id));
-        allFiles.forEach((f) => {
-            if (!receivedFilesSet.has(f.id)) {
-                batch.push(f.prepareDestroyPermanently());
-            }
-        });
+        // We need to check if it is a thread updated event, since those events do not include metadata,
+        // and this will lead to remove all files from the post.
+        if (!isThreadUpdatedEvent) {
+            const allFiles = await database.get<FileModel>(MM_TABLES.SERVER.FILE).query(Q.where('post_id', Q.oneOf(uniquePosts.map((p) => p.id)))).fetch();
+            const receivedFilesSet = new Set(files.map((f) => f.id));
+            allFiles.forEach((f) => {
+                if (!receivedFilesSet.has(f.id)) {
+                    batch.push(f.prepareDestroyPermanently());
+                }
+            });
+        }
 
         if (emojis.length) {
             const postEmojis = await this.handleCustomEmojis({emojis, prepareRecordsOnly: true});
