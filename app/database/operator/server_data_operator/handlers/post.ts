@@ -206,22 +206,9 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
     _deleteScheduledPostByIds = async (scheduledPostIds: string[], prepareRecordsOnly = false): Promise<ScheduledPostModel[]> => {
         const database: Database = this.database;
         const scheduledPostsToDelete = await database.get<ScheduledPostModel>(SCHEDULED_POST).query(Q.where('id', Q.oneOf(scheduledPostIds))).fetch();
-        const deleteRawValues: ScheduledPost[] = [];
-        for await (const post of scheduledPostsToDelete) {
-            const schedulePost = await post.toApi(database);
-            deleteRawValues.push(schedulePost);
-        }
-        const processedScheduledPosts = await this.processRecords({
-            createOrUpdateRawValues: [],
-            deleteRawValues,
-            tableName: SCHEDULED_POST,
-            fieldName: 'id',
-        });
 
         const preparedScheduledPosts = await this.prepareRecords({
-            createRaws: processedScheduledPosts.createRaws,
-            updateRaws: processedScheduledPosts.updateRaws,
-            deleteRaws: processedScheduledPosts.deleteRaws,
+            deleteRaws: scheduledPostsToDelete,
             transformer: transformSchedulePostsRecord,
             tableName: SCHEDULED_POST,
         }) as ScheduledPostModel[];
