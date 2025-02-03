@@ -1,124 +1,120 @@
 #!/bin/bash
 # Reference: Download Android (AOSP) Emulators - https://github.com/wix/Detox/blob/master/docs/guide/android-dev-env.md#android-aosp-emulators
-# sdkmanager "system-images;android-31;default;arm64-v8a"
-# sdkmanager --licenses
 
 set -ex
 set -o pipefail
 
 SDK_VERSION=33
-NAME="detox_pixel_4_xl_api_${SDK_VERSION}"
+AVD_NAME="detox_pixel_4_xl_api_${SDK_VERSION}"
 
-# Set ANDROID_AVD_HOME to the current directory
-if [[ "$CI" == "true" ]]; then
-    export ANDROID_AVD_HOME=$(pwd)/.android/avd
-    mkdir -p $ANDROID_AVD_HOME
-fi
-
-if emulator -list-avds | grep -q $NAME; then
-    echo "'${NAME}' Android virtual device already exists."
-else
-    CPU_ARCH_FAMILY=''
-    CPU_ARCH=''
-    if [[ $(uname -p) == 'arm' ]]; then
-        CPU_ARCH_FAMILY=arm64-v8a
-        CPU_ARCH=arm64
-    else
-        CPU_ARCH_FAMILY=x86_64
-        CPU_ARCH=x86_64
+setup_avd_home() {
+    if [[ "$CI" == "true" ]]; then
+        export ANDROID_AVD_HOME=$(pwd)/.android/avd
+        mkdir -p "$ANDROID_AVD_HOME"
     fi
+}
 
-    # Create virtual device in a relative "detox_pixel_4_xl_api_${SDK_VERSION}" folder
-    avdmanager create avd -n $NAME -k "system-images;android-${SDK_VERSION};default;${CPU_ARCH_FAMILY}" -p $NAME -d 'pixel'
+get_cpu_architecture() {
+    if [[ $(uname -p) == 'arm' ]]; then
+        echo "arm64-v8a arm64"
+    else
+        echo "x86_64 x86_64"
+    fi
+}
 
-    # Copy predefined config and skin
-    cp -r android_emulator/ $NAME/
-    sed -i -e "s|AvdId = change_avd_id|AvdId = ${NAME}|g" $NAME/config.ini
-    sed -i -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 4 XL API ${SDK_VERSION}|g" $NAME/config.ini
-    sed -i -e "s|abi.type = change_type|abi.type = ${CPU_ARCH_FAMILY}|g" $NAME/config.ini
-    sed -i -e "s|hw.cpu.arch = change_cpu_arch|hw.cpu.arch = ${CPU_ARCH}|g" $NAME/config.ini
-    sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${CPU_ARCH_FAMILY}/|g" $NAME/config.ini
-    sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${NAME}/pixel_4_xl_skin|g" $NAME/config.ini
+create_avd() {
+    local cpu_arch_family cpu_arch
+    read cpu_arch_family cpu_arch < <(get_cpu_architecture)
 
-    # Set the number of CPU cores in config.ini
-    echo "hw.cpu.ncore=5" >> $NAME/config.ini
+    avdmanager create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};default;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel'
 
-    echo "Android virtual device successfully created: ${NAME}"
-fi
+    cp -r android_emulator/ "$AVD_NAME/"
+    sed -i -e "s|AvdId = change_avd_id|AvdId = ${AVD_NAME}|g" "$AVD_NAME/config.ini"
+    sed -i -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 4 XL API ${SDK_VERSION}|g" "$AVD_NAME/config.ini"
+    sed -i -e "s|abi.type = change_type|abi.type = ${cpu_arch_family}|g" "$AVD_NAME/config.ini"
+    sed -i -e "s|hw.cpu.arch = change_cpu_arch|hw.cpu.arch = ${cpu_arch}|g" "$AVD_NAME/config.ini"
+    sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${cpu_arch_family}/|g" "$AVD_NAME/config.ini"
+    sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${AVD_NAME}/pixel_4_xl_skin|g" "$AVD_NAME/config.ini"
 
-# Kill existing ADB server
-echo "Killing existing ADB server..."
-adb kill-server
+    echo "hw.cpu.ncore=5" >> "$AVD_NAME/config.ini"
+    echo "Android virtual device successfully created: ${AVD_NAME}"
+}
 
-# Start ADB server
-echo "Starting ADB server..."
-adb start-server
+start_adb_server() {
+    echo "Restarting ADB server..."
+    adb kill-server
+    adb start-server
+}
 
-# Start the emulator
-echo "Starting the emulator..."
+start_emulator() {
+    echo "Starting the emulator..."
+    local emulator_opts="-avd $AVD_NAME -no-snapshot -no-boot-anim -no-audio -no-window"
+    
+    if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
+        emulator $emulator_opts -gpu host -accel on -qemu -m 4096 &
+    else
+        emulator $emulator_opts -gpu guest -verbose -qemu -vnc :0
+    fi
+}
 
-if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
-    echo "Starting the emulator with KVM..."
-    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu host -accel on -qemu -m 4096 &
-else
-    emulator -avd $NAME -no-snapshot -no-boot-anim -no-audio -no-window -gpu guest -verbose -qemu -vnc :0
-fi
+wait_for_emulator() {
+    if [[ "$CI" != "true" ]]; then return; fi
 
-if [[ "$CI" == "true" ]]; then
-    # Wait for the emulator to boot
-    echo "Waiting for the emulator to boot..."
+    echo "Waiting for emulator to boot..."
     adb wait-for-device
-
-    # Check if the emulator is fully booted
-    echo "Checking if the emulator is fully booted..."
-    while true; do
-        boot_completed=$(adb shell getprop sys.boot_completed | tr -d '\r')
-        if [[ "$boot_completed" == "1" ]]; then
-            echo "Emulator is fully booted."
-            break
-        fi
-        echo "Waiting for emulator to boot..."
+    until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
+        echo "Waiting for emulator to fully boot..."
         sleep 10
     done
-fi
+    echo "Emulator is fully booted."
+}
 
-if [[ "$CI" == "true" ]]; then
-    # Install the app
+install_app() {
     echo "Installing the app..."
-    cd ..
     adb install -r android/app/build/outputs/apk/debug/app-debug.apk
-
-    # Verify the app is installed
-    echo "Verifying the app is installed..."
     adb shell pm list packages | grep "com.mattermost.rnbeta" && echo "App is installed." || echo "App is not installed."
+}
 
-    # Start the server
+start_server() {
     echo "Starting the server..."
     npm run start &
+    local timeout=120 interval=5 elapsed=0
 
-    # Wait for the server to be ready
-    timeout=120
-    interval=5
-    elapsed=0
-
-    while ! nc -z localhost 8081; do
+    until nc -z localhost 8081; do
         if [[ $elapsed -ge $timeout ]]; then
             echo "Server did not start within 3 minutes."
             exit 1
         fi
-        echo "Waiting for the server to be ready..."
+        echo "Waiting for server to be ready..."
         sleep $interval
         elapsed=$((elapsed + interval))
     done
-
     echo "Server is ready."
-fi
+}
 
-# Set up ADB reverse port forwarding
-echo "Setting up ADB reverse port forwarding..."
-adb reverse tcp:8081 tcp:8081
+setup_adb_reverse() {
+    echo "Setting up ADB reverse port forwarding..."
+    adb reverse tcp:8081 tcp:8081
+}
 
-# Run tests
-echo "Running tests..."
-cd detox
-npm run e2e:android-test --loglevel -- about.e2e.ts
+main() {
+    setup_avd_home
+    
+    if ! emulator -list-avds | grep -q "$AVD_NAME"; then
+        create_avd
+    else
+        echo "'${AVD_NAME}' Android virtual device already exists."
+    fi
+
+    start_adb_server
+    start_emulator
+    wait_for_emulator
+
+    if [[ "$CI" == "true" ]]; then
+        install_app
+        start_server
+        setup_adb_reverse
+    fi
+}
+
+main
