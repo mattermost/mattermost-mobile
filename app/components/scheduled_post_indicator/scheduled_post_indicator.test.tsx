@@ -101,14 +101,14 @@ describe('components/scheduled_post_indicator', () => {
         expect(getByText(/19:41/)).toBeVisible();
     });
 
-    it('renders with 12-hour time when preference is not set', async () => {
+    it('renders with 12-hour time when preference is set to 12 hours', async () => {
         await operator.handlePreferences({
             preferences: [
                 {
                     user_id: 'user_1',
                     category: 'display_settings',
                     name: 'use_military_time',
-                    value: 'true',
+                    value: 'false',
                 },
             ],
             prepareRecordsOnly: false,
@@ -124,7 +124,21 @@ describe('components/scheduled_post_indicator', () => {
         const timeElement = await findByTestId('scheduled_post_indicator_single_time');
         expect(timeElement).toBeVisible();
 
-        expect(getByText(/7:41/)).toBeVisible();
+        expect(getByText(/7:41 AM/)).toBeVisible();
+    });
+
+    it('renders with 12-hour time when preference is not set', async () => {
+        const {getByText, findByTestId} = renderWithEverything(
+            <ScheduledPostIndicator
+                scheduledPostCount={1}
+            />,
+            {database},
+        );
+
+        const timeElement = await findByTestId('scheduled_post_indicator_single_time');
+        expect(timeElement).toBeVisible();
+
+        expect(getByText(/7:41 AM/)).toBeVisible();
     });
 
     it('handles missing current user', async () => {
