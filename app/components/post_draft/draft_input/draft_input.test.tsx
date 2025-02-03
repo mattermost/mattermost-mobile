@@ -113,6 +113,7 @@ describe('DraftInput', () => {
             expect(openAsBottomSheet).toHaveBeenCalledWith(expect.objectContaining({
                 screen: Screens.SCHEDULED_POST_OPTIONS,
             }));
+            expect(baseProps.sendMessage).not.toHaveBeenCalled();
         });
 
         it('handles persistent notifications', async () => {
@@ -161,6 +162,12 @@ describe('DraftInput', () => {
             const sendButton = getByTestId('draft_input.send_action.send.button.disabled');
             expect(sendButton).toBeVisible();
             expect(sendButton).toBeDisabled();
+
+            fireEvent(sendButton, 'longPress');
+            expect(baseProps.sendMessage).not.toHaveBeenCalled();
+
+            fireEvent.press(sendButton);
+            expect(baseProps.sendMessage).not.toHaveBeenCalled();
         });
     });
 });
