@@ -20,16 +20,19 @@ describe('components/post_draft/send_action', () => {
         const {getByTestId} = renderWithIntl(
             <SendAction {...baseProps}/>,
         );
-        
+
         const button = getByTestId('test_id.send.button');
         expect(button).toBeTruthy();
     });
 
     it('should render disabled send button when disabled', () => {
         const {getByTestId} = renderWithIntl(
-            <SendAction {...baseProps} disabled={true}/>,
+            <SendAction
+                {...baseProps}
+                disabled={true}
+            />,
         );
-        
+
         const button = getByTestId('test_id.send.button.disabled');
         expect(button).toBeTruthy();
         expect(button).toBeDisabled();

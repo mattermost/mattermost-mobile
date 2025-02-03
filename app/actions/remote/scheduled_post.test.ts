@@ -36,8 +36,7 @@ const mockClient = {
 };
 
 beforeAll(() => {
-    // eslint-disable-next-line
-    // @ts-ignore
+    // @ts-expect-error mock
     NetworkManager.getClient = () => mockClient;
 });
 
@@ -53,8 +52,7 @@ afterEach(async () => {
 describe('scheduled_post', () => {
     it('createScheduledPost - handle not found database', async () => {
         const result = await createScheduledPost('foo', scheduledPost);
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
+        expect(result.error).toBe('foo database not found');
         expect(logError).not.toHaveBeenCalled();
         expect(forceLogoutIfNecessary).not.toHaveBeenCalled();
     });
@@ -62,23 +60,18 @@ describe('scheduled_post', () => {
     it('createScheduledPost - base case', async () => {
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
         const result = await createScheduledPost(serverUrl, scheduledPost);
-        expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
-        expect(result.response).toBeDefined();
-        if (result.response) {
-            expect(result.response.id).toBe(scheduledPost.id);
-        }
+        expect(result!.response!.id).toBe(scheduledPost.id);
     });
 
     it('createScheduledPost - request error', async () => {
-        const error = new Error('error');
+        const error = new Error('custom error');
         mockClient.createScheduledPost.mockImplementationOnce(jest.fn(() => {
             throw error;
         }));
         const result = await createScheduledPost(serverUrl, scheduledPost);
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
+        expect(result.error).toBe('custom error');
         expect(logError).toHaveBeenCalledWith('error on createScheduledPost', error.message);
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
     });
