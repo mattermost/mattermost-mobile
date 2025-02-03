@@ -71,12 +71,13 @@ wait_for_emulator() {
 
 install_app() {
     echo "Installing the app..."
-    adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+    adb install -r ../android/app/build/outputs/apk/debug/app-debug.apk
     adb shell pm list packages | grep "com.mattermost.rnbeta" && echo "App is installed." || echo "App is not installed."
 }
 
 start_server() {
     echo "Starting the server..."
+    cd ..
     npm run start &
     local timeout=120 interval=5 elapsed=0
 
