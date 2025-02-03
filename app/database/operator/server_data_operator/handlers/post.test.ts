@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
 import {Database, Q} from '@nozbe/watermelondb';
 
@@ -24,7 +25,6 @@ Q.sortBy = jest.fn().mockImplementation((field) => {
 });
 describe('*** Operator: Post Handlers tests ***', () => {
     let operator: ServerDataOperator;
-    let database: Database;
 
     let posts: Post[] = [];
     let scheduledPosts: ScheduledPost[] = [];
@@ -204,7 +204,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
         await DatabaseManager.init(['baseHandler.test.com']);
         operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
-        database = DatabaseManager.serverDatabases['baseHandler.test.com']!.database;
     });
 
     afterEach(async () => {
