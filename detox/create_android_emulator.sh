@@ -101,7 +101,7 @@ setup_adb_reverse() {
 run_detox_tests() {
     echo "Running Detox tests..."
     cd detox
-    npm run e2e:android-test -- about.e2e.ts
+    npm run e2e:android-test -- about.e2e.ts account_menu.e2e.ts
 }
 
 main() {
