@@ -117,7 +117,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
      * @param {HandleScheduledPostsArgs} ScheduledPostsArgs
      * @returns {Promise<ScheduledPostModel[]>}
      */
-    handleScheduledPosts = async ({actionType, scheduledPosts, prepareRecordsOnly}: HandleScheduledPostsArgs): Promise<ScheduledPostModel[]> => {
+    handleScheduledPosts = async ({actionType, scheduledPosts, includeDirectChannelPosts, prepareRecordsOnly}: HandleScheduledPostsArgs): Promise<ScheduledPostModel[]> => {
         const database: Database = this.database;
         const scheduledPostsToDelete: ScheduledPostModel[] = [];
         const scheduledPostsToCreateAndUpdate: ScheduledPostModel[] = [];
@@ -126,9 +126,10 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
         if (!scheduledPosts?.length) {
             if (actionType === ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS) {
-                const scheduledPostQuery = queryScheduledPostsForTeam(database, currentTeamId);
+                const scheduledPostQuery = queryScheduledPostsForTeam(database, currentTeamId, includeDirectChannelPosts);
                 const scheduledPostsIds = await scheduledPostQuery.fetchIds();
-                scheduledPostsToDelete.push(...await this._deleteScheduledPostByIds(scheduledPostsIds, true));
+                const recordTodelete = await this._deleteScheduledPostByIds(scheduledPostsIds, true);
+                scheduledPostsToDelete.push(...recordTodelete);
             } else {
                 logWarning('An empty or undefined "scheduledPosts" array has been passed to the handleScheduledPosts method');
                 return [];
@@ -155,8 +156,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                     break;
                 }
                 const idsFromServer = new Set(scheduledPosts?.map((post) => post.id) || []);
-                const existingScheduledPosts = await queryScheduledPostsForTeam(database, currentTeamId).fetch();
-
+                const existingScheduledPosts = await queryScheduledPostsForTeam(database, currentTeamId, includeDirectChannelPosts).fetch();
                 const deletedScheduledPostIds = existingScheduledPosts.
                     filter((post) => !idsFromServer.has(post.id)).
                     map((post) => post.id);
