@@ -78,16 +78,16 @@ describe('DraftInput', () => {
     describe('Rendering', () => {
         it('renders base components', async () => {
             const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
-            expect(getByTestId('draft_input')).toBeTruthy();
-            expect(getByTestId('draft_input.post.input')).toBeTruthy();
-            expect(getByTestId('draft_input.quick_actions')).toBeTruthy();
-            expect(getByTestId('draft_input.send_action.send.button')).toBeTruthy();
+            expect(getByTestId('draft_input')).toBeVisible();
+            expect(getByTestId('draft_input.post.input')).toBeVisible();
+            expect(getByTestId('draft_input.quick_actions')).toBeVisible();
+            expect(getByTestId('draft_input.send_action.send.button')).toBeVisible();
         });
 
         it('shows upload error when present', () => {
             const props = {...baseProps, uploadFileError: 'Error message'};
             const {getByText} = renderWithEverything(<DraftInput {...props}/>, {database});
-            expect(getByText('Error message')).toBeTruthy();
+            expect(getByText('Error message')).toBeVisible();
         });
     });
 
@@ -159,7 +159,7 @@ describe('DraftInput', () => {
             const props = {...baseProps, canSend: false};
             const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
             const sendButton = getByTestId('draft_input.send_action.send.button.disabled');
-            expect(sendButton).toBeTruthy();
+            expect(sendButton).toBeVisible();
             expect(sendButton).toBeDisabled();
         });
     });

@@ -65,8 +65,8 @@ describe('ScheduledPostFooter', () => {
             {database},
         );
 
-        expect(screen.getByText('Schedule Draft')).toBeTruthy();
-        expect(screen.getByTestId('scheduled_post_create_button')).toBeTruthy();
+        expect(screen.getByText('Schedule Draft')).toBeVisible();
+        expect(screen.getByTestId('scheduled_post_create_button')).toBeVisible();
         expect(screen.getByTestId('scheduled_post_create_button')).not.toBeDisabled();
     });
 
@@ -81,7 +81,7 @@ describe('ScheduledPostFooter', () => {
             {database},
         );
 
-        expect(screen.getByText('Scheduling')).toBeTruthy();
+        expect(screen.getByText('Scheduling')).toBeVisible();
         expect(screen.getByTestId('scheduled_post_create_button')).toBeDisabled();
     });
 
@@ -115,7 +115,7 @@ describe('ScheduledPostFooter', () => {
             {database},
         );
 
-        expect(screen.getByTestId('scheduled_post_create_button')).toBeTruthy();
+        expect(screen.getByTestId('scheduled_post_create_button')).toBeVisible();
     });
 
     it('prevents scheduling when already in progress', () => {
