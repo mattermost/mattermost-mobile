@@ -1,10 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {logError} from '@utils/log';
 
 import {createScheduledPost} from './scheduled_post';
+
+jest.mock('@utils/log', () => ({
+    logError: jest.fn(),
+}));
+
+jest.mock('@actions/remote/session', () => ({
+    forceLogoutIfNecessary: jest.fn(),
+}));
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -21,17 +31,12 @@ const scheduledPost = {
     scheduled_at: Date.now() + 10000,
 } as ScheduledPost;
 
-const throwFunc = () => {
-    throw Error('error');
-};
-
 const mockClient = {
     createScheduledPost: jest.fn(() => ({...scheduledPost})),
 };
 
 beforeAll(() => {
-    // eslint-disable-next-line
-    // @ts-ignore
+    // @ts-expect-error mock
     NetworkManager.getClient = () => mockClient;
 });
 
@@ -47,26 +52,27 @@ afterEach(async () => {
 describe('scheduled_post', () => {
     it('createScheduledPost - handle not found database', async () => {
         const result = await createScheduledPost('foo', scheduledPost);
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
+        expect(result.error).toBe('foo database not found');
+        expect(logError).not.toHaveBeenCalled();
+        expect(forceLogoutIfNecessary).not.toHaveBeenCalled();
     });
 
     it('createScheduledPost - base case', async () => {
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
         const result = await createScheduledPost(serverUrl, scheduledPost);
-        expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
-        expect(result.response).toBeDefined();
-        if (result.response) {
-            expect(result.response.id).toBe(scheduledPost.id);
-        }
+        expect(result!.response!.id).toBe(scheduledPost.id);
     });
 
     it('createScheduledPost - request error', async () => {
-        mockClient.createScheduledPost.mockImplementationOnce(jest.fn(throwFunc));
+        const error = new Error('custom error');
+        mockClient.createScheduledPost.mockImplementationOnce(jest.fn(() => {
+            throw error;
+        }));
         const result = await createScheduledPost(serverUrl, scheduledPost);
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
+        expect(result.error).toBe('custom error');
+        expect(logError).toHaveBeenCalledWith('error on createScheduledPost', error.message);
+        expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
     });
 });

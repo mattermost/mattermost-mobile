@@ -50,8 +50,8 @@ describe('ScheduledPostOptions', () => {
     it('displays correct title and initial state', () => {
         renderWithEverything(<ScheduledPostOptions {...baseProps}/>, {database});
 
-        expect(screen.getByText('Schedule draft')).toBeTruthy();
-        expect(screen.getByTestId('scheduled_post_options_bottom_sheet.screen')).toBeTruthy();
+        expect(screen.getByText('Schedule draft')).toBeVisible();
+        expect(screen.getByTestId('scheduled_post_options_bottom_sheet.screen')).toBeVisible();
     });
 
     it('handles timezone correctly', () => {
@@ -66,8 +66,8 @@ describe('ScheduledPostOptions', () => {
         );
 
         // Verify timezone-specific options are present
-        expect(screen.getByText(/Monday at/)).toBeTruthy();
-        expect(screen.getByText(/Tomorrow at/)).toBeTruthy();
+        expect(screen.getByText(/Monday at/)).toBeVisible();
+        expect(screen.getByText(/Tomorrow at/)).toBeVisible();
     });
 
     it('prevents scheduling without time selection', () => {

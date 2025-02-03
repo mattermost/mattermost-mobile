@@ -16,11 +16,26 @@ describe('components/post_draft/send_action', () => {
         showScheduledPostOptions: jest.fn(),
     };
 
-    it('should match snapshot', () => {
-        const {toJSON} = renderWithIntl(
+    it('should render send button when enabled', () => {
+        const {getByTestId} = renderWithIntl(
             <SendAction {...baseProps}/>,
         );
-        expect(toJSON()).toMatchSnapshot();
+
+        const button = getByTestId('test_id.send.button');
+        expect(button).toBeTruthy();
+    });
+
+    it('should render disabled send button when disabled', () => {
+        const {getByTestId} = renderWithIntl(
+            <SendAction
+                {...baseProps}
+                disabled={true}
+            />,
+        );
+
+        const button = getByTestId('test_id.send.button.disabled');
+        expect(button).toBeTruthy();
+        expect(button).toBeDisabled();
     });
 
     it('should handle single tap', () => {

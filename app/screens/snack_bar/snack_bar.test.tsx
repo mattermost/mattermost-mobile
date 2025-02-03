@@ -72,7 +72,7 @@ describe('SnackBar', () => {
             <SnackBar {...baseProps}/>,
         );
 
-        expect(getByTestId('toast.message')).toBeTruthy();
+        expect(getByTestId('toast.message')).toBeVisible();
     });
 
     test('does not auto-dismiss when keepOpen is true', () => {
@@ -100,7 +100,7 @@ describe('SnackBar', () => {
             />,
         );
 
-        expect(getByText(customMessage)).toBeTruthy();
+        expect(getByText(customMessage)).toBeVisible();
     });
 
     test('renders close button when keepOpen is true', () => {
@@ -111,6 +111,6 @@ describe('SnackBar', () => {
             />,
         );
 
-        expect(getByTestId('close-button')).toBeTruthy();
+        expect(getByTestId('close-button')).toBeVisible();
     });
 });

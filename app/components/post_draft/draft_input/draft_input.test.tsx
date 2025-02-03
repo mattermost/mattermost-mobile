@@ -76,18 +76,42 @@ describe('DraftInput', () => {
     });
 
     describe('Rendering', () => {
-        it('renders base components', async () => {
-            const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
-            expect(getByTestId('draft_input')).toBeTruthy();
-            expect(getByTestId('draft_input.post.input')).toBeTruthy();
-            expect(getByTestId('draft_input.quick_actions')).toBeTruthy();
-            expect(getByTestId('draft_input.send_action.send.button')).toBeTruthy();
+        it('renders all required components', async () => {
+            const {getByTestId, queryByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
+
+            // Main container
+            const container = getByTestId('draft_input');
+            expect(container).toBeVisible();
+
+            // Input field
+            const input = getByTestId('draft_input.post.input');
+            expect(input).toBeVisible();
+
+            // Quick actions
+            const quickActions = getByTestId('draft_input.quick_actions');
+            expect(quickActions).toBeVisible();
+
+            // Send button
+            const sendButton = getByTestId('draft_input.send_action.send.button');
+            expect(sendButton).toBeVisible();
+            expect(sendButton).not.toBeDisabled();
+
+            // Should not show disabled send button
+            const disabledSend = queryByTestId('draft_input.send_action.send.button.disabled');
+            expect(disabledSend).toBeNull();
         });
 
-        it('shows upload error when present', () => {
-            const props = {...baseProps, uploadFileError: 'Error message'};
-            const {getByText} = renderWithEverything(<DraftInput {...props}/>, {database});
-            expect(getByText('Error message')).toBeTruthy();
+        it('shows upload error with correct message', () => {
+            const errorMsg = 'Test error message';
+            const props = {...baseProps, uploadFileError: errorMsg};
+            const {getByText, getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+
+            const error = getByText(errorMsg);
+            expect(error).toBeVisible();
+
+            // Error should be within uploads section
+            const uploadsSection = getByTestId('uploads');
+            expect(uploadsSection).toContainElement(error);
         });
     });
 
@@ -95,11 +119,17 @@ describe('DraftInput', () => {
         it('sends message on press', () => {
             const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
             fireEvent.press(getByTestId('draft_input.send_action.send.button'));
-            expect(baseProps.sendMessage).toHaveBeenCalled();
+            expect(baseProps.sendMessage).toHaveBeenCalledWith(undefined);
         });
 
-        it('opens scheduled post options on long press', async () => {
-            // make this a re-usable function
+        it('opens scheduled post options on long press and schedules post', async () => {
+            // Mock openAsBottomSheet to simulate selecting a schedule option
+            const scheduledTime = {scheduled_at: 1234567890};
+            jest.mocked(openAsBottomSheet).mockImplementationOnce(({props}) => {
+                props.onSchedule(scheduledTime);
+                return Promise.resolve({data: true});
+            });
+
             await operator.handleConfigs({
                 configs: [
                     {id: 'ScheduledPosts', value: 'true'},
@@ -110,9 +140,14 @@ describe('DraftInput', () => {
 
             const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
             fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
+            
             expect(openAsBottomSheet).toHaveBeenCalledWith(expect.objectContaining({
                 screen: Screens.SCHEDULED_POST_OPTIONS,
+                closeButtonId: 'close-scheduled-post-picker',
             }));
+            
+            // Verify sendMessage was called with the scheduled time
+            expect(baseProps.sendMessage).toHaveBeenCalledWith(scheduledTime);
         });
 
         it('handles persistent notifications', async () => {
@@ -159,8 +194,14 @@ describe('DraftInput', () => {
             const props = {...baseProps, canSend: false};
             const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
             const sendButton = getByTestId('draft_input.send_action.send.button.disabled');
-            expect(sendButton).toBeTruthy();
+            expect(sendButton).toBeVisible();
             expect(sendButton).toBeDisabled();
+
+            fireEvent(sendButton, 'longPress');
+            expect(baseProps.sendMessage).not.toHaveBeenCalled();
+
+            fireEvent.press(sendButton);
+            expect(baseProps.sendMessage).not.toHaveBeenCalled();
         });
     });
 });
