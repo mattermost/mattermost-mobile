@@ -44,6 +44,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
                 reply_count: 4,
                 last_reply_at: 0,
                 participants: null,
+                file_ids: ['f1oxe5rtepfs7n3zifb4sso7po'],
                 metadata: {
                     images: {
                         'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4': {
@@ -381,6 +382,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
                     ...postWithMetadata.metadata,
                     files: [],
                 },
+                file_ids: [],
             },
         ];
 
@@ -443,6 +445,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
                         },
                     ],
                 },
+                file_ids: [...postWithMetadata.file_ids!, 'another-file-id'],
             },
         ];
 
@@ -505,6 +508,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
                         },
                     ],
                 },
+                file_ids: ['another-file-id'],
             },
         ];
 
@@ -536,6 +540,48 @@ describe('*** Operator: Post Handlers tests ***', () => {
         files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
         expect(files).toHaveLength(1);
         expect(files[0].id).toBe('another-file-id');
+    });
+
+    it('=> HandlePosts: should not remove files if file ids are present but metadata is missing', async () => {
+        const postWithMetadata = posts[0];
+        const uploadedFiles = postWithMetadata.metadata.files!;
+        const updatedPosts: Post[] = [
+            {
+                ...postWithMetadata,
+                update_at: Date.now(),
+                metadata: {}, // No metadata
+                file_ids: postWithMetadata.file_ids, // File IDs are still present
+            },
+        ];
+
+        const order = [
+            '8swgtrrdiff89jnsiwiip3y1eoe',
+            '8fcnk3p1jt8mmkaprgajoxz115a',
+            '3y3w3a6gkbg73bnj3xund9o5ic',
+        ];
+
+        const actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
+
+        await operator.handlePosts({
+            actionType,
+            order,
+            posts,
+            prepareRecordsOnly: false,
+        });
+
+        let files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
+        expect(files).toHaveLength(1);
+        expect(files[0].id).toBe(uploadedFiles[0].id);
+
+        await operator.handlePosts({
+            actionType,
+            order: [uploadedFiles[0].id!],
+            posts: updatedPosts,
+        });
+
+        files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
+        expect(files).toHaveLength(1);
+        expect(files[0].id).toBe(uploadedFiles[0].id);
     });
 });
 
