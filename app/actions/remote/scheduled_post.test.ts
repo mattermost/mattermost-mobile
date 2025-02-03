@@ -119,7 +119,8 @@ describe('scheduled_post', () => {
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
     });
 });
-describe('fetch and delete scheduled posts', () => {
+
+describe('fetchScheduledPosts', () => {
     it('fetch Schedule post - handle database not found', async () => {
         const result = await fetchScheduledPosts('foo', 'bar');
         expect(result).toBeDefined();
@@ -147,7 +148,9 @@ describe('fetch and delete scheduled posts', () => {
         expect(result).toBeDefined();
         expect(result.scheduledPosts).toEqual(scheduledPostsResponse.bar);
     });
+});
 
+describe('deleteScheduledPost', () => {
     it('delete Schedule post - handle database not found', async () => {
         const result = await deleteScheduledPost('foo', 'scheduled_post_id');
         expect(result).toBeDefined();

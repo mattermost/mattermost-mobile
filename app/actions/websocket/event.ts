@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as bookmark from '@actions/local/channel_bookmark';
-import * as scheduledPost from '@actions/local/scheduled_post';
+import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 

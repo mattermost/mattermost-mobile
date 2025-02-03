@@ -48,14 +48,9 @@ afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
-describe('handleScheduledPosts', () => {
+describe('handleCreateOrUpdateSchedulePost', () => {
     it('handleCreateOrUpdateScheduledPost - handle not found database', async () => {
         const {error} = await handleCreateOrUpdateScheduledPost('foo', {} as WebSocketMessage) as {error: unknown};
-        expect(error).toBeTruthy();
-    });
-
-    it('handleDeleteScheduledPost - handle not found database', async () => {
-        const {error} = await handleDeleteScheduledPost('foo', {} as WebSocketMessage) as {error: unknown};
         expect(error).toBeTruthy();
     });
 
@@ -64,15 +59,22 @@ describe('handleScheduledPosts', () => {
         expect(models).toBeUndefined();
     });
 
-    it('handleDeleteScheduledPost - no scheduled post', async () => {
-        const {models} = await handleDeleteScheduledPost(serverUrl, {data: {scheduled_post: ''}} as WebSocketMessage) as {models: undefined};
-        expect(models).toBeUndefined();
-    });
-
     it('handleCreateOrUpdateScheduledPost - success', async () => {
         const {models} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduled_post: JSON.stringify(scheduledPosts[0])}} as WebSocketMessage) as {models: ScheduledPostModel[]};
         expect(models).toBeTruthy();
         expect(models?.length).toBe(1);
+    });
+});
+
+describe('handleDeleteScheduledPost', () => {
+    it('handleDeleteScheduledPost - handle not found database', async () => {
+        const {error} = await handleDeleteScheduledPost('foo', {} as WebSocketMessage) as {error: unknown};
+        expect(error).toBeTruthy();
+    });
+
+    it('handleDeleteScheduledPost - no scheduled post', async () => {
+        const {models} = await handleDeleteScheduledPost(serverUrl, {data: {scheduled_post: ''}} as WebSocketMessage) as {models: undefined};
+        expect(models).toBeUndefined();
     });
 
     it('handleDeleteScheduledPost - success', async () => {
