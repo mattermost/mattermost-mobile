@@ -115,7 +115,6 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
     /**
      * handleScheduledPosts: Handler responsible for the Create/Update operations occurring the SchedulePost table from the 'Server' schema
      * @param {HandleScheduledPostsArgs} ScheduledPostsArgs
-     * @param {boolean} draftsArgs.prepareRecordsOnly
      * @returns {Promise<ScheduledPostModel[]>}
      */
     handleScheduledPosts = async ({actionType, scheduledPosts, prepareRecordsOnly}: HandleScheduledPostsArgs): Promise<ScheduledPostModel[]> => {
