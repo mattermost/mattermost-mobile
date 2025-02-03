@@ -114,6 +114,10 @@ if [[ "$CI" == "true" ]]; then
     echo "Server is ready."
 fi
 
+# Set up ADB reverse port forwarding
+echo "Setting up ADB reverse port forwarding..."
+adb reverse tcp:8081 tcp:8081
+
 # Run tests
 echo "Running tests..."
 cd detox
