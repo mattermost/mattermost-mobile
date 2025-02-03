@@ -31,7 +31,7 @@ function convertXmlToJson(xml, platform) {
                     reject(err);
                     return;
                 }
-                resolve(readJsonFromFile(jsonFile));
+                resolve(json);
             });
         });
     });
