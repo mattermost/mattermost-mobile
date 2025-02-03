@@ -24,6 +24,7 @@ Q.sortBy = jest.fn().mockImplementation((field) => {
 });
 describe('*** Operator: Post Handlers tests ***', () => {
     let operator: ServerDataOperator;
+    let database: Database;
 
     let posts: Post[] = [];
     let scheduledPosts: ScheduledPost[] = [];
@@ -203,6 +204,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
         await DatabaseManager.init(['baseHandler.test.com']);
         operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
+        database = DatabaseManager.serverDatabases['baseHandler.test.com']!.database;
     });
 
     afterEach(async () => {
@@ -621,7 +623,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
     it('HandleScheduledPosts: should delete all the schedule post from the database when action is RECEIVED_ALL_SCHEDULED_POSTS', async () => {
         const spyOnBatchRecords = jest.spyOn(operator, 'batchRecords');
         jest.spyOn(ScheduledPostQueries, 'queryScheduledPostsForTeam').mockReturnValue({
-            fetch: jest.fn().mockResolvedValue(scheduledPosts),
+            fetchIds: jest.fn().mockResolvedValue(scheduledPosts.map((post) => post.id)),
         } as any);
 
         jest.spyOn(database, 'get').mockReturnValue({
