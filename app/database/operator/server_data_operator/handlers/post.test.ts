@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
 import {Database, Q} from '@nozbe/watermelondb';
 
@@ -598,14 +599,23 @@ describe('*** Operator: Post Handlers tests ***', () => {
     });
 
     it('HandleScheduledPosts: should delete from the ScheduledPost table', async () => {
-        const spyOnBatchRecords = jest.spyOn(operator, 'processRecords');
         await operator.handleScheduledPosts({
-            actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
-            scheduledPosts: [scheduledPosts[0]],
+            actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+            scheduledPosts,
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnBatchRecords).toHaveBeenCalledTimes(1);
+        const scheduledPost = scheduledPosts[0];
+
+        const deletedRecord = await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
+            scheduledPosts: [scheduledPost],
+            prepareRecordsOnly: false,
+        });
+
+        console.log('deletedRecord', deletedRecord);
+        expect(deletedRecord).toBeTruthy();
+        expect(deletedRecord[0]._raw.id).toBe(scheduledPost.id);
     });
 
     it('HandleScheduledPosts: should delete all the schedule post from the database when action is RECEIVED_ALL_SCHEDULED_POSTS', async () => {

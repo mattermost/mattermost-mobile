@@ -163,7 +163,7 @@ export const transformSchedulePostsRecord = ({action, database, value}: Transfor
     const raw = value.raw as ScheduledPost;
 
     const fieldsMapper = (scheduledPost: ScheduledPostModel) => {
-        scheduledPost._raw.id = scheduledPost.id;
+        scheduledPost._raw.id = raw.id;
         scheduledPost.rootId = raw?.root_id ?? '';
         scheduledPost.message = raw?.message ?? '';
         scheduledPost.channelId = raw?.channel_id ?? '';
