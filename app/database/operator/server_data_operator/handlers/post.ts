@@ -119,15 +119,16 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
      */
     handleScheduledPosts = async ({actionType, scheduledPosts, prepareRecordsOnly}: HandleScheduledPostsArgs): Promise<ScheduledPostModel[]> => {
         const database: Database = this.database;
-        const scheduledPostToDelete: ScheduledPostModel[] = [];
-        const scheduledPostToCreateAndUpdate: ScheduledPostModel[] = [];
+        const scheduledPostsToDelete: ScheduledPostModel[] = [];
+        const scheduledPostsToCreateAndUpdate: ScheduledPostModel[] = [];
 
         const currentTeamId = await getCurrentTeamId(database);
 
         if (!scheduledPosts?.length) {
             if (actionType === ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS) {
                 const scheduledPostQuery = queryScheduledPostsForTeam(database, currentTeamId);
-                scheduledPostToDelete.push(...await scheduledPostQuery.fetch());
+                const scheduledPostsIds = await scheduledPostQuery.fetchIds();
+                scheduledPostsToDelete.push(...await this._deleteScheduledPostByIds(scheduledPostsIds, true));
             } else {
                 logWarning('An empty or undefined "scheduledPosts" array has been passed to the handleScheduledPosts method');
                 return [];
@@ -138,14 +139,14 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             case ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST: {
                 const toDeleteIds = scheduledPosts?.map((post) => post.id) || [];
                 if (toDeleteIds.length > 0) {
-                    scheduledPostToDelete.push(...await this._deleteScheduledPostByIds(toDeleteIds, true));
+                    scheduledPostsToDelete.push(...await this._deleteScheduledPostByIds(toDeleteIds, true));
                 }
                 break;
             }
 
             case ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST: {
                 const createOrUpdateRawValues = getUniqueRawsBy({raws: scheduledPosts ?? [], key: 'id'}) as ScheduledPost[];
-                scheduledPostToCreateAndUpdate.push(...await this._createOrUpdateScheduledPost(createOrUpdateRawValues, true));
+                scheduledPostsToCreateAndUpdate.push(...await this._createOrUpdateScheduledPost(createOrUpdateRawValues, true));
                 break;
             }
 
@@ -161,16 +162,16 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                     map((post) => post.id);
 
                 if (deletedScheduledPostIds.length > 0) {
-                    scheduledPostToDelete.push(...await this._deleteScheduledPostByIds(deletedScheduledPostIds, true));
+                    scheduledPostsToDelete.push(...await this._deleteScheduledPostByIds(deletedScheduledPostIds, true));
                 }
 
                 const createOrUpdateRawValues = getUniqueRawsBy({raws: scheduledPosts ?? [], key: 'id'}) as ScheduledPost[];
-                scheduledPostToCreateAndUpdate.push(...await this._createOrUpdateScheduledPost(createOrUpdateRawValues, true));
+                scheduledPostsToCreateAndUpdate.push(...await this._createOrUpdateScheduledPost(createOrUpdateRawValues, true));
                 break;
             }
         }
 
-        const batch: ScheduledPostModel[] = [...scheduledPostToDelete, ...scheduledPostToCreateAndUpdate];
+        const batch: ScheduledPostModel[] = [...scheduledPostsToDelete, ...scheduledPostsToCreateAndUpdate];
         if (!prepareRecordsOnly && batch.length) {
             await this.batchRecords(batch, 'handleScheduledPosts');
         }
