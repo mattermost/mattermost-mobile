@@ -45,7 +45,7 @@ const {
 type PostActionType = keyof typeof ActionType.POSTS;
 
 export interface PostHandlerMix {
-    handleScheduledPosts: ({actionType, scheduledPosts, prepareRecordsOnly}: HandleScheduledPostsArgs) => Promise<ScheduledPostModel[]>;
+    handleScheduledPosts: ({actionType, scheduledPosts, includeDirectChannelPosts, prepareRecordsOnly}: HandleScheduledPostsArgs) => Promise<ScheduledPostModel[]>;
     handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Promise<DraftModel[]>;
     handleFiles: ({files, prepareRecordsOnly}: HandleFilesArgs) => Promise<FileModel[]>;
     handlePosts: ({actionType, order, posts, previousPostId, prepareRecordsOnly}: HandlePostsArgs) => Promise<Model[]>;
