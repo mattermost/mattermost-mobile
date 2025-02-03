@@ -177,7 +177,7 @@ jobs:
         - name: Run Detox tests
           run: |
             cd detox
-            npm run e2e:android -- about.e2e.ts
+            npm run e2e:android-test -- about.e2e.ts
 
         - name: Generate Report Path
           id: s3
