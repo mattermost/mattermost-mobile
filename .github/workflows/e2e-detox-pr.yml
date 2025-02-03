@@ -16,16 +16,27 @@ concurrency:
 jobs:
   update-initial-status:
     runs-on: ubuntu-22.04
-    if: contains(github.event.label.name, 'E2E iOS tests for PR')
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
+        if: contains(github.event.label.name, 'E2E iOS tests for PR')
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ github.event.pull_request.head.sha }}
-          context: e2e/detox-tests
-          description: Detox tests for mattermost mobile app have started ...
+          context: e2e/detox-ios-tests
+          description: Detox iOS tests for mattermost mobile app have started ...
+          status: pending
+
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        if: contains(github.event.label.name, 'E2E Android tests for PR')
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          context: e2e/detox-android-tests
+          description: Detox Android tests for mattermost mobile app have started ...
           status: pending
 
   build-ios-simulator:
@@ -54,30 +65,95 @@ jobs:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
 
+  build-android-apk:
+    runs-on: ubuntu-latest-8-cores
+    needs:
+      - update-initial-status
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Remove npm Temporary Files
+        run: |
+          rm -rf ~/.npm/_cacache
+
+      - name: Checkout Repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+          STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+          STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+          MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+
+      - name: Install Dependencies
+        run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
+
+      - name: Detox build
+        run: |
+          cd detox
+          npm install
+          npm install -g detox-cli
+          npm run e2e:android-build
+
+      - name: Upload Android Build
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: android-build-files-${{ github.run_id }}
+          path: "android/app/build/**/*"
+        
   run-ios-tests-on-pr:
     name: iOS Mobile Tests on PR
-    uses: ./.github/workflows/e2e-detox-template.yml
+    uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
     with:
-      run-ios-tests: true
       run-type: "PR"
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
       low_bandwidth_mode: ${{ contains(github.event.label.name,'LBW') && true || false }}
+    secrets: inherit
+
+  run-android-tests-on-pr:
+    name: Android Mobile Tests on PR
+    uses: ./.github/workflows/e2e-android-template.yml
+    needs:
+      - build-android-apk
+    with:
+      run-android-tests: true
+      run-type: "PR"
+      MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
     secrets: inherit
 
   update-final-status:
     runs-on: ubuntu-22.04
     needs:
       - run-ios-tests-on-pr
+      - run-android-tests-on-pr
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
+        if: contains(github.event.label.name, 'E2E iOS tests for PR')
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ github.event.pull_request.head.sha }}
-          context: e2e/detox-tests
+          context: e2e/detox-ios-tests
+          description: Completed with ${{ needs.run-ios-tests-on-pr.outputs.FAILURES }} failures
+          status: ${{ needs.run-ios-tests-on-pr.outputs.STATUS }}
+          target_url: ${{ needs.run-ios-tests-on-pr.outputs.TARGET_URL }}
+
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        if: contains(github.event.label.name, 'E2E Android tests for PR')
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          context: e2e/detox-android-tests
           description: Completed with ${{ needs.run-ios-tests-on-pr.outputs.FAILURES }} failures
           status: ${{ needs.run-ios-tests-on-pr.outputs.STATUS }}
           target_url: ${{ needs.run-ios-tests-on-pr.outputs.TARGET_URL }}
@@ -86,21 +162,21 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - run-ios-tests-on-pr
+      - run-android-tests-on-pr
     steps:
       - name: e2e/remove-label-from-pr
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         continue-on-error: true # Label might have been removed manually
         with:
           script: |
-            const iosLabel = 'E2E iOS tests for PR';
-            const androidLabel = 'E2E Android tests for PR';
+            const labelsToRemove = ['E2E iOS tests for PR', 'E2E Android tests for PR'];
             context.payload.pull_request.labels.forEach(label => {
-              if (label.name.includes(iosLabel)) {
-                github.rest.issues.removeLabel({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  name: label.name,
-                });
+              if (labelsToRemove.includes(label.name)) {
+              github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: label.name,
+              });
               }
             });
