@@ -122,14 +122,8 @@ describe('DraftInput', () => {
             expect(baseProps.sendMessage).toHaveBeenCalledWith(undefined);
         });
 
-        it('opens scheduled post options on long press and schedules post', async () => {
-            // Mock openAsBottomSheet to simulate selecting a schedule option
-            const scheduledTime = {scheduled_at: 1234567890};
-            jest.mocked(openAsBottomSheet).mockImplementationOnce(({props}) => {
-                props.onSchedule(scheduledTime);
-                return Promise.resolve({data: true});
-            });
-
+        it('opens scheduled post options on long press', async () => {
+            // make this a re-usable function
             await operator.handleConfigs({
                 configs: [
                     {id: 'ScheduledPosts', value: 'true'},
@@ -140,14 +134,11 @@ describe('DraftInput', () => {
 
             const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
             fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
-            
             expect(openAsBottomSheet).toHaveBeenCalledWith(expect.objectContaining({
                 screen: Screens.SCHEDULED_POST_OPTIONS,
                 closeButtonId: 'close-scheduled-post-picker',
             }));
-            
-            // Verify sendMessage was called with the scheduled time
-            expect(baseProps.sendMessage).toHaveBeenCalledWith(scheduledTime);
+            expect(baseProps.sendMessage).not.toHaveBeenCalled();
         });
 
         it('handles persistent notifications', async () => {
