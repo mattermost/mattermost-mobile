@@ -174,10 +174,10 @@ jobs:
             chmod +x ./create_android_emulator.sh
             ./create_android_emulator.sh
 
-        - name: Run Detox tests
-          run: |
-            cd detox
-            npm run e2e:android-test -- about.e2e.ts
+        # - name: Run Detox tests
+        #   run: |
+        #     cd detox
+        #     npm run e2e:android-test -- about.e2e.ts
 
         - name: Generate Report Path
           id: s3

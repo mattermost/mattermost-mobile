@@ -98,6 +98,11 @@ setup_adb_reverse() {
     adb reverse tcp:8081 tcp:8081
 }
 
+run_detox_tests() {
+    echo "Running Detox tests..."
+    npm run e2e:android-test -- about.e2e.ts
+}
+
 main() {
     setup_avd_home
     
@@ -116,6 +121,8 @@ main() {
         start_server
         setup_adb_reverse
     fi
+
+    run_detox_tests
 }
 
 main
