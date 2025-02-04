@@ -3,7 +3,6 @@
 
 import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
-import ClientScheduledPost, {type ClientScheduledPostMix} from '@client/rest/scheduled_post';
 import mix from '@utils/mix';
 
 import ClientApps, {type ClientAppsMix} from './apps';
