@@ -642,6 +642,8 @@ describe('*** Operator: Post Handlers tests ***', () => {
         });
 
         expect(spyOnBatchRecords).toHaveBeenCalledWith(scheduledPosts, 'handleScheduledPosts');
+    });
+
     it('=> HandlePosts: should not remove files if file ids are present but metadata is missing', async () => {
         const postWithMetadata = posts[0];
         const uploadedFiles = postWithMetadata.metadata.files!;
