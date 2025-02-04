@@ -28,7 +28,7 @@ import Header from './header';
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type Props = {
+export type Props = {
     testID?: string;
     channelId: string;
     channelType?: ChannelType;
@@ -48,7 +48,7 @@ type Props = {
     cursorPosition: number;
 
     // Send Handler
-    sendMessage: () => void;
+    sendMessage: (schedulingInfo?: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>;
     canSend: boolean;
     maxMessageLength: number;
 
@@ -164,13 +164,16 @@ function DraftInput({
         postPriority,
     });
 
-    const handleSendMessage = useCallback(async () => {
+    const handleSendMessage = useCallback(async (schedulingInfoParam?: SchedulingInfo) => {
+        const schedulingInfo = (schedulingInfoParam && 'scheduled_at' in schedulingInfoParam) ? schedulingInfoParam : undefined;
+
         if (persistentNotificationsEnabled) {
-            persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
-        } else {
-            sendMessage();
+            const sendMessageWithScheduledPost = () => sendMessage(schedulingInfo);
+            await persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessageWithScheduledPost, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
+            return Promise.resolve();
         }
-    }, [serverUrl, mentionsList, persistentNotificationsEnabled, persistentNotificationMaxRecipients, sendMessage, value, channelType]);
+        return sendMessage(schedulingInfo);
+    }, [persistentNotificationsEnabled, serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType]);
 
     const handleShowScheduledPostOptions = useCallback(() => {
         if (!scheduledPostsEnabled) {
@@ -187,9 +190,10 @@ function DraftInput({
             title,
             props: {
                 closeButtonId: SCHEDULED_POST_PICKER_BUTTON,
+                onSchedule: handleSendMessage,
             },
         });
-    }, [intl, isTablet, scheduledPostsEnabled, theme]);
+    }, [handleSendMessage, intl, isTablet, scheduledPostsEnabled, theme]);
 
     const sendActionDisabled = !canSend || noMentionsError;
 

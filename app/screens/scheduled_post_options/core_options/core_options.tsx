@@ -63,12 +63,12 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
         }
 
         if (selectedTime) {
-            onSelectOption(selectedTime.unix().toString());
+            onSelectOption(selectedTime.valueOf().toString());
         }
     }, [now, onSelectOption]);
 
     const handleCustomTimeChange = useCallback((selectedTime: Moment) => {
-        onSelectOption(selectedTime.unix().toString());
+        onSelectOption(selectedTime.valueOf().toString());
     }, [onSelectOption]);
 
     const nineAmTime = moment().

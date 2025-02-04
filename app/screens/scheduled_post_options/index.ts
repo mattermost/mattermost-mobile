@@ -11,8 +11,9 @@ import {ScheduledPostOptions} from '@screens/scheduled_post_options/scheduled_po
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const currentUserTimezone = observeCurrentUser(database).pipe(switchMap((u) => of$(u?.timezone)));
     return {
-        currentUserTimezone: observeCurrentUser(database).pipe(switchMap((u) => of$(u?.timezone))),
+        currentUserTimezone,
     };
 });
 
