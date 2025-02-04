@@ -14,27 +14,19 @@ const MAX_FAILED_TITLES = 5;
 function convertXmlToJson(xml, platform) {
     const jsonFile = `${ARTIFACTS_DIR}/${platform}-junit.json`;
 
-    return new Promise((resolve, reject) => {
-        // Convert XML to JSON
-        xml2js.parseString(xml, {mergeAttrs: true}, (parseErr, result) => {
-            if (parseErr) {
-                reject(parseErr);
-                return;
-            }
+    // Convert XML to JSON
+    xml2js.parseString(xml, {mergeAttrs: true}, (err, result) => {
+        if (err) {
+            throw err;
+        }
 
-            // Convert result to a JSON string
-            const json = JSON.stringify(result, null, 4);
+        // Convert result to a JSON string
+        const json = JSON.stringify(result, null, 4);
 
-            // Save JSON in a file
-            fse.writeJson(jsonFile, json, (err) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve(readJsonFromFile(jsonFile));
-            });
-        });
+        // Save JSON in a file
+        fse.writeFileSync(jsonFile, json);
     });
+    return readJsonFromFile(jsonFile);
 }
 
 function getAllTests(testSuites) {

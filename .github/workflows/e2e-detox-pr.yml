@@ -40,6 +40,7 @@ jobs:
           status: pending
 
   build-ios-simulator:
+    if: contains(github.event.label.name, 'E2E iOS tests for PR')
     runs-on: macos-14
     needs:
       - update-initial-status
@@ -67,6 +68,7 @@ jobs:
 
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
+    if: contains(github.event.label.name, 'E2E Android tests for PR')
     needs:
       - update-initial-status
     env:
@@ -107,6 +109,7 @@ jobs:
           path: "android/app/build/**/*"
         
   run-ios-tests-on-pr:
+    if: contains(github.event.label.name, 'E2E iOS tests for PR')
     name: iOS Mobile Tests on PR
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
@@ -118,6 +121,7 @@ jobs:
     secrets: inherit
 
   run-android-tests-on-pr:
+    if: contains(github.event.label.name, 'E2E Android tests for PR')
     name: Android Mobile Tests on PR
     uses: ./.github/workflows/e2e-android-template.yml
     needs:

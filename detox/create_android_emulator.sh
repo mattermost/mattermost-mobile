@@ -4,9 +4,9 @@
 set -ex
 set -o pipefail
 
-SDK_VERSION=${1:-33}
-AVD_NAME=${2:-"detox_pixel_4_xl_api_${SDK_VERSION}"}
-shift 2 # Shift to remove the first two arguments so "$@" captures only test specs
+SDK_VERSION=${2:-33}
+AVD_NAME=${1:-"detox_pixel_4_xl_api_${SDK_VERSION}"}
+shift 2  # Shift to remove the first two arguments so "$@" captures only test specs
 
 setup_avd_home() {
     if [[ "$CI" == "true" ]]; then
@@ -79,7 +79,7 @@ install_app() {
 start_server() {
     echo "Starting the server..."
     cd ..
-    npm run start &
+    RUNNING_E2E=true npm run start &
     local timeout=120 interval=5 elapsed=0
 
     until nc -z localhost 8081; do
@@ -100,8 +100,7 @@ setup_adb_reverse() {
 }
 
 run_detox_tests() {
-    echo "Running Detox tests..."
-    echo "$@"
+    echo "Running Detox tests... "$@""
 
     cd detox
     npm run e2e:android-test -- "$@"
