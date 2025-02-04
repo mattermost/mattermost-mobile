@@ -157,6 +157,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         const postsReactions: ReactionsPerPost[] = [];
         const pendingPostsToDelete: Post[] = [];
         const postsInThread: Record<string, Post[]> = {};
+        const receivedFilesSet = new Set<string>();
 
         // Let's process the post data
         for (const post of posts) {
@@ -201,6 +202,8 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
                 post.metadata = data;
             }
+
+            post.file_ids?.forEach((fileId) => receivedFilesSet.add(fileId));
         }
 
         // Get unique posts in case they are duplicated
@@ -261,7 +264,6 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         }
 
         const allFiles = await database.get<FileModel>(MM_TABLES.SERVER.FILE).query(Q.where('post_id', Q.oneOf(uniquePosts.map((p) => p.id)))).fetch();
-        const receivedFilesSet = new Set(files.map((f) => f.id));
         allFiles.forEach((f) => {
             if (!receivedFilesSet.has(f.id)) {
                 batch.push(f.prepareDestroyPermanently());

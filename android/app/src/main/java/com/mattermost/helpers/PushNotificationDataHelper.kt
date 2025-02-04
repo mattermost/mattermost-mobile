@@ -115,6 +115,8 @@ class PushNotificationDataRunnable {
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    val eMessage = e.message ?: "Error with no message"
+                    TurboLog.e("ReactNative", "Error processing push notification error=$eMessage")
                 } finally {
                     db?.close()
                     TurboLog.i("ReactNative", "DONE fetching notification data")
