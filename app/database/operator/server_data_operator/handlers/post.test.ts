@@ -613,7 +613,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        console.log('deletedRecord', deletedRecord);
         expect(deletedRecord).toBeTruthy();
         expect(deletedRecord[0]._raw.id).toBe(scheduledPost.id);
     });
@@ -621,7 +620,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
     it('HandleScheduledPosts: should delete all the schedule post from the database when action is RECEIVED_ALL_SCHEDULED_POSTS', async () => {
         const spyOnBatchRecords = jest.spyOn(operator, 'batchRecords');
         jest.spyOn(ScheduledPostQueries, 'queryScheduledPostsForTeam').mockReturnValue({
-            fetchIds: jest.fn().mockResolvedValue(scheduledPosts.map((post) => post.id)),
+            fetch: jest.fn().mockResolvedValue(scheduledPosts),
         } as any);
 
         jest.spyOn(database, 'get').mockReturnValue({
