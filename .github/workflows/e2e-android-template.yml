@@ -121,8 +121,8 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 4
-          search_path: detox/e2e/test/search
+          parallelism: 10
+          search_path: detox/e2e/test
           device_name: ${{ env.AVD_NAME }}
           device_os_version: ${{ env.SDK_VERSION }}
 
