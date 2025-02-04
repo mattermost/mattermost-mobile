@@ -4,8 +4,8 @@
 set -ex
 set -o pipefail
 
-SDK_VERSION=${2:-33}
-AVD_NAME=${1:-"detox_pixel_4_xl_api_${SDK_VERSION}"}
+SDK_VERSION=${1:-33}  # First argument is SDK version
+AVD_NAME=${2:-"detox_pixel_4_xl_api_${SDK_VERSION}"}  # Second argument is AVD name
 shift 2  # Shift to remove the first two arguments so "$@" captures only test specs
 
 setup_avd_home() {

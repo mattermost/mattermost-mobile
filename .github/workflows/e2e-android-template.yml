@@ -68,7 +68,7 @@ env:
   ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
   BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
   COMMIT_HASH: ${{ github.sha }}
-  DEVICE_NAME: ${{ inputs.android_avd_name }} # This is the name splitting the tests as its same code as used in iOS job
+  DEVICE_NAME: ${{ inputs.android_avd_name }} # This is needed to split tests as same code is used in iOS job
   DEVICE_OS_VERSION: ${{ inputs.android_api_level }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
   HEADLESS: "true"
