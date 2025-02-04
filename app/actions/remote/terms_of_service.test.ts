@@ -62,7 +62,7 @@ describe('terms_of_service', () => {
         const mockUser = {
             id: 'user123',
             prepareUpdate: jest.fn((fn) => fn({})),
-        };
+        } as any;
 
         it('should update terms of service status successfully', async () => {
             mockGetCurrentUser.mockResolvedValue(mockUser);
