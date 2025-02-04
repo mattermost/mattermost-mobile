@@ -71,9 +71,8 @@ describe('handleCreateOrUpdateSchedulePost', () => {
     it('handleCreateOrUpdateScheduledPost - success', async () => {
         const {models} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduled_post: JSON.stringify(scheduledPosts[0])}} as WebSocketMessage) as {models: ScheduledPostModel[]};
         expect(models).toBeTruthy();
-        console.log({models});
         expect(models?.length).toBe(1);
-        expect(models[0]._raw.id).toEqual(scheduledPosts[0].id);
+        expect(models[0].id).toEqual(scheduledPosts[0].id);
     });
 });
 
