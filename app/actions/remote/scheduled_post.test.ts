@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
+import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getConfigValue} from '@queries/servers/system';
@@ -73,6 +74,7 @@ const mockClient = {
 };
 jest.mock('@queries/servers/system', () => ({
     getConfigValue: jest.fn(),
+    getCurrentTeamId: jest.fn(),
 }));
 
 const mockedGetConfigValue = jest.mocked(getConfigValue);
@@ -123,8 +125,8 @@ describe('scheduled_post', () => {
 describe('fetchScheduledPosts', () => {
     it('fetch Schedule post - handle database not found', async () => {
         const result = await fetchScheduledPosts('foo', 'bar');
-        expect(result).toBeDefined();
         expect(result.error).toBeTruthy();
+        expect(result.error).toBe('foo database not found');
     });
 
     it('fetch Schedule post - handle client error', async () => {
@@ -143,18 +145,23 @@ describe('fetchScheduledPosts', () => {
 
     it('fetch Schedule post - handle scheduled post enabled', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
-        jest.spyOn(operator, 'handleScheduledPosts').mockResolvedValueOnce([]);
+        const spyHandleScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
         const result = await fetchScheduledPosts(serverUrl, 'bar');
-        expect(result).toBeDefined();
         expect(result.scheduledPosts).toEqual(scheduledPostsResponse.bar);
+        expect(spyHandleScheduledPosts).toHaveBeenCalledWith({
+            actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
+            scheduledPosts: scheduledPostsResponse.bar,
+            prepareRecordsOnly: false,
+            includeDirectChannelPosts: false,
+        });
     });
 });
 
 describe('deleteScheduledPost', () => {
     it('delete Schedule post - handle database not found', async () => {
         const result = await deleteScheduledPost('foo', 'scheduled_post_id');
-        expect(result).toBeDefined();
         expect(result.error).toBeTruthy();
+        expect(result.error).toBe('foo database not found');
     });
 
     it('delete Schedule post - handle client error', async () => {
@@ -166,9 +173,13 @@ describe('deleteScheduledPost', () => {
     });
 
     it('delete Schedule post - handle scheduled post enabled', async () => {
-        jest.spyOn(operator, 'handleScheduledPosts').mockResolvedValueOnce([]);
+        const spyHandleScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
         const result = await deleteScheduledPost(serverUrl, 'scheduled_post_id');
-        expect(result).toBeDefined();
         expect(result.scheduledPost).toEqual(scheduledPostsResponse.bar[0]);
+        expect(spyHandleScheduledPosts).toHaveBeenCalledWith({
+            actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
+            scheduledPosts: [scheduledPostsResponse.bar[0]],
+            prepareRecordsOnly: false,
+        });
     });
 });

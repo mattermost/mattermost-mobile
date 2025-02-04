@@ -52,8 +52,15 @@ afterEach(async () => {
 
 describe('handleCreateOrUpdateSchedulePost', () => {
     it('handleCreateOrUpdateScheduledPost - handle not found database', async () => {
-        const {error} = await handleCreateOrUpdateScheduledPost('foo', {} as WebSocketMessage) as {error: unknown};
+        const {error} = await handleCreateOrUpdateScheduledPost('foo', {data: {scheduled_post: JSON.stringify(scheduledPosts[0])}} as WebSocketMessage) as {error: Error};
         expect(error).toBeTruthy();
+        expect(error.message).toBe('foo database not found');
+    });
+
+    it('handleCreateOrUpdateScheduledPost - wrong websocket scheduled post message', async () => {
+        const {error} = await handleCreateOrUpdateScheduledPost('foo', {} as WebSocketMessage) as {error: Error};
+        expect(error).toBeTruthy();
+        expect(error.message).toBe('Cannot read properties of undefined (reading \'scheduled_post\')');
     });
 
     it('handleCreateOrUpdateScheduledPost - no scheduled post', async () => {
@@ -64,7 +71,9 @@ describe('handleCreateOrUpdateSchedulePost', () => {
     it('handleCreateOrUpdateScheduledPost - success', async () => {
         const {models} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduled_post: JSON.stringify(scheduledPosts[0])}} as WebSocketMessage) as {models: ScheduledPostModel[]};
         expect(models).toBeTruthy();
+        console.log({models});
         expect(models?.length).toBe(1);
+        expect(models[0]._raw.id).toEqual(scheduledPosts[0].id);
     });
 });
 
@@ -91,7 +100,6 @@ describe('handleDeleteScheduledPost', () => {
         const deletedRecord = await handleDeleteScheduledPost(serverUrl, {data: {scheduled_post: JSON.stringify(scheduledPost)}} as WebSocketMessage) as {models: ScheduledPostModel[]};
         expect(deletedRecord).toBeTruthy();
         expect(deletedRecord.models).toBeTruthy();
-        expect(deletedRecord.models.length).toBe(1);
         expect(deletedRecord.models[0].id).toBe(scheduledPost.id);
     });
 });

@@ -33,9 +33,13 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
 }
 
 export async function fetchScheduledPosts(serverUrl: string, teamId: string, includeDirectChannels = false, groupLabel?: RequestGroupLabel) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!operator || !database) {
+        return {error: `${serverUrl} database not found`};
+    }
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const scheduledPostEnabled = (await getConfigValue(database, 'ScheduledPosts')) === 'true';
         if (!scheduledPostEnabled) {
@@ -63,9 +67,12 @@ export async function fetchScheduledPosts(serverUrl: string, teamId: string, inc
 }
 
 export async function deleteScheduledPost(serverUrl: string, scheduledPostId: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const ws = websocketManager.getClient(serverUrl);
 
         const result = await client.deleteScheduledPost(scheduledPostId, ws?.getConnectionId());
