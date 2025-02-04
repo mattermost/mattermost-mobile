@@ -145,9 +145,6 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             }
 
             case ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS: {
-                if (!scheduledPosts?.length) {
-                    break;
-                }
                 const idsFromServer = new Set(scheduledPosts?.map((post) => post.id) || []);
                 const existingScheduledPosts = await queryScheduledPostsForTeam(database, currentTeamId, includeDirectChannelPosts).fetch();
                 const deletedScheduledPostIds = existingScheduledPosts.
