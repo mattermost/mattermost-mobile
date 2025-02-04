@@ -5,8 +5,10 @@ import {field, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import {identity, safeParseJSON} from '@utils/helpers';
+import {getCurrentUserId} from '@queries/servers/system';
+import {safeParseJSON} from '@utils/helpers';
 
+import type {Database} from '@nozbe/watermelondb';
 import type ScheduledPostModelInterface from '@typings/database/models/servers/scheduled_post';
 
 const {CHANNEL, POST, SCHEDULED_POST} = MM_TABLES.SERVER;
@@ -40,7 +42,7 @@ export default class ScheduledPostModel extends Model implements ScheduledPostMo
     /** root_id : The root_id will be empty most of the time unless the scheduled post is created inside the thread */
     @field('root_id') rootId!: string;
 
-    @json('metadata', identity) metadata?: PostMetadata;
+    @json('metadata', safeParseJSON) metadata!: PostMetadata | null;
 
     /** update_at : The timestamp to when this scheduled post was last updated on the server */
     @field('update_at') updateAt!: number;
@@ -53,4 +55,24 @@ export default class ScheduledPostModel extends Model implements ScheduledPostMo
 
     /** error_code : The reason message if the schedule post failed */
     @field('error_code') errorCode!: string;
+
+    toApi = async (serverDatabase: Database) => {
+        const scheduledPost: ScheduledPost = {
+            id: this.id,
+            channel_id: this.channelId,
+            root_id: this.rootId,
+            message: this.message,
+            files: this.files,
+            metadata: this.metadata ? this.metadata : {},
+            update_at: this.updateAt,
+            scheduled_at: this.scheduledAt,
+            processed_at: this.processedAt,
+            error_code: this.errorCode,
+            user_id: await getCurrentUserId(serverDatabase),
+        };
+        if (this.metadata?.priority) {
+            scheduledPost.priority = this.metadata.priority;
+        }
+        return scheduledPost;
+    };
 }

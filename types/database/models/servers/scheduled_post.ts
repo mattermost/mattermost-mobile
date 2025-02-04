@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {Model} from '@nozbe/watermelondb';
+import type {Database, Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
 
 /**
@@ -26,7 +26,7 @@ declare class ScheduledPostModel extends Model {
     /** files : The files field will hold an array of files object that have not yet been uploaded and persisted within the FILE table */
     files: FileInfo[];
 
-    metadata?: PostMetadata;
+    metadata: PostMetadata | null;
 
     /** update_at : The timestamp to when this scheduled post was last updated on the server */
     updateAt: number;
@@ -39,6 +39,8 @@ declare class ScheduledPostModel extends Model {
 
     /** error_code : The reason message if the schedule post failed */
     errorCode: string;
+
+    toApi: (serverDatabase: Database) => Promise<ScheduledPost>;
 }
 
 export default ScheduledPostModel;

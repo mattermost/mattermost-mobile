@@ -14,6 +14,13 @@ export const POSTS = keyMirror({
     RECEIVED_POST_THREAD: null,
 });
 
+export const SCHEDULED_POSTS = keyMirror({
+    RECEIVED_ALL_SCHEDULED_POSTS: null,
+    CREATE_OR_UPDATED_SCHEDULED_POST: null,
+    DELETE_SCHEDULED_POST: null,
+});
+
 export default {
     POSTS,
+    SCHEDULED_POSTS,
 };
