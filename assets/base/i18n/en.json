@@ -468,6 +468,7 @@
   "logout.fail.cancel": "Cancel",
   "logout.fail.confirm": "Confirm",
   "logout.fail.message": "We could not log you out of the server. If you log out now, data may continue to be accessible to this device once the device goes back online. Do you still want to continue?",
+  "logout.fail.message.forced": "We could not log you out of the server. Data may continue to be accessible to this device once the device goes back online.",
   "logout.fail.title": "Logout Failed",
   "markdown.latex.error": "Latex render error",
   "markdown.max_nodes.error": "This message is too long to by shown fully on a mobile device. Please view it on desktop or contact an admin to increase this limit.",
