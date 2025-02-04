@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import NetInfo from '@react-native-community/netinfo';
+import {defineMessages, type IntlShape} from 'react-intl';
 import {Alert, DeviceEventEmitter, Platform, type AlertButton} from 'react-native';
 
 import {Database, Events} from '@constants';
@@ -22,9 +23,31 @@ import {getCSRFFromCookie} from '@utils/security';
 import {loginEntry} from './entry';
 
 import type {LoginArgs} from '@typings/database/database';
-import type {IntlShape} from 'react-intl';
 
 const HTTP_UNAUTHORIZED = 401;
+
+const logoutMessages = defineMessages({
+    title: {
+        id: 'logout.fail.title',
+        defaultMessage: 'Logout Failed',
+    },
+    bodyForced: {
+        id: 'logout.fail.message.forced',
+        defaultMessage: 'We could not log you out of the server. Data may continue to be accessible to this device once the device goes back online.',
+    },
+    body: {
+        id: 'logout.fail.message',
+        defaultMessage: 'We could not log you out of the server. If you log out now, data may continue to be accessible to this device once the device goes back online. Do you still want to continue?',
+    },
+    cancel: {
+        id: 'logout.fail.cancel',
+        defaultMessage: 'Cancel',
+    },
+    confirm: {
+        id: 'logout.fail.confirm',
+        defaultMessage: 'Confirm',
+    },
+});
 
 export const addPushProxyVerificationStateFromLogin = async (serverUrl: string) => {
     try {
@@ -166,13 +189,11 @@ export const logout = async (
         }
 
         if (!loggedOut) {
-            const title = intl?.formatMessage({id: 'logout.fail.title', defaultMessage: 'Logout Failed'}) || 'Logout Failed';
+            const title = intl?.formatMessage(logoutMessages.title) || logoutMessages.title.defaultMessage;
 
-            const body = logoutOnAlert ?
-                intl?.formatMessage({id: 'logout.fail.message.forced', defaultMessage: 'We could not log you out of the server. Data may continue to be accessible to this device once the device goes back online.'}) || 'We could not log you out of the server. Data may continue to be accessible to this device once the device goes back online.' :
-                intl?.formatMessage({id: 'logout.fail.message', defaultMessage: 'We could not log you out of the server. If you log out now, data may continue to be accessible to this device once the device goes back online. Do you still want to continue?'}) || 'We could not log you out of the server. If you log out now, data may continue to be accessible to this device once the device goes back online. Do you still want to continue?';
-            const cancel = intl?.formatMessage({id: 'logout.fail.cancel', defaultMessage: 'Cancel'}) || 'Cancel';
-            const confirm = intl?.formatMessage({id: 'logout.fail.confirm', defaultMessage: 'Confirm'}) || 'Confirm';
+            const body = logoutOnAlert ? intl?.formatMessage(logoutMessages.bodyForced) || logoutMessages.bodyForced.defaultMessage : intl?.formatMessage(logoutMessages.body) || logoutMessages.body.defaultMessage;
+            const cancel = intl?.formatMessage(logoutMessages.cancel) || logoutMessages.cancel.defaultMessage;
+            const confirm = intl?.formatMessage(logoutMessages.confirm) || logoutMessages.confirm.defaultMessage;
 
             const buttons: AlertButton[] = logoutOnAlert ? [] : [{text: cancel, style: 'cancel'}];
             buttons.push({
