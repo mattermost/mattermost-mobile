@@ -177,8 +177,8 @@ export const transformSchedulePostsRecord = ({action, database, value}: Transfor
         }
         scheduledPost.updateAt = raw.update_at ?? Date.now();
         scheduledPost.scheduledAt = raw.scheduled_at;
-        scheduledPost.processedAt = raw.processed_at;
-        scheduledPost.errorCode = raw.error_code;
+        scheduledPost.processedAt = raw.processed_at ?? 0;
+        scheduledPost.errorCode = raw.error_code ?? '';
     };
 
     return prepareBaseRecord({
