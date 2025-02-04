@@ -8,10 +8,11 @@ import {Alert, TouchableOpacity} from 'react-native';
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {popTopScreen} from '@screens/navigation';
+import {goToScreen, popTopScreen} from '@screens/navigation';
 import {deleteFileCache, getAllFilesInCachesDirectory, getFormattedFileSize} from '@utils/file';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -32,8 +33,12 @@ const EMPTY_FILES: FileInfo[] = [];
 
 type AdvancedSettingsProps = {
     componentId: AvailableScreens;
+    isDevMode: boolean;
 };
-const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
+const AdvancedSettings = ({
+    componentId,
+    isDevMode,
+}: AdvancedSettingsProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -77,6 +82,13 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
         }
     });
 
+    const onPressComponentLibrary = () => {
+        const screen = Screens.COMPONENT_LIBRARY;
+        const title = intl.formatMessage({id: 'settings.advanced_settings.component_library', defaultMessage: 'Component library'});
+
+        goToScreen(screen, title);
+    };
+
     useEffect(() => {
         getAllCachedFiles();
     }, []);
@@ -107,6 +119,19 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                 />
                 <SettingSeparator/>
             </TouchableOpacity>
+            {isDevMode && (
+                <TouchableOpacity
+                    onPress={onPressComponentLibrary}
+                >
+                    <SettingOption
+                        containerStyle={styles.itemStyle}
+                        label={intl.formatMessage({id: 'settings.advanced.component_library', defaultMessage: 'Component library'})}
+                        testID='advanced_settings.component_library.option'
+                        type='none'
+                    />
+                    <SettingSeparator/>
+                </TouchableOpacity>
+            )}
         </SettingContainer>
     );
 };

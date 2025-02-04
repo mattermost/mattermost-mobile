@@ -17,7 +17,7 @@ import {semverFromServerVersion} from '@utils/server';
 import * as ClientConstants from './constants';
 import ClientError from './error';
 
-import type {APIClientInterface, ClientHeaders, ClientResponseMetrics, RequestOptions} from '@mattermost/react-native-network-client';
+import type {APIClientInterface, ClientHeaders, ClientResponse, ClientResponseMetrics, RequestOptions} from '@mattermost/react-native-network-client';
 
 type UrlData = {
     count: number;
@@ -373,38 +373,9 @@ export default class ClientTracking {
             this.incrementRequestCount(groupLabel);
         }
 
+        let response: ClientResponse;
         try {
-            const response = await request!(url, this.buildRequestOptions(options));
-            const headers: ClientHeaders = response.headers || {};
-            if (groupLabel && CollectNetworkMetrics) {
-                this.trackRequest(groupLabel, url, response.metrics);
-            }
-            const serverVersion = semverFromServerVersion(
-                headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()],
-            );
-            const hasCacheControl = Boolean(
-                headers[ClientConstants.HEADER_CACHE_CONTROL] || headers[ClientConstants.HEADER_CACHE_CONTROL.toLowerCase()],
-            );
-            if (serverVersion && !hasCacheControl && this.serverVersion !== serverVersion) {
-                this.serverVersion = serverVersion;
-                DeviceEventEmitter.emit(Events.SERVER_VERSION_CHANGED, {serverUrl: this.apiClient.baseUrl, serverVersion});
-            }
-
-            const bearerToken = headers[ClientConstants.HEADER_TOKEN] || headers[ClientConstants.HEADER_TOKEN.toLowerCase()];
-            if (bearerToken) {
-                this.setBearerToken(bearerToken);
-            }
-
-            if (response.ok) {
-                return returnDataOnly ? (response.data || {}) : response;
-            }
-
-            throw new ClientError(this.apiClient.baseUrl, {
-                message: response.data?.message as string || `Response with status code ${response.code}`,
-                server_error_id: response.data?.id as string,
-                status_code: response.code,
-                url,
-            });
+            response = await request!(url, this.buildRequestOptions(options));
         } catch (error) {
             const status_code = isErrorWithStatusCode(error) ? error.status_code : undefined;
             throw new ClientError(this.apiClient.baseUrl, {
@@ -422,5 +393,35 @@ export default class ClientTracking {
                 this.decrementRequestCount(groupLabel);
             }
         }
+        const headers: ClientHeaders = response.headers || {};
+        if (groupLabel && CollectNetworkMetrics) {
+            this.trackRequest(groupLabel, url, response.metrics);
+        }
+        const serverVersion = semverFromServerVersion(
+            headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()],
+        );
+        const hasCacheControl = Boolean(
+            headers[ClientConstants.HEADER_CACHE_CONTROL] || headers[ClientConstants.HEADER_CACHE_CONTROL.toLowerCase()],
+        );
+        if (serverVersion && !hasCacheControl && this.serverVersion !== serverVersion) {
+            this.serverVersion = serverVersion;
+            DeviceEventEmitter.emit(Events.SERVER_VERSION_CHANGED, {serverUrl: this.apiClient.baseUrl, serverVersion});
+        }
+
+        const bearerToken = headers[ClientConstants.HEADER_TOKEN] || headers[ClientConstants.HEADER_TOKEN.toLowerCase()];
+        if (bearerToken) {
+            this.setBearerToken(bearerToken);
+        }
+
+        if (response.ok) {
+            return returnDataOnly ? (response.data || {}) : response;
+        }
+
+        throw new ClientError(this.apiClient.baseUrl, {
+            message: response.data?.message as string || `Response with status code ${response.code}`,
+            server_error_id: response.data?.id as string,
+            status_code: response.code,
+            url,
+        });
     };
 }

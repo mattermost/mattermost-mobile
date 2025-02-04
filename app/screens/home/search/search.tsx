@@ -146,6 +146,12 @@ const SearchScreen = ({teamId, teams}: Props) => {
         setFilter(FileFilters.ALL);
     }, []);
 
+    const clearInputs = useCallback(() => {
+        setSearchValue('');
+        setLastSearchedValue('');
+        setFilter(FileFilters.ALL);
+    }, []);
+
     const handleClearSearch = useCallback(() => {
         clearRef.current = true;
         Keyboard.dismiss();
@@ -320,11 +326,11 @@ const SearchScreen = ({teamId, teams}: Props) => {
 
     useEffect(() => {
         if (searchTerm) {
-            resetToInitial();
+            clearInputs();
             setSearchValue(searchTerm);
             handleSearch(searchTeamId, searchTerm);
         }
-    }, [handleSearch, resetToInitial, searchTeamId, searchTerm]);
+    }, [handleSearch, clearInputs, searchTeamId, searchTerm]);
 
     useDidUpdate(() => {
         if (isFocused) {
