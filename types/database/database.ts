@@ -294,6 +294,12 @@ export type HandleDraftArgs = PrepareOnly & {
   drafts?: Draft[];
 };
 
+export type HandleScheduledPostsArgs = PrepareOnly & {
+  actionType: string;
+  scheduledPosts?: ScheduledPost[];
+  includeDirectChannelPosts?: boolean;
+};
+
 export type LoginArgs = {
   config: Partial<ClientConfig>;
   ldapOnly?: boolean;
