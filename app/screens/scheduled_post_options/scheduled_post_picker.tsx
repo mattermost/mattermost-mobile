@@ -8,11 +8,14 @@ import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import BottomSheet from '@screens/bottom_sheet';
+import {dismissBottomSheet} from '@screens/navigation';
 import ScheduledPostCoreOptions from '@screens/scheduled_post_options/core_options';
 import ScheduledPostFooter from '@screens/scheduled_post_options/footer';
 import {FOOTER_HEIGHT} from '@screens/scheduled_post_options/footer/scheduled_post_footer';
-import {logInfo} from '@utils/log';
+import {logDebug} from '@utils/log';
+import {showScheduledPostCreationErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
@@ -50,13 +53,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     currentUserTimezone?: UserTimezone | null;
-    serverUrl: string;
+    onSchedule: (schedulingInfo: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>;
 }
 
-export function ScheduledPostOptions({currentUserTimezone}: Props) {
+export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     const isTablet = useIsTablet();
     const theme = useTheme();
-
+    const [isScheduling, setIsScheduling] = useState(false);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const userTimezone = getTimezone(currentUserTimezone);
 
@@ -75,10 +78,27 @@ export function ScheduledPostOptions({currentUserTimezone}: Props) {
         setSelectedTime(selectedValue);
     }, []);
 
-    const onSchedule = useCallback(async () => {
-        // TODO - to be implemented later
-        logInfo('Schedule post', selectedTime);
-    }, [selectedTime]);
+    const handleOnSchedule = usePreventDoubleTap(useCallback(async () => {
+        if (!selectedTime) {
+            logDebug('ScheduledPostOptions', 'No time selected');
+            return;
+        }
+
+        setIsScheduling(true);
+        const schedulingInfo: SchedulingInfo = {
+            scheduled_at: parseInt(selectedTime, 10),
+        };
+
+        const response = await onSchedule(schedulingInfo);
+        setIsScheduling(false);
+
+        if (response?.error) {
+            const errorMessage = response.error as string;
+            showScheduledPostCreationErrorSnackbar(errorMessage);
+        } else {
+            await dismissBottomSheet();
+        }
+    }, [onSchedule, selectedTime]));
 
     const renderContent = () => {
         return (
@@ -106,7 +126,8 @@ export function ScheduledPostOptions({currentUserTimezone}: Props) {
     const renderFooter = (props: BottomSheetFooterProps) => (
         <ScheduledPostFooter
             {...props}
-            onSchedule={onSchedule}
+            onSchedule={handleOnSchedule}
+            isScheduling={isScheduling}
         />
     );
 
