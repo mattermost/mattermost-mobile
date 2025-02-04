@@ -1,11 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import RNUtils from '@mattermost/rnutils';
 import {uniqueId} from 'lodash';
 import React, {useCallback, useEffect, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
@@ -15,6 +13,7 @@ import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
+import {useAndroidAdjustSoftKeyboard} from '@hooks/android_adjust_soft_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
 import {popTopScreen, setButtons} from '@screens/navigation';
@@ -58,20 +57,7 @@ const Thread = ({
     }, [componentId]);
 
     useAndroidHardwareBackHandler(componentId, close);
-
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                RNUtils.setSoftKeyboardToAdjustNothing();
-            },
-            componentDidDisappear: () => {
-                RNUtils.setSoftKeyboardToAdjustResize();
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId!);
-
-        return () => unsubscribe.remove();
-    }, []);
+    useAndroidAdjustSoftKeyboard(componentId);
 
     useEffect(() => {
         if (isCRTEnabled && rootId) {
