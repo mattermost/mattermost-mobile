@@ -78,7 +78,7 @@ install_app() {
 start_server() {
     echo "Starting the server..."
     cd ..
-    npm run start &
+    RUNNING_E2E=true npm run start &
     local timeout=120 interval=5 elapsed=0
 
     until nc -z localhost 8081; do
