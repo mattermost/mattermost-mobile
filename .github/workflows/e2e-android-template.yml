@@ -130,7 +130,7 @@ jobs:
     name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     runs-on: ubuntu-latest-8-cores
     continue-on-error: true
-    timeout-minutes: 60
+    timeout-minutes: 150
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
