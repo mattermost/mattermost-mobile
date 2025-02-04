@@ -64,8 +64,7 @@ describe('useAndroidAdjustSoftKeyboard', () => {
 
         const listener = registerComponentListenerMock.mock.calls[0][0];
 
-        // @ts-expect-error mockReturnValue not defined
-        Keyboard.isVisible.mockReturnValue(true);
+        jest.mocked(Keyboard.isVisible).mockReturnValue(true);
         listener.componentDidAppear();
 
         expect(Keyboard.dismiss).toHaveBeenCalled();
@@ -75,6 +74,18 @@ describe('useAndroidAdjustSoftKeyboard', () => {
 
         listener.componentDidDisappear();
         expect(RNUtils.setSoftKeyboardToAdjustResize).toHaveBeenCalled();
+    });
+
+    it('should register component listener and handle lifecycle events when the screen is undefined', () => {
+        renderHook(() => useAndroidAdjustSoftKeyboard(undefined));
+
+        expect(registerComponentListenerMock).not.toHaveBeenCalledWith(
+            expect.objectContaining({
+                componentDidAppear: expect.any(Function),
+                componentDidDisappear: expect.any(Function),
+            }),
+            undefined,
+        );
     });
 
     it('should clean up on unmount', () => {

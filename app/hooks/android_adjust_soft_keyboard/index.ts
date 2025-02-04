@@ -4,7 +4,7 @@
 import RNUtils from '@mattermost/rnutils';
 import {useEffect, useRef} from 'react';
 import {Keyboard} from 'react-native';
-import {Navigation} from 'react-native-navigation';
+import {Navigation, type EventSubscription} from 'react-native-navigation';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -12,6 +12,7 @@ export function useAndroidAdjustSoftKeyboard(screen?: AvailableScreens) {
     const timeout = useRef<NodeJS.Timeout>();
 
     useEffect(() => {
+        let unsubscribe: EventSubscription;
         const listener = {
             componentDidAppear: () => {
                 if (Keyboard.isVisible()) {
@@ -25,11 +26,14 @@ export function useAndroidAdjustSoftKeyboard(screen?: AvailableScreens) {
                 RNUtils.setSoftKeyboardToAdjustResize();
             },
         };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, screen!);
+
+        if (screen) {
+            unsubscribe = Navigation.events().registerComponentListener(listener, screen);
+        }
 
         return () => {
             clearTimeout(timeout.current);
-            unsubscribe.remove();
+            unsubscribe?.remove();
         };
     }, []);
 }
