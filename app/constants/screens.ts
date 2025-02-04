@@ -80,6 +80,7 @@ export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
 export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
 export const GENERIC_OVERLAY = 'GenericOverlay';
+export const SCHEDULED_POST_OPTIONS = 'ScheduledPostOptions';
 
 export default {
     ABOUT,
@@ -160,6 +161,7 @@ export default {
     THREAD_OPTIONS,
     USER_PROFILE,
     GENERIC_OVERLAY,
+    SCHEDULED_POST_OPTIONS,
 } as const;
 
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
@@ -197,6 +199,7 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     USER_PROFILE,
     CALL_PARTICIPANTS,
     CALL_HOST_CONTROLS,
+    SCHEDULED_POST_OPTIONS,
 ]);
 
 export const NOT_READY = [

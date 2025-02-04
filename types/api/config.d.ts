@@ -196,4 +196,5 @@ interface ClientConfig {
     WebsocketPort: string;
     WebsocketSecurePort: string;
     WebsocketURL: string;
+    ScheduledPosts: string;
 }

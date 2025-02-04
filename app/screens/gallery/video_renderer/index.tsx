@@ -128,19 +128,15 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
         const w = width;
         const h = height - (VIDEO_INSET + GALLERY_FOOTER_HEIGHT + bottom);
 
-        if (hasError) {
-            return {height: 0, width: 0};
-        }
-
         return {width: w, height: h};
-    }, [hasError, fullscreen.value, height, width]);
+    }, [width, height, bottom]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
             width: withTiming(dimensionsStyle.width, timingConfig),
             height: withTiming(dimensionsStyle.height, timingConfig),
         };
-    }, [dimensionsStyle, hasError]);
+    }, [dimensionsStyle]);
 
     useEffect(() => {
         if (initialIndex === index && videoReady) {

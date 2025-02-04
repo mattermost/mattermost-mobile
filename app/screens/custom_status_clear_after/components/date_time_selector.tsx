@@ -23,6 +23,7 @@ type Props = {
     isMilitaryTime: boolean;
     theme: Theme;
     handleChange: (currentDate: Moment) => void;
+    showInitially?: AndroidMode;
 }
 
 type AndroidMode = 'date' | 'time';
@@ -30,12 +31,10 @@ type AndroidMode = 'date' | 'time';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            flex: 1,
             paddingTop: 10,
             backgroundColor: theme.centerChannelBg,
         },
         buttonContainer: {
-            flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-evenly',
@@ -44,14 +43,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme}: Props) => {
+const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme, showInitially}: Props) => {
     const styles = getStyleSheet(theme);
     const currentTime = getCurrentMomentForTimezone(timezone);
     const timezoneOffSetInMinutes = timezone ? getUtcOffsetForTimeZone(timezone) : undefined;
     const minimumDate = getRoundedTime(currentTime);
     const [date, setDate] = useState<Moment>(minimumDate);
-    const [mode, setMode] = useState<AndroidMode>('date');
-    const [show, setShow] = useState<boolean>(false);
+    const [mode, setMode] = useState<AndroidMode>(showInitially || 'date');
+    const [show, setShow] = useState<boolean>(Boolean(showInitially));
 
     const onChange = (_: DateTimePickerEvent, selectedDate: Date) => {
         const currentDate = selectedDate || date;

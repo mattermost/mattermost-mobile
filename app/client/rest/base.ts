@@ -203,6 +203,10 @@ export default class ClientBase extends ClientTracking {
         return `${this.urlVersion}/custom_profile_attributes`;
     }
 
+    getScheduledPostRoute() {
+        return `${this.getPostsRoute()}/schedule`;
+    }
+
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
         return this.doFetchWithTracking(url, options, returnDataOnly);
     };

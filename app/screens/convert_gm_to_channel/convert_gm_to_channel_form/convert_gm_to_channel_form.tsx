@@ -130,7 +130,7 @@ export const ConvertGMToChannelForm = ({
     const defaultUserDisplayNames = formatMessage({id: 'channel_info.convert_gm_to_channel.warning.body.yourself', defaultMessage: 'yourself'});
     const memberNames = profiles.length > 0 ? formatList(userDisplayNames) : defaultUserDisplayNames;
     const messageBoxBody = formatMessage({
-        id: 'channel_info.convert_gm_to_channel.warning.bodyXXXX',
+        id: 'channel_info.convert_gm_to_channel.warning.body',
         defaultMessage: 'You are about to convert the Group Message with {memberNames} to a Channel. This cannot be undone.',
     }, {
         memberNames,

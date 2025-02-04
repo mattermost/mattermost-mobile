@@ -204,7 +204,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
     }
 };
 
-async function entryInitialChannelId(database: Database, requestedChannelId = '', requestedTeamId = '', initialTeamId: string, locale: string, channels?: Channel[], memberships?: ChannelMember[]) {
+export async function entryInitialChannelId(database: Database, requestedChannelId = '', requestedTeamId = '', initialTeamId: string, locale: string, channels?: Channel[], memberships?: ChannelMember[]) {
     const membershipIds = new Set(memberships?.map((m) => m.channel_id));
     const requestedChannel = channels?.find((c) => (c.id === requestedChannelId) && membershipIds.has(c.id));
 
@@ -242,7 +242,7 @@ async function entryInitialChannelId(database: Database, requestedChannelId = ''
     return myFirstTeamChannel?.id || '';
 }
 
-async function restDeferredAppEntryActions(
+export async function restDeferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense | undefined, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string, groupLabel?: BaseRequestGroupLabel,

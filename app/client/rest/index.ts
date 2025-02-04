@@ -3,6 +3,7 @@
 
 import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
+import ClientScheduledPost, {type ClientScheduledPostMix} from '@client/rest/scheduled_post';
 import mix from '@utils/mix';
 
 import ClientApps, {type ClientAppsMix} from './apps';
@@ -46,7 +47,8 @@ interface Client extends ClientBase,
     ClientCallsMix,
     ClientPluginsMix,
     ClientNPSMix,
-    ClientCustomAttributesMix
+    ClientCustomAttributesMix,
+    ClientScheduledPostMix
 {}
 
 class Client extends mix(ClientBase).with(
@@ -69,6 +71,7 @@ class Client extends mix(ClientBase).with(
     ClientPlugins,
     ClientNPS,
     ClientCustomAttributes,
+    ClientScheduledPost,
 ) {
     // eslint-disable-next-line no-useless-constructor
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
