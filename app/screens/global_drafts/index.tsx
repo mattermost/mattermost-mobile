@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {Tab, TabView} from '@rneui/base';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
@@ -16,18 +17,21 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {popTopScreen} from '../navigation';
 
 import GlobalDraftsList from './components/global_drafts_list';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const edges: Edge[] = ['left', 'right'];
 
 type Props = {
     componentId?: AvailableScreens;
+    scheduledPostsEnabled?: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -78,7 +82,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const GlobalDraftsAndScheduledPosts = ({componentId}: Props) => {
+const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled}: Props) => {
     const [index, setIndex] = React.useState(0);
 
     // eslint-disable-next-line no-warning-comments
@@ -172,47 +176,65 @@ const GlobalDraftsAndScheduledPosts = ({componentId}: Props) => {
             </View>
             {!switchingTeam &&
             <View style={containerStyle}>
-                <Tab
-                    value={index}
-                    onChange={(e) => setIndex(e)}
-                    indicatorStyle={styles.activeTabIndicator}
-                >
-                    <Tab.Item
-                        title={intl.formatMessage({id: 'drafts_tab.title.drafts', defaultMessage: 'Drafts'})}
-                        style={styles.tabItem}
-                        titleStyle={tabStyle}
-                        icon={draftCountBadge(0)}
-                        iconPosition='right'
-                        active={index === 0}
-                    />
-                    <Tab.Item
-                        title={intl.formatMessage({id: 'drafts_tab.title.scheduled', defaultMessage: 'Scheduled'})}
-                        icon={draftCountBadge(1)}
-                        iconPosition='right'
-                        style={styles.tabItem}
-                        titleStyle={tabStyle}
-                        active={index === 1}
-                    />
-                </Tab>
+                {
+                    scheduledPostsEnabled ? (
+                        <>
+                            <Tab
+                                value={index}
+                                onChange={(e) => setIndex(e)}
+                                indicatorStyle={styles.activeTabIndicator}
+                            >
+                                <Tab.Item
+                                    title={intl.formatMessage({id: 'drafts_tab.title.drafts', defaultMessage: 'Drafts'})}
+                                    style={styles.tabItem}
+                                    titleStyle={tabStyle}
+                                    icon={draftCountBadge(0)}
+                                    iconPosition='right'
+                                    active={index === 0}
+                                />
+                                <Tab.Item
+                                    title={intl.formatMessage({id: 'drafts_tab.title.scheduled', defaultMessage: 'Scheduled'})}
+                                    icon={draftCountBadge(1)}
+                                    iconPosition='right'
+                                    style={styles.tabItem}
+                                    titleStyle={tabStyle}
+                                    active={index === 1}
+                                />
+                            </Tab>
 
-                <TabView
-                    value={index}
-                    onChange={setIndex}
-                >
-                    <TabView.Item style={styles.tabView}>
+                            <TabView
+                                value={index}
+                                onChange={setIndex}
+                                disableSwipe={true}
+                            >
+                                <TabView.Item style={styles.tabView}>
+                                    <GlobalDraftsList
+                                        location={Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS}
+                                    />
+                                </TabView.Item>
+                                <TabView.Item style={styles.tabView}>
+                                    {/*Render scheduled post list here*/}
+                                    <Text>{'Favorite'}</Text>
+                                </TabView.Item>
+                            </TabView>
+                        </>
+                    ) : (
                         <GlobalDraftsList
                             location={Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS}
                         />
-                    </TabView.Item>
-                    <TabView.Item style={styles.tabView}>
-                        {/*Render scheduled post list here*/}
-                        <Text>{'Favorite'}</Text>
-                    </TabView.Item>
-                </TabView>
+                    )
+                }
             </View>
             }
         </SafeAreaView>
     );
 };
 
-export default GlobalDraftsAndScheduledPosts;
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const scheduledPostsEnabled = observeConfigBooleanValue(database, 'ScheduledPosts');
+    return {
+        scheduledPostsEnabled,
+    };
+});
+
+export default withDatabase(enhanced(GlobalDraftsAndScheduledPosts));
