@@ -72,6 +72,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         badgeStylesActive: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.08),
         },
+        tabView: {
+            width: '100%',
+        },
     };
 });
 
@@ -119,7 +122,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId}: Props) => {
         }
     }, [componentId, isTablet]);
 
-    const draftCountBadge = useCallback((i: number) => {
+    const draftCountBadge = (i: number) => {
         if (draftsCount === 0) {
             return undefined;
         }
@@ -133,9 +136,9 @@ const GlobalDraftsAndScheduledPosts = ({componentId}: Props) => {
                 style={style}
             />
         );
-    }, [index, styles.activeBadgeStyles, styles.badgeStyles]);
+    };
 
-    const tabStyle = useCallback((active: boolean) => {
+    const tabStyle = (active: boolean) => {
         if (active) {
             return {
                 ...styles.tabItemText,
@@ -143,7 +146,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId}: Props) => {
             };
         }
         return styles.tabItemText;
-    }, [styles.activeTabItemText, styles.tabItemText]);
+    };
 
     return (
         <SafeAreaView
@@ -195,14 +198,13 @@ const GlobalDraftsAndScheduledPosts = ({componentId}: Props) => {
                 <TabView
                     value={index}
                     onChange={setIndex}
-                    animationType='spring'
                 >
-                    <TabView.Item>
+                    <TabView.Item style={styles.tabView}>
                         <GlobalDraftsList
                             location={Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS}
                         />
                     </TabView.Item>
-                    <TabView.Item>
+                    <TabView.Item style={styles.tabView}>
                         {/*Render scheduled post list here*/}
                         <Text>{'Favorite'}</Text>
                     </TabView.Item>
