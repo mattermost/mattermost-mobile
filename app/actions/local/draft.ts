@@ -12,11 +12,11 @@ import {logError} from '@utils/log';
 import {isParsableUrl} from '@utils/url';
 
 export const switchToGlobalDrafts = async () => {
-    const isTablelDevice = isTablet();
-    if (isTablelDevice) {
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS);
+    const isTabletDevice = isTablet();
+    if (isTabletDevice) {
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS);
     } else {
-        goToScreen(Screens.GLOBAL_DRAFTS, '', {}, {topBar: {visible: false}});
+        goToScreen(Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS, '', {}, {topBar: {visible: false}});
     }
 };
 
