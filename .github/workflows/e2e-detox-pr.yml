@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
     needs:
-      - run-android-tests-on-pr
+      - run-ios-tests-on-pr
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -166,30 +166,50 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ github.event.pull_request.head.sha }}
           context: e2e/detox-android-tests
-          description: Completed with ${{ needs.run-ios-tests-on-pr.outputs.FAILURES }} failures
-          status: ${{ needs.run-ios-tests-on-pr.outputs.STATUS }}
-          target_url: ${{ needs.run-ios-tests-on-pr.outputs.TARGET_URL }}
+          description: Completed with ${{ needs.run-android-tests-on-pr.outputs.FAILURES }} failures
+          status: ${{ needs.run-android-tests-on-pr.outputs.STATUS }}
+          target_url: ${{ needs.run-android-tests-on-pr.outputs.TARGET_URL }}
 
-  e2e-remove-label:
+  e2e-remove-ios-label:
     runs-on: ubuntu-22.04
     needs:
       - run-ios-tests-on-pr
-      - run-android-tests-on-pr
-    if: needs.run-ios-tests-on-pr.result == 'success' || needs.run-android-tests-on-pr.result == 'success'
     steps:
       - name: e2e/remove-label-from-pr
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         continue-on-error: true # Label might have been removed manually
         with:
           script: |
-            const labelsToRemove = ['E2E iOS tests for PR', 'E2E Android tests for PR'];
+            const iosLabel = 'E2E iOS tests for PR';
             context.payload.pull_request.labels.forEach(label => {
-              if (labelsToRemove.includes(label.name)) {
-              github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: label.name,
-              });
+              if (label.name.includes(iosLabel)) {
+                github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                });
+              }
+            });
+
+  e2e-remove-android-label:
+    runs-on: ubuntu-22.04
+    needs:
+      - run-android-tests-on-pr
+    steps:
+      - name: e2e/remove-label-from-pr
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        continue-on-error: true # Label might have been removed manually
+        with:
+          script: |
+            const androidLabel = 'E2E Android tests for PR';
+            context.payload.pull_request.labels.forEach(label => {
+              if (label.name.includes(androidLabel)) {
+                github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                });
               }
             });
