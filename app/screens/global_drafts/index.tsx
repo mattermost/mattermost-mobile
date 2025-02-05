@@ -127,15 +127,29 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled}: Pro
     }, [componentId, isTablet]);
 
     const draftCountBadge = (i: number) => {
-        if (draftsCount === 0) {
-            return undefined;
-        }
+        // eslint-disable-next-line no-warning-comments
+        // TODO: when integrating with database, handle here the case of draft count being 0, and return undefined
 
         const style = i === index ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
 
         return (
             <Badge
                 value={draftsCount}
+                visible={true}
+                style={style}
+            />
+        );
+    };
+
+    const scheduledPostCountBadge = (i: number) => {
+        // eslint-disable-next-line no-warning-comments
+        // TODO: when integrating with database, handle here the case of scheduled post count being 0, and return undefined
+
+        const style = i === index ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
+
+        return (
+            <Badge
+                value={scheduledPostCount}
                 visible={true}
                 style={style}
             />
@@ -194,7 +208,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled}: Pro
                                 />
                                 <Tab.Item
                                     title={intl.formatMessage({id: 'drafts_tab.title.scheduled', defaultMessage: 'Scheduled'})}
-                                    icon={draftCountBadge(1)}
+                                    icon={scheduledPostCountBadge(1)}
                                     iconPosition='right'
                                     style={styles.tabItem}
                                     titleStyle={tabStyle}
