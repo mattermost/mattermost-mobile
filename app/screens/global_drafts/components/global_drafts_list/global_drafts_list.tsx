@@ -62,7 +62,7 @@ const GlobalDraftsList: React.FC<Props> = ({
     const [layoutWidth, setLayoutWidth] = useState(0);
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        if (location === Screens.GLOBAL_DRAFTS) {
+        if (location === Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS) {
             setLayoutWidth(e.nativeEvent.layout.width - 40); // 40 is the padding of the container
         }
     }, [location]);
@@ -82,10 +82,10 @@ const GlobalDraftsList: React.FC<Props> = ({
     }, []);
 
     const collapse = useCallback(() => {
-        popTopScreen(Screens.GLOBAL_DRAFTS);
+        popTopScreen(Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS);
     }, []);
 
-    useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, collapse);
+    useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS, collapse);
 
     const close = useCallback(() => {
         setTooltipVisible(false);
