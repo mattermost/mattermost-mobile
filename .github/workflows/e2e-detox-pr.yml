@@ -14,7 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  update-initial-status:
+  update-initial-status-ios:
+    if: contains(github.event.label.name, 'E2E iOS tests for PR')
     runs-on: ubuntu-22.04
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
@@ -28,8 +29,11 @@ jobs:
           description: Detox iOS tests for mattermost mobile app have started ...
           status: pending
 
+  update-initial-status-android:
+    runs-on: ubuntu-22.04
+    if: contains(github.event.label.name, 'E2E Android tests for PR')
+    steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
-        if: contains(github.event.label.name, 'E2E Android tests for PR')
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -43,7 +47,7 @@ jobs:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
     runs-on: macos-14
     needs:
-      - update-initial-status
+      - update-initial-status-ios
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -70,7 +74,7 @@ jobs:
     runs-on: ubuntu-latest-8-cores
     if: contains(github.event.label.name, 'E2E Android tests for PR')
     needs:
-      - update-initial-status
+      - update-initial-status-android
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -132,14 +136,13 @@ jobs:
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
     secrets: inherit
 
-  update-final-status:
+  update-final-status-ios:
     runs-on: ubuntu-22.04
+    if: contains(github.event.label.name, 'E2E iOS tests for PR')
     needs:
-      - run-ios-tests-on-pr
       - run-android-tests-on-pr
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
-        if: contains(github.event.label.name, 'E2E iOS tests for PR')
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -150,8 +153,13 @@ jobs:
           status: ${{ needs.run-ios-tests-on-pr.outputs.STATUS }}
           target_url: ${{ needs.run-ios-tests-on-pr.outputs.TARGET_URL }}
 
+  update-final-status-android:
+    runs-on: ubuntu-22.04
+    if: contains(github.event.label.name, 'E2E Android tests for PR')
+    needs:
+      - run-android-tests-on-pr
+    steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
-        if: contains(github.event.label.name, 'E2E Android tests for PR')
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -167,6 +175,7 @@ jobs:
     needs:
       - run-ios-tests-on-pr
       - run-android-tests-on-pr
+    if: needs.run-ios-tests-on-pr.result == 'success' || needs.run-android-tests-on-pr.result == 'success'
     steps:
       - name: e2e/remove-label-from-pr
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1

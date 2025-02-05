@@ -6,7 +6,7 @@ on:
       - release-*
 
 jobs:
-  update-initial-status:
+  update-initial-status-ios:
     runs-on: ubuntu-22.04
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
@@ -19,6 +19,9 @@ jobs:
           description: Detox iOS tests for mattermost mobile app have started ...
           status: pending
 
+  update-initial-status-android:
+    runs-on: ubuntu-22.04
+    steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -32,7 +35,7 @@ jobs:
   build-ios-simulator:
     runs-on: macos-14
     needs:
-      - update-initial-status
+      - update-initial-status-ios
     steps:
       - name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -57,6 +60,8 @@ jobs:
 
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
+    needs: 
+      - update-initial-status-android
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -126,7 +131,7 @@ jobs:
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
-  update-final-status:
+  update-final-status-ios:
     runs-on: ubuntu-22.04
     needs:
       - run-ios-tests-on-release
@@ -142,6 +147,11 @@ jobs:
           status: ${{ needs.run-ios-tests-on-release.outputs.STATUS }}
           target_url: ${{ needs.run-ios-tests-on-release.outputs.TARGET_URL }}
 
+  update-final-status-android:
+    runs-on: ubuntu-22.04
+    needs:
+      - run-android-tests-on-release
+    steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -149,6 +159,6 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ github.sha }}
           context: e2e/detox-android-tests
-          description: Completed with ${{ needs.run-ios-tests-on-release.outputs.FAILURES }} failures
-          status: ${{ needs.run-ios-tests-on-release.outputs.STATUS }}
-          target_url: ${{ needs.run-ios-tests-on-release.outputs.TARGET_URL }}
+          description: Completed with ${{ needs.run-android-tests-on-release.outputs.FAILURES }} failures
+          status: ${{ needs.run-android-tests-on-release.outputs.STATUS }}
+          target_url: ${{ needs.run-android-tests-on-release.outputs.TARGET_URL }}
