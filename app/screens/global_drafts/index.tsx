@@ -4,9 +4,10 @@
 import {Tab, TabView} from '@rneui/base';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, Text, View} from 'react-native';
+import {Keyboard, Text, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
+import Badge from '@components/badge';
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -22,7 +23,6 @@ import {popTopScreen} from '../navigation';
 import GlobalDraftsList from './components/global_drafts_list';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
-import Badge from '@components/badge';
 
 const edges: Edge[] = ['left', 'right'];
 
@@ -37,17 +37,40 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         tabItem: {
             position: 'relative',
+            height: 44,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+        },
+        activeTabItem: {
+            color: theme.buttonBg,
         },
         tabItemText: {
             fontSize: 14,
+            fontWeight: 600,
             color: changeOpacity(theme.centerChannelColor, 0.75),
+        },
+        activeTabItemText: {
+            color: theme.buttonBg,
+        },
+        tabItemTextActive: {
+            color: theme.buttonBg,
         },
         activeTabIndicator: {
             backgroundColor: theme.buttonBg,
         },
         badgeStyles: {
             position: 'relative',
-            backgroundColor: 'red',
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+        },
+        activeBadgeStyles: {
+            color: theme.buttonBg,
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+        },
+        badgeStylesActive: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
         },
     };
 });
@@ -96,33 +119,31 @@ const GlobalDraftsAndScheduledPosts = ({componentId}: Props) => {
         }
     }, [componentId, isTablet]);
 
-    const draftCountBadge = useMemo(() => {
+    const draftCountBadge = useCallback((i: number) => {
         if (draftsCount === 0) {
             return undefined;
         }
+
+        const style = i === index ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
 
         return (
             <Badge
                 value={draftsCount}
                 visible={true}
-                style={styles.badgeStyles}
+                style={style}
             />
         );
-    }, [styles.badgeStyles]);
+    }, [index, styles.activeBadgeStyles, styles.badgeStyles]);
 
-    const scheduledPostCountBadge = useMemo(() => {
-        if (scheduledPostCount === 0) {
-            return undefined;
+    const tabStyle = useCallback((active: boolean) => {
+        if (active) {
+            return {
+                ...styles.tabItemText,
+                ...styles.activeTabItemText,
+            };
         }
-
-        return (
-            <Badge
-                value={scheduledPostCount}
-                visible={true}
-                style={styles.badgeStyles}
-            />
-        );
-    }, [styles.badgeStyles]);
+        return styles.tabItemText;
+    }, [styles.activeTabItemText, styles.tabItemText]);
 
     return (
         <SafeAreaView
@@ -156,16 +177,18 @@ const GlobalDraftsAndScheduledPosts = ({componentId}: Props) => {
                     <Tab.Item
                         title={intl.formatMessage({id: 'drafts_tab.title.drafts', defaultMessage: 'Drafts'})}
                         style={styles.tabItem}
-                        titleStyle={styles.tabItemText}
-                        icon={draftCountBadge}
+                        titleStyle={tabStyle}
+                        icon={draftCountBadge(0)}
                         iconPosition='right'
+                        active={index === 0}
                     />
                     <Tab.Item
                         title={intl.formatMessage({id: 'drafts_tab.title.scheduled', defaultMessage: 'Scheduled'})}
-                        style={styles.tabItem}
-                        titleStyle={styles.tabItemText}
-                        icon={scheduledPostCountBadge}
+                        icon={draftCountBadge(1)}
                         iconPosition='right'
+                        style={styles.tabItem}
+                        titleStyle={tabStyle}
+                        active={index === 1}
                     />
                 </Tab>
 
