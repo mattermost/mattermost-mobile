@@ -180,6 +180,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId}: Props) => {
                         />
                     </TabView.Item>
                     <TabView.Item>
+                        {/*Render scheduled post list here*/}
                         <Text>{'Favorite'}</Text>
                     </TabView.Item>
                 </TabView>
