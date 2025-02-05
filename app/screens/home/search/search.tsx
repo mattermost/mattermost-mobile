@@ -241,10 +241,27 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         setResultsLoading(false);
     }, [lastSearchedValue, searchTeamId, serverUrl]);
 
-    const handleResultsTeamChange = useCallback((newTeamId: string) => {
-        setSearchTeamId(newTeamId);
-        handleSearch(newTeamId, lastSearchedValue);
-    }, [lastSearchedValue, handleSearch]);
+    const removeChannelAndUserFiltersFromString = (str: string) => {
+        return str.replace(/(?:from|channel|in):\s?[^\s\n]+/gi, '').trim();
+    };
+
+    const updateSearchTeamId = useCallback(
+        (newTeamId: string) => {
+            setSearchTeamId(newTeamId);
+            setSearchValue(removeChannelAndUserFiltersFromString(searchValue));
+        },
+        [searchValue],
+    );
+
+    const handleResultsTeamChange = useCallback(
+        (newTeamId: string) => {
+            setSearchTeamId(newTeamId);
+            const cleanedSearchValue = removeChannelAndUserFiltersFromString(lastSearchedValue);
+            setSearchValue(cleanedSearchValue);
+            handleSearch(newTeamId, cleanedSearchValue);
+        },
+        [lastSearchedValue, handleSearch],
+    );
 
     const initialContainerStyle: AnimatedStyle<ViewStyle> = useMemo(() => {
         return {
@@ -268,7 +285,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                 setRecentValue={handleRecentSearch}
                 searchRef={searchRef}
                 setSearchValue={handleModifierTextChange}
-                setTeamId={setSearchTeamId}
+                setTeamId={updateSearchTeamId}
                 teamId={searchTeamId}
                 teams={teams}
             />
