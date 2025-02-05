@@ -2,7 +2,7 @@
 
 exports[`<FormattedDate/> should default when timezone is not found 1`] = `
 <Text>
-  6:01 PM
+  10:01 PM
 </Text>
 `;
 
@@ -1442,6 +1442,6 @@ exports[`<FormattedDate/> should render with timezone Pacific/Fiji 1`] = `
 
 exports[`<FormattedDate/> should render with timezone undefined 1`] = `
 <Text>
-  6:01 PM
+  10:01 PM
 </Text>
 `;
