@@ -180,7 +180,7 @@ export const logout = async (
         try {
             const client = NetworkManager.getClient(serverUrl);
             const response = await client.logout();
-            if (response.status === 200) {
+            if (response.status === 'OK') {
                 loggedOut = true;
             }
         } catch (error) {
@@ -198,8 +198,8 @@ export const logout = async (
             const buttons: AlertButton[] = logoutOnAlert ? [] : [{text: cancel, style: 'cancel'}];
             buttons.push({
                 text: confirm,
-                onPress: logoutOnAlert ? undefined : async () => {
-                    logout(serverUrl, intl, {skipServerLogout: true});
+                onPress: logoutOnAlert ? undefined : () => {
+                    logout(serverUrl, intl, {skipEvents, removeServer, logoutOnAlert, skipServerLogout: true});
                 },
             });
             Alert.alert(
