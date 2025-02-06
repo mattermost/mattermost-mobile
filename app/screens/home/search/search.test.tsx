@@ -6,9 +6,9 @@ import React from 'react';
 
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
+import {bottomSheet} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
-import {bottomSheet} from '@screens/navigation';
 
 import SearchScreen from './search';
 
@@ -76,8 +76,10 @@ describe('SearchScreen', () => {
             {database},
         );
         expect(getByTestId('search_messages.screen')).toBeTruthy();
+
         // The page title
-        expect(getByText("Search")).toBeTruthy();
+        expect(getByText('Search')).toBeTruthy();
+
         // The search input with the expected placeholder
         expect(getByPlaceholderText('Search messages & files')).toBeTruthy();
     });
