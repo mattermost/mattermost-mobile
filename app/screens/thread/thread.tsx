@@ -1,11 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import RNUtils from '@mattermost/rnutils';
 import {uniqueId} from 'lodash';
 import React, {useCallback, useEffect, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
@@ -58,20 +56,6 @@ const Thread = ({
     }, [componentId]);
 
     useAndroidHardwareBackHandler(componentId, close);
-
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                RNUtils.setSoftKeyboardToAdjustNothing();
-            },
-            componentDidDisappear: () => {
-                RNUtils.setSoftKeyboardToAdjustResize();
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId!);
-
-        return () => unsubscribe.remove();
-    }, []);
 
     useEffect(() => {
         if (isCRTEnabled && rootId) {

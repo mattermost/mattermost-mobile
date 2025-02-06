@@ -411,14 +411,32 @@ export async function fetchAllMyChannelsForAllTeams(serverUrl: string, since: nu
         }
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        async function fetchAllMemberships() {
+            const results: ChannelMembership[] = [];
+            async function fetchNextMembershipsPage(page: number) {
+                try {
+                    const memberships = await client.getAllMyChannelMembersFromAllTeams(page, General.CHANNEL_MEMBERS_CHUNK_SIZE, groupLabel);
+                    results.push(...memberships);
+                    if (memberships.length < General.CHANNEL_MEMBERS_CHUNK_SIZE) {
+                        return;
+                    }
+
+                    await fetchNextMembershipsPage(page + 1);
+                } catch (e) {
+                    logError(`fetchAllMyChannelsForAllTeams error: Failed to fetch memberships for page ${page} `, e);
+                }
+            }
+
+            await fetchNextMembershipsPage(0);
+            return results;
+        }
+
         const promises: [Promise<Channel[]>, Promise<ChannelMembership[]>] = [
             client.getAllChannelsFromAllTeams(since, since > 0, groupLabel),
-            client.getAllMyChannelMembersFromAllTeams(0, General.CHANNEL_MEMBERS_CHUNK_SIZE, groupLabel),
+            fetchAllMemberships(),
         ];
-
         const [channels, memberships] = await Promise.all(promises);
-        const remaining = Math.floor(channels.length / General.CHANNEL_MEMBERS_CHUNK_SIZE);
-        const remainingMembershipsPromises = [];
         const categoriesPromises = [];
 
         const teamIdsSet = channels.reduce<Set<string>>((set, c) => {
@@ -427,24 +445,15 @@ export async function fetchAllMyChannelsForAllTeams(serverUrl: string, since: nu
             }
             return set;
         }, new Set());
+
         for (const teamId of teamIdsSet) {
             categoriesPromises.push(client.getCategories('me', teamId, groupLabel));
         }
 
-        if (remaining > 0) {
-            for (let i = 1; i <= remaining; i++) {
-                remainingMembershipsPromises.push(client.getAllMyChannelMembersFromAllTeams(i, General.CHANNEL_MEMBERS_CHUNK_SIZE, groupLabel));
-            }
-        }
-
-        const results = await Promise.all([...remainingMembershipsPromises, ...categoriesPromises]);
         const categories: CategoryWithChannels[] = [];
+        const results = await Promise.all(categoriesPromises);
         for (const result of results) {
-            if (Array.isArray(result)) {
-                memberships.push(...result);
-            } else if ('categories' in result) {
-                categories.push(...result.categories);
-            }
+            categories.push(...result.categories);
         }
 
         if (!fetchOnly) {

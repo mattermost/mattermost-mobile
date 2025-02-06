@@ -9,6 +9,7 @@ import {
     isErrorWithStatusCode,
     isErrorWithUrl,
     getFullErrorMessage,
+    getServerError,
 } from './errors';
 import {getIntlShape} from './general';
 
@@ -68,5 +69,15 @@ describe('Errors', () => {
         expect(getFullErrorMessage({
             details: 'more info',
         })).toBe('Unknown error; more info');
+    });
+
+    test('getServerError', () => {
+        expect(getServerError({message: 'error message'})).toBe(undefined);
+        expect(getServerError({details: 'more info', message: 'error message'})).toBe(undefined);
+        expect(getServerError({server_error_id: 'server error', message: 'error message'})).toBe('server error');
+        expect(getServerError({details: {server_error_id: 'deep error'}, message: 'error message'})).toBe('deep error');
+        expect(getServerError({details: {details: {server_error_id: 'deeper error'}}, message: 'error message'})).toBe('deeper error');
+        expect(getServerError({details: {details: {details: {details: {server_error_id: 'too deep error'}}}}, message: 'error message'})).toBe(undefined);
+        expect(getServerError({server_error_id: 'server error', details: {server_error_id: 'not this'}, message: 'error message'})).toBe('server error');
     });
 });
