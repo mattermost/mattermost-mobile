@@ -8,6 +8,7 @@ import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {bottomSheet} from '@screens/navigation';
 
 import SearchScreen from './search';
 
@@ -70,11 +71,15 @@ describe('SearchScreen', () => {
     });
 
     it('renders search screen correctly', () => {
-        const {getByTestId} = renderWithEverything(
+        const {getByTestId, getByText, getByPlaceholderText} = renderWithEverything(
             <SearchScreen {...baseProps}/>,
             {database},
         );
         expect(getByTestId('search_messages.screen')).toBeTruthy();
+        // The page title
+        expect(getByText("Search")).toBeTruthy();
+        // The search input with the expected placeholder
+        expect(getByPlaceholderText('Search messages & files')).toBeTruthy();
     });
 
     it('handles search input changes', () => {
@@ -102,11 +107,13 @@ describe('SearchScreen', () => {
             expect(searchPosts).toHaveBeenCalledWith(
                 expect.any(String),
                 'team1',
-                expect.objectContaining({
-                    terms: 'test search',
-                }),
+                expect.objectContaining({terms: 'test search'}),
             );
-            expect(searchFiles).toHaveBeenCalled();
+            expect(searchFiles).toHaveBeenCalledWith(
+                expect.any(String),
+                'team1',
+                expect.objectContaining({terms: 'test search'}),
+            );
         });
     });
 
@@ -120,7 +127,7 @@ describe('SearchScreen', () => {
         fireEvent.press(teamPicker);
 
         expect(teamPicker).toBeTruthy();
-        expect(require('@screens/navigation').bottomSheet).toHaveBeenCalled();
+        expect(bottomSheet).toHaveBeenCalled();
     });
 
     it('clears search when clear button is pressed', async () => {
