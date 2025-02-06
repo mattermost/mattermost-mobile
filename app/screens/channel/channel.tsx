@@ -10,7 +10,6 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
-import {useAndroidAdjustSoftKeyboard} from '@hooks/android_adjust_soft_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
@@ -79,7 +78,6 @@ const Channel = ({
     }, [componentId]);
 
     useAndroidHardwareBackHandler(componentId, handleBack);
-    useAndroidAdjustSoftKeyboard(componentId);
 
     const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
     useEffect(() => {
