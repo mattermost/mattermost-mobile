@@ -5,18 +5,18 @@ import React, {useCallback} from 'react';
 import {FormattedMessage} from 'react-intl';
 import {DeviceEventEmitter, Text, View} from 'react-native';
 
+import {switchToGlobalDrafts} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
 import FormattedTime from '@components/formatted_time';
+import {Events} from '@constants';
+import {DRAFT} from '@constants/screens';
 import {useTheme} from '@context/theme';
+import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
-import {DRAFT} from '@constants/screens';
-import {Events} from '@constants';
-import {switchToGlobalDrafts} from '@actions/local/draft';
-import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
