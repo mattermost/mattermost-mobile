@@ -2,9 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import {screen} from '@testing-library/react-native';
+import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
+import {DeviceEventEmitter} from 'react-native';
 
+import {switchToGlobalDrafts} from '@actions/local/draft';
+import {Events} from '@constants';
+import {DRAFT} from '@constants/screens';
 import NetworkManager from '@managers/network_manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -152,5 +156,26 @@ describe('components/scheduled_post_indicator', () => {
         const timeElement = await findByTestId('scheduled_post_indicator_single_time');
         expect(timeElement).toBeVisible();
         expect(getByText(/Message scheduled for/)).toBeVisible();
+    });
+
+    it('handles See all link press correctly', async () => {
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+        const switchToGlobalDraftsSpy = jest.spyOn(require('@actions/local/draft'), 'switchToGlobalDrafts');
+
+        const {getByText} = renderWithEverything(
+            <ScheduledPostIndicator
+                scheduledPostCount={1}
+            />,
+            {database},
+        );
+
+        const seeAllLink = getByText('See all.');
+        fireEvent.press(seeAllLink);
+
+        expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SCREEN, DRAFT);
+        expect(switchToGlobalDraftsSpy).toHaveBeenCalledWith('scheduled-posts');
+
+        emitSpy.mockRestore();
+        switchToGlobalDraftsSpy.mockRestore();
     });
 });
