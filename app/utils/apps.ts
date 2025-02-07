@@ -180,6 +180,11 @@ function cleanStaticSelect(field: AppField): void {
     const usedLabels: {[label: string]: boolean} = {};
     const usedValues: {[label: string]: boolean} = {};
     field.options?.forEach((option, i) => {
+        if (!option.value) {
+            toRemove.unshift(i);
+            return;
+        }
+
         let label = option.label;
         if (!label) {
             label = option.value;
@@ -246,7 +251,7 @@ export function createCallRequest(
     };
 }
 
-export const makeCallErrorResponse = (errMessage: string): AppCallResponse<any> => {
+export const makeCallErrorResponse = <T=unknown>(errMessage: string): AppCallResponse<T> => {
     return {
         type: AppCallResponseTypes.ERROR,
         text: errMessage,
@@ -312,7 +317,7 @@ function isAppCall(obj: unknown): obj is AppCall {
 
     const call = obj as AppCall;
 
-    if (typeof call.path !== 'string') {
+    if (call.path !== undefined && typeof call.path !== 'string') {
         return false;
     }
 
@@ -348,7 +353,11 @@ function isAppSelectOption(v: unknown): v is AppSelectOption {
 
     const option = v as AppSelectOption;
 
-    if (typeof option.label !== 'string' || typeof option.value !== 'string') {
+    if (option.label !== undefined && typeof option.label !== 'string') {
+        return false;
+    }
+
+    if (option.value !== undefined && typeof option.value !== 'string') {
         return false;
     }
 
@@ -366,7 +375,11 @@ function isAppField(v: unknown): v is AppField {
 
     const field = v as AppField;
 
-    if (typeof field.name !== 'string' || typeof field.type !== 'string') {
+    if (field.name !== undefined && typeof field.name !== 'string') {
+        return false;
+    }
+
+    if (field.type !== undefined && typeof field.type !== 'string') {
         return false;
     }
 
@@ -494,7 +507,11 @@ export function isAppBinding(obj: unknown): obj is AppBinding {
 
     const binding = obj as AppBinding;
 
-    if (typeof binding.app_id !== 'string' || typeof binding.label !== 'string') {
+    if (binding.app_id !== undefined && typeof binding.app_id !== 'string') {
+        return false;
+    }
+
+    if (binding.label !== undefined && typeof binding.label !== 'string') {
         return false;
     }
 

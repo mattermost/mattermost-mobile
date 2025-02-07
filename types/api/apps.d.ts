@@ -23,15 +23,15 @@ type AppsState = {
 };
 
 type AppBinding = {
-    app_id: string;
-    location: string;
+    app_id?: string;
+    location?: string;
     icon?: string;
 
     // Label is the (usually short) primary text to display at the location.
     // - For LocationPostMenu is the menu item text.
     // - For LocationChannelHeader is the dropdown text.
     // - For LocationCommand is the name of the command
-    label: string;
+    label?: string;
 
     // Hint is the secondary text to display
     // - LocationPostMenu: not used
@@ -60,7 +60,7 @@ type AppCallValues = {
 };
 
 type AppCall = {
-    path: string;
+    path?: string;
     expand?: AppExpand;
     state?: any;
 };
@@ -152,8 +152,8 @@ type AppFormValue = string | boolean | number | AppSelectOption | AppSelectOptio
 type AppFormValues = {[name: string]: AppFormValue};
 
 type AppSelectOption = {
-    label: string;
-    value: string;
+    label?: string;
+    value?: string;
     icon_data?: string;
 };
 
@@ -163,8 +163,8 @@ type AppFieldType = string;
 type AppField = {
 
     // Name is the name of the JSON field to use.
-    name: string;
-    type: AppFieldType;
+    name?: string;
+    type?: AppFieldType;
     is_required?: boolean;
     readonly?: boolean;
 

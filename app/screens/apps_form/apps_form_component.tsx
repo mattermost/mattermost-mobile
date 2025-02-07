@@ -103,6 +103,9 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
 function initValues(fields?: AppField[]) {
     const values: AppFormValues = {};
     fields?.forEach((e) => {
+        if (!e.name) {
+            return;
+        }
         if (e.type === 'bool') {
             values[e.name] = (e.value === true || String(e.value).toLowerCase() === 'true');
         } else if (e.value) {
@@ -327,7 +330,7 @@ function AppsFormComponent({
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const field = form.fields?.find((f) => f.name === name);
-        if (!field) {
+        if (!field || !field.name) {
             return [];
         }
 
@@ -409,6 +412,9 @@ function AppsFormComponent({
                     />
                 }
                 {form.fields && form.fields.filter((f) => f.name !== form.submit_buttons).map((field) => {
+                    if (!field.name) {
+                        return null;
+                    }
                     const value = secureGetFromRecord(values, field.name);
                     if (!value) {
                         return null;
