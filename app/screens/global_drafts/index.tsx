@@ -90,8 +90,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab}: Props) => {
+export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab}: Props) => {
     const [tabIndex, setTabIndex] = React.useState(initialTab || DRAFT_SCREEN_TAB_DRAFTS);
+
+    console.log({tabIndex});
 
     // eslint-disable-next-line no-warning-comments
     // TODO: replace this hardcoded count with actual count integrated from the database
@@ -209,6 +211,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
                                 indicatorStyle={styles.activeTabIndicator}
                             >
                                 <Tab.Item
+                                    testID='drafts_tab'
                                     title={intl.formatMessage({id: 'drafts_tab.title.drafts', defaultMessage: 'Drafts'})}
                                     style={styles.tabItem}
                                     titleStyle={tabStyle}
@@ -217,6 +220,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
                                     active={tabIndex === DRAFT_TAB_INDEX}
                                 />
                                 <Tab.Item
+                                    testID='scheduled_posts_tab'
                                     title={intl.formatMessage({id: 'drafts_tab.title.scheduled', defaultMessage: 'Scheduled'})}
                                     style={styles.tabItem}
                                     titleStyle={tabStyle}
@@ -231,12 +235,18 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
                                 onChange={setTabIndex}
                                 disableSwipe={true}
                             >
-                                <TabView.Item style={styles.tabView}>
+                                <TabView.Item
+                                    style={styles.tabView}
+                                    testID='drafts_tab_content'
+                                >
                                     <GlobalDraftsList
                                         location={Screens.GLOBAL_DRAFTS}
                                     />
                                 </TabView.Item>
-                                <TabView.Item style={styles.tabView}>
+                                <TabView.Item
+                                    style={styles.tabView}
+                                    testID='scheduled_post_tab_content'
+                                >
                                     {/*Render scheduled post list here*/}
                                     <Text>{'Favorite'}</Text>
                                 </TabView.Item>
