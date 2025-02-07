@@ -6,7 +6,6 @@ import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
-import {switchToGlobalDrafts} from '@actions/local/draft';
 import {Events} from '@constants';
 import {DRAFT} from '@constants/screens';
 import NetworkManager from '@managers/network_manager';

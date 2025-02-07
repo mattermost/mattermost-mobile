@@ -93,8 +93,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab}: Props) => {
     const [tabIndex, setTabIndex] = React.useState(initialTab || DRAFT_SCREEN_TAB_DRAFTS);
 
-    console.log({tabIndex});
-
     // eslint-disable-next-line no-warning-comments
     // TODO: replace this hardcoded count with actual count integrated from the database
     const draftsCount = 10;
