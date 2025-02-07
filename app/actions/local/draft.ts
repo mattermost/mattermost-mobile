@@ -16,9 +16,9 @@ import type {DraftScreenTab} from '@screens/global_drafts';
 export const switchToGlobalDrafts = async (initialTab?: DraftScreenTab) => {
     const isTabletDevice = isTablet();
     if (isTabletDevice) {
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS, {initialTab});
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab});
     } else {
-        goToScreen(Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS, '', {initialTab}, {topBar: {visible: false}});
+        goToScreen(Screens.GLOBAL_DRAFTS, '', {initialTab}, {topBar: {visible: false}});
     }
 };
 

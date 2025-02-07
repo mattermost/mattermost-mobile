@@ -112,7 +112,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
             return undefined;
         }
 
-        return (<OtherMentionsBadge channelId={Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS}/>);
+        return (<OtherMentionsBadge channelId={Screens.GLOBAL_DRAFTS}/>);
     }, [isTablet]);
 
     const contextStyle = useMemo(() => ({
@@ -228,7 +228,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
                             >
                                 <TabView.Item style={styles.tabView}>
                                     <GlobalDraftsList
-                                        location={Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS}
+                                        location={Screens.GLOBAL_DRAFTS}
                                     />
                                 </TabView.Item>
                                 <TabView.Item style={styles.tabView}>
@@ -239,7 +239,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
                         </>
                     ) : (
                         <GlobalDraftsList
-                            location={Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS}
+                            location={Screens.GLOBAL_DRAFTS}
                         />
                     )
                 }
