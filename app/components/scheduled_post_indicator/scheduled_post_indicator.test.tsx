@@ -173,7 +173,7 @@ describe('components/scheduled_post_indicator', () => {
         fireEvent.press(seeAllLink);
 
         expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SCREEN, DRAFT);
-        expect(switchToGlobalDraftsSpy).toHaveBeenCalledWith('scheduled-posts');
+        expect(switchToGlobalDraftsSpy).toHaveBeenCalledWith(1);
 
         emitSpy.mockRestore();
         switchToGlobalDraftsSpy.mockRestore();
