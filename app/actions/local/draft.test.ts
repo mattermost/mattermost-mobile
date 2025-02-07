@@ -3,9 +3,15 @@
 
 /* eslint-disable max-lines */
 
+import {DeviceEventEmitter} from 'react-native';
+
+import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
+import * as NavigationModule from '@screens/navigation';
+import * as HelpersModule from '@utils/helpers';
 
 import {
+    switchToGlobalDrafts,
     updateDraftFile,
     removeDraftFile,
     updateDraftMessage,
@@ -46,6 +52,58 @@ beforeEach(async () => {
 
 afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
+});
+
+jest.mock('@utils/helpers', () => ({
+    isTablet: jest.fn(),
+}));
+
+jest.mock('@screens/navigation', () => ({
+    goToScreen: jest.fn(),
+}));
+
+describe('switchToGlobalDrafts', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should navigate using DeviceEventEmitter on tablet', async () => {
+        (HelpersModule.isTablet as jest.Mock).mockReturnValue(true);
+        const spy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        await switchToGlobalDrafts('drafts');
+
+        expect(spy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: 'drafts'});
+        expect(NavigationModule.goToScreen).not.toHaveBeenCalled();
+    });
+
+    it('should navigate using goToScreen on non-tablet', async () => {
+        (HelpersModule.isTablet as jest.Mock).mockReturnValue(false);
+        const spy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        await switchToGlobalDrafts('scheduled');
+
+        expect(spy).not.toHaveBeenCalled();
+        expect(NavigationModule.goToScreen).toHaveBeenCalledWith(
+            Screens.GLOBAL_DRAFTS,
+            '',
+            {initialTab: 'scheduled'},
+            {topBar: {visible: false}},
+        );
+    });
+
+    it('should work without initialTab parameter', async () => {
+        (HelpersModule.isTablet as jest.Mock).mockReturnValue(false);
+
+        await switchToGlobalDrafts();
+
+        expect(NavigationModule.goToScreen).toHaveBeenCalledWith(
+            Screens.GLOBAL_DRAFTS,
+            '',
+            {initialTab: undefined},
+            {topBar: {visible: false}},
+        );
+    });
 });
 
 describe('updateDraftFile', () => {
