@@ -39,6 +39,9 @@ type Props = {
     initialTab?: DraftScreenTab;
 };
 
+const DRAFT_TAB_INDEX = 0;
+const SCHEDULED_POSTS_TAB_INDEX = 1;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         flex: {
@@ -88,7 +91,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab}: Props) => {
-    const [index, setIndex] = React.useState(initialTab || DRAFT_SCREEN_TAB_DRAFTS);
+    const [tabIndex, setTabIndex] = React.useState(initialTab || DRAFT_SCREEN_TAB_DRAFTS);
 
     // eslint-disable-next-line no-warning-comments
     // TODO: replace this hardcoded count with actual count integrated from the database
@@ -131,11 +134,12 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
         }
     }, [componentId, isTablet]);
 
-    const draftCountBadge = (i: number) => {
+    const draftCountBadge = useMemo(() => {
         // eslint-disable-next-line no-warning-comments
         // TODO: when integrating with database, handle here the case of draft count being 0, and return undefined
 
-        const style = i === index ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
+        // change style depending on whether this tab is the active tab or not
+        const style = tabIndex === DRAFT_TAB_INDEX ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
 
         return (
             <Badge
@@ -144,13 +148,14 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
                 style={style}
             />
         );
-    };
+    }, [tabIndex, styles.activeBadgeStyles, styles.badgeStyles]);
 
-    const scheduledPostCountBadge = (i: number) => {
+    const scheduledPostCountBadge = useMemo(() => {
         // eslint-disable-next-line no-warning-comments
         // TODO: when integrating with database, handle here the case of scheduled post count being 0, and return undefined
 
-        const style = i === index ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
+        // change style depending on whether this tab is the active tab or not
+        const style = tabIndex === SCHEDULED_POSTS_TAB_INDEX ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
 
         return (
             <Badge
@@ -159,7 +164,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
                 style={style}
             />
         );
-    };
+    }, []);
 
     const tabStyle = (active: boolean) => {
         if (active) {
@@ -199,31 +204,31 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
                     scheduledPostsEnabled ? (
                         <>
                             <Tab
-                                value={index}
-                                onChange={(e) => setIndex(e)}
+                                value={tabIndex}
+                                onChange={(e) => setTabIndex(e)}
                                 indicatorStyle={styles.activeTabIndicator}
                             >
                                 <Tab.Item
                                     title={intl.formatMessage({id: 'drafts_tab.title.drafts', defaultMessage: 'Drafts'})}
                                     style={styles.tabItem}
                                     titleStyle={tabStyle}
-                                    icon={draftCountBadge(0)}
+                                    icon={draftCountBadge}
                                     iconPosition='right'
-                                    active={index === 0}
+                                    active={tabIndex === DRAFT_TAB_INDEX}
                                 />
                                 <Tab.Item
                                     title={intl.formatMessage({id: 'drafts_tab.title.scheduled', defaultMessage: 'Scheduled'})}
-                                    icon={scheduledPostCountBadge(1)}
-                                    iconPosition='right'
                                     style={styles.tabItem}
                                     titleStyle={tabStyle}
-                                    active={index === 1}
+                                    icon={scheduledPostCountBadge}
+                                    iconPosition='right'
+                                    active={tabIndex === SCHEDULED_POSTS_TAB_INDEX}
                                 />
                             </Tab>
 
                             <TabView
-                                value={index}
-                                onChange={setIndex}
+                                value={tabIndex}
+                                onChange={setTabIndex}
                                 disableSwipe={true}
                             >
                                 <TabView.Item style={styles.tabView}>
