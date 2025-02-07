@@ -23,6 +23,7 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type DraftModel from '@typings/database/models/servers/draft';
+import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
 
 let operator: ServerDataOperator;
 const serverUrl = 'baseHandler.test.com';
@@ -71,9 +72,9 @@ describe('switchToGlobalDrafts', () => {
         (HelpersModule.isTablet as jest.Mock).mockReturnValue(true);
         const spy = jest.spyOn(DeviceEventEmitter, 'emit');
 
-        await switchToGlobalDrafts('drafts');
+        await switchToGlobalDrafts();
 
-        expect(spy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: 'drafts'});
+        expect(spy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {});
         expect(NavigationModule.goToScreen).not.toHaveBeenCalled();
     });
 
@@ -81,13 +82,13 @@ describe('switchToGlobalDrafts', () => {
         (HelpersModule.isTablet as jest.Mock).mockReturnValue(false);
         const spy = jest.spyOn(DeviceEventEmitter, 'emit');
 
-        await switchToGlobalDrafts('scheduled');
+        await switchToGlobalDrafts();
 
         expect(spy).not.toHaveBeenCalled();
         expect(NavigationModule.goToScreen).toHaveBeenCalledWith(
             Screens.GLOBAL_DRAFTS,
             '',
-            {initialTab: 'scheduled'},
+            {},
             {topBar: {visible: false}},
         );
     });
@@ -101,6 +102,42 @@ describe('switchToGlobalDrafts', () => {
             Screens.GLOBAL_DRAFTS,
             '',
             {initialTab: undefined},
+            {topBar: {visible: false}},
+        );
+    });
+
+    it('should pass initial tab using DeviceEventEmitter on tablet', async () => {
+        (HelpersModule.isTablet as jest.Mock).mockReturnValue(true);
+        const spy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        await switchToGlobalDrafts(DRAFT_SCREEN_TAB_DRAFTS);
+        expect(spy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: 0});
+        expect(NavigationModule.goToScreen).not.toHaveBeenCalled();
+
+        await switchToGlobalDrafts(DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
+        expect(spy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: 1});
+        expect(NavigationModule.goToScreen).not.toHaveBeenCalled();
+    });
+
+    it('should pass initial tab using goToScreen on non-tablet', async () => {
+        (HelpersModule.isTablet as jest.Mock).mockReturnValue(false);
+        const spy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        await switchToGlobalDrafts(DRAFT_SCREEN_TAB_DRAFTS);
+        expect(spy).not.toHaveBeenCalled();
+        expect(NavigationModule.goToScreen).toHaveBeenCalledWith(
+            Screens.GLOBAL_DRAFTS,
+            '',
+            {initialTab: 0},
+            {topBar: {visible: false}},
+        );
+
+        await switchToGlobalDrafts(DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
+        expect(spy).not.toHaveBeenCalled();
+        expect(NavigationModule.goToScreen).toHaveBeenCalledWith(
+            Screens.GLOBAL_DRAFTS,
+            '',
+            {initialTab: 1},
             {topBar: {visible: false}},
         );
     });
