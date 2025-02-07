@@ -3,12 +3,12 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {ALL_TEAMS_ID} from '@constants/team';
 import {useTheme} from '@context/theme';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet} from '@screens/navigation';
@@ -25,39 +25,38 @@ const NO_TEAMS_HEIGHT = 392;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        teamContainer: {
-            paddingLeft: 8,
+        teamPicker: {
             flexDirection: 'row',
             alignItems: 'center',
+            justifyContent: 'flex-end',
+            width: '100%',
         },
-        border: {
-            marginLeft: 12,
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.16),
+        container: {
+            flex: 1,
         },
-        teamIcon: {
-            flexDirection: 'row',
-        },
-        compass: {
-            alignItems: 'center',
-            marginLeft: 0,
+        teamName: {
+            color: theme.centerChannelColor,
+            fontSize: 12,
+            textAlign: 'right',
         },
     };
 });
 
 type Props = {
-    size?: number;
-    divider?: boolean;
     teams: TeamModel[];
     setTeamId: (id: string) => void;
     teamId: string;
+    crossTeamSearchEnabled: boolean;
 }
-const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: Props) => {
+const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
 
-    const selectedTeam = teams.find((t) => t.id === teamId);
+    let selectedTeam = teams.find((t) => t.id === teamId);
+    if (teamId === ALL_TEAMS_ID) {
+        selectedTeam = {id: ALL_TEAMS_ID, displayName: intl.formatMessage({id: 'mobile.search.team.all_teams', defaultMessage: 'All teams'})} as TeamModel;
+    }
 
     const title = intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'});
 
@@ -69,6 +68,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
                     teams={teams}
                     teamId={teamId}
                     title={title}
+                    crossTeamSearchEnabled={crossTeamSearchEnabled}
                 />
             );
         };
@@ -98,23 +98,18 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
                     onPress={handleTeamChange}
                     type='opacity'
                     testID='team_picker.button'
+                    style={styles.teamPicker}
                 >
-                    <View style={[styles.teamContainer, divider && styles.border]}>
-                        <View style={[styles.teamIcon, {width: size, height: size}]}>
-                            <TeamIcon
-                                displayName={selectedTeam.displayName}
-                                id={selectedTeam.id}
-                                lastIconUpdate={selectedTeam.lastTeamIconUpdatedAt}
-                                textColor={theme.centerChannelColor}
-                                backgroundColor={changeOpacity(theme.centerChannelColor, 0.16)}
-                                selected={false}
-                                testID={`team_picker.${selectedTeam.id}.team_icon`}
-                                smallText={true}
-                            />
-                        </View>
+                    <View style={styles.container}>
+                        <Text
+                            id={selectedTeam.id}
+                            numberOfLines={1}
+                            style={styles.teamName}
+                        >{selectedTeam.displayName}</Text>
+                    </View>
+                    <View>
                         <CompassIcon
                             color={changeOpacity(theme.centerChannelColor, 0.56)}
-                            style={styles.compass}
                             name='menu-down'
                             size={MENU_DOWN_ICON_SIZE}
                         />
@@ -124,4 +119,4 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
         </>
     );
 };
-export default TeamPickerIcon;
+export default TeamPicker;

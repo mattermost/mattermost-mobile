@@ -99,6 +99,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CREATE_OR_EDIT_CHANNEL:
             screen = withServerDatabase(require('@screens/create_or_edit_channel').default);
             break;
+        case Screens.COMPONENT_LIBRARY:
+            screen = withServerDatabase(require('@screens/component_library').default);
+            break;
         case Screens.CUSTOM_STATUS:
             screen = withServerDatabase(require('@screens/custom_status').default);
             break;
