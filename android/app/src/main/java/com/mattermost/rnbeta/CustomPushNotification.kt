@@ -33,7 +33,6 @@ class CustomPushNotification(
     init {
         try {
             DatabaseHelper.instance?.init(context)
-            Network.init(context)
             NotificationHelper.cleanNotificationPreferencesIfNeeded(context)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -51,6 +50,7 @@ class CustomPushNotification(
         val isIdLoaded = initialData.getString("id_loaded") == "true"
         val notificationId = NotificationHelper.getNotificationId(initialData)
         val serverUrl = addServerUrlToBundle(initialData)
+        Network.init(mContext)
 
         GlobalScope.launch {
             try {
