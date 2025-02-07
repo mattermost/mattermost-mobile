@@ -10,6 +10,7 @@ import {goToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {isParsableUrl} from '@utils/url';
+
 import type {DraftScreenTab} from '@screens/global_drafts';
 
 export const switchToGlobalDrafts = async (initialTab?: DraftScreenTab) => {
