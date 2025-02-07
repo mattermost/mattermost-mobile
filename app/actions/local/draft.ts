@@ -10,13 +10,14 @@ import {goToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {isParsableUrl} from '@utils/url';
+import type {DraftScreenTab} from '@screens/global_drafts';
 
-export const switchToGlobalDrafts = async () => {
+export const switchToGlobalDrafts = async (initialTab?: DraftScreenTab) => {
     const isTabletDevice = isTablet();
     if (isTabletDevice) {
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS);
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS, {initialTab});
     } else {
-        goToScreen(Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS, '', {}, {topBar: {visible: false}});
+        goToScreen(Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS, '', {initialTab}, {topBar: {visible: false}});
     }
 };
 

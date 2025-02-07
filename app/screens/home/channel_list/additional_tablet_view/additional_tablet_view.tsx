@@ -12,6 +12,7 @@ import GlobalThreads from '@screens/global_threads';
 type SelectedView = {
     id: string;
     Component: any;
+    params?: unknown;
 }
 
 type Props = {
@@ -34,12 +35,13 @@ const AdditionalTabletView = ({onTeam, currentChannelId, isCRTEnabled}: Props) =
     const [initiaLoad, setInitialLoad] = useState(true);
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, (id: string) => {
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, (id: string, params?: unknown) => {
             const component = ComponentsList[id];
             if (component) {
                 setSelected({
                     Component: component,
                     id,
+                    params,
                 });
             }
         });
@@ -59,7 +61,7 @@ const AdditionalTabletView = ({onTeam, currentChannelId, isCRTEnabled}: Props) =
         return null;
     }
 
-    return React.createElement(selected.Component, {componentId: selected.id, isTabletView: true});
+    return React.createElement(selected.Component, {componentId: selected.id, isTabletView: true, ...(selected.params || {})});
 };
 
 export default AdditionalTabletView;
