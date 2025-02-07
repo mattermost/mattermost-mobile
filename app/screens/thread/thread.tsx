@@ -13,7 +13,6 @@ import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
-import {useAndroidAdjustSoftKeyboard} from '@hooks/android_adjust_soft_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
 import {popTopScreen, setButtons} from '@screens/navigation';
@@ -57,7 +56,6 @@ const Thread = ({
     }, [componentId]);
 
     useAndroidHardwareBackHandler(componentId, close);
-    useAndroidAdjustSoftKeyboard(componentId);
 
     useEffect(() => {
         if (isCRTEnabled && rootId) {
