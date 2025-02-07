@@ -29,9 +29,14 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 const edges: Edge[] = ['left', 'right'];
 
+export const DRAFT_SCREEN_TAB_DRAFTS = 0;
+export const DRAFT_SCREEN_TAB_SCHEDULED_POSTS = 1;
+export type DraftScreenTab = typeof DRAFT_SCREEN_TAB_DRAFTS | typeof DRAFT_SCREEN_TAB_SCHEDULED_POSTS;
+
 type Props = {
     componentId?: AvailableScreens;
     scheduledPostsEnabled?: boolean;
+    initialTab?: DraftScreenTab;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -82,8 +87,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled}: Props) => {
-    const [index, setIndex] = React.useState(0);
+const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab}: Props) => {
+    const [index, setIndex] = React.useState(initialTab || DRAFT_SCREEN_TAB_DRAFTS);
 
     // eslint-disable-next-line no-warning-comments
     // TODO: replace this hardcoded count with actual count integrated from the database
