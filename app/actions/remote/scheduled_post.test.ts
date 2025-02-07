@@ -125,7 +125,6 @@ describe('scheduled_post', () => {
 describe('fetchScheduledPosts', () => {
     it('fetch Schedule post - handle database not found', async () => {
         const result = await fetchScheduledPosts('foo', 'bar');
-        expect(result.error).toBeTruthy();
         expect(result.error).toBe('foo database not found');
     });
 
@@ -133,13 +132,11 @@ describe('fetchScheduledPosts', () => {
         jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 
         const result = await fetchScheduledPosts(serverUrl, 'bar');
-        expect(result).toBeDefined();
         expect(result.error).toBeTruthy();
     });
 
     it('fetch Schedule post - handle scheduled post disabled', async () => {
         const result = await fetchScheduledPosts(serverUrl, 'bar');
-        expect(result).toBeDefined();
         expect(result.scheduledPosts).toEqual([]);
     });
 
@@ -160,7 +157,6 @@ describe('fetchScheduledPosts', () => {
 describe('deleteScheduledPost', () => {
     it('delete Schedule post - handle database not found', async () => {
         const result = await deleteScheduledPost('foo', 'scheduled_post_id');
-        expect(result.error).toBeTruthy();
         expect(result.error).toBe('foo database not found');
     });
 
@@ -168,7 +164,6 @@ describe('deleteScheduledPost', () => {
         jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 
         const result = await deleteScheduledPost(serverUrl, 'scheduled_post_id');
-        expect(result).toBeDefined();
         expect(result.error).toBeTruthy();
     });
 

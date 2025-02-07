@@ -52,13 +52,11 @@ afterEach(async () => {
 describe('handleScheduledPosts', () => {
     it('handleScheduledPosts - handle not found database', async () => {
         const {error} = await handleScheduledPosts('foo', ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST, scheduledPosts) as {error: Error};
-        expect(error).toBeTruthy();
         expect(error.message).toBe('foo database not found');
     });
 
     it('handleScheduledPosts - should create scheduled post', async () => {
         const {models} = await handleScheduledPosts(serverUrl, ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST, scheduledPosts);
-        expect(models).toBeTruthy();
         expect(models?.length).toBe(2);
     });
 
@@ -93,7 +91,6 @@ describe('handleScheduledPosts', () => {
             false,
         );
 
-        expect(models).toBeTruthy();
         expect(models![0].message).toEqual(updatedScheduledPost.message);
     });
 
@@ -111,7 +108,6 @@ describe('handleScheduledPosts', () => {
             false,
         );
 
-        expect(models).toBeTruthy();
         expect(models![0].id).toEqual(scheduledPosts[0].id);
     });
 
