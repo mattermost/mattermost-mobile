@@ -4,8 +4,9 @@
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Freeze} from 'react-freeze';
 import {useIntl} from 'react-intl';
-import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard} from 'react-native';
+import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -13,7 +14,6 @@ import {getPosts} from '@actions/local/post';
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
 import Autocomplete from '@components/autocomplete';
-import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -27,7 +27,6 @@ import {useCollapsibleHeader} from '@hooks/header';
 import NavigationStore from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, type TabType} from '@utils/search';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Initial from './initial';
 import Results from './results';
@@ -53,10 +52,9 @@ type Props = {
     teams: TeamModel[];
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+const styles = StyleSheet.create({
     flex: {
         flex: 1,
-        backgroundColor: theme.centerChannelBg,
     },
     loading: {
         flex: 1,
@@ -65,7 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     autocompleteContainer: {
         zIndex: 11,
     },
-}));
+});
 
 const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
@@ -86,7 +84,6 @@ const SearchScreen = ({teamId, teams}: Props) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const keyboardHeight = useKeyboardHeight();
-    const styles = getStyleSheet(theme);
 
     const stateIndex = nav.getState()?.index;
     const serverUrl = useServerUrl();
@@ -354,7 +351,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
     useHardwareKeyboardEvents(events);
 
     return (
-        <FreezeScreen freeze={!isFocused}>
+        <Freeze freeze={!isFocused}>
             <NavigationHeader
                 isLargeTitle={true}
                 showBackButton={false}
@@ -446,7 +443,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                 teamId={searchTeamId}
             />
             }
-        </FreezeScreen>
+        </Freeze>
     );
 };
 
