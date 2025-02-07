@@ -13,18 +13,31 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.Person;
 
+import com.facebook.react.ReactApplication;
+import com.facebook.react.ReactNativeHost;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
 
 import com.mattermost.helpers.*;
 import com.mattermost.turbolog.TurboLog;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
+import com.wix.reactnativenotifications.core.notification.INotificationsApplication;
 import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
 
 public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
     private Context mContext;
     private Bundle bundle;
     private NotificationManager notificationManager;
+
+    private ReactApplicationContext getReactContext(Context context) {
+        if (context instanceof ReactApplication) {
+            ReactNativeHost host = ((ReactApplication) context).getReactNativeHost();
+            return (ReactApplicationContext) host.getReactInstanceManager().getCurrentReactContext();
+        }
+
+        return null;
+    }
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -40,6 +53,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
 
             final int notificationId = intent.getIntExtra(CustomPushNotificationHelper.NOTIFICATION_ID, -1);
             final String serverUrl = bundle.getString("server_url");
+            Network.init(context);
             if (serverUrl != null) {
                     replyToMessage(serverUrl, notificationId, message);
             } else {
