@@ -24,7 +24,7 @@ type Props = {
 const ComponentsList: Record<string, React.ComponentType<any>> = {
     [Screens.CHANNEL]: Channel,
     [Screens.GLOBAL_THREADS]: GlobalThreads,
-    [Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS]: GlobalDraftsAndScheduledPosts,
+    [Screens.GLOBAL_DRAFTS]: GlobalDraftsAndScheduledPosts,
 };
 
 const channelScreen: SelectedView = {id: Screens.CHANNEL, Component: Channel};
