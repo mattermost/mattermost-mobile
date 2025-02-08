@@ -45,3 +45,8 @@ else
     mkdir -p "android/app/src/main/res/raw/"
     cp $SOUNDS/* "android/app/src/main/res/raw/"
 fi
+
+APNG4Android="node_modules/APNG4Android"
+if [ ! -z "$APNG4Android" ]; then
+    git clone -b "fix/MM-62375-oom-on-gif" --single-branch https://github.com/rahimrahman/APNG4Android.git "$APNG4Android";
+fi

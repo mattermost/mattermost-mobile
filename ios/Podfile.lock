@@ -17,7 +17,7 @@ PODS:
     - ExpoModulesCore
   - ExpoFileSystem (18.0.6):
     - ExpoModulesCore
-  - ExpoImage (2.0.3):
+  - ExpoImage (2.0.4):
     - ExpoModulesCore
     - SDWebImage (~> 5.19.1)
     - SDWebImageSVGCoder (~> 1.7.0)
@@ -2466,7 +2466,7 @@ SPEC CHECKSUMS:
   ExpoCrypto: 483fc758365923f89ddaab4327c21cae9534841d
   ExpoDevice: 449822f2c45660c1ce83283dd51c67fe5404996c
   ExpoFileSystem: a38e1bb58d77f41717293a7b73ebd4014d8cb8dd
-  ExpoImage: 2c1f4adee95d033894c53346c721361736583728
+  ExpoImage: 18ec1a3e5cd96ee6162d988be3085e18113e143f
   ExpoLinearGradient: 18148bd38f98fa0229c1f9df23393b32ab6d2d32
   ExpoModulesCore: c9cb309323aee3c048099bb40ad0226e3fcf0c56
   ExpoStoreReview: f38ed71ee04dfc02dde63a05f925f001cebba5d8
