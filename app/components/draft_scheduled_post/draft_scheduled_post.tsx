@@ -7,8 +7,7 @@ import {Keyboard, TouchableHighlight, View} from 'react-native';
 
 import {switchToThread} from '@actions/local/thread';
 import {switchToChannelById} from '@actions/remote/channel';
-import DraftPost from '@components/draft/draft_post';
-import DraftPostHeader from '@components/draft_post_header';
+import DraftAndScheduledPostHeader from '@components/draft_scheduled_post_header';
 import Header from '@components/post_draft/draft_input/header';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -18,6 +17,9 @@ import {DRAFT_OPTIONS_BUTTON} from '@screens/draft_options';
 import {openAsBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import DraftAndScheduledPostContainer from './draft_scheduled_post_container';
+
+import type {ScheduledPostModel} from '@database/models/server';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type UserModel from '@typings/database/models/servers/user';
@@ -25,10 +27,11 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     channel: ChannelModel;
     location: string;
-    draftReceiverUser?: UserModel;
-    draft: DraftModel;
+    postReceiverUser?: UserModel;
+    post: DraftModel | ScheduledPostModel;
     layoutWidth: number;
     isPostPriorityEnabled: boolean;
+    postType: 'draft' | 'scheduled';
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -50,40 +53,43 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Draft: React.FC<Props> = ({
+const DraftAndScheduledPost: React.FC<Props> = ({
     channel,
     location,
-    draft,
-    draftReceiverUser,
+    post,
+    postReceiverUser,
     layoutWidth,
     isPostPriorityEnabled,
+    postType,
 }) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
-    const showPostPriority = Boolean(isPostPriorityEnabled && draft.metadata?.priority && draft.metadata?.priority?.priority);
+    const showPostPriority = Boolean(isPostPriorityEnabled && post.metadata?.priority && post.metadata?.priority?.priority);
 
     const onLongPress = useCallback(() => {
         Keyboard.dismiss();
         const title = isTablet ? intl.formatMessage({id: 'draft.options.title', defaultMessage: 'Draft Options'}) : 'Draft Options';
-        openAsBottomSheet({
-            closeButtonId: DRAFT_OPTIONS_BUTTON,
-            screen: Screens.DRAFT_OPTIONS,
-            theme,
-            title,
-            props: {channel, rootId: draft.rootId, draft, draftReceiverUserName: draftReceiverUser?.username},
-        });
-    }, [channel, draft, draftReceiverUser?.username, intl, isTablet, theme]);
+        if (postType === 'draft') {
+            openAsBottomSheet({
+                closeButtonId: DRAFT_OPTIONS_BUTTON,
+                screen: Screens.DRAFT_OPTIONS,
+                theme,
+                title,
+                props: {channel, rootId: post.rootId, draft: post, draftReceiverUserName: postReceiverUser?.username},
+            });
+        }
+    }, [isTablet, intl, postType, theme, channel, post, postReceiverUser?.username]);
 
     const onPress = useCallback(() => {
-        if (draft.rootId) {
-            switchToThread(serverUrl, draft.rootId, false);
+        if (post.rootId) {
+            switchToThread(serverUrl, post.rootId, false);
             return;
         }
         switchToChannelById(serverUrl, channel.id, channel.teamId, false);
-    }, [channel.id, channel.teamId, draft.rootId, serverUrl]);
+    }, [channel.id, channel.teamId, post.rootId, serverUrl]);
 
     return (
         <TouchableHighlight
@@ -95,23 +101,23 @@ const Draft: React.FC<Props> = ({
             <View
                 style={style.container}
             >
-                <DraftPostHeader
+                <DraftAndScheduledPostHeader
                     channel={channel}
-                    draftReceiverUser={draftReceiverUser}
-                    rootId={draft.rootId}
+                    postReceiverUser={postReceiverUser}
+                    rootId={post.rootId}
                     testID='draft_post.channel_info'
-                    updateAt={draft.updateAt}
+                    updateAt={post.updateAt}
                 />
-                {showPostPriority && draft.metadata?.priority &&
+                {showPostPriority && post.metadata?.priority &&
                 <View style={style.postPriority}>
                     <Header
                         noMentionsError={false}
-                        postPriority={draft.metadata?.priority}
+                        postPriority={post.metadata?.priority}
                     />
                 </View>
                 }
-                <DraftPost
-                    draft={draft}
+                <DraftAndScheduledPostContainer
+                    post={post}
                     location={location}
                     layoutWidth={layoutWidth}
                 />
@@ -121,4 +127,4 @@ const Draft: React.FC<Props> = ({
     );
 };
 
-export default Draft;
+export default DraftAndScheduledPost;

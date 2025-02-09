@@ -5,7 +5,7 @@ import React, {type ReactNode} from 'react';
 import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import ProfileAvatar from '@components/draft_post_header/profile_avatar';
+import ProfileAvatar from '@components/draft_scheduled_post_header/profile_avatar';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {General} from '@constants';
@@ -20,7 +20,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     channel: ChannelModel;
-    draftReceiverUser?: UserModel;
+    postReceiverUser?: UserModel;
     updateAt: number;
     rootId?: PostModel['rootId'];
     testID?: string;
@@ -72,9 +72,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const DraftPostHeader: React.FC<Props> = ({
+const DraftAndScheduledPostHeader: React.FC<Props> = ({
     channel,
-    draftReceiverUser,
+    postReceiverUser,
     updateAt,
     rootId,
     testID,
@@ -93,8 +93,8 @@ const DraftPostHeader: React.FC<Props> = ({
                 style={style.category}
             />
             <View style={style.profileComponentContainer}>
-                {draftReceiverUser ? (
-                    <ProfileAvatar author={draftReceiverUser}/>
+                {postReceiverUser ? (
+                    <ProfileAvatar author={postReceiverUser}/>
                 ) : (
                     <View style={style.categoryIconContainer}>
                         <CompassIcon
@@ -156,4 +156,4 @@ const DraftPostHeader: React.FC<Props> = ({
     );
 };
 
-export default DraftPostHeader;
+export default DraftAndScheduledPostHeader;

@@ -21,7 +21,7 @@ const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
 }));
 
 const enhanced = withObservables(['teamId'], ({database, teamId}: Props) => {
-    const allScheduledPosts = observeScheduledPostsForTeam(database, teamId);
+    const allScheduledPosts = observeScheduledPostsForTeam(database, teamId, true);
     const tutorialWatched = observeTutorialWatched(Tutorial.SCHEDULED_POSTS);
 
     return {

@@ -23,7 +23,14 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.createScheduledPost(schedulePost, connectionId);
 
-        // TODO - record scheduled post in database here
+        if (response) {
+            await operator.handleScheduledPosts({
+                actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                scheduledPosts: [response],
+                prepareRecordsOnly: false,
+            });
+        }
+
         return {data: true, response};
     } catch (error) {
         logError('error on createScheduledPost', getFullErrorMessage(error));

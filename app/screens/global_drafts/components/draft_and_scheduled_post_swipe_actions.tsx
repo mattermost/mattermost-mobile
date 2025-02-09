@@ -9,7 +9,7 @@ import ReanimatedSwipeable, {type SwipeableMethods} from 'react-native-gesture-h
 import Reanimated, {useAnimatedStyle, useSharedValue, type SharedValue} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
-import Draft from '@components/draft';
+import DraftAndSchedulePost from '@components/draft_scheduled_post';
 import FormattedText from '@components/formatted_text';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -19,9 +19,11 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type DraftModel from '@typings/database/models/servers/draft';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 type Props = {
-    item: DraftModel;
+    postType: 'draft' | 'scheduled';
+    item: DraftModel | ScheduledPostModel;
     location: string;
     layoutWidth: number;
 }
@@ -50,7 +52,7 @@ const getStyles = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-function RightAction({deleteDraft, drag}: { deleteDraft: () => void; drag: SharedValue<number> }) {
+function RightAction({deletePost, drag}: { deletePost: () => void; drag: SharedValue<number> }) {
     const theme = useTheme();
     const styles1 = getStyles(theme);
     const containerWidth = useSharedValue(0);
@@ -74,7 +76,7 @@ function RightAction({deleteDraft, drag}: { deleteDraft: () => void; drag: Share
             onLayout={handleLayout}
         >
             <Pressable
-                onPress={deleteDraft}
+                onPress={deletePost}
             >
                 <View
                     style={styles1.pressableContainer}
@@ -83,7 +85,7 @@ function RightAction({deleteDraft, drag}: { deleteDraft: () => void; drag: Share
                         color={theme.sidebarText}
                         name='trash-can-outline'
                         size={18}
-                        onPress={deleteDraft}
+                        onPress={deletePost}
                     />
                     <FormattedText
                         id='draft.options.delete.title'
@@ -96,7 +98,8 @@ function RightAction({deleteDraft, drag}: { deleteDraft: () => void; drag: Share
     );
 }
 
-const DraftSwipeActions: React.FC<Props> = ({
+const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
+    postType,
     item,
     location,
     layoutWidth,
@@ -109,7 +112,10 @@ const DraftSwipeActions: React.FC<Props> = ({
         DeviceEventEmitter.emit(Events.DRAFT_SWIPEABLE, item.id);
     }, [item.id]);
 
-    const deleteDraft = useCallback(() => {
+    const deletePost = useCallback(() => {
+        if (postType === 'scheduled') {
+            return;
+        }
         deleteDraftConfirmation({
             intl,
             serverUrl,
@@ -117,17 +123,17 @@ const DraftSwipeActions: React.FC<Props> = ({
             rootId: item.rootId,
             swipeable,
         });
-    }, [intl, item.channelId, item.rootId, serverUrl]);
+    }, [intl, item.channelId, item.rootId, postType, serverUrl]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.DRAFT_SWIPEABLE, (draftId: string) => {
-            if (item.id !== draftId) {
+            if (item.id !== draftId && postType === 'draft') {
                 swipeable.current?.close();
             }
         });
 
         return () => listener.remove();
-    }, [item.id]);
+    }, [item.id, postType]);
 
     return (
         <GestureHandlerRootView>
@@ -136,18 +142,19 @@ const DraftSwipeActions: React.FC<Props> = ({
                 rightThreshold={20}
                 renderRightActions={(_, drag) => (
                     <RightAction
-                        deleteDraft={deleteDraft}
+                        deletePost={deletePost}
                         drag={drag}
                     />
                 )}
                 ref={swipeable}
                 onSwipeableOpenStartDrag={onSwipeableOpenStartDrag}
-                testID='draft_swipeable'
+                testID='draft_scheduled_post_swipeable'
             >
-                <Draft
+                <DraftAndSchedulePost
+                    postType={postType}
                     key={item.id}
                     channelId={item.channelId}
-                    draft={item}
+                    post={item}
                     location={location}
                     layoutWidth={layoutWidth}
                 />
@@ -156,4 +163,4 @@ const DraftSwipeActions: React.FC<Props> = ({
     );
 };
 
-export default DraftSwipeActions;
+export default DraftAndScheduledPostSwipeActions;

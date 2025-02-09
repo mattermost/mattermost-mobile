@@ -12,9 +12,9 @@ import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
 
+import DraftAndScheduledPostSwipeActions from '../draft_and_scheduled_post_swipe_actions';
 import DraftEmptyComponent from '../draft_empty_component';
 
-import DraftSwipeActions from './draft_swipe_actions';
 import DraftTooltip from './draft_tooltip';
 
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -107,7 +107,8 @@ const GlobalDraftsList: React.FC<Props> = ({
                     <View
                         style={styles.swippeableContainer}
                     >
-                        <DraftSwipeActions
+                        <DraftAndScheduledPostSwipeActions
+                            postType='draft'
                             item={item}
                             location={location}
                             layoutWidth={layoutWidth}
@@ -117,7 +118,8 @@ const GlobalDraftsList: React.FC<Props> = ({
             );
         }
         return (
-            <DraftSwipeActions
+            <DraftAndScheduledPostSwipeActions
+                postType='draft'
                 item={item}
                 location={location}
                 layoutWidth={layoutWidth}
