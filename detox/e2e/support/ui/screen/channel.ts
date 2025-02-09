@@ -46,7 +46,7 @@ class ChannelScreen {
         postPriorityImportantMessage: 'post_priority_picker_item.important',
         postPriorityUrgentMessage: 'post_priority_picker_item.urgent',
         postPriorityRequestAck: 'post_priority_picker_item.requested_ack.toggled.false.requested_ack',
-        postPriorityPersistentNotification: 'post_priority_picker_item.persistent_notifications.toggled.undefined.persistent_notifications',
+        postPriorityPersistentNotification: 'post_priority_picker_item.persistent_notifications.toggled.undefined.button',
     };
 
     postPriorityPersistentNotification = element(by.id(this.testID.postPriorityPersistentNotification));
