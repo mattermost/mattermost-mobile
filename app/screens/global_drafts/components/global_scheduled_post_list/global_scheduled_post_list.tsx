@@ -126,8 +126,6 @@ const GlobalScheduledPostList: React.FC<Props> = ({
         );
     }, [close, firstScheduledPostId, layoutWidth, location, tooltipVisible, tutorialWatched]);
 
-    // eslint-disable-next-line no-console
-    console.log({location, tutorialWatched, allScheduledPosts: allScheduledPosts.map((post) => post._raw)});
     return (
         <View
             style={styles.container}
