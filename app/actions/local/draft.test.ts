@@ -3,16 +3,9 @@
 
 /* eslint-disable max-lines */
 
-import {DeviceEventEmitter} from 'react-native';
-
-import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
-import * as NavigationModule from '@screens/navigation';
-import * as HelpersModule from '@utils/helpers';
 
 import {
-    switchToGlobalDrafts,
     updateDraftFile,
     removeDraftFile,
     updateDraftMessage,
@@ -53,94 +46,6 @@ beforeEach(async () => {
 
 afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
-});
-
-jest.mock('@utils/helpers', () => ({
-    isTablet: jest.fn(),
-}));
-
-jest.mock('@screens/navigation', () => ({
-    goToScreen: jest.fn(),
-}));
-
-describe('switchToGlobalDrafts', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    it('should navigate using DeviceEventEmitter on tablet', async () => {
-        (HelpersModule.isTablet as jest.Mock).mockReturnValue(true);
-        const spy = jest.spyOn(DeviceEventEmitter, 'emit');
-
-        await switchToGlobalDrafts();
-
-        expect(spy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {});
-        expect(NavigationModule.goToScreen).not.toHaveBeenCalled();
-    });
-
-    it('should navigate using goToScreen on non-tablet', async () => {
-        (HelpersModule.isTablet as jest.Mock).mockReturnValue(false);
-        const spy = jest.spyOn(DeviceEventEmitter, 'emit');
-
-        await switchToGlobalDrafts();
-
-        expect(spy).not.toHaveBeenCalled();
-        expect(NavigationModule.goToScreen).toHaveBeenCalledWith(
-            Screens.GLOBAL_DRAFTS,
-            '',
-            {},
-            {topBar: {visible: false}},
-        );
-    });
-
-    it('should work without initialTab parameter', async () => {
-        (HelpersModule.isTablet as jest.Mock).mockReturnValue(false);
-
-        await switchToGlobalDrafts();
-
-        expect(NavigationModule.goToScreen).toHaveBeenCalledWith(
-            Screens.GLOBAL_DRAFTS,
-            '',
-            {initialTab: undefined},
-            {topBar: {visible: false}},
-        );
-    });
-
-    it('should pass initial tab using DeviceEventEmitter on tablet', async () => {
-        (HelpersModule.isTablet as jest.Mock).mockReturnValue(true);
-        const spy = jest.spyOn(DeviceEventEmitter, 'emit');
-
-        await switchToGlobalDrafts(DRAFT_SCREEN_TAB_DRAFTS);
-        expect(spy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: 0});
-        expect(NavigationModule.goToScreen).not.toHaveBeenCalled();
-
-        await switchToGlobalDrafts(DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
-        expect(spy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: 1});
-        expect(NavigationModule.goToScreen).not.toHaveBeenCalled();
-    });
-
-    it('should pass initial tab using goToScreen on non-tablet', async () => {
-        (HelpersModule.isTablet as jest.Mock).mockReturnValue(false);
-        const spy = jest.spyOn(DeviceEventEmitter, 'emit');
-
-        await switchToGlobalDrafts(DRAFT_SCREEN_TAB_DRAFTS);
-        expect(spy).not.toHaveBeenCalled();
-        expect(NavigationModule.goToScreen).toHaveBeenCalledWith(
-            Screens.GLOBAL_DRAFTS,
-            '',
-            {initialTab: 0},
-            {topBar: {visible: false}},
-        );
-
-        await switchToGlobalDrafts(DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
-        expect(spy).not.toHaveBeenCalled();
-        expect(NavigationModule.goToScreen).toHaveBeenCalledWith(
-            Screens.GLOBAL_DRAFTS,
-            '',
-            {initialTab: 1},
-            {topBar: {visible: false}},
-        );
-    });
 });
 
 describe('updateDraftFile', () => {
