@@ -14,12 +14,11 @@ import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@cons
 import {HOME_PADDING} from '@constants/view';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
 import {alertServerLogout} from '@utils/server';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -112,7 +111,6 @@ const ChannelListHeader = ({
     pushProxyStatus,
 }: Props) => {
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const intl = useIntl();
     const serverDisplayName = useServerDisplayName();
     const marginLeft = useSharedValue(iconPad ? 50 : 0);
@@ -125,7 +123,7 @@ const ChannelListHeader = ({
         marginLeft.value = iconPad ? 50 : 0;
     }, [iconPad]);
 
-    const onPress = useCallback(preventDoubleTap(() => {
+    const onPress = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => {
             return (
                 <PlusMenu
@@ -160,7 +158,7 @@ const ChannelListHeader = ({
             theme,
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
-    }), [intl, isTablet, theme]);
+    }, [intl, theme, canCreateChannels, canInvitePeople, canJoinChannels]));
 
     const onPushAlertPress = useCallback(() => {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {

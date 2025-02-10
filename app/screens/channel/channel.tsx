@@ -1,10 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
@@ -80,20 +78,6 @@ const Channel = ({
     }, [componentId]);
 
     useAndroidHardwareBackHandler(componentId, handleBack);
-
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                RNUtils.setSoftKeyboardToAdjustNothing();
-            },
-            componentDidDisappear: () => {
-                RNUtils.setSoftKeyboardToAdjustResize();
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId!);
-
-        return () => unsubscribe.remove();
-    }, []);
 
     const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
     useEffect(() => {
