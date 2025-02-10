@@ -12,8 +12,9 @@ import GlobalDraftsAndScheduledPosts from './index';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
-jest.mock('@mattermost/rnutils', () => ({
-    getWindowDimensions: jest.fn(() => ({width: 800, height: 600})),
+jest.mock('@hooks/device', () => ({
+    useWindowDimensions: jest.fn(() => ({width: 800, height: 600})),
+    useIsTablet: jest.fn().mockReturnValue(false),
 }));
 
 describe('screens/global_drafts', () => {
