@@ -6,8 +6,9 @@ import {StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import {useWindowDimensions} from '@hooks/device';
-import {DRAFT_SCREEN_TAB_DRAFTS, type DraftScreenTab} from '@screens/global_drafts';
+import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS, type DraftScreenTab} from '@screens/global_drafts';
 import {DraftTabsHeader} from '@screens/global_drafts/components/tabbed_contents/draftTabsHeader';
+import {Freeze} from 'react-freeze';
 
 const duration = 250;
 
@@ -31,6 +32,9 @@ const getStyleSheet = (width: number) => {
         },
         tabContent: {
             width,
+        },
+        hiddenTabContent: {
+            display: 'none',
         },
     });
 };
@@ -61,17 +65,21 @@ export default function TabbedContents({draftsCount, scheduledPostCount, initial
 
             <Animated.View style={[styles.tabContentContainer, transform]}>
                 <View
-                    style={styles.tabContent}
+                    style={[styles.tabContent, selectedTab !== DRAFT_SCREEN_TAB_DRAFTS && styles.hiddenTabContent]}
                     testID='draft_list_container'
                 >
-                    {drafts}
+                    <Freeze freeze={selectedTab !== DRAFT_SCREEN_TAB_DRAFTS}>
+                        {drafts}
+                    </Freeze>
                 </View>
 
                 <View
-                    style={styles.tabContent}
+                    style={[styles.tabContent, selectedTab !== DRAFT_SCREEN_TAB_SCHEDULED_POSTS && styles.hiddenTabContent]}
                     testID='scheduled_posts_list_container'
                 >
-                    {scheduledPosts}
+                    <Freeze freeze={selectedTab !== DRAFT_SCREEN_TAB_SCHEDULED_POSTS}>
+                        {scheduledPosts}
+                    </Freeze>
                 </View>
             </Animated.View>
         </View>
