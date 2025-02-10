@@ -25,7 +25,9 @@ describe('screens/global_drafts', () => {
         const server = await TestHelper.setupServerDatabase();
         database = server.database;
         operator = server.operator;
+    });
 
+    beforeEach(async () => {
         await operator.handleConfigs({
             configs: [
                 {id: 'ScheduledPosts', value: 'true'},
@@ -35,22 +37,22 @@ describe('screens/global_drafts', () => {
         });
     });
 
-    it('should match snapshot', () => {
-        const {toJSON} = renderWithEverything(
-            <GlobalDraftsAndScheduledPosts/>,
-            {database},
-        );
-        expect(toJSON()).toMatchSnapshot();
-    });
+    it('should render drafts list when scheduled posts is disabled', async () => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'ScheduledPosts', value: 'false'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
 
-    it('should render drafts list when scheduled posts is disabled', () => {
         const {getByTestId, queryByTestId} = renderWithEverything(
             <GlobalDraftsAndScheduledPosts/>,
             {database},
         );
 
-        expect(getByTestId('global_drafts.screen')).toBeTruthy();
-        expect(queryByTestId('draft_tab_container')).toBeFalsy();
+        expect(getByTestId('global_drafts.screen')).toBeVisible();
+        expect(queryByTestId('draft_tab_container')).not.toBeVisible();
     });
 
     it('should render tabs when scheduled posts is enabled', async () => {
@@ -59,13 +61,13 @@ describe('screens/global_drafts', () => {
             {database},
         );
 
-        expect(getByTestId('draft_tab_container')).toBeTruthy();
-        expect(getByTestId('draft_tab')).toBeTruthy();
-        expect(getByTestId('scheduled_post_tab')).toBeTruthy();
+        expect(getByTestId('draft_tab_container')).toBeVisible();
+        expect(getByTestId('draft_tab')).toBeVisible();
+        expect(getByTestId('scheduled_post_tab')).toBeVisible();
     });
 
     it('should switch between tabs', async () => {
-        const {getByTestId} = renderWithEverything(
+        const {getByTestId, queryByTestId} = renderWithEverything(
             <GlobalDraftsAndScheduledPosts/>,
             {database},
         );
@@ -74,7 +76,10 @@ describe('screens/global_drafts', () => {
         const scheduledTab = getByTestId('scheduled_post_tab');
 
         // Initially drafts list should be visible
-        expect(getByTestId('draft_list_container')).toBeTruthy();
+        expect(getByTestId('draft_list_container')).toBeVisible();
+
+        // And scheduled posts tab should not be visible
+        expect(queryByTestId('scheduled_posts_list_container')).not.toBeVisible();
 
         // Switch to scheduled posts
         act(() => {
@@ -82,7 +87,10 @@ describe('screens/global_drafts', () => {
         });
 
         // Scheduled posts list should now be visible
-        expect(getByTestId('scheduled_posts_list_container')).toBeTruthy();
+        expect(getByTestId('scheduled_posts_list_container')).toBeVisible();
+
+        // And draft tab not be visible
+        expect(queryByTestId('draft_list_container')).not.toBeVisible();
 
         // Switch back to drafts
         act(() => {
@@ -90,6 +98,9 @@ describe('screens/global_drafts', () => {
         });
 
         // Drafts list should be visible again
-        expect(getByTestId('draft_list_container')).toBeTruthy();
+        expect(getByTestId('draft_list_container')).toBeVisible();
+
+        // And scheduled posts tab should not be visible again
+        expect(queryByTestId('scheduled_posts_list_container')).not.toBeVisible();
     });
 });
