@@ -3,9 +3,14 @@
 
 /* eslint-disable max-lines */
 
+import {DeviceEventEmitter} from 'react-native';
+
+import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
+import {isTablet} from '@utils/helpers';
 
 import {
+    switchToGlobalDrafts,
     updateDraftFile,
     removeDraftFile,
     updateDraftMessage,
@@ -241,6 +246,47 @@ describe('updateDraftPriority', () => {
         expect(result.error).toBeUndefined();
         expect(result.draft).toBeDefined();
         expect(result.draft.metadata?.priority?.priority).toBe(postPriority.priority);
+    });
+});
+
+jest.mock('@utils/helpers', () => ({
+    isTablet: jest.fn(),
+}));
+
+jest.mock('@screens/navigation', () => ({
+    goToScreen: jest.fn(),
+}));
+
+describe('switchToGlobalDrafts', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should emit navigation event on tablet', () => {
+        (isTablet as jest.Mock).mockReturnValue(true);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        switchToGlobalDrafts();
+
+        expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {});
+    });
+
+    it('should call goToScreen on non-tablet', () => {
+        (isTablet as jest.Mock).mockReturnValue(false);
+        const {goToScreen} = require('@screens/navigation');
+
+        switchToGlobalDrafts();
+
+        expect(goToScreen).toHaveBeenCalledWith(Screens.GLOBAL_DRAFTS, '', {}, {topBar: {visible: false}});
+    });
+
+    it('should pass initialTab param when provided', () => {
+        (isTablet as jest.Mock).mockReturnValue(true);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        switchToGlobalDrafts('scheduled');
+
+        expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: 'scheduled'});
     });
 });
 
