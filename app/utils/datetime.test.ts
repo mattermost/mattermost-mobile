@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isSameDate, isSameMonth, isSameYear, isToday, isYesterday} from './datetime';
+import {getReadableTimestamp, isSameDate, isSameMonth, isSameYear, isToday, isYesterday} from './datetime';
 
 describe('Datetime', () => {
     test('isSameDate (isSameMonth / isSameYear)', () => {
@@ -33,5 +33,13 @@ describe('Datetime', () => {
         const today = new Date();
         today.setDate(today.getDate() - 1);
         expect(isYesterday(today)).toBe(true);
+    });
+});
+
+describe('getReadableTimestamp', () => {
+    test('should return a formatted timestamp string', () => {
+        const timestamp = 1625094000000;
+        const expected = 'Jul 1 at 4:30 AM';
+        expect(getReadableTimestamp(timestamp)).toBe(expected);
     });
 });

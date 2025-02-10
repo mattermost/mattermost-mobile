@@ -32,3 +32,18 @@ export function toMilliseconds({days, hours, minutes, seconds}: {days?: number; 
     const totalSeconds = (totalMinutes * 60) + (seconds || 0);
     return totalSeconds * 1000;
 }
+
+export function getReadableTimestamp(timestamp: number) {
+    const date = new Date(timestamp);
+
+    const options: Intl.DateTimeFormatOptions = {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+    };
+
+    const formattedDate = date.toLocaleString('en-US', options);
+    return formattedDate.replace(',', ' at');
+}

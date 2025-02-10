@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {type ReactNode} from 'react';
+import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -10,6 +11,7 @@ import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import {getReadableTimestamp} from '@utils/datetime';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
@@ -26,6 +28,8 @@ type Props = {
     testID?: string;
     currentUser?: UserModel;
     isMilitaryTime: boolean;
+    postType: 'draft' | 'scheduled';
+    postScheduledAt?: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -69,6 +73,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
         },
+        scheduledContainer: {
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 10,
+        },
+        scheduledAtText: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75),
+        },
     };
 });
 
@@ -80,7 +94,10 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
     testID,
     currentUser,
     isMilitaryTime,
+    postType,
+    postScheduledAt,
 }) => {
+    const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isChannelTypeDM = channel.type === General.DM_CHANNEL;
@@ -135,23 +152,32 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
 
     return (
 
-        <View
-            style={style.container}
-            testID={testID}
-        >
-            <View style={style.infoContainer}>
-                {headerComponent}
-                <Text style={style.displayName}>
-                    {channel.displayName}
-                </Text>
+        <View>
+            {postType === 'scheduled' &&
+                <View style={style.scheduledContainer}>
+                    <Text style={style.scheduledAtText}>
+                        {intl.formatMessage({id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'}, {time: getReadableTimestamp(postScheduledAt!)})}
+                    </Text>
+                </View>
+            }
+            <View
+                style={style.container}
+                testID={testID}
+            >
+                <View style={style.infoContainer}>
+                    {headerComponent}
+                    <Text style={style.displayName}>
+                        {channel.displayName}
+                    </Text>
+                </View>
+                <FormattedTime
+                    timezone={getUserTimezone(currentUser)}
+                    isMilitaryTime={isMilitaryTime}
+                    value={updateAt}
+                    style={style.time}
+                    testID='post_header.date_time'
+                />
             </View>
-            <FormattedTime
-                timezone={getUserTimezone(currentUser)}
-                isMilitaryTime={isMilitaryTime}
-                value={updateAt}
-                style={style.time}
-                testID='post_header.date_time'
-            />
         </View>
     );
 };

@@ -107,6 +107,8 @@ const DraftAndScheduledPost: React.FC<Props> = ({
                     rootId={post.rootId}
                     testID='draft_post.channel_info'
                     updateAt={post.updateAt}
+                    postType={postType}
+                    postScheduledAt={(post as ScheduledPostModel).scheduledAt}
                 />
                 {showPostPriority && post.metadata?.priority &&
                 <View style={style.postPriority}>
