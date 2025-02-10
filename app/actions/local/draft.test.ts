@@ -8,7 +8,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
-import {isTablet} from '@utils/helpers';
+import {isTablet, safeParseJSON} from '@utils/helpers';
 
 import {
     switchToGlobalDrafts,
@@ -55,6 +55,7 @@ afterEach(async () => {
 });
 
 jest.mock('@utils/helpers', () => ({
+    ...jest.requireActual('@utils/helpers'),
     isTablet: jest.fn(),
 }));
 
