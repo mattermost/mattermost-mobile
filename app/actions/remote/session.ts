@@ -29,23 +29,27 @@ const HTTP_UNAUTHORIZED = 401;
 const logoutMessages = defineMessages({
     title: {
         id: 'logout.fail.title',
-        defaultMessage: 'Logout Failed',
+        defaultMessage: 'Logout not complete',
     },
     bodyForced: {
         id: 'logout.fail.message.forced',
-        defaultMessage: 'We could not log you out of the server. Data may continue to be accessible to this device once the device goes back online.',
+        defaultMessage: 'We could not log you out of the server. Some data may continue to be accessible to this device once the device goes back online.',
     },
     body: {
         id: 'logout.fail.message',
-        defaultMessage: 'We could not log you out of the server. If you log out now, data may continue to be accessible to this device once the device goes back online. Do you still want to continue?',
+        defaultMessage: 'You’re not fully logged out. Some data may continue to be accessible to this device once the device goes back online. What do you want to do?',
     },
     cancel: {
         id: 'logout.fail.cancel',
         defaultMessage: 'Cancel',
     },
-    confirm: {
-        id: 'logout.fail.confirm',
-        defaultMessage: 'Confirm',
+    continue: {
+        id: 'logout.fail.continue_anyway',
+        defaultMessage: 'Continue Anyway',
+    },
+    ok: {
+        id: 'logout.fail.ok',
+        defaultMessage: 'OK',
     },
 });
 
@@ -191,9 +195,11 @@ export const logout = async (
         if (!loggedOut) {
             const title = intl?.formatMessage(logoutMessages.title) || logoutMessages.title.defaultMessage;
 
-            const body = logoutOnAlert ? intl?.formatMessage(logoutMessages.bodyForced) || logoutMessages.bodyForced.defaultMessage : intl?.formatMessage(logoutMessages.body) || logoutMessages.body.defaultMessage;
+            const bodyMessage = logoutOnAlert ? logoutMessages.bodyForced : logoutMessages.body;
+            const confirmMessage = logoutOnAlert ? logoutMessages.ok : logoutMessages.continue;
+            const body = intl?.formatMessage(bodyMessage) || bodyMessage.defaultMessage;
             const cancel = intl?.formatMessage(logoutMessages.cancel) || logoutMessages.cancel.defaultMessage;
-            const confirm = intl?.formatMessage(logoutMessages.confirm) || logoutMessages.confirm.defaultMessage;
+            const confirm = intl?.formatMessage(confirmMessage) || confirmMessage.defaultMessage;
 
             const buttons: AlertButton[] = logoutOnAlert ? [] : [{text: cancel, style: 'cancel'}];
             buttons.push({
