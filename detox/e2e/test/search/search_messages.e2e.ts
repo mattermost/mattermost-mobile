@@ -96,6 +96,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchModifierFrom.tap();
         await SearchMessagesScreen.searchInput.typeText(testUser.username);
         const {atMentionItem} = Autocomplete.getAtMentionItem(testUser.id);
+        await waitFor(atMentionItem).toBeVisible().withTimeout(2000);
         await atMentionItem.tap();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 

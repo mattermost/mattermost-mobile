@@ -186,7 +186,8 @@ describe('Smoke Test - Messaging', () => {
 
         // # Tap on post to open thread and tap on thread overview unsave button
         await postListPostItem.tap();
-        await ThreadScreen.getThreadOverviewUnsaveButton().tap();
+        await element(by.text(message)).longPress();
+        await PostOptionsScreen.unsavePostOption.tap();
 
         // * Verify saved text is not displayed on the post pre-header
         await expect(channelPostListPostItemPreHeaderText).not.toBeVisible();
