@@ -1,23 +1,43 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import React from 'react';
 import {Database, Model} from '@nozbe/watermelondb';
 import {act, fireEvent} from '@testing-library/react-native';
 
 import {renderWithEverything} from '@test/intl-test-helper';
-import {setupServerDatabase} from '@test/server-test-helper';
+import TestHelper from '@test/test_helper';
 
 import GlobalDraftsAndScheduledPosts from './index';
 
+import type ServerDataOperator from '@database/operator/server_data_operator';
+
+jest.mock('@mattermost/rnutils', () => ({
+    getWindowDimensions: jest.fn(() => ({width: 800, height: 600})),
+}));
+
 describe('screens/global_drafts', () => {
     let database: Database;
+    let operator: ServerDataOperator;
 
     beforeAll(async () => {
-        const server = await setupServerDatabase();
+        const server = await TestHelper.setupServerDatabase();
         database = server.database;
+        operator = server.operator;
+
+        await operator.handleConfigs({
+            configs: [
+                {id: 'ScheduledPosts', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
     });
 
     it('should match snapshot', () => {
         const {toJSON} = renderWithEverything(
             <GlobalDraftsAndScheduledPosts/>,
-            {database}
+            {database},
         );
         expect(toJSON()).toMatchSnapshot();
     });
@@ -25,7 +45,7 @@ describe('screens/global_drafts', () => {
     it('should render drafts list when scheduled posts is disabled', () => {
         const {getByTestId, queryByTestId} = renderWithEverything(
             <GlobalDraftsAndScheduledPosts/>,
-            {database}
+            {database},
         );
 
         expect(getByTestId('global_drafts.screen')).toBeTruthy();
@@ -33,16 +53,9 @@ describe('screens/global_drafts', () => {
     });
 
     it('should render tabs when scheduled posts is enabled', async () => {
-        await database.write(async () => {
-            await database.get('Config').create((c: Model) => {
-                c._raw.value = 'true';
-                c._raw.name = 'ScheduledPosts';
-            });
-        });
-
         const {getByTestId} = renderWithEverything(
             <GlobalDraftsAndScheduledPosts/>,
-            {database}
+            {database},
         );
 
         expect(getByTestId('draft_tab_container')).toBeTruthy();
@@ -51,16 +64,9 @@ describe('screens/global_drafts', () => {
     });
 
     it('should switch between tabs', async () => {
-        await database.write(async () => {
-            await database.get('Config').create((c: Model) => {
-                c._raw.value = 'true';
-                c._raw.name = 'ScheduledPosts';
-            });
-        });
-
         const {getByTestId} = renderWithEverything(
             <GlobalDraftsAndScheduledPosts/>,
-            {database}
+            {database},
         );
 
         const draftTab = getByTestId('draft_tab');
