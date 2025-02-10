@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo, useState} from 'react';
+import React, {useMemo} from 'react';
 import {FormattedMessage} from 'react-intl';
 import {Pressable, Text, View} from 'react-native';
 
 import Badge from '@components/badge';
 import {useTheme} from '@context/theme';
+import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS, type DraftScreenTab} from '@screens/global_drafts';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import type {DraftScreenTab} from '@screens/global_drafts';
 
 const DRAFT_TAB_INDEX = 0;
 const SCHEDULED_POSTS_TAB_INDEX = 1;
@@ -72,10 +72,10 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, o
 
     const draftCountBadge = useMemo(() => {
         // eslint-disable-next-line no-warning-comments
-        // TODO: when integrating with database, handle here the case of draft count being 0, and return undefined
+        // TODO: when integrating with database, handle here the case of draft count being 0, and return undefined to show no badge
 
         // change style depending on whether this tab is the active tab or not
-        const style = selectedTab === DRAFT_TAB_INDEX ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
+        const style = [styles.badgeStyles, selectedTab === DRAFT_TAB_INDEX ? styles.activeBadgeStyles : null];
 
         return (
             <Badge
@@ -89,10 +89,10 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, o
 
     const scheduledPostCountBadge = useMemo(() => {
         // eslint-disable-next-line no-warning-comments
-        // TODO: when integrating with database, handle here the case of scheduled post count being 0, and return undefined
+        // TODO: when integrating with database, handle here the case of scheduled post count being 0, and return undefined to show no badge
 
         // change style depending on whether this tab is the active tab or not
-        const style = selectedTab === SCHEDULED_POSTS_TAB_INDEX ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
+        const style = [styles.badgeStyles, selectedTab === DRAFT_SCREEN_TAB_SCHEDULED_POSTS ? styles.activeBadgeStyles : null];
 
         return (
             <Badge

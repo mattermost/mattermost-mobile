@@ -21,7 +21,10 @@ type Props = {
 
 const getStyleSheet = (width: number) => {
     return StyleSheet.create({
-        container: {
+        tabContainer: {
+            height: '100%',
+        },
+        tabContentContainer: {
             flex: 1,
             flexDirection: 'row',
             width: width * 2,
@@ -48,7 +51,7 @@ export default function TabbedContents({draftsCount, scheduledPostCount, initial
     }, [selectedTab, width]);
 
     return (
-        <View style={{height: '100%', borderWidth: 1, borderColor: 'red'}}>
+        <View style={styles.tabContainer}>
             <DraftTabsHeader
                 draftsCount={draftsCount}
                 scheduledPostCount={scheduledPostCount}
@@ -56,7 +59,7 @@ export default function TabbedContents({draftsCount, scheduledPostCount, initial
                 onTabChange={setSelectedTab}
             />
 
-            <Animated.View style={[styles.container, transform]}>
+            <Animated.View style={[styles.tabContentContainer, transform]}>
                 <View
                     style={styles.tabContent}
                     testID='draft_list_container'
