@@ -22,6 +22,7 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type DraftModel from '@typings/database/models/servers/draft';
+import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
 
 let operator: ServerDataOperator;
 const serverUrl = 'baseHandler.test.com';
@@ -52,6 +53,14 @@ beforeEach(async () => {
 afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
+
+jest.mock('@utils/helpers', () => ({
+    isTablet: jest.fn(),
+}));
+
+jest.mock('@screens/navigation', () => ({
+    goToScreen: jest.fn(),
+}));
 
 describe('updateDraftFile', () => {
     it('handle not found database', async () => {
@@ -249,14 +258,6 @@ describe('updateDraftPriority', () => {
     });
 });
 
-jest.mock('@utils/helpers', () => ({
-    isTablet: jest.fn(),
-}));
-
-jest.mock('@screens/navigation', () => ({
-    goToScreen: jest.fn(),
-}));
-
 describe('switchToGlobalDrafts', () => {
     beforeEach(() => {
         jest.clearAllMocks();
@@ -275,18 +276,23 @@ describe('switchToGlobalDrafts', () => {
         (isTablet as jest.Mock).mockReturnValue(false);
         const {goToScreen} = require('@screens/navigation');
 
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
         switchToGlobalDrafts();
 
         expect(goToScreen).toHaveBeenCalledWith(Screens.GLOBAL_DRAFTS, '', {}, {topBar: {visible: false}});
+        expect(emitSpy).not.toHaveBeenCalled();
     });
 
     it('should pass initialTab param when provided', () => {
         (isTablet as jest.Mock).mockReturnValue(true);
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
 
-        switchToGlobalDrafts('scheduled');
+        switchToGlobalDrafts(DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
+        expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: DRAFT_SCREEN_TAB_SCHEDULED_POSTS});
 
-        expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: 'scheduled'});
+        switchToGlobalDrafts(DRAFT_SCREEN_TAB_DRAFTS);
+        expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: DRAFT_SCREEN_TAB_DRAFTS});
     });
 });
 
