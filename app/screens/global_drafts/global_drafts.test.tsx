@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {Database, Model} from '@nozbe/watermelondb';
+import {Database} from '@nozbe/watermelondb';
 import {act, fireEvent} from '@testing-library/react-native';
+import React from 'react';
 
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
