@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {FormattedMessage} from 'react-intl';
-import {Pressable, Text, Touchable, View} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 
 import Badge from '@components/badge';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import type {DraftScreenTab} from '@screens/global_drafts';
 
 const DRAFT_TAB_INDEX = 0;
 const SCHEDULED_POSTS_TAB_INDEX = 1;
@@ -16,18 +16,11 @@ const SCHEDULED_POSTS_TAB_INDEX = 1;
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         tabContainer: {
-
-            // borderWidth: 1,
-            // borderColor: 'red',
-
             display: 'flex',
             flexDirection: 'row',
             height: 44,
         },
         tab: {
-
-            // borderWidth: 1,
-            // borderColor: 'blue',
             width: '50%',
             flex: 1,
             flexDirection: 'row',
@@ -39,6 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             gap: 6,
             borderBottomWidth: 2,
             borderColor: 'transparent',
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         activeTab: {
             borderBottomColor: theme.buttonBg,
@@ -68,12 +62,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 type Props = {
     draftsCount: number;
     scheduledPostCount: number;
-    initialTab: number;
+    selectedTab: DraftScreenTab;
+    onTabChange: (tab: DraftScreenTab) => void;
 }
 
-export function DraftTabsHeader({draftsCount, scheduledPostCount, initialTab}: Props) {
-    const [selectedTab, setSelectedTab] = useState(initialTab);
-
+export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, onTabChange}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -89,9 +82,10 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, initialTab}: P
                 value={draftsCount}
                 visible={true}
                 style={style}
+                testID='draft_count_badge'
             />
         );
-    }, [initialTab, draftsCount, styles.activeBadgeStyles, styles.badgeStyles]);
+    }, [draftsCount, selectedTab, styles.activeBadgeStyles, styles.badgeStyles]);
 
     const scheduledPostCountBadge = useMemo(() => {
         // eslint-disable-next-line no-warning-comments
@@ -105,15 +99,20 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, initialTab}: P
                 value={scheduledPostCount}
                 visible={true}
                 style={style}
+                testID='scheduled_post_count_badge'
             />
         );
-    }, [initialTab, scheduledPostCount, styles.activeBadgeStyles, styles.badgeStyles]);
+    }, [scheduledPostCount, selectedTab, styles.activeBadgeStyles, styles.badgeStyles]);
 
     return (
-        <View style={styles.tabContainer}>
+        <View
+            style={styles.tabContainer}
+            testID='draft_tab_container'
+        >
             <Pressable
                 style={selectedTab === DRAFT_TAB_INDEX ? {...styles.tab, ...styles.activeTab} : styles.tab}
-                onPress={() => setSelectedTab(DRAFT_TAB_INDEX)}
+                onPress={() => onTabChange(DRAFT_TAB_INDEX)}
+                testID='draft_tab'
             >
                 <Text style={selectedTab === DRAFT_TAB_INDEX ? {...styles.tabItemText, ...styles.activeTabItemText} : styles.tabItemText}>
                     <FormattedMessage
@@ -126,7 +125,8 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, initialTab}: P
 
             <Pressable
                 style={selectedTab === SCHEDULED_POSTS_TAB_INDEX ? {...styles.tab, ...styles.activeTab} : styles.tab}
-                onPress={() => setSelectedTab(SCHEDULED_POSTS_TAB_INDEX)}
+                onPress={() => onTabChange(SCHEDULED_POSTS_TAB_INDEX)}
+                testID='scheduled_post_tab'
             >
                 <Text style={selectedTab === SCHEDULED_POSTS_TAB_INDEX ? {...styles.tabItemText, ...styles.activeTabItemText} : styles.tabItemText}>
                     <FormattedMessage
@@ -136,18 +136,6 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, initialTab}: P
                 </Text>
                 {scheduledPostCountBadge}
             </Pressable>
-
-            {/*<Pressable style={styles.tab}>*/}
-            {/*    <View>*/}
-            {/*        <Text>{'Hello'}</Text>*/}
-            {/*    </View>*/}
-            {/*</Pressable>*/}
-
-            {/*<Pressable style={styles.tab}>*/}
-            {/*    <View >*/}
-            {/*        <Text>{'World'}</Text>*/}
-            {/*    </View>*/}
-            {/*</Pressable>*/}
         </View>
     );
 }
