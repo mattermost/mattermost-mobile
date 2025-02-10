@@ -26,6 +26,7 @@ import GlobalDraftsList from './components/global_drafts_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type {AvailableScreens} from '@typings/screens/navigation';
+import TabbedContents from '@screens/global_drafts/components/tabbed_contents/tabbed_contents';
 
 const edges: Edge[] = ['left', 'right'];
 
@@ -38,9 +39,6 @@ type Props = {
     scheduledPostsEnabled?: boolean;
     initialTab?: DraftScreenTab;
 };
-
-const DRAFT_TAB_INDEX = 0;
-const SCHEDULED_POSTS_TAB_INDEX = 1;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -134,37 +132,37 @@ export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnable
         }
     }, [componentId, isTablet]);
 
-    const draftCountBadge = useMemo(() => {
-        // eslint-disable-next-line no-warning-comments
-        // TODO: when integrating with database, handle here the case of draft count being 0, and return undefined
-
-        // change style depending on whether this tab is the active tab or not
-        const style = tabIndex === DRAFT_TAB_INDEX ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
-
-        return (
-            <Badge
-                value={draftsCount}
-                visible={true}
-                style={style}
-            />
-        );
-    }, [tabIndex, styles.activeBadgeStyles, styles.badgeStyles]);
-
-    const scheduledPostCountBadge = useMemo(() => {
-        // eslint-disable-next-line no-warning-comments
-        // TODO: when integrating with database, handle here the case of scheduled post count being 0, and return undefined
-
-        // change style depending on whether this tab is the active tab or not
-        const style = tabIndex === SCHEDULED_POSTS_TAB_INDEX ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
-
-        return (
-            <Badge
-                value={scheduledPostCount}
-                visible={true}
-                style={style}
-            />
-        );
-    }, []);
+    // const draftCountBadge = useMemo(() => {
+    //     // eslint-disable-next-line no-warning-comments
+    //     // TODO: when integrating with database, handle here the case of draft count being 0, and return undefined
+    //
+    //     // change style depending on whether this tab is the active tab or not
+    //     const style = tabIndex === DRAFT_TAB_INDEX ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
+    //
+    //     return (
+    //         <Badge
+    //             value={draftsCount}
+    //             visible={true}
+    //             style={style}
+    //         />
+    //     );
+    // }, [tabIndex, styles.activeBadgeStyles, styles.badgeStyles]);
+    //
+    // const scheduledPostCountBadge = useMemo(() => {
+    //     // eslint-disable-next-line no-warning-comments
+    //     // TODO: when integrating with database, handle here the case of scheduled post count being 0, and return undefined
+    //
+    //     // change style depending on whether this tab is the active tab or not
+    //     const style = tabIndex === SCHEDULED_POSTS_TAB_INDEX ? {...styles.badgeStyles, ...styles.activeBadgeStyles} : styles.badgeStyles;
+    //
+    //     return (
+    //         <Badge
+    //             value={scheduledPostCount}
+    //             visible={true}
+    //             style={style}
+    //         />
+    //     );
+    // }, []);
 
     const tabStyle = (active: boolean) => {
         if (active) {
@@ -200,62 +198,64 @@ export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnable
             </View>
             {!switchingTeam &&
             <View style={containerStyle}>
-                {
-                    scheduledPostsEnabled ? (
-                        <>
-                            <Tab
-                                value={tabIndex}
-                                onChange={(e) => setTabIndex(e)}
-                                indicatorStyle={styles.activeTabIndicator}
-                            >
-                                <Tab.Item
-                                    testID='drafts_tab'
-                                    title={intl.formatMessage({id: 'drafts_tab.title.drafts', defaultMessage: 'Drafts'})}
-                                    style={styles.tabItem}
-                                    titleStyle={tabStyle}
-                                    icon={draftCountBadge}
-                                    iconPosition='right'
-                                    active={tabIndex === DRAFT_TAB_INDEX}
-                                />
-                                <Tab.Item
-                                    testID='scheduled_posts_tab'
-                                    title={intl.formatMessage({id: 'drafts_tab.title.scheduled', defaultMessage: 'Scheduled'})}
-                                    style={styles.tabItem}
-                                    titleStyle={tabStyle}
-                                    icon={scheduledPostCountBadge}
-                                    iconPosition='right'
-                                    active={tabIndex === SCHEDULED_POSTS_TAB_INDEX}
-                                />
-                            </Tab>
+                {/*{*/}
+                {/*    scheduledPostsEnabled ? (*/}
+                {/*        <>*/}
+                {/*            <Tab*/}
+                {/*                value={tabIndex}*/}
+                {/*                onChange={(e) => setTabIndex(e)}*/}
+                {/*                indicatorStyle={styles.activeTabIndicator}*/}
+                {/*            >*/}
+                {/*                <Tab.Item*/}
+                {/*                    testID='drafts_tab'*/}
+                {/*                    title={intl.formatMessage({id: 'drafts_tab.title.drafts', defaultMessage: 'Drafts'})}*/}
+                {/*                    style={styles.tabItem}*/}
+                {/*                    titleStyle={tabStyle}*/}
+                {/*                    icon={draftCountBadge}*/}
+                {/*                    iconPosition='right'*/}
+                {/*                    active={tabIndex === DRAFT_TAB_INDEX}*/}
+                {/*                />*/}
+                {/*                <Tab.Item*/}
+                {/*                    testID='scheduled_posts_tab'*/}
+                {/*                    title={intl.formatMessage({id: 'drafts_tab.title.scheduled', defaultMessage: 'Scheduled'})}*/}
+                {/*                    style={styles.tabItem}*/}
+                {/*                    titleStyle={tabStyle}*/}
+                {/*                    icon={scheduledPostCountBadge}*/}
+                {/*                    iconPosition='right'*/}
+                {/*                    active={tabIndex === SCHEDULED_POSTS_TAB_INDEX}*/}
+                {/*                />*/}
+                {/*            </Tab>*/}
 
-                            <TabView
-                                value={tabIndex}
-                                onChange={setTabIndex}
-                                disableSwipe={true}
-                            >
-                                <TabView.Item
-                                    style={styles.tabView}
-                                    testID='drafts_tab_content'
-                                >
-                                    <GlobalDraftsList
-                                        location={Screens.GLOBAL_DRAFTS}
-                                    />
-                                </TabView.Item>
-                                <TabView.Item
-                                    style={styles.tabView}
-                                    testID='scheduled_post_tab_content'
-                                >
-                                    {/*Render scheduled post list here*/}
-                                    <Text>{'Favorite'}</Text>
-                                </TabView.Item>
-                            </TabView>
-                        </>
-                    ) : (
-                        <GlobalDraftsList
-                            location={Screens.GLOBAL_DRAFTS}
-                        />
-                    )
-                }
+                {/*            <TabView*/}
+                {/*                value={tabIndex}*/}
+                {/*                onChange={setTabIndex}*/}
+                {/*                disableSwipe={true}*/}
+                {/*            >*/}
+                {/*                <TabView.Item*/}
+                {/*                    style={styles.tabView}*/}
+                {/*                    testID='drafts_tab_content'*/}
+                {/*                >*/}
+                {/*                    <GlobalDraftsList*/}
+                {/*                        location={Screens.GLOBAL_DRAFTS}*/}
+                {/*                    />*/}
+                {/*                </TabView.Item>*/}
+                {/*                <TabView.Item*/}
+                {/*                    style={styles.tabView}*/}
+                {/*                    testID='scheduled_post_tab_content'*/}
+                {/*                >*/}
+                {/*                    /!*Render scheduled post list here*!/*/}
+                {/*                    <Text>{'Favorite'}</Text>*/}
+                {/*                </TabView.Item>*/}
+                {/*            </TabView>*/}
+                {/*        </>*/}
+                {/*    ) : (*/}
+                {/*        <GlobalDraftsList*/}
+                {/*            location={Screens.GLOBAL_DRAFTS}*/}
+                {/*        />*/}
+                {/*    )*/}
+                {/*}*/}
+
+                <TabbedContents/>
             </View>
             }
         </SafeAreaView>
