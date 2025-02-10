@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {type ReactNode, useState} from 'react';
+import {Freeze} from 'react-freeze';
 import {StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import {useWindowDimensions} from '@hooks/device';
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS, type DraftScreenTab} from '@screens/global_drafts';
 import {DraftTabsHeader} from '@screens/global_drafts/components/tabbed_contents/draftTabsHeader';
-import {Freeze} from 'react-freeze';
 
 const duration = 250;
 
