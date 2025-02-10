@@ -787,6 +787,7 @@
   "mobile.search.results": "{count} {count, plural, one {výsledek} other {výsledků}} hledání",
   "mobile.search.show_less": "Zobrazit méně",
   "mobile.search.show_more": "Zobrazit více",
+  "mobile.search.team.all_teams": "Všechny Týmy",
   "mobile.search.team.select": "Vyberte tým, který chcete prohledat",
   "mobile.server_identifier.exists": "Již jste připojení k tomuto serveru.",
   "mobile.server_link.error.text": "Odkaz nebyl na tomto serveru nalezen.",
