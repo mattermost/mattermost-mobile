@@ -181,6 +181,7 @@ interface ClientConfig {
     SamlLoginButtonTextColor: string;
     SamlNicknameAttributeSet: string;
     SamlPositionAttributeSet: string;
+    ScheduledPosts: string;
     SchemaVersion: string;
     SendEmailNotifications: string;
     SendPushNotifications: string;

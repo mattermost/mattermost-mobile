@@ -92,7 +92,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               "lineHeight": 24,
             },
             {
-              "color": "#ffffff",
+              "color": "rgba(255,255,255,0.72)",
             },
             false,
             null,
@@ -213,7 +213,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               "lineHeight": 24,
             },
             {
-              "color": "#ffffff",
+              "color": "rgba(255,255,255,0.72)",
             },
             false,
             null,
@@ -251,7 +251,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               "lineHeight": 24,
             },
             {
-              "color": "#ffffff",
+              "color": "rgba(255,255,255,0.72)",
             },
             false,
             null,
@@ -361,7 +361,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
               "lineHeight": 24,
             },
             {
-              "color": "#ffffff",
+              "color": "rgba(255,255,255,0.72)",
             },
             false,
             null,

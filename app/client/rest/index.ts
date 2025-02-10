@@ -3,7 +3,6 @@
 
 import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
-import ClientScheduledPost, {type ClientScheduledPostMix} from '@client/rest/scheduled_post';
 import mix from '@utils/mix';
 
 import ClientApps, {type ClientAppsMix} from './apps';
@@ -21,6 +20,7 @@ import ClientIntegrations, {type ClientIntegrationsMix} from './integrations';
 import ClientNPS, {type ClientNPSMix} from './nps';
 import ClientPosts, {type ClientPostsMix} from './posts';
 import ClientPreferences, {type ClientPreferencesMix} from './preferences';
+import ClientScheduledPost, {type ClientScheduledPostMix} from './scheduled_post';
 import ClientTeams, {type ClientTeamsMix} from './teams';
 import ClientThreads, {type ClientThreadsMix} from './threads';
 import ClientTos, {type ClientTosMix} from './tos';
@@ -40,6 +40,7 @@ interface Client extends ClientBase,
     ClientIntegrationsMix,
     ClientPostsMix,
     ClientPreferencesMix,
+    ClientScheduledPostMix,
     ClientTeamsMix,
     ClientThreadsMix,
     ClientTosMix,
@@ -63,6 +64,7 @@ class Client extends mix(ClientBase).with(
     ClientIntegrations,
     ClientPosts,
     ClientPreferences,
+    ClientScheduledPost,
     ClientTeams,
     ClientThreads,
     ClientTos,
