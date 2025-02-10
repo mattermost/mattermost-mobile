@@ -7,6 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
+import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
 import {isTablet} from '@utils/helpers';
 
 import {
@@ -22,7 +23,6 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type DraftModel from '@typings/database/models/servers/draft';
-import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
 
 let operator: ServerDataOperator;
 const serverUrl = 'baseHandler.test.com';
