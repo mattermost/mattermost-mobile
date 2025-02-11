@@ -1454,7 +1454,7 @@ PODS:
     - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-network-client (1.8.1):
+  - react-native-network-client (1.8.2):
     - Alamofire (~> 5.10.2)
     - DoubleConversion
     - glog
@@ -2518,7 +2518,7 @@ SPEC CHECKSUMS:
   react-native-emm: f6003bebdf4fef4feef7c61f96a5c174f43c6b5f
   react-native-image-picker: 130fad649d07e4eec8faaed361d3bba570e1e5ff
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-network-client: f2996a6440c422e64e787bdf8c8e3f992be1cee6
+  react-native-network-client: fdbd7f5f4c2818d6b90b4dcf9613d0a54ab41303
   react-native-notifications: 3bafa1237ae8a47569a84801f17d80242fe9f6a5
   react-native-paste-input: d33daa183942fa57f34dff2088805a60895f14d2
   react-native-performance: 125a96c145e29918b55b45ce25cbba54f1e24dcd
