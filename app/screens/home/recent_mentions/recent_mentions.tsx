@@ -162,19 +162,19 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
     return (
         <Freeze freeze={!isFocused}>
             <ExtraKeyboardProvider>
-                <NavigationHeader
-                    isLargeTitle={true}
-                    showBackButton={false}
-                    subtitle={subtitle}
-                    title={title}
-                    hasSearch={false}
-                    scrollValue={scrollValue}
-                />
                 <SafeAreaView
                     style={styles.flex}
                     edges={EDGES}
                     testID='recent_mentions.screen'
                 >
+                    <NavigationHeader
+                        isLargeTitle={true}
+                        showBackButton={false}
+                        subtitle={subtitle}
+                        title={title}
+                        hasSearch={false}
+                        scrollValue={scrollValue}
+                    />
                     <Animated.View style={[styles.flex, animated]}>
                         <Animated.View style={top}>
                             <RoundedHeaderContext/>
