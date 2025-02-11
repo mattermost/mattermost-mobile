@@ -13,11 +13,14 @@ import {forceLogoutIfNecessary} from './session';
 
 import type {CreateResponse} from '@hooks/handle_send_message';
 
-export async function createScheduledPost(serverUrl: string, schedulePost: ScheduledPost, connectionId?: string): Promise<CreateResponse> {
+export async function createScheduledPost(serverUrl: string, schedulePost: ScheduledPost): Promise<CreateResponse> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
+    const ws = websocketManager.getClient(serverUrl);
+    const connectionId = ws?.getConnectionId();
 
     try {
         const client = NetworkManager.getClient(serverUrl);
