@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
@@ -9,7 +10,6 @@ import DraftsButton from '@components/drafts_buttton/drafts_button';
 import {Events} from '@constants';
 import {DRAFT} from '@constants/screens';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
-import {act, fireEvent} from '@testing-library/react-native';
 
 jest.mock('@actions/local/draft', () => ({
     switchToGlobalDrafts: jest.fn(),
