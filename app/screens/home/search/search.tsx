@@ -79,6 +79,8 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
 
 const searchScreenIndex = 1;
 
+const CHANNEL_AND_USER_FILTERS_REGEX = /(?:from|channel|in):\s?[^\s\n]+/gi;
+
 const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
@@ -238,9 +240,20 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         setResultsLoading(false);
     }, [lastSearchedValue, searchTeamId, serverUrl]);
 
+    const removeChannelAndUserFiltersFromString = (str: string) => {
+        return str.replace(CHANNEL_AND_USER_FILTERS_REGEX, '').trim();
+    };
+
+    const updateSearchTeamId = useCallback((newTeamId: string) => {
+        setSearchTeamId(newTeamId);
+        setSearchValue(removeChannelAndUserFiltersFromString(searchValue));
+    }, [searchValue]);
+
     const handleResultsTeamChange = useCallback((newTeamId: string) => {
         setSearchTeamId(newTeamId);
-        handleSearch(newTeamId, lastSearchedValue);
+        const cleanedSearchValue = removeChannelAndUserFiltersFromString(lastSearchedValue);
+        setSearchValue(cleanedSearchValue);
+        handleSearch(newTeamId, cleanedSearchValue);
     }, [lastSearchedValue, handleSearch]);
 
     const initialContainerStyle: AnimatedStyle<ViewStyle> = useMemo(() => {
@@ -265,7 +278,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                 setRecentValue={handleRecentSearch}
                 searchRef={searchRef}
                 setSearchValue={handleModifierTextChange}
-                setTeamId={setSearchTeamId}
+                setTeamId={updateSearchTeamId}
                 teamId={searchTeamId}
                 teams={teams}
             />
@@ -357,31 +370,31 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     return (
         <Freeze freeze={!isFocused}>
-            <NavigationHeader
-                isLargeTitle={true}
-                showBackButton={false}
-                title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
-                hasSearch={true}
-                scrollValue={scrollValue}
-                lockValue={lockValue}
-                hideHeader={hideHeader}
-                onChangeText={handleTextChange}
-                onSubmitEditing={onSubmit}
-                blurOnSubmit={true}
-                placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
-                onBlur={onBlur}
-                onClear={handleClearSearch}
-                onCancel={handleCancelSearch}
-                onFocus={onFocus}
-                defaultValue={searchValue}
-                ref={searchRef}
-            />
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
                 onLayout={onLayout}
                 testID='search_messages.screen'
             >
+                <NavigationHeader
+                    isLargeTitle={true}
+                    showBackButton={false}
+                    title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
+                    hasSearch={true}
+                    scrollValue={scrollValue}
+                    lockValue={lockValue}
+                    hideHeader={hideHeader}
+                    onChangeText={handleTextChange}
+                    onSubmitEditing={onSubmit}
+                    blurOnSubmit={true}
+                    placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
+                    onBlur={onBlur}
+                    onClear={handleClearSearch}
+                    onCancel={handleCancelSearch}
+                    onFocus={onFocus}
+                    defaultValue={searchValue}
+                    ref={searchRef}
+                />
                 <KeyboardAvoidingView
                     style={styles.flex}
                     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
