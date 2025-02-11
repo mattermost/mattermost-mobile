@@ -133,7 +133,10 @@ const DraftsButton: React.FC<DraftListProps> = ({
                 <View style={customStyles.countBadgeContainer}>
                     {
                         draftsCount > 0 &&
-                        <View style={customStyles.countContainer}>
+                        <View
+                            testID='channel_list.drafts.count.container'
+                            style={customStyles.countContainer}
+                        >
                             <CompassIcon
                                 name='pencil-outline'
                                 size={14}
@@ -150,7 +153,10 @@ const DraftsButton: React.FC<DraftListProps> = ({
                     }
                     {
                         scheduledPostCount > 0 &&
-                        <View style={[customStyles.countContainer, scheduledPostHasError && customStyles.errorCountContainer]}>
+                        <View
+                            testID='channel_list.scheduled_post.count.container'
+                            style={[customStyles.countContainer, scheduledPostHasError && customStyles.errorCountContainer]}
+                        >
                             <CompassIcon
                                 name='clock-send-outline'
                                 size={14}
@@ -158,7 +164,7 @@ const DraftsButton: React.FC<DraftListProps> = ({
                                 style={scheduledPostHasError ? customStyles.badgeOpacityWithError : customStyles.opacity}
                             />
                             <Text
-                                testID='channel_list.schedued_post.count'
+                                testID='channel_list.scheduled_post.count'
                                 style={[customStyles.count, scheduledPostHasError && customStyles.badgeOpacityWithError]}
                             >
                                 {scheduledPostCount}
