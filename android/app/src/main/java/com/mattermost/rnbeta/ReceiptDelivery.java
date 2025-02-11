@@ -38,6 +38,7 @@ public class ReceiptDelivery {
             JSONObject jsonResponse = new JSONObject(responseBody);
             return parseAckResponse(jsonResponse);
         } catch (Exception e) {
+            TurboLog.Companion.e("ReactNative", "Send receipt delivery failed " + e.getMessage());
             e.printStackTrace();
             return null;
         }
