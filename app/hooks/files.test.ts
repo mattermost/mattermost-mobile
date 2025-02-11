@@ -23,6 +23,7 @@ jest.mock('@utils/file', () => ({
     isGif: jest.fn(),
     isImage: jest.fn(),
     isVideo: jest.fn(),
+    isAudio: jest.fn(),
 }));
 
 jest.mock('@context/server', () => ({
