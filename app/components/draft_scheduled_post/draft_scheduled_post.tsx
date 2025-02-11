@@ -37,6 +37,9 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
+            position: 'relative',
+        },
+        postContainer: {
             paddingHorizontal: 20,
             paddingVertical: 16,
             width: '100%',
@@ -49,6 +52,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         postPriority: {
             marginTop: 10,
             marginLeft: -12,
+        },
+        errorLine: {
+            backgroundColor: theme.errorTextColor,
+            position: 'absolute',
+            width: 1,
+            top: 0,
+            left: 0,
+            height: '100%',
         },
     };
 });
@@ -98,31 +109,37 @@ const DraftAndScheduledPost: React.FC<Props> = ({
             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
             testID='draft_post'
         >
-            <View
-                style={style.container}
-            >
-                <DraftAndScheduledPostHeader
-                    channel={channel}
-                    postReceiverUser={postReceiverUser}
-                    rootId={post.rootId}
-                    testID='draft_post.channel_info'
-                    updateAt={post.updateAt}
-                    postType={postType}
-                    postScheduledAt={(post as ScheduledPostModel).scheduledAt}
-                />
-                {showPostPriority && post.metadata?.priority &&
-                <View style={style.postPriority}>
-                    <Header
-                        noMentionsError={false}
-                        postPriority={post.metadata?.priority}
+            <View style={style.container}>
+                {postType === 'scheduled' && (post as ScheduledPostModel).errorCode !== '' &&
+                    <View style={style.errorLine}/>
+                }
+                <View
+                    style={style.postContainer}
+                >
+                    <DraftAndScheduledPostHeader
+                        channel={channel}
+                        postReceiverUser={postReceiverUser}
+                        rootId={post.rootId}
+                        testID='draft_post.channel_info'
+                        updateAt={post.updateAt}
+                        postType={postType}
+                        postScheduledAt={(post as ScheduledPostModel).scheduledAt}
+                        scheduledPostErrorCode={(post as ScheduledPostModel).errorCode}
+                    />
+                    {showPostPriority && post.metadata?.priority &&
+                    <View style={style.postPriority}>
+                        <Header
+                            noMentionsError={false}
+                            postPriority={post.metadata?.priority}
+                        />
+                    </View>
+                    }
+                    <DraftAndScheduledPostContainer
+                        post={post}
+                        location={location}
+                        layoutWidth={layoutWidth}
                     />
                 </View>
-                }
-                <DraftAndScheduledPostContainer
-                    post={post}
-                    location={location}
-                    layoutWidth={layoutWidth}
-                />
             </View>
 
         </TouchableHighlight>

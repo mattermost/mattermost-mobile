@@ -30,6 +30,7 @@ type Props = {
     isMilitaryTime: boolean;
     postType: 'draft' | 'scheduled';
     postScheduledAt?: number;
+    scheduledPostErrorCode?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -83,6 +84,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
         },
+        errorState: {
+            backgroundColor: theme.errorTextColor,
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+            marginLeft: 8,
+            paddingHorizontal: 4,
+            borderRadius: 4,
+        },
+        errorText: {
+            color: theme.buttonColor,
+            ...typography('Heading', 25),
+        },
     };
 });
 
@@ -96,6 +111,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
     isMilitaryTime,
     postType,
     postScheduledAt,
+    scheduledPostErrorCode,
 }) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -158,6 +174,16 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
                     <Text style={style.scheduledAtText}>
                         {intl.formatMessage({id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'}, {time: getReadableTimestamp(postScheduledAt!)})}
                     </Text>
+                    {scheduledPostErrorCode &&
+                        <View style={style.errorState}>
+                            <CompassIcon
+                                name='alert-outline'
+                                size={12}
+                                color={theme.buttonColor}
+                            />
+                            <Text style={style.errorText}>{'CHANNEL IS READ-ONLY'}</Text>
+                        </View>
+                    }
                 </View>
             }
             <View
