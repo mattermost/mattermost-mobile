@@ -164,19 +164,19 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
     return (
         <Freeze freeze={!isFocused}>
             <ExtraKeyboardProvider>
-                <NavigationHeader
-                    isLargeTitle={true}
-                    showBackButton={false}
-                    subtitle={subtitle}
-                    title={title}
-                    hasSearch={false}
-                    scrollValue={scrollValue}
-                />
                 <SafeAreaView
                     edges={edges}
                     style={styles.flex}
                     testID='saved_messages.screen'
                 >
+                    <NavigationHeader
+                        isLargeTitle={true}
+                        showBackButton={false}
+                        subtitle={subtitle}
+                        title={title}
+                        hasSearch={false}
+                        scrollValue={scrollValue}
+                    />
                     <Animated.View style={[styles.flex, animated]}>
                         <Animated.View style={top}>
                             <RoundedHeaderContext/>
