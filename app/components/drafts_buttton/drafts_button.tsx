@@ -23,6 +23,8 @@ import {typography} from '@utils/typography';
 type DraftListProps = {
     shouldHighlightActive?: boolean;
     draftsCount: number;
+    scheduledPostCount: number;
+    scheduledPostHasError: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -46,19 +48,35 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         gap: 4,
     },
+    errorCountContainer: {
+        backgroundColor: theme.dndIndicator,
+        borderRadius: 6,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+    },
     count: {
         color: theme.sidebarText,
         ...typography('Body', 75, 'SemiBold'),
         opacity: 0.64,
     },
+    badgeOpacityWithError: {
+        opacity: 1,
+    },
     opacity: {
         opacity: 0.56,
+    },
+    countBadgeContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 8,
     },
 }));
 
 const DraftsButton: React.FC<DraftListProps> = ({
     shouldHighlightActive = false,
     draftsCount,
+    scheduledPostCount,
+    scheduledPostHasError,
 }) => {
     const theme = useTheme();
     const styles = getChannelItemStyleSheet(theme);
@@ -112,19 +130,41 @@ const DraftsButton: React.FC<DraftListProps> = ({
                     defaultMessage='Drafts'
                     style={textStyle}
                 />
-                <View style={customStyles.countContainer}>
-                    <CompassIcon
-                        name='pencil-outline'
-                        size={14}
-                        color={theme.sidebarText}
-                        style={customStyles.opacity}
-                    />
-                    <Text
-                        testID='channel_list.drafts.count'
-                        style={customStyles.count}
-                    >
-                        {draftsCount}
-                    </Text>
+                <View style={customStyles.countBadgeContainer}>
+                    {
+                        draftsCount > 0 &&
+                        <View style={customStyles.countContainer}>
+                            <CompassIcon
+                                name='pencil-outline'
+                                size={14}
+                                color={theme.sidebarText}
+                                style={customStyles.opacity}
+                            />
+                            <Text
+                                testID='channel_list.drafts.count'
+                                style={customStyles.count}
+                            >
+                                {draftsCount}
+                            </Text>
+                        </View>
+                    }
+                    {
+                        scheduledPostCount > 0 &&
+                        <View style={[customStyles.countContainer, scheduledPostHasError && customStyles.errorCountContainer]}>
+                            <CompassIcon
+                                name='clock-send-outline'
+                                size={14}
+                                color={theme.sidebarText}
+                                style={scheduledPostHasError ? customStyles.badgeOpacityWithError : customStyles.opacity}
+                            />
+                            <Text
+                                testID='channel_list.schedued_post.count'
+                                style={[customStyles.count, scheduledPostHasError && customStyles.badgeOpacityWithError]}
+                            >
+                                {scheduledPostCount}
+                            </Text>
+                        </View>
+                    }
                 </View>
             </View>
         </TouchableOpacity>
