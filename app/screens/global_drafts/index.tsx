@@ -136,9 +136,9 @@ export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnable
     ), []);
 
     const scheduledPostList = useMemo(() => (
-        <Text>
-            {'Scheduled posts will be renderred here'}
-        </Text>
+        <GlobalScheduledPostList
+            location={Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS}
+        />
     ), []);
 
     return (
