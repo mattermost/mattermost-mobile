@@ -3,8 +3,9 @@
 
 import DatabaseManager from '@database/manager';
 import {logError} from '@utils/log';
+import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
-export async function handleScheduledPosts(serverUrl: string, actionType: string, scheduledPosts: ScheduledPost[], prepareRecordsOnly = false) {
+export async function handleScheduledPosts(serverUrl: string, actionType: string, scheduledPosts: ScheduledPost[], prepareRecordsOnly = false): Promise<{models?: ScheduledPostModel[]; error?: any}> {
     if (!scheduledPosts.length) {
         return {models: undefined};
     }
