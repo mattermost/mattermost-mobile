@@ -167,7 +167,7 @@ export const transformSchedulePostsRecord = ({action, database, value}: Transfor
         scheduledPost.rootId = raw?.root_id ?? '';
         scheduledPost.message = raw?.message ?? '';
         scheduledPost.channelId = raw?.channel_id ?? '';
-        scheduledPost.files = raw?.files ?? emptyFileInfo;
+        scheduledPost.files = raw?.metadata?.files ?? emptyFileInfo;
         scheduledPost.metadata = raw?.metadata ?? null;
         if (raw.priority) {
             if (!scheduledPost.metadata) {
