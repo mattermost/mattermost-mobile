@@ -179,6 +179,7 @@ describe('Teams - Invite', () => {
     it('MM-T5365 - should handle both sent and not sent invites', async () => {
         const {user: user3} = await User.apiCreateUser(siteOneUrl, {prefix: 'i'});
         testUser3 = user3;
+
         // # Search for an existent user
         await Invite.searchBarInput.replaceText(testUser3.username);
 
