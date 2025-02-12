@@ -13,7 +13,7 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {DRAFT_OPTIONS_BUTTON} from '@screens/draft_options';
+import {DRAFT_OPTIONS_BUTTON} from '@screens/draft_scheduled_post_options';
 import {openAsBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -86,12 +86,20 @@ const DraftAndScheduledPost: React.FC<Props> = ({
         if (postType === 'draft') {
             openAsBottomSheet({
                 closeButtonId: DRAFT_OPTIONS_BUTTON,
-                screen: Screens.DRAFT_OPTIONS,
+                screen: Screens.DRAFT_SCHEDULED_POST_OPTIONS,
                 theme,
                 title,
-                props: {channel, rootId: post.rootId, draft: post, draftReceiverUserName: postReceiverUser?.username},
+                props: {channel, rootId: post.rootId, postType: 'draft', draft: post, draftReceiverUserName: postReceiverUser?.username},
             });
+            return;
         }
+        openAsBottomSheet({
+            closeButtonId: DRAFT_OPTIONS_BUTTON,
+            screen: Screens.DRAFT_SCHEDULED_POST_OPTIONS,
+            theme,
+            title,
+            props: {channel, rootId: post.rootId, postType: 'scheduled', draft: post, draftReceiverUserName: postReceiverUser?.username},
+        });
     }, [isTablet, intl, postType, theme, channel, post, postReceiverUser?.username]);
 
     const onPress = useCallback(() => {

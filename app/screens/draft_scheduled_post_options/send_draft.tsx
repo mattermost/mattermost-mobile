@@ -5,6 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import {removeDraft} from '@actions/local/draft';
+import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -25,6 +26,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     channelId: string;
     rootId: string;
+    postType?: 'draft' | 'scheduled';
     channelType: ChannelType | undefined;
     currentUserId: string;
     channelName: string | undefined;
@@ -42,6 +44,7 @@ type Props = {
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
     draftReceiverUserName?: string;
+    postId?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -66,6 +69,8 @@ const SendDraft: React.FC<Props> = ({
     channelName,
     channelDisplayName,
     rootId,
+    postType,
+    postId,
     channelType,
     bottomSheetId,
     currentUserId,
@@ -87,7 +92,13 @@ const SendDraft: React.FC<Props> = ({
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const clearDraft = () => {
-        removeDraft(serverUrl, channelId, rootId);
+        if (postType === 'draft') {
+            removeDraft(serverUrl, channelId, rootId);
+            return;
+        }
+        if (postId) {
+            deleteScheduledPost(serverUrl, postId);
+        }
     };
 
     const {persistentNotificationsEnabled, mentionsList} = usePersistentNotificationProps({
@@ -154,11 +165,20 @@ const SendDraft: React.FC<Props> = ({
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
-            <FormattedText
-                id='draft.options.send.title'
-                defaultMessage='Send draft'
-                style={style.title}
-            />
+            {postType === 'draft' ? (
+                <FormattedText
+                    id='draft.options.send.title'
+                    defaultMessage='Send draft'
+                    style={style.title}
+                />
+            ) : (
+                <FormattedText
+                    id='scheduled_post.options.send.title'
+                    defaultMessage='Send'
+                    style={style.title}
+                />
+            )
+            }
         </TouchableWithFeedback>
     );
 };

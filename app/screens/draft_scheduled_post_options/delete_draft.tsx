@@ -12,6 +12,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
 import {deleteDraftConfirmation} from '@utils/draft';
+import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -21,6 +22,8 @@ type Props = {
     bottomSheetId: AvailableScreens;
     channelId: string;
     rootId: string;
+    postType?: 'draft' | 'scheduled';
+    postId?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -41,6 +44,8 @@ const DeleteDraft: React.FC<Props> = ({
     bottomSheetId,
     channelId,
     rootId,
+    postType,
+    postId,
 }) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -49,12 +54,21 @@ const DeleteDraft: React.FC<Props> = ({
 
     const draftDeleteHandler = async () => {
         await dismissBottomSheet(bottomSheetId);
-        deleteDraftConfirmation({
-            intl,
-            serverUrl,
-            channelId,
-            rootId,
-        });
+        if (postType === 'draft') {
+            deleteDraftConfirmation({
+                intl,
+                serverUrl,
+                channelId,
+                rootId,
+            });
+        }
+        if (postType === 'scheduled' && postId) {
+            deleteScheduledPostConfirmation({
+                intl,
+                serverUrl,
+                scheduledPostId: postId,
+            });
+        }
     };
 
     return (
@@ -69,11 +83,19 @@ const DeleteDraft: React.FC<Props> = ({
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
-            <FormattedText
-                id='draft.options.delete.title'
-                defaultMessage={'Delete draft'}
-                style={style.title}
-            />
+            {postType === 'draft' ? (
+                <FormattedText
+                    id='draft.options.delete.title'
+                    defaultMessage={'Delete draft'}
+                    style={style.title}
+                />
+            ) : (
+                <FormattedText
+                    id='scheduled_post.options.delete.title'
+                    defaultMessage={'Delete'}
+                    style={style.title}
+                />
+            )}
         </TouchableWithFeedback>
     );
 };

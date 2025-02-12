@@ -18,11 +18,13 @@ import EditDraft from './edit_draft';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 type Props = {
+    postType: 'draft' | 'scheduled';
     channel: ChannelModel;
     rootId: string;
-    draft: DraftModel;
+    draft: DraftModel | ScheduledPostModel;
     draftReceiverUserName: string | undefined;
 }
 
@@ -42,7 +44,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const TITLE_HEIGHT = 54;
 const ITEM_HEIGHT = 48;
 
-const DraftOptions: React.FC<Props> = ({
+const DraftScheduledPostOptions: React.FC<Props> = ({
+    postType,
     channel,
     rootId,
     draft,
@@ -60,19 +63,30 @@ const DraftOptions: React.FC<Props> = ({
     const renderContent = () => {
         return (
             <View>
-                {!isTablet &&
-                <FormattedText
-                    id='draft.option.header'
-                    defaultMessage='Draft actions'
-                    style={styles.header}
-                />}
-                <EditDraft
-                    bottomSheetId={Screens.DRAFT_OPTIONS}
-                    channel={channel}
-                    rootId={rootId}
-                />
+                {!isTablet && (
+                    postType === 'draft' ? (
+                        <FormattedText
+                            id='draft.option.header'
+                            defaultMessage='Draft actions'
+                            style={styles.header}
+                        />
+                    ) : (
+                        <FormattedText
+                            id='scheduled_post.option.header'
+                            defaultMessage='Scheduled post actions'
+                            style={styles.header}
+                        />
+                    )
+                )}
+                {postType === 'draft' &&
+                    <EditDraft
+                        bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+                        channel={channel}
+                        rootId={rootId}
+                    />
+                }
                 <SendHandler
-                    bottomSheetId={Screens.DRAFT_OPTIONS}
+                    bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     channelId={channel.id}
                     rootId={rootId}
                     files={draft.files}
@@ -81,6 +95,8 @@ const DraftOptions: React.FC<Props> = ({
                     isFromDraftView={true}
                     uploadFileError={null}
                     cursorPosition={0}
+                    postType={postType}
+                    postId={draft.id}
                     /* eslint-disable no-empty-function */
                     clearDraft={() => {}}
                     updateCursorPosition={() => {}}
@@ -91,9 +107,11 @@ const DraftOptions: React.FC<Props> = ({
                     /* eslint-enable no-empty-function */
                 />
                 <DeleteDraft
-                    bottomSheetId={Screens.DRAFT_OPTIONS}
+                    bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     channelId={channel.id}
                     rootId={rootId}
+                    postType={postType}
+                    postId={draft.id}
                 />
             </View>
         );
@@ -101,7 +119,7 @@ const DraftOptions: React.FC<Props> = ({
 
     return (
         <BottomSheet
-            componentId={Screens.DRAFT_OPTIONS}
+            componentId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
             renderContent={renderContent}
             closeButtonId={DRAFT_OPTIONS_BUTTON}
             snapPoints={snapPoints}
@@ -110,4 +128,4 @@ const DraftOptions: React.FC<Props> = ({
     );
 };
 
-export default DraftOptions;
+export default DraftScheduledPostOptions;
