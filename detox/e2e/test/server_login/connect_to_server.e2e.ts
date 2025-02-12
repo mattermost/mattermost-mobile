@@ -104,7 +104,7 @@ describe('Server Login - Connect to Server', () => {
         await connectButton.tap();
         await wait(timeouts.ONE_SEC);
 
-        if (isIos()) {
+        if (isIos() && !process.env.CI) {
             // # Tap alert okay button
             await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
             await Alert.okayButton.tap();
