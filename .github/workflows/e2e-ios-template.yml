@@ -38,12 +38,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 15 Pro"
+        default: "iPhone 16 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 17.4"
+        default: "iOS 18.1"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -185,7 +185,7 @@ jobs:
         run: |
           cd detox
           npm run detox:config-gen
-          npm run e2e:ios-test -- ${{ matrix.specs }}
+          npm run e2e:ios-test -- ${{ matrix.specs }} --maxWorkers 2
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
