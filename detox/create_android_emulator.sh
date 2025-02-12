@@ -4,7 +4,7 @@
 set -ex
 set -o pipefail
 
-SDK_VERSION=${1:-33}  # First argument is SDK version
+SDK_VERSION=${1:-34}  # First argument is SDK version
 AVD_BASE_NAME=${2:-"detox_pixel_4_xl_api_33"}  # Second argument is AVD base name
 AVD_NAME="${AVD_BASE_NAME}_api_${SDK_VERSION}"
 TEST_FILES=${@:3} # Capture all remaining arguments as Detox test files

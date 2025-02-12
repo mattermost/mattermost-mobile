@@ -198,7 +198,7 @@ jobs:
 
       - name: Install Android system image
         run: |
-          sdkmanager "system-images;android-33;default;x86_64"
+          sdkmanager "system-images;android-34;default;x86_64"
           sdkmanager "platform-tools" "emulator"
 
       - name: Create and run Android Emulator
