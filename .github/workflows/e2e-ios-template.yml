@@ -124,7 +124,7 @@ jobs:
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     runs-on: macos-14
     continue-on-error: true
-    timeout-minutes: ${{ inputs.low_bandwidth_mode && 80 || 40 }}
+    timeout-minutes: ${{ inputs.low_bandwidth_mode && 140 || 70 }}
     env:
       IOS: true
     needs:

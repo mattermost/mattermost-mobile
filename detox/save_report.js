@@ -100,9 +100,6 @@ const saveReport = async () => {
     const platform = process.env.IOS === 'true' ? 'ios' : 'android';
     const combinedFilePath = `${ARTIFACTS_DIR}/${platform}-combined.xml`;
 
-    console.log('Combined file path:', combinedFilePath);
-    console.log('Merfe file arg:', [`${ARTIFACTS_DIR}/${platform}-results*/${platform}-junit*.xml`]);
-
     await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/${platform}-results*/${platform}-junit*.xml`]);
     console.log(`Merged, check ${combinedFilePath}`);
 
