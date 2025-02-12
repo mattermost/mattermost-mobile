@@ -7,7 +7,6 @@ import DatabaseManager from '@database/manager';
 import {handleCreateOrUpdateScheduledPost, handleDeleteScheduledPost} from './scheduled_post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -86,8 +85,8 @@ describe('handleDeleteScheduledPost', () => {
 
         const deletedRecord = await handleDeleteScheduledPost(serverUrl, {data: {scheduledPost: JSON.stringify(scheduledPost)}} as WebSocketMessage);
         expect(deletedRecord.models).toBeDefined();
-        expect(deletedRecord.models.length).toBe(1);
-        expect(deletedRecord.models[0].id).toBe(scheduledPost.id);
+        expect(deletedRecord!.models!.length).toBe(1);
+        expect(deletedRecord!.models![0].id).toBe(scheduledPost.id);
     });
 
     it('handleDeleteScheduledPost - should return error for invalid JSON payload', async () => {

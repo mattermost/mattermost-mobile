@@ -84,6 +84,7 @@ jest.mock('@queries/servers/system', () => ({
 }));
 
 jest.mock('@managers/websocket_manager', () => ({
+
     // default: {
     //     getClient: jest.fn(() => mockWebSocketClient),
     // },
