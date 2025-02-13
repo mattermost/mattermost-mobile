@@ -60,15 +60,7 @@ const GlobalDraftsList: React.FC<Props> = ({
     allDrafts,
     location,
     tutorialWatched,
-    allScheduledPosts,
 }) => {
-    console.log('***********************************************************************');
-    allScheduledPosts.forEach((scheduledPost) => {
-        console.log(scheduledPost.message);
-    });
-    console.log('***********************************************************************');
-
-
     const [layoutWidth, setLayoutWidth] = useState(0);
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const onLayout = useCallback((e: LayoutChangeEvent) => {

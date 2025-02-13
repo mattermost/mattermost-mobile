@@ -24,17 +24,9 @@ const ClientScheduledPost = <TBase extends Constructor<ClientBase>>(superclass: 
     };
 
     getScheduledPostsForTeam(teamId: string, includeDirectChannels = false, groupLabel?: RequestGroupLabel) {
-        const options: unknown = {
-            method: 'get',
-        };
-
-        if (groupLabel) {
-            options.groupLabel = groupLabel;
-        }
-
         return this.doFetch(
             `${this.getTeamAndDirectChannelScheduledPostsRoute()}/team/${teamId}${buildQueryString({includeDirectChannels})}`,
-            options,
+            {method: 'get', groupLabel},
         );
     }
 

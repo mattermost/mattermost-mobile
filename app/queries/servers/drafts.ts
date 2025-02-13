@@ -54,7 +54,3 @@ export const observeDraftsForTeam = (database: Database, teamId: string) => {
 export const observeDraftCount = (database: Database, teamId: string) => {
     return queryDraftsForTeam(database, teamId).observeCount();
 };
-
-export const observeScheduledPostsForTeam = (database: Database, teamId: string, includeDirectChannelPosts?: boolean) => {
-    return queryScheduledPostsForTeam(database, teamId, includeDirectChannelPosts).observeWithColumns(['update_at']);
-};

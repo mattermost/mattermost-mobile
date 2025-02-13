@@ -124,11 +124,6 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
         const currentTeamId = await getCurrentTeamId(database);
 
-        // if (!scheduledPosts?.length && actionType !== ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS) {
-        //     logWarning('An empty or undefined "scheduledPosts" array has been passed to the handleScheduledPosts method');
-        //     return [];
-        // }
-
         switch (actionType) {
             case ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST: {
                 const toDeleteIds = scheduledPosts?.map((post) => post.id) || [];
@@ -145,15 +140,11 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             }
 
             case ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS: {
-                console.log('Processing RECEIVED_ALL_SCHEDULED_POSTS action');
-
                 const idsFromServer = new Set(scheduledPosts?.map((post) => post.id) || []);
                 const existingScheduledPosts = await queryScheduledPostsForTeam(database, currentTeamId, includeDirectChannelPosts).fetch();
                 const deletedScheduledPostIds = existingScheduledPosts.
                     filter((post) => !idsFromServer.has(post.id)).
                     map((post) => post.id);
-
-                console.log({deletedScheduledPostIds});
 
                 if (deletedScheduledPostIds.length > 0) {
                     scheduledPostsToDelete.push(...await this._deleteScheduledPostByIds(deletedScheduledPostIds, true));
