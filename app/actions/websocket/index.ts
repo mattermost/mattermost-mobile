@@ -35,6 +35,7 @@ import NavigationStore from '@store/navigation_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 
 export async function handleFirstConnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     setExtraSessionProps(serverUrl, groupLabel);
@@ -86,6 +87,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     setTeamLoading(serverUrl, false);
 
     await fetchPostDataIfNeeded(serverUrl, groupLabel);
+    await fetchScheduledPosts(serverUrl, currentTeamId, true, groupLabel);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
     const license = await getLicense(database);
