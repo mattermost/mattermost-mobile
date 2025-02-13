@@ -55,6 +55,12 @@ describe('handleCreateOrUpdateSchedulePost', () => {
         const {models} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduledPost: JSON.stringify(scheduledPost)}} as WebSocketMessage);
         expect(models).toBeDefined();
         expect(models![0].id).toEqual(scheduledPost.id);
+
+        // Verify post exists in database
+        const scheduledPosts = await operator.database.get('scheduledPosts').query().fetch();
+        expect(scheduledPosts.length).toBe(1);
+        expect(scheduledPosts[0].id).toBe(scheduledPost.id);
+        expect(scheduledPosts[0].message).toBe(scheduledPost.message);
     });
 
     it('handleCreateOrUpdateScheduledPost - should return error for invalid JSON payload', async () => {
@@ -87,6 +93,10 @@ describe('handleDeleteScheduledPost', () => {
         expect(deletedRecord.models).toBeDefined();
         expect(deletedRecord!.models!.length).toBe(1);
         expect(deletedRecord!.models![0].id).toBe(scheduledPost.id);
+
+        // Verify post was deleted from database
+        const scheduledPosts = await operator.database.get('scheduledPosts').query().fetch();
+        expect(scheduledPosts.length).toBe(0);
     });
 
     it('handleDeleteScheduledPost - should return error for invalid JSON payload', async () => {
