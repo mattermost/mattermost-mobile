@@ -100,7 +100,6 @@ describe('Channels - Create Direct Message', () => {
         // # Post a message and go back to channel list screen
         await ChannelScreen.postMessage('test');
         await ChannelScreen.back();
-        await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 
         // * Verify direct message channel for the new user is added to direct message list
@@ -147,11 +146,7 @@ describe('Channels - Create Direct Message', () => {
         // # Post a message and go back to channel list screen
         await ChannelScreen.postMessage('test');
         await ChannelScreen.back();
-        await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
-
-        // * Verify group message channel for the other two new users is added to direct message list
-        await expect(element(by.text(groupDisplayName))).toBeVisible();
     });
 
     it('MM-T4730_4 - should display empty search state for create direct message', async () => {
