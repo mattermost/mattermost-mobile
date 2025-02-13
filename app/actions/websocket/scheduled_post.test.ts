@@ -41,7 +41,7 @@ describe('handleCreateOrUpdateSchedulePost', () => {
     });
 
     it('handleCreateOrUpdateScheduledPost - wrong websocket scheduled post message', async () => {
-        const {models, error} = await handleCreateOrUpdateScheduledPost('foo', {} as WebSocketMessage);
+        const {models, error} = await handleCreateOrUpdateScheduledPost('foo', {data: {}} as WebSocketMessage);
         expect(error).toBeUndefined();
         expect(models).toBeUndefined();
     });
@@ -66,7 +66,7 @@ describe('handleCreateOrUpdateSchedulePost', () => {
 
 describe('handleDeleteScheduledPost', () => {
     it('handleDeleteScheduledPost - handle empty payload', async () => {
-        const {error, models} = await handleDeleteScheduledPost('foo', {} as WebSocketMessage);
+        const {error, models} = await handleDeleteScheduledPost('foo', {data: {}} as WebSocketMessage);
         expect(error).toBeUndefined();
         expect(models).toBeUndefined();
     });
