@@ -1,3 +1,21 @@
+diff --git a/node_modules/expo-image/android/build.gradle b/node_modules/expo-image/android/build.gradle
+index a85fb5e..ac568c1 100644
+--- a/node_modules/expo-image/android/build.gradle
++++ b/node_modules/expo-image/android/build.gradle
+@@ -44,7 +44,12 @@ dependencies {
+   kapt "com.github.bumptech.glide:compiler:${GLIDE_VERSION}"
+   api 'com.caverock:androidsvg-aar:1.4'
+ 
+-  implementation "com.github.penfeizhou.android.animation:glide-plugin:3.0.2"
++  implementation project(':frameanimation')
++  implementation project(':gif')
++  implementation("com.github.penfeizhou.android.animation:glide-plugin:3.0.2") {
++    exclude group: 'com.github.penfeizhou.android.animation', module: 'frameanimation'
++    exclude group: 'com.github.penfeizhou.android.animation', module: 'gif'
++  }
+   implementation "com.github.bumptech.glide:avif-integration:${GLIDE_VERSION}"
+ 
+   api 'com.github.bumptech.glide:okhttp3-integration:4.11.0'
 diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
 index 071907c..edf10c1 100644
 --- a/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt

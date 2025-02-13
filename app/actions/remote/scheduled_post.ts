@@ -19,8 +19,7 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
         return {error: `${serverUrl} database not found`};
     }
 
-    const ws = websocketManager.getClient(serverUrl);
-    const connectionId = ws?.getConnectionId();
+    const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
 
     try {
         const client = NetworkManager.getClient(serverUrl);
@@ -74,9 +73,9 @@ export async function deleteScheduledPost(serverUrl: string, scheduledPostId: st
     }
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const ws = websocketManager.getClient(serverUrl);
+        const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
 
-        const result = await client.deleteScheduledPost(scheduledPostId, ws?.getConnectionId());
+        const result = await client.deleteScheduledPost(scheduledPostId, connectionId);
 
         if (result) {
             await operator.handleScheduledPosts({

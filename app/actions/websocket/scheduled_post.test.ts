@@ -2,7 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {ActionType} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {ScheduledPostModel} from '@database/models/server';
 
 import {handleCreateOrUpdateScheduledPost, handleDeleteScheduledPost} from './scheduled_post';
 
@@ -41,7 +43,7 @@ describe('handleCreateOrUpdateSchedulePost', () => {
     });
 
     it('handleCreateOrUpdateScheduledPost - wrong websocket scheduled post message', async () => {
-        const {models, error} = await handleCreateOrUpdateScheduledPost('foo', {} as WebSocketMessage);
+        const {models, error} = await handleCreateOrUpdateScheduledPost('foo', {data: {}} as WebSocketMessage);
         expect(error).toBeUndefined();
         expect(models).toBeUndefined();
     });
@@ -55,6 +57,12 @@ describe('handleCreateOrUpdateSchedulePost', () => {
         const {models} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduledPost: JSON.stringify(scheduledPost)}} as WebSocketMessage);
         expect(models).toBeDefined();
         expect(models![0].id).toEqual(scheduledPost.id);
+
+        // Verify post exists in database
+        const scheduledPosts = await operator.database.get<ScheduledPostModel>(MM_TABLES.SERVER.SCHEDULED_POST).query().fetch();
+        expect(scheduledPosts.length).toBe(1);
+        expect(scheduledPosts[0].id).toBe(scheduledPost.id);
+        expect(scheduledPosts[0].message).toBe(scheduledPost.message);
     });
 
     it('handleCreateOrUpdateScheduledPost - should return error for invalid JSON payload', async () => {
@@ -66,7 +74,7 @@ describe('handleCreateOrUpdateSchedulePost', () => {
 
 describe('handleDeleteScheduledPost', () => {
     it('handleDeleteScheduledPost - handle empty payload', async () => {
-        const {error, models} = await handleDeleteScheduledPost('foo', {} as WebSocketMessage);
+        const {error, models} = await handleDeleteScheduledPost('foo', {data: {}} as WebSocketMessage);
         expect(error).toBeUndefined();
         expect(models).toBeUndefined();
     });
@@ -87,6 +95,10 @@ describe('handleDeleteScheduledPost', () => {
         expect(deletedRecord.models).toBeDefined();
         expect(deletedRecord!.models!.length).toBe(1);
         expect(deletedRecord!.models![0].id).toBe(scheduledPost.id);
+
+        // Verify post was deleted from database
+        const scheduledPosts = await operator.database.get<ScheduledPostModel>(MM_TABLES.SERVER.SCHEDULED_POST).query().fetch();
+        expect(scheduledPosts.length).toBe(0);
     });
 
     it('handleDeleteScheduledPost - should return error for invalid JSON payload', async () => {
