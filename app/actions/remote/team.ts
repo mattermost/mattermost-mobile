@@ -31,6 +31,7 @@ import {syncThreadsIfNeeded} from './thread';
 
 import type {Client} from '@client/rest';
 import type {Model} from '@nozbe/watermelondb';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 
 export type MyTeamsRequest = {
     teams?: Team[];
@@ -436,6 +437,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
 
     // Fetch Groups + GroupTeams
     fetchGroupsForTeamIfConstrained(serverUrl, teamId);
+    fetchScheduledPosts(serverUrl, teamId, false);
     return {};
 }
 

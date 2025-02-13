@@ -6,6 +6,7 @@ import {of as of$} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 import DraftModel from '@typings/database/models/servers/draft';
+import {queryScheduledPostsForTeam} from '@queries/servers/scheduled_post';
 
 const {SERVER: {DRAFT, CHANNEL}} = MM_TABLES;
 
@@ -52,4 +53,8 @@ export const observeDraftsForTeam = (database: Database, teamId: string) => {
 
 export const observeDraftCount = (database: Database, teamId: string) => {
     return queryDraftsForTeam(database, teamId).observeCount();
+};
+
+export const observeScheduledPostsForTeam = (database: Database, teamId: string, includeDirectChannelPosts?: boolean) => {
+    return queryScheduledPostsForTeam(database, teamId, includeDirectChannelPosts).observeWithColumns(['update_at']);
 };

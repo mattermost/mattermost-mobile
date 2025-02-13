@@ -35,6 +35,7 @@ import {logDebug, logError} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
 import type {Database, Model} from '@nozbe/watermelondb';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 
 export type AppEntryData = {
     initialTeamId: string;
@@ -131,6 +132,10 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
             fetchMe(serverUrl, true, groupLabel),
             fetchAllMyChannelsForAllTeams(serverUrl, lastDisconnectedAt, isCRTEnabled, true, groupLabel),
         ];
+
+        if (teamId) {
+            promises.push(fetchScheduledPosts(serverUrl, teamId, true, groupLabel));
+        }
 
         const [teamData, meData, chData] = await Promise.all(promises);
         const error = confResp.error || prefData.error || teamData.error || meData.error || chData.error;

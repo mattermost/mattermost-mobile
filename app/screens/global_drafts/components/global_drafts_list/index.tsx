@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
 import {Tutorial} from '@constants';
 import {observeTutorialWatched} from '@queries/app/global';
-import {observeDraftsForTeam} from '@queries/servers/drafts';
+import {observeDraftsForTeam, observeScheduledPostsForTeam} from '@queries/servers/drafts';
 import {observeCurrentTeamId} from '@queries/servers/system';
 
 import GlobalDraftsList from './global_drafts_list';
@@ -24,9 +24,12 @@ const enhanced = withObservables(['teamId'], ({database, teamId}: Props) => {
     const allDrafts = observeDraftsForTeam(database, teamId);
     const tutorialWatched = observeTutorialWatched(Tutorial.DRAFTS);
 
+    const allScheduledPosts = observeScheduledPostsForTeam(database, teamId, true);
+
     return {
         allDrafts,
         tutorialWatched,
+        allScheduledPosts,
     };
 });
 

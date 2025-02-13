@@ -36,6 +36,8 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
 }
 
 export async function fetchScheduledPosts(serverUrl: string, teamId: string, includeDirectChannels = false, groupLabel?: RequestGroupLabel) {
+    console.log('fetchScheduledPosts', serverUrl, teamId, includeDirectChannels, groupLabel);
+
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!operator || !database) {
@@ -49,20 +51,35 @@ export async function fetchScheduledPosts(serverUrl: string, teamId: string, inc
             return {scheduledPosts: []};
         }
 
+        console.log('AAA');
+
         const scheduledPostsResponse = await client.getScheduledPostsForTeam(teamId, includeDirectChannels, groupLabel);
-        const {directChannels, ...scheduledPostsByTeam} = scheduledPostsResponse;
+
+        console.log('BBB');
+
+        console.log({scheduledPostsResponse});
+
+        const {directChannels = [], ...scheduledPostsByTeam} = scheduledPostsResponse;
+
+        console.log({directChannels, scheduledPostsByTeam});
+
         const scheduledPosts = [...Object.values(scheduledPostsByTeam).flat(), ...directChannels];
-        if (scheduledPosts.length) {
+
+        console.log(JSON.stringify(scheduledPosts, null, 2));
+
+        console.log('CCC');
+        // if (scheduledPosts.length) {
             await operator.handleScheduledPosts({
-                actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
+                actionType: ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS,
                 scheduledPosts,
                 prepareRecordsOnly: false,
                 includeDirectChannelPosts: includeDirectChannels,
             });
-        }
+        // }
 
         return {scheduledPosts};
     } catch (error) {
+        console.log({error});
         logError('error on fetchScheduledPosts', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};

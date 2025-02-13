@@ -18,11 +18,13 @@ import DraftSwipeActions from './draft_swipe_actions';
 import DraftTooltip from './draft_tooltip';
 
 import type DraftModel from '@typings/database/models/servers/draft';
+import {ScheduledPostModel} from '@database/models/server';
 
 type Props = {
     allDrafts: DraftModel[];
     location: string;
     tutorialWatched: boolean;
+    allScheduledPosts: ScheduledPostModel[];
 }
 
 const styles = StyleSheet.create({
@@ -58,7 +60,15 @@ const GlobalDraftsList: React.FC<Props> = ({
     allDrafts,
     location,
     tutorialWatched,
+    allScheduledPosts,
 }) => {
+    console.log('***********************************************************************');
+    allScheduledPosts.forEach((scheduledPost) => {
+        console.log(scheduledPost.message);
+    });
+    console.log('***********************************************************************');
+
+
     const [layoutWidth, setLayoutWidth] = useState(0);
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const onLayout = useCallback((e: LayoutChangeEvent) => {
