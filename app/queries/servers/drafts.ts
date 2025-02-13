@@ -6,7 +6,6 @@ import {of as of$} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 import DraftModel from '@typings/database/models/servers/draft';
-import {queryScheduledPostsForTeam} from '@queries/servers/scheduled_post';
 
 const {SERVER: {DRAFT, CHANNEL}} = MM_TABLES;
 

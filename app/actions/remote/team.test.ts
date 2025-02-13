@@ -8,6 +8,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 
+import {fetchScheduledPosts} from './scheduled_post';
 import {
     addCurrentUserToTeam,
     addUserToTeam,
@@ -27,8 +28,6 @@ import {
     buildTeamIconUrl,
     fetchTeamsThreads,
 } from './team';
-
-import {fetchScheduledPosts} from './scheduled_post';
 
 jest.mock('./scheduled_post', () => ({
     fetchScheduledPosts: jest.fn(),

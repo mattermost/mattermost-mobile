@@ -5,6 +5,7 @@ import {chunk} from 'lodash';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -31,7 +32,6 @@ import {syncThreadsIfNeeded} from './thread';
 
 import type {Client} from '@client/rest';
 import type {Model} from '@nozbe/watermelondb';
-import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 
 export type MyTeamsRequest = {
     teams?: Team[];

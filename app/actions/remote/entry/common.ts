@@ -9,6 +9,7 @@ import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {type MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {fetchMyTeams, fetchTeamsThreads, handleKickFromTeam, type MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
@@ -35,7 +36,6 @@ import {logDebug, logError} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
 import type {Database, Model} from '@nozbe/watermelondb';
-import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 
 export type AppEntryData = {
     initialTeamId: string;

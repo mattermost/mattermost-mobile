@@ -7,10 +7,10 @@ import {nativeApplicationVersion} from 'expo-application';
 import {RESULTS} from 'react-native-permissions';
 
 import {handleKickFromChannel, fetchAllMyChannelsForAllTeams, fetchMissingDirectChannelsInfo, type MyChannelsRequest} from '@actions/remote/channel';
-import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {fetchMyPreferences} from '@actions/remote/preference';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchMyTeams, fetchTeamsThreads, updateCanJoinTeams, handleKickFromTeam, type MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, updateAllUsersSince, autoUpdateTimezone} from '@actions/remote/user';

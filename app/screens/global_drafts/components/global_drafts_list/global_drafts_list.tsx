@@ -18,13 +18,11 @@ import DraftSwipeActions from './draft_swipe_actions';
 import DraftTooltip from './draft_tooltip';
 
 import type DraftModel from '@typings/database/models/servers/draft';
-import {ScheduledPostModel} from '@database/models/server';
 
 type Props = {
     allDrafts: DraftModel[];
     location: string;
     tutorialWatched: boolean;
-    allScheduledPosts: ScheduledPostModel[];
 }
 
 const styles = StyleSheet.create({
