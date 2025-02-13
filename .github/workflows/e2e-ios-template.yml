@@ -185,7 +185,7 @@ jobs:
         run: |
           cd detox
           npm run detox:config-gen
-          npm run e2e:ios-test -- ${{ matrix.specs }} --maxWorkers 2
+          npm run e2e:ios-test -- ${{ matrix.specs }}
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
