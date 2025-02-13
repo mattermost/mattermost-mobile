@@ -2,7 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {ActionType} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {ScheduledPostModel} from '@database/models/server';
 
 import {handleCreateOrUpdateScheduledPost, handleDeleteScheduledPost} from './scheduled_post';
 
@@ -57,7 +59,7 @@ describe('handleCreateOrUpdateSchedulePost', () => {
         expect(models![0].id).toEqual(scheduledPost.id);
 
         // Verify post exists in database
-        const scheduledPosts = await operator.database.get('scheduledPosts').query().fetch();
+        const scheduledPosts = await operator.database.get<ScheduledPostModel>(MM_TABLES.SERVER.SCHEDULED_POST).query().fetch();
         expect(scheduledPosts.length).toBe(1);
         expect(scheduledPosts[0].id).toBe(scheduledPost.id);
         expect(scheduledPosts[0].message).toBe(scheduledPost.message);
@@ -95,7 +97,7 @@ describe('handleDeleteScheduledPost', () => {
         expect(deletedRecord!.models![0].id).toBe(scheduledPost.id);
 
         // Verify post was deleted from database
-        const scheduledPosts = await operator.database.get('scheduledPosts').query().fetch();
+        const scheduledPosts = await operator.database.get<ScheduledPostModel>(MM_TABLES.SERVER.SCHEDULED_POST).query().fetch();
         expect(scheduledPosts.length).toBe(0);
     });
 
