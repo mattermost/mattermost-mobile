@@ -28,6 +28,12 @@ import {
     fetchTeamsThreads,
 } from './team';
 
+import {fetchScheduledPosts} from './scheduled_post';
+
+jest.mock('./scheduled_post', () => ({
+    fetchScheduledPosts: jest.fn(),
+}));
+
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
 const serverUrl = 'baseHandler.test.com';
@@ -310,6 +316,7 @@ describe('teams', () => {
         const result = await handleTeamChange(serverUrl, teamId);
         expect(result).toBeDefined();
         expect(result?.error).toBeUndefined();
+        expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, teamId, false);
     });
 
     it('handleKickFromTeam - base case', async () => {
