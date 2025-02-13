@@ -7,6 +7,7 @@ import {nativeApplicationVersion} from 'expo-application';
 import {RESULTS} from 'react-native-permissions';
 
 import {handleKickFromChannel, fetchAllMyChannelsForAllTeams, fetchMissingDirectChannelsInfo, type MyChannelsRequest} from '@actions/remote/channel';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {fetchMyPreferences} from '@actions/remote/preference';
@@ -25,6 +26,7 @@ import NavigationStore from '@store/navigation_store';
 import {entry, setExtraSessionProps, verifyPushProxy, entryInitialChannelId, restDeferredAppEntryActions, handleEntryAfterLoadNavigation, deferredAppEntryActions} from './common';
 
 jest.mock('@actions/remote/channel');
+jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
 jest.mock('@actions/remote/systems');
 jest.mock('@actions/remote/team');
@@ -117,7 +119,9 @@ describe('actions/remote/entry/common', () => {
             const mockChannels = {channels: [], memberships: []};
             (fetchAllMyChannelsForAllTeams as jest.Mock).mockResolvedValue(mockChannels);
 
-            const result = await entry(serverUrl);
+            const result = await entry(serverUrl, 'team1');
+
+            expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, 'team1', true, undefined);
 
             expect(result).toEqual(expect.objectContaining({
                 initialChannelId: '',
