@@ -8,6 +8,7 @@ import {dataRetentionCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {deferredAppEntryActions, entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
@@ -31,6 +32,7 @@ jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/entry/common');
 jest.mock('@actions/remote/post');
+jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
 jest.mock('@actions/remote/user');
 jest.mock('@calls/actions/calls');
@@ -156,6 +158,7 @@ describe('WebSocket Index Actions', () => {
             expect(openAllUnreadChannels).toHaveBeenCalled();
             expect(dataRetentionCleanup).toHaveBeenCalled();
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
+            expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, currentTeamId, true, 'WebSocket Reconnect');
         });
 
         it('should fetch posts for channel screen', async () => {
