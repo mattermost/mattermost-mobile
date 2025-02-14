@@ -10,11 +10,13 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
+import CopyTextOption from '@screens/post_options/options/copy_text_option';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import DeleteDraft from './delete_draft';
 import EditDraft from './edit_draft';
+import RescheduledDraft from './rescheduled_draft';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -56,7 +58,7 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
     const styles = getStyleSheet(theme);
     const snapPoints = useMemo(() => {
         const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
-        const COMPONENT_HIEGHT = TITLE_HEIGHT + (3 * ITEM_HEIGHT) + bottomSheetAdjust;
+        const COMPONENT_HIEGHT = TITLE_HEIGHT + (4 * ITEM_HEIGHT) + bottomSheetAdjust;
         return [1, COMPONENT_HIEGHT];
     }, []);
 
@@ -73,11 +75,17 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                     ) : (
                         <FormattedText
                             id='scheduled_post.option.header'
-                            defaultMessage='Scheduled post actions'
+                            defaultMessage='Message actions'
                             style={styles.header}
                         />
                     )
                 )}
+                <CopyTextOption
+                    bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+                    postMessage={draft.message}
+                    sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+                    key={draft.id}
+                />
                 {postType === 'draft' &&
                     <EditDraft
                         bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
@@ -106,6 +114,12 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                     updateValue={() => {}}
                     /* eslint-enable no-empty-function */
                 />
+                {postType === 'scheduled' &&
+                    <RescheduledDraft
+                        bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+                        draft={draft as ScheduledPostModel}
+                    />
+                }
                 <DeleteDraft
                     bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     channelId={channel.id}

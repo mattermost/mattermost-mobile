@@ -39,6 +39,32 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
     }
 }
 
+export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost, connectionId?: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const response = await client.updateScheduledPost(scheduledPost, connectionId);
+
+        if (response) {
+            await operator.handleScheduledPosts({
+                actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                scheduledPosts: [response],
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {data: true, response};
+    } catch (error) {
+        logError('error on updateScheduledPost', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error: getFullErrorMessage(error)};
+    }
+}
+
 export async function fetchScheduledPosts(serverUrl: string, teamId: string, includeDirectChannels = false, groupLabel?: RequestGroupLabel) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;

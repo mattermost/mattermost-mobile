@@ -33,7 +33,7 @@ export function toMilliseconds({days, hours, minutes, seconds}: {days?: number; 
     return totalSeconds * 1000;
 }
 
-export function getReadableTimestamp(timestamp: number) {
+export function getReadableTimestamp(timestamp: number, timeZone: string) {
     const date = new Date(timestamp);
 
     const options: Intl.DateTimeFormatOptions = {
@@ -42,6 +42,7 @@ export function getReadableTimestamp(timestamp: number) {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true,
+        timeZone: timeZone as string,
     };
 
     const formattedDate = date.toLocaleString('en-US', options);

@@ -176,6 +176,7 @@ export const transformSchedulePostsRecord = ({action, database, value}: Transfor
             scheduledPost.metadata.priority = raw.priority;
         }
         scheduledPost.updateAt = raw.update_at ?? Date.now();
+        scheduledPost.createAt = raw.create_at ?? Date.now();
         scheduledPost.scheduledAt = raw.scheduled_at;
         scheduledPost.processedAt = raw.processed_at ?? 0;
         scheduledPost.errorCode = raw.error_code ?? '';
