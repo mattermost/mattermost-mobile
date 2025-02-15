@@ -112,7 +112,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 export type OptionItemProps = {
     action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void);
-    arrowStyle?: StyleProp<ViewStyle>;
+    arrowStyle?: StyleProp<Intersection<TextStyle, ViewStyle>>;
     containerStyle?: StyleProp<ViewStyle>;
     description?: string;
     destructive?: boolean;
@@ -214,7 +214,7 @@ const OptionItem = ({
                 value={selected}
                 trackColor={trackColor}
                 thumbColor={thumbColor}
-                testID={`${testID}.toggled.${selected}`}
+                testID={`${testID}.toggled.${selected}.button`}
             />
         );
     } else if (type === OptionType.ARROW) {

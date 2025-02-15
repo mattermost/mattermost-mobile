@@ -255,7 +255,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                 >
                     {label}
                 </Animated.Text>
-                <View style={combinedTextInputContainerStyle}>
+                <View style={combinedTextInputContainerStyle as StyleProp<ViewStyle>}>
                     <TextInput
                         {...props}
                         editable={isKeyboardInput && editable}

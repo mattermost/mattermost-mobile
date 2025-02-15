@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
-import {DeviceEventEmitter, View, TouchableOpacity, useWindowDimensions} from 'react-native';
+import {DeviceEventEmitter, View, TouchableOpacity} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Shadow} from 'react-native-shadow-2';
 
 import {Events, Navigation as NavigationConstants, Screens, View as ViewConstants} from '@constants';
+import {useWindowDimensions} from '@hooks/device';
 import NavigationStore from '@store/navigation_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -200,7 +201,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
                         accessibilityRole='button'
                         accessibilityState={isFocused ? {selected: true} : {}}
                         accessibilityLabel={options.tabBarAccessibilityLabel}
-                        testID={options.tabBarTestID}
+                        testID={options.tabBarButtonTestID}
                         onPress={onPress}
                         onLongPress={onLongPress}
                         style={style.item}

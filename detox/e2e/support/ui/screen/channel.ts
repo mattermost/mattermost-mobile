@@ -42,8 +42,18 @@ class ChannelScreen {
         introUnfavoriteAction: 'channel_post_list.intro_options.unfavorite.action',
         introChannelInfoAction: 'channel_post_list.intro_options.channel_info.action',
         toastMessage: 'toast.message',
+        postPriorityPicker: 'channel.post_draft.quick_actions.post_priority_action',
+        postPriorityImportantMessage: 'post_priority_picker_item.important',
+        postPriorityUrgentMessage: 'post_priority_picker_item.urgent',
+        postPriorityRequestAck: 'post_priority_picker_item.requested_ack.toggled.false.button',
+        postPriorityPersistentNotification: 'post_priority_picker_item.persistent_notifications.toggled.undefined.button',
     };
 
+    postPriorityPersistentNotification = element(by.id(this.testID.postPriorityPersistentNotification));
+    postPriorityUrgentMessage = element(by.id(this.testID.postPriorityUrgentMessage));
+    postPriorityRequestAck = element(by.id(this.testID.postPriorityRequestAck));
+    postPriorityImportantMessage = element(by.id(this.testID.postPriorityImportantMessage));
+    postPriorityPicker = element(by.id(this.testID.postPriorityPicker));
     archievedCloseChannelButton = element(by.id(this.testID.archievedCloseChannelButton));
     channelScreen = element(by.id(this.testID.channelScreen));
     channelQuickActionsButton = element(by.id(this.testID.channelQuickActionsButton));
@@ -63,6 +73,7 @@ class ChannelScreen {
     introUnfavoriteAction = element(by.id(this.testID.introUnfavoriteAction));
     introChannelInfoAction = element(by.id(this.testID.introChannelInfoAction));
     toastMessage = element(by.id(this.testID.toastMessage));
+    applyPostPriority = element(by.text('Apply'));
 
     // convenience props
     backButton = NavigationHeader.backButton;
@@ -195,6 +206,30 @@ class ChannelScreen {
         await expect(
             this.getPostMessageAtIndex(index),
         ).toHaveText(postMessage);
+    };
+
+    openPostPriorityPicker = async () => {
+        await this.postPriorityPicker.tap();
+    };
+
+    clickPostPriorityImportantMessage = async () => {
+        await this.postPriorityImportantMessage.tap();
+    };
+
+    clickPostPriorityUrgentMessage = async () => {
+        await this.postPriorityUrgentMessage.tap();
+    };
+
+    toggleRequestAckPostpriority = async () => {
+        await this.postPriorityRequestAck.tap();
+    };
+
+    togglePersistentNotificationPostpriority = async () => {
+        await this.postPriorityPersistentNotification.tap();
+    };
+
+    applyPostPrioritySettings = async () => {
+        await this.applyPostPriority.tap();
     };
 }
 

@@ -19,8 +19,11 @@ export const CONVERT_GM_TO_CHANNEL = 'ConvertGMToChannel';
 export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
 export const CREATE_TEAM = 'CreateTeam';
+export const COMPONENT_LIBRARY = 'ComponentLibrary';
 export const CUSTOM_STATUS = 'CustomStatus';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
+export const DRAFT = 'Draft';
+export const DRAFT_OPTIONS = 'DraftOptions';
 export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
@@ -28,6 +31,7 @@ export const EMOJI_PICKER = 'EmojiPicker';
 export const FIND_CHANNELS = 'FindChannels';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const GALLERY = 'Gallery';
+export const GLOBAL_DRAFTS = 'GlobalDrafts';
 export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
@@ -95,11 +99,13 @@ export default {
     CHANNEL_NOTIFICATION_PREFERENCES,
     CODE,
     CONVERT_GM_TO_CHANNEL,
+    COMPONENT_LIBRARY,
     CREATE_DIRECT_MESSAGE,
     CREATE_OR_EDIT_CHANNEL,
     CREATE_TEAM,
     CUSTOM_STATUS,
     CUSTOM_STATUS_CLEAR_AFTER,
+    DRAFT_OPTIONS,
     EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,
@@ -107,6 +113,7 @@ export default {
     FIND_CHANNELS,
     FORGOT_PASSWORD,
     GALLERY,
+    GLOBAL_DRAFTS,
     GLOBAL_THREADS,
     HOME,
     INTEGRATION_SELECTOR,
@@ -183,6 +190,7 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
 
 export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     BOTTOM_SHEET,
+    DRAFT_OPTIONS,
     EMOJI_PICKER,
     POST_OPTIONS,
     POST_PRIORITY_PICKER,
@@ -192,6 +200,8 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     CALL_PARTICIPANTS,
     CALL_HOST_CONTROLS,
 ]);
+
+export const SCREENS_WITH_EXTRA_KEYBOARD = new Set<string>([CHANNEL, THREAD]);
 
 export const NOT_READY = [
     CREATE_TEAM,

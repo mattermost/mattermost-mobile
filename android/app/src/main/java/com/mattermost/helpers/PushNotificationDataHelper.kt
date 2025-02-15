@@ -55,26 +55,33 @@ class PushNotificationDataRunnable {
                         val receivingThreads = isCRTEnabled && !rootId.isNullOrEmpty()
                         val notificationData = Arguments.createMap()
 
+                        var channel: ReadableMap? = null
+                        var myTeam: ReadableMap? = null
+
                         if (!teamId.isNullOrEmpty()) {
                             val res = fetchTeamIfNeeded(db, serverUrl, teamId)
                             res.first?.let { notificationData.putMap("team", it) }
-                            res.second?.let { notificationData.putMap("myTeam", it) }
+
+                            myTeam = res.second
+                            myTeam?.let { notificationData.putMap("myTeam", it) }
                         }
 
                         if (channelId != null && postId != null) {
                             val channelRes = fetchMyChannel(db, serverUrl, channelId, isCRTEnabled)
-                            channelRes.first?.let { notificationData.putMap("channel", it) }
+
+                            channel = channelRes.first
+                            channel?.let { notificationData.putMap("channel", it) }
                             channelRes.second?.let { notificationData.putMap("myChannel", it) }
                             val loadedProfiles = channelRes.third
 
                             // Fetch categories if needed
-                            if (!teamId.isNullOrEmpty() && notificationData.getMap("myTeam") != null) {
+                            if (!teamId.isNullOrEmpty() && myTeam != null) {
                                 // should load all categories
                                 val res = fetchMyTeamCategories(db, serverUrl, teamId)
                                 res?.let { notificationData.putMap("categories", it) }
-                            } else if (notificationData.getMap("channel") != null) {
+                            } else if (channel != null) {
                                 // check if the channel is in the category for the team
-                                val res = addToDefaultCategoryIfNeeded(db, notificationData.getMap("channel")!!)
+                                val res = addToDefaultCategoryIfNeeded(db, channel)
                                 res?.let { notificationData.putArray("categoryChannels", it) }
                             }
 
@@ -108,6 +115,8 @@ class PushNotificationDataRunnable {
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    val eMessage = e.message ?: "Error with no message"
+                    TurboLog.e("ReactNative", "Error processing push notification error=$eMessage")
                 } finally {
                     db?.close()
                     TurboLog.i("ReactNative", "DONE fetching notification data")

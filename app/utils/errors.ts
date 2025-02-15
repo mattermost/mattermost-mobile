@@ -78,7 +78,7 @@ export const getErrorMessage = (error: unknown, intl?: IntlShape) => {
         return error;
     }
     if (isErrorWithIntl(error)) {
-        return intl ? intl.formatMessage({id: error.intl.id, defaultMessage: error.intl.defaultMessage}, error.intl.values) : error.intl.defaultMessage;
+        return intl ? intl.formatMessage({id: error.intl.id, defaultMessage: error.intl.defaultMessage}, error.intl.values) : error.intl.defaultMessage!;
     }
 
     if (isErrorWithMessage(error)) {
@@ -86,4 +86,17 @@ export const getErrorMessage = (error: unknown, intl?: IntlShape) => {
     }
 
     return 'Unknown error';
+};
+
+export const getServerError = (error: unknown, depth = 0): string | undefined => {
+    if (isServerError(error)) {
+        return error.server_error_id!;
+    }
+    if (isErrorWithDetails(error)) {
+        if (depth > 2) {
+            return undefined;
+        }
+        return getServerError(error.details, depth + 1);
+    }
+    return undefined;
 };

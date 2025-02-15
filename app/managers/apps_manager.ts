@@ -17,7 +17,7 @@ const emptyBindings: AppBinding[] = [];
 
 const normalizeBindings = (bindings: AppBinding[]) => bindings.reduce<AppBinding[]>((acc, v) => (v.bindings ? acc.concat(v.bindings) : acc), []);
 
-class AppsManager {
+export class AppsManager {
     private enabled: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
 
     private bindings: {[serverUrl: string]: BehaviorSubject<AppBinding[]>} = {};
@@ -103,7 +103,7 @@ class AppsManager {
         }
     };
 
-    fetchBindings = async (serverUrl: string, channelId: string, forThread = false, groupLabel?: string) => {
+    fetchBindings = async (serverUrl: string, channelId: string, forThread = false, groupLabel?: RequestGroupLabel) => {
         try {
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             const userId = await getCurrentUserId(database);
@@ -135,13 +135,14 @@ class AppsManager {
         }
     };
 
-    refreshAppBindings = async (serverUrl: string, groupLabel?: string) => {
+    refreshAppBindings = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
         try {
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const appsEnabled = (await getConfig(database))?.FeatureFlagAppsEnabled === 'true';
+            const appsEnabled = await this.isAppsEnabled(serverUrl);
             if (!appsEnabled) {
                 this.getEnabledSubject(serverUrl).next(false);
                 this.clearServer(serverUrl);
+                return;
             }
 
             const channelId = await getCurrentChannelId(database);
@@ -173,9 +174,7 @@ class AppsManager {
 
     observeBindings = (serverUrl: string, location?: string, forThread = false) => {
         const isEnabled = this.observeIsAppsEnabled(serverUrl);
-        const bindings = forThread ?
-            this.getThreadsBindingsSubject(serverUrl).asObservable().pipe(switchMap(({bindings: bb}) => of$(bb))) :
-            this.getBindingsSubject(serverUrl).asObservable();
+        const bindings = forThread ? this.getThreadsBindingsSubject(serverUrl).asObservable().pipe(switchMap(({bindings: bb}) => of$(bb))) : this.getBindingsSubject(serverUrl).asObservable();
 
         return combineLatest([isEnabled, bindings]).pipe(
             switchMap(([e, bb]) => of$(e ? bb : emptyBindings)),
@@ -188,9 +187,7 @@ class AppsManager {
     };
 
     getBindings = (serverUrl: string, location?: string, forThread = false) => {
-        let bindings = forThread ?
-            this.getThreadsBindingsSubject(serverUrl).value.bindings :
-            this.getBindingsSubject(serverUrl).value;
+        let bindings = forThread ? this.getThreadsBindingsSubject(serverUrl).value.bindings : this.getBindingsSubject(serverUrl).value;
 
         if (location) {
             bindings = bindings.filter((b) => b.location === location);
@@ -200,15 +197,11 @@ class AppsManager {
     };
 
     getCommandForm = (serverUrl: string, key: string, forThread = false) => {
-        return forThread ?
-            this.threadCommandForms[serverUrl]?.[key] :
-            this.commandForms[serverUrl]?.[key];
+        return forThread ? this.threadCommandForms[serverUrl]?.[key] : this.commandForms[serverUrl]?.[key];
     };
 
     setCommandForm = (serverUrl: string, key: string, form: AppForm, forThread = false) => {
-        const toStore = forThread ?
-            this.threadCommandForms :
-            this.commandForms;
+        const toStore = forThread ? this.threadCommandForms : this.commandForms;
         if (!toStore[serverUrl]) {
             toStore[serverUrl] = {};
         }

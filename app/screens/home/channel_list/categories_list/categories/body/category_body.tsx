@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo} from 'react';
-import {FlatList} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {DeviceEventEmitter, FlatList} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {fetchDirectChannelsInfo} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
 import {ROW_HEIGHT as CHANNEL_ROW_HEIGHT} from '@components/channel_item/channel_item';
+import {Events} from '@constants';
+import {DRAFT, THREAD} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {isDMorGM} from '@utils/channel';
 
@@ -26,6 +28,18 @@ const extractKey = (item: ChannelModel) => item.id;
 
 const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChannelSwitch}: Props) => {
     const serverUrl = useServerUrl();
+    const [isChannelScreenActive, setChannelScreenActive] = useState(true);
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.ACTIVE_SCREEN, (screen: string) => {
+            setChannelScreenActive(screen !== DRAFT && screen !== THREAD);
+        });
+
+        return () => {
+            listener.remove();
+        };
+    }, []);
+
     const ids = useMemo(() => {
         const filteredChannels = unreadsOnTop ? sortedChannels.filter((c) => !unreadIds.has(c.id)) : sortedChannels;
 
@@ -47,12 +61,12 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChan
                 onPress={onChannelSwitch}
                 key={item.id}
                 testID={`channel_list.category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_item`}
-                shouldHighlightActive={true}
+                shouldHighlightActive={isChannelScreenActive}
                 shouldHighlightState={true}
                 isOnHome={true}
             />
         );
-    }, [onChannelSwitch]);
+    }, [category.displayName, isChannelScreenActive, onChannelSwitch]);
 
     const sharedValue = useSharedValue(category.collapsed);
 

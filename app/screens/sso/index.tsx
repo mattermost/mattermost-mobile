@@ -161,14 +161,12 @@ const SSO = ({
         authentication = (
             <SSOAuthenticationWithExternalBrowser
                 {...props}
-                serverUrl={serverUrl!}
             />
         );
     } else {
         authentication = (
             <SSOAuthentication
                 {...props}
-                serverUrl={serverUrl!}
             />
         );
     }

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ServerScreen} from '@support/ui/screen';
+import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
@@ -65,9 +65,10 @@ class LoginScreen {
         await this.usernameInput.replaceText(user.newUser.email);
         await this.passwordInput.tap();
         await this.passwordInput.replaceText(user.newUser.password);
+        await element(by.text(/^Log In to Your Account*$/)).tap();
         await this.signinButton.tap();
 
-        await wait(timeouts.FOUR_SEC);
+        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(timeouts.TEN_SEC);
     };
 
     loginAsAdmin = async (user: any = {}) => {
@@ -78,7 +79,8 @@ class LoginScreen {
         await this.passwordInput.tap();
         await this.passwordInput.replaceText(user.password);
         await this.signinButton.tap();
-        await wait(timeouts.FOUR_SEC);
+
+        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(timeouts.TEN_SEC);
     };
 }
 
