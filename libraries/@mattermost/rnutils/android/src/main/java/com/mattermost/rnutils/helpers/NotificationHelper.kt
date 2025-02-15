@@ -13,7 +13,7 @@ object NotificationHelper {
     private const val PUSH_NOTIFICATIONS: String = "PUSH_NOTIFICATIONS"
     private const val NOTIFICATIONS_IN_GROUP: String = "notificationsInGroup"
     private const val VERSION_PREFERENCE = "VERSION_PREFERENCE"
-    private const val MESSAGE_NOTIFICATION_ID: Int = 435345
+    const val MESSAGE_NOTIFICATION_ID: Int = 435345
     private const val KEY_ROOT_ID = "root_id"
     private const val KEY_CHANNEL_ID = "channel_id"
     private const val KEY_POST_ID = "post_id"
