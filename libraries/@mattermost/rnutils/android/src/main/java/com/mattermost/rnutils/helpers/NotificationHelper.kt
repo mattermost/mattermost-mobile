@@ -15,6 +15,14 @@ object NotificationHelper {
     private const val VERSION_PREFERENCE = "VERSION_PREFERENCE"
     const val MESSAGE_NOTIFICATION_ID: Int = 435345
 
+    private const val KEY_ROOT_ID = "root_id"
+    private const val KEY_CHANNEL_ID = "channel_id"
+    private const val KEY_POST_ID = "post_id"
+    private const val KEY_IS_CRT_ENABLED = "is_crt_enabled"
+    private const val KEY_SERVER_URL = "server_url"
+
+    private const val PREF_VERSION = "Version"
+
     fun cleanNotificationPreferencesIfNeeded(context: Context) {
         try {
             val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
@@ -22,13 +30,13 @@ object NotificationHelper {
             var storedVersion: String? = null
             val pSharedPref = context.getSharedPreferences(VERSION_PREFERENCE, Context.MODE_PRIVATE)
             if (pSharedPref != null) {
-                storedVersion = pSharedPref.getString("Version", "")
+                storedVersion = pSharedPref.getString(PREF_VERSION, "")
             }
 
             if (version != storedVersion) {
                 if (pSharedPref != null) {
                     val editor = pSharedPref.edit()
-                    editor.putString("Version", version)
+                    editor.putString(PREF_VERSION, version)
                     editor.apply()
                 }
 
@@ -41,8 +49,8 @@ object NotificationHelper {
     }
 
     fun getNotificationId(notification: Bundle): Int {
-        val postId = notification.getString("post_id")
-        val channelId = notification.getString("channel_id")
+        val postId = getPostId(notification)
+        val channelId = getChannelId(notification)
 
         var notificationId: Int = MESSAGE_NOTIFICATION_ID
         if (postId != null) {
@@ -62,10 +70,10 @@ object NotificationHelper {
     fun addNotificationToPreferences(context: Context, notificationId: Int, notification: Bundle): Boolean {
         try {
             var createSummary = true
-            val serverUrl = notification.getString("server_url")
-            val channelId = notification.getString("channel_id")
-            val rootId = notification.getString("root_id")
-            val isCRTEnabled = notification.containsKey("is_crt_enabled") && notification.getString("is_crt_enabled") == "true"
+            val serverUrl = getServerUrl(notification)
+            val channelId = getChannelId(notification)
+            val rootId = getRootId(notification)
+            val isCRTEnabled = isCRTEnabled(notification)
 
             val isThreadNotification = isCRTEnabled && !TextUtils.isEmpty(rootId)
             val groupId = if (isThreadNotification) rootId else channelId
@@ -103,10 +111,10 @@ object NotificationHelper {
     }
 
     fun dismissNotification(context: Context, notification: Bundle) {
-        val isCRTEnabled = notification.containsKey("is_crt_enabled") && notification.getString("is_crt_enabled") == "true"
-        val serverUrl = notification.getString("server_url")
-        val channelId = notification.getString("channel_id")
-        val rootId = notification.getString("root_id")
+        val isCRTEnabled = isCRTEnabled(notification)
+        val serverUrl = getServerUrl(notification)
+        val channelId = getChannelId(notification)
+        val rootId = getRootId(notification)
 
         val notificationId = getNotificationId(notification)
 
@@ -130,9 +138,9 @@ object NotificationHelper {
             for (status in statusNotifications) {
                 val bundle = status.notification.extras
                 hasMore = if (isThreadNotification) {
-                    bundle.containsKey("root_id") && bundle.getString("root_id") == rootId
+                    bundle.containsKey(KEY_ROOT_ID) && getRootId(bundle) == rootId
                 } else {
-                    bundle.containsKey("channel_id") && bundle.getString("channel_id") == channelId
+                    bundle.containsKey(KEY_CHANNEL_ID) && getChannelId(bundle) == channelId
                 }
                 if (hasMore) break
             }
@@ -167,9 +175,9 @@ object NotificationHelper {
         for (sbn in notifications) {
             val n = sbn.notification
             val bundle = n.extras
-            val cId = bundle.getString("channel_id")
-            val rootId = bundle.getString("root_id")
-            val isCRTEnabled = bundle.containsKey("is_crt_enabled") && bundle.getString("is_crt_enabled") == "true"
+            val cId = getChannelId(bundle)
+            val rootId = getRootId(bundle)
+            val isCRTEnabled = isCRTEnabled(bundle)
             val skipThreadNotification = isCRTEnabled && !TextUtils.isEmpty(rootId)
             if (cId == channelId && !skipThreadNotification) {
                 notificationManager.cancel(sbn.id)
@@ -186,14 +194,14 @@ object NotificationHelper {
         for (sbn in notifications) {
             val n = sbn.notification
             val bundle = n.extras
-            val rootId = bundle.getString("root_id")
-            val postId = bundle.getString("post_id")
+            val rootId = getRootId(bundle)
+            val postId = getPostId(bundle)
             if (rootId == threadId) {
                 notificationManager.cancel(sbn.id)
             }
 
             if (postId == threadId) {
-                val channelId = bundle.getString("channel_id")
+                val channelId = getChannelId(bundle)
                 val id = sbn.id
                 if (notificationsInServer != null && channelId != null) {
                     val notificationsInChannel = notificationsInServer.optJSONObject(channelId)
@@ -217,6 +225,8 @@ object NotificationHelper {
         }
     }
 
+    private fun getPostId(notification: Bundle) = notification.getString(KEY_POST_ID)
+
     fun removeServerNotifications(context: Context, serverUrl: String) {
         val notificationManager = NotificationManagerCompat.from(context)
         val notificationsPerServer = loadMap(context)
@@ -226,7 +236,7 @@ object NotificationHelper {
         for (sbn in notifications) {
             val n = sbn.notification
             val bundle = n.extras
-            val url = bundle.getString("server_url")
+            val url = getServerUrl(bundle)
             if (url == serverUrl) {
                 notificationManager.cancel(sbn.id)
             }
@@ -234,11 +244,11 @@ object NotificationHelper {
     }
 
     fun clearChannelOrThreadNotifications(context: Context, notification: Bundle) {
-        val serverUrl = notification.getString("server_url")
-        val channelId = notification.getString("channel_id")
-        val rootId = notification.getString("root_id")
+        val serverUrl = getServerUrl(notification)
+        val channelId = getChannelId(notification)
+        val rootId = getRootId(notification)
         if (channelId != null) {
-            val isCRTEnabled = notification.containsKey("is_crt_enabled") && notification.getString("is_crt_enabled") == "true"
+            val isCRTEnabled = isCRTEnabled(notification)
             // rootId is available only when CRT is enabled & clearing the thread
             val isClearThread = isCRTEnabled && !TextUtils.isEmpty(rootId)
 
@@ -249,6 +259,15 @@ object NotificationHelper {
             }
         }
     }
+
+    private fun getRootId(notification: Bundle) = notification.getString(KEY_ROOT_ID)
+
+    private fun getChannelId(notification: Bundle) = notification.getString(KEY_CHANNEL_ID)
+
+    private fun getServerUrl(notification: Bundle) = notification.getString(KEY_SERVER_URL)
+
+    private fun isCRTEnabled(bundle: Bundle) =
+        bundle.containsKey(KEY_IS_CRT_ENABLED) && bundle.getString(KEY_IS_CRT_ENABLED) == "true"
 
 
     /**
