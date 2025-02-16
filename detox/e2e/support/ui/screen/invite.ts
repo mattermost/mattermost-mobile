@@ -64,7 +64,7 @@ class InviteScreen {
     };
 
     getSearchListUserItemText = (id: string) => {
-        return element(by.id(`${this.testID.searchListUserItemPrefix}.${id}.username`));
+        return element(by.id(`${this.testID.searchListUserItemPrefix}.${id}.display_name`));
     };
 
     getSearchListNoResults = (id: string) => {

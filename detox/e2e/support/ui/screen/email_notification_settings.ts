@@ -18,8 +18,8 @@ class EmailNotificationSettingsScreen {
         everyHourOptionSelected: 'email_notification_settings.every_hour.option.selected',
         neverOption: 'email_notification_settings.never.option',
         neverOptionSelected: 'email_notification_settings.never.option.selected',
-        emailThreadsOptionToggledOff: 'email_notification_settings.email_threads.option.toggled.false',
-        emailThreadsOptionToggledOn: 'email_notification_settings.email_threads.option.toggled.true',
+        emailThreadsOptionToggledOff: 'email_notification_settings.email_threads.option.toggled.false.button',
+        emailThreadsOptionToggledOn: 'email_notification_settings.email_threads.option.toggled.true.button',
     };
 
     emailNotificationSettingsScreen = element(by.id(this.testID.emailNotificationSettingsScreen));

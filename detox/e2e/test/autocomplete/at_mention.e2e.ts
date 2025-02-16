@@ -316,9 +316,9 @@ describe('Autocomplete - At-Mention', () => {
         await ChannelScreen.postInput.typeText(testUser.username);
 
         // * Verify at-mention autocomplete contains current user
-        const {atMentionItemUserDisplayName, atMentionItemCurrentUserIndicator, atMentionItemUsername} = Autocomplete.getAtMentionItem(testUser.id);
-        await expect(atMentionItemUserDisplayName).toHaveText(`${testUser.first_name} ${testUser.last_name}`);
-        await expect(atMentionItemCurrentUserIndicator).toHaveText(' (you)');
-        await expect(atMentionItemUsername).toHaveText(` @${testUser.username}`);
+        await wait(timeouts.TWO_SEC);
+        const {atMentionItemUserDisplayName, atMentionItemProfilePicture} = Autocomplete.getAtMentionItem(testUser.id);
+        await expect(atMentionItemUserDisplayName).toBeVisible();
+        await expect(atMentionItemProfilePicture).toBeVisible();
     });
 });

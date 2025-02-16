@@ -11,8 +11,7 @@ const {ARTIFACTS_DIR} = require('./constants');
 
 const MAX_FAILED_TITLES = 5;
 
-function convertXmlToJson(xml) {
-    const platform = process.env.IOS === 'true' ? 'ios' : 'android';
+function convertXmlToJson(xml, platform) {
     const jsonFile = `${ARTIFACTS_DIR}/${platform}-junit.json`;
 
     // Convert XML to JSON
@@ -27,7 +26,6 @@ function convertXmlToJson(xml) {
         // Save JSON in a file
         fse.writeFileSync(jsonFile, json);
     });
-
     return readJsonFromFile(jsonFile);
 }
 

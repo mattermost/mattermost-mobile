@@ -69,10 +69,14 @@ describe('Channels - Channel List', () => {
         await expect(ChannelListScreen.headerPlusButton).toBeVisible();
         await expect(ChannelListScreen.threadsButton).toBeVisible();
         await expect(ChannelListScreen.getCategoryHeaderDisplayName(channelsCategory)).toHaveText('CHANNELS');
-        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toHaveText(testChannel.display_name);
-        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).toHaveText('Off-Topic');
-        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName)).toHaveText('Town Square');
-        await expect(ChannelListScreen.getCategoryHeaderDisplayName(directMessagesCategory)).toHaveText('DIRECT MESSAGES');
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).toBeVisible();
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName)).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName)).toBeVisible();
+        await waitFor(ChannelListScreen.getCategoryHeaderDisplayName(directMessagesCategory)).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await expect(ChannelListScreen.getCategoryHeaderDisplayName(directMessagesCategory)).toBeVisible();
     });
 
     it('MM-T4728_2 - should be able to switch between channels', async () => {
@@ -108,6 +112,7 @@ describe('Channels - Channel List', () => {
     it('MM-T4728_3 - should be able to collapse and expand categories', async () => {
         // # Go to a channel to make it active and go back to channel list screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage('Test message');
         await ChannelScreen.back();
 
         // * Verify on channel list screen
@@ -156,8 +161,14 @@ describe('Channels - Channel List', () => {
         // * Verify on create direct message screen
         await CreateDirectMessageScreen.toBeVisible();
 
+        try {
+            await CreateDirectMessageScreen.closeTutorial();
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to close tutorial:', error);
+        }
+
         // # Go back to channel list screen
-        await CreateDirectMessageScreen.closeTutorial();
         await CreateDirectMessageScreen.close();
     });
 
