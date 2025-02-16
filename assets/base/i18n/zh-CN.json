@@ -872,7 +872,7 @@
   "notification_settings.mentions.sensitiveName": "您的大小写区分名",
   "notification_settings.mentions.sensitiveUsername": "您的大小写不区分用户名",
   "notification_settings.mentions_replies": "提及和回复",
-  "notification_settings.mobile": "推通知",
+  "notification_settings.mobile": "推送通知",
   "notification_settings.mobile.away": "离开或下线",
   "notification_settings.mobile.offline": "下线",
   "notification_settings.mobile.online": "在线，离开或下线",
