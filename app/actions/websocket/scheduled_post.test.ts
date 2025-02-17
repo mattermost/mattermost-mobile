@@ -2,44 +2,30 @@
 // See LICENSE.txt for license information.
 
 import {ActionType} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {ScheduledPostModel} from '@database/models/server';
 
 import {handleCreateOrUpdateScheduledPost, handleDeleteScheduledPost} from './scheduled_post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
 
-const scheduledPosts = [
-    {
-        channel_id: 'channel_id',
-        error_code: '',
-        files: [],
-        id: 'scheduled_post_id',
-        message: 'test scheduled post',
-        metadata: {},
-        processed_at: 0,
-        root_id: '',
-        scheduled_at: 123,
-        update_at: 456,
-        user_id: '',
-    },
-    {
-        id: 'scheduled_post_id_2',
-        channel_id: 'channel_id',
-        root_id: '',
-        message: 'test scheduled post 2',
-        files: [],
-        metadata: {},
-        scheduled_at: 123,
-        user_id: 'user_id',
-        processed_at: 0,
-        update_at: 456,
-        error_code: '',
-    },
-];
+const scheduledPost = {
+    channel_id: 'channel_id',
+    error_code: '',
+    files: [],
+    id: 'scheduled_post_id',
+    message: 'test scheduled post',
+    metadata: {},
+    processed_at: 0,
+    root_id: '',
+    scheduled_at: 123,
+    update_at: 456,
+    user_id: '',
+};
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
@@ -51,48 +37,73 @@ afterEach(async () => {
 });
 
 describe('handleCreateOrUpdateSchedulePost', () => {
-    it('handleCreateOrUpdateScheduledPost - handle not found database', async () => {
-        const {error} = await handleCreateOrUpdateScheduledPost('foo', {data: {scheduled_post: JSON.stringify(scheduledPosts[0])}} as WebSocketMessage) as {error: Error};
+    it('handleCreateOrUpdateScheduledPost - handle empty payload', async () => {
+        const {error} = await handleCreateOrUpdateScheduledPost('foo', {data: {scheduledPost: JSON.stringify(scheduledPost)}} as WebSocketMessage);
         expect(error.message).toBe('foo database not found');
     });
 
     it('handleCreateOrUpdateScheduledPost - wrong websocket scheduled post message', async () => {
-        const {error} = await handleCreateOrUpdateScheduledPost('foo', {} as WebSocketMessage) as {error: Error};
-        expect(error.message).toBe('Cannot read properties of undefined (reading \'scheduled_post\')');
+        const {models, error} = await handleCreateOrUpdateScheduledPost('foo', {data: {}} as WebSocketMessage);
+        expect(error).toBeUndefined();
+        expect(models).toBeUndefined();
     });
 
     it('handleCreateOrUpdateScheduledPost - no scheduled post', async () => {
-        const {models} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduled_post: ''}} as WebSocketMessage) as {models: undefined};
+        const {models} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduledPost: ''}} as WebSocketMessage);
         expect(models).toBeUndefined();
     });
 
     it('handleCreateOrUpdateScheduledPost - success', async () => {
-        const {models} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduled_post: JSON.stringify(scheduledPosts[0])}} as WebSocketMessage) as {models: ScheduledPostModel[]};
-        expect(models[0].id).toEqual(scheduledPosts[0].id);
+        const {models} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduledPost: JSON.stringify(scheduledPost)}} as WebSocketMessage);
+        expect(models).toBeDefined();
+        expect(models![0].id).toEqual(scheduledPost.id);
+
+        // Verify post exists in database
+        const scheduledPosts = await operator.database.get<ScheduledPostModel>(MM_TABLES.SERVER.SCHEDULED_POST).query().fetch();
+        expect(scheduledPosts.length).toBe(1);
+        expect(scheduledPosts[0].id).toBe(scheduledPost.id);
+        expect(scheduledPosts[0].message).toBe(scheduledPost.message);
+    });
+
+    it('handleCreateOrUpdateScheduledPost - should return error for invalid JSON payload', async () => {
+        const {models, error} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduledPost: 'invalid_json'}} as WebSocketMessage);
+        expect(models).toBeUndefined();
+        expect(error).toBeDefined();
     });
 });
 
 describe('handleDeleteScheduledPost', () => {
-    it('handleDeleteScheduledPost - handle not found database', async () => {
-        const {error} = await handleDeleteScheduledPost('foo', {} as WebSocketMessage) as {error: unknown};
-        expect(error).toBeTruthy();
+    it('handleDeleteScheduledPost - handle empty payload', async () => {
+        const {error, models} = await handleDeleteScheduledPost('foo', {data: {}} as WebSocketMessage);
+        expect(error).toBeUndefined();
+        expect(models).toBeUndefined();
     });
 
     it('handleDeleteScheduledPost - no scheduled post', async () => {
-        const {models} = await handleDeleteScheduledPost(serverUrl, {data: {scheduled_post: ''}} as WebSocketMessage) as {models: undefined};
+        const {models} = await handleDeleteScheduledPost(serverUrl, {data: {scheduledPost: ''}} as WebSocketMessage);
         expect(models).toBeUndefined();
     });
 
     it('handleDeleteScheduledPost - success', async () => {
         await operator.handleScheduledPosts({
             actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
-            scheduledPosts: [scheduledPosts[0]],
+            scheduledPosts: [scheduledPost],
             prepareRecordsOnly: false,
         });
 
-        const scheduledPost = scheduledPosts[0];
+        const deletedRecord = await handleDeleteScheduledPost(serverUrl, {data: {scheduledPost: JSON.stringify(scheduledPost)}} as WebSocketMessage);
+        expect(deletedRecord.models).toBeDefined();
+        expect(deletedRecord!.models!.length).toBe(1);
+        expect(deletedRecord!.models![0].id).toBe(scheduledPost.id);
 
-        const deletedRecord = await handleDeleteScheduledPost(serverUrl, {data: {scheduled_post: JSON.stringify(scheduledPost)}} as WebSocketMessage) as {models: ScheduledPostModel[]};
-        expect(deletedRecord.models[0].id).toBe(scheduledPost.id);
+        // Verify post was deleted from database
+        const scheduledPosts = await operator.database.get<ScheduledPostModel>(MM_TABLES.SERVER.SCHEDULED_POST).query().fetch();
+        expect(scheduledPosts.length).toBe(0);
+    });
+
+    it('handleDeleteScheduledPost - should return error for invalid JSON payload', async () => {
+        const {models, error} = await handleDeleteScheduledPost(serverUrl, {data: {scheduledPost: 'invalid_json'}} as WebSocketMessage);
+        expect(models).toBeUndefined();
+        expect(error).toBeDefined();
     });
 });
