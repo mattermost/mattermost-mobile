@@ -9,7 +9,6 @@ import {markChannelAsRead} from '@actions/remote/channel';
 import {deferredAppEntryActions, entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
-import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import DatabaseManager from '@database/manager';
@@ -158,7 +157,6 @@ describe('WebSocket Index Actions', () => {
             expect(openAllUnreadChannels).toHaveBeenCalled();
             expect(dataRetentionCleanup).toHaveBeenCalled();
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
-            expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, currentTeamId, true, 'WebSocket Reconnect');
         });
 
         it('should fetch posts for channel screen', async () => {

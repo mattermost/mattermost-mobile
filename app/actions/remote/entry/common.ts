@@ -133,10 +133,6 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
             fetchAllMyChannelsForAllTeams(serverUrl, lastDisconnectedAt, isCRTEnabled, true, groupLabel),
         ];
 
-        if (teamId) {
-            promises.push(fetchScheduledPosts(serverUrl, teamId, true, groupLabel));
-        }
-
         const [teamData, meData, chData] = await Promise.all(promises);
         const error = confResp.error || prefData.error || teamData.error || meData.error || chData.error;
         if (error) {
@@ -310,6 +306,10 @@ export async function restDeferredAppEntryActions(
 
     // Fetch groups for current user
     fetchGroupsForMember(serverUrl, currentUserId, false, requestLabel);
+
+    if (initialTeamId) {
+        fetchScheduledPosts(serverUrl, initialTeamId, true, groupLabel);
+    }
 }
 
 export const setExtraSessionProps = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {

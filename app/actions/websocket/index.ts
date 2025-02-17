@@ -12,7 +12,6 @@ import {
 } from '@actions/remote/entry/common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
-import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
@@ -87,7 +86,6 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     setTeamLoading(serverUrl, false);
 
     await fetchPostDataIfNeeded(serverUrl, groupLabel);
-    await fetchScheduledPosts(serverUrl, currentTeamId, true, groupLabel);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
     const license = await getLicense(database);

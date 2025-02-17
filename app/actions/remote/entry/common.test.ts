@@ -121,8 +121,6 @@ describe('actions/remote/entry/common', () => {
 
             const result = await entry(serverUrl, 'team1');
 
-            expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, 'team1', true, undefined);
-
             expect(result).toEqual(expect.objectContaining({
                 initialChannelId: '',
                 initialTeamId: '',
@@ -327,6 +325,7 @@ describe('actions/remote/entry/common', () => {
             expect(updateCanJoinTeams).toHaveBeenCalledWith(serverUrl);
             expect(fetchPostsForUnreadChannels).toHaveBeenCalled();
             expect(fetchGroupsForMember).toHaveBeenCalledWith(serverUrl, currentUserId, false, undefined);
+            expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, initialTeamId, true, undefined);
         });
 
         it('should handle missing data gracefully', async () => {
