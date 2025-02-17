@@ -172,7 +172,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
             {postType === 'scheduled' &&
                 <View style={style.scheduledContainer}>
                     <Text style={style.scheduledAtText}>
-                        {intl.formatMessage({id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'}, {time: getReadableTimestamp(postScheduledAt!, getUserTimezone(currentUser))})}
+                        {intl.formatMessage({id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'}, {time: getReadableTimestamp(postScheduledAt!, getUserTimezone(currentUser), isMilitaryTime)})}
                     </Text>
                     {scheduledPostErrorCode &&
                         <View style={style.errorState}>

@@ -33,16 +33,19 @@ export function toMilliseconds({days, hours, minutes, seconds}: {days?: number; 
     return totalSeconds * 1000;
 }
 
-export function getReadableTimestamp(timestamp: number, timeZone: string) {
+export function getReadableTimestamp(timestamp: number, timeZone: string, isMilitaryTime: boolean) {
     const date = new Date(timestamp);
+    const now = new Date();
+    const isCurrentYear = date.getFullYear() === now.getFullYear();
 
     const options: Intl.DateTimeFormatOptions = {
         month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
-        hour12: true,
+        hour12: !isMilitaryTime,
         timeZone: timeZone as string,
+        ...(isCurrentYear ? {} : {year: 'numeric'}),
     };
 
     const formattedDate = date.toLocaleString('en-US', options);

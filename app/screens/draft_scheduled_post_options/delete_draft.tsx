@@ -13,7 +13,7 @@ import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
 import {deleteDraftConfirmation} from '@utils/draft';
 import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -28,7 +28,7 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
-        color: theme.centerChannelColor,
+        color: theme.dndIndicator,
         ...typography('Body', 200),
     },
     draftOptions: {
@@ -81,7 +81,7 @@ const DeleteDraft: React.FC<Props> = ({
             <CompassIcon
                 name='trash-can-outline'
                 size={ICON_SIZE}
-                color={changeOpacity(theme.centerChannelColor, 0.56)}
+                color={theme.dndIndicator}
             />
             {postType === 'draft' ? (
                 <FormattedText
