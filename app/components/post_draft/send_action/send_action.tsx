@@ -43,6 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             shadowOffset: {width: 0, height: 2},
             shadowRadius: 2,
             shadowOpacity: 0.16,
+            elevation: 24,
             width: 250,
             height: 140,
         },
