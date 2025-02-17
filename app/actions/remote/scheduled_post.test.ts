@@ -97,8 +97,7 @@ beforeAll(() => {
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
-    const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-    operator = serverDatabaseAndOperator.operator;
+    operator = DatabaseManager.getServerDatabaseAndOperator(serverUrl)!.operator;
 });
 
 afterEach(async () => {
