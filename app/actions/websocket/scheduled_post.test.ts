@@ -12,7 +12,7 @@ import type ScheduledPostModel from '@typings/database/models/servers/scheduled_
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
 
-const scheduledPosts = [
+const scheduledPosts: ScheduledPost[] = [
     {
         channel_id: 'channel_id',
         error_code: '',
@@ -23,6 +23,7 @@ const scheduledPosts = [
         processed_at: 0,
         root_id: '',
         scheduled_at: 123,
+        create_at: 789,
         update_at: 456,
         user_id: '',
     },
@@ -36,6 +37,7 @@ const scheduledPosts = [
         scheduled_at: 123,
         user_id: 'user_id',
         processed_at: 0,
+        create_at: 789,
         update_at: 456,
         error_code: '',
     },

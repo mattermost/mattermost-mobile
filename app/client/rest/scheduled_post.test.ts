@@ -22,6 +22,7 @@ describe('ClientScheduledPost', () => {
             user_id: 'current_user_id',
             root_id: '',
             update_at: 1738925211,
+            create_at: 1738925211,
         };
 
         await client.createScheduledPost(scheduledPost, 'connection_id');
@@ -44,6 +45,7 @@ describe('ClientScheduledPost', () => {
             user_id: 'current_user_id',
             root_id: '',
             update_at: 1738925211,
+            create_at: 1738925211,
         };
 
         await client.createScheduledPost(scheduledPost);
