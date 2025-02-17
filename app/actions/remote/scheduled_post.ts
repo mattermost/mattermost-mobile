@@ -13,11 +13,13 @@ import {forceLogoutIfNecessary} from './session';
 
 import type {CreateResponse} from '@hooks/handle_send_message';
 
-export async function createScheduledPost(serverUrl: string, schedulePost: ScheduledPost, connectionId?: string): Promise<CreateResponse> {
+export async function createScheduledPost(serverUrl: string, schedulePost: ScheduledPost): Promise<CreateResponse> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
+    const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
 
     try {
         const client = NetworkManager.getClient(serverUrl);
@@ -73,9 +75,9 @@ export async function deleteScheduledPost(serverUrl: string, scheduledPostId: st
     }
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const ws = websocketManager.getClient(serverUrl);
+        const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
 
-        const result = await client.deleteScheduledPost(scheduledPostId, ws?.getConnectionId());
+        const result = await client.deleteScheduledPost(scheduledPostId, connectionId);
 
         if (result) {
             await operator.handleScheduledPosts({

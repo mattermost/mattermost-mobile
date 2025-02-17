@@ -65,16 +65,26 @@ const throwFunc = () => {
     throw Error('error');
 };
 
+const mockConnectionId = 'mock-connection-id';
 const mockClient = {
-    createScheduledPost: jest.fn(() => ({...scheduledPost})),
+    createScheduledPost: jest.fn((post, connId) => ({...scheduledPost, connectionId: connId})),
     getScheduledPostsForTeam: jest.fn(() => Promise.resolve({...scheduledPostsResponse})),
-    deleteScheduledPost: jest.fn((scheduledPostId) => {
-        return Promise.resolve(scheduledPostsResponse.bar.find((post) => post.id === scheduledPostId));
+    deleteScheduledPost: jest.fn((scheduledPostId, connId) => {
+        const post = scheduledPostsResponse.bar.find((p) => p.id === scheduledPostId);
+        return Promise.resolve({...post, connectionId: connId});
     }),
+};
+
+const mockWebSocketClient = {
+    getConnectionId: jest.fn(() => mockConnectionId),
 };
 jest.mock('@queries/servers/system', () => ({
     getConfigValue: jest.fn(),
     getCurrentTeamId: jest.fn(),
+}));
+
+jest.mock('@managers/websocket_manager', () => ({
+    getClient: jest.fn(() => mockWebSocketClient),
 }));
 
 const mockedGetConfigValue = jest.mocked(getConfigValue);
@@ -108,6 +118,7 @@ describe('scheduled_post', () => {
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
         expect(result!.response!.id).toBe(scheduledPost.id);
+        expect(mockClient.createScheduledPost).toHaveBeenCalledWith(scheduledPost, mockConnectionId);
     });
 
     it('createScheduledPost - request error', async () => {
@@ -170,11 +181,12 @@ describe('deleteScheduledPost', () => {
     it('delete Schedule post - handle scheduled post enabled', async () => {
         const spyHandleScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
         const result = await deleteScheduledPost(serverUrl, 'scheduled_post_id');
-        expect(result.scheduledPost).toEqual(scheduledPostsResponse.bar[0]);
+        expect(result.scheduledPost).toEqual({...scheduledPostsResponse.bar[0], connectionId: mockConnectionId});
         expect(spyHandleScheduledPosts).toHaveBeenCalledWith({
             actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
-            scheduledPosts: [scheduledPostsResponse.bar[0]],
+            scheduledPosts: [{...scheduledPostsResponse.bar[0], connectionId: mockConnectionId}],
             prepareRecordsOnly: false,
         });
+        expect(mockClient.deleteScheduledPost).toHaveBeenCalledWith('scheduled_post_id', mockConnectionId);
     });
 });
