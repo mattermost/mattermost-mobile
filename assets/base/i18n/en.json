@@ -999,6 +999,7 @@
   "scheduled_post.picker.next_monday": "Next Monday at {9amTime}",
   "scheduled_post.picker.title": "Schedule draft",
   "scheduled_post.picker.tomorrow": "Tomorrow at {9amTime}",
+  "scheduled_post.feature_tooltip": "Type a message and long press the send button to schedule it for a later time.",
   "screen.channel_files.header.recent_files": "Recent Files",
   "screen.channel_files.results.filter.title": "Filter by file type",
   "screen.mentions.subtitle": "Messages you've been mentioned in",
