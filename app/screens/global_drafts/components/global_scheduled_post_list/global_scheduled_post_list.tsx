@@ -122,7 +122,12 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                     useInteractionManager={true}
                     contentStyle={styles.tooltipContentStyle}
                     placement={'bottom'}
-                    content={<DraftTooltip onClose={close}/>} // Change this to ScheduledPostTooltip
+                    content={
+                        <DraftTooltip
+                            onClose={close}
+                            draftType={DRAFT_TYPE_SCHEDULED}
+                        />
+                    }
                     onClose={close}
                     tooltipStyle={styles.tooltipStyle}
                 >
@@ -174,7 +179,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                 maxToRenderPerBatch={10}
                 nativeID={location}
                 renderItem={renderItem}
-                ListEmptyComponent={DraftEmptyComponent} // Change this to ScheduledPostEmptyComponent
+                ListEmptyComponent={DraftEmptyComponent} //TODO: Change this to ScheduledPostEmptyComponent
             />
         </View>
     );

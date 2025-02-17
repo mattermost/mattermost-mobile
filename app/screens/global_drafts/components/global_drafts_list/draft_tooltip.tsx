@@ -8,11 +8,13 @@ import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
     onClose: () => void;
+    draftType: DraftType;
 }
 
 const longPressGestureHandLogo = require('@assets/images/emojis/swipe.png');
@@ -49,7 +51,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const DraftTooltip = ({onClose}: Props) => {
+const DraftTooltip = ({draftType, onClose}: Props) => {
     return (
         <View>
             <View style={styles.titleContainer}>
@@ -71,12 +73,24 @@ const DraftTooltip = ({onClose}: Props) => {
                 </TouchableOpacity>
             </View>
             <View style={styles.descriptionContainer}>
-                <FormattedText
-                    id='draft.tooltip.description'
-                    defaultMessage='Long-press on an item to see draft actions'
-                    style={styles.description}
-                    testID='draft.tooltip.description'
-                />
+                {
+                    draftType === DRAFT_TYPE_DRAFT &&
+                    <FormattedText
+                        id='draft.tooltip.description'
+                        defaultMessage='Long-press on an item to see draft actions'
+                        style={styles.description}
+                        testID='draft.tooltip.description'
+                    />
+                }
+                {
+                    draftType === DRAFT_TYPE_SCHEDULED &&
+                    <FormattedText
+                        id='scheduled_post.tooltip.description'
+                        defaultMessage='Long-press on an item to see scheduled post actions'
+                        style={styles.description}
+                        testID='scheduled_post.tooltip.description'
+                    />
+                }
             </View>
         </View>
     );

@@ -101,7 +101,12 @@ const GlobalDraftsList: React.FC<Props> = ({
                     useInteractionManager={true}
                     contentStyle={styles.tooltipContentStyle}
                     placement={'bottom'}
-                    content={<DraftTooltip onClose={close}/>}
+                    content={
+                        <DraftTooltip
+                            onClose={close}
+                            draftType={DRAFT_TYPE_DRAFT}
+                        />
+                    }
                     onClose={close}
                     tooltipStyle={styles.tooltipStyle}
                 >

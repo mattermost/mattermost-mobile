@@ -116,6 +116,7 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
 
     const deletePost = useCallback(() => {
         if (draftType === DRAFT_TYPE_SCHEDULED) {
+            // TODO: Add swipeable delete for schedule post
             return;
         }
         deleteDraftConfirmation({
@@ -133,6 +134,8 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
                 swipeable.current?.close();
             }
         });
+
+        //TODO: Add listener for scheduled post
 
         return () => listener.remove();
     }, [item.id, draftType]);
