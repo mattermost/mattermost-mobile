@@ -54,7 +54,10 @@ const styles = StyleSheet.create({
 
 const ScheduledPostTooltip = ({onClose}: Props) => {
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            testID='scheduled_post_tutorial_tooltip'
+        >
             <View style={styles.titleContainer}>
                 <Image
                     source={longPressGestureHandLogo}
@@ -70,6 +73,7 @@ const ScheduledPostTooltip = ({onClose}: Props) => {
                         color={changeOpacity(Preferences.THEMES.denim.centerChannelColor, 0.56)}
                         name='close'
                         size={18}
+                        testID='scheduled_post_tutorial_tooltip.close'
                     />
                 </TouchableOpacity>
             </View>

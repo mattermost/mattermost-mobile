@@ -14,6 +14,7 @@ describe('components/post_draft/send_action', () => {
         sendMessage: jest.fn(),
         testID: 'test_id',
         showScheduledPostOptions: jest.fn(),
+        scheduledPostFeatureTooltipWatched: true,
     };
 
     it('should render send button when enabled', () => {
