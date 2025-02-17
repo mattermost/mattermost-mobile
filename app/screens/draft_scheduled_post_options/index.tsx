@@ -10,6 +10,7 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import CopyTextOption from '@screens/post_options/options/copy_text_option';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -23,7 +24,7 @@ import type DraftModel from '@typings/database/models/servers/draft';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 type Props = {
-    postType: 'draft' | 'scheduled';
+    draftType: DraftType;
     channel: ChannelModel;
     rootId: string;
     draft: DraftModel | ScheduledPostModel;
@@ -47,7 +48,7 @@ const TITLE_HEIGHT = 54;
 const ITEM_HEIGHT = 48;
 
 const DraftScheduledPostOptions: React.FC<Props> = ({
-    postType,
+    draftType,
     channel,
     rootId,
     draft,
@@ -66,7 +67,7 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
         return (
             <View>
                 {!isTablet && (
-                    postType === 'draft' ? (
+                    draftType === DRAFT_TYPE_DRAFT ? (
                         <FormattedText
                             id='draft.option.header'
                             defaultMessage='Draft actions'
@@ -86,7 +87,7 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                     sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     key={draft.id}
                 />
-                {postType === 'draft' &&
+                {draftType === DRAFT_TYPE_DRAFT &&
                     <EditDraft
                         bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                         channel={channel}
@@ -103,7 +104,7 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                     isFromDraftView={true}
                     uploadFileError={null}
                     cursorPosition={0}
-                    postType={postType}
+                    draftType={draftType}
                     postId={draft.id}
                     /* eslint-disable no-empty-function */
                     clearDraft={() => {}}
@@ -114,7 +115,7 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                     updateValue={() => {}}
                     /* eslint-enable no-empty-function */
                 />
-                {postType === 'scheduled' &&
+                {draftType === DRAFT_TYPE_SCHEDULED &&
                     <RescheduledDraft
                         bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                         draft={draft as ScheduledPostModel}
@@ -124,7 +125,7 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                     bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     channelId={channel.id}
                     rootId={rootId}
-                    postType={postType}
+                    draftType={draftType}
                     postId={draft.id}
                 />
             </View>

@@ -18,11 +18,13 @@ import {deleteDraftConfirmation} from '@utils/draft';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '../constants';
+
 import type DraftModel from '@typings/database/models/servers/draft';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 type Props = {
-    postType: 'draft' | 'scheduled';
+    draftType: DraftType;
     item: DraftModel | ScheduledPostModel;
     location: string;
     layoutWidth: number;
@@ -99,7 +101,7 @@ function RightAction({deletePost, drag}: { deletePost: () => void; drag: SharedV
 }
 
 const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
-    postType,
+    draftType,
     item,
     location,
     layoutWidth,
@@ -113,7 +115,7 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
     }, [item.id]);
 
     const deletePost = useCallback(() => {
-        if (postType === 'scheduled') {
+        if (draftType === DRAFT_TYPE_SCHEDULED) {
             return;
         }
         deleteDraftConfirmation({
@@ -123,17 +125,17 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
             rootId: item.rootId,
             swipeable,
         });
-    }, [intl, item.channelId, item.rootId, postType, serverUrl]);
+    }, [intl, item.channelId, item.rootId, draftType, serverUrl]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.DRAFT_SWIPEABLE, (draftId: string) => {
-            if (item.id !== draftId && postType === 'draft') {
+            if (item.id !== draftId && draftType === DRAFT_TYPE_DRAFT) {
                 swipeable.current?.close();
             }
         });
 
         return () => listener.remove();
-    }, [item.id, postType]);
+    }, [item.id, draftType]);
 
     return (
         <GestureHandlerRootView>
@@ -151,7 +153,7 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
                 testID='draft_scheduled_post_swipeable'
             >
                 <DraftAndSchedulePost
-                    postType={postType}
+                    draftType={draftType}
                     key={item.id}
                     channelId={item.channelId}
                     post={item}

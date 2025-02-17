@@ -12,6 +12,7 @@ import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -129,7 +130,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                         style={styles.swippeableContainer}
                     >
                         <DraftAndScheduledPostSwipeActions
-                            postType='scheduled'
+                            draftType={DRAFT_TYPE_SCHEDULED}
                             item={item}
                             location={location}
                             layoutWidth={layoutWidth}
@@ -140,7 +141,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
         }
         return (
             <DraftAndScheduledPostSwipeActions
-                postType='scheduled'
+                draftType={DRAFT_TYPE_SCHEDULED}
                 item={item}
                 location={location}
                 layoutWidth={layoutWidth}

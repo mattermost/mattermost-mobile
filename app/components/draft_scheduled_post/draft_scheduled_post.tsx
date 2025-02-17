@@ -14,6 +14,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {DRAFT_OPTIONS_BUTTON} from '@screens/draft_scheduled_post_options';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {openAsBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -31,7 +32,7 @@ type Props = {
     post: DraftModel | ScheduledPostModel;
     layoutWidth: number;
     isPostPriorityEnabled: boolean;
-    postType: 'draft' | 'scheduled';
+    draftType: DraftType;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -71,7 +72,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
     postReceiverUser,
     layoutWidth,
     isPostPriorityEnabled,
-    postType,
+    draftType,
 }) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -83,13 +84,13 @@ const DraftAndScheduledPost: React.FC<Props> = ({
     const onLongPress = useCallback(() => {
         Keyboard.dismiss();
         const title = isTablet ? intl.formatMessage({id: 'draft.options.title', defaultMessage: 'Draft Options'}) : 'Draft Options';
-        if (postType === 'draft') {
+        if (draftType === DRAFT_TYPE_DRAFT) {
             openAsBottomSheet({
                 closeButtonId: DRAFT_OPTIONS_BUTTON,
                 screen: Screens.DRAFT_SCHEDULED_POST_OPTIONS,
                 theme,
                 title,
-                props: {channel, rootId: post.rootId, postType: 'draft', draft: post, draftReceiverUserName: postReceiverUser?.username},
+                props: {channel, rootId: post.rootId, draftType: DRAFT_TYPE_DRAFT, draft: post, draftReceiverUserName: postReceiverUser?.username},
             });
             return;
         }
@@ -98,9 +99,9 @@ const DraftAndScheduledPost: React.FC<Props> = ({
             screen: Screens.DRAFT_SCHEDULED_POST_OPTIONS,
             theme,
             title,
-            props: {channel, rootId: post.rootId, postType: 'scheduled', draft: post, draftReceiverUserName: postReceiverUser?.username},
+            props: {channel, rootId: post.rootId, draftType: DRAFT_TYPE_SCHEDULED, draft: post, draftReceiverUserName: postReceiverUser?.username},
         });
-    }, [isTablet, intl, postType, theme, channel, post, postReceiverUser?.username]);
+    }, [isTablet, intl, draftType, theme, channel, post, postReceiverUser?.username]);
 
     const onPress = useCallback(() => {
         if (post.rootId) {
@@ -118,7 +119,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
             testID='draft_post'
         >
             <View style={style.container}>
-                {postType === 'scheduled' && (post as ScheduledPostModel).errorCode !== '' &&
+                {draftType === DRAFT_TYPE_SCHEDULED && (post as ScheduledPostModel).errorCode !== '' &&
                     <View style={style.errorLine}/>
                 }
                 <View
@@ -130,7 +131,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
                         rootId={post.rootId}
                         testID='draft_post.channel_info'
                         updateAt={post.updateAt}
-                        postType={postType}
+                        draftType={draftType}
                         postScheduledAt={(post as ScheduledPostModel).scheduledAt}
                         scheduledPostErrorCode={(post as ScheduledPostModel).errorCode}
                     />

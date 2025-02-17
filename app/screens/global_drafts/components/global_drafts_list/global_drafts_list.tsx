@@ -10,6 +10,7 @@ import {storeDraftsTutorial} from '@actions/app/global';
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_list/config';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {DRAFT_TYPE_DRAFT} from '@screens/global_drafts/constants';
 import {popTopScreen} from '@screens/navigation';
 
 import DraftAndScheduledPostSwipeActions from '../draft_and_scheduled_post_swipe_actions';
@@ -108,7 +109,7 @@ const GlobalDraftsList: React.FC<Props> = ({
                         style={styles.swippeableContainer}
                     >
                         <DraftAndScheduledPostSwipeActions
-                            postType='draft'
+                            draftType={DRAFT_TYPE_DRAFT}
                             item={item}
                             location={location}
                             layoutWidth={layoutWidth}
@@ -119,7 +120,7 @@ const GlobalDraftsList: React.FC<Props> = ({
         }
         return (
             <DraftAndScheduledPostSwipeActions
-                postType='draft'
+                draftType={DRAFT_TYPE_DRAFT}
                 item={item}
                 location={location}
                 layoutWidth={layoutWidth}

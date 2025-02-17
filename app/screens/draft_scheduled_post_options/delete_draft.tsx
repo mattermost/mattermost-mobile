@@ -10,6 +10,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {deleteDraftConfirmation} from '@utils/draft';
 import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
@@ -22,7 +23,7 @@ type Props = {
     bottomSheetId: AvailableScreens;
     channelId: string;
     rootId: string;
-    postType?: 'draft' | 'scheduled';
+    draftType?: DraftType;
     postId?: string;
 }
 
@@ -44,7 +45,7 @@ const DeleteDraft: React.FC<Props> = ({
     bottomSheetId,
     channelId,
     rootId,
-    postType,
+    draftType,
     postId,
 }) => {
     const theme = useTheme();
@@ -54,7 +55,7 @@ const DeleteDraft: React.FC<Props> = ({
 
     const draftDeleteHandler = async () => {
         await dismissBottomSheet(bottomSheetId);
-        if (postType === 'draft') {
+        if (draftType === DRAFT_TYPE_DRAFT) {
             deleteDraftConfirmation({
                 intl,
                 serverUrl,
@@ -62,7 +63,7 @@ const DeleteDraft: React.FC<Props> = ({
                 rootId,
             });
         }
-        if (postType === 'scheduled' && postId) {
+        if (draftType === DRAFT_TYPE_SCHEDULED && postId) {
             deleteScheduledPostConfirmation({
                 intl,
                 serverUrl,
@@ -83,7 +84,7 @@ const DeleteDraft: React.FC<Props> = ({
                 size={ICON_SIZE}
                 color={theme.dndIndicator}
             />
-            {postType === 'draft' ? (
+            {draftType === DRAFT_TYPE_DRAFT ? (
                 <FormattedText
                     id='draft.options.delete.title'
                     defaultMessage={'Delete draft'}

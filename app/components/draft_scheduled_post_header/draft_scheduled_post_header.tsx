@@ -11,6 +11,7 @@ import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {getReadableTimestamp} from '@utils/datetime';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -28,7 +29,7 @@ type Props = {
     testID?: string;
     currentUser?: UserModel;
     isMilitaryTime: boolean;
-    postType: 'draft' | 'scheduled';
+    draftType: DraftType;
     postScheduledAt?: number;
     scheduledPostErrorCode?: string;
 }
@@ -109,7 +110,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
     testID,
     currentUser,
     isMilitaryTime,
-    postType,
+    draftType,
     postScheduledAt,
     scheduledPostErrorCode,
 }) => {
@@ -169,7 +170,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
     return (
 
         <View>
-            {postType === 'scheduled' &&
+            {draftType === DRAFT_TYPE_SCHEDULED &&
                 <View style={style.scheduledContainer}>
                     <Text style={style.scheduledAtText}>
                         {intl.formatMessage({id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'}, {time: getReadableTimestamp(postScheduledAt!, getUserTimezone(currentUser), isMilitaryTime)})}

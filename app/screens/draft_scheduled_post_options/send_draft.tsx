@@ -15,6 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
+import {DRAFT_TYPE_DRAFT, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {persistentNotificationsConfirmation, sendMessageWithAlert} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -26,7 +27,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     channelId: string;
     rootId: string;
-    postType?: 'draft' | 'scheduled';
+    draftType?: DraftType;
     channelType: ChannelType | undefined;
     currentUserId: string;
     channelName: string | undefined;
@@ -69,7 +70,7 @@ const SendDraft: React.FC<Props> = ({
     channelName,
     channelDisplayName,
     rootId,
-    postType,
+    draftType,
     postId,
     channelType,
     bottomSheetId,
@@ -92,7 +93,7 @@ const SendDraft: React.FC<Props> = ({
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const clearDraft = () => {
-        if (postType === 'draft') {
+        if (draftType === DRAFT_TYPE_DRAFT) {
             removeDraft(serverUrl, channelId, rootId);
             return;
         }
@@ -165,7 +166,7 @@ const SendDraft: React.FC<Props> = ({
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
-            {postType === 'draft' ? (
+            {draftType === DRAFT_TYPE_DRAFT ? (
                 <FormattedText
                     id='draft.options.send.title'
                     defaultMessage='Send draft'
