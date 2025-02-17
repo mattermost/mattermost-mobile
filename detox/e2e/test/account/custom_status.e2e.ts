@@ -172,13 +172,11 @@ describe('Account - Custom Status', () => {
         // # Open custom status screen
         await CustomStatusScreen.open();
 
+        await wait(timeouts.ONE_SEC);
+
         // * Verify custom status is cleared from input field
         await expect(CustomStatusScreen.getCustomStatusEmoji('default')).toBeVisible();
-        if (isIos()) {
-            await expect(CustomStatusScreen.statusInput).toHaveValue(defaultStatusText);
-        } else {
-            await expect(CustomStatusScreen.statusInput).toHaveText('');
-        }
+        await expect(CustomStatusScreen.statusInput).toHaveText('');
 
         // # Go back to account screen
         await CustomStatusScreen.close();
