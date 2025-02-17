@@ -44,9 +44,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         backgroundColor: theme.buttonBg,
         borderRadius: 4,
-
-        // flex: 1,
-        // marginLeft: 8,
         paddingVertical: BUTTON_PADDING,
         width: '100%',
     },
