@@ -87,9 +87,31 @@ jest.doMock('react-native', () => {
         alert: jest.fn(),
     };
 
+    let activeInteractions = 0;
+    const pendingCallbacks: Array<() => void> = [];
     const InteractionManager = {
         ...RNInteractionManager,
-        runAfterInteractions: jest.fn((cb) => cb()),
+        createInteractionHandle: jest.fn(() => {
+            activeInteractions += 1;
+            return activeInteractions;
+        }),
+        clearInteractionHandle: jest.fn(() => {
+            activeInteractions = Math.max(0, activeInteractions - 1);
+            if (activeInteractions === 0) {
+                // Execute pending callbacks when interactions are cleared
+                while (pendingCallbacks.length > 0) {
+                    const cb = pendingCallbacks.shift();
+                    cb?.();
+                }
+            }
+        }),
+        runAfterInteractions: jest.fn((callback) => {
+            if (activeInteractions === 0) {
+                callback();
+            } else {
+                pendingCallbacks.push(callback); // Delay execution until interactions finish
+            }
+        }),
     };
 
     const NativeModules = {

@@ -3,6 +3,7 @@
 
 import {act} from '@testing-library/react-hooks';
 import React from 'react';
+import {InteractionManager} from 'react-native';
 
 import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
 
@@ -117,5 +118,25 @@ describe('components/post_draft/send_action', () => {
         fireEvent.press(button);
 
         expect(onPress).not.toHaveBeenCalled();
+    });
+
+    it('should show the tooltip after when the tutorial has not been watched', async () => {
+        const handle = InteractionManager.createInteractionHandle();
+        const props = {...baseProps, scheduledPostFeatureTooltipWatched: false};
+        const {queryByText} = renderWithIntl(
+            <SendAction
+                {...props}
+            />,
+        );
+        const text = 'Type a message and long press the send button to schedule it for a later time.';
+
+        expect(queryByText(text)).toBeNull();
+
+        InteractionManager.clearInteractionHandle(handle);
+        await new Promise((resolve) => setImmediate(resolve));
+
+        act(() => {
+            expect(queryByText(text)).toBeTruthy();
+        });
     });
 });
