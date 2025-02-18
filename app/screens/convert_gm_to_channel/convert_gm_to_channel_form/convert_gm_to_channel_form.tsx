@@ -36,7 +36,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.dndIndicator,
         },
         loadingContainerStyle: {
-            marginRight: 10,
             padding: 0,
             top: -2,
         },

@@ -5,6 +5,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.bridge.ReadableArray
 
 class RNUtilsModule(context: ReactApplicationContext) :
   ReactContextBaseJavaModule(context) {
@@ -27,6 +28,11 @@ class RNUtilsModule(context: ReactApplicationContext) :
     @ReactMethod
     fun getRealFilePath(filePath: String?, promise: Promise?) {
         implementation.getRealFilePath(filePath, promise)
+    }
+
+    @ReactMethod
+    fun getFileSize(filePath: String?, promise: Promise?) {
+        implementation.getFileSize(filePath, promise)
     }
 
     @ReactMethod
@@ -107,5 +113,16 @@ class RNUtilsModule(context: ReactApplicationContext) :
     @ReactMethod
     fun setSoftKeyboardToAdjustNothing() {
         implementation.setSoftKeyboardToAdjustNothing()
+    }
+
+    @ReactMethod
+    fun createZipFile(paths: ReadableArray, promise: Promise?) {
+        val pathList = paths.toArrayList().map { it.toString() }
+        implementation.createZipFile(pathList, promise)
+    }
+
+    @ReactMethod
+    fun deleteFile(filePath: String?, promise: Promise?) {
+        implementation.deleteFile(filePath, promise)
     }
 }

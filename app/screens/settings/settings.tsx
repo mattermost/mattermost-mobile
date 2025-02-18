@@ -149,7 +149,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
                     type='default'
                 />
             }
-            <ReportProblem siteName={siteName}/>
+            <ReportProblem/>
         </SettingContainer>
     );
 };

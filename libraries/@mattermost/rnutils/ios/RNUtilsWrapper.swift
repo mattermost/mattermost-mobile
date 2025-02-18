@@ -274,6 +274,96 @@ import React
             UINavigationController.attemptRotationToDeviceOrientation()
         }
     }
+
+    @objc public func deleteFile(atPath path: String) -> Dictionary<String, Any> {
+        let fileManager = FileManager.default
+        do {
+            try fileManager.removeItem(atPath: path)
+            return [
+                "error": "",
+                "success": true
+            ]
+        } catch {
+            return [
+                "error": error.localizedDescription,
+                "success": false
+            ]
+        }
+    }
+
+    @objc public func getFileSize(atPath path: String) -> Dictionary<String, Any> {
+        let fileManager = FileManager.default
+        do {
+            let attributes = try fileManager.attributesOfItem(atPath: path)
+            let fileSize = attributes[.size] as? UInt64 ?? 0
+            return [
+                "error": "",
+                "success": true,
+                "size": fileSize
+            ]
+        } catch {
+            return [
+                "error": error.localizedDescription,
+                "success": false,
+                "size": 0
+            ]
+        }
+    }
+
+    @objc public func createZipFile(sourcePaths: [String]) -> Dictionary<String, Any> {
+        let fileManager = FileManager.default
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd-HHmmss"
+        let currentDate = dateFormatter.string(from: Date())
+        let destinationURL = fileManager.temporaryDirectory.appendingPathComponent("Logs_\(currentDate).zip")
+        
+        do {
+            try fileManager.createDirectory(at: destinationURL.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
+            
+            let coordinator = NSFileCoordinator()
+            var coordinatorError: NSError?
+            var zipFilePath: String?
+            
+            let tempDirectory = fileManager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fileManager.createDirectory(at: tempDirectory, withIntermediateDirectories: true, attributes: nil)
+            
+            for sourcePath in sourcePaths {
+                let sourceURL = URL(fileURLWithPath: sourcePath)
+                let destinationTempURL = tempDirectory.appendingPathComponent(sourceURL.lastPathComponent)
+                try fileManager.copyItem(at: sourceURL, to: destinationTempURL)
+            }
+            
+            var moveError: Error?
+            coordinator.coordinate(readingItemAt: tempDirectory, options: [.forUploading], error: &coordinatorError) { (zipURL) in
+                do {
+                    try fileManager.moveItem(at: zipURL, to: destinationURL)
+                    zipFilePath = destinationURL.path
+                } catch let error {
+                    moveError = error
+                }
+            }
+            
+            try fileManager.removeItem(at: tempDirectory)
+            
+            if let error = moveError ?? coordinatorError {
+                return [
+                    "error": error.localizedDescription,
+                    "success": false
+                ]
+            }
+            
+            return [
+                "error": "",
+                "success": true,
+                "zipFilePath": zipFilePath ?? ""
+            ]
+        } catch {
+            return [
+                "error": error.localizedDescription,
+                "success": false
+            ]
+        }
+    }
 }
 
 

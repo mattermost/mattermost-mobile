@@ -3,26 +3,16 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {observeConfigValue, observeCurrentUserId, observeCurrentTeamId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeConfigValue, observeReportAProblemMetadata} from '@queries/servers/system';
 
 import ReportProblem from './report_problem';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
-
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const buildNumber = observeConfigValue(database, 'BuildNumber');
-    const currentTeamId = observeCurrentTeamId(database);
-    const currentUserId = observeCurrentUserId(database);
-    const supportEmail = observeConfigValue(database, 'SupportEmail');
-    const version = observeConfigValue(database, 'Version');
-
-    return {
-        buildNumber,
-        currentTeamId,
-        currentUserId,
-        supportEmail,
-        version,
-    };
-});
+const enhanced = withObservables([], ({database}) => ({
+    allowDownloadLogs: observeConfigBooleanValue(database, 'AllowDownloadLogs', true),
+    reportAProblemMail: observeConfigValue(database, 'ReportAProblemMail'),
+    reportAProblemType: observeConfigValue(database, 'ReportAProblemType'),
+    siteName: observeConfigValue(database, 'SiteName'),
+    metadata: observeReportAProblemMetadata(database),
+}));
 
 export default withDatabase(enhanced(ReportProblem));
