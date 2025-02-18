@@ -11,7 +11,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
 
-const scheduledPosts = [
+const scheduledPosts: ScheduledPost[] = [
     {
         channel_id: 'channel_id',
         error_code: '',
@@ -23,6 +23,7 @@ const scheduledPosts = [
         root_id: '',
         scheduled_at: 123,
         update_at: 456,
+        create_at: 789,
         user_id: '',
     },
     {
@@ -36,6 +37,7 @@ const scheduledPosts = [
         user_id: 'user_id',
         processed_at: 0,
         update_at: 456,
+        create_at: 789,
         error_code: '',
     },
 ];
