@@ -165,6 +165,29 @@ describe('WebSocketClient', () => {
         expect(closeCallback).toHaveBeenCalled();
     });
 
+    it('should handle WebSocket close event - reconnect', async () => {
+        enableFakeTimers();
+
+        const closeCallback = jest.fn();
+        client.setCloseCallback(closeCallback);
+
+        const connectingCallback = jest.fn();
+        client.setConnectingCallback(connectingCallback);
+
+        await client.initialize();
+
+        expect(connectingCallback).toHaveBeenCalledTimes(1);
+        expect(closeCallback).toHaveBeenCalledTimes(0);
+
+        mockConn.close();
+
+        await advanceTimers(6000);
+
+        expect(connectingCallback).toHaveBeenCalledTimes(2);
+        expect(closeCallback).toHaveBeenCalledTimes(1);
+        expect(mockConn.readyState).toBe(WebSocketReadyState.OPEN);
+    });
+
     it('should handle WebSocket close event - tls handshake error', async () => {
         await client.initialize();
         const message = {code: 1015, reason: 'tls handshake error'};
