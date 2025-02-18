@@ -69,6 +69,7 @@ const throwFunc = () => {
 
 const mockClient = {
     createScheduledPost: jest.fn(() => ({...scheduledPost})),
+    updateScheduledPost: jest.fn(() => ({...scheduledPost})),
     getScheduledPostsForTeam: jest.fn(() => Promise.resolve({...scheduledPostsResponse})),
     deleteScheduledPost: jest.fn((scheduledPostId) => {
         return Promise.resolve(scheduledPostsResponse.bar.find((post) => post.id === scheduledPostId));
@@ -153,6 +154,40 @@ describe('fetchScheduledPosts', () => {
             prepareRecordsOnly: false,
             includeDirectChannelPosts: false,
         });
+    });
+});
+
+describe('updateScheduledPost', () => {
+    it('update Schedule post - handle not found database', async () => {
+        const result = await updateScheduledPost('foo', scheduledPost);
+        expect(result.error).toBe('foo database not found');
+        expect(logError).not.toHaveBeenCalled();
+        expect(forceLogoutIfNecessary).not.toHaveBeenCalled();
+    });
+
+    it('update Schedule post - base case', async () => {
+        await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
+        const result = await updateScheduledPost(serverUrl, scheduledPost);
+        expect(result.error).toBeUndefined();
+        expect(result.scheduledPost).toEqual(scheduledPost);
+    });
+
+    it('update Schedule post - request error', async () => {
+        const error = new Error('custom error');
+        mockClient.updateScheduledPost = jest.fn().mockRejectedValueOnce(error);
+        const result = await updateScheduledPost(serverUrl, scheduledPost);
+        expect(result.error).toBe('custom error');
+        expect(logError).toHaveBeenCalledWith('error on updateScheduledPost', error.message);
+        expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
+    });
+
+    it('update Schedule post - fetch only', async () => {
+        const spyHandleScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
+        await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
+        const result = await updateScheduledPost(serverUrl, scheduledPost, undefined, true);
+        expect(result.error).toBeUndefined();
+        expect(result.scheduledPost).toEqual(scheduledPost);
+        expect(spyHandleScheduledPosts).not.toHaveBeenCalled();
     });
 });
 
