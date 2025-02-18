@@ -44,27 +44,39 @@ const mockedHasReliableWebsocket = jest.mocked(hasReliableWebsocket);
 const mockedGetOrCreateWebSocketClient = jest.mocked(getOrCreateWebSocketClient);
 
 describe('WebSocketClient', () => {
-    let client: WebSocketClient;
     const serverUrl = 'https://example.com';
     const token = 'test-token';
 
-    const mockConn = {
+    const createMockConn = () => ({
         onOpen: jest.fn(),
         onClose: jest.fn(),
         onError: jest.fn(),
         onMessage: jest.fn(),
-        open: jest.fn(),
-        close: jest.fn(),
-        invalidate: jest.fn(),
         send: jest.fn(),
-        readyState: WebSocketReadyState.OPEN,
-    };
-    const mockClient = {client: mockConn};
-    mockedGetOrCreateWebSocketClient.mockResolvedValue(mockClient as any);
-    mockedHasReliableWebsocket.mockReturnValue(false);
+        readyState: WebSocketReadyState.CLOSED,
+        open() {
+            this.readyState = WebSocketReadyState.OPEN;
+            this.onOpen.mock.calls[0][0]({});
+        },
+        close() {
+            this.readyState = WebSocketReadyState.CLOSED;
+            this.onClose.mock.calls[0][0]({});
+        },
+    });
+
+    let mockConn: ReturnType<typeof createMockConn>;
+    let client: WebSocketClient;
 
     beforeEach(() => {
+        mockConn = createMockConn();
+        const mockClient = {client: mockConn};
+        mockedGetOrCreateWebSocketClient.mockResolvedValue(mockClient as any);
+        mockedHasReliableWebsocket.mockReturnValue(false);
         client = new WebSocketClient(serverUrl, token);
+    });
+
+    afterEach(() => {
+        client.close(true);
     });
 
     it('should initialize the WebSocketClient', async () => {
@@ -85,7 +97,7 @@ describe('WebSocketClient', () => {
 
         await client.initialize({}, true);
 
-        mockConn.onOpen.mock.calls[0][0]();
+        expect(mockConn.readyState).toBe(WebSocketReadyState.OPEN);
 
         expect(logInfo).toHaveBeenCalledWith('websocket connected to', 'wss://example.com/api/v4/websocket');
         expect(firstConnectCallback).toHaveBeenCalled();
@@ -96,8 +108,6 @@ describe('WebSocketClient', () => {
         client.setReconnectCallback(reconnectCallback);
 
         await client.initialize();
-
-        mockConn.onOpen.mock.calls[0][0]();
 
         expect(logInfo).toHaveBeenCalledWith('websocket re-established connection to', 'wss://example.com/api/v4/websocket');
         expect(reconnectCallback).toHaveBeenCalled();
@@ -130,7 +140,7 @@ describe('WebSocketClient', () => {
 
         await client.initialize();
 
-        mockConn.onClose.mock.calls[0][0]({});
+        mockConn.close();
 
         expect(logInfo).toHaveBeenCalledWith('websocket closed', 'wss://example.com/api/v4/websocket');
         expect(closeCallback).toHaveBeenCalled();
@@ -242,9 +252,16 @@ describe('WebSocketClient', () => {
 
         client.sendUserTypingEvent('channel1', 'parent1');
 
-        expect(mockConn.send).toHaveBeenCalledWith(JSON.stringify({
-            action: 'user_typing',
+        expect(mockConn.send).toHaveBeenNthCalledWith(1, JSON.stringify({
+            action: 'authentication_challenge',
             seq: 1,
+            data: {
+                token: 'test-token',
+            },
+        }));
+        expect(mockConn.send).toHaveBeenNthCalledWith(2, JSON.stringify({
+            action: 'user_typing',
+            seq: 2,
             data: {
                 channel_id: 'channel1',
                 parent_id: 'parent1',
@@ -253,7 +270,7 @@ describe('WebSocketClient', () => {
     });
 
     it('should fail to send user typing event', async () => {
-        client.close();
+        client.close(true);
         client.sendUserTypingEvent('channel1', 'parent1');
 
         expect(mockConn.send).not.toHaveBeenCalled();
