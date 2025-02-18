@@ -24,14 +24,17 @@ const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
 
 const user1 = {id: 'userid1', username: 'user1', email: 'user1@mattermost.com', roles: ''} as UserProfile;
-const scheduledPost = {
+const scheduledPost: ScheduledPost = {
     id: 'scheduledPostId1',
     root_id: '',
     update_at: 0,
     channel_id: 'channelid1',
     message: 'Test message',
     scheduled_at: Date.now() + 10000,
-} as ScheduledPost;
+    create_at: Date.now(),
+    user_id: 'userid1',
+    error_code: '',
+};
 
 const scheduledPostsResponse: FetchScheduledPostsResponse = {
     directChannels: [],
@@ -68,8 +71,8 @@ const throwFunc = () => {
 };
 
 const mockClient = {
-    createScheduledPost: jest.fn(() => Promise.resolve({...scheduledPost})),
-    updateScheduledPost: jest.fn(() => Promise.resolve({...scheduledPost})),
+    createScheduledPost: jest.fn(() => ({...scheduledPost})),
+    updateScheduledPost: jest.fn(() => ({...scheduledPost})),
     getScheduledPostsForTeam: jest.fn(() => Promise.resolve({...scheduledPostsResponse})),
     deleteScheduledPost: jest.fn((scheduledPostId) => {
         return Promise.resolve(scheduledPostsResponse.bar.find((post) => post.id === scheduledPostId));
@@ -185,7 +188,7 @@ describe('updateScheduledPost', () => {
         const spyHandleScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
         const mockResponse = {...scheduledPost, update_at: Date.now()};
-        mockClient.updateScheduledPost.mockImplementationOnce(() => Promise.resolve(mockResponse));
+        mockClient.updateScheduledPost.mockImplementationOnce(() => mockResponse);
         const result = await updateScheduledPost(serverUrl, scheduledPost, undefined, true);
         expect(result.error).toBeUndefined();
         expect(result.scheduledPost).toEqual(mockResponse);
