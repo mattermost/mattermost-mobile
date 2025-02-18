@@ -55,8 +55,8 @@ function Header() {
 
     const headerStyle = useMemo(() => ({...styles.header, marginLeft: canAddOtherServers ? MARGIN_WITH_SERVER_ICON : undefined}), [canAddOtherServers]);
     const onLogoutPress = useCallback(() => {
-        alertServerLogout(serverDisplayName, () => logout(serverUrl), intl);
-    }, [serverUrl, serverDisplayName]);
+        alertServerLogout(serverDisplayName, () => logout(serverUrl, intl), intl);
+    }, [serverDisplayName, intl, serverUrl]);
 
     const onLabelPress = useCallback(() => {
         serverButtonRef.current?.openServers();

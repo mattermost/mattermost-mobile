@@ -114,7 +114,7 @@ describe('SessionManager', () => {
 
             await new Promise((resolve) => setImmediate(resolve));
 
-            expect(logout).toHaveBeenCalledWith(mockServerUrl, false, false, true);
+            expect(logout).toHaveBeenCalledWith(mockServerUrl, undefined, {skipEvents: true, skipServerLogout: true});
             expect(relaunchApp).toHaveBeenCalled();
         });
     });
