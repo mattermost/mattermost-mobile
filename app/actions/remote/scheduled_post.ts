@@ -41,7 +41,7 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
     }
 }
 
-export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost, connectionId?: string) {
+export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost, connectionId?: string, fetchOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -51,7 +51,7 @@ export async function updateScheduledPost(serverUrl: string, scheduledPost: Sche
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.updateScheduledPost(scheduledPost, connectionId);
 
-        if (response) {
+        if (response && !fetchOnly) {
             await operator.handleScheduledPosts({
                 actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
                 scheduledPosts: [response],
@@ -59,7 +59,7 @@ export async function updateScheduledPost(serverUrl: string, scheduledPost: Sche
             });
         }
 
-        return {data: true, response};
+        return {scheduledPost: response};
     } catch (error) {
         logError('error on updateScheduledPost', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
