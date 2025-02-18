@@ -45,6 +45,7 @@ const scheduledPostsResponse: FetchScheduledPostsResponse = {
             user_id: 'user_id',
             processed_at: 0,
             update_at: 456,
+            create_at: 789,
             error_code: '',
         },
         {
@@ -56,6 +57,7 @@ const scheduledPostsResponse: FetchScheduledPostsResponse = {
             user_id: 'user_id',
             processed_at: 0,
             update_at: 456,
+            create_at: 789,
             error_code: '',
         },
     ],
