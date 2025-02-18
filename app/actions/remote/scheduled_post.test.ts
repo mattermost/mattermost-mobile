@@ -5,7 +5,7 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getConfigValue} from '@queries/servers/system';
+import {getConfigValue, getCurrentTeamId} from '@queries/servers/system';
 import {logError} from '@utils/log';
 
 import {createScheduledPost, deleteScheduledPost, fetchScheduledPosts} from './scheduled_post';
@@ -152,12 +152,13 @@ describe('fetchScheduledPosts', () => {
     });
 
     it('fetch Schedule post - handle scheduled post enabled', async () => {
+        jest.mocked(getCurrentTeamId).mockResolvedValue('bar');
         mockedGetConfigValue.mockResolvedValueOnce('true');
         const spyHandleScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
         const result = await fetchScheduledPosts(serverUrl, 'bar');
         expect(result.scheduledPosts).toEqual(scheduledPostsResponse.bar);
         expect(spyHandleScheduledPosts).toHaveBeenCalledWith({
-            actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
+            actionType: ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS,
             scheduledPosts: scheduledPostsResponse.bar,
             prepareRecordsOnly: false,
             includeDirectChannelPosts: false,

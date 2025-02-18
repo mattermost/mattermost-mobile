@@ -33,7 +33,7 @@ const LogOut = () => {
 
     const onLogout = useCallback(preventDoubleTap(() => {
         Navigation.updateProps(Screens.HOME, {extra: undefined});
-        alertServerLogout(serverDisplayName, () => logout(serverUrl), intl);
+        alertServerLogout(serverDisplayName, () => logout(serverUrl, intl), intl);
     }), [serverDisplayName, serverUrl, intl]);
 
     return (

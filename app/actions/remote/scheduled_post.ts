@@ -49,16 +49,14 @@ export async function fetchScheduledPosts(serverUrl: string, teamId: string, inc
         }
 
         const scheduledPostsResponse = await client.getScheduledPostsForTeam(teamId, includeDirectChannels, groupLabel);
-        const {directChannels, ...scheduledPostsByTeam} = scheduledPostsResponse;
+        const {directChannels = [], ...scheduledPostsByTeam} = scheduledPostsResponse;
         const scheduledPosts = [...Object.values(scheduledPostsByTeam).flat(), ...directChannels];
-        if (scheduledPosts.length) {
-            await operator.handleScheduledPosts({
-                actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
-                scheduledPosts,
-                prepareRecordsOnly: false,
-                includeDirectChannelPosts: includeDirectChannels,
-            });
-        }
+        await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS,
+            scheduledPosts,
+            prepareRecordsOnly: false,
+            includeDirectChannelPosts: includeDirectChannels,
+        });
 
         return {scheduledPosts};
     } catch (error) {
