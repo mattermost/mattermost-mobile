@@ -125,8 +125,8 @@ const TermsOfService = ({
 
     const closeTermsAndLogout = useCallback(() => {
         dismissOverlay(componentId);
-        logout(serverUrl);
-    }, [serverUrl, componentId]);
+        logout(serverUrl, intl, {logoutOnAlert: true});
+    }, [serverUrl, componentId, intl]);
 
     const alertError = useCallback((retry: () => void) => {
         Alert.alert(
