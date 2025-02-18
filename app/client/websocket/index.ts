@@ -398,9 +398,6 @@ export default class WebSocketClient {
 
         if (this.conn && this.conn.readyState === WebSocketReadyState.OPEN) {
             this.conn.send(JSON.stringify(msg));
-        } else if (!this.conn || this.conn.readyState === WebSocketReadyState.CLOSED) {
-            this.conn = undefined;
-            this.initialize(this.token);
         }
     }
 
