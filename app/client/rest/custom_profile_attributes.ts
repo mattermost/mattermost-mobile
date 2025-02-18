@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type ClientBase from './base';
+import type {CustomProfileAttributeSimple, CustomProfileField} from '@typings/api/custom_profile_attributes';
 
 export interface ClientCustomAttributesMix {
     getCustomProfileAttributeFields: () => Promise<CustomProfileField[]>;

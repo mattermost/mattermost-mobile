@@ -3,6 +3,7 @@
 
 import type {AvailableScreens} from './navigation';
 import type {FieldProps} from '@screens/edit_profile/components/field';
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
 
 export interface CustomAttributeSet {
@@ -17,12 +18,6 @@ export interface UserInfo {
     position: string;
     username: string;
     customAttributes: CustomAttributeSet;
-}
-
-export type CustomAttribute = {
-    id: string;
-    name: string;
-    value: string;
 }
 
 export type EditProfileProps = {
