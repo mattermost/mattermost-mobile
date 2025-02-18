@@ -89,7 +89,7 @@ jobs:
         run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
 
       - name: Cache Gradle dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
         with:
           path: ~/.gradle/caches/modules-2/
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
