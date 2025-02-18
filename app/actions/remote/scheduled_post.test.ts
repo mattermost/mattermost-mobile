@@ -68,8 +68,8 @@ const throwFunc = () => {
 };
 
 const mockClient = {
-    createScheduledPost: jest.fn(() => ({...scheduledPost})),
-    updateScheduledPost: jest.fn(() => ({...scheduledPost})),
+    createScheduledPost: jest.fn(() => Promise.resolve({...scheduledPost})),
+    updateScheduledPost: jest.fn(() => Promise.resolve({...scheduledPost})),
     getScheduledPostsForTeam: jest.fn(() => Promise.resolve({...scheduledPostsResponse})),
     deleteScheduledPost: jest.fn((scheduledPostId) => {
         return Promise.resolve(scheduledPostsResponse.bar.find((post) => post.id === scheduledPostId));
