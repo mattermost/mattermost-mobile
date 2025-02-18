@@ -2,17 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetFooter, type BottomSheetFooterProps} from '@gorhom/bottom-sheet';
+import {Button} from '@rneui/base';
 import React from 'react';
-import {Platform, TouchableOpacity, View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {Platform, View} from 'react-native';
 
-import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Updating from '@screens/edit_profile/components/updating';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-const BUTTON_PADDING = 15;
+const BUTTON_PADDING = 6;
 const FOOTER_PADDING = 20;
 const FOOTER_PADDING_BOTTOM_TABLET_ADJUST = 20;
 const TEXT_HEIGHT = 24; // typography 200 line height
@@ -26,6 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingTop: FOOTER_PADDING,
         flexDirection: 'row',
         paddingHorizontal: 20,
+        width: '100%',
     },
     cancelButton: {
         alignItems: 'center',
@@ -42,16 +44,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         backgroundColor: theme.buttonBg,
         borderRadius: 4,
-        flex: 1,
-        marginLeft: 8,
         paddingVertical: BUTTON_PADDING,
+        width: '100%',
     },
     disabledApplyButton: {
-        alignItems: 'center',
-        borderRadius: 4,
-        flex: 1,
-        marginLeft: 8,
-        paddingVertical: BUTTON_PADDING,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
     },
     applyButtonText: {
@@ -60,7 +56,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     applyButtonProcessingText: {
         color: changeOpacity(theme.centerChannelColor, 0.32),
-        ...typography('Body', 200, 'SemiBold'),
     },
     schedulingButtonContentWrapper: {
         position: 'relative',
@@ -79,6 +74,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         position: 'relative',
         height: '100%',
         width: 20,
+        marginLeft: 8,
+    },
+    containerStyle: {
+        flex: 1,
+    },
+    disabledContainerStyle: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
     },
 }));
 
@@ -92,39 +94,34 @@ export function ScheduledPostFooter({onSchedule, isScheduling, ...props}: Props)
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
+    const intl = useIntl();
+
+    const buttonText = isScheduling ? intl.formatMessage({id: 'scheduled_post_options.confirm_button.processing.text', defaultMessage: 'Scheduling'}) : intl.formatMessage({id: 'scheduled_post_options.confirm_button.text', defaultMessage: 'Schedule Draft'});
+
+    const icon = (
+        <View style={style.updatingIcon}>
+            <Updating/>
+        </View>
+    );
+
     const footer = (
         <View
             style={[style.container, {
                 paddingBottom: Platform.select({ios: (isTablet ? FOOTER_PADDING_BOTTOM_TABLET_ADJUST : 0), default: FOOTER_PADDING}),
             }]}
         >
-            <TouchableOpacity
-                onPress={onSchedule}
-                style={isScheduling ? style.disabledApplyButton : style.applyButton}
-                disabled={isScheduling}
+            <Button
                 testID='scheduled_post_create_button'
-            >
-                {
-                    isScheduling ? (
-                        <View style={style.schedulingButtonContentWrapper}>
-                            <View style={style.updatingIcon}>
-                                <Updating/>
-                            </View>
-                            <FormattedText
-                                id='scheduled_post_options.confirm_button.processing.text'
-                                defaultMessage='Scheduling'
-                                style={style.applyButtonProcessingText}
-                            />
-                        </View>
-                    ) : (
-                        <FormattedText
-                            id='scheduled_post_options.confirm_button.text'
-                            defaultMessage='Schedule Draft'
-                            style={style.applyButtonText}
-                        />
-                    )
-                }
-            </TouchableOpacity>
+                title={buttonText}
+                onPress={onSchedule}
+                disabled={isScheduling}
+                icon={isScheduling ? icon : undefined}
+                iconRight={true}
+                color={isScheduling ? changeOpacity(theme.centerChannelColor, 0.08) : theme.buttonBg}
+                style={[style.applyButton, isScheduling && style.disabledApplyButton]}
+                containerStyle={[style.containerStyle, isScheduling && style.disabledContainerStyle]}
+                titleStyle={[style.applyButtonText, isScheduling && style.applyButtonProcessingText]}
+            />
         </View>
     );
 
