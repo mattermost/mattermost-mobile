@@ -67,7 +67,7 @@ const ScheduledPostTooltip = ({onClose}: Props) => {
                     style={styles.close}
                     hitSlop={hitSlop}
                     onPress={onClose}
-                    testID='draft.tooltip.close.button'
+                    testID='scheduled_post.tooltip.close.button'
                 >
                     <CompassIcon
                         color={changeOpacity(Preferences.THEMES.denim.centerChannelColor, 0.56)}
@@ -82,7 +82,7 @@ const ScheduledPostTooltip = ({onClose}: Props) => {
                     id='scheduled_post.feature_tooltip'
                     defaultMessage='Type a message and long press the send button to schedule it for a later time.'
                     style={styles.description}
-                    testID='draft.tooltip.description'
+                    testID='scheduled_post.tooltip.description'
                 />
             </View>
         </View>

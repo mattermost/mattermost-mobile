@@ -19,7 +19,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import PostInput from '../post_input';
 import QuickActions from '../quick_actions';
-import SendAction from '../send_action';
+import SendAction from '../send_button';
 import Typing from '../typing';
 import Uploads from '../uploads';
 

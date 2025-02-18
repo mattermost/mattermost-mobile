@@ -3,10 +3,9 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
+import {SendButton} from '@components/post_draft/send_button/send_button';
 import {Tutorial} from '@constants';
 import {observeTutorialWatched} from '@queries/app/global';
-
-import {SendButton} from './send_action';
 
 const enhanced = withObservables([], () => {
     const scheduledPostFeatureTooltipWatched = observeTutorialWatched(Tutorial.SCHEDULED_POST);
@@ -16,4 +15,4 @@ const enhanced = withObservables([], () => {
     };
 });
 
-export default withDatabase(enhanced((SendButton)));
+export default withDatabase(enhanced(SendButton));

@@ -7,7 +7,7 @@ import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {storeScheduledPostTutorial} from '@actions/app/global';
 import CompassIcon from '@components/compass_icon';
-import ScheduledPostTooltip from '@components/post_draft/send_action/scheudled_post_tooltip';
+import ScheduledPostTooltip from '@components/post_draft/send_button/scheduled_post_tooltip';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
@@ -58,7 +58,7 @@ export function SendButton({
     scheduledPostFeatureTooltipWatched,
 }: Props) {
     const theme = useTheme();
-    const sendButtonTestID = disabled ? `${testID}.send.button.disabled` : `${testID}.send.button`;
+    const sendButtonTestID = `${testID}.send.button` + disabled ? '.disabled' : '';
     const style = getStyleSheet(theme);
 
     const [scheduledPostTooltipVisible, setScheduledPostTooltipVisible] = useState(false);
@@ -81,12 +81,7 @@ export function SendButton({
         storeScheduledPostTutorial();
     }, []);
 
-    const viewStyle = useMemo(() => {
-        if (disabled) {
-            return [style.sendButton, style.disableButton];
-        }
-        return style.sendButton;
-    }, [disabled, style]);
+    const viewStyle = useMemo(() => [style.sendButton, disabled ? style.disableButton : {}], [disabled, style]);
 
     const buttonColor = disabled ? changeOpacity(theme.buttonColor, 0.5) : theme.buttonColor;
 

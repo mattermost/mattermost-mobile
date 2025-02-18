@@ -7,9 +7,9 @@ import {InteractionManager} from 'react-native';
 
 import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
 
-import SendAction from './index';
+import SendButton from './index';
 
-describe('components/post_draft/send_action', () => {
+describe('components/post_draft/send_button', () => {
     const baseProps = {
         disabled: false,
         sendMessage: jest.fn(),
@@ -20,7 +20,7 @@ describe('components/post_draft/send_action', () => {
 
     it('should render send button when enabled', () => {
         const {getByTestId} = renderWithIntl(
-            <SendAction {...baseProps}/>,
+            <SendButton {...baseProps}/>,
         );
 
         const button = getByTestId('test_id.send.button');
@@ -29,7 +29,7 @@ describe('components/post_draft/send_action', () => {
 
     it('should render disabled send button when disabled', () => {
         const {getByTestId} = renderWithIntl(
-            <SendAction
+            <SendButton
                 {...baseProps}
                 disabled={true}
             />,
@@ -43,7 +43,7 @@ describe('components/post_draft/send_action', () => {
     it('should handle single tap', () => {
         const onPress = jest.fn();
         const {getByTestId} = renderWithIntl(
-            <SendAction
+            <SendButton
                 {...baseProps}
                 sendMessage={onPress}
             />,
@@ -58,7 +58,7 @@ describe('components/post_draft/send_action', () => {
     it('should prevent double tap within debounce period', async () => {
         const onPress = jest.fn();
         const {getByTestId} = renderWithIntl(
-            <SendAction
+            <SendButton
                 {...baseProps}
                 sendMessage={onPress}
             />,
@@ -80,7 +80,7 @@ describe('components/post_draft/send_action', () => {
         jest.useFakeTimers();
         const onPress = jest.fn();
         const {getByTestId} = renderWithIntl(
-            <SendAction
+            <SendButton
                 {...baseProps}
                 sendMessage={onPress}
             />,
@@ -107,7 +107,7 @@ describe('components/post_draft/send_action', () => {
     it('should not call onPress when disabled', () => {
         const onPress = jest.fn();
         const {getByTestId} = renderWithIntl(
-            <SendAction
+            <SendButton
                 {...baseProps}
                 disabled={true}
                 sendMessage={onPress}
@@ -124,7 +124,7 @@ describe('components/post_draft/send_action', () => {
         const handle = InteractionManager.createInteractionHandle();
         const props = {...baseProps, scheduledPostFeatureTooltipWatched: false};
         const {queryByText} = renderWithIntl(
-            <SendAction
+            <SendButton
                 {...props}
             />,
         );
