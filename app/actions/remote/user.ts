@@ -880,7 +880,7 @@ export const getAllSupportedTimezones = async (serverUrl: string) => {
     }
 };
 
-export const fetchCustomAttributes = async (serverUrl: string, userId: string) => {
+export const fetchCustomAttributes = async (serverUrl: string, userId: string): Promise<{attributes: CustomAttributeSet; error: unknown}> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const [fields, attrValues] = await Promise.all([
@@ -897,9 +897,9 @@ export const fetchCustomAttributes = async (serverUrl: string, userId: string) =
                     value: attrValues[field.id] || '',
                 };
             });
-            return {attributes, undefined};
+            return {attributes, error: undefined};
         }
-        return {attributes: {} as Record<string, CustomAttribute>};
+        return {attributes: {} as Record<string, CustomAttribute>, error: undefined};
     } catch (error) {
         logDebug('error on fetchCustomAttributes', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
@@ -907,7 +907,7 @@ export const fetchCustomAttributes = async (serverUrl: string, userId: string) =
     }
 };
 
-export const updateCustomAttributes = async (serverUrl: string, attributes: CustomAttributeSet) => {
+export const updateCustomAttributes = async (serverUrl: string, attributes: CustomAttributeSet): Promise<{success: boolean; error: unknown}> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const values: CustomProfileAttributeSimple = {};
