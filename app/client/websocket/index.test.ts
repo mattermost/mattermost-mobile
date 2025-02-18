@@ -43,6 +43,23 @@ jest.mock('@utils/config', () => ({
 const mockedHasReliableWebsocket = jest.mocked(hasReliableWebsocket);
 const mockedGetOrCreateWebSocketClient = jest.mocked(getOrCreateWebSocketClient);
 
+// Helper functions to handle Jest timer issues with async code
+// These are needed because Jest's fake timers don't play well with Promise-based code.
+// The combination of fake timers for time advancement + real timers for nextTick
+// allows us to properly test async timing behavior.
+const enableFakeTimers = () => {
+    jest.useFakeTimers({doNotFake: ['nextTick']});
+};
+
+const disableFakeTimers = () => {
+    jest.useRealTimers();
+};
+
+const advanceTimers = async (ms: number) => {
+    jest.advanceTimersByTime(ms);
+    await new Promise(process.nextTick);
+};
+
 describe('WebSocketClient', () => {
     const serverUrl = 'https://example.com';
     const token = 'test-token';
@@ -73,10 +90,12 @@ describe('WebSocketClient', () => {
         mockedGetOrCreateWebSocketClient.mockResolvedValue(mockClient as any);
         mockedHasReliableWebsocket.mockReturnValue(false);
         client = new WebSocketClient(serverUrl, token);
+        enableFakeTimers();
     });
 
     afterEach(() => {
         client.close(true);
+        disableFakeTimers();
     });
 
     it('should initialize the WebSocketClient', async () => {
