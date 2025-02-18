@@ -323,4 +323,106 @@ describe('WebSocketClient', () => {
 
         expect(client.isConnected()).toBe(true);
     });
+
+    it('should send ping messages on interval and handle pong responses', async () => {
+        await client.initialize();
+
+        // Wait until we get a client PING
+        await advanceTimers(30100);
+        expect(mockConn.send).toHaveBeenNthCalledWith(1, JSON.stringify({
+            action: 'authentication_challenge',
+            seq: 1,
+            data: {
+                token: 'test-token',
+            },
+        }));
+        expect(mockConn.send).toHaveBeenNthCalledWith(2, JSON.stringify({
+            action: 'ping',
+            seq: 2,
+        }));
+
+        // Second ping should be sent if we got a pong response
+        const pongMessage = {data: {text: WebsocketEvents.PONG}, seq_reply: 2, status: 'OK'};
+        mockConn.onMessage.mock.calls[0][0]({message: pongMessage});
+
+        // Second ping should be sent if we got a pong response
+        await advanceTimers(30100);
+        expect(mockConn.send).toHaveBeenNthCalledWith(3, JSON.stringify({
+            action: 'ping',
+            seq: 3,
+        }));
+
+        // Verify ping sequence increments
+        const pongMessage2 = {data: {text: WebsocketEvents.PONG}, seq_reply: 3, status: 'OK'};
+        mockConn.onMessage.mock.calls[0][0]({message: pongMessage2});
+
+        await advanceTimers(30100);
+        expect(mockConn.send).toHaveBeenNthCalledWith(4, JSON.stringify({
+            action: 'ping',
+            seq: 4,
+        }));
+    });
+
+    it('should handle ping timeouts and reconnect', async () => {
+        await client.initialize();
+
+        // Send first ping
+        await advanceTimers(30100);
+        expect(mockConn.send).toHaveBeenNthCalledWith(1, JSON.stringify({
+            action: 'authentication_challenge',
+            seq: 1,
+            data: {
+                token: 'test-token',
+            },
+        }));
+        expect(mockConn.send).toHaveBeenNthCalledWith(2, JSON.stringify({
+            action: 'ping',
+            seq: 2,
+        }));
+
+        // No pong received, next interval should trigger close
+        await advanceTimers(30100);
+        expect(mockConn.onClose).toHaveBeenCalled();
+
+        // Reset mock and verify reconnect behavior
+        mockConn.onClose.mockClear();
+        mockConn.send.mockClear();
+
+        // Should attempt to reconnect after timeout
+        await advanceTimers(3000);
+
+        // Should start pinging again after reconnect
+        mockConn.onOpen.mock.calls[0][0]();
+        await advanceTimers(30000);
+
+        expect(mockConn.send).toHaveBeenNthCalledWith(2, JSON.stringify({
+            action: 'authentication_challenge',
+            seq: 2,
+            data: {
+                token: 'test-token',
+            },
+        }));
+        expect(mockConn.send).toHaveBeenNthCalledWith(3, JSON.stringify({
+            action: 'ping',
+            seq: 3,
+        }));
+    });
+
+    it('should clear ping interval on close', async () => {
+        enableFakeTimers();
+
+        await client.initialize();
+        mockConn.onOpen.mock.calls[0][0](); // Complete the connection
+        mockConn.send.mockClear(); // Clear the initial authentication call
+
+        // Advance timer - no ping should be sent
+        await advanceTimers(20000);
+
+        client.close(true);
+
+        // Advance timer - no ping should be sent
+        await advanceTimers(20000);
+
+        expect(mockConn.send).not.toHaveBeenCalled();
+    });
 });
