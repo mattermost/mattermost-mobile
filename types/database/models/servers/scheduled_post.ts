@@ -28,6 +28,9 @@ declare class ScheduledPostModel extends Model {
 
     metadata: PostMetadata | null;
 
+    /** create_at: The timestamp to when this scheduled post was created on the server */
+    createAt: number;
+
     /** update_at : The timestamp to when this scheduled post was last updated on the server */
     updateAt: number;
 

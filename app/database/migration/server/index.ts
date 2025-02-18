@@ -22,6 +22,7 @@ export default schemaMigrations({migrations: [
                     {name: 'files', type: 'string'},
                     {name: 'root_id', type: 'string', isIndexed: true},
                     {name: 'metadata', type: 'string', isOptional: true},
+                    {name: 'create_at', type: 'number'},
                     {name: 'update_at', type: 'number'},
                     {name: 'scheduled_at', type: 'number'},
                     {name: 'processed_at', type: 'number'},

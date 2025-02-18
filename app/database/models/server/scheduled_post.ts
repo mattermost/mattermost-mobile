@@ -44,6 +44,9 @@ export default class ScheduledPostModel extends Model implements ScheduledPostMo
 
     @json('metadata', safeParseJSON) metadata!: PostMetadata | null;
 
+    /** update_at : The timestamp to when this scheduled post was created on the server */
+    @field('create_at') createAt!: number;
+
     /** update_at : The timestamp to when this scheduled post was last updated on the server */
     @field('update_at') updateAt!: number;
 
@@ -68,6 +71,7 @@ export default class ScheduledPostModel extends Model implements ScheduledPostMo
             scheduled_at: this.scheduledAt,
             processed_at: this.processedAt,
             error_code: this.errorCode,
+            create_at: this.createAt,
             user_id: await getCurrentUserId(serverDatabase),
         };
         if (this.metadata?.priority) {
