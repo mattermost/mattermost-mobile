@@ -58,7 +58,7 @@ export function SendButton({
     scheduledPostFeatureTooltipWatched,
 }: Props) {
     const theme = useTheme();
-    const sendButtonTestID = `${testID}.send.button` + disabled ? '.disabled' : '';
+    const sendButtonTestID = `${testID}.send.button` + (disabled ? '.disabled' : '');
     const style = getStyleSheet(theme);
 
     const [scheduledPostTooltipVisible, setScheduledPostTooltipVisible] = useState(false);
