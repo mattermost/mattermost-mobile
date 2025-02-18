@@ -8,7 +8,7 @@ import NetworkManager from '@managers/network_manager';
 import {getConfigValue, getCurrentTeamId} from '@queries/servers/system';
 import {logError} from '@utils/log';
 
-import {createScheduledPost, deleteScheduledPost, fetchScheduledPosts} from './scheduled_post';
+import {createScheduledPost, deleteScheduledPost, fetchScheduledPosts, updateScheduledPost} from './scheduled_post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -70,6 +70,7 @@ const throwFunc = () => {
 const mockConnectionId = 'mock-connection-id';
 const mockClient = {
     createScheduledPost: jest.fn((post, connId) => ({...scheduledPost, connectionId: connId})),
+    updateScheduledPost: jest.fn(() => Promise.resolve(({...scheduledPost}))),
     getScheduledPostsForTeam: jest.fn(() => Promise.resolve({...scheduledPostsResponse})),
     deleteScheduledPost: jest.fn((scheduledPostId, connId) => {
         const post = scheduledPostsResponse.bar.find((p) => p.id === scheduledPostId);
