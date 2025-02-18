@@ -34,7 +34,7 @@ const getStyleSheet = (width: number) => {
             width,
         },
         hiddenTabContent: {
-            display: 'none',
+            opacity: 0,
         },
     });
 };

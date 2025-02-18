@@ -22,3 +22,7 @@ export const queryScheduledPostsForTeam = (database: Database, teamId: string, i
         Q.sortBy('update_at', Q.desc),
     );
 };
+
+export const observeScheduledPostsForTeam = (database: Database, teamId: string, includeDirectChannelPosts?: boolean) => {
+    return queryScheduledPostsForTeam(database, teamId, includeDirectChannelPosts).observeWithColumns(['update_at']);
+};
