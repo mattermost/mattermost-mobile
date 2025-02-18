@@ -1013,6 +1013,7 @@
   "scheduled_post.picker.next_monday": "Next Monday at {9amTime}",
   "scheduled_post.picker.title": "Schedule draft",
   "scheduled_post.picker.tomorrow": "Tomorrow at {9amTime}",
+  "scheduled_post.tooltip.description": "Long-press on an item to see scheduled post actions",
   "screen.channel_files.header.recent_files": "Recent Files",
   "screen.channel_files.results.filter.title": "Filter by file type",
   "screen.mentions.subtitle": "Messages you've been mentioned in",
