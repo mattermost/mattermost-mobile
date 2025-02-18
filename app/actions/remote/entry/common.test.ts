@@ -10,6 +10,7 @@ import {handleKickFromChannel, fetchAllMyChannelsForAllTeams, fetchMissingDirect
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {fetchMyPreferences} from '@actions/remote/preference';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchMyTeams, fetchTeamsThreads, updateCanJoinTeams, handleKickFromTeam, type MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, updateAllUsersSince, autoUpdateTimezone} from '@actions/remote/user';
@@ -25,6 +26,7 @@ import NavigationStore from '@store/navigation_store';
 import {entry, setExtraSessionProps, verifyPushProxy, entryInitialChannelId, restDeferredAppEntryActions, handleEntryAfterLoadNavigation, deferredAppEntryActions} from './common';
 
 jest.mock('@actions/remote/channel');
+jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
 jest.mock('@actions/remote/systems');
 jest.mock('@actions/remote/team');
@@ -117,7 +119,7 @@ describe('actions/remote/entry/common', () => {
             const mockChannels = {channels: [], memberships: []};
             (fetchAllMyChannelsForAllTeams as jest.Mock).mockResolvedValue(mockChannels);
 
-            const result = await entry(serverUrl);
+            const result = await entry(serverUrl, 'team1');
 
             expect(result).toEqual(expect.objectContaining({
                 initialChannelId: '',
@@ -323,6 +325,7 @@ describe('actions/remote/entry/common', () => {
             expect(updateCanJoinTeams).toHaveBeenCalledWith(serverUrl);
             expect(fetchPostsForUnreadChannels).toHaveBeenCalled();
             expect(fetchGroupsForMember).toHaveBeenCalledWith(serverUrl, currentUserId, false, undefined);
+            expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, initialTeamId, true, undefined);
         });
 
         it('should handle missing data gracefully', async () => {

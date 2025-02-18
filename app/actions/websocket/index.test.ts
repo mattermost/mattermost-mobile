@@ -31,6 +31,7 @@ jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/entry/common');
 jest.mock('@actions/remote/post');
+jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
 jest.mock('@actions/remote/user');
 jest.mock('@calls/actions/calls');
