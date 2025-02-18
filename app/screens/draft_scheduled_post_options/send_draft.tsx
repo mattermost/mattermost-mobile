@@ -5,6 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import {removeDraft} from '@actions/local/draft';
+import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -14,6 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
+import {DRAFT_TYPE_DRAFT, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {persistentNotificationsConfirmation, sendMessageWithAlert} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -25,6 +27,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     channelId: string;
     rootId: string;
+    draftType?: DraftType;
     channelType: ChannelType | undefined;
     currentUserId: string;
     channelName: string | undefined;
@@ -42,6 +45,7 @@ type Props = {
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
     draftReceiverUserName?: string;
+    postId?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -66,6 +70,8 @@ const SendDraft: React.FC<Props> = ({
     channelName,
     channelDisplayName,
     rootId,
+    draftType,
+    postId,
     channelType,
     bottomSheetId,
     currentUserId,
@@ -87,7 +93,13 @@ const SendDraft: React.FC<Props> = ({
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const clearDraft = () => {
-        removeDraft(serverUrl, channelId, rootId);
+        if (draftType === DRAFT_TYPE_DRAFT) {
+            removeDraft(serverUrl, channelId, rootId);
+            return;
+        }
+        if (postId) {
+            deleteScheduledPost(serverUrl, postId);
+        }
     };
 
     const {persistentNotificationsEnabled, mentionsList} = usePersistentNotificationProps({
@@ -154,11 +166,20 @@ const SendDraft: React.FC<Props> = ({
                 size={ICON_SIZE}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
             />
-            <FormattedText
-                id='draft.options.send.title'
-                defaultMessage='Send draft'
-                style={style.title}
-            />
+            {draftType === DRAFT_TYPE_DRAFT ? (
+                <FormattedText
+                    id='draft.options.send.title'
+                    defaultMessage='Send draft'
+                    style={style.title}
+                />
+            ) : (
+                <FormattedText
+                    id='scheduled_post.options.send.title'
+                    defaultMessage='Send'
+                    style={style.title}
+                />
+            )
+            }
         </TouchableWithFeedback>
     );
 };

@@ -10,9 +10,11 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {deleteDraftConfirmation} from '@utils/draft';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -21,11 +23,13 @@ type Props = {
     bottomSheetId: AvailableScreens;
     channelId: string;
     rootId: string;
+    draftType?: DraftType;
+    postId?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
-        color: theme.centerChannelColor,
+        color: theme.dndIndicator,
         ...typography('Body', 200),
     },
     draftOptions: {
@@ -41,6 +45,8 @@ const DeleteDraft: React.FC<Props> = ({
     bottomSheetId,
     channelId,
     rootId,
+    draftType,
+    postId,
 }) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -49,12 +55,21 @@ const DeleteDraft: React.FC<Props> = ({
 
     const draftDeleteHandler = async () => {
         await dismissBottomSheet(bottomSheetId);
-        deleteDraftConfirmation({
-            intl,
-            serverUrl,
-            channelId,
-            rootId,
-        });
+        if (draftType === DRAFT_TYPE_DRAFT) {
+            deleteDraftConfirmation({
+                intl,
+                serverUrl,
+                channelId,
+                rootId,
+            });
+        }
+        if (draftType === DRAFT_TYPE_SCHEDULED && postId) {
+            deleteScheduledPostConfirmation({
+                intl,
+                serverUrl,
+                scheduledPostId: postId,
+            });
+        }
     };
 
     return (
@@ -67,13 +82,21 @@ const DeleteDraft: React.FC<Props> = ({
             <CompassIcon
                 name='trash-can-outline'
                 size={ICON_SIZE}
-                color={changeOpacity(theme.centerChannelColor, 0.56)}
+                color={theme.dndIndicator}
             />
-            <FormattedText
-                id='draft.options.delete.title'
-                defaultMessage={'Delete draft'}
-                style={style.title}
-            />
+            {draftType === DRAFT_TYPE_DRAFT ? (
+                <FormattedText
+                    id='draft.options.delete.title'
+                    defaultMessage={'Delete draft'}
+                    style={style.title}
+                />
+            ) : (
+                <FormattedText
+                    id='scheduled_post.options.delete.title'
+                    defaultMessage={'Delete'}
+                    style={style.title}
+                />
+            )}
         </TouchableWithFeedback>
     );
 };
