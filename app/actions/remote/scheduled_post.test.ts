@@ -137,6 +137,17 @@ describe('scheduled_post', () => {
         expect(logError).toHaveBeenCalledWith('error on createScheduledPost', error.message);
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
     });
+
+    it('createScheduledPost - operator handling error', async () => {
+        const error = new Error('operator error');
+        await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
+        jest.spyOn(operator, 'handleScheduledPosts').mockRejectedValueOnce(error);
+        
+        const result = await createScheduledPost(serverUrl, scheduledPost);
+        expect(result.error).toBe('operator error');
+        expect(logError).toHaveBeenCalledWith('error on createScheduledPost', error.message);
+        expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
+    });
 });
 
 describe('fetchScheduledPosts', () => {
