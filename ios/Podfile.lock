@@ -17,7 +17,7 @@ PODS:
     - ExpoModulesCore
   - ExpoFileSystem (18.0.6):
     - ExpoModulesCore
-  - ExpoImage (2.0.3):
+  - ExpoImage (2.0.4):
     - ExpoModulesCore
     - SDWebImage (~> 5.19.1)
     - SDWebImageSVGCoder (~> 1.7.0)
@@ -1454,7 +1454,7 @@ PODS:
     - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-network-client (1.8.1):
+  - react-native-network-client (1.8.2):
     - Alamofire (~> 5.10.2)
     - DoubleConversion
     - glog
@@ -2466,7 +2466,7 @@ SPEC CHECKSUMS:
   ExpoCrypto: 483fc758365923f89ddaab4327c21cae9534841d
   ExpoDevice: 449822f2c45660c1ce83283dd51c67fe5404996c
   ExpoFileSystem: a38e1bb58d77f41717293a7b73ebd4014d8cb8dd
-  ExpoImage: 2c1f4adee95d033894c53346c721361736583728
+  ExpoImage: 18ec1a3e5cd96ee6162d988be3085e18113e143f
   ExpoLinearGradient: 18148bd38f98fa0229c1f9df23393b32ab6d2d32
   ExpoModulesCore: c9cb309323aee3c048099bb40ad0226e3fcf0c56
   ExpoStoreReview: f38ed71ee04dfc02dde63a05f925f001cebba5d8
@@ -2518,7 +2518,7 @@ SPEC CHECKSUMS:
   react-native-emm: f6003bebdf4fef4feef7c61f96a5c174f43c6b5f
   react-native-image-picker: 130fad649d07e4eec8faaed361d3bba570e1e5ff
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-network-client: f2996a6440c422e64e787bdf8c8e3f992be1cee6
+  react-native-network-client: fdbd7f5f4c2818d6b90b4dcf9613d0a54ab41303
   react-native-notifications: 3bafa1237ae8a47569a84801f17d80242fe9f6a5
   react-native-paste-input: d33daa183942fa57f34dff2088805a60895f14d2
   react-native-performance: 125a96c145e29918b55b45ce25cbba54f1e24dcd

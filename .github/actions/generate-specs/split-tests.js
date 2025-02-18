@@ -52,20 +52,22 @@ class Specs {
   }
 
   generateSplits() {
-    const chunkSize = Math.ceil(this.rawFiles.length / this.parallelism);
+    const chunkSize = Math.floor(this.rawFiles.length / this.parallelism);
+    let remainder = this.rawFiles.length % this.parallelism;
     let runNo = 1;
+    let start = 0;
 
-    for (let i = 0; i < this.rawFiles.length; i += chunkSize) {
-      const end = Math.min(i + chunkSize, this.rawFiles.length);
-      const fileGroup = this.rawFiles.slice(i, end).join(' ');
+    for (let i = 0; i < this.parallelism; i++) {
+      let end = start + chunkSize + (remainder > 0 ? 1 : 0);
+      const fileGroup = this.rawFiles.slice(start, end).join(' ');
       const specFileGroup = new SpecGroup(runNo.toString(), fileGroup, this.deviceInfo);
       this.groupedFiles.push(specFileGroup);
 
-      if (end === this.rawFiles.length) {
-        break;
-      }
-
+      start = end;
       runNo++;
+      if (remainder > 0) {
+        remainder--;
+      }
     }
   }
 

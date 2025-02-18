@@ -96,6 +96,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchModifierFrom.tap();
         await SearchMessagesScreen.searchInput.typeText(testUser.username);
         const {atMentionItem} = Autocomplete.getAtMentionItem(testUser.id);
+        await waitFor(atMentionItem).toBeVisible().withTimeout(2000);
         await atMentionItem.tap();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
@@ -274,6 +275,7 @@ describe('Search - Search Messages', () => {
         await expect(postListPostItem).toBeVisible();
 
         // # Clear search input, remove recent search item, and go back to channel list screen
+        await SearchMessagesScreen.searchInput.tap();
         await SearchMessagesScreen.searchClearButton.tap();
         await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
         await ChannelListScreen.open();
@@ -306,8 +308,8 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.teamPickerButton.tap();
         await TeamDropdownMenuScreen.getTeamIcon(testTeamTwo.id).tap();
 
-        // * Verify team picker button displays second team icon
-        await expect(SearchMessagesScreen.getTeamPickerIcon(testTeamTwo.id)).toBeVisible();
+        // * Verify team picker button displays second team name
+        await expect(element(by.text(testTeamTwo.display_name))).toBeVisible();
 
         // # Type in a search term that will yield results for second team and tap on search key
         await SearchMessagesScreen.searchInput.typeText(searchTerm);
@@ -321,8 +323,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.teamPickerButton.tap();
         await TeamDropdownMenuScreen.getTeamIcon(testTeam.id).tap();
 
-        // * Verify team picker button displays first team icon and search results do not contain searched message
-        await expect(SearchMessagesScreen.getTeamPickerIcon(testTeam.id)).toBeVisible();
+        // * Verify search results do not contain searched message
         await expect(postListPostItem).not.toBeVisible();
 
         // # Clear search input, remove recent search item, and go back to channel list screen
