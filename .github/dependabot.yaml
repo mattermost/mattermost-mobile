@@ -1,7 +1,9 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories: 
+     - "/.github/workflows"
+     - "/.github/actions/**/*"
     reviewers:
       - "mattermost/core-build-engineers"
     open-pull-requests-limit: 5
