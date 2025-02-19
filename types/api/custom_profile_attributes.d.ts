@@ -49,3 +49,7 @@ export type CustomAttribute = {
     value: string;
     sort_order?: number;
 }
+
+export interface CustomAttributeSet {
+    [key: string]: CustomAttribute;
+}

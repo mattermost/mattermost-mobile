@@ -3,12 +3,8 @@
 
 import type {AvailableScreens} from './navigation';
 import type {FieldProps} from '@screens/edit_profile/components/field';
-import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
+import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
-
-export interface CustomAttributeSet {
-    [key: string]: CustomAttribute;
-}
 
 export interface UserInfo {
     email: string;

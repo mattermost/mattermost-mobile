@@ -25,9 +25,8 @@ import {fetchGroupsByNames} from './groups';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Model} from '@nozbe/watermelondb';
-import type {CustomAttribute, CustomProfileAttributeSimple, CustomProfileField} from '@typings/api/custom_profile_attributes';
+import type {CustomAttribute, CustomProfileAttributeSimple, CustomProfileField, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
-import type {CustomAttributeSet} from '@typings/screens/edit_profile';
 
 export type MyUserRequest = {
     user?: UserProfile;
