@@ -11,6 +11,7 @@
     "npm": "^9 || ^10"
   },
   "dependencies": {
+    "APNG4Android": "1.0.0",
     "@formatjs/intl-datetimeformat": "6.17.1",
     "@formatjs/intl-getcanonicallocales": "2.5.4",
     "@formatjs/intl-listformat": "7.7.8",
