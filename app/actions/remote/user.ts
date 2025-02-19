@@ -29,7 +29,6 @@ import type {CustomAttribute, CustomProfileAttributeSimple, CustomProfileField} 
 import type UserModel from '@typings/database/models/servers/user';
 import type {CustomAttributeSet} from '@typings/screens/edit_profile';
 
-
 export type MyUserRequest = {
     user?: UserProfile;
     error?: unknown;
