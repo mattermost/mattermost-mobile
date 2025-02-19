@@ -54,6 +54,7 @@ describe('channel bookmarks', () => {
             configsToDelete: [],
             prepareRecordsOnly: false,
         });
+        await operator.handleSystem({systems: [{id: 'License', value: {isLicensed: 'true'}}], prepareRecordsOnly: false});
         bookmarkSpy = jest.spyOn(operator, 'handleChannelBookmark');
     });
 
@@ -154,5 +155,14 @@ describe('channel bookmarks', () => {
         const result = await deleteChannelBookmark(serverUrl, channelId, bookmarkId);
         expect(result).toBeDefined();
         expect(result.bookmarks).toBeDefined();
+    });
+
+    it('should not fetch bookmarks if license is not licensed', async () => {
+        await operator.handleSystem({systems: [{id: 'License', value: {isLicensed: 'false'}}], prepareRecordsOnly: false});
+        const result = await fetchChannelBookmarks(serverUrl, channelId);
+        expect(result).toBeDefined();
+        expect(result.bookmarks).toBeDefined();
+        expect(result.bookmarks?.length).toBe(0);
+        expect(mockClient.getChannelBookmarksForChannel).not.toHaveBeenCalled();
     });
 });
