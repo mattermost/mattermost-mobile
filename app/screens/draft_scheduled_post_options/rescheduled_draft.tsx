@@ -66,7 +66,7 @@ const RescheduledDraft: React.FC<Props> = ({
             type={'opacity'}
             style={style.rescheduledContainer}
             onPress={rescheduledDraft}
-            testID='delete_draft'
+            testID='rescheduled_draft'
         >
             <CompassIcon
                 name='clock-send-outline'
