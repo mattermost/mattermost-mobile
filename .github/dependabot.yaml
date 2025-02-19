@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "github-actions"
     directories: 
      - "/.github/workflows"
-     - "/.github/actions"
+     - "/.github/actions/**/*"
     reviewers:
       - "mattermost/core-build-engineers"
     open-pull-requests-limit: 5
