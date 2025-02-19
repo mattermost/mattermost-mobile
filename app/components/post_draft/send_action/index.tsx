@@ -7,12 +7,14 @@ import {View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     testID: string;
     disabled: boolean;
     sendMessage: () => void;
+    showScheduledPostOptions: () => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -39,6 +41,7 @@ function SendButton({
     testID,
     disabled,
     sendMessage,
+    showScheduledPostOptions,
 }: Props) {
     const theme = useTheme();
     const sendButtonTestID = disabled ? `${testID}.send.button.disabled` : `${testID}.send.button`;
@@ -53,13 +56,16 @@ function SendButton({
 
     const buttonColor = disabled ? changeOpacity(theme.buttonColor, 0.5) : theme.buttonColor;
 
+    const sendMessageWithDoubleTapPrevention = usePreventDoubleTap(sendMessage);
+
     return (
         <TouchableWithFeedback
             testID={sendButtonTestID}
-            onPress={sendMessage}
+            onPress={sendMessageWithDoubleTapPrevention}
             style={style.sendButtonContainer}
             type={'opacity'}
             disabled={disabled}
+            onLongPress={showScheduledPostOptions}
         >
             <View style={viewStyle}>
                 <CompassIcon

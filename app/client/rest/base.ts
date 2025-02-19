@@ -171,6 +171,14 @@ export default class ClientBase extends ClientTracking {
         return `${this.urlVersion}/redirect_location`;
     }
 
+    getScheduledPostActionsRoute() {
+        return `${this.getPostsRoute()}/schedule`;
+    }
+
+    getTeamAndDirectChannelScheduledPostsRoute() {
+        return `${this.getPostsRoute()}/scheduled`;
+    }
+
     getThreadsRoute(userId: string, teamId: string): string {
         return `${this.getUserRoute(userId)}/teams/${teamId}/threads`;
     }
@@ -201,6 +209,10 @@ export default class ClientBase extends ClientTracking {
 
     getCustomProfileAttributesRoute() {
         return `${this.urlVersion}/custom_profile_attributes`;
+    }
+
+    getScheduledPostRoute() {
+        return `${this.getPostsRoute()}/schedule`;
     }
 
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
