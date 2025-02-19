@@ -37,6 +37,8 @@ import {
     autoUpdateTimezone,
     fetchTeamAndChannelMembership,
     getAllSupportedTimezones,
+    fetchCustomAttributes,
+    updateCustomAttributes,
 } from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -90,6 +92,9 @@ const mockClient = {
     getTeamMember: jest.fn((id: string, userId: string) => ({id: userId + '-' + id, user_id: userId, team_id: id, roles: ''})),
     getChannelMember: jest.fn((cid: string, userId: string) => ({id: userId + '-' + cid, user_id: userId, channel_id: cid, roles: ''})),
     getTimezones: jest.fn(() => ['EST']),
+    getCustomProfileAttributeFields: jest.fn(),
+    getCustomProfileAttributeValues: jest.fn(),
+    updateCustomProfileAttributeValues: jest.fn(),
 };
 
 beforeAll(() => {
@@ -337,7 +342,7 @@ describe('get users', () => {
     });
 
     it('buildProfileImageUrlFromUser - base case', async () => {
-        const result = await buildProfileImageUrlFromUser(serverUrl, user2);
+        const result = buildProfileImageUrlFromUser(serverUrl, user2);
         expect(result).toBeDefined();
     });
 
@@ -355,6 +360,112 @@ describe('get users', () => {
     it('getAllSupportedTimezones - base case', async () => {
         const result = await getAllSupportedTimezones(serverUrl);
         expect(result).toBeDefined();
+    });
+});
+
+describe('Custom Profile Attributes', () => {
+    it('fetchCustomAttributes - base case', async () => {
+        mockClient.getCustomProfileAttributeFields = jest.fn().mockResolvedValue([
+            {id: 'field1', name: 'Field 1'},
+            {id: 'field2', name: 'Field 2'},
+        ]);
+        mockClient.getCustomProfileAttributeValues = jest.fn().mockResolvedValue({
+            field1: 'value1',
+            field2: 'value2',
+        });
+
+        const result = await fetchCustomAttributes(serverUrl, 'user1');
+        expect(result.error).toBeUndefined();
+        expect(result.attributes).toBeDefined();
+        expect(Object.keys(result.attributes!)).toHaveLength(2);
+        expect(result.attributes!.field1).toEqual({
+            id: 'field1',
+            name: 'Field 1',
+            value: 'value1',
+        });
+        expect(result.attributes!.field2).toEqual({
+            id: 'field2',
+            name: 'Field 2',
+            value: 'value2',
+        });
+    });
+
+    it('fetchCustomAttributes - no fields', async () => {
+        mockClient.getCustomProfileAttributeFields = jest.fn().mockResolvedValue([]);
+        mockClient.getCustomProfileAttributeValues = jest.fn().mockResolvedValue({});
+
+        const result = await fetchCustomAttributes(serverUrl, 'user1');
+        expect(result.error).toBeUndefined();
+        expect(result.attributes).toEqual({});
+    });
+
+    it('fetchCustomAttributes - error on fields', async () => {
+        const error = new Error('Sample error');
+
+        mockClient.getCustomProfileAttributeFields = jest.fn().mockRejectedValue(error);
+        mockClient.getCustomProfileAttributeValues = jest.fn().mockResolvedValue({
+            field1: 'value1',
+            field2: 'value2',
+        });
+
+        const result = await fetchCustomAttributes(serverUrl, 'user1');
+        expect(result.error).toBeDefined();
+    });
+
+    it('fetchCustomAttributes - error on values', async () => {
+        const error = new Error('Sample error');
+
+        mockClient.getCustomProfileAttributeFields = jest.fn().mockResolvedValue([
+            {id: 'field1', name: 'Field 1'},
+            {id: 'field2', name: 'Field 2'},
+        ]);
+        mockClient.getCustomProfileAttributeValues = jest.fn().mockRejectedValue(error);
+
+        const result = await fetchCustomAttributes(serverUrl, 'user1');
+        expect(result.error).toBeDefined();
+    });
+
+    it('updateCustomAttributes - base case', async () => {
+        mockClient.updateCustomProfileAttributeValues = jest.fn().mockResolvedValue({});
+
+        const attributes = {
+            field1: {
+                id: 'field1',
+                name: 'Field 1',
+                value: 'new value 1',
+            },
+            field2: {
+                id: 'field2',
+                name: 'Field 2',
+                value: 'new value 2',
+            },
+        };
+
+        const result = await updateCustomAttributes(serverUrl, attributes);
+        expect(result.error).toBeUndefined();
+        expect(result.success).toBe(true);
+        expect(mockClient.updateCustomProfileAttributeValues).toHaveBeenCalledWith({
+            field1: 'new value 1',
+            field2: 'new value 2',
+        });
+    });
+
+    it('updateCustomAttributes - error', async () => {
+        const error = new Error('Test Error');
+
+        mockClient.updateCustomProfileAttributeValues = jest.fn().mockRejectedValue(error);
+
+        const attributes = {
+            field1: {
+                id: 'field1',
+                name: 'Field 1',
+                value: 'new value 1',
+            },
+        };
+
+        const result = await updateCustomAttributes(serverUrl, attributes);
+        expect(result.error).toBeDefined();
+        expect(result.success).toBe(false);
     });
 });
 
