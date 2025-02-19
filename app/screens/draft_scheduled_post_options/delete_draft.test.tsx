@@ -11,7 +11,7 @@ import {renderWithIntl} from '@test/intl-test-helper';
 import {deleteDraftConfirmation} from '@utils/draft';
 import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
 
-import DeleteDraft from '../delete_draft';
+import DeleteDraft from './delete_draft';
 
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(() => 'http://baseUrl.com'),

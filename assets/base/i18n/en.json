@@ -1010,7 +1010,7 @@
   "scheduled_post.channel_indicator.single": "Message scheduled for {dateTime}.",
   "scheduled_post.channel_indicator.thread.multiple": "{count} scheduled messages in thread.",
   "scheduled_post.feature_tooltip": "Type a message and long press the send button to schedule it for a later time.",
-  "scheduled_post.option.header": "Scheduled post actions",
+  "scheduled_post.option.header": "Message actions",
   "scheduled_post.options.delete.cancel": "Cancel",
   "scheduled_post.options.delete.confirm": "Delete",
   "scheduled_post.options.delete.confirmation": "Are you sure you want to delete this scheduled post?",
