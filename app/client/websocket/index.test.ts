@@ -4,9 +4,9 @@
 import {WebSocketReadyState, getOrCreateWebSocketClient} from '@mattermost/react-native-network-client';
 
 import {WebsocketEvents} from '@constants';
-import {enableFakeTimers, disableFakeTimers, advanceTimers} from '@test/timer_helpers';
 import DatabaseManager from '@database/manager';
 import {getConfigValue} from '@queries/servers/system';
+import {enableFakeTimers, disableFakeTimers, advanceTimers} from '@test/timer_helpers';
 import {hasReliableWebsocket} from '@utils/config';
 import {logDebug, logInfo, logError, logWarning} from '@utils/log';
 
@@ -43,7 +43,6 @@ jest.mock('@utils/config', () => ({
 
 const mockedHasReliableWebsocket = jest.mocked(hasReliableWebsocket);
 const mockedGetOrCreateWebSocketClient = jest.mocked(getOrCreateWebSocketClient);
-
 
 describe('WebSocketClient', () => {
     const serverUrl = 'https://example.com';
