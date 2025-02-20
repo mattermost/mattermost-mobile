@@ -82,6 +82,7 @@
   "apps.suggestion.no_static": "Brak pasujących opcji.",
   "apps.suggestion.no_suggestion": "Brak pasujących sugestii.",
   "archivedChannelMessage": "Przeglądasz **zarchiwizowany kanał**. Nowe wiadomości nie mogą być wysłane.",
+  "audio.loading_error": "Błąd ładowania Audio.",
   "autocomplete_selector.unknown_channel": "Nieznany kanał",
   "browse_channels.archivedChannels": "Zarchiwizowane kanały",
   "browse_channels.dropdownTitle": "Pokaż",
