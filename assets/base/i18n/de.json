@@ -82,6 +82,7 @@
   "apps.suggestion.no_static": "Keine passenden Auswahlmöglichkeiten.",
   "apps.suggestion.no_suggestion": "Keine passenden Vorschläge.",
   "archivedChannelMessage": "Du siehst einen **archivierten Kanal**. Neue Nachrichten können nicht geschickt werden.",
+  "audio.loading_error": "Fehler beim Laden der Ton-Datei.",
   "autocomplete_selector.unknown_channel": "Unbekannter Kanal",
   "browse_channels.archivedChannels": "Archivierte Kanäle",
   "browse_channels.dropdownTitle": "Anzeigen",
