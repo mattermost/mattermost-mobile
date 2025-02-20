@@ -4,6 +4,7 @@
 import {WebSocketReadyState, getOrCreateWebSocketClient} from '@mattermost/react-native-network-client';
 
 import {WebsocketEvents} from '@constants';
+import {enableFakeTimers, disableFakeTimers, advanceTimers} from '@test/timer_helpers';
 import DatabaseManager from '@database/manager';
 import {getConfigValue} from '@queries/servers/system';
 import {hasReliableWebsocket} from '@utils/config';
@@ -43,22 +44,6 @@ jest.mock('@utils/config', () => ({
 const mockedHasReliableWebsocket = jest.mocked(hasReliableWebsocket);
 const mockedGetOrCreateWebSocketClient = jest.mocked(getOrCreateWebSocketClient);
 
-// Helper functions to handle Jest timer issues with async code
-// These are needed because Jest's fake timers don't play well with Promise-based code.
-// The combination of fake timers for time advancement + real timers for nextTick
-// allows us to properly test async timing behavior.
-const enableFakeTimers = () => {
-    jest.useFakeTimers({doNotFake: ['nextTick']});
-};
-
-const disableFakeTimers = () => {
-    jest.useRealTimers();
-};
-
-const advanceTimers = async (ms: number) => {
-    jest.advanceTimersByTime(ms);
-    await new Promise(process.nextTick);
-};
 
 describe('WebSocketClient', () => {
     const serverUrl = 'https://example.com';
