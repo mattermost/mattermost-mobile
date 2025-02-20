@@ -1000,6 +1000,7 @@
   "scheduled_post.channel_indicator.multiple": "{count} scheduled messages in channel.",
   "scheduled_post.channel_indicator.single": "Message scheduled for {dateTime}.",
   "scheduled_post.channel_indicator.thread.multiple": "{count} scheduled messages in thread.",
+  "scheduled_post.feature_tooltip": "Type a message and long press the send button to schedule it for a later time.",
   "scheduled_post.picker.custom": "Custom Time",
   "scheduled_post.picker.monday": "Monday at {9amTime}",
   "scheduled_post.picker.next_monday": "Next Monday at {9amTime}",

@@ -3,22 +3,23 @@
 
 import {act} from '@testing-library/react-hooks';
 import React from 'react';
+import {InteractionManager} from 'react-native';
 
+import {SendButton} from '@components/post_draft/send_button/send_button';
 import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
 
-import SendAction from './index';
-
-describe('components/post_draft/send_action', () => {
+describe('components/post_draft/send_button', () => {
     const baseProps = {
         disabled: false,
         sendMessage: jest.fn(),
         testID: 'test_id',
         showScheduledPostOptions: jest.fn(),
+        scheduledPostFeatureTooltipWatched: true,
     };
 
     it('should render send button when enabled', () => {
         const {getByTestId} = renderWithIntl(
-            <SendAction {...baseProps}/>,
+            <SendButton {...baseProps}/>,
         );
 
         const button = getByTestId('test_id.send.button');
@@ -27,7 +28,7 @@ describe('components/post_draft/send_action', () => {
 
     it('should render disabled send button when disabled', () => {
         const {getByTestId} = renderWithIntl(
-            <SendAction
+            <SendButton
                 {...baseProps}
                 disabled={true}
             />,
@@ -41,7 +42,7 @@ describe('components/post_draft/send_action', () => {
     it('should handle single tap', () => {
         const onPress = jest.fn();
         const {getByTestId} = renderWithIntl(
-            <SendAction
+            <SendButton
                 {...baseProps}
                 sendMessage={onPress}
             />,
@@ -56,7 +57,7 @@ describe('components/post_draft/send_action', () => {
     it('should prevent double tap within debounce period', async () => {
         const onPress = jest.fn();
         const {getByTestId} = renderWithIntl(
-            <SendAction
+            <SendButton
                 {...baseProps}
                 sendMessage={onPress}
             />,
@@ -78,7 +79,7 @@ describe('components/post_draft/send_action', () => {
         jest.useFakeTimers();
         const onPress = jest.fn();
         const {getByTestId} = renderWithIntl(
-            <SendAction
+            <SendButton
                 {...baseProps}
                 sendMessage={onPress}
             />,
@@ -105,7 +106,7 @@ describe('components/post_draft/send_action', () => {
     it('should not call onPress when disabled', () => {
         const onPress = jest.fn();
         const {getByTestId} = renderWithIntl(
-            <SendAction
+            <SendButton
                 {...baseProps}
                 disabled={true}
                 sendMessage={onPress}
@@ -116,5 +117,25 @@ describe('components/post_draft/send_action', () => {
         fireEvent.press(button);
 
         expect(onPress).not.toHaveBeenCalled();
+    });
+
+    it('should show the tooltip after when the tutorial has not been watched', async () => {
+        const handle = InteractionManager.createInteractionHandle();
+        const props = {...baseProps, scheduledPostFeatureTooltipWatched: false};
+        const {queryByText} = renderWithIntl(
+            <SendButton
+                {...props}
+            />,
+        );
+        const text = 'Type a message and long press the send button to schedule it for a later time.';
+
+        expect(queryByText(text)).toBeNull();
+
+        InteractionManager.clearInteractionHandle(handle);
+        await new Promise((resolve) => setImmediate(resolve));
+
+        act(() => {
+            expect(queryByText(text)).toBeTruthy();
+        });
     });
 });
