@@ -44,6 +44,10 @@ export const storeDraftsTutorial = async () => {
     return storeGlobal(Tutorial.DRAFTS, 'true', false);
 };
 
+export const storeScheduledPostsTutorial = async () => {
+    return storeGlobal(Tutorial.SCHEDULED_POSTS, 'true', false);
+};
+
 export const storeDontAskForReview = async (prepareRecordsOnly = false) => {
     return storeGlobal(GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW, 'true', prepareRecordsOnly);
 };

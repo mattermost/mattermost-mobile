@@ -67,12 +67,12 @@ const DraftOptions: React.FC<Props> = ({
                     style={styles.header}
                 />}
                 <EditDraft
-                    bottomSheetId={Screens.DRAFT_OPTIONS}
+                    bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     channel={channel}
                     rootId={rootId}
                 />
                 <SendHandler
-                    bottomSheetId={Screens.DRAFT_OPTIONS}
+                    bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     channelId={channel.id}
                     rootId={rootId}
                     files={draft.files}
@@ -91,7 +91,7 @@ const DraftOptions: React.FC<Props> = ({
                     /* eslint-enable no-empty-function */
                 />
                 <DeleteDraft
-                    bottomSheetId={Screens.DRAFT_OPTIONS}
+                    bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     channelId={channel.id}
                     rootId={rootId}
                 />
@@ -101,7 +101,7 @@ const DraftOptions: React.FC<Props> = ({
 
     return (
         <BottomSheet
-            componentId={Screens.DRAFT_OPTIONS}
+            componentId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
             renderContent={renderContent}
             closeButtonId={DRAFT_OPTIONS_BUTTON}
             snapPoints={snapPoints}
