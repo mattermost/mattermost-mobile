@@ -64,7 +64,7 @@ const LogFileItem = ({path}: Props) => {
                     {filename}
                 </Text>
                 <Text style={styles.logSize}>
-                    {`TXT ${size}KB`}
+                    {`TXT ${size}`}
                 </Text>
             </View>
         </View>

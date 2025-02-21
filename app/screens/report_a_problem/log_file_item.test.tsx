@@ -41,7 +41,7 @@ describe('screens/report_a_problem/log_file_item', () => {
 
         await act(async () => {
             await waitFor(() => {
-                expect(getByText('TXT 1KB')).toBeTruthy();
+                expect(getByText('TXT 1024 B')).toBeTruthy();
             });
         });
     });
@@ -67,7 +67,7 @@ describe('screens/report_a_problem/log_file_item', () => {
 
         await act(async () => {
             await waitFor(() => {
-                expect(getByText('TXT 3KB')).toBeTruthy();
+                expect(getByText('TXT 2 KB')).toBeTruthy();
             });
         });
     });

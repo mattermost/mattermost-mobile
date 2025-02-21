@@ -153,7 +153,7 @@ describe('screens/report_a_problem/report_problem', () => {
         await act(async () => {
             fireEvent.press(getByText('Report a problem'));
             expect(logDebug).toHaveBeenCalledWith('Report a problem link is not set');
-            expect(tryOpenURL).not.toHaveBeenCalled();
+            expect(tryOpenURL).toHaveBeenCalledWith('default-link');
         });
     });
 
