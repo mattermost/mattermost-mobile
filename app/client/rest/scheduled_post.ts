@@ -7,6 +7,7 @@ import type ClientBase from './base';
 
 export interface ClientScheduledPostMix {
     createScheduledPost(schedulePost: ScheduledPost, connectionId?: string): Promise<ScheduledPost>;
+    updateScheduledPost(scheduledPost: ScheduledPost, connectionId?: string): Promise<ScheduledPost>;
     getScheduledPostsForTeam(teamId: string, includeDirectChannels: boolean, groupLabel?: RequestGroupLabel): Promise<FetchScheduledPostsResponse>;
     deleteScheduledPost(scheduledPostId: string, connectionId?: string): Promise<ScheduledPost>;
 }
@@ -18,6 +19,18 @@ const ClientScheduledPost = <TBase extends Constructor<ClientBase>>(superclass: 
             {
                 method: 'post',
                 body: schedulePost,
+                headers: {'Connection-Id': connectionId},
+            },
+        );
+    };
+
+    updateScheduledPost = async (scheduledPost: ScheduledPost, connectionId = '') => {
+        const scheduledPostId = scheduledPost.id;
+        return this.doFetch(
+            `${this.getScheduledPostActionsRoute()}/${scheduledPostId}`,
+            {
+                method: 'put',
+                body: scheduledPost,
                 headers: {'Connection-Id': connectionId},
             },
         );
