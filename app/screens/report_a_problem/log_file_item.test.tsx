@@ -1,11 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import RNUtils from '@mattermost/rnutils';
 import {act, render, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
+import {getFileSize} from '@utils/file';
+
 import LogFileItem from './log_file_item';
+
+jest.mock('@utils/file', () => ({
+    ...jest.requireActual('@utils/file'),
+    getFileSize: jest.fn(),
+}));
 
 describe('screens/report_a_problem/log_file_item', () => {
     const filePath = '/path/to/log/file.txt';
@@ -13,7 +19,7 @@ describe('screens/report_a_problem/log_file_item', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.mocked(RNUtils.getFileSize).mockResolvedValue(fileSize);
+        jest.mocked(getFileSize).mockResolvedValue(fileSize);
     });
 
     it('renders log file item with correct filename', async () => {
@@ -47,13 +53,13 @@ describe('screens/report_a_problem/log_file_item', () => {
 
         await act(async () => {
             await waitFor(() => {
-                expect(RNUtils.getFileSize).toHaveBeenCalledWith(filePath);
+                expect(getFileSize).toHaveBeenCalledWith(filePath);
             });
         });
     });
 
     it('rounds file size to nearest KB', async () => {
-        jest.mocked(RNUtils.getFileSize).mockResolvedValue(2750); // 2.685KB
+        jest.mocked(getFileSize).mockResolvedValue(2750); // 2.685KB
 
         const {getByText} = render(
             <LogFileItem path={filePath}/>,

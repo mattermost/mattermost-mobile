@@ -275,47 +275,13 @@ import React
         }
     }
 
-    @objc public func deleteFile(atPath path: String) -> Dictionary<String, Any> {
-        let fileManager = FileManager.default
-        do {
-            try fileManager.removeItem(atPath: path)
-            return [
-                "error": "",
-                "success": true
-            ]
-        } catch {
-            return [
-                "error": error.localizedDescription,
-                "success": false
-            ]
-        }
-    }
-
-    @objc public func getFileSize(atPath path: String) -> Dictionary<String, Any> {
-        let fileManager = FileManager.default
-        do {
-            let attributes = try fileManager.attributesOfItem(atPath: path)
-            let fileSize = attributes[.size] as? UInt64 ?? 0
-            return [
-                "error": "",
-                "success": true,
-                "size": fileSize
-            ]
-        } catch {
-            return [
-                "error": error.localizedDescription,
-                "success": false,
-                "size": 0
-            ]
-        }
-    }
-
     @objc public func createZipFile(sourcePaths: [String]) -> Dictionary<String, Any> {
         let fileManager = FileManager.default
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd-HHmmss"
         let currentDate = dateFormatter.string(from: Date())
         let destinationURL = fileManager.temporaryDirectory.appendingPathComponent("Logs_\(currentDate).zip")
+        let tempDirectory = fileManager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         
         do {
             try fileManager.createDirectory(at: destinationURL.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
@@ -324,13 +290,22 @@ import React
             var coordinatorError: NSError?
             var zipFilePath: String?
             
-            let tempDirectory = fileManager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try fileManager.createDirectory(at: tempDirectory, withIntermediateDirectories: true, attributes: nil)
             
+            // Copy files to temp directory
             for sourcePath in sourcePaths {
                 let sourceURL = URL(fileURLWithPath: sourcePath)
                 let destinationTempURL = tempDirectory.appendingPathComponent(sourceURL.lastPathComponent)
-                try fileManager.copyItem(at: sourceURL, to: destinationTempURL)
+                do {
+                    try fileManager.copyItem(at: sourceURL, to: destinationTempURL)
+                } catch {
+                    // Clean up temp directory if copy fails
+                    try? fileManager.removeItem(at: tempDirectory)
+                    return [
+                        "error": "Failed to copy file: \(error.localizedDescription)",
+                        "success": false
+                    ]
+                }
             }
             
             var moveError: Error?
@@ -343,9 +318,12 @@ import React
                 }
             }
             
-            try fileManager.removeItem(at: tempDirectory)
+            // Clean up temp directory regardless of success or failure
+            try? fileManager.removeItem(at: tempDirectory)
             
             if let error = moveError ?? coordinatorError {
+                // Clean up destination file if move failed
+                try? fileManager.removeItem(at: destinationURL)
                 return [
                     "error": error.localizedDescription,
                     "success": false
@@ -358,6 +336,9 @@ import React
                 "zipFilePath": zipFilePath ?? ""
             ]
         } catch {
+            // Clean up both temp directory and destination file in case of any other errors
+            try? fileManager.removeItem(at: tempDirectory)
+            try? fileManager.removeItem(at: destinationURL)
             return [
                 "error": error.localizedDescription,
                 "success": false

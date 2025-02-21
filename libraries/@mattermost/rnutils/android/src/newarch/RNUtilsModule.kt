@@ -22,10 +22,6 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
         implementation.getRealFilePath(filePath, promise)
     }
 
-    override fun getFileSize(filePath: String?, promise: Promise?) {
-        implementation.getFileSize(filePath, promise)
-    }
-
     override fun saveFile(filePath: String?, promise: Promise?) {
         implementation.saveFile(filePath, promise)
     }
@@ -84,9 +80,5 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
     override fun createZipFile(paths: ReadableArray, promise: Promise?) {
         val pathList = paths.toArrayList().map { it.toString() }
         implementation.createZipFile(pathList, promise)
-    }
-
-    override fun deleteFile(filePath: String?, promise: Promise?) {
-        implementation.deleteFile(filePath, promise)
     }
 }

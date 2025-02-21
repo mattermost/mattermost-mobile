@@ -31,11 +31,6 @@ class RNUtilsModule(context: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun getFileSize(filePath: String?, promise: Promise?) {
-        implementation.getFileSize(filePath, promise)
-    }
-
-    @ReactMethod
     fun saveFile(filePath: String?, promise: Promise?) {
         implementation.saveFile(filePath, promise)
     }
@@ -119,10 +114,5 @@ class RNUtilsModule(context: ReactApplicationContext) :
     fun createZipFile(paths: ReadableArray, promise: Promise?) {
         val pathList = paths.toArrayList().map { it.toString() }
         implementation.createZipFile(pathList, promise)
-    }
-
-    @ReactMethod
-    fun deleteFile(filePath: String?, promise: Promise?) {
-        implementation.deleteFile(filePath, promise)
     }
 }

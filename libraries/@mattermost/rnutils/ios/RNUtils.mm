@@ -117,22 +117,10 @@ RCT_EXPORT_METHOD(getRealFilePath:(NSString *)filePath
     [self getRealFilePath:filePath resolve:resolve reject:reject];
 }
 
-RCT_EXPORT_METHOD(getFileSize:(NSString *)filePath
-                  withResolver:(RCTPromiseResolveBlock)resolve
-                  withRejecter:(RCTPromiseRejectBlock)reject) {
-    [self getFileSize:filePath resolve:resolve reject:reject];
-}
-
 RCT_EXPORT_METHOD(saveFile:(NSString *)filePath
                   withResolver:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject) {
     [self saveFile:filePath resolve:resolve reject:reject];
-}
-
-RCT_EXPORT_METHOD(deleteFile:(NSString *)filePath
-                  withResolver:(RCTPromiseResolveBlock)resolve
-                  withRejecter:(RCTPromiseRejectBlock)reject) {
-    [self deleteFile:filePath resolve:resolve reject:reject];
 }
 
 RCT_REMAP_METHOD(setSoftKeyboardToAdjustResize, setAdjustResize) {
@@ -238,26 +226,8 @@ RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
     resolve(@"");
 }
 
-- (void)getFileSize:(NSString *)filePath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    NSDictionary *result = [wrapper getFileSizeAtPath:filePath];
-    if ([[result objectForKey:@"success"] boolValue]) {
-        resolve([result objectForKey:@"size"]);
-    } else {
-        reject(@"get_file_size_error", [result objectForKey:@"error"], nil);
-    }
-}
-
 - (void)saveFile:(NSString *)filePath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     resolve(@"");
-}
-
-- (void)deleteFile:(NSString *)filePath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    NSDictionary *result = [wrapper deleteFileAtPath:filePath];
-    if ([[result objectForKey:@"success"] boolValue]) {
-        resolve(@"");
-    } else {
-        reject(@"delete_file_error", [result objectForKey:@"error"], nil);
-    }
 }
 
 - (void)createZipFile:(NSArray<NSString *> *)paths resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

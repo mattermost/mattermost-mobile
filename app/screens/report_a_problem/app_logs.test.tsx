@@ -9,12 +9,17 @@ import {Platform} from 'react-native';
 import Share from 'react-native-share';
 
 import {renderWithIntl} from '@test/intl-test-helper';
+import {deleteFile} from '@utils/file';
 import {logDebug} from '@utils/log';
 
 import AppLogs from './app_logs';
-
 jest.mock('react-native-share', () => ({
     open: jest.fn(),
+}));
+
+jest.mock('@utils/file', () => ({
+    ...jest.requireActual('@utils/file'),
+    deleteFile: jest.fn(),
 }));
 
 describe('screens/report_a_problem/app_logs', () => {
@@ -86,7 +91,7 @@ describe('screens/report_a_problem/app_logs', () => {
                 url: 'file://' + zipPath,
                 saveToFiles: true,
             });
-            expect(RNUtils.deleteFile).toHaveBeenCalledWith(zipPath);
+            expect(deleteFile).toHaveBeenCalledWith(zipPath);
         });
     });
 
@@ -106,7 +111,7 @@ describe('screens/report_a_problem/app_logs', () => {
         await waitFor(() => {
             expect(RNUtils.createZipFile).toHaveBeenCalledWith(logPaths);
             expect(RNUtils.saveFile).toHaveBeenCalledWith(zipPath);
-            expect(RNUtils.deleteFile).toHaveBeenCalledWith(zipPath);
+            expect(deleteFile).toHaveBeenCalledWith(zipPath);
         });
     });
 
@@ -126,12 +131,12 @@ describe('screens/report_a_problem/app_logs', () => {
         await waitFor(() => {
             expect(RNUtils.createZipFile).toHaveBeenCalled();
             expect(logDebug).toHaveBeenCalledWith('Failed to create save file', new Error('Zip failed'));
-            expect(RNUtils.deleteFile).not.toHaveBeenCalled();
+            expect(deleteFile).not.toHaveBeenCalled();
         });
     });
 
     it('handles errors during file deletion', async () => {
-        jest.mocked(RNUtils.deleteFile).mockRejectedValue(new Error('Delete failed'));
+        jest.mocked(deleteFile).mockRejectedValue(new Error('Delete failed'));
         const {getByText} = renderWithIntl(
             <AppLogs/>,
         );
@@ -145,7 +150,7 @@ describe('screens/report_a_problem/app_logs', () => {
 
         await waitFor(() => {
             expect(RNUtils.createZipFile).toHaveBeenCalled();
-            expect(RNUtils.deleteFile).toHaveBeenCalled();
+            expect(deleteFile).toHaveBeenCalled();
             expect(logDebug).toHaveBeenCalledWith('Failed to delete zip file', new Error('Delete failed'));
         });
     });

@@ -163,8 +163,6 @@ jest.doMock('react-native', () => {
 
             createZipFile: jest.fn(),
             saveFile: jest.fn(),
-            deleteFile: jest.fn(),
-            getFileSize: jest.fn().mockResolvedValue(100),
 
             unlockOrientation: jest.fn(),
         },

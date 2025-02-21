@@ -9,6 +9,7 @@ import Share from 'react-native-share';
 
 import Button from '@components/button';
 import {useTheme} from '@context/theme';
+import {deleteFile} from '@utils/file';
 import {pathWithPrefix} from '@utils/files';
 import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -69,7 +70,7 @@ const AppLogs = () => {
 
         if (zipFilePath) {
             try {
-                await RNUtils.deleteFile(zipFilePath);
+                await deleteFile(zipFilePath);
             } catch (error) {
                 logDebug('Failed to delete zip file', error);
             }

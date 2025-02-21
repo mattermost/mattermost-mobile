@@ -76,13 +76,15 @@ const ReportProblem = ({
             case 'email':
                 await shareLogs(metadata, siteName, reportAProblemMail, !allowDownloadLogs);
                 return;
-            case 'link':
-                if (!reportAProblemLink) {
+            case 'link': {
+                let linkToUse = reportAProblemLink;
+                if (!linkToUse) {
                     logDebug('Report a problem link is not set');
-                    return;
+                    linkToUse = getDefaultReportAProblemLink(isLicensed);
                 }
-                tryOpenURL(reportAProblemLink);
+                tryOpenURL(linkToUse);
                 return;
+            }
             case 'default': {
                 tryOpenURL(getDefaultReportAProblemLink(isLicensed));
                 return;

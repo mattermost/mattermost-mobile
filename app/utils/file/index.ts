@@ -573,3 +573,12 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
         return {error};
     }
 };
+
+export const getFileSize = async (path: string) => {
+    const file = await getInfoAsync(path);
+    return 'size' in file ? file.size : 0;
+};
+
+export const deleteFile = async (path: string) => {
+    await deleteAsync(path);
+};

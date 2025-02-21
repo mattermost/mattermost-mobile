@@ -65,49 +65,43 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
         promise?.resolve(result)
     }
 
-    fun getFileSize(filePath: String?, promise: Promise?) {
-        if (filePath == null) {
-            promise?.reject("File path is null")
-            return
-        }
-
-        val file = java.io.File(filePath)
-        if (!file.exists()) {
-            promise?.reject("File does not exist")
-            return
-        }
-
-        val fileSize = file.length()
-        promise?.resolve(fileSize.toDouble())
-    }
-
     fun createZipFile(paths: List<String>, promise: Promise?) {
+        var zipFile: java.io.File? = null
+        var fos: java.io.FileOutputStream? = null
+        var zos: java.util.zip.ZipOutputStream? = null
+        
         try {
             val dateFormat = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault())
             val date = java.util.Date()
             val fileName = "Logs_${dateFormat.format(date)}.zip"
             val tempDir = reactContext.cacheDir
-            val zipFile = java.io.File(tempDir, fileName)
+            zipFile = java.io.File(tempDir, fileName)
             
-            val fos = java.io.FileOutputStream(zipFile)
-            val zos = java.util.zip.ZipOutputStream(fos)
+            fos = java.io.FileOutputStream(zipFile)
+            zos = java.util.zip.ZipOutputStream(fos)
 
             paths.forEach { path ->
                 val file = java.io.File(path)
                 if (file.exists()) {
-                    val fis = java.io.FileInputStream(file)
-                    val zipEntry = java.util.zip.ZipEntry(file.name)
-                    zos.putNextEntry(zipEntry)
+                    var fis: java.io.FileInputStream? = null
+                    try {
+                        fis = java.io.FileInputStream(file)
+                        val zipEntry = java.util.zip.ZipEntry(file.name)
+                        zos.putNextEntry(zipEntry)
 
-                    val buffer = ByteArray(1024)
-                    var length: Int
-                    while (fis.read(buffer).also { length = it } >= 0) {
-                        zos.write(buffer, 0, length)
+                        val buffer = ByteArray(1024)
+                        var length: Int
+                        while (fis.read(buffer).also { length = it } >= 0) {
+                            zos.write(buffer, 0, length)
+                        }
+
+                        zos.closeEntry()
+                    } finally {
+                        fis?.close()
                     }
-
-                    zos.closeEntry()
-                    fis.close()
                 } else {
+                    // Clean up if a file is missing
+                    cleanupResources(zos, fos, zipFile)
                     promise?.reject("File does not exist: $path")
                     return
                 }
@@ -117,32 +111,30 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
             fos.close()
             promise?.resolve(zipFile.absolutePath)
         } catch (e: Exception) {
+            // Clean up on any error
+            cleanupResources(zos, fos, zipFile)
             promise?.reject("Error creating ZIP file", e)
+        }
+    }
+
+    private fun cleanupResources(
+        zos: java.util.zip.ZipOutputStream?,
+        fos: java.io.FileOutputStream?,
+        zipFile: java.io.File?
+    ) {
+        try {
+            zos?.close()
+            fos?.close()
+            zipFile?.delete()
+        } catch (e: Exception) {
+            // Log cleanup errors but don't throw as we're already in error handling
+            android.util.Log.e("RNUtils", "Error cleaning up resources", e)
         }
     }
 
     fun saveFile(filePath: String?, promise: Promise?) {
         val task = SaveDataTask.getInstance(reactContext)
         task.saveFile(filePath, promise)
-    }
-
-    fun deleteFile(filePath: String?, promise: Promise?) {
-        if (filePath == null) {
-            promise?.reject("File path is null")
-            return
-        }
-
-        val file = java.io.File(filePath)
-        if (!file.exists()) {
-            promise?.reject("File does not exist")
-            return
-        }
-
-        if (file.delete()) {
-            promise?.resolve("File deleted successfully")
-        } else {
-            promise?.reject("Failed to delete file")
-        }
     }
 
     fun isRunningInSplitView(): WritableMap? {

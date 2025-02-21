@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import RNUtils from '@mattermost/rnutils';
 import React, {useEffect, useState} from 'react';
 import {View, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {getFileSize, getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -41,13 +41,13 @@ const LogFileItem = ({path}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const [size, setSize] = useState<number>();
+    const [size, setSize] = useState<string>();
 
     const filename = path.split('/').pop() || '';
 
     useEffect(() => {
-        RNUtils.getFileSize(path).then((fileSize) => {
-            setSize(Math.round(fileSize / 1024));
+        getFileSize(path).then((fileSize) => {
+            setSize(getFormattedFileSize(fileSize));
         });
     }, [path]);
 

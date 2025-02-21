@@ -52,7 +52,6 @@ export interface Spec extends TurboModule {
     removeListeners: (count: number) => void;
 
     getRealFilePath: (filePath: string) => Promise<string>;
-    getFileSize: (filePath: string) => Promise<number>;
     saveFile: (filePath: string) => Promise<string>;
 
     getWindowDimensions: () => WindowDimensionsChanged;
@@ -76,7 +75,6 @@ export interface Spec extends TurboModule {
     setSoftKeyboardToAdjustNothing(): void;
 
     createZipFile: (paths: string[]) => Promise<string>;
-    deleteFile: (filePath: string) => Promise<string>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNUtils');
