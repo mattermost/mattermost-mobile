@@ -26,15 +26,6 @@ type Draft = {
     update_at: number;
 };
 
-type ScheduledPost = Draft & {
-    id: string;
-    priority?: PostPriority;
-    scheduled_at: number;
-    processed_at: number;
-    error_code: string;
-    user_id: string;
-}
-
 type MyTeam = {
     id: string;
     roles: string;
