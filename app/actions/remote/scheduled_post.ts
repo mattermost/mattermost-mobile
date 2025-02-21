@@ -42,12 +42,8 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
 }
 
 export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost, connectionId?: string, fetchOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.updateScheduledPost(scheduledPost, connectionId);
 

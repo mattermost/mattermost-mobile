@@ -184,10 +184,10 @@ describe('fetchScheduledPosts', () => {
 
 describe('updateScheduledPost', () => {
     it('update Schedule post - handle not found database', async () => {
-        const result = await updateScheduledPost('foo', scheduledPost);
-        expect(result.error).toBe('foo database not found');
-        expect(logError).not.toHaveBeenCalled();
-        expect(forceLogoutIfNecessary).not.toHaveBeenCalled();
+        const result = await updateScheduledPost('foo', scheduledPost) as unknown as {error: Error};
+        expect(result).toEqual({error: 'foo database not found'});
+        expect(logError).toHaveBeenCalled();
+        expect(forceLogoutIfNecessary).toHaveBeenCalled();
     });
 
     it('update Schedule post - base case', async () => {
