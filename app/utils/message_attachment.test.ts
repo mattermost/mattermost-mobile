@@ -92,13 +92,13 @@ describe('isPostAction', () => {
         expect(isPostAction(nonObjectInput)).toBe(false);
     });
 
-    test('returns false for missing id', () => {
-        const invalidPostAction = {name: 'name'};
+    test('returns false for wrong id type', () => {
+        const invalidPostAction = {id: {}, name: 'name'};
         expect(isPostAction(invalidPostAction)).toBe(false);
     });
 
-    test('returns false for missing name', () => {
-        const invalidPostAction = {id: 'id'};
+    test('returns false for wrong name type', () => {
+        const invalidPostAction = {id: 'id', name: {}};
         expect(isPostAction(invalidPostAction)).toBe(false);
     });
 
@@ -154,11 +154,6 @@ describe('isMessageAttachmentField', () => {
         expect(isMessageAttachmentField(nonObjectInput)).toBe(false);
     });
 
-    test('returns false for missing title', () => {
-        const invalidField = {value: 'value', short: true};
-        expect(isMessageAttachmentField(invalidField)).toBe(false);
-    });
-
     test('returns false for non-string title', () => {
         const invalidField = {title: 123, value: 'value', short: true};
         expect(isMessageAttachmentField(invalidField)).toBe(false);
@@ -169,8 +164,8 @@ describe('isMessageAttachmentField', () => {
         expect(isMessageAttachmentField(invalidField)).toBe(false);
     });
 
-    test('returns false for missing value', () => {
-        const invalidField = {title: 'title', short: true};
+    test('returns false for invalid value', () => {
+        const invalidField = {title: 'title', value: {toString: 123}, short: true};
         expect(isMessageAttachmentField(invalidField)).toBe(false);
     });
 

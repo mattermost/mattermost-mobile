@@ -180,11 +180,6 @@ function cleanStaticSelect(field: AppField): void {
     const usedLabels: {[label: string]: boolean} = {};
     const usedValues: {[label: string]: boolean} = {};
     field.options?.forEach((option, i) => {
-        if (!option.value) {
-            toRemove.unshift(i);
-            return;
-        }
-
         let label = option.label;
         if (!label) {
             label = option.value;
@@ -195,18 +190,28 @@ function cleanStaticSelect(field: AppField): void {
             return;
         }
 
+        let value = option.value;
+        if (!value) {
+            value = option.label;
+        }
+
+        if (!value) {
+            toRemove.unshift(i);
+            return;
+        }
+
         if (usedLabels[label]) {
             toRemove.unshift(i);
             return;
         }
 
-        if (usedValues[option.value]) {
+        if (usedValues[value]) {
             toRemove.unshift(i);
             return;
         }
 
         usedLabels[label] = true;
-        usedValues[option.value] = true;
+        usedValues[value] = true;
     });
 
     toRemove.forEach((i) => {
