@@ -44,7 +44,7 @@ export default class ScheduledPostModel extends Model implements ScheduledPostMo
 
     @json('metadata', safeParseJSON) metadata!: PostMetadata | null;
 
-    /** update_at : The timestamp to when this scheduled post was created on the server */
+    /** create_at : The timestamp to when this scheduled post was created on the server */
     @field('create_at') createAt!: number;
 
     /** update_at : The timestamp to when this scheduled post was last updated on the server */
