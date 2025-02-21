@@ -11,10 +11,10 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 
 import {prepareDeleteCategory} from './categories';
-import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount} from './channel';
+import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount, observeMyChannelUnreads} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId, getCurrentTeamId} from './system';
-import {observeThreadMentionCount} from './thread';
+import {observeThreadMentionCount, observeUnreadsAndMentionsInTeam} from './thread';
 import {getCurrentUser} from './user';
 
 import type {MyChannelModel} from '@database/models/server';
@@ -414,6 +414,19 @@ export function observeMentionCount(database: Database, teamId?: string, include
     return channelMentionCountObservable.pipe(
         combineLatestWith(threadMentionCountObservable),
         map$(([ccount, tcount]) => ccount + tcount),
+        distinctUntilChanged(),
+    );
+}
+
+export function observeIsTeamUnread(database: Database, teamId: string): Observable<boolean> {
+    const channelUnreads = observeMyChannelUnreads(database, teamId);
+    const threadsUnreadsAndMentions = observeUnreadsAndMentionsInTeam(database, teamId);
+
+    return channelUnreads.pipe(
+        combineLatestWith(threadsUnreadsAndMentions),
+        map$(([channels, threads]) => {
+            return channels || threads.unreads;
+        }),
         distinctUntilChanged(),
     );
 }

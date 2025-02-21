@@ -62,7 +62,7 @@ describe('Performance metrics are set correctly', () => {
         expect(client).toBeTruthy();
         operator = (await TestHelper.setupServerDatabase(serverUrl)).operator;
         await DatabaseManager.setActiveServerDatabase(serverUrl);
-        post = TestHelper.fakePost(TestHelper.basicChannel!.id);
+        post = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id});
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
             order: [post.id],
@@ -101,8 +101,7 @@ describe('Performance metrics are set correctly', () => {
     });
 
     it('thread notification', async () => {
-        const commentPost = TestHelper.fakePost(TestHelper.basicChannel!.id);
-        commentPost.root_id = post.id;
+        const commentPost = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id, root_id: post.id});
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
             order: [commentPost.id],
@@ -134,8 +133,7 @@ describe('Performance metrics are set correctly', () => {
     });
 
     it('thread notification with wrong root id', async () => {
-        const commentPost = TestHelper.fakePost(TestHelper.basicChannel!.id);
-        commentPost.root_id = post.id;
+        const commentPost = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id, root_id: post.id});
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
             order: [commentPost.id],
@@ -167,8 +165,7 @@ describe('Performance metrics are set correctly', () => {
     });
 
     it('thread notification with non crt', async () => {
-        const commentPost = TestHelper.fakePost(TestHelper.basicChannel!.id);
-        commentPost.root_id = post.id;
+        const commentPost = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id, root_id: post.id});
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
             order: [commentPost.id],

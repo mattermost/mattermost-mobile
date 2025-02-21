@@ -65,7 +65,7 @@ const user2: UserProfile = {
     roles: '',
 } as UserProfile;
 
-const rootPost = {...TestHelper.fakePost(channelId, user.id), id: 'rootpostid', create_at: 1};
+const rootPost = TestHelper.fakePost({channel_id: channelId, user_id: user.id, id: 'rootpostid', create_at: 1});
 const threads = [
     {
         id: rootPost.id,
@@ -147,7 +147,7 @@ describe('switchToThread', () => {
     it('handle no channel', async () => {
         await operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
-        const post = {...TestHelper.fakePost(channelId, user2.id), id: 'postid', create_at: 1};
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post.id],
@@ -165,7 +165,7 @@ describe('switchToThread', () => {
         await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'teamid2'}, {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
-        const post = {...TestHelper.fakePost(channelId, user2.id), id: 'postid', create_at: 1};
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post.id],
@@ -183,7 +183,7 @@ describe('switchToThread', () => {
         await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'teamid2'}, {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
-        const post = {...TestHelper.fakePost(channelId, user2.id), id: 'postid', create_at: 1};
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post.id],
@@ -201,7 +201,7 @@ describe('switchToThread', () => {
         await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'teamid2'}, {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [{...channel, team_id: '', type: 'D', display_name: 'user1-user2'}], prepareRecordsOnly: false});
-        const post = {...TestHelper.fakePost(channelId, user2.id), id: 'postid', create_at: 1};
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post.id],
@@ -224,7 +224,7 @@ describe('createThreadFromNewPost', () => {
     it('base case', async () => {
         await operator.handleUsers({users: [user, user2], prepareRecordsOnly: false});
         await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: team.id});
-        const post = {...TestHelper.fakePost(channelId, user2.id), id: 'postid', create_at: 1, root_id: rootPost.id};
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1, root_id: rootPost.id});
 
         const {models, error} = await createThreadFromNewPost(serverUrl, post, false);
         expect(error).toBeUndefined();
@@ -234,7 +234,7 @@ describe('createThreadFromNewPost', () => {
 
     it('base case - no root post', async () => {
         await operator.handleUsers({users: [user2], prepareRecordsOnly: false});
-        const post = {...TestHelper.fakePost(channelId, user2.id), id: 'postid', create_at: 1};
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
 
         const {models, error} = await createThreadFromNewPost(serverUrl, post);
         expect(error).toBeUndefined();

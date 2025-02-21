@@ -111,7 +111,7 @@ describe('sendEphemeralPost', () => {
 });
 
 describe('removePost', () => {
-    const post = {...TestHelper.fakePost(channelId), id: 'postid'};
+    const post = TestHelper.fakePost({id: 'postid', channel_id: channelId});
 
     it('handle not found database', async () => {
         const {post: rPost, error} = await removePost('foo', post);
@@ -139,12 +139,12 @@ describe('removePost', () => {
     });
 
     it('base case - system message', async () => {
-        const systemPost = {...TestHelper.fakePost(channelId), id: `${COMBINED_USER_ACTIVITY}id1_id2`, type: Post.POST_TYPES.COMBINED_USER_ACTIVITY as PostType, props: {system_post_ids: ['id1']}};
+        const systemPost = TestHelper.fakePost({channel_id: channelId, id: `${COMBINED_USER_ACTIVITY}id1_id2`, type: Post.POST_TYPES.COMBINED_USER_ACTIVITY as PostType, props: {system_post_ids: ['id1']}});
 
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post.id, 'id1'],
-            posts: [systemPost, {...TestHelper.fakePost(channelId), id: 'id1'}],
+            posts: [systemPost, TestHelper.fakePost({id: 'id1', channel_id: channelId})],
             prepareRecordsOnly: false,
         });
 
@@ -155,7 +155,7 @@ describe('removePost', () => {
 });
 
 describe('markPostAsDeleted', () => {
-    const post = TestHelper.fakePost(channelId);
+    const post = TestHelper.fakePost({channel_id: channelId});
 
     it('handle not found database', async () => {
         const {model, error} = await markPostAsDeleted('foo', post);
@@ -185,8 +185,7 @@ describe('markPostAsDeleted', () => {
 });
 
 describe('storePostsForChannel', () => {
-    const post = TestHelper.fakePost(channelId);
-    post.user_id = user.id;
+    const post = TestHelper.fakePost({channel_id: channelId, user_id: user.id});
     const teamId = 'tId1';
     const channel: Channel = {
         id: channelId,
@@ -226,7 +225,7 @@ describe('storePostsForChannel', () => {
 });
 
 describe('getPosts', () => {
-    const post = TestHelper.fakePost(channelId);
+    const post = TestHelper.fakePost({channel_id: channelId});
 
     it('handle not found database', async () => {
         const posts = await getPosts('foo', [post.id]);
@@ -249,7 +248,7 @@ describe('getPosts', () => {
 });
 
 describe('addPostAcknowledgement', () => {
-    const post = TestHelper.fakePost(channelId);
+    const post = TestHelper.fakePost({channel_id: channelId});
 
     it('handle not found database', async () => {
         const {model, error} = await addPostAcknowledgement('foo', post.id, user.id, 123, false);
@@ -292,7 +291,7 @@ describe('addPostAcknowledgement', () => {
 });
 
 describe('removePostAcknowledgement', () => {
-    const post = TestHelper.fakePost(channelId);
+    const post = TestHelper.fakePost({channel_id: channelId});
 
     it('handle not found database', async () => {
         const {model, error} = await removePostAcknowledgement('foo', post.id, user.id, false);
@@ -321,7 +320,7 @@ describe('removePostAcknowledgement', () => {
 });
 
 describe('deletePosts', () => {
-    const post = TestHelper.fakePost(channelId);
+    const post = TestHelper.fakePost({channel_id: channelId});
 
     it('handle not found database', async () => {
         const {error} = await deletePosts('foo', [post.id]);
