@@ -3,8 +3,9 @@
 
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {Freeze} from 'react-freeze';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, type ListRenderItemInfo, View} from 'react-native';
+import {DeviceEventEmitter, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -20,7 +21,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmptyState from './components/empty';
 
@@ -36,12 +36,8 @@ type Props = {
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+const styles = StyleSheet.create({
     flex: {
-        flex: 1,
-        backgroundColor: theme.centerChannelBg,
-    },
-    container: {
         flex: 1,
     },
     empty: {
@@ -49,7 +45,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         flex: 1,
         justifyContent: 'center',
     },
-}));
+});
 
 function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: Props) {
     const intl = useIntl();
@@ -59,7 +55,6 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
     const serverUrl = useServerUrl();
     const route = useRoute();
     const isFocused = useIsFocused();
-    const styles = getStyleSheet(theme);
 
     const params = route.params as {direction: string};
     const toLeft = params.direction === 'left';
@@ -167,45 +162,47 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
     }, [appsEnabled, currentTimezone, customEmojiNames, theme]);
 
     return (
-        <ExtraKeyboardProvider>
-            <NavigationHeader
-                isLargeTitle={true}
-                showBackButton={false}
-                subtitle={subtitle}
-                title={title}
-                hasSearch={false}
-                scrollValue={scrollValue}
-            />
-            <SafeAreaView
-                edges={edges}
-                style={styles.flex}
-                testID='saved_messages.screen'
-            >
-                <Animated.View style={[styles.container, animated]}>
-                    <Animated.View style={top}>
-                        <RoundedHeaderContext/>
-                    </Animated.View>
-                    <Animated.FlatList
-                        ref={scrollRef}
-                        contentContainerStyle={paddingTop}
-                        ListEmptyComponent={emptyList}
-                        data={data}
-                        onRefresh={handleRefresh}
-                        refreshing={refreshing}
-                        renderItem={renderItem}
-                        scrollToOverflowEnabled={true}
-                        showsVerticalScrollIndicator={false}
-                        progressViewOffset={scrollPaddingTop}
-                        scrollEventThrottle={16}
-                        indicatorStyle='black'
-                        onScroll={onScroll}
-                        removeClippedSubviews={true}
-                        onViewableItemsChanged={onViewableItemsChanged}
-                        testID='saved_messages.post_list.flat_list'
+        <Freeze freeze={!isFocused}>
+            <ExtraKeyboardProvider>
+                <SafeAreaView
+                    edges={edges}
+                    style={styles.flex}
+                    testID='saved_messages.screen'
+                >
+                    <NavigationHeader
+                        isLargeTitle={true}
+                        showBackButton={false}
+                        subtitle={subtitle}
+                        title={title}
+                        hasSearch={false}
+                        scrollValue={scrollValue}
                     />
-                </Animated.View>
-            </SafeAreaView>
-        </ExtraKeyboardProvider>
+                    <Animated.View style={[styles.flex, animated]}>
+                        <Animated.View style={top}>
+                            <RoundedHeaderContext/>
+                        </Animated.View>
+                        <Animated.FlatList
+                            ref={scrollRef}
+                            contentContainerStyle={paddingTop}
+                            ListEmptyComponent={emptyList}
+                            data={data}
+                            onRefresh={handleRefresh}
+                            refreshing={refreshing}
+                            renderItem={renderItem}
+                            scrollToOverflowEnabled={true}
+                            showsVerticalScrollIndicator={false}
+                            progressViewOffset={scrollPaddingTop}
+                            scrollEventThrottle={16}
+                            indicatorStyle='black'
+                            onScroll={onScroll}
+                            removeClippedSubviews={true}
+                            onViewableItemsChanged={onViewableItemsChanged}
+                            testID='saved_messages.post_list.flat_list'
+                        />
+                    </Animated.View>
+                </SafeAreaView>
+            </ExtraKeyboardProvider>
+        </Freeze>
     );
 }
 

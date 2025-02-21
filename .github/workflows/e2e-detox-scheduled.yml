@@ -5,7 +5,7 @@ on:
     - cron: "0 0 * * 4,5" # Wednesday and Thursday midnight
 
 jobs:
-  update-initial-status:
+  update-initial-status-ios:
     runs-on: ubuntu-22.04
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
@@ -14,17 +14,30 @@ jobs:
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ github.sha }}
-          context: e2e/detox-tests
-          description: Detox tests for mattermost mobile app have started ...
+          context: e2e/detox-ios-tests
+          description: Detox iOS tests for mattermost mobile app have started ...
+          status: pending
+
+  update-initial-status-android:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.sha }}
+          context: e2e/detox-android-tests
+          description: Detox Android tests for mattermost mobile app have started ...
           status: pending
 
   build-ios-simulator:
     runs-on: macos-14
     needs:
-      - update-initial-status
+      - update-initial-status-ios
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
@@ -39,24 +52,85 @@ jobs:
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
 
+  build-android-apk:
+    runs-on: ubuntu-latest-8-cores
+    needs:
+      - update-initial-status-android
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Remove npm Temporary Files
+        run: |
+          rm -rf ~/.npm/_cacache
+
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+          STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+          STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+          MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+
+      - name: Install Dependencies
+        run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Detox build
+        run: |
+          cd detox
+          npm install
+          npm install -g detox-cli
+          npm run e2e:android-build
+
+      - name: Upload Android Build
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: android-build-files-${{ github.run_id }}
+          path: "android/app/build/**/*"
+
   run-ios-tests-on-main-scheduled:
     name: iOS Mobile Tests on Main (Scheduled)
-    uses: ./.github/workflows/e2e-detox-template.yml
+    uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
     with:
-      run-ios-tests: true
       run-type: "MAIN"
       record_tests_in_zephyr: 'true'
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
-  update-final-status:
+  run-android-tests-on-main-scheduled:
+    name: Android Mobile Tests on Main (Scheduled)
+    uses: ./.github/workflows/e2e-android-template.yml
+    needs:
+      - build-android-apk
+    with:
+      run-android-tests: true
+      run-type: "MAIN"
+      record_tests_in_zephyr: 'true'
+      MOBILE_VERSION: ${{ github.ref }}
+    secrets: inherit
+
+  update-final-status-ios:
     runs-on: ubuntu-22.04
     needs:
       - run-ios-tests-on-main-scheduled
@@ -67,7 +141,23 @@ jobs:
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ github.sha }}
-          context: e2e/detox-tests
+          context: e2e/detox-ios-tests
           description: Completed with ${{ needs.run-ios-tests-on-main-scheduled.outputs.FAILURES }} failures
           status: ${{ needs.run-ios-tests-on-main-scheduled.outputs.STATUS }}
           target_url: ${{ needs.run-ios-tests-on-main-scheduled.outputs.TARGET_URL }}
+
+  update-final-status-android:
+    runs-on: ubuntu-22.04
+    needs:
+      - run-android-tests-on-main-scheduled
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ github.sha }}
+          context: e2e/detox-android-tests
+          description: Completed with ${{ needs.run-android-tests-on-main-scheduled.outputs.FAILURES }} failures
+          status: ${{ needs.run-android-tests-on-main-scheduled.outputs.STATUS }}
+          target_url: ${{ needs.run-android-tests-on-main-scheduled.outputs.TARGET_URL }}

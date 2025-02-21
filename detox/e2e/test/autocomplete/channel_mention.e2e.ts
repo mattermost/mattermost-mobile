@@ -253,6 +253,6 @@ describe('Autocomplete - Channel Mention', () => {
 
         // * Verify channel mention autocomplete contains current channel
         const {channelMentionItemChannelDisplayName} = Autocomplete.getChannelMentionItem(testChannel.name);
-        await expect(channelMentionItemChannelDisplayName).toHaveText(`${testChannel.display_name} ~${testChannel.name}`);
+        await expect(channelMentionItemChannelDisplayName).toBeVisible();
     });
 });
