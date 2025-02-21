@@ -82,6 +82,7 @@
   "apps.suggestion.no_static": "No matching options.",
   "apps.suggestion.no_suggestion": "No matching suggestions.",
   "archivedChannelMessage": "You are viewing an **archived channel**. New messages cannot be posted.",
+  "audio.loading_error": "Error loading audio.",
   "autocomplete_selector.unknown_channel": "Unknown channel",
   "browse_channels.archivedChannels": "Archived Channels",
   "browse_channels.dropdownTitle": "Show",
