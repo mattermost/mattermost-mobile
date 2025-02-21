@@ -11,6 +11,7 @@ import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import {DEFAULT_LOCALE} from '@i18n';
 import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {getReadableTimestamp} from '@utils/datetime';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -173,7 +174,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
             {draftType === DRAFT_TYPE_SCHEDULED &&
                 <View style={style.scheduledContainer}>
                     <Text style={style.scheduledAtText}>
-                        {intl.formatMessage({id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'}, {time: getReadableTimestamp(postScheduledAt!, getUserTimezone(currentUser), isMilitaryTime)})}
+                        {intl.formatMessage({id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'}, {time: getReadableTimestamp(postScheduledAt!, getUserTimezone(currentUser), isMilitaryTime, currentUser?.locale || DEFAULT_LOCALE)})}
                     </Text>
                     {scheduledPostErrorCode &&
                         <View style={style.errorState}>

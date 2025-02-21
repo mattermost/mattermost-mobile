@@ -33,7 +33,7 @@ export function toMilliseconds({days, hours, minutes, seconds}: {days?: number; 
     return totalSeconds * 1000;
 }
 
-export function getReadableTimestamp(timestamp: number, timeZone: string, isMilitaryTime: boolean) {
+export function getReadableTimestamp(timestamp: number, timeZone: string, isMilitaryTime: boolean, currentUserLocale: string): string {
     const date = new Date(timestamp);
     const now = new Date();
     const isCurrentYear = date.getFullYear() === now.getFullYear();
@@ -48,6 +48,6 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
         ...(isCurrentYear ? {} : {year: 'numeric'}),
     };
 
-    const formattedDate = date.toLocaleString('en-US', options);
+    const formattedDate = date.toLocaleString(currentUserLocale, options);
     return formattedDate.replace(',', ' at');
 }
