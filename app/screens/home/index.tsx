@@ -9,6 +9,7 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
+import {initializeSecurityManager} from '@actions/app/server';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import ServerVersion from '@components/server_version';
 import {Events, Launch, Screens} from '@constants';
@@ -61,6 +62,12 @@ export function HomeScreen(props: HomeProps) {
     const theme = useTheme();
     const intl = useIntl();
     const appState = useAppState();
+
+    useEffect(() => {
+        if (props.serverUrl) {
+            initializeSecurityManager(props.serverUrl);
+        }
+    }, []);
 
     const handleFindChannels = useCallback(() => {
         if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS)) {

@@ -158,7 +158,7 @@ class ManagedAppSingleton {
     };
 
     showNotSecuredAlert = (translations: Record<string, string>) => {
-        return new Promise(async (resolve) => { /* eslint-disable-line no-async-promise-executor */
+        return new Promise((resolve) => {
             const buttons: AlertButton[] = [];
 
             if (Platform.OS === 'android') {
@@ -177,16 +177,11 @@ class ManagedAppSingleton {
             });
 
             let message;
-            if (Platform.OS === 'ios') {
-                const {face} = await Emm.deviceSecureWith();
-
-                if (face) {
-                    message = translations[t('mobile.managed.not_secured.ios')];
-                } else {
-                    message = translations[t('mobile.managed.not_secured.ios.touchId')];
-                }
+            const platform = Platform.select({ios: 'ios', default: 'android'});
+            if (this.vendor) {
+                message = translations[t(`mobile.managed.not_secured.${platform}.vendor`)].replace('{vendor}', this.vendor);
             } else {
-                message = translations[t('mobile.managed.not_secured.android')];
+                message = translations[t(`mobile.managed.not_secured.${platform}`)];
             }
 
             Alert.alert(
