@@ -13,7 +13,7 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {DRAFT_OPTIONS_BUTTON} from '@screens/draft_options';
+import {DRAFT_OPTIONS_BUTTON} from '@screens/draft_scheduled_post_options';
 import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {openAsBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
