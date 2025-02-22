@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
+import {isRootedExperimentalAsync} from 'expo-device';
 import {createIntl} from 'react-intl';
 import {Alert, type AlertButton, AppState, type AppStateStatus, Platform} from 'react-native';
 
@@ -26,6 +27,7 @@ type SecurityManagerServerConfig = {
 type SecurityManagerServersCollection = Record<string, SecurityManagerServerConfig>;
 
 class SecurityManager {
+    initialized: boolean = false;
     activeServer?: string;
     serverConfig: SecurityManagerServersCollection = {};
     backgroundSince = 0;
@@ -39,7 +41,12 @@ class SecurityManager {
      * Initializes the class with existing servers on app launch.
      * Should be called when the app starts.
      */
-    init(servers: Record<string, ClientConfig>, activeServer?: string) {
+    async init(servers: Record<string, ClientConfig>, activeServer?: string) {
+        if (this.initialized) {
+            return;
+        }
+
+        this.initialized = true;
         const added = new Set<string>();
         for (const [server, config] of Object.entries(servers)) {
             if (!this.serverConfig[server]) {
@@ -50,7 +57,10 @@ class SecurityManager {
 
         if (activeServer && (!added.has(activeServer) || !this.activeServer)) {
             this.activeServer = activeServer;
-            this.authenticateWithBiometricsIfNeeded(activeServer);
+            const isJailbroken = await this.isDeviceJailbroken(activeServer);
+            if (!isJailbroken) {
+                this.authenticateWithBiometricsIfNeeded(activeServer);
+            }
         }
     }
 
@@ -60,6 +70,14 @@ class SecurityManager {
      */
     isAuthenticationHandledByEmm = () => {
         return ManagedApp.enabled && ManagedApp.inAppPinCode;
+    };
+
+    /**
+     * Checks if EMM is already enabled and setup
+     * to handle jailbreak protection.
+     */
+    isJalbreakProtectionHandledByEmm = () => {
+        return ManagedApp.enabled && ManagedApp.cacheConfig?.jailbreakProtection === 'true';
     };
 
     /**
@@ -104,6 +122,33 @@ class SecurityManager {
     };
 
     /**
+     * Checks if the device is Jailbroken or Rooted.
+     */
+    isDeviceJailbroken = async (server: string, siteName?: string) => {
+        if (this.isJalbreakProtectionHandledByEmm()) {
+            return false;
+        }
+
+        const config = this.getServerConfig(server);
+        if (!config && !siteName) {
+            return false;
+        }
+
+        const locale = DEFAULT_LOCALE;
+        const translations = getTranslations(locale);
+
+        if (!this.isJalbreakProtectionHandledByEmm() && (config?.JailbreakProtection || siteName)) {
+            const isRooted = await isRootedExperimentalAsync();
+            if (isRooted) {
+                this.showDeviceNotTrustedAlert(server, siteName, translations);
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    /**
      * Determines if biometric authentication should be prompted.
      */
     authenticateWithBiometricsIfNeeded = async (server: string) => {
@@ -119,7 +164,7 @@ class SecurityManager {
         if (config?.Biometrics) {
             const lastAccessed = config?.lastAccessed || 0;
             const timeSinceLastAccessed = Date.now() - lastAccessed;
-            if (timeSinceLastAccessed > toMilliseconds({seconds: 25})) {
+            if (timeSinceLastAccessed > toMilliseconds({minutes: 5})) {
                 return this.authenticateWithBiometrics(server);
             }
         }
@@ -140,10 +185,10 @@ class SecurityManager {
             return true;
         }
 
-        const isSecured = await Emm.isDeviceSecured();
         const locale = DEFAULT_LOCALE;
         const translations = getTranslations(locale);
 
+        const isSecured = await Emm.isDeviceSecured();
         if (!isSecured) {
             await this.showNotSecuredAlert(server, siteName, translations);
             return false;
@@ -183,9 +228,12 @@ class SecurityManager {
             if (this.activeServer) {
                 const config = this.getServerConfig(this.activeServer);
                 if (config && config.Biometrics && isMainActivity()) {
-                    const authExpired = this.backgroundSince > 0 && (Date.now() - this.backgroundSince) >= toMilliseconds({seconds: 5});
+                    const authExpired = this.backgroundSince > 0 && (Date.now() - this.backgroundSince) >= toMilliseconds({minutes: 5});
                     if (authExpired) {
-                        await this.authenticateWithBiometrics(this.activeServer);
+                        const isJailbroken = await this.isDeviceJailbroken(this.activeServer);
+                        if (!isJailbroken) {
+                            await this.authenticateWithBiometrics(this.activeServer);
+                        }
                     }
                     this.backgroundSince = 0;
                 }
@@ -195,6 +243,19 @@ class SecurityManager {
         }
 
         this.previousAppState = appState;
+    };
+
+    showDeviceNotTrustedAlert = async (server: string, siteName: string | undefined, translations: Record<string, string>) => {
+        const buttons = await this.buildAlertOptions(server, translations);
+        const securedBy = siteName || this.getServerConfig(server)?.siteName || 'Mattermost';
+
+        Alert.alert(
+            translations[t('mobile.managed.blocked_by')].replace('{vendor}', securedBy),
+            translations[t('mobile.managed.jailbreak')].
+                replace('{vendor}', securedBy),
+            buttons,
+            {cancelable: false},
+        );
     };
 
     /**
@@ -281,6 +342,7 @@ class SecurityManager {
         if (server && hasSessionToServer) {
             buttons.push({
                 text: translations[t('mobile.managed.logout')],
+                style: 'destructive',
                 onPress: async () => {
                     await logout(server, undefined);
                     callback?.(true);
@@ -290,7 +352,7 @@ class SecurityManager {
 
         const otherServers = Object.keys(this.serverConfig).filter((s) => s !== server);
         if (otherServers.length > 0) {
-            if (otherServers.length === 1) {
+            if (otherServers.length === 1 && otherServers[0] === this.activeServer) {
                 buttons.push({
                     text: translations[t('mobile.managed.OK')],
                     style: 'cancel',

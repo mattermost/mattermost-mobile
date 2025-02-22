@@ -57,8 +57,12 @@ export async function switchToServer(serverUrl: string, theme: Theme, intl: Intl
         logError(`Switch to Server with url ${serverUrl} not found`);
         return;
     }
-
     if (server.lastActiveAt) {
+        const isJailbroken = await SecurityManager.isDeviceJailbroken(server.url);
+        if (isJailbroken) {
+            return;
+        }
+
         const authenticated = await SecurityManager.authenticateWithBiometricsIfNeeded(server.url);
         if (authenticated) {
             Navigation.updateProps(Screens.HOME, {extra: undefined});
@@ -99,10 +103,20 @@ export async function switchToServerAndLogin(serverUrl: string, theme: Theme, in
         callback?.();
         return;
     }
+
+    if (data.config?.MobileJailbreakProtection === 'true') {
+        const isJailbroken = await SecurityManager.isDeviceJailbroken(server.url);
+        if (isJailbroken) {
+            callback?.();
+            return;
+        }
+    }
+
     let authenticated = true;
     if (data.config?.MobileEnableBiometrics === 'true') {
         authenticated = await SecurityManager.authenticateWithBiometrics(server.url, data.config?.SiteName);
     }
+
     if (authenticated) {
         canReceiveNotifications(server.url, result.canReceiveNotifications as string, intl);
         loginToServer(theme, server.url, server.displayName, data.config!, data.license!);

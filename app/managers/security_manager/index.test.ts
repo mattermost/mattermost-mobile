@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
+import {isRootedExperimentalAsync} from 'expo-device';
 import {Alert, type AppStateStatus} from 'react-native';
 
 import {switchToServer} from '@actions/app/server';
@@ -31,6 +32,9 @@ jest.mock('react-native', () => ({
         select: jest.fn((dict) => dict.ios || dict.default),
     },
 }));
+jest.mock('expo-device', () => ({
+    isRootedExperimentalAsync: jest.fn(),
+}));
 jest.mock('@actions/app/server', () => ({switchToServer: jest.fn()}));
 jest.mock('@actions/remote/session', () => ({logout: jest.fn()}));
 jest.mock('@utils/datetime', () => ({toMilliseconds: jest.fn(() => 25000)}));
@@ -41,6 +45,8 @@ jest.mock('@utils/helpers', () => ({
 jest.mock('@utils/log', () => ({logError: jest.fn()}));
 jest.mock('@init/managed_app', () => ({enabled: true, inAppPinCode: false}));
 jest.mock('@init/credentials', () => ({getServerCredentials: jest.fn().mockResolvedValue({token: 'token'})}));
+
+const wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
 
 describe('SecurityManager', () => {
     beforeEach(() => {
@@ -108,13 +114,13 @@ describe('SecurityManager', () => {
         SecurityManager.onAppStateChange('background' as AppStateStatus);
         SecurityManager.backgroundSince = Date.now() - toMilliseconds({minutes: 5, seconds: 1});
         SecurityManager.onAppStateChange('active' as AppStateStatus);
+        await wait(300);
         expect(authenticateWithBiometrics).toHaveBeenCalledWith('server-8');
     });
 
     test('should show not secured alert', async () => {
         SecurityManager.addServer('server-9');
         SecurityManager.showNotSecuredAlert('server-9', 'Test Site', getTranslations(DEFAULT_LOCALE));
-        const wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
         await wait(300);
         expect(Alert.alert).toHaveBeenCalled();
     });
@@ -140,5 +146,66 @@ describe('SecurityManager', () => {
         expect(logoutButton).toBeDefined();
         logoutButton?.onPress?.();
         expect(logout).toHaveBeenCalledWith('server-12', undefined);
+    });
+
+    // New tests for the added functionality
+    test('should show device not trusted alert', async () => {
+        const server = 'server-13';
+        const siteName = 'Site Name';
+        const translations = getTranslations(DEFAULT_LOCALE);
+
+        await SecurityManager.showDeviceNotTrustedAlert(server, siteName, translations);
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            translations[t('mobile.managed.blocked_by')].replace('{vendor}', siteName),
+            translations[t('mobile.managed.jailbreak')].replace('{vendor}', siteName),
+            expect.any(Array),
+            {cancelable: false},
+        );
+    });
+
+    test('should show biometric failure alert', async () => {
+        const server = 'server-14';
+        const siteName = 'Site Name';
+        const translations = getTranslations(DEFAULT_LOCALE);
+
+        await SecurityManager.showBiometricFailureAlert(server, siteName, translations);
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            translations[t('mobile.managed.blocked_by')].replace('{vendor}', siteName),
+            translations[t('mobile.managed.biometric_failed')],
+            expect.any(Array),
+            {cancelable: false},
+        );
+    });
+
+    test('should check if device is jailbroken', async () => {
+        const server = 'server-15';
+        const siteName = 'Site Name';
+        SecurityManager.addServer(server, {MobileJailbreakProtection: 'true'} as ClientConfig);
+        (isRootedExperimentalAsync as jest.Mock).mockResolvedValue(true);
+        const translations = getTranslations(DEFAULT_LOCALE);
+
+        const result = await SecurityManager.isDeviceJailbroken(server, siteName);
+        expect(result).toBe(true);
+        await wait(300);
+        expect(Alert.alert).toHaveBeenCalledWith(
+            translations[t('mobile.managed.blocked_by')].replace('{vendor}', siteName),
+            translations[t('mobile.managed.jailbreak')].replace('{vendor}', siteName),
+            expect.any(Array),
+            {cancelable: false},
+        );
+    });
+
+    test('should return false if device is not jailbroken', async () => {
+        const server = 'server-16';
+        const siteName = 'Site Name';
+        SecurityManager.addServer(server, {MobileJailbreakProtection: 'true'} as ClientConfig);
+        (isRootedExperimentalAsync as jest.Mock).mockResolvedValue(false);
+
+        const result = await SecurityManager.isDeviceJailbroken(server, siteName);
+
+        expect(result).toBe(false);
+        expect(Alert.alert).not.toHaveBeenCalled();
     });
 });

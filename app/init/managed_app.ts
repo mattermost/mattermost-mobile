@@ -95,7 +95,7 @@ class ManagedAppSingleton {
         const translations = getTranslations(locale);
         Alert.alert(
             translations[t('mobile.managed.blocked_by')].replace('{vendor}', this.vendor),
-            translations[t('mobile.managed.jailbreak')].
+            translations[t('mobile.managed.jailbreak.emm')].
                 replace('{vendor}', this.vendor),
             [{
                 text: translations[t('mobile.managed.exit')],

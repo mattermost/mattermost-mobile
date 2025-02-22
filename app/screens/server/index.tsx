@@ -341,6 +341,14 @@ const Server = ({
             return;
         }
 
+        if (data.config.MobileJailbreakProtection === 'true') {
+            const isJailbroken = await SecurityManager.isDeviceJailbroken(ping.url);
+            if (isJailbroken) {
+                setConnecting(false);
+                return;
+            }
+        }
+
         if (data.config.MobileEnableBiometrics === 'true') {
             const biometricsResult = await SecurityManager.authenticateWithBiometrics(ping.url, data.config.SiteName);
             if (!biometricsResult) {
