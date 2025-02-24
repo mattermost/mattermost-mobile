@@ -10,6 +10,7 @@ import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {toTitleCase} from '@utils/helpers';
 
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 
@@ -392,4 +393,17 @@ export const getLastPictureUpdate = (user: UserModel | UserProfile) => {
     }
 
     return user.is_bot ? user.bot_last_icon_update : user.last_picture_update || 0;
+};
+
+/**
+ * Sorts custom profile attributes by their sort_order property, falling back to name comparison.
+ * Attributes with undefined sort_order are placed last.
+ * @param a First CustomAttribute to compare
+ * @param b Second CustomAttribute to compare
+ * @returns Negative if a comes first, positive if b comes first, 0 if equal
+ */
+export const sortCustomProfileAttributes = (a: CustomAttribute, b: CustomAttribute): number => {
+    const orderA = a.sort_order ?? Number.MAX_SAFE_INTEGER;
+    const orderB = b.sort_order ?? Number.MAX_SAFE_INTEGER;
+    return orderA === orderB ? a.name.localeCompare(b.name) : orderA - orderB;
 };

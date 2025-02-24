@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 
+import {fetchCustomAttributes} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
-import NetworkManager from '@managers/network_manager';
-import {getUserCustomStatus} from '@utils/user';
+import {getUserCustomStatus, sortCustomProfileAttributes} from '@utils/user';
 
 import CustomAttributes from './custom_attributes';
 import UserProfileCustomStatus from './custom_status';
 
 import type {UserModel} from '@database/models/server';
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 
 type Props = {
     localTime?: string;
@@ -22,12 +23,13 @@ type Props = {
     enableCustomAttributes?: boolean;
 }
 
-const emptyList: DisplayCustomAttribute[] = []; /** avoid re-renders **/
+const emptyList: CustomAttribute[] = []; /** avoid re-renders **/
 
 const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user, enableCustomAttributes}: Props) => {
     const customStatus = getUserCustomStatus(user);
     const serverUrl = useServerUrl();
-    const [customAttributes, setCustomAttributes] = useState<DisplayCustomAttribute[]>(emptyList);
+    const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>(emptyList);
+
     const lastRequest = useRef(0);
 
     useEffect(() => {
@@ -35,28 +37,11 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
             const fetchData = async () => {
                 const reqTime = Date.now();
                 lastRequest.current = reqTime;
-                try {
-                    const client = NetworkManager.getClient(serverUrl);
-                    const [fields, attrValues] = await Promise.all([
-                        client.getCustomProfileAttributeFields(),
-                        client.getCustomProfileAttributeValues(user.id),
-                    ]);
-
-                    // ignore results if there was a newer request
-                    if (fields && fields.length > 0 && lastRequest.current === reqTime) {
-                        const attributes = fields.map((field) => {
-                            if (attrValues[field.id]) {
-                                return ({
-                                    id: field.id,
-                                    name: field.name,
-                                    value: attrValues[field.id] || '',
-                                } as DisplayCustomAttribute);
-                            }
-                            return {} as DisplayCustomAttribute; // this will be cleaned out in CustomAttributes along with the fixed attributes.
-                        });
-                        setCustomAttributes(attributes);
-                    }
-                } catch {
+                const {attributes, error} = await fetchCustomAttributes(serverUrl, user.id, true);
+                if (!error && lastRequest.current === reqTime) {
+                    const attributesList = Object.values(attributes).sort(sortCustomProfileAttributes);
+                    setCustomAttributes(attributesList);
+                } else {
                     setCustomAttributes(emptyList);
                 }
             };
