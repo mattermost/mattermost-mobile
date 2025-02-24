@@ -35,21 +35,38 @@ export const observeScheduledPostCountForChannel = (
     database: Database,
     teamId: string,
     channelId: string,
+    isCRTEnabled: boolean,
 ) => {
-    return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
+    let query = database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
         Q.on(CHANNEL,
             Q.and(
                 Q.where('team_id', teamId),
                 Q.where('id', channelId),
             ),
         ),
-    ).observeCount();
+    );
+
+    if (isCRTEnabled) {
+        query = query.extend(Q.where('root_id', ''));
+    }
+
+    return query.observeCount();
 };
 
-export const observeScheduledPostCountForDMsAndGMs = (database: Database, channelId: string) => {
+export const observeScheduledPostCountForDMsAndGMs = (database: Database, channelId: string, isCRTEnabled: boolean) => {
+    let query = database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
+        Q.on(CHANNEL, Q.where('id', channelId)),
+    );
+
+    if (isCRTEnabled) {
+        query = query.extend(Q.where('root_id', ''));
+    }
+
+    return query.observeCount();
+};
+
+export const observeScheduledPostCountForThread = (database: Database, rootId: string) => {
     return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
-        Q.on(CHANNEL,
-            Q.where('id', channelId),
-        ),
+        Q.where('root_id', rootId),
     ).observeCount();
 };
