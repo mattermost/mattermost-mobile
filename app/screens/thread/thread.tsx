@@ -128,6 +128,7 @@ const Thread = ({
                     <ScheduledPostIndicator
                         isCRTEnabled={isCRTEnabled}
                         rootId={rootId}
+                        channelId=''
                     />
                     <PostDraft
                         channelId={rootPost!.channelId}

@@ -7,9 +7,12 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
 import {DRAFT} from '@constants/screens';
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {renderWithEverything} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 import {ScheduledPostIndicator} from './scheduled_post_indicator';
+
+import type {Database} from '@nozbe/watermelondb';
 
 jest.mock('@utils/theme', () => ({
     changeOpacity: jest.fn().mockReturnValue('rgba(0,0,0,0.5)'),
@@ -36,7 +39,11 @@ jest.mock('@components/formatted_time', () => {
 });
 
 describe('ScheduledPostIndicator', () => {
-    beforeAll(() => {
+    let database: Database;
+
+    beforeAll(async () => {
+        const server = await TestHelper.setupServerDatabase();
+        database = server.database;
         jest.useFakeTimers();
         jest.setSystemTime(new Date('2024-02-24T12:00:00Z'));
     });
@@ -54,9 +61,10 @@ describe('ScheduledPostIndicator', () => {
         const props = {
             ...baseProps,
             scheduledPostCount: 0,
+            channelId: 'channel_id',
         };
 
-        renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
+        renderWithEverything(<ScheduledPostIndicator {...props}/>, {database});
         expect(screen.queryByText(/scheduled/i)).toBeNull();
     });
 
@@ -64,9 +72,10 @@ describe('ScheduledPostIndicator', () => {
         const props = {
             ...baseProps,
             scheduledPostCount: 2,
+            channelId: 'channel_id',
         };
 
-        renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
+        renderWithEverything(<ScheduledPostIndicator {...props}/>, {database});
         expect(screen.getByText(/2 scheduled messages in channel/i)).toBeTruthy();
     });
 
@@ -75,16 +84,22 @@ describe('ScheduledPostIndicator', () => {
             ...baseProps,
             scheduledPostCount: 2,
             isThread: true,
+            channelId: 'channel_id',
         };
 
-        renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
+        renderWithEverything(<ScheduledPostIndicator {...props}/>, {database});
         expect(screen.getByText(/2 scheduled messages in thread/i)).toBeTruthy();
     });
 
     test('should handle see all scheduled posts click', () => {
+        const props = {
+            ...baseProps,
+            scheduledPostCount: 2,
+            channelId: 'channel_id',
+        };
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
 
-        renderWithIntlAndTheme(<ScheduledPostIndicator {...baseProps}/>);
+        renderWithEverything(<ScheduledPostIndicator {...props}/>, {database});
 
         fireEvent.press(screen.getByText('See all.'));
 
