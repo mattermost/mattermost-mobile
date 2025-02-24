@@ -40,6 +40,7 @@ type ChannelProps = {
     channelType: ChannelType;
     hasGMasDMFeature: boolean;
     includeBookmarkBar?: boolean;
+    isCRTEnabled: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -64,6 +65,7 @@ const Channel = ({
     currentUserId,
     hasGMasDMFeature,
     includeBookmarkBar,
+    isCRTEnabled,
 }: ChannelProps) => {
     useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
@@ -134,9 +136,11 @@ const Channel = ({
                             nativeID={channelId}
                         />
                     </View>
-                    {/* eslint-disable-next-line no-warning-comments */}
-                    {/*TODO: This count is hardcoded but will be removed during integration work*/}
-                    <ScheduledPostIndicator scheduledPostCount={10}/>
+                    <ScheduledPostIndicator
+                        channelId={channelId}
+                        channelType={channelType}
+                        isCRTEnabled={isCRTEnabled}
+                    />
                     <PostDraft
                         channelId={channelId}
                         testID='channel.post_draft'
