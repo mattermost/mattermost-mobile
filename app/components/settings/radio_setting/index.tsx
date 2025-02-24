@@ -26,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 type Props = {
     label: string;
-    options?: PostActionOption[];
+    options?: DialogOption[];
     onChange: (value: string) => void;
     helpText?: string;
     errorText?: string;

@@ -51,7 +51,7 @@ const EmbeddedBinding = ({embed, location, post, theme}: Props) => {
     return (
         <>
             <View style={style.container}>
-                {Boolean(embed.label) &&
+                {embed.label &&
                 <EmbedTitle
                     channelId={post.channelId}
                     location={location}
@@ -59,11 +59,11 @@ const EmbeddedBinding = ({embed, location, post, theme}: Props) => {
                     value={embed.label}
                 />
                 }
-                {Boolean(embed.description) &&
+                {embed.description &&
                 <EmbedText
                     channelId={post.channelId}
                     location={location}
-                    value={embed.description!}
+                    value={embed.description}
                     theme={theme}
                 />
                 }
