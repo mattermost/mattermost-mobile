@@ -225,3 +225,54 @@ describe('getErrorStringFromCode', () => {
         expect(result).toBe('UNKNOWN ERROR');
     });
 });
+
+describe('getErrorStringFromCode', () => {
+    const mockIntl = {
+        formatMessage: jest.fn((message) => message.defaultMessage),
+    } as unknown as IntlShape;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should return correct error message for known error codes', () => {
+        const testCases: ScheduledPostErrorCode[] = [
+            'channel_archived',
+            'channel_not_found',
+            'user_missing',
+            'user_deleted',
+            'no_channel_permission',
+            'no_channel_member',
+            'thread_deleted',
+            'unable_to_send',
+            'invalid_post',
+        ];
+
+        const expectedMessages = [
+            'Channel Archived',
+            'Channel Removed',
+            'User Deleted',
+            'User Deleted',
+            'Missing Permission',
+            'Not In Channel',
+            'Thread Deleted',
+            'Unable to Send',
+            'Invalid Post',
+        ];
+
+        testCases.forEach((errorCode, index) => {
+            const result = getErrorStringFromCode(mockIntl, errorCode);
+            expect(result).toBe(expectedMessages[index].toUpperCase());
+        });
+    });
+
+    it('should return "UNKNOWN ERROR" for undefined error code', () => {
+        const result = getErrorStringFromCode(mockIntl);
+        expect(result).toBe('UNKNOWN ERROR');
+    });
+
+    it('should return "UNKNOWN ERROR" for unknown error code', () => {
+        const result = getErrorStringFromCode(mockIntl, 'unknown');
+        expect(result).toBe('UNKNOWN ERROR');
+    });
+});
