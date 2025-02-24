@@ -409,4 +409,69 @@ describe('WebSocketClient', () => {
 
         expect(mockConn.send).not.toHaveBeenCalled();
     });
+
+    it('should reset ping interval state when reconnecting during pending ping', async () => {
+        enableFakeTimers();
+
+        const closeCallback = jest.fn();
+        client.setCloseCallback(closeCallback);
+
+        const connectingCallback = jest.fn();
+        client.setConnectingCallback(connectingCallback);
+
+        await client.initialize();
+
+        // Wait until we get a client PING
+        await advanceTimers(30100);
+
+        expect(mockConn.send).toHaveBeenNthCalledWith(1, JSON.stringify({
+            action: 'authentication_challenge',
+            seq: 1,
+            data: {
+                token: 'test-token',
+            },
+        }));
+        expect(mockConn.send).toHaveBeenNthCalledWith(2, JSON.stringify({
+            action: 'ping',
+            seq: 2,
+        }));
+
+        mockConn.close();
+
+        // Let connection reconnect
+        await advanceTimers(5100);
+
+        // And client for PINGs to start again
+        await advanceTimers(30100);
+
+        expect(connectingCallback).toHaveBeenCalledTimes(2);
+        expect(closeCallback).toHaveBeenCalledTimes(1);
+        expect(mockConn.send).toHaveBeenNthCalledWith(3, JSON.stringify({
+            action: 'authentication_challenge',
+            seq: 1,
+            data: {
+                token: 'test-token',
+            },
+        }));
+        expect(mockConn.send).toHaveBeenNthCalledWith(4, JSON.stringify({
+            action: 'ping',
+            seq: 2,
+        }));
+
+        // Second ping should be sent if we got a pong response
+        const pongMessage = {data: {text: WebsocketEvents.PONG}, seq_reply: 2, status: 'OK'};
+        mockConn.onMessage.mock.calls[0][0]({message: pongMessage});
+
+        // Ensure we continue to get client PINGs
+        await advanceTimers(30100);
+        expect(mockConn.send).toHaveBeenNthCalledWith(5, JSON.stringify({
+            action: 'ping',
+            seq: 3,
+        }));
+
+        expect(connectingCallback).toHaveBeenCalledTimes(2);
+        expect(closeCallback).toHaveBeenCalledTimes(1);
+
+        disableFakeTimers();
+    });
 });
