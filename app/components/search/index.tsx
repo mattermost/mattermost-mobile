@@ -7,7 +7,18 @@
 import {SearchBar} from '@rneui/base';
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type ActivityIndicatorProps, Keyboard, Platform, type StyleProp, TextInput, type TextInputProps, type TextStyle, type TouchableOpacityProps, type ViewStyle} from 'react-native';
+import {
+    ActivityIndicatorProps,
+    Keyboard,
+    Platform,
+    StyleProp,
+    TextInput,
+    TextInputProps,
+    TextStyle,
+    TouchableOpacityProps,
+    ViewStyle,
+} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import {SEARCH_INPUT_HEIGHT} from '@constants/view';
@@ -58,6 +69,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: undefined,
         paddingTop: 0,
         paddingBottom: 0,
+        flex: 1, // Ensure the container can expand to full height
     },
     inputContainerStyle: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
@@ -160,33 +172,37 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     }), [searchRef]);
 
     return (
-        <SearchBar
-            {...props}
-            cancelButtonProps={props.cancelButtonProps || cancelButtonProps}
-            cancelButtonTitle={props.cancelButtonTitle || intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-            cancelIcon={cancelIcon}
-            clearIcon={clearIcon}
-            containerStyle={[styles.containerStyle, props.containerStyle]}
-            inputContainerStyle={[styles.inputContainerStyle, props.inputContainerStyle]}
-            inputStyle={[styles.inputStyle, props.inputStyle]}
-            returnKeyType='search'
-            onCancel={onCancel}
-            onClear={onClear}
-            onChangeText={onChangeText}
-            placeholder={props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-            placeholderTextColor={props.placeholderTextColor || changeOpacity(theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
-            platform={Platform.select({android: 'android', default: 'ios'})}
+        <SafeAreaView style={{flex: 1}}>
+            <SearchBar
+                {...props}
+                cancelButtonProps={props.cancelButtonProps || cancelButtonProps}
+                cancelButtonTitle={props.cancelButtonTitle || intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                cancelIcon={cancelIcon}
+                clearIcon={clearIcon}
+                containerStyle={[styles.containerStyle, props.containerStyle]}
+                inputContainerStyle={[styles.inputContainerStyle, props.inputContainerStyle]}
+                inputStyle={[styles.inputStyle, props.inputStyle]}
+                returnKeyType='search'
+                onCancel={onCancel}
+                onClear={onClear}
+                onChangeText={onChangeText}
+                placeholder={props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                placeholderTextColor={props.placeholderTextColor || changeOpacity(theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
+                platform={Platform.select({android: 'android', default: 'ios'})}
 
-            // @ts-expect-error legacy ref
-            ref={searchRef}
-            searchIcon={searchIcon}
-            selectionColor={Platform.select({android: changeOpacity(props.selectionColor || theme.centerChannelColor, 0.24), default: props.selectionColor || theme.centerChannelColor})}
-            testID={searchInputTestID}
-            value={value}
-        />
+                // @ts-expect-error legacy ref
+                ref={searchRef}
+                searchIcon={searchIcon}
+                selectionColor={Platform.select({
+                    android: changeOpacity(props.selectionColor || theme.centerChannelColor, 0.24),
+                    default: props.selectionColor || theme.centerChannelColor
+                })}
+                testID={searchInputTestID}
+                value={value}
+            />
+        </SafeAreaView>
     );
 });
 
 Search.displayName = 'SeachBar';
-
 export default Search;
