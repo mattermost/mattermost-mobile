@@ -42,7 +42,7 @@ describe('components/scheduled_post_indicator', () => {
         const {getByText} = renderWithEverything(
             <ScheduledPostIndicator
                 isThread={false}
-                scheduledPostCount={1}
+                channelId='channel_id'
             />,
             {database},
         );
@@ -56,7 +56,7 @@ describe('components/scheduled_post_indicator', () => {
         const {getByText} = renderWithEverything(
             <ScheduledPostIndicator
                 isThread={false}
-                scheduledPostCount={10}
+                channelId='channel_id'
             />,
             {database},
         );
@@ -69,7 +69,7 @@ describe('components/scheduled_post_indicator', () => {
         const {getByText} = renderWithEverything(
             <ScheduledPostIndicator
                 isThread={true}
-                scheduledPostCount={10}
+                channelId='channel_id'
             />,
             {database},
         );
@@ -93,7 +93,7 @@ describe('components/scheduled_post_indicator', () => {
 
         const {getByText, findByTestId} = renderWithEverything(
             <ScheduledPostIndicator
-                scheduledPostCount={1}
+                channelId='channel_id'
             />,
             {database},
         );
@@ -119,7 +119,7 @@ describe('components/scheduled_post_indicator', () => {
 
         const {getByText, findByTestId} = renderWithEverything(
             <ScheduledPostIndicator
-                scheduledPostCount={1}
+                channelId='channel_id'
             />,
             {database},
         );
@@ -133,7 +133,7 @@ describe('components/scheduled_post_indicator', () => {
     it('renders with 12-hour time when preference is not set', async () => {
         const {getByText, findByTestId} = renderWithEverything(
             <ScheduledPostIndicator
-                scheduledPostCount={1}
+                channelId='channel_id'
             />,
             {database},
         );
@@ -147,7 +147,7 @@ describe('components/scheduled_post_indicator', () => {
     it('handles missing current user', async () => {
         const {getByText, findByTestId} = renderWithEverything(
             <ScheduledPostIndicator
-                scheduledPostCount={1}
+                channelId='channel_id'
             />,
             {database},
         );
@@ -163,7 +163,7 @@ describe('components/scheduled_post_indicator', () => {
 
         const {getByText} = renderWithEverything(
             <ScheduledPostIndicator
-                scheduledPostCount={1}
+                channelId='channel_id'
             />,
             {database},
         );

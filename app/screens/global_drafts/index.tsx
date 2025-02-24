@@ -6,6 +6,7 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
+import {switchMap} from 'rxjs/operators';
 
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
@@ -15,7 +16,9 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
-import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeDraftCount} from '@queries/servers/drafts';
+import {observeScheduledPostCount} from '@queries/servers/scheduled_post';
+import {observeConfigBooleanValue, observeCurrentTeamId} from '@queries/servers/system';
 import TabbedContents from '@screens/global_drafts/components/tabbed_contents/tabbed_contents';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -37,6 +40,8 @@ type Props = {
     componentId?: AvailableScreens;
     scheduledPostsEnabled?: boolean;
     initialTab?: DraftScreenTab;
+    draftsCount: number;
+    scheduledPostCount: number;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -87,15 +92,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab}: Props) => {
-    // eslint-disable-next-line no-warning-comments
-    // TODO: replace this hardcoded count with actual count integrated from the database
-    const draftsCount = 10;
-
-    // eslint-disable-next-line no-warning-comments
-    // TODO: replace this hardcoded count with actual count integrated from the database
-    const scheduledPostCount = 100;
-
+export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab, draftsCount, scheduledPostCount}: Props) => {
     const intl = useIntl();
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
@@ -183,9 +180,14 @@ export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnable
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const currentTeamId = observeCurrentTeamId(database);
     const scheduledPostsEnabled = observeConfigBooleanValue(database, 'ScheduledPosts');
+    const draftsCount = currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))); // Observe draft count
+    const scheduledPostCount = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostCount(database, teamId, true)));
     return {
         scheduledPostsEnabled,
+        draftsCount,
+        scheduledPostCount,
     };
 });
 
