@@ -6,7 +6,7 @@ import {map, switchMap} from 'rxjs/operators';
 
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {observeScheduledPostCountForChannel, observeScheduledPostCountForDMsAndGMs} from '@queries/servers/scheduled_post';
+import {observeScheduledPostCountForChannel, observeScheduledPostCountForDMsAndGMs, observeScheduledPostCountForThread} from '@queries/servers/scheduled_post';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 
@@ -15,11 +15,13 @@ import {ScheduledPostIndicator} from './scheduled_post_indicator';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type Props = WithDatabaseArgs & {
-    channelId: string;
-    channelType: ChannelType;
+    channelId?: string;
+    channelType?: ChannelType;
+    isCRTEnabled: boolean;
+    rootId?: string;
 }
 
-const enhance = withObservables(['channelId', 'channelType'], ({database, channelId, channelType}: Props) => {
+const enhance = withObservables(['channelId', 'channelType', 'isCRTEnabled', 'rootId'], ({database, channelId, channelType, isCRTEnabled, rootId}: Props) => {
     const currentUser = observeCurrentUser(database);
     const currentTeamId = observeCurrentTeamId(database);
     const preferences = queryDisplayNamePreferences(database).
@@ -27,10 +29,12 @@ const enhance = withObservables(['channelId', 'channelType'], ({database, channe
     const isMilitaryTime = preferences.pipe(map((prefs) => getDisplayNamePreferenceAsBool(prefs, 'use_military_time')));
 
     let scheduledPostCount;
-    if (channelType === 'D' || channelType === 'G') {
-        scheduledPostCount = observeScheduledPostCountForDMsAndGMs(database, channelId);
-    } else {
-        scheduledPostCount = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostCountForChannel(database, teamId, channelId)));
+    if ((channelType === 'D' || channelType === 'G') && channelId) {
+        scheduledPostCount = observeScheduledPostCountForDMsAndGMs(database, channelId, isCRTEnabled);
+    } else if (channelType === 'O' && channelId) {
+        scheduledPostCount = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostCountForChannel(database, teamId, channelId, isCRTEnabled)));
+    } else if (rootId) {
+        scheduledPostCount = observeScheduledPostCountForThread(database, rootId);
     }
     return {
         currentUser,

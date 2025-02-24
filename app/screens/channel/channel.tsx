@@ -40,6 +40,7 @@ type ChannelProps = {
     channelType: ChannelType;
     hasGMasDMFeature: boolean;
     includeBookmarkBar?: boolean;
+    isCRTEnabled: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -64,6 +65,7 @@ const Channel = ({
     currentUserId,
     hasGMasDMFeature,
     includeBookmarkBar,
+    isCRTEnabled,
 }: ChannelProps) => {
     useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
@@ -137,6 +139,7 @@ const Channel = ({
                     <ScheduledPostIndicator
                         channelId={channelId}
                         channelType={channelType}
+                        isCRTEnabled={isCRTEnabled}
                     />
                     <PostDraft
                         channelId={channelId}
