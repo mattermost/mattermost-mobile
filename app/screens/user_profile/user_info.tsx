@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState, useRef, useCallback} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 
 import {fetchCustomAttributes} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
@@ -32,8 +32,6 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
 
     const lastRequest = useRef(0);
 
-    const sortAttributes = useCallback(sortCustomProfileAttributes, []);
-
     useEffect(() => {
         if (enableCustomAttributes) {
             const fetchData = async () => {
@@ -41,7 +39,7 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
                 lastRequest.current = reqTime;
                 const {attributes, error} = await fetchCustomAttributes(serverUrl, user.id, true);
                 if (!error && lastRequest.current === reqTime) {
-                    const attributesList = Object.values(attributes).sort(sortAttributes);
+                    const attributesList = Object.values(attributes).sort(sortCustomProfileAttributes);
                     setCustomAttributes(attributesList);
                 } else {
                     setCustomAttributes(emptyList);
@@ -52,7 +50,7 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
         } else {
             setCustomAttributes(emptyList);
         }
-    }, [enableCustomAttributes, serverUrl, user.id, sortAttributes]);
+    }, [enableCustomAttributes, serverUrl, user.id]);
 
     return (
         <>
