@@ -7,7 +7,7 @@ import {map, switchMap} from 'rxjs/operators';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeScheduledPostCountForChannel, observeScheduledPostCountForDMsAndGMs, observeScheduledPostCountForThread} from '@queries/servers/scheduled_post';
-import {observeCurrentTeamId} from '@queries/servers/system';
+import {observeCurrentChannelId, observeCurrentTeamId} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import {ScheduledPostIndicator} from './scheduled_post_indicator';
@@ -24,6 +24,7 @@ type Props = WithDatabaseArgs & {
 const enhance = withObservables(['channelId', 'channelType', 'isCRTEnabled', 'rootId'], ({database, channelId, channelType, isCRTEnabled, rootId}: Props) => {
     const currentUser = observeCurrentUser(database);
     const currentTeamId = observeCurrentTeamId(database);
+    const currentChannelId = observeCurrentChannelId(database);
     const preferences = queryDisplayNamePreferences(database).
         observeWithColumns(['value']);
     const isMilitaryTime = preferences.pipe(map((prefs) => getDisplayNamePreferenceAsBool(prefs, 'use_military_time')));
@@ -40,6 +41,7 @@ const enhance = withObservables(['channelId', 'channelType', 'isCRTEnabled', 'ro
         currentUser,
         isMilitaryTime,
         scheduledPostCount,
+        currentChannelId,
     };
 });
 
