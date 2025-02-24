@@ -4,8 +4,9 @@
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Freeze} from 'react-freeze';
 import {useIntl} from 'react-intl';
-import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard} from 'react-native';
+import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -13,11 +14,11 @@ import {getPosts} from '@actions/local/post';
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
 import Autocomplete from '@components/autocomplete';
-import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
+import {ALL_TEAMS_ID} from '@constants/team';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -27,7 +28,6 @@ import {useCollapsibleHeader} from '@hooks/header';
 import NavigationStore from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, type TabType} from '@utils/search';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Initial from './initial';
 import Results from './results';
@@ -51,12 +51,12 @@ const AutocompletePaddingTop = 4;
 type Props = {
     teamId: string;
     teams: TeamModel[];
+    crossTeamSearchEnabled: boolean;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+const styles = StyleSheet.create({
     flex: {
         flex: 1,
-        backgroundColor: theme.centerChannelBg,
     },
     loading: {
         flex: 1,
@@ -65,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     autocompleteContainer: {
         zIndex: 11,
     },
-}));
+});
 
 const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
@@ -79,14 +79,15 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
 
 const searchScreenIndex = 1;
 
-const SearchScreen = ({teamId, teams}: Props) => {
+const CHANNEL_AND_USER_FILTERS_REGEX = /(?:from|channel|in):\s?[^\s\n]+/gi;
+
+const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const keyboardHeight = useKeyboardHeight();
-    const styles = getStyleSheet(theme);
 
     const stateIndex = nav.getState()?.index;
     const serverUrl = useServerUrl();
@@ -189,7 +190,10 @@ const SearchScreen = ({teamId, teams}: Props) => {
         hideHeader(true);
         handleLoading(true);
         setLastSearchedValue(term);
-        addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
+
+        if (newSearchTeamId !== ALL_TEAMS_ID) {
+            addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
+        }
         const [postResults, {files, channels}] = await Promise.all([
             searchPosts(serverUrl, newSearchTeamId, searchParams),
             searchFiles(serverUrl, newSearchTeamId, searchParams),
@@ -236,9 +240,20 @@ const SearchScreen = ({teamId, teams}: Props) => {
         setResultsLoading(false);
     }, [lastSearchedValue, searchTeamId, serverUrl]);
 
+    const removeChannelAndUserFiltersFromString = (str: string) => {
+        return str.replace(CHANNEL_AND_USER_FILTERS_REGEX, '').trim();
+    };
+
+    const updateSearchTeamId = useCallback((newTeamId: string) => {
+        setSearchTeamId(newTeamId);
+        setSearchValue(removeChannelAndUserFiltersFromString(searchValue));
+    }, [searchValue]);
+
     const handleResultsTeamChange = useCallback((newTeamId: string) => {
         setSearchTeamId(newTeamId);
-        handleSearch(newTeamId, lastSearchedValue);
+        const cleanedSearchValue = removeChannelAndUserFiltersFromString(lastSearchedValue);
+        setSearchValue(cleanedSearchValue);
+        handleSearch(newTeamId, cleanedSearchValue);
     }, [lastSearchedValue, handleSearch]);
 
     const initialContainerStyle: AnimatedStyle<ViewStyle> = useMemo(() => {
@@ -263,7 +278,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                 setRecentValue={handleRecentSearch}
                 searchRef={searchRef}
                 setSearchValue={handleModifierTextChange}
-                setTeamId={setSearchTeamId}
+                setTeamId={updateSearchTeamId}
                 teamId={searchTeamId}
                 teams={teams}
             />
@@ -354,32 +369,32 @@ const SearchScreen = ({teamId, teams}: Props) => {
     useHardwareKeyboardEvents(events);
 
     return (
-        <FreezeScreen freeze={!isFocused}>
-            <NavigationHeader
-                isLargeTitle={true}
-                showBackButton={false}
-                title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
-                hasSearch={true}
-                scrollValue={scrollValue}
-                lockValue={lockValue}
-                hideHeader={hideHeader}
-                onChangeText={handleTextChange}
-                onSubmitEditing={onSubmit}
-                blurOnSubmit={true}
-                placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
-                onBlur={onBlur}
-                onClear={handleClearSearch}
-                onCancel={handleCancelSearch}
-                onFocus={onFocus}
-                defaultValue={searchValue}
-                ref={searchRef}
-            />
+        <Freeze freeze={!isFocused}>
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
                 onLayout={onLayout}
                 testID='search_messages.screen'
             >
+                <NavigationHeader
+                    isLargeTitle={true}
+                    showBackButton={false}
+                    title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
+                    hasSearch={true}
+                    scrollValue={scrollValue}
+                    lockValue={lockValue}
+                    hideHeader={hideHeader}
+                    onChangeText={handleTextChange}
+                    onSubmitEditing={onSubmit}
+                    blurOnSubmit={true}
+                    placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
+                    onBlur={onBlur}
+                    onClear={handleClearSearch}
+                    onCancel={handleCancelSearch}
+                    onFocus={onFocus}
+                    defaultValue={searchValue}
+                    ref={searchRef}
+                />
                 <KeyboardAvoidingView
                     style={styles.flex}
                     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -396,6 +411,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                                 selectedTab={selectedTab}
                                 selectedFilter={filter}
                                 teams={teams}
+                                crossTeamSearchEnabled={crossTeamSearchEnabled}
                             />
                             }
                         </Animated.View>
@@ -446,7 +462,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                 teamId={searchTeamId}
             />
             }
-        </FreezeScreen>
+        </Freeze>
     );
 };
 

@@ -19,6 +19,7 @@ export const CONVERT_GM_TO_CHANNEL = 'ConvertGMToChannel';
 export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
 export const CREATE_TEAM = 'CreateTeam';
+export const COMPONENT_LIBRARY = 'ComponentLibrary';
 export const CUSTOM_STATUS = 'CustomStatus';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const DRAFT = 'Draft';
@@ -98,6 +99,7 @@ export default {
     CHANNEL_NOTIFICATION_PREFERENCES,
     CODE,
     CONVERT_GM_TO_CHANNEL,
+    COMPONENT_LIBRARY,
     CREATE_DIRECT_MESSAGE,
     CREATE_OR_EDIT_CHANNEL,
     CREATE_TEAM,
@@ -198,6 +200,8 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     CALL_PARTICIPANTS,
     CALL_HOST_CONTROLS,
 ]);
+
+export const SCREENS_WITH_EXTRA_KEYBOARD = new Set<string>([CHANNEL, THREAD]);
 
 export const NOT_READY = [
     CREATE_TEAM,

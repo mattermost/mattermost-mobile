@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import NetInfo from '@react-native-community/netinfo';
-import {DeviceEventEmitter, Platform} from 'react-native';
+import {defineMessages, type IntlShape} from 'react-intl';
+import {Alert, DeviceEventEmitter, Platform, type AlertButton} from 'react-native';
 
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -24,6 +25,33 @@ import {loginEntry} from './entry';
 import type {LoginArgs} from '@typings/database/database';
 
 const HTTP_UNAUTHORIZED = 401;
+
+const logoutMessages = defineMessages({
+    title: {
+        id: 'logout.fail.title',
+        defaultMessage: 'Logout not complete',
+    },
+    bodyForced: {
+        id: 'logout.fail.message.forced',
+        defaultMessage: 'We could not log you out of the server. Some data may continue to be accessible to this device once the device goes back online.',
+    },
+    body: {
+        id: 'logout.fail.message',
+        defaultMessage: 'You’re not fully logged out. Some data may continue to be accessible to this device once the device goes back online. What do you want to do?',
+    },
+    cancel: {
+        id: 'logout.fail.cancel',
+        defaultMessage: 'Cancel',
+    },
+    continue: {
+        id: 'logout.fail.continue_anyway',
+        defaultMessage: 'Continue Anyway',
+    },
+    ok: {
+        id: 'logout.fail.ok',
+        defaultMessage: 'OK',
+    },
+});
 
 export const addPushProxyVerificationStateFromLogin = async (serverUrl: string) => {
     try {
@@ -56,7 +84,7 @@ export const forceLogoutIfNecessary = async (serverUrl: string, err: unknown) =>
     const currentUserId = await getCurrentUserId(database);
 
     if (isErrorWithStatusCode(err) && err.status_code === HTTP_UNAUTHORIZED && isErrorWithUrl(err) && err.url?.indexOf('/login') === -1 && currentUserId) {
-        await logout(serverUrl);
+        await logout(serverUrl, undefined, {skipServerLogout: true});
         return {error: null, logout: true};
     }
 
@@ -135,14 +163,60 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 };
 
-export const logout = async (serverUrl: string, skipServerLogout = false, removeServer = false, skipEvents = false) => {
+type LogoutOptions = {
+    skipServerLogout?: boolean;
+    removeServer?: boolean;
+    skipEvents?: boolean;
+    logoutOnAlert?: boolean;
+};
+
+export const logout = async (
+    serverUrl: string,
+    intl: IntlShape | undefined,
+    {
+        skipServerLogout = false,
+        removeServer = false,
+        skipEvents = false,
+        logoutOnAlert = false,
+    }: LogoutOptions = {}) => {
     if (!skipServerLogout) {
+        let loggedOut = false;
         try {
             const client = NetworkManager.getClient(serverUrl);
-            await client.logout();
+            const response = await client.logout();
+            if (response.status === 'OK') {
+                loggedOut = true;
+            }
         } catch (error) {
             // We want to log the user even if logging out from the server failed
             logWarning('An error occurred logging out from the server', serverUrl, getFullErrorMessage(error));
+        }
+
+        if (!loggedOut) {
+            const title = intl?.formatMessage(logoutMessages.title) || logoutMessages.title.defaultMessage;
+
+            const bodyMessage = logoutOnAlert ? logoutMessages.bodyForced : logoutMessages.body;
+            const confirmMessage = logoutOnAlert ? logoutMessages.ok : logoutMessages.continue;
+            const body = intl?.formatMessage(bodyMessage) || bodyMessage.defaultMessage;
+            const cancel = intl?.formatMessage(logoutMessages.cancel) || logoutMessages.cancel.defaultMessage;
+            const confirm = intl?.formatMessage(confirmMessage) || confirmMessage.defaultMessage;
+
+            const buttons: AlertButton[] = logoutOnAlert ? [] : [{text: cancel, style: 'cancel'}];
+            buttons.push({
+                text: confirm,
+                onPress: logoutOnAlert ? undefined : () => {
+                    logout(serverUrl, intl, {skipEvents, removeServer, logoutOnAlert, skipServerLogout: true});
+                },
+            });
+            Alert.alert(
+                title,
+                body,
+                buttons,
+            );
+
+            if (!logoutOnAlert) {
+                return {data: false};
+            }
         }
     }
 
