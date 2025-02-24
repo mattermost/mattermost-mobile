@@ -1,0 +1,68 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`screens/global_drafts/components/ScheduledPostEmptyComponent should match snapshot 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "flex": 1,
+      "justifyContent": "center",
+    }
+  }
+  testID="scheduled_post_empty_component"
+>
+  <ViewManagerAdapter_ExpoImage
+    containerViewRef={"[React.ref]"}
+    contentFit="cover"
+    contentPosition={
+      {
+        "left": "50%",
+        "top": "50%",
+      }
+    }
+    nativeViewRef={"[React.ref]"}
+    onError={[Function]}
+    onLoad={[Function]}
+    onLoadStart={[Function]}
+    onProgress={[Function]}
+    placeholder={[]}
+    source={
+      [
+        {
+          "testUri": "../../../dist/assets/images/Scheduled_Message.png",
+        },
+      ]
+    }
+    style={{}}
+    transition={null}
+  />
+  <Text
+    style={
+      {
+        "color": "#3f4350",
+        "fontFamily": "Metropolis-SemiBold",
+        "fontSize": 20,
+        "fontWeight": "600",
+        "lineHeight": 28,
+      }
+    }
+  >
+    No scheduled drafts at the moment
+  </Text>
+  <Text
+    style={
+      {
+        "color": "rgba(63,67,80,0.72)",
+        "fontFamily": "OpenSans",
+        "fontSize": 14,
+        "fontWeight": "400",
+        "lineHeight": 20,
+        "marginTop": 8,
+        "textAlign": "center",
+      }
+    }
+  >
+    Schedule drafts to send messages at a later time. Any scheduled drafts will show up here and can be modified after being scheduled.
+  </Text>
+</View>
+`;

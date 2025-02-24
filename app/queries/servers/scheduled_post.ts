@@ -26,3 +26,22 @@ export const queryScheduledPostsForTeam = (database: Database, teamId: string, i
 export const observeScheduledPostsForTeam = (database: Database, teamId: string, includeDirectChannelPosts?: boolean) => {
     return queryScheduledPostsForTeam(database, teamId, includeDirectChannelPosts).observeWithColumns(['update_at']);
 };
+
+export const observeScheduledPostCount = (database: Database, teamId: string, includeDirectChannelPosts?: boolean) => {
+    return queryScheduledPostsForTeam(database, teamId, includeDirectChannelPosts).observeCount();
+};
+
+export const observeScheduledPostCountForChannel = (
+    database: Database,
+    teamId: string,
+    channelId: string,
+) => {
+    return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
+        Q.on(CHANNEL,
+            Q.and(
+                Q.where('team_id', teamId),
+                Q.where('id', channelId),
+            ),
+        ),
+    ).observeCount();
+};
