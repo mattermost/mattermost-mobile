@@ -4,7 +4,7 @@ import {Alert} from 'react-native';
 
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 
-import {deleteScheduledPostConfirmation} from './index';
+import {deleteScheduledPostConfirmation, getErrorStringFromCode, type ScheduledPostErrorCode} from './index';
 
 import type {IntlShape} from 'react-intl';
 import type {SwipeableMethods} from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
@@ -88,5 +88,56 @@ describe('deleteScheduledPostConfirmation', () => {
 
         // Should not throw when swipeable is undefined
         expect(() => cancelButton.onPress()).not.toThrow();
+    });
+});
+
+describe('getErrorStringFromCode', () => {
+    const mockIntl = {
+        formatMessage: jest.fn((message) => message.defaultMessage),
+    } as unknown as IntlShape;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should return correct error message for known error codes', () => {
+        const testCases: ScheduledPostErrorCode[] = [
+            'channel_archived',
+            'channel_not_found',
+            'user_missing',
+            'user_deleted',
+            'no_channel_permission',
+            'no_channel_member',
+            'thread_deleted',
+            'unable_to_send',
+            'invalid_post',
+        ];
+
+        const expectedMessages = [
+            'Channel Archived',
+            'Channel Removed',
+            'User Deleted',
+            'User Deleted',
+            'Missing Permission',
+            'Not In Channel',
+            'Thread Deleted',
+            'Unable to Send',
+            'Invalid Post',
+        ];
+
+        testCases.forEach((errorCode, index) => {
+            const result = getErrorStringFromCode(mockIntl, errorCode);
+            expect(result).toBe(expectedMessages[index].toUpperCase());
+        });
+    });
+
+    it('should return "UNKNOWN ERROR" for undefined error code', () => {
+        const result = getErrorStringFromCode(mockIntl);
+        expect(result).toBe('UNKNOWN ERROR');
+    });
+
+    it('should return "UNKNOWN ERROR" for unknown error code', () => {
+        const result = getErrorStringFromCode(mockIntl, 'unknown');
+        expect(result).toBe('UNKNOWN ERROR');
     });
 });
