@@ -42,7 +42,7 @@ describe('TeamItem enhanced component', () => {
         await operator.handleTeam({teams: [TestHelper.fakeTeam({id: teamId})], prepareRecordsOnly: false});
         await operator.handleConfigs({
             configs: [
-                {id: 'CollapsedThreads', value: Config.DISABLED},
+                {id: 'CollapsedThreads', value: Config.ALWAYS_ON},
                 {id: 'Version', value: '7.6.0'},
             ],
             configsToDelete: [],
