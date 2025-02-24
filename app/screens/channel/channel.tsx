@@ -136,6 +136,7 @@ const Channel = ({
                     </View>
                     <ScheduledPostIndicator
                         channelId={channelId}
+                        channelType={channelType}
                     />
                     <PostDraft
                         channelId={channelId}
