@@ -10,6 +10,12 @@ jest.mock('@sentry/react-native', () => ({
     addBreadcrumb: jest.fn(),
 }));
 
+// We need to get back the original functions
+// since we are mocking them in the setup file
+jest.mock('./log', () => ({
+    ...jest.requireActual('./log'),
+}));
+
 // Mock console methods
 const originalConsole = global.console;
 
