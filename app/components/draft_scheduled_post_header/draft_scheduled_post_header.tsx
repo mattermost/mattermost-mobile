@@ -14,6 +14,7 @@ import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
 import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {getReadableTimestamp} from '@utils/datetime';
+import {getErrorStringFromCode, type ScheduledPostErrorCode} from '@utils/scheduled_post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
@@ -183,7 +184,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
                                 size={12}
                                 color={theme.buttonColor}
                             />
-                            <Text style={style.errorText}>{'CHANNEL IS READ-ONLY'}</Text>
+                            <Text style={style.errorText}>{getErrorStringFromCode(intl, scheduledPostErrorCode as ScheduledPostErrorCode)}</Text>
                         </View>
                     }
                 </View>
