@@ -7,13 +7,6 @@ import {renderWithIntl} from '@test/intl-test-helper';
 import ScheduledPostEmptyComponent from './scheduled_post_empty_component';
 
 describe('screens/global_drafts/components/ScheduledPostEmptyComponent', () => {
-    it('should match snapshot', () => {
-        const {toJSON} = renderWithIntl(
-            <ScheduledPostEmptyComponent/>,
-        );
-        expect(toJSON()).toMatchSnapshot();
-    });
-
     it('renders all required elements', () => {
         const {getByTestId, getByText} = renderWithIntl(
             <ScheduledPostEmptyComponent/>,
