@@ -45,3 +45,11 @@ export const observeScheduledPostCountForChannel = (
         ),
     ).observeCount();
 };
+
+export const observeScheduledPostCountForDMsAndGMs = (database: Database, channelId: string) => {
+    return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
+        Q.on(CHANNEL,
+            Q.where('id', channelId),
+        ),
+    ).observeCount();
+};
