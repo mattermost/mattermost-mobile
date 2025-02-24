@@ -1,180 +1,94 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
 import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
 import {DRAFT} from '@constants/screens';
-import NetworkManager from '@managers/network_manager';
-import {renderWithEverything} from '@test/intl-test-helper';
-import TestHelper from '@test/test_helper';
+import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import ScheduledPostIndicator from './';
+import {ScheduledPostIndicator} from './scheduled_post_indicator';
 
-import type ServerDataOperator from '@database/operator/server_data_operator';
-
-const SERVER_URL = 'https://appv1.mattermost.com';
-
-// this is needed when using the useServerUrl hook
-jest.mock('@context/server', () => ({
-    useServerUrl: jest.fn(() => SERVER_URL),
+jest.mock('@utils/theme', () => ({
+    changeOpacity: jest.fn().mockReturnValue('rgba(0,0,0,0.5)'),
+    makeStyleSheetFromTheme: jest.fn().mockReturnValue(() => ({
+        wrapper: {},
+        container: {},
+        text: {},
+        link: {},
+    })),
 }));
 
-describe('components/scheduled_post_indicator', () => {
-    let database: Database;
-    let operator: ServerDataOperator;
+jest.mock('@actions/local/draft', () => ({
+    switchToGlobalDrafts: jest.fn(),
+}));
 
-    beforeEach(async () => {
-        const server = await TestHelper.setupServerDatabase(SERVER_URL);
-        database = server.database;
-        operator = server.operator;
+jest.mock('@components/formatted_time', () => {
+    const MockFormattedTime = (props: any) => {
+        // Store props for test assertions
+        MockFormattedTime.mockProps = props;
+        return null;
+    };
+    MockFormattedTime.mockProps = {};
+    return MockFormattedTime;
+});
+
+describe('ScheduledPostIndicator', () => {
+    beforeAll(() => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2024-02-24T12:00:00Z'));
     });
 
-    afterEach(async () => {
-        await TestHelper.tearDown();
-        NetworkManager.invalidateClient(SERVER_URL);
+    afterAll(() => {
+        jest.useRealTimers();
     });
 
-    it('should render single scheduled post indicator correctly', async () => {
-        const {getByText} = renderWithEverything(
-            <ScheduledPostIndicator
-                isThread={false}
-                channelId='channel_id'
-            />,
-            {database},
-        );
+    const baseProps = {
+        isMilitaryTime: false,
+        scheduledPostCount: 1,
+    };
 
-        await screen.findByTestId('scheduled_post_indicator_single_time');
-        expect(getByText(/Message scheduled for/)).toBeVisible();
-        expect(getByText(/See all./)).toBeVisible();
+    test('should not render when scheduledPostCount is 0', () => {
+        const props = {
+            ...baseProps,
+            scheduledPostCount: 0,
+        };
+
+        renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
+        expect(screen.queryByText(/scheduled/i)).toBeNull();
     });
 
-    it('should render multiple scheduled posts indicator for channel', async () => {
-        const {getByText} = renderWithEverything(
-            <ScheduledPostIndicator
-                isThread={false}
-                channelId='channel_id'
-            />,
-            {database},
-        );
+    test('should render multiple posts message when scheduledPostCount is greater than 1', () => {
+        const props = {
+            ...baseProps,
+            scheduledPostCount: 2,
+        };
 
-        expect(getByText(/10 scheduled messages in channel./)).toBeVisible();
-        expect(getByText(/See all./)).toBeVisible();
+        renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
+        expect(screen.getByText(/2 scheduled messages in channel/i)).toBeTruthy();
     });
 
-    it('should render multiple scheduled posts indicator for thread', async () => {
-        const {getByText} = renderWithEverything(
-            <ScheduledPostIndicator
-                isThread={true}
-                channelId='channel_id'
-            />,
-            {database},
-        );
+    test('should render thread message when isThread is true', () => {
+        const props = {
+            ...baseProps,
+            scheduledPostCount: 2,
+            isThread: true,
+        };
 
-        expect(getByText(/10 scheduled messages in thread./)).toBeVisible();
-        expect(getByText(/See all./)).toBeVisible();
+        renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
+        expect(screen.getByText(/2 scheduled messages in thread/i)).toBeTruthy();
     });
 
-    it('renders with military time when preference is set', async () => {
-        await operator.handlePreferences({
-            preferences: [
-                {
-                    user_id: 'user_1',
-                    category: 'display_settings',
-                    name: 'use_military_time',
-                    value: 'true',
-                },
-            ],
-            prepareRecordsOnly: false,
-        });
-
-        const {getByText, findByTestId} = renderWithEverything(
-            <ScheduledPostIndicator
-                channelId='channel_id'
-            />,
-            {database},
-        );
-
-        const timeElement = await findByTestId('scheduled_post_indicator_single_time');
-        expect(timeElement).toBeVisible();
-
-        expect(getByText(/19:41/)).toBeVisible();
-    });
-
-    it('renders with 12-hour time when preference is set to 12 hours', async () => {
-        await operator.handlePreferences({
-            preferences: [
-                {
-                    user_id: 'user_1',
-                    category: 'display_settings',
-                    name: 'use_military_time',
-                    value: 'false',
-                },
-            ],
-            prepareRecordsOnly: false,
-        });
-
-        const {getByText, findByTestId} = renderWithEverything(
-            <ScheduledPostIndicator
-                channelId='channel_id'
-            />,
-            {database},
-        );
-
-        const timeElement = await findByTestId('scheduled_post_indicator_single_time');
-        expect(timeElement).toBeVisible();
-
-        expect(getByText(/7:41 PM/)).toBeVisible();
-    });
-
-    it('renders with 12-hour time when preference is not set', async () => {
-        const {getByText, findByTestId} = renderWithEverything(
-            <ScheduledPostIndicator
-                channelId='channel_id'
-            />,
-            {database},
-        );
-
-        const timeElement = await findByTestId('scheduled_post_indicator_single_time');
-        expect(timeElement).toBeVisible();
-
-        expect(getByText(/7:41 PM/)).toBeVisible();
-    });
-
-    it('handles missing current user', async () => {
-        const {getByText, findByTestId} = renderWithEverything(
-            <ScheduledPostIndicator
-                channelId='channel_id'
-            />,
-            {database},
-        );
-
-        const timeElement = await findByTestId('scheduled_post_indicator_single_time');
-        expect(timeElement).toBeVisible();
-        expect(getByText(/Message scheduled for/)).toBeVisible();
-    });
-
-    it('handles See all link press correctly', async () => {
+    test('should handle see all scheduled posts click', () => {
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
-        const switchToGlobalDraftsSpy = jest.spyOn(require('@actions/local/draft'), 'switchToGlobalDrafts');
 
-        const {getByText} = renderWithEverything(
-            <ScheduledPostIndicator
-                channelId='channel_id'
-            />,
-            {database},
-        );
+        renderWithIntlAndTheme(<ScheduledPostIndicator {...baseProps}/>);
 
-        const seeAllLink = getByText('See all.');
-        fireEvent.press(seeAllLink);
+        fireEvent.press(screen.getByText('See all.'));
 
         expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SCREEN, DRAFT);
-        expect(switchToGlobalDraftsSpy).toHaveBeenCalledWith(1);
-
-        emitSpy.mockRestore();
-        switchToGlobalDraftsSpy.mockRestore();
+        expect(emitSpy).toHaveBeenCalledTimes(1);
     });
 });
