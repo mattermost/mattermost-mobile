@@ -81,7 +81,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - mattermost-react-native-turbo-log (0.5.0):
+  - mattermost-react-native-turbo-log (0.6.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2476,7 +2476,7 @@ SPEC CHECKSUMS:
   Expo: 848501c300b37b3fa7330c58a5353e07e03d5c3d
   ExpoCrypto: 483fc758365923f89ddaab4327c21cae9534841d
   ExpoDevice: 449822f2c45660c1ce83283dd51c67fe5404996c
-  ExpoFileSystem: a38e1bb58d77f41717293a7b73ebd4014d8cb8dd
+  ExpoFileSystem: 818e82dbb71175414d1ca310e926c48ff0d07348
   ExpoImage: 18ec1a3e5cd96ee6162d988be3085e18113e143f
   ExpoLinearGradient: 18148bd38f98fa0229c1f9df23393b32ab6d2d32
   ExpoModulesCore: c9cb309323aee3c048099bb40ad0226e3fcf0c56
@@ -2490,7 +2490,7 @@ SPEC CHECKSUMS:
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
   JitsiWebRTC: b47805ab5668be38e7ee60e2258f49badfe8e1d0
   mattermost-hardware-keyboard: 510850877516c61f71f06c95377b96263af1b80d
-  mattermost-react-native-turbo-log: d9f09145089b5fcabac2c0227ee6cf7d81714221
+  mattermost-react-native-turbo-log: 9e2c4f2e2b278a1541e5c2eb99ed9cd2af601fe2
   mattermost-rnutils: 88291c01fc351a93c553b6a3bce44b17f8d38233
   RCT-Folly: 84578c8756030547307e4572ab1947de1685c599
   RCTDeprecation: fb7d408617e25d7f537940000d766d60149c5fea
