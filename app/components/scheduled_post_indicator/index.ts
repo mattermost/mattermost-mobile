@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {of} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
@@ -29,14 +30,15 @@ const enhance = withObservables(['channelId', 'channelType', 'isCRTEnabled', 'ro
         observeWithColumns(['value']);
     const isMilitaryTime = preferences.pipe(map((prefs) => getDisplayNamePreferenceAsBool(prefs, 'use_military_time')));
 
-    let scheduledPostCount;
-    if ((channelType === 'D' || channelType === 'G') && channelId) {
+    let scheduledPostCount = of(0);
+    if (rootId) {
+        scheduledPostCount = observeScheduledPostCountForThread(database, rootId);
+    } else if ((channelType === 'D' || channelType === 'G') && channelId) {
         scheduledPostCount = observeScheduledPostCountForDMsAndGMs(database, channelId, isCRTEnabled);
     } else if (channelType === 'O' && channelId) {
         scheduledPostCount = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostCountForChannel(database, teamId, channelId, isCRTEnabled)));
-    } else if (rootId) {
-        scheduledPostCount = observeScheduledPostCountForThread(database, rootId);
     }
+
     return {
         currentUser,
         isMilitaryTime,
