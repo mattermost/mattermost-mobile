@@ -10,6 +10,7 @@ import useFieldRefs from '@hooks/field_refs';
 import {t} from '@i18n';
 import {getErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
+import {sortCustomProfileAttributes} from '@utils/user';
 
 import DisabledFields from './disabled_fields';
 import EmailField from './email_field';
@@ -100,7 +101,12 @@ const ProfileForm = ({
     ), [enableCustomAttributes, userInfo.customAttributes]);
 
     const formKeys = useMemo(() => {
-        return total_custom_attrs === 0 ? profileKeys : [...profileKeys, ...(Object.keys(userInfo.customAttributes).map((k) => `${CUSTOM_ATTRS_PREFIX}.${k}`))];
+        const newKeys = Object.keys(userInfo.customAttributes).sort(
+            (a: string, b: string): number => {
+                return sortCustomProfileAttributes(userInfo.customAttributes[a], userInfo.customAttributes[b]);
+            }).map((k) => `${CUSTOM_ATTRS_PREFIX}.${k}`);
+
+        return total_custom_attrs === 0 ? profileKeys : [...profileKeys, ...newKeys];
     }, [userInfo.customAttributes, total_custom_attrs]);
 
     const userProfileFields: FieldSequence = useMemo(() => {

@@ -25,8 +25,8 @@ import {fetchGroupsByNames} from './groups';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Model} from '@nozbe/watermelondb';
+import type {CustomAttribute, CustomProfileAttributeSimple, CustomProfileField, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
-import type {CustomAttribute, CustomAttributeSet} from '@typings/screens/edit_profile';
 
 export type MyUserRequest = {
     user?: UserProfile;
@@ -880,7 +880,7 @@ export const getAllSupportedTimezones = async (serverUrl: string) => {
     }
 };
 
-export const fetchCustomAttributes = async (serverUrl: string, userId: string): Promise<{attributes: CustomAttributeSet; error: unknown}> => {
+export const fetchCustomAttributes = async (serverUrl: string, userId: string, filterEmpty = false): Promise<{attributes: CustomAttributeSet; error: unknown}> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const [fields, attrValues] = await Promise.all([
@@ -890,12 +890,16 @@ export const fetchCustomAttributes = async (serverUrl: string, userId: string): 
 
         if (fields?.length > 0) {
             const attributes: Record<string, CustomAttribute> = {};
-            fields.forEach((field) => {
-                attributes[field.id] = {
-                    id: field.id,
-                    name: field.name,
-                    value: attrValues[field.id] || '',
-                };
+            fields.forEach((field: CustomProfileField) => {
+                const value = attrValues[field.id] || '';
+                if (!filterEmpty || value) {
+                    attributes[field.id] = {
+                        id: field.id,
+                        name: field.name,
+                        value,
+                        sort_order: field.attrs?.sort_order,
+                    };
+                }
             });
             return {attributes, error: undefined};
         }
