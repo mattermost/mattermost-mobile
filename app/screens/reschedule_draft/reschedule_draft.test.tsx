@@ -4,11 +4,12 @@
 import {act} from '@testing-library/react-native';
 import moment from 'moment-timezone';
 import React from 'react';
+import {Navigation} from 'react-native-navigation';
 
 import {updateScheduledPost} from '@actions/remote/scheduled_post';
 import {useServerUrl} from '@context/server';
 import DateTimeSelector from '@screens/custom_status_clear_after/components/date_time_selector';
-import {setButtons} from '@screens/navigation';
+import {dismissModal, setButtons} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -31,6 +32,17 @@ jest.mock('@screens/navigation', () => ({
     dismissModal: jest.fn(),
     setButtons: jest.fn(),
 }));
+
+jest.mock('react-native-navigation', () => {
+    const registerComponentListenerMock = jest.fn();
+    return {
+        Navigation: {
+            events: () => ({
+                registerComponentListener: registerComponentListenerMock,
+            }),
+        },
+    };
+});
 
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(),
@@ -84,7 +96,7 @@ describe('RescheduledDraft', () => {
             expect.objectContaining({
                 rightButtons: expect.arrayContaining([
                     expect.objectContaining({
-                        enabled: false,
+                        enabled: true,
                     }),
                 ]),
             }),
@@ -105,9 +117,76 @@ describe('RescheduledDraft', () => {
             dateTimeSelector.props.handleChange(newDate);
         });
 
-        const setButtonsCall = (setButtons as jest.Mock).mock.calls[1][1];
-        const saveButton = setButtonsCall.rightButtons[0];
+        expect(setButtons).toHaveBeenCalled();
 
+        const mockCalls = (setButtons as jest.Mock).mock.calls;
+        const lastCallIndex = mockCalls.length - 1;
+        const setButtonsCall = mockCalls[lastCallIndex][1];
+
+        expect(setButtonsCall.rightButtons).toBeDefined();
+        expect(setButtonsCall.rightButtons.length).toBeGreaterThan(0);
+
+        const saveButton = setButtonsCall.rightButtons[0];
         expect(saveButton.enabled).toBeTruthy();
+    });
+
+    it('should call Navigation event when save button is pressed', async () => {
+        const {UNSAFE_getByType: getByType} = renderWithEverything(
+            <RescheduledDraft {...baseProps}/>, {database},
+        );
+
+        // Change the date to enable the save button
+        const dateTimeSelector = getByType(DateTimeSelector);
+        const newDate = moment().add(2, 'days');
+        await act(async () => {
+            dateTimeSelector.props.handleChange(newDate);
+        });
+
+        // Verify navigation listener was registered
+        expect(Navigation.events().registerComponentListener).toHaveBeenCalledWith(
+            expect.any(Object),
+            baseProps.componentId,
+        );
+
+        // Get the navigationButtonPressed handler
+        const functionToCall = jest.mocked(Navigation.events().registerComponentListener).mock.calls[0][0].navigationButtonPressed;
+
+        // Simulate pressing the save button
+        await act(async () => {
+            if (functionToCall) {
+                functionToCall({
+                    buttonId: 'reschedule-draft',
+                    componentId: '',
+                });
+            }
+        });
+    });
+
+    it('should dismiss modal when close button is pressed', async () => {
+        renderWithEverything(
+            <RescheduledDraft {...baseProps}/>, {database},
+        );
+
+        // Verify navigation listener was registered
+        expect(Navigation.events().registerComponentListener).toHaveBeenCalledWith(
+            expect.any(Object),
+            baseProps.componentId,
+        );
+
+        // Get the navigationButtonPressed handler
+        const functionToCall = jest.mocked(Navigation.events().registerComponentListener).mock.calls[0][0].navigationButtonPressed;
+
+        // Simulate pressing the close button
+        await act(async () => {
+            if (functionToCall) {
+                functionToCall({
+                    buttonId: baseProps.closeButtonId,
+                    componentId: '',
+                });
+            }
+        });
+
+        // Verify dismissModal was called
+        expect(dismissModal).toHaveBeenCalledWith({componentId: baseProps.componentId});
     });
 });

@@ -20,12 +20,7 @@ jest.mock('react-native', () => ({
 }));
 
 describe('deleteScheduledPostConfirmation', () => {
-    const baseProps: {
-        intl: IntlShape;
-        serverUrl: string;
-        scheduledPostId: string;
-        swipeable?: React.RefObject<SwipeableMethods>;
-    } = {
+    const baseProps: Parameters<typeof deleteScheduledPostConfirmation>[0] = {
         intl: {
             formatMessage: ({defaultMessage}: {defaultMessage: string}) => defaultMessage,
         } as IntlShape,
@@ -42,14 +37,23 @@ describe('deleteScheduledPostConfirmation', () => {
         jest.clearAllMocks();
     });
 
-    it('shows confirmation dialog with correct text', () => {
+    it('shows confirmation dialog with correct text and buttons', () => {
         deleteScheduledPostConfirmation(baseProps);
 
-        expect(Alert.alert).toHaveBeenCalledWith(
-            'Delete scheduled post',
-            'Are you sure you want to delete this scheduled post?',
-            expect.any(Array),
-        );
+        const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+        expect(alertCall[0]).toBe('Delete scheduled post');
+        expect(alertCall[1]).toBe('Are you sure you want to delete this scheduled post?');
+
+        const buttons = alertCall[2];
+        expect(buttons).toHaveLength(2);
+
+        // Check Cancel button
+        expect(buttons[0].text).toBe('Cancel');
+        expect(typeof buttons[0].onPress).toBe('function');
+
+        // Check Delete button
+        expect(buttons[1].text).toBe('Delete');
+        expect(typeof buttons[1].onPress).toBe('function');
     });
 
     it('calls deleteScheduledPost when confirmed', () => {
@@ -87,6 +91,21 @@ describe('deleteScheduledPostConfirmation', () => {
         const cancelButton = (Alert.alert as jest.Mock).mock.calls[0][2][0];
 
         // Should not throw when swipeable is undefined
+        expect(() => cancelButton.onPress()).not.toThrow();
+    });
+
+    it('handles missing swipeable.current', () => {
+        const propsWithoutSwipeableCurrent = {
+            ...baseProps,
+            swipeable: {current: null} as unknown as React.RefObject<SwipeableMethods>,
+        };
+
+        deleteScheduledPostConfirmation(propsWithoutSwipeableCurrent);
+
+        // Get the cancel button callback
+        const cancelButton = (Alert.alert as jest.Mock).mock.calls[0][2][0];
+
+        // Should not throw when swipeable.current is null
         expect(() => cancelButton.onPress()).not.toThrow();
     });
 });

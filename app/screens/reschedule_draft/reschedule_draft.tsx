@@ -16,6 +16,7 @@ import DateTimeSelector from '@screens/custom_status_clear_after/components/date
 import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {logDebug} from '@utils/log';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 import {getTimezone} from '@utils/user';
 
@@ -69,11 +70,11 @@ const RescheduledDraft: React.FC<Props> = ({
     const userTimezone = getTimezone(currentUserTimezone);
 
     useEffect(() => {
-        toggleSaveButton(false);
+        toggleSaveButton(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const toggleSaveButton = useCallback((enabled = true) => {
+    const toggleSaveButton = useCallback(preventDoubleTap((enabled = true) => {
         setButtons(componentId, {
             rightButtons: [{
                 ...RIGHT_BUTTON,
@@ -83,7 +84,7 @@ const RescheduledDraft: React.FC<Props> = ({
                 enabled,
             }],
         });
-    }, [componentId, intl, theme]);
+    }), [componentId, intl, theme]);
 
     const onClose = useCallback(() => {
         Keyboard.dismiss();

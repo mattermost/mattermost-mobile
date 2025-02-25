@@ -59,8 +59,8 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
     const styles = getStyleSheet(theme);
     const snapPoints = useMemo(() => {
         const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
-        const COMPONENT_HIEGHT = TITLE_HEIGHT + (4 * ITEM_HEIGHT) + bottomSheetAdjust;
-        return [1, COMPONENT_HIEGHT];
+        const COMPONENT_HEIGHT = TITLE_HEIGHT + (4 * ITEM_HEIGHT) + bottomSheetAdjust;
+        return [1, COMPONENT_HEIGHT];
     }, []);
 
     const renderContent = () => {
