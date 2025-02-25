@@ -109,7 +109,7 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
                 hideExtraKeyboard,
                 registerTextInputBlur,
                 registerTextInputFocus,
-                crossFadeIsEnabled
+                crossFadeIsEnabled,
             }}
         >
             {children}
@@ -160,7 +160,7 @@ export const ExtraKeyboard = () => {
 
     useEffect(() => {
         setNativeOpen(nativeHeight > 0);
-    }, [nativeHeight])
+    }, [nativeHeight]);
 
     const maxKeyboardHeight = useDerivedValue(() => {
         if (keyb.state.value === KeyboardState.OPEN) {
