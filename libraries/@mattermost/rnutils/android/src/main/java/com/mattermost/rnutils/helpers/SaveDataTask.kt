@@ -51,10 +51,12 @@ open class SaveDataTask(private val reactContext: ReactApplicationContext) {
                             if (taskInstance?.mPickerPromise != null) {
                                 if (resultCode == Activity.RESULT_CANCELED) {
                                     taskInstance.mPickerPromise?.reject(Events.SAVE_ERROR_EVENT.event, "Save operation cancelled")
+                                    taskInstance.mPickerPromise = null
                                 } else if (resultCode == Activity.RESULT_OK) {
                                     val uri = intent?.data
                                     if (uri == null) {
                                         taskInstance.mPickerPromise?.reject(Events.SAVE_ERROR_EVENT.event, "No data found")
+                                        taskInstance.mPickerPromise = null
                                     } else {
                                         CoroutineScope(Dispatchers.Main).launch {
                                             val success = taskInstance.save(taskInstance.fileContent!!, uri)
@@ -67,7 +69,6 @@ open class SaveDataTask(private val reactContext: ReactApplicationContext) {
                                         }
                                     }
                                 }
-                                taskInstance.mPickerPromise = null
                             }
                         }
                     }

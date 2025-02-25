@@ -12,6 +12,7 @@ import {Alert, Linking, Platform} from 'react-native';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
+import {pathWithPrefix} from '@utils/files';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
@@ -575,10 +576,10 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
 };
 
 export const getFileSize = async (path: string) => {
-    const file = await getInfoAsync(path);
+    const file = await getInfoAsync(pathWithPrefix('file://', path));
     return 'size' in file ? file.size : 0;
 };
 
 export const deleteFile = async (path: string) => {
-    await deleteAsync(path);
+    await deleteAsync(pathWithPrefix('file://', path));
 };
