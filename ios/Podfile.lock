@@ -7,7 +7,7 @@ PODS:
   - DoubleConversion (1.1.6)
   - EXApplication (6.0.1):
     - ExpoModulesCore
-  - EXConstants (17.0.3):
+  - EXConstants (17.0.5):
     - ExpoModulesCore
   - Expo (52.0.19):
     - ExpoModulesCore
@@ -15,7 +15,7 @@ PODS:
     - ExpoModulesCore
   - ExpoDevice (7.0.1):
     - ExpoModulesCore
-  - ExpoFileSystem (18.0.6):
+  - ExpoFileSystem (18.0.7):
     - ExpoModulesCore
   - ExpoImage (2.0.4):
     - ExpoModulesCore
@@ -59,7 +59,7 @@ PODS:
     - hermes-engine/Pre-built (= 0.76.5)
   - hermes-engine/Pre-built (0.76.5)
   - HMSegmentedControl (1.5.6)
-  - JitsiWebRTC (124.0.1)
+  - JitsiWebRTC (124.0.2)
   - mattermost-hardware-keyboard (0.0.0):
     - DoubleConversion
     - glog
@@ -81,8 +81,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - mattermost-react-native-turbo-log (0.5.0):
-    - CocoaLumberjack (~> 3.8.5)
+  - mattermost-react-native-turbo-log (0.6.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -102,6 +101,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+    - TurboLogIOSNative
     - Yoga
   - mattermost-rnutils (0.0.0):
     - DoubleConversion
@@ -2094,6 +2094,8 @@ PODS:
   - SocketRocket (0.7.1)
   - Starscream (4.0.8)
   - SwiftyJSON (5.0.2)
+  - TurboLogIOSNative (0.1.0):
+    - CocoaLumberjack (~> 3.8.5)
   - WatermelonDB (0.28.0-1):
     - React
     - simdjson
@@ -2101,6 +2103,7 @@ PODS:
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
+  - CocoaLumberjack
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
@@ -2212,6 +2215,7 @@ DEPENDENCIES:
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - "simdjson (from `../node_modules/@nozbe/simdjson`)"
+  - TurboLogIOSNative (from `https://github.com/larkox/react-native-turbo-log-ios-native.git`)
   - "WatermelonDB (from `../node_modules/@nozbe/watermelondb`)"
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -2450,10 +2454,17 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-vector-icons"
   simdjson:
     :path: "../node_modules/@nozbe/simdjson"
+  TurboLogIOSNative:
+    :git: https://github.com/larkox/react-native-turbo-log-ios-native.git
   WatermelonDB:
     :path: "../node_modules/@nozbe/watermelondb"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
+
+CHECKOUT OPTIONS:
+  TurboLogIOSNative:
+    :commit: 44fa9abe32a74ce6206d6237c639e6382495d210
+    :git: https://github.com/larkox/react-native-turbo-log-ios-native.git
 
 SPEC CHECKSUMS:
   Alamofire: 7193b3b92c74a07f85569e1a6c4f4237291e7496
@@ -2461,11 +2472,11 @@ SPEC CHECKSUMS:
   CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   EXApplication: 88ebf1a95f85faa5d2df160016d61f2d060e9438
-  EXConstants: 277129d9a42ba2cf1fad375e7eaa9939005c60be
+  EXConstants: e25c3f3ef5d1cf7a6ef911ebf7a3ab94d8d06d82
   Expo: 848501c300b37b3fa7330c58a5353e07e03d5c3d
   ExpoCrypto: 483fc758365923f89ddaab4327c21cae9534841d
   ExpoDevice: 449822f2c45660c1ce83283dd51c67fe5404996c
-  ExpoFileSystem: a38e1bb58d77f41717293a7b73ebd4014d8cb8dd
+  ExpoFileSystem: 818e82dbb71175414d1ca310e926c48ff0d07348
   ExpoImage: 18ec1a3e5cd96ee6162d988be3085e18113e143f
   ExpoLinearGradient: 18148bd38f98fa0229c1f9df23393b32ab6d2d32
   ExpoModulesCore: c9cb309323aee3c048099bb40ad0226e3fcf0c56
@@ -2477,9 +2488,9 @@ SPEC CHECKSUMS:
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   hermes-engine: 06a9c6900587420b90accc394199527c64259db4
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
-  JitsiWebRTC: d0ae5fd6a81e771bfd82c2ee6c6bb542ebd65ee8
+  JitsiWebRTC: b47805ab5668be38e7ee60e2258f49badfe8e1d0
   mattermost-hardware-keyboard: 510850877516c61f71f06c95377b96263af1b80d
-  mattermost-react-native-turbo-log: 4eff5879e0d263f8146666a6124d66f8e8fcc0ae
+  mattermost-react-native-turbo-log: 9e2c4f2e2b278a1541e5c2eb99ed9cd2af601fe2
   mattermost-rnutils: 88291c01fc351a93c553b6a3bce44b17f8d38233
   RCT-Folly: 84578c8756030547307e4572ab1947de1685c599
   RCTDeprecation: fb7d408617e25d7f537940000d766d60149c5fea
@@ -2576,9 +2587,10 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Starscream: 19b5533ddb925208db698f0ac508a100b884a1b9
   SwiftyJSON: f5b1bf1cd8dd53cd25887ac0eabcfd92301c6a5a
+  TurboLogIOSNative: 45f6d20ba17ee39f8106e718e93baf43b2d76b7b
   WatermelonDB: 438a8dd16910dfe622095c44b5d1dbe11cbba6ba
   Yoga: fcc198acd4a55599b3468cfb6ebc526baff5f06e
 
-PODFILE CHECKSUM: f61c6130110ff18ebe025edfebd33129a0601fec
+PODFILE CHECKSUM: 0e437947a8e6696940c2efdfd7205ab54d67b7b8
 
 COCOAPODS: 1.16.1

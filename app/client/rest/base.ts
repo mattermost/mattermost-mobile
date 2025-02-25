@@ -215,6 +215,10 @@ export default class ClientBase extends ClientTracking {
         return `${this.getPostsRoute()}/schedule`;
     }
 
+    getUserCustomProfileAttributesRoute(userId: string) {
+        return `${this.getUsersRoute()}/${userId}/custom_profile_attributes`;
+    }
+
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
         return this.doFetchWithTracking(url, options, returnDataOnly);
     };
