@@ -7,15 +7,16 @@ import {Keyboard, SafeAreaView, StyleSheet, View} from 'react-native';
 
 import {updateScheduledPost} from '@actions/remote/scheduled_post';
 import Loading from '@components/loading';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {usePreventDoubleTap} from '@hooks/utils';
 import DateTimeSelector from '@screens/custom_status_clear_after/components/date_time_selector';
-import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {logDebug} from '@utils/log';
+import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity} from '@utils/theme';
 import {getTimezone} from '@utils/user';
 
@@ -58,8 +59,6 @@ const RescheduledDraft: React.FC<Props> = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [isUpdating, setIsUpdating] = useState(false);
-    const [errorLine, setErrorLine] = useState<string | undefined>();
-    const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const selectedTime = useRef<string | null>(null);
     const userTimezone = getTimezone(currentUserTimezone);
 
@@ -83,8 +82,13 @@ const RescheduledDraft: React.FC<Props> = ({
     const handleUIUpdates = useCallback((res: {error?: unknown}) => {
         if (res.error) {
             setIsUpdating(false);
-            const errorMessage = intl.formatMessage({id: 'mobile.scheduled_post.update.error', defaultMessage: 'There was a problem editing this message. Please try again.'});
-            setErrorLine(errorMessage);
+            const errorMessage = intl.formatMessage({id: 'mobile.scheduled_post.update.error', defaultMessage: 'There was a problem updating this post message. Please try again.'});
+            showSnackBar({
+                barType: SNACK_BAR_TYPE.RESCHEDULED_POST,
+                customMessage: errorMessage,
+                keepOpen: true,
+                type: 'error',
+            });
         } else {
             setIsUpdating(false);
             onClose();
@@ -93,14 +97,17 @@ const RescheduledDraft: React.FC<Props> = ({
 
     const onSavePostMessage = usePreventDoubleTap(useCallback(async () => {
         setIsUpdating(true);
-        setErrorLine(undefined);
-        setErrorExtra(undefined);
         toggleSaveButton(false);
         if (!selectedTime.current) {
             logDebug('ScheduledPostOptions', 'No time selected');
             setIsUpdating(false);
             const errorMessage = intl.formatMessage({id: 'mobile.scheduled_post.error', defaultMessage: 'No time selected'});
-            setErrorLine(errorMessage);
+            showSnackBar({
+                barType: SNACK_BAR_TYPE.RESCHEDULED_POST,
+                customMessage: errorMessage,
+                keepOpen: true,
+                type: 'error',
+            });
             return;
         }
         draft.scheduledAt = parseInt(selectedTime.current, 10);
@@ -132,23 +139,13 @@ const RescheduledDraft: React.FC<Props> = ({
             testID='edit_post.screen'
             style={styles.container}
         >
-            <View
-                style={styles.container}
-            >
-                {Boolean((errorLine || errorExtra)) &&
-                <PostError
-                    errorExtra={errorExtra}
-                    errorLine={errorLine}
+            <View style={styles.optionsContainer}>
+                <DateTimeSelector
+                    handleChange={handleCustomTimeChange}
+                    theme={theme}
+                    timezone={userTimezone}
+                    showInitially='date'
                 />
-                }
-                <View style={styles.optionsContainer}>
-                    <DateTimeSelector
-                        handleChange={handleCustomTimeChange}
-                        theme={theme}
-                        timezone={userTimezone}
-                        showInitially='date'
-                    />
-                </View>
             </View>
         </SafeAreaView>
     );

@@ -11,6 +11,7 @@ import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
@@ -18,6 +19,7 @@ import {usePersistentNotificationProps} from '@hooks/persistent_notification_pro
 import {DRAFT_TYPE_DRAFT, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {persistentNotificationsConfirmation, sendMessageWithAlert} from '@utils/post';
+import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -92,13 +94,22 @@ const SendDraft: React.FC<Props> = ({
     const intl = useIntl();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
-    const clearDraft = () => {
+
+    const clearDraft = async () => {
         if (draftType === DRAFT_TYPE_DRAFT) {
             removeDraft(serverUrl, channelId, rootId);
             return;
         }
         if (postId) {
-            deleteScheduledPost(serverUrl, postId);
+            const res = await deleteScheduledPost(serverUrl, postId);
+            if (res?.error) {
+                showSnackBar({
+                    barType: SNACK_BAR_TYPE.DELETE_SCHEDULED_POST_ERROR,
+                    customMessage: (res.error as Error).message,
+                    keepOpen: true,
+                    type: 'error',
+                });
+            }
         }
     };
 

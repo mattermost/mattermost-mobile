@@ -622,4 +622,31 @@ describe('useHandleSendMessage', () => {
             expect(createScheduledPost).toHaveBeenCalled();
         });
     });
+
+    describe('handle error while failing creating post from scheduled post and draft', () => {
+        it('should handle failed post creation', async () => {
+            jest.mocked(createPost).mockResolvedValueOnce({
+                error: new Error('Failed to create post'),
+            });
+
+            jest.mock('@utils/snack_bar', () => ({
+                showSnackBar: jest.fn(),
+            }));
+
+            const props = {
+                ...defaultProps,
+                value: 'test message',
+            };
+
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+            await act(async () => {
+                const response = await result.current.handleSendMessage();
+                expect(response?.error).toBeDefined();
+            });
+
+            expect(defaultProps.clearDraft).toHaveBeenCalled();
+            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_LIST_SCROLL_TO_BOTTOM, Screens.CHANNEL);
+        });
+    });
 });
