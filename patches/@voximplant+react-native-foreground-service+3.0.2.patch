@@ -28,7 +28,7 @@ index afc578c..c8c32e3 100644
          IntentFilter filter = new IntentFilter();
          filter.addAction(FOREGROUND_SERVICE_BUTTON_PRESSED);
 -        getReactApplicationContext().registerReceiver(foregroundReceiver, filter);
-+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 +            getReactApplicationContext().registerReceiver(foregroundReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
 +        } else {
 +            getReactApplicationContext().registerReceiver(foregroundReceiver, filter, null, null, ContextCompat.RECEIVER_NOT_EXPORTED);
