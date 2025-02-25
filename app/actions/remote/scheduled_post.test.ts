@@ -216,7 +216,7 @@ describe('updateScheduledPost', () => {
         const spyHandleScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
         const mockResponse = {...scheduledPost, update_at: Date.now()};
-        mockClient.updateScheduledPost.mockImplementationOnce(() => mockResponse);
+        mockClient.updateScheduledPost.mockImplementationOnce(() => Promise.resolve(mockResponse));
         const result = await updateScheduledPost(serverUrl, scheduledPost, undefined, true);
         expect(result.error).toBeUndefined();
         expect(result.scheduledPost).toEqual(mockResponse);
