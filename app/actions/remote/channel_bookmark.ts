@@ -17,9 +17,9 @@ export async function fetchChannelBookmarks(serverUrl: string, channelId: string
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const bookmarksEnabled = (await getConfigValue(database, 'FeatureFlagChannelBookmarks')) === 'true';
-        const license = await getLicense(database);
+        const isLicensed = (await getLicense(database))?.IsLicensed === 'true';
 
-        if (!bookmarksEnabled || license?.IsLicensed !== 'true') {
+        if (!bookmarksEnabled || !isLicensed) {
             return {bookmarks: []};
         }
 
