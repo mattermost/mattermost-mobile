@@ -20,6 +20,8 @@ export const SNACK_BAR_TYPE = keyMirror({
     UNMUTE_CHANNEL: null,
     UNFOLLOW_THREAD: null,
     SCHEDULED_POST_CREATION_ERROR: null,
+    RESCHEDULED_POST: null,
+    DELETE_SCHEDULED_POST_ERROR: null,
 });
 
 export const MESSAGE_TYPE = {

@@ -9,6 +9,11 @@ import {deleteScheduledPostConfirmation, getErrorStringFromCode, type ScheduledP
 import type {IntlShape} from 'react-intl';
 import type {SwipeableMethods} from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
 
+// Mock dependencies before importing the module under test
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
+}));
+
 jest.mock('@actions/remote/scheduled_post', () => ({
     deleteScheduledPost: jest.fn(),
 }));
@@ -16,6 +21,9 @@ jest.mock('@actions/remote/scheduled_post', () => ({
 jest.mock('react-native', () => ({
     Alert: {
         alert: jest.fn(),
+    },
+    Platform: {
+        select: jest.fn((obj) => obj.ios || obj.default),
     },
 }));
 
@@ -107,6 +115,27 @@ describe('deleteScheduledPostConfirmation', () => {
 
         // Should not throw when swipeable.current is null
         expect(() => cancelButton.onPress()).not.toThrow();
+    });
+
+    it('shows error snackbar when deleteScheduledPost fails', async () => {
+        const showSnackBar = require('@utils/snack_bar').showSnackBar;
+        const errorMessage = 'Failed to delete scheduled post';
+        (deleteScheduledPost as jest.Mock).mockResolvedValueOnce({
+            error: new Error(errorMessage),
+        });
+
+        deleteScheduledPostConfirmation(baseProps);
+
+        // Get the confirm button callback
+        const confirmButton = (Alert.alert as jest.Mock).mock.calls[0][2][1];
+        await confirmButton.onPress();
+
+        expect(showSnackBar).toHaveBeenCalledWith({
+            barType: 'DELETE_SCHEDULED_POST_ERROR',
+            customMessage: errorMessage,
+            keepOpen: true,
+            type: 'error',
+        });
     });
 });
 

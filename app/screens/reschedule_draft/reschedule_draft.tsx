@@ -7,16 +7,17 @@ import {Keyboard, SafeAreaView, StyleSheet, View} from 'react-native';
 
 import {updateScheduledPost} from '@actions/remote/scheduled_post';
 import Loading from '@components/loading';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import DateTimeSelector from '@screens/custom_status_clear_after/components/date_time_selector';
-import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
+import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity} from '@utils/theme';
 import {getTimezone} from '@utils/user';
 
@@ -64,8 +65,6 @@ const RescheduledDraft: React.FC<Props> = ({
     const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
     const mainView = useRef<View>(null);
     const [isUpdating, setIsUpdating] = useState(false);
-    const [errorLine, setErrorLine] = useState<string | undefined>();
-    const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const selectedTime = useRef<string | null>(null);
     const userTimezone = getTimezone(currentUserTimezone);
 
@@ -94,8 +93,13 @@ const RescheduledDraft: React.FC<Props> = ({
     const handleUIUpdates = useCallback((res: {error?: unknown}) => {
         if (res.error) {
             setIsUpdating(false);
-            const errorMessage = intl.formatMessage({id: 'mobile.scheduled_post.update.error', defaultMessage: 'There was a problem editing this message. Please try again.'});
-            setErrorLine(errorMessage);
+            const errorMessage = intl.formatMessage({id: 'mobile.scheduled_post.update.error', defaultMessage: 'There was a problem updating this post message. Please try again.'});
+            showSnackBar({
+                barType: SNACK_BAR_TYPE.RESCHEDULED_POST,
+                customMessage: errorMessage,
+                keepOpen: true,
+                type: 'error',
+            });
         } else {
             setIsUpdating(false);
             onClose();
@@ -104,14 +108,17 @@ const RescheduledDraft: React.FC<Props> = ({
 
     const onSavePostMessage = useCallback(async () => {
         setIsUpdating(true);
-        setErrorLine(undefined);
-        setErrorExtra(undefined);
         toggleSaveButton(false);
         if (!selectedTime.current) {
             logDebug('ScheduledPostOptions', 'No time selected');
             setIsUpdating(false);
             const errorMessage = intl.formatMessage({id: 'mobile.scheduled_post.error', defaultMessage: 'No time selected'});
-            setErrorLine(errorMessage);
+            showSnackBar({
+                barType: SNACK_BAR_TYPE.RESCHEDULED_POST,
+                customMessage: errorMessage,
+                keepOpen: true,
+                type: 'error',
+            });
             return;
         }
         const draftPayload = await draft.toApi(database);
@@ -149,12 +156,6 @@ const RescheduledDraft: React.FC<Props> = ({
                     style={styles.body}
                     ref={mainView}
                 >
-                    {Boolean((errorLine || errorExtra)) &&
-                        <PostError
-                            errorExtra={errorExtra}
-                            errorLine={errorLine}
-                        />
-                    }
                     <View style={styles.optionsContainer}>
                         <DateTimeSelector
                             handleChange={handleCustomTimeChange}
