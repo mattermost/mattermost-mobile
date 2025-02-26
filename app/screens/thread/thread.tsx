@@ -11,6 +11,7 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
+import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {Screens} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -39,6 +40,8 @@ const edges: Edge[] = ['left', 'right'];
 const styles = StyleSheet.create({
     flex: {flex: 1},
 });
+
+const EMPTY_STRING = '';
 
 const Thread = ({
     componentId,
@@ -124,6 +127,11 @@ const Thread = ({
                             rootPost={rootPost!}
                         />
                     </View>
+                    <ScheduledPostIndicator
+                        isCRTEnabled={isCRTEnabled}
+                        rootId={rootId}
+                        channelId={EMPTY_STRING}
+                    />
                     <PostDraft
                         channelId={rootPost!.channelId}
                         rootId={rootId}

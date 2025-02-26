@@ -6,6 +6,7 @@ import {of} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeDraftCount} from '@queries/servers/drafts';
+import {observeScheduledPostCount, observeScheduledPostsForTeam} from '@queries/servers/scheduled_post';
 import {observeCurrentTeamId} from '@queries/servers/system';
 
 import CategoriesList from './categories_list';
@@ -15,11 +16,13 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
     const draftsCount = currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))); // Observe draft count
+    const scheduledPostCount = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostCount(database, teamId, true))); // Observe scheduled post count
+    const allScheduledPost = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostsForTeam(database, teamId, true))); // Observe scheduled post count
 
-    // eslint-disable-next-line no-warning-comments
-    // TODO: this hardcoded count will be removed from the final implementation once integrated with database
-    const scheduledPostCount = of(10);
-    const scheduledPostHasError = of(false);
+    const scheduledPostHasError = allScheduledPost.pipe(
+        // eslint-disable-next-line max-nested-callbacks
+        switchMap((scheduledPosts) => of(scheduledPosts.some((post) => post.errorCode !== ''))),
+    );
 
     return {
         draftsCount,
