@@ -82,6 +82,7 @@
   "apps.suggestion.no_static": "Нет подходящих вариантов.",
   "apps.suggestion.no_suggestion": "Нет подходящих предложений.",
   "archivedChannelMessage": "Вы просматриваете **архивированный канал**. Создание новых сообщений запрещено.",
+  "audio.loading_error": "Ошибка при загрузке аудио.",
   "autocomplete_selector.unknown_channel": "Неизвестный канал",
   "browse_channels.archivedChannels": "Архивированные каналы",
   "browse_channels.dropdownTitle": "Показать",
