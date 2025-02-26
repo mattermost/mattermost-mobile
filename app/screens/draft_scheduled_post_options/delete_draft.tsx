@@ -61,7 +61,7 @@ export const DeleteDraft: React.FC<Props> = ({
 
     const draftDeleteHandler = async () => {
         await dismissBottomSheet(bottomSheetId);
-        if (websocketState !== 'connected') {
+        if (websocketState !== 'connected' && draftType === DRAFT_TYPE_SCHEDULED) {
             showSnackBar({
                 barType: SNACK_BAR_TYPE.CONNECTION_ERROR,
                 customMessage: intl.formatMessage({id: 'network_connection.not_connected', defaultMessage: 'No internet connection'}),
