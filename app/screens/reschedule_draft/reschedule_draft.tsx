@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, SafeAreaView, StyleSheet, View} from 'react-native';
 
@@ -12,11 +12,11 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {usePreventDoubleTap} from '@hooks/utils';
 import DateTimeSelector from '@screens/custom_status_clear_after/components/date_time_selector';
 import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {logDebug} from '@utils/log';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 import {getTimezone} from '@utils/user';
 
@@ -69,12 +69,7 @@ const RescheduledDraft: React.FC<Props> = ({
     const selectedTime = useRef<string | null>(null);
     const userTimezone = getTimezone(currentUserTimezone);
 
-    useEffect(() => {
-        toggleSaveButton(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const toggleSaveButton = useCallback(preventDoubleTap((enabled = true) => {
+    const toggleSaveButton = useCallback((enabled = false) => {
         setButtons(componentId, {
             rightButtons: [{
                 ...RIGHT_BUTTON,
@@ -84,7 +79,7 @@ const RescheduledDraft: React.FC<Props> = ({
                 enabled,
             }],
         });
-    }), [componentId, intl, theme]);
+    }, [componentId, intl, theme]);
 
     const onClose = useCallback(() => {
         Keyboard.dismiss();
@@ -102,7 +97,7 @@ const RescheduledDraft: React.FC<Props> = ({
         }
     }, [intl, onClose]);
 
-    const onSavePostMessage = useCallback(async () => {
+    const onSavePostMessage = usePreventDoubleTap(useCallback(async () => {
         setIsUpdating(true);
         setErrorLine(undefined);
         setErrorExtra(undefined);
@@ -119,7 +114,12 @@ const RescheduledDraft: React.FC<Props> = ({
 
         const res = await updateScheduledPost(serverUrl, draftPayload);
         handleUIUpdates(res);
-    }, [database, draft, handleUIUpdates, intl, selectedTime, serverUrl, toggleSaveButton]);
+    }, [database, draft, handleUIUpdates, intl, selectedTime, serverUrl, toggleSaveButton]));
+
+    // Initialize the save button as disabled when component mounts
+    React.useEffect(() => {
+        toggleSaveButton(false);
+    }, [toggleSaveButton]);
 
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
     useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, []);

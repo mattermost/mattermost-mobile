@@ -40,29 +40,44 @@ describe('deleteScheduledPostConfirmation', () => {
     it('shows confirmation dialog with correct text and buttons', () => {
         deleteScheduledPostConfirmation(baseProps);
 
-        const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+        const alertCall = jest.mocked(Alert.alert).mock.calls[0];
         expect(alertCall[0]).toBe('Delete scheduled post');
         expect(alertCall[1]).toBe('Are you sure you want to delete this scheduled post?');
 
-        const buttons = alertCall[2];
+        // Ensure buttons exist
+        expect(alertCall[2]).toBeDefined();
+        const buttons = alertCall[2] ?? [];
+
         expect(buttons).toHaveLength(2);
 
         // Check Cancel button
-        expect(buttons[0].text).toBe('Cancel');
-        expect(typeof buttons[0].onPress).toBe('function');
+        expect(buttons[0]?.text).toBe('Cancel');
+        expect(typeof buttons[0]?.onPress).toBe('function');
 
         // Check Delete button
-        expect(buttons[1].text).toBe('Delete');
-        expect(typeof buttons[1].onPress).toBe('function');
+        expect(buttons[1]?.text).toBe('Delete');
+        expect(typeof buttons[1]?.onPress).toBe('function');
     });
 
     it('calls deleteScheduledPost when confirmed', () => {
         deleteScheduledPostConfirmation(baseProps);
 
-        // Get the confirm button callback
-        const confirmButton = (Alert.alert as jest.Mock).mock.calls[0][2][1];
-        confirmButton.onPress();
+        const alertMock = jest.mocked(Alert.alert);
+        expect(alertMock).toHaveBeenCalled();
 
+        const alertCall = alertMock.mock.calls[0];
+        expect(alertCall).toBeDefined();
+
+        const buttons = alertCall[2] ?? [];
+        expect(buttons).toHaveLength(2);
+
+        const confirmButton = buttons[1];
+        expect(confirmButton).toBeDefined();
+        expect(confirmButton.onPress).toBeDefined();
+
+        confirmButton.onPress?.();
+
+        // Verify deleteScheduledPost is called with the correct arguments
         expect(deleteScheduledPost).toHaveBeenCalledWith(
             baseProps.serverUrl,
             baseProps.scheduledPostId,
@@ -72,10 +87,20 @@ describe('deleteScheduledPostConfirmation', () => {
     it('closes swipeable when cancelled', () => {
         deleteScheduledPostConfirmation(baseProps);
 
-        // Get the cancel button callback
-        const cancelButton = (Alert.alert as jest.Mock).mock.calls[0][2][0];
-        cancelButton.onPress();
+        const alertMock = jest.mocked(Alert.alert);
+        expect(alertMock).toHaveBeenCalled();
+        const alertCall = alertMock.mock.calls[0];
+        expect(alertCall).toBeDefined();
+        const buttons = alertCall[2] ?? [];
+        expect(buttons).toHaveLength(2);
 
+        const cancelButton = buttons[0];
+        expect(cancelButton).toBeDefined();
+        expect(cancelButton.onPress).toBeDefined();
+
+        cancelButton.onPress?.();
+
+        // Verify swipeable close is called
         expect(baseProps.swipeable?.current?.close).toHaveBeenCalled();
     });
 
@@ -88,10 +113,12 @@ describe('deleteScheduledPostConfirmation', () => {
         deleteScheduledPostConfirmation(propsWithoutSwipeable);
 
         // Get the cancel button callback
-        const cancelButton = (Alert.alert as jest.Mock).mock.calls[0][2][0];
-
-        // Should not throw when swipeable is undefined
-        expect(() => cancelButton.onPress()).not.toThrow();
+        const alertMock = jest.mocked(Alert.alert);
+        const buttons = alertMock.mock.calls[0]?.[2] ?? []; // Ensure buttons array exists
+        const cancelButton = buttons[0];
+        expect(cancelButton).toBeDefined();
+        const onPress = cancelButton.onPress ?? (() => {});
+        expect(() => onPress()).not.toThrow();
     });
 
     it('handles missing swipeable.current', () => {
@@ -103,9 +130,11 @@ describe('deleteScheduledPostConfirmation', () => {
         deleteScheduledPostConfirmation(propsWithoutSwipeableCurrent);
 
         // Get the cancel button callback
-        const cancelButton = (Alert.alert as jest.Mock).mock.calls[0][2][0];
-
-        // Should not throw when swipeable.current is null
-        expect(() => cancelButton.onPress()).not.toThrow();
+        const alertMock = jest.mocked(Alert.alert);
+        const buttons = alertMock.mock.calls[0]?.[2] ?? []; // Ensure buttons array exists
+        const cancelButton = buttons[0];
+        expect(cancelButton).toBeDefined();
+        const onPress = cancelButton.onPress ?? (() => {});
+        expect(() => onPress()).not.toThrow();
     });
 });

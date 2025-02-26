@@ -24,9 +24,7 @@ export function deleteScheduledPostConfirmation({
     };
 
     const onDismiss = () => {
-        if (swipeable?.current) {
-            swipeable.current?.close();
-        }
+        swipeable?.current?.close();
     };
 
     Alert.alert(

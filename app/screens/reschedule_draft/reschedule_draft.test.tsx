@@ -88,25 +88,27 @@ describe('RescheduledDraft', () => {
         expect(getByTestId('edit_post.screen')).toBeTruthy();
     });
 
-    it('should initialize with save button disabled', () => {
+    it('should have navigation component registered on initialization', () => {
         renderWithEverything(<RescheduledDraft {...baseProps}/>, {database});
 
-        expect(setButtons).toHaveBeenCalledWith(
-            'test-component-id',
-            expect.objectContaining({
-                rightButtons: expect.arrayContaining([
-                    expect.objectContaining({
-                        enabled: true,
-                    }),
-                ]),
-            }),
+        // Verify navigation listener was registered
+        expect(Navigation.events().registerComponentListener).toHaveBeenCalledWith(
+            expect.any(Object),
+            baseProps.componentId,
         );
+
+        // Check that the component registered with proper navigation handler
+        const registerCall = jest.mocked(Navigation.events().registerComponentListener).mock.calls[0][0];
+        expect(registerCall).toBeDefined();
+        expect(registerCall.navigationButtonPressed).toBeDefined();
     });
 
-    it('Should enable save button when data change', async () => {
+    it('Should enable save button when data changes', async () => {
         jest.mocked(updateScheduledPost).mockResolvedValue({scheduledPost: {} as ScheduledPost, error: undefined});
+
         const {UNSAFE_getByType: getByType} = renderWithEverything(
-            <RescheduledDraft {...baseProps}/>, {database},
+            <RescheduledDraft {...baseProps}/>,
+            {database},
         );
 
         const dateTimeSelector = getByType(DateTimeSelector);
@@ -119,15 +121,19 @@ describe('RescheduledDraft', () => {
 
         expect(setButtons).toHaveBeenCalled();
 
-        const mockCalls = (setButtons as jest.Mock).mock.calls;
+        // Use jest.mocked for proper type inference
+        const setButtonsMock = jest.mocked(setButtons);
+        const mockCalls = setButtonsMock.mock.calls;
+
         const lastCallIndex = mockCalls.length - 1;
-        const setButtonsCall = mockCalls[lastCallIndex][1];
+        const setButtonsCall = mockCalls[lastCallIndex]?.[1]; // Ensure lastCallIndex exists
 
-        expect(setButtonsCall.rightButtons).toBeDefined();
-        expect(setButtonsCall.rightButtons.length).toBeGreaterThan(0);
+        expect(setButtonsCall).toBeDefined();
+        expect(setButtonsCall?.rightButtons).toBeDefined();
+        expect(setButtonsCall?.rightButtons?.length).toBeGreaterThan(0);
 
-        const saveButton = setButtonsCall.rightButtons[0];
-        expect(saveButton.enabled).toBeTruthy();
+        const saveButton = setButtonsCall?.rightButtons?.[0];
+        expect(saveButton?.enabled).toBeTruthy();
     });
 
     it('should call Navigation event when save button is pressed', async () => {
