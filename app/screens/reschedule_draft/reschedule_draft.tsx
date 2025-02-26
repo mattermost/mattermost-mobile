@@ -17,6 +17,7 @@ import DateTimeSelector from '@screens/custom_status_clear_after/components/date
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {showSnackBar} from '@utils/snack_bar';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 import {getTimezone} from '@utils/user';
 
