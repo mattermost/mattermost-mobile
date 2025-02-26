@@ -116,11 +116,6 @@ const RescheduledDraft: React.FC<Props> = ({
         handleUIUpdates(res);
     }, [database, draft, handleUIUpdates, intl, selectedTime, serverUrl, toggleSaveButton]));
 
-    // Initialize the save button as disabled when component mounts
-    React.useEffect(() => {
-        toggleSaveButton(false);
-    }, [toggleSaveButton]);
-
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
     useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, []);
     useAndroidHardwareBackHandler(componentId, onClose);

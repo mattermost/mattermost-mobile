@@ -7,6 +7,7 @@ import React from 'react';
 import {Screens} from '@constants';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import test_helper from '@test/test_helper';
 
 import RescheduledDraft from './rescheduled_draft';
 
@@ -62,8 +63,7 @@ describe('RescheduledDraft', () => {
 
         fireEvent.press(getByTestId('rescheduled_draft'));
 
-        // Wait for the next tick to allow async operations to complete
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await test_helper.wait(0);
 
         expect(dismissBottomSheet).toHaveBeenCalledWith(baseProps.bottomSheetId);
         expect(showModal).toHaveBeenCalledWith(

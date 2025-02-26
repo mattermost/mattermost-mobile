@@ -3,10 +3,7 @@
 
 import React from 'react';
 
-import {removeDraft} from '@actions/local/draft';
-import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 import {General, Screens} from '@constants';
-import {useServerUrl} from '@context/server';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -115,57 +112,5 @@ describe('Send Draft', () => {
         );
         const {getByText} = wrapper;
         expect(getByText('Send')).toBeTruthy();
-    });
-
-    it('should call removeDraft when clearing a draft', () => {
-        const mockHandleSendMessage = jest.fn();
-        jest.mock('@hooks/handle_send_message', () => ({
-            useHandleSendMessage: () => ({
-                handleSendMessage: mockHandleSendMessage,
-            }),
-        }));
-
-        const TestClearDraft = () => {
-            const serverUrl = useServerUrl();
-            const channelId = 'channel_id';
-            const rootId = 'root_id';
-            const draftType = DRAFT_TYPE_DRAFT;
-
-            React.useEffect(() => {
-                // This simulates the clearDraft function logic
-                if (draftType === DRAFT_TYPE_DRAFT) {
-                    removeDraft(serverUrl, channelId, rootId);
-                }
-            }, []);
-
-            return null;
-        };
-
-        renderWithIntlAndTheme(<TestClearDraft/>);
-
-        expect(removeDraft).toHaveBeenCalledWith('https://server.com', 'channel_id', 'root_id');
-        expect(deleteScheduledPost).not.toHaveBeenCalled();
-    });
-
-    it('should call deleteScheduledPost when clearing a scheduled post', () => {
-        const TestClearScheduledDraft = () => {
-            const serverUrl = useServerUrl();
-            const draftType = DRAFT_TYPE_SCHEDULED;
-            const postId = 'post_id';
-
-            React.useEffect(() => {
-                // This simulates the clearDraft function logic
-                if (draftType !== (DRAFT_TYPE_DRAFT as DraftType) && postId) {
-                    deleteScheduledPost(serverUrl, postId);
-                }
-            }, []);
-
-            return null;
-        };
-
-        renderWithIntlAndTheme(<TestClearScheduledDraft/>);
-
-        expect(deleteScheduledPost).toHaveBeenCalledWith('https://server.com', 'post_id');
-        expect(removeDraft).not.toHaveBeenCalled();
     });
 });

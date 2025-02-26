@@ -20,6 +20,7 @@ jest.mock('@actions/remote/channel', () => ({
 
 jest.mock('@utils/post', () => ({
     sendMessageWithAlert: jest.fn(),
+    persistentNotificationsConfirmation: jest.fn(),
 }));
 
 jest.mock('@screens/navigation', () => ({
@@ -102,7 +103,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         expect(wrapper.getByText('Send')).toBeTruthy();
     });
 
-    it('should handle post priority updates', async () => {
+    it('should show correct post priority', async () => {
         const wrapper = renderWithEverything(
             <SendHandler
                 {...baseProps}
@@ -112,7 +113,8 @@ describe('components/post_draft/send_handler/SendHandler', () => {
 
         const draftInput = wrapper.getByTestId('test_send_handler');
         expect(draftInput).toBeTruthy();
-        expect(baseProps.postPriority.priority).toBe('urgent');
+        const priority = wrapper.getByText('URGENT');
+        expect(priority).toBeTruthy();
     });
 
     it('should pass correct props to SendDraft component when in draft view', async () => {
@@ -149,12 +151,12 @@ describe('components/post_draft/send_handler/SendHandler', () => {
             files: [],
         };
 
-        const emptyWrapper = renderWithEverything(
-            <SendHandler {...emptyProps}/>, {database},
+        wrapper.rerender(
+            <SendHandler {...emptyProps}/>,
         );
 
         // Button should still exist but pressing it should not trigger send when empty
-        const emptyButton = emptyWrapper.getByTestId('send_draft_button');
+        const emptyButton = wrapper.getByTestId('send_draft_button');
         expect(emptyButton).toBeTruthy();
 
         fireEvent.press(emptyButton);
@@ -187,7 +189,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         await waitFor(() => {
             expect(sendMessageWithAlert).toHaveBeenCalledWith(expect.objectContaining({
                 channelName: 'test-channel',
-                title: expect.any(String),
+                title: 'Send message now',
                 intl: expect.any(Object),
                 sendMessageHandler: expect.any(Function),
             }));
