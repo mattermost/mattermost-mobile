@@ -4,6 +4,7 @@
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
+import {removeDraft} from '@actions/local/draft';
 import {General} from '@constants';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -25,6 +26,10 @@ jest.mock('@utils/post', () => ({
 
 jest.mock('@screens/navigation', () => ({
     dismissBottomSheet: jest.fn(),
+}));
+
+jest.mock('@actions/local/draft', () => ({
+    removeDraft: jest.fn(),
 }));
 
 describe('components/post_draft/send_handler/SendHandler', () => {
@@ -199,18 +204,16 @@ describe('components/post_draft/send_handler/SendHandler', () => {
     it('should execute sendMessageHandler when send_draft_button is clicked', async () => {
         // Mock implementation to capture the sendMessageHandler
         let capturedHandler: Function;
-        (sendMessageWithAlert as jest.Mock).mockImplementation((params) => {
+        jest.mocked(sendMessageWithAlert).mockImplementation((params) => {
             capturedHandler = params.sendMessageHandler;
             return Promise.resolve();
         });
 
-        const mockClearDraft = jest.fn();
         const props = {
             ...baseProps,
             isFromDraftView: true,
             draftType: DRAFT_TYPE_DRAFT as DraftType,
             value: 'test message',
-            clearDraft: mockClearDraft,
         };
 
         const wrapper = renderWithEverything(
@@ -232,5 +235,8 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         await act(async () => {
             await capturedHandler();
         });
+
+        // Varify removeDraft function is been called.
+        expect(removeDraft).toHaveBeenCalled();
     });
 });
