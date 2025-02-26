@@ -199,6 +199,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.REACTIONS:
             screen = withServerDatabase(require('@screens/reactions').default);
             break;
+        case Screens.RESCHEDULE_DRAFT:
+            screen = withServerDatabase(require('@screens/reschedule_draft').default);
+            break;
         case Screens.REVIEW_APP:
             screen = withServerDatabase(require('@screens/review_app').default);
             break;

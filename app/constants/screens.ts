@@ -50,6 +50,7 @@ export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
 export const POST_PRIORITY_PICKER = 'PostPriorityPicker';
 export const REACTIONS = 'Reactions';
+export const RESCHEDULE_DRAFT = 'RescheduleDraft';
 export const REVIEW_APP = 'ReviewApp';
 export const SAVED_MESSAGES = 'SavedMessages';
 export const SCHEDULED_POST_OPTIONS = 'ScheduledPostOptions';
@@ -134,6 +135,7 @@ export default {
     POST_OPTIONS,
     POST_PRIORITY_PICKER,
     REACTIONS,
+    RESCHEDULE_DRAFT,
     REVIEW_APP,
     SAVED_MESSAGES,
     SEARCH,
@@ -183,6 +185,7 @@ export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     MANAGE_CHANNEL_MEMBERS,
     INVITE,
     PERMALINK,
+    RESCHEDULE_DRAFT,
 ]);
 
 export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
