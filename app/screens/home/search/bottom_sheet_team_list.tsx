@@ -50,7 +50,7 @@ export default function BottomSheetTeamList({teams, title, setTeamId, teamId, cr
                 teams={teamList}
                 onPress={onPress}
                 testID='search.select_team_slide_up.team_list'
-                type={isTablet ? 'FlatList' : 'BottomSheetFlatList'}
+                type={'FlatList'}
                 hideIcon={true}
                 separatorAfterFirstItem={crossTeamSearchEnabled}
             />
