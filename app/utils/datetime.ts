@@ -48,6 +48,5 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
         ...(isCurrentYear ? {} : {year: 'numeric'}),
     };
 
-    const formattedDate = date.toLocaleString(currentUserLocale, options);
-    return formattedDate.replace(',', ' at');
+    return date.toLocaleString(currentUserLocale, options);
 }

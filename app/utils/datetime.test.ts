@@ -50,28 +50,28 @@ describe('getReadableTimestamp', () => {
         const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
         const timeZone = 'America/New_York';
         const result = getReadableTimestamp(timestamp, timeZone, false, 'en-US');
-        expect(result).toBe('Jun 15 at 8:00 AM');
+        expect(result).toBe('Jun 15, 8:00 AM');
     });
 
     it('should format timestamp correctly in 24-hour format for current year', () => {
         const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
         const timeZone = 'America/New_York';
         const result = getReadableTimestamp(timestamp, timeZone, true, 'en-US');
-        expect(result).toBe('Jun 15 at 08:00');
+        expect(result).toBe('Jun 15, 08:00');
     });
 
     it('should include year if not current year', () => {
         const timestamp = new Date('2024-06-15T12:00:00Z').getTime();
         const timeZone = 'America/New_York';
         const result = getReadableTimestamp(timestamp, timeZone, false, 'en-US');
-        expect(result).toBe('Jun 15 at 2024, 8:00 AM');
+        expect(result).toBe('Jun 15, 2024, 8:00 AM');
     });
 
     it('should include year if not current year in 24-hour format', () => {
         const timestamp = new Date('2024-06-15T12:00:00Z').getTime();
         const timeZone = 'America/New_York';
         const result = getReadableTimestamp(timestamp, timeZone, true, 'en-US');
-        expect(result).toBe('Jun 15 at 2024, 08:00');
+        expect(result).toBe('Jun 15, 2024, 08:00');
     });
 
     it('should format timestamp correctly for different locales', () => {
@@ -79,9 +79,9 @@ describe('getReadableTimestamp', () => {
         const timeZone = 'America/New_York';
 
         const frResult = getReadableTimestamp(timestamp, timeZone, false, 'fr-FR');
-        expect(frResult).toBe('15 juin at 8:00 AM');
+        expect(frResult).toBe('15 juin, 8:00 AM');
 
         const deResult = getReadableTimestamp(timestamp, timeZone, false, 'de-DE');
-        expect(deResult).toBe('15. Juni at 8:00 AM');
+        expect(deResult).toBe('15. Juni, 8:00 AM');
     });
 });
