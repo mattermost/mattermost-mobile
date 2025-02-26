@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {View, type LayoutChangeEvent, InteractionManager, type ListRenderItemInfo, Text} from 'react-native';
 import Animated from 'react-native-reanimated';
 import Tooltip from 'react-native-walkthrough-tooltip';
@@ -12,7 +12,7 @@ import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
+import {DRAFT_SCHEDULED_POST_LAYOUT_PADDING, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
 import DraftTooltip from '@screens/global_drafts/draft_scheduled_post_tooltip';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -40,7 +40,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
         },
         tooltipStyle: {
-            shadowColor: '#000',
             shadowOffset: {width: 0, height: 2},
             shadowRadius: 2,
             shadowOpacity: 0.16,
@@ -82,10 +81,8 @@ const GlobalScheduledPostList: React.FC<Props> = ({
     const [layoutWidth, setLayoutWidth] = useState(0);
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        if (location === Screens.GLOBAL_DRAFTS) {
-            setLayoutWidth(e.nativeEvent.layout.width - 40); // 40 is the padding of the container
-        }
-    }, [location]);
+        setLayoutWidth(e.nativeEvent.layout.width - DRAFT_SCHEDULED_POST_LAYOUT_PADDING); // 40 is the padding of the container
+    }, []);
 
     useEffect(() => {
         if (tutorialWatched) {
@@ -99,9 +96,11 @@ const GlobalScheduledPostList: React.FC<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const firstScheduledPostId = allScheduledPosts.length ? allScheduledPosts[0].id : '';
+    const firstScheduledPostId = allScheduledPosts[0]?.id || '';
 
-    const isErrorInScheduledPosts = allScheduledPosts.some((post) => post.errorCode !== '');
+    const isErrorInScheduledPosts = useMemo(() => {
+        return allScheduledPosts.some((post) => post.errorCode !== '');
+    }, [allScheduledPosts]);
 
     const collapse = useCallback(() => {
         popTopScreen(Screens.GLOBAL_DRAFTS);
