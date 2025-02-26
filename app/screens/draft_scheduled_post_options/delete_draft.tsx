@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {useIntl} from 'react-intl';
 
@@ -8,12 +9,15 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import websocket_manager from '@managers/websocket_manager';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {deleteDraftConfirmation} from '@utils/draft';
 import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
+import {showSnackBar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -25,6 +29,7 @@ type Props = {
     rootId: string;
     draftType?: DraftType;
     postId?: string;
+    websocketState: WebsocketConnectedState;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -41,12 +46,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const DeleteDraft: React.FC<Props> = ({
+export const DeleteDraft: React.FC<Props> = ({
     bottomSheetId,
     channelId,
     rootId,
     draftType,
     postId,
+    websocketState,
 }) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -55,6 +61,15 @@ const DeleteDraft: React.FC<Props> = ({
 
     const draftDeleteHandler = async () => {
         await dismissBottomSheet(bottomSheetId);
+        if (websocketState !== 'connected') {
+            showSnackBar({
+                barType: SNACK_BAR_TYPE.CONNECTION_ERROR,
+                customMessage: intl.formatMessage({id: 'network_connection.not_connected', defaultMessage: 'No internet connection'}),
+                type: 'error',
+                keepOpen: true,
+            });
+            return;
+        }
         if (draftType === DRAFT_TYPE_DRAFT) {
             deleteDraftConfirmation({
                 intl,
@@ -101,4 +116,11 @@ const DeleteDraft: React.FC<Props> = ({
     );
 };
 
-export default DeleteDraft;
+const enhanced = withObservables([], () => {
+    const serverUrl = useServerUrl();
+    return {
+        websocketState: websocket_manager.observeWebsocketState(serverUrl),
+    };
+});
+
+export default enhanced(DeleteDraft);
