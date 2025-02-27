@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {act} from 'react';
 import {Alert} from 'react-native';
 
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
+import {showSnackBar} from '@utils/snack_bar';
 
 import {deleteScheduledPostConfirmation, hasScheduledPostError, isScheduledPostModel, getErrorStringFromCode, type ScheduledPostErrorCode} from './index';
 
@@ -17,15 +19,6 @@ jest.mock('@utils/snack_bar', () => ({
 
 jest.mock('@actions/remote/scheduled_post', () => ({
     deleteScheduledPost: jest.fn(),
-}));
-
-jest.mock('react-native', () => ({
-    Alert: {
-        alert: jest.fn(),
-    },
-    Platform: {
-        select: jest.fn((obj) => obj.ios || obj.default),
-    },
 }));
 
 describe('deleteScheduledPostConfirmation', () => {
@@ -91,6 +84,8 @@ describe('deleteScheduledPostConfirmation', () => {
             baseProps.serverUrl,
             baseProps.scheduledPostId,
         );
+
+        expect(showSnackBar).not.toHaveBeenCalled();
     });
 
     it('closes swipeable when cancelled', () => {
@@ -146,6 +141,40 @@ describe('deleteScheduledPostConfirmation', () => {
         expect(cancelButton).toBeDefined();
         const onPress = cancelButton.onPress ?? (() => {});
         expect(() => onPress()).not.toThrow();
+    });
+
+    it('shows error snackbar when deleteScheduledPost fails', async () => {
+        const errorMessage = 'Failed to delete scheduled post';
+
+        jest.mocked(deleteScheduledPost).mockResolvedValueOnce({
+            error: new Error(errorMessage),
+        });
+
+        deleteScheduledPostConfirmation(baseProps);
+
+        const alertMock = jest.mocked(Alert.alert);
+        expect(alertMock).toHaveBeenCalled();
+
+        const alertCall = alertMock.mock.calls[0];
+        expect(alertCall).toBeDefined();
+
+        const buttons = alertCall[2] ?? [];
+        expect(buttons).toHaveLength(2);
+
+        const confirmButton = buttons[1];
+        expect(confirmButton).toBeDefined();
+        expect(confirmButton.onPress).toBeDefined();
+
+        await act(async () => {
+            await confirmButton.onPress?.();
+        });
+
+        expect(showSnackBar).toHaveBeenCalledWith({
+            barType: 'DELETE_SCHEDULED_POST_ERROR',
+            customMessage: errorMessage,
+            keepOpen: true,
+            type: 'error',
+        });
     });
 });
 
@@ -231,27 +260,6 @@ describe('getErrorStringFromCode', () => {
     it('should return "UNKNOWN ERROR" for unknown error code', () => {
         const result = getErrorStringFromCode(mockIntl, 'unknown');
         expect(result).toBe('UNKNOWN ERROR');
-    });
-
-    it('shows error snackbar when deleteScheduledPost fails', async () => {
-        const showSnackBar = require('@utils/snack_bar').showSnackBar;
-        const errorMessage = 'Failed to delete scheduled post';
-        (deleteScheduledPost as jest.Mock).mockResolvedValueOnce({
-            error: new Error(errorMessage),
-        });
-
-        deleteScheduledPostConfirmation(baseProps);
-
-        // Get the confirm button callback
-        const confirmButton = (Alert.alert as jest.Mock).mock.calls[0][2][1];
-        await confirmButton.onPress();
-
-        expect(showSnackBar).toHaveBeenCalledWith({
-            barType: 'DELETE_SCHEDULED_POST_ERROR',
-            customMessage: errorMessage,
-            keepOpen: true,
-            type: 'error',
-        });
     });
 });
 
