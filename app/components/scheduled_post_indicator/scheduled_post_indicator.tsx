@@ -12,6 +12,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getUserTimezone} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -32,8 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         link: {
             color: theme.linkColor,
-            fontSize: 14,
-            fontWeight: '600',
+            ...typography('Body', 100, 'SemiBold'),
         },
     };
 });
