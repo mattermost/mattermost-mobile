@@ -9,29 +9,22 @@ import CompassIcon from '@components/compass_icon';
 import FormattedTime from '@components/formatted_time';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
-const WRAPPER_HEIGHT = 40;
-
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        wrapper: {
-            height: WRAPPER_HEIGHT,
-        },
         container: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             paddingVertical: 12,
-            paddingBottom: 20,
             paddingHorizontal: 16,
             color: changeOpacity(theme.centerChannelColor, 0.72),
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             gap: 12,
-            position: 'absolute',
-            top: 0,
             width: '100%',
         },
         text: {
@@ -40,7 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         link: {
             color: theme.linkColor,
-            fontSize: 14,
+            ...typography('Body', 100, 'SemiBold'),
         },
     };
 });
@@ -106,7 +99,6 @@ export function ScheduledPostIndicator({currentUser, isMilitaryTime, isThread, s
     return (
         <View
             className='ScheduledPostIndicator'
-            style={styles.wrapper}
         >
             <View style={styles.container}>
                 <CompassIcon
