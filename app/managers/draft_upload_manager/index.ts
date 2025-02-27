@@ -23,7 +23,7 @@ type FileHandler = {
     };
 }
 
-class DraftUploadManager {
+class DraftUploadManagerSingleton {
     private handlers: FileHandler = {};
     private previousAppState: AppStateStatus;
 
@@ -186,8 +186,9 @@ class DraftUploadManager {
     };
 }
 
-export default new DraftUploadManager();
+const DraftUploadManager = new DraftUploadManagerSingleton();
+export default DraftUploadManager;
 
 export const exportedForTesting = {
-    DraftUploadManager,
+    DraftUploadManagerSingleton,
 };

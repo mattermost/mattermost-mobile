@@ -15,7 +15,7 @@ import {
 
 import {logWarning} from './log';
 
-class JavascriptAndNativeErrorHandler {
+class JavascriptAndNativeErrorHandlerSingleton {
     initializeErrorHandling = () => {
         initializeSentry();
         setJSExceptionHandler(this.errorHandler, false);
@@ -61,4 +61,5 @@ class JavascriptAndNativeErrorHandler {
     };
 }
 
-export default new JavascriptAndNativeErrorHandler();
+const JavascriptAndNativeErrorHandler = new JavascriptAndNativeErrorHandlerSingleton();
+export default JavascriptAndNativeErrorHandler;
