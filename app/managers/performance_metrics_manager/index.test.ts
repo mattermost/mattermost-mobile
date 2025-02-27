@@ -17,7 +17,7 @@ import {getBaseReportRequest} from './test_utils';
 
 import {testExports} from '.';
 
-const PerformanceMetricsManagerClass = testExports.PerformanceMetricsManager;
+const PerformanceMetricsManagerClass = testExports.PerformanceMetricsManagerSingleton;
 const {
     RETRY_TIME,
     MAX_RETRIES,

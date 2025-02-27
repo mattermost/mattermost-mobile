@@ -34,7 +34,7 @@ import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, 
 const {SERVERS} = MM_TABLES.APP;
 const APP_DATABASE = 'app';
 
-class DatabaseManager {
+class DatabaseManagerSingleton {
     public appDatabase?: AppDatabase;
     public serverDatabases: ServerDatabases = {};
     private readonly appModels: Models;
@@ -554,4 +554,5 @@ if (!__DEV__) {
     logger.silence();
 }
 
-export default new DatabaseManager();
+const DatabaseManager = new DatabaseManagerSingleton();
+export default DatabaseManager;

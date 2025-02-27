@@ -9,7 +9,7 @@ import {toMilliseconds} from '@utils/datetime';
 
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
 
-class EphemeralStore {
+class EphemeralStoreSingleton {
     theme: Theme | undefined;
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
@@ -281,4 +281,5 @@ class EphemeralStore {
     };
 }
 
-export default new EphemeralStore();
+const EphemeralStore = new EphemeralStoreSingleton();
+export default EphemeralStore;
