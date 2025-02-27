@@ -9,10 +9,10 @@ import CompassIcon from '@components/compass_icon';
 import FormattedTime from '@components/formatted_time';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
-import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
