@@ -14,7 +14,7 @@ import {exportedForTesting} from '.';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 
-const {DraftUploadManager} = exportedForTesting;
+const {DraftUploadManagerSingleton} = exportedForTesting;
 
 const url = 'baseHandler.test.com';
 const mockClient = TestHelper.createClient();
@@ -79,7 +79,7 @@ describe('draft upload manager', () => {
     });
 
     it('File is uploaded and stored', async () => {
-        const manager = new DraftUploadManager();
+        const manager = new DraftUploadManagerSingleton();
         const uploadMocks = mockUpload();
 
         const fileClientId = 'clientId';
@@ -103,7 +103,7 @@ describe('draft upload manager', () => {
     });
 
     it('Progress is not stored on progress, but stored on fail', async () => {
-        const manager = new DraftUploadManager();
+        const manager = new DraftUploadManagerSingleton();
         const uploadMocks = mockUpload();
 
         const fileClientId = 'clientId';
@@ -158,7 +158,7 @@ describe('draft upload manager', () => {
         const spyNow = jest.spyOn(Date, 'now');
         spyNow.mockImplementation(() => now);
         AppState.currentState = 'active';
-        const manager = new DraftUploadManager();
+        const manager = new DraftUploadManagerSingleton();
 
         const progressFunc: {[fileUrl: string] : ((fractionCompleted: number, bytesRead?: number | null | undefined) => void)} = {};
         const cancel = jest.fn();
@@ -255,7 +255,7 @@ describe('draft upload manager', () => {
     });
 
     it('Error on complete: Received wrong response code', async () => {
-        const manager = new DraftUploadManager();
+        const manager = new DraftUploadManagerSingleton();
         const uploadMocks = mockUpload();
 
         const fileClientId = 'clientId';
@@ -280,7 +280,7 @@ describe('draft upload manager', () => {
     });
 
     it('Error on complete: Received no data', async () => {
-        const manager = new DraftUploadManager();
+        const manager = new DraftUploadManagerSingleton();
         const uploadMocks = mockUpload();
 
         const clientId = 'clientId';
@@ -304,7 +304,7 @@ describe('draft upload manager', () => {
     });
 
     it('Error on complete: Received no file info', async () => {
-        const manager = new DraftUploadManager();
+        const manager = new DraftUploadManagerSingleton();
         const uploadMocks = mockUpload();
 
         const clientId = 'clientId';
@@ -328,7 +328,7 @@ describe('draft upload manager', () => {
     });
 
     it('Progress handler', async () => {
-        const manager = new DraftUploadManager();
+        const manager = new DraftUploadManagerSingleton();
         const uploadMocks = mockUpload();
 
         const clientId = 'clientId';
@@ -369,7 +369,7 @@ describe('draft upload manager', () => {
     });
 
     it('Error handler: normal error', async () => {
-        const manager = new DraftUploadManager();
+        const manager = new DraftUploadManagerSingleton();
         const uploadMocks = mockUpload();
 
         const clientId = 'clientId';
@@ -405,7 +405,7 @@ describe('draft upload manager', () => {
     });
 
     it('Error handler: complete error', async () => {
-        const manager = new DraftUploadManager();
+        const manager = new DraftUploadManagerSingleton();
         const uploadMocks = mockUpload();
 
         const clientId = 'clientId';

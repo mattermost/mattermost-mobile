@@ -181,21 +181,21 @@ const ServerItem = ({
 
     const logoutServer = useCallback(async () => {
         Navigation.updateProps(Screens.HOME, {extra: undefined});
-        await logout(server.url);
+        await logout(server.url, intl);
 
         if (isActive) {
             dismissBottomSheet();
         } else {
             DeviceEventEmitter.emit(Events.SWIPEABLE, '');
         }
-    }, [isActive, server.url]);
+    }, [intl, isActive, server.url]);
 
     const removeServer = useCallback(async () => {
-        const skipLogoutFromServer = server.lastActiveAt === 0;
+        const skipServerLogout = server.lastActiveAt === 0;
         await dismissBottomSheet();
         Navigation.updateProps(Screens.HOME, {extra: undefined});
-        await logout(server.url, skipLogoutFromServer, true);
-    }, [server.lastActiveAt, server.url]);
+        await logout(server.url, intl, {skipServerLogout, removeServer: true});
+    }, [intl, server.lastActiveAt, server.url]);
 
     const startTutorial = () => {
         viewRef.current?.measureInWindow((x, y, w, h) => {

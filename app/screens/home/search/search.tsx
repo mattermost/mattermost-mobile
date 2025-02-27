@@ -370,31 +370,31 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     return (
         <Freeze freeze={!isFocused}>
-            <NavigationHeader
-                isLargeTitle={true}
-                showBackButton={false}
-                title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
-                hasSearch={true}
-                scrollValue={scrollValue}
-                lockValue={lockValue}
-                hideHeader={hideHeader}
-                onChangeText={handleTextChange}
-                onSubmitEditing={onSubmit}
-                blurOnSubmit={true}
-                placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
-                onBlur={onBlur}
-                onClear={handleClearSearch}
-                onCancel={handleCancelSearch}
-                onFocus={onFocus}
-                defaultValue={searchValue}
-                ref={searchRef}
-            />
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
                 onLayout={onLayout}
                 testID='search_messages.screen'
             >
+                <NavigationHeader
+                    isLargeTitle={true}
+                    showBackButton={false}
+                    title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
+                    hasSearch={true}
+                    scrollValue={scrollValue}
+                    lockValue={lockValue}
+                    hideHeader={hideHeader}
+                    onChangeText={handleTextChange}
+                    onSubmitEditing={onSubmit}
+                    blurOnSubmit={true}
+                    placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
+                    onBlur={onBlur}
+                    onClear={handleClearSearch}
+                    onCancel={handleCancelSearch}
+                    onFocus={onFocus}
+                    defaultValue={searchValue}
+                    ref={searchRef}
+                />
                 <KeyboardAvoidingView
                     style={styles.flex}
                     behavior={Platform.OS === 'ios' ? 'padding' : undefined}

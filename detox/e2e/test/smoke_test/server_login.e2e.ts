@@ -101,7 +101,7 @@ describe('Smoke Test - Server Login', () => {
         await expect(Alert.logoutTitle(serverTwoDisplayName)).toBeVisible();
 
         // # Tap on logout button
-        await Alert.logoutButton2.tap();
+        await Alert.logoutButton.tap();
 
         // * Verify second server is logged out
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');

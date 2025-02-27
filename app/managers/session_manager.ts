@@ -31,7 +31,7 @@ type LogoutCallbackArg = {
     removeServer: boolean;
 }
 
-export class SessionManager {
+export class SessionManagerSingleton {
     private previousAppState: AppStateStatus;
     private scheduling = false;
     private terminatingSessionUrl = new Set<string>();
@@ -187,7 +187,11 @@ export class SessionManager {
 
     private onSessionExpired = async (serverUrl: string) => {
         this.terminatingSessionUrl.add(serverUrl);
-        await logout(serverUrl, false, false, true);
+
+        // logout is not doing anything in this scenario, but we keep it
+        // to keep the same flow as other logout scenarios.
+        await logout(serverUrl, undefined, {skipServerLogout: true, skipEvents: true});
+
         await this.terminateSession(serverUrl, false);
 
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
@@ -203,4 +207,5 @@ export class SessionManager {
     };
 }
 
-export default new SessionManager();
+const SessionManager = new SessionManagerSingleton();
+export default SessionManager;

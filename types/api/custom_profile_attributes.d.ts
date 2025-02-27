@@ -20,7 +20,10 @@ type CustomProfileField = {
     type: string;
 
     /** any extra properties of the field **/
-    attrs?: unknown;
+    attrs?: {
+        sort_order?: number;
+        [key: string]: unknown;
+    };
 
     /** id of the target element if empty it is a system property **/
     target_id: string;
@@ -33,17 +36,20 @@ type CustomProfileField = {
 };
 
 /**
- * DisplayCustomAttribute
- * @description a simplified version of a field with its value for display purposes
+ * CustomProfileAttributeSimple
+ * @description simpler type to display a field id with its value.
  **/
-type DisplayCustomAttribute = {
+type CustomProfileAttributeSimple = {
+    [field_id: string]: string;
+}
 
-    /** field id **/
+export type CustomAttribute = {
     id: string;
-
-    /** field name **/
     name: string;
-
-    /** value assigned to that field **/
     value: string;
-};
+    sort_order?: number;
+}
+
+export interface CustomAttributeSet {
+    [key: string]: CustomAttribute;
+}

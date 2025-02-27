@@ -21,7 +21,7 @@ import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
 const DEFAULT_LOCALE = 'en';
 
-class TestHelper {
+class TestHelperSingleton {
     basicClient: Client | null;
     basicUser: UserProfile | null;
     basicTeam: Team | null;
@@ -733,4 +733,5 @@ class TestHelper {
     tick = () => new Promise((r) => setImmediate(r));
 }
 
-export default new TestHelper();
+const TestHelper = new TestHelperSingleton();
+export default TestHelper;
