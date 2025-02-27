@@ -33,6 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         link: {
             color: theme.linkColor,
             fontSize: 14,
+            fontWeight: '600',
         },
     };
 });
