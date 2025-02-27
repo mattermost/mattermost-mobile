@@ -101,6 +101,7 @@ const ScrollToEndView = ({
                 },
             ],
             maxWidth: withTiming(isNewMessage ? 169 : 40, {duration: 300}),
+            opacity: withTiming(showScrollToEndBtn ? 1 : 0),
         }),
         [showScrollToEndBtn, isNewMessage, keyboardOverlap, bottomAdjustment],
     );
