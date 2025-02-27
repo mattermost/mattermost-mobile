@@ -13,7 +13,7 @@ import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 const PROMPT_IN_APP_PIN_CODE_AFTER = toMilliseconds({minutes: 5});
 
-class ManagedApp {
+class ManagedAppSingleton {
     backgroundSince = 0;
     enabled = false;
     inAppPinCode = false;
@@ -199,4 +199,5 @@ class ManagedApp {
     };
 }
 
-export default new ManagedApp();
+const ManagedApp = new ManagedAppSingleton();
+export default ManagedApp;

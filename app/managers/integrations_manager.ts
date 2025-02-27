@@ -61,7 +61,7 @@ class ServerIntegrationsManager {
     }
 }
 
-class IntegrationsManager {
+class IntegrationsManagerSingleton {
     private serverManagers: {[serverUrl: string]: ServerIntegrationsManager | undefined} = {};
     public getManager(serverUrl: string): ServerIntegrationsManager {
         if (!this.serverManagers[serverUrl]) {
@@ -72,4 +72,5 @@ class IntegrationsManager {
     }
 }
 
-export default new IntegrationsManager();
+const IntegrationsManager = new IntegrationsManagerSingleton();
+export default IntegrationsManager;
