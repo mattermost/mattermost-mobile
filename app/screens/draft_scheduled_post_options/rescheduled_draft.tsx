@@ -13,7 +13,7 @@ import {ICON_SIZE} from '@constants/post_draft';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {withServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import websocket_manager from '@managers/websocket_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -99,7 +99,7 @@ export const RescheduledDraft: React.FC<Props> = ({
 };
 
 const enhanced = withObservables(['serverUrl'], ({serverUrl}: {serverUrl: string}) => ({
-    websocketState: websocket_manager.observeWebsocketState(serverUrl),
+    websocketState: WebsocketManager.observeWebsocketState(serverUrl),
 }));
 
 export default withServerUrl(enhanced(RescheduledDraft));

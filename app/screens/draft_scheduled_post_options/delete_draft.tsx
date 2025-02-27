@@ -12,7 +12,7 @@ import {ICON_SIZE} from '@constants/post_draft';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import websocket_manager from '@managers/websocket_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {deleteDraftConfirmation} from '@utils/draft';
@@ -120,7 +120,7 @@ export const DeleteDraft: React.FC<Props> = ({
 const enhanced = withObservables([], () => {
     const serverUrl = useServerUrl();
     return {
-        websocketState: websocket_manager.observeWebsocketState(serverUrl),
+        websocketState: WebsocketManager.observeWebsocketState(serverUrl),
     };
 });
 

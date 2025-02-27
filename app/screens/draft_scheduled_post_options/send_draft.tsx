@@ -17,9 +17,10 @@ import {useServerUrl, withServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
-import websocket_manager from '@managers/websocket_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {DRAFT_TYPE_DRAFT, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
+import {getErrorMessage} from '@utils/errors';
 import {persistentNotificationsConfirmation, sendMessageWithAlert} from '@utils/post';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -109,7 +110,7 @@ export const SendDraft: React.FC<Props> = ({
             if (res?.error) {
                 showSnackBar({
                     barType: SNACK_BAR_TYPE.DELETE_SCHEDULED_POST_ERROR,
-                    customMessage: (res.error as Error).message,
+                    customMessage: getErrorMessage(res.error),
                     keepOpen: true,
                     type: 'error',
                 });
@@ -209,7 +210,7 @@ export const SendDraft: React.FC<Props> = ({
 };
 
 const enhanced = withObservables(['serverUrl'], ({serverUrl}: {serverUrl: string}) => ({
-    websocketState: websocket_manager.observeWebsocketState(serverUrl),
+    websocketState: WebsocketManager.observeWebsocketState(serverUrl),
 }));
 
 export default withServerUrl(enhanced(SendDraft));
