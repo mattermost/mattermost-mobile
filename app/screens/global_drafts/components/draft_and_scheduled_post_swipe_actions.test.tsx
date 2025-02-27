@@ -115,7 +115,7 @@ describe('DraftAndScheduledPostSwipeActions', () => {
             />,
         );
 
-        const deleteButton = getByText('Delete draft');
+        const deleteButton = getByText('Delete');
         fireEvent.press(deleteButton);
 
         await waitFor(() => {
