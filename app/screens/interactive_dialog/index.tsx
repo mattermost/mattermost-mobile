@@ -10,6 +10,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {submitInteractiveDialog} from '@actions/remote/integrations';
 import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
+import {ExtraKeyboard, ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -234,44 +235,47 @@ function InteractiveDialog({
             testID='interactive_dialog.screen'
             style={style.container}
         >
-            <ScrollView
-                ref={scrollView}
-                style={style.scrollView}
-            >
-                {Boolean(error) && (
-                    <ErrorText
-                        testID='interactive_dialog.error.text'
-                        textStyle={style.errorContainer}
-                        error={error}
-                    />
-                )}
-                {Boolean(introductionText) &&
-                    <DialogIntroductionText
-                        value={introductionText}
-                    />
-                }
-                {Boolean(elements) && elements.map((e) => {
-                    const value = secureGetFromRecord(values, e.name);
-                    return (
-                        <DialogElement
-                            key={'dialogelement' + e.name}
-                            displayName={e.display_name}
-                            name={e.name}
-                            type={e.type}
-                            subtype={e.subtype}
-                            helpText={e.help_text}
-                            errorText={secureGetFromRecord(errors, e.name)}
-                            placeholder={e.placeholder}
-                            maxLength={e.max_length}
-                            dataSource={e.data_source}
-                            optional={e.optional}
-                            options={e.options}
-                            value={value}
-                            onChange={onChange}
+            <ExtraKeyboardProvider>
+                <ScrollView
+                    ref={scrollView}
+                    style={style.scrollView}
+                >
+                    {Boolean(error) && (
+                        <ErrorText
+                            testID='interactive_dialog.error.text'
+                            textStyle={style.errorContainer}
+                            error={error}
                         />
-                    );
-                })}
-            </ScrollView>
+                    )}
+                    {Boolean(introductionText) &&
+                        <DialogIntroductionText
+                            value={introductionText}
+                        />
+                    }
+                    {Boolean(elements) && elements.map((e) => {
+                        const value = secureGetFromRecord(values, e.name);
+                        return (
+                            <DialogElement
+                                key={'dialogelement' + e.name}
+                                displayName={e.display_name}
+                                name={e.name}
+                                type={e.type}
+                                subtype={e.subtype}
+                                helpText={e.help_text}
+                                errorText={secureGetFromRecord(errors, e.name)}
+                                placeholder={e.placeholder}
+                                maxLength={e.max_length}
+                                dataSource={e.data_source}
+                                optional={e.optional}
+                                options={e.options}
+                                value={value}
+                                onChange={onChange}
+                            />
+                        );
+                    })}
+                </ScrollView>
+                <ExtraKeyboard/>
+            </ExtraKeyboardProvider>
         </SafeAreaView>
     );
 }
