@@ -55,7 +55,7 @@ export const RescheduledDraft: React.FC<Props> = ({
         if (websocketState !== 'connected') {
             showSnackBar({
                 barType: SNACK_BAR_TYPE.CONNECTION_ERROR,
-                customMessage: intl.formatMessage({id: 'network_connection.not_connected', defaultMessage: 'No internet connection'}),
+                customMessage: intl.formatMessage({id: 'server.not_connected', defaultMessage: 'Cannot reach the server'}),
                 type: 'error',
                 keepOpen: true,
             });
