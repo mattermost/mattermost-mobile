@@ -470,7 +470,7 @@
   "logout.fail.continue_anyway": "Přesto Pokračovat",
   "logout.fail.message": "Nejste úplně odhlášeni. Některá data mohou zůstat přístupná tomuto zařízení, jakmile se zařízení opět připojí k internetu. Co chcete udělat?",
   "logout.fail.message.forced": "Nepodařilo se vás odhlásit ze serveru. Některá data mohou zůstat přístupná tomuto zařízení, jakmile se zařízení opět připojí k internetu.",
-  "logout.fail.ok": "Dobře",
+  "logout.fail.ok": "ok",
   "logout.fail.title": "Odhlášení neproběhlo úplně",
   "markdown.latex.error": "Chyba při vykreslování Latexu",
   "markdown.max_nodes.error": "Tato zpráva je příliš dlouhá na to, aby byla plně zobrazena na mobilním zařízení. Zobrazte ji na desktopu nebo kontaktujte správce, aby zvýšil tento limit.",
