@@ -5,7 +5,7 @@ import {BehaviorSubject} from 'rxjs';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-class NavigationStore {
+class NavigationStoreSingleton {
     private screensInStack: AvailableScreens[] = [];
     private modalsInStack: AvailableScreens[] = [];
     private visibleTab = 'Home';
@@ -144,4 +144,5 @@ class NavigationStore {
     };
 }
 
-export default new NavigationStore();
+const NavigationStore = new NavigationStoreSingleton();
+export default NavigationStore;
