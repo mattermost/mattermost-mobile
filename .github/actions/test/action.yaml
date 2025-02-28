@@ -19,6 +19,11 @@ runs:
         echo "::group::run-tests"
         npm run test:coverage
         echo "::endgroup::"
+    - name: ci/download-current-coverage
+      uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+      with:
+        path: current-coverage/coverage-summary.json
+
     - name: ci/upload-coverage
       uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
       with:
