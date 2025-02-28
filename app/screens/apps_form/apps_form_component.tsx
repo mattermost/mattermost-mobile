@@ -330,7 +330,7 @@ function AppsFormComponent({
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const field = form.fields?.find((f) => f.name === name);
-        if (!field || !field.name) {
+        if (!field?.name) {
             return [];
         }
 
