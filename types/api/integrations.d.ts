@@ -105,8 +105,8 @@ type PostAction = {
 };
 
 type PostActionOption = {
-    text: string;
-    value: string;
+    text?: string;
+    value?: string;
 };
 
 type PostActionIntegration = {
