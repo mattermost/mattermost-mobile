@@ -1,6 +1,11 @@
 name: test
 description: Common tests for mobile repo
 
+inputs:
+  github_token:
+    description: The token to use to download the coverage result
+    required: true
+
 runs:
   using: composite
   steps:
@@ -25,7 +30,7 @@ runs:
       with:
         name: test-coverage-result
         path: current-coverage/coverage-summary.json
-        token: ${{ github.token }}
+        token: ${{ inputs.github_token }}
 
     - name: ci/read-coverage
       shell: bash
