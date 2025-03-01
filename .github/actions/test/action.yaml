@@ -25,7 +25,7 @@ runs:
       with:
         name: test-coverage-result
         path: current-coverage/coverage-summary.json
-        token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+        token: ${{ github.token }}
 
     - name: ci/read-coverage
       shell: bash
