@@ -22,7 +22,7 @@ runs:
     - name: ci/download-current-coverage
       uses: actions/download-artifact@v4
       with:
-        name: test-coverage-result
+        # name: test-coverage-result
         path: current-coverage/coverage-summary.json
         github-token: ${{ inputs.github_token }}
 
