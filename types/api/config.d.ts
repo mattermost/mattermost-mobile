@@ -181,6 +181,7 @@ interface ClientConfig {
     SamlLoginButtonTextColor: string;
     SamlNicknameAttributeSet: string;
     SamlPositionAttributeSet: string;
+    ScheduledPosts: string;
     SchemaVersion: string;
     SendEmailNotifications: string;
     SendPushNotifications: string;
@@ -197,4 +198,5 @@ interface ClientConfig {
     WebsocketPort: string;
     WebsocketSecurePort: string;
     WebsocketURL: string;
+    ScheduledPosts: string;
 }

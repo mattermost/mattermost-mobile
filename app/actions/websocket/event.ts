@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as bookmark from '@actions/local/channel_bookmark';
+import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 
@@ -293,6 +294,15 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.CHANNEL_BOOKMARK_SORTED:
             bookmark.handleBookmarkSorted(serverUrl, msg);
+            break;
+
+        // scheduled posts
+        case WebsocketEvents.SCHEDULED_POST_CREATED:
+        case WebsocketEvents.SCHEDULED_POST_UPDATED:
+            scheduledPost.handleCreateOrUpdateScheduledPost(serverUrl, msg);
+            break;
+        case WebsocketEvents.SCHEDULED_POST_DELETED:
+            scheduledPost.handleDeleteScheduledPost(serverUrl, msg);
             break;
     }
 }
