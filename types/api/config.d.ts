@@ -7,6 +7,7 @@ interface ClientConfig {
     AllowCustomThemes: string;
     AllowEditPost: string;
     AllowedThemes: string;
+    AllowDownloadLogs: string;
     AndroidAppDownloadLink: string;
     AndroidLatestVersion: string;
     AndroidMinVersion: string;
@@ -169,6 +170,8 @@ interface ClientConfig {
     PersistentNotificationIntervalMinutes: string;
     PrivacyPolicyLink: string;
     ReportAProblemLink: string;
+    ReportAProblemMail: string;
+    ReportAProblemType: string;
     RequireEmailVerification: string;
     RestrictDirectMessage: string;
     RunJobs: string;

@@ -171,22 +171,20 @@ exports[`Section notice match snapshot 1`] = `
                   [
                     {
                       "flexDirection": "row",
+                      "gap": 7,
                     },
                     {
                       "minHeight": 18,
                     },
                   ]
                 }
+                testID="undefined-text-container"
               >
                 <Icon
                   color="#ffffff"
                   name="chevron-right"
                   size={18}
-                  style={
-                    {
-                      "marginRight": 7,
-                    }
-                  }
+                  testID="undefined-icon"
                 />
                 <Text
                   numberOfLines={1}
@@ -293,22 +291,20 @@ exports[`Section notice match snapshot 1`] = `
                   [
                     {
                       "flexDirection": "row",
+                      "gap": 7,
                     },
                     {
                       "minHeight": 18,
                     },
                   ]
                 }
+                testID="undefined-text-container"
               >
                 <Icon
                   color="#1c58d9"
                   name="chevron-right"
                   size={18}
-                  style={
-                    {
-                      "marginRight": 7,
-                    }
-                  }
+                  testID="undefined-icon"
                 />
                 <Text
                   numberOfLines={1}
@@ -415,22 +411,20 @@ exports[`Section notice match snapshot 1`] = `
                   [
                     {
                       "flexDirection": "row",
+                      "gap": 7,
                     },
                     {
                       "minHeight": 18,
                     },
                   ]
                 }
+                testID="undefined-text-container"
               >
                 <Icon
                   color="#1c58d9"
                   name="chevron-right"
                   size={18}
-                  style={
-                    {
-                      "marginRight": 7,
-                    }
-                  }
+                  testID="undefined-icon"
                 />
                 <Text
                   numberOfLines={1}
