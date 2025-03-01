@@ -24,7 +24,7 @@ runs:
       with:
         name: test-coverage-result
         path: current-coverage/coverage-summary.json
-        token: ${{ inputs.github_token }}
+        github-token: ${{ inputs.github_token }}
 
     - name: ci/read-coverage
       shell: bash
