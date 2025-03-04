@@ -23,11 +23,13 @@ import {openAsBottomSheet} from '@screens/navigation';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import type {Theme} from '@typings/api/preferences';
 
 import Avatar from './avatar';
 import Body from './body';
 import Footer from './footer';
 import Header from './header';
+import PermalinkPreview from './permalink_preview';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
 import UnreadDot from './unread_dot';
@@ -36,6 +38,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 import type {SearchPattern} from '@typings/global/markdown';
+import type {MessageAttachment} from '@typings/api/posts';
 
 type PostProps = {
     appsEnabled: boolean;
@@ -347,8 +350,6 @@ const Post = ({
             <CallsCustomMessage
                 serverUrl={serverUrl}
                 post={post}
-
-                // Note: the below are provided by the index, but typescript seems to be having problems.
                 otherParticipants={false}
                 isAdmin={false}
                 isHost={false}
@@ -356,27 +357,50 @@ const Post = ({
             />
         );
     } else {
+        const permalinkPreview = post.metadata?.embeds?.[0]?.data as {
+            post_id: string;
+            post?: {
+                message: string;
+                create_at: number;
+                user_id: string;
+            };
+            channel_display_name: string;
+            team_name: string;
+            channel_type: string;
+            channel_id: string;
+        } | undefined;
+
         body = (
-            <Body
-                appsEnabled={appsEnabled}
-                hasFiles={hasFiles}
-                hasReactions={hasReactions}
-                highlight={Boolean(highlightedStyle)}
-                highlightReplyBar={highlightReplyBar}
-                isCRTEnabled={isCRTEnabled}
-                isEphemeral={isEphemeral}
-                isFirstReply={isFirstReply}
-                isJumboEmoji={isJumboEmoji}
-                isLastReply={isLastReply}
-                isPendingOrFailed={isPendingOrFailed}
-                isPostAcknowledgementEnabled={isPostAcknowledgementEnabled}
-                isPostAddChannelMember={isPostAddChannelMember}
-                location={location}
-                post={post}
-                searchPatterns={searchPatterns}
-                showAddReaction={showAddReaction}
-                theme={theme}
-            />
+            <View>
+                <Body
+                    appsEnabled={appsEnabled}
+                    hasFiles={hasFiles}
+                    hasReactions={hasReactions}
+                    highlight={Boolean(highlightedStyle)}
+                    highlightReplyBar={highlightReplyBar}
+                    isCRTEnabled={isCRTEnabled}
+                    isEphemeral={isEphemeral}
+                    isFirstReply={isFirstReply}
+                    isJumboEmoji={isJumboEmoji}
+                    isLastReply={isLastReply}
+                    isPendingOrFailed={isPendingOrFailed}
+                    isPostAcknowledgementEnabled={isPostAcknowledgementEnabled}
+                    isPostAddChannelMember={isPostAddChannelMember}
+                    location={location}
+                    post={post}
+                    searchPatterns={searchPatterns}
+                    showAddReaction={showAddReaction}
+                    theme={theme}
+                />
+                {permalinkPreview?.post && (
+                    <PermalinkPreview
+                        authorName={permalinkPreview.channel_display_name}
+                        timestamp={new Date(permalinkPreview.post.create_at * 1000).toLocaleString()}
+                        message={permalinkPreview.post.message}
+                        footerText={`${permalinkPreview.team_name} > ${permalinkPreview.channel_display_name}`}
+                    />
+                )}
+            </View>
         );
     }
 

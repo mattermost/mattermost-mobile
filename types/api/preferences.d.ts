@@ -9,7 +9,7 @@ type ThemeKey = 'denim' | 'sapphire' | 'quartz' | 'indigo' | 'onyx' | 'custom';
 
 type ThemeType = 'Denim' | 'Sapphire' | 'Quartz' | 'Indigo' | 'Onyx' | 'custom';
 
-type Theme = {
+export type Theme = {
     type?: ThemeType | LegacyThemeType;
     sidebarBg: string;
     sidebarText: string;
