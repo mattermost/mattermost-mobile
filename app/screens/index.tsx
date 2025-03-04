@@ -4,7 +4,7 @@
 import {Provider as EMMProvider} from '@mattermost/react-native-emm';
 import React, {type ComponentType} from 'react';
 import {IntlProvider} from 'react-intl';
-import {Platform, type StyleProp, type ViewStyle} from 'react-native';
+import {Platform} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -13,10 +13,10 @@ import {Screens} from '@constants';
 import {withServerDatabase} from '@database/components';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
-const withGestures = (Screen: React.ComponentType, styles: StyleProp<ViewStyle>) => {
+const withGestures = (Screen: React.ComponentType) => {
     return function gestureHoc(props: any) {
         return (
-            <GestureHandlerRootView style={[{flex: 1}, styles]}>
+            <GestureHandlerRootView style={{flex: 1}}>
                 <Screen {...props}/>
             </GestureHandlerRootView>
         );
@@ -58,7 +58,6 @@ const withManagedConfig = (Screen: React.ComponentType) => {
 
 Navigation.setLazyComponentRegistrator((screenName) => {
     let screen: any|undefined;
-    let extraStyles: StyleProp<ViewStyle>;
     switch (screenName) {
         case Screens.ABOUT:
             screen = withServerDatabase(require('@screens/settings/about').default);
@@ -68,9 +67,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.BOTTOM_SHEET:
             screen = withServerDatabase(require('@screens/bottom_sheet').default);
-            Navigation.registerComponent(Screens.BOTTOM_SHEET, () =>
-                withGestures(withSafeAreaInsets(withManagedConfig(screen)), undefined),
-            );
             return;
         case Screens.BROWSE_CHANNELS:
             screen = withServerDatabase(require('@screens/browse_channels').default);
@@ -199,6 +195,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.REACTIONS:
             screen = withServerDatabase(require('@screens/reactions').default);
             break;
+        case Screens.REPORT_PROBLEM:
+            screen = withServerDatabase(require('@screens/report_a_problem').default);
+            break;
         case Screens.REVIEW_APP:
             screen = withServerDatabase(require('@screens/review_app').default);
             break;
@@ -295,7 +294,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig(screen)), extraStyles));
+        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig(screen))));
     }
 });
 
@@ -303,7 +302,7 @@ export function registerScreens() {
     const homeScreen = require('@screens/home').default;
     const serverScreen = require('@screens/server').default;
     const onboardingScreen = require('@screens/onboarding').default;
-    Navigation.registerComponent(Screens.ONBOARDING, () => withGestures(withIntl(withManagedConfig(onboardingScreen)), undefined));
-    Navigation.registerComponent(Screens.SERVER, () => withSafeAreaInsets(withGestures(withIntl(withManagedConfig(serverScreen)), undefined)));
-    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen))), undefined));
+    Navigation.registerComponent(Screens.ONBOARDING, () => withGestures(withIntl(withManagedConfig(onboardingScreen))));
+    Navigation.registerComponent(Screens.SERVER, () => withSafeAreaInsets(withGestures(withIntl(withManagedConfig(serverScreen)))));
+    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen)))));
 }

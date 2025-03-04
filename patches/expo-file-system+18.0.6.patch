@@ -1,0 +1,16 @@
+diff --git a/node_modules/expo-file-system/ios/FileSystemModule.swift b/node_modules/expo-file-system/ios/FileSystemModule.swift
+index d564ae7..ace718c 100644
+--- a/node_modules/expo-file-system/ios/FileSystemModule.swift
++++ b/node_modules/expo-file-system/ios/FileSystemModule.swift
+@@ -80,7 +80,10 @@ public final class FileSystemModule: Module {
+       guard url.isFileURL else {
+         throw InvalidFileUrlException(url)
+       }
+-      try ensurePathPermission(appContext, path: url.appendingPathComponent("..").path, flag: .write)
++
++      // This line was impeding us to delete files in the tmp folder,
++      // since the ensure permission was mistakenly returning false.
++      //try ensurePathPermission(appContext, path: url.appendingPathComponent("..").path, flag: .write)
+       try removeFile(path: url.path, idempotent: options.idempotent)
+     }
+ 

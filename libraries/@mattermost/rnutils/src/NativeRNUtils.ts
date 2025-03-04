@@ -73,6 +73,8 @@ export interface Spec extends TurboModule {
 
     setSoftKeyboardToAdjustResize(): void;
     setSoftKeyboardToAdjustNothing(): void;
+
+    createZipFile: (paths: string[]) => Promise<string>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNUtils');

@@ -131,6 +131,12 @@ RCT_REMAP_METHOD(setSoftKeyboardToAdjustNothing, setAdjustNothing) {
     [self setSoftKeyboardToAdjustNothing];
 }
 
+RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
+                  withResolver:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject) {
+    [self createZipFile:paths resolve:resolve reject:reject];
+}
+
 // Don't compile this code when we build for the old architecture.
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<TurboModule>)getTurboModule:
@@ -222,6 +228,16 @@ RCT_REMAP_METHOD(setSoftKeyboardToAdjustNothing, setAdjustNothing) {
 
 - (void)saveFile:(NSString *)filePath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     resolve(@"");
+}
+
+- (void)createZipFile:(NSArray<NSString *> *)paths resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    NSDictionary *result = [wrapper createZipFileWithSourcePaths:paths];
+    
+    if ([[result objectForKey:@"success"] boolValue]) {
+        resolve([result objectForKey:@"zipFilePath"]);
+    } else {
+        reject(@"create_zip_error", [result objectForKey:@"error"], nil);
+    }
 }
 
 -(void)setSoftKeyboardToAdjustResize {
