@@ -144,7 +144,10 @@ function Uploads({
 
     return (
         <GalleryInit galleryIdentifier={galleryIdentifier}>
-            <View style={style.previewContainer}>
+            <View
+                style={style.previewContainer}
+                testID='uploads'
+            >
                 <Animated.View
                     style={[style.fileContainer, fileContainerStyle, containerAnimatedStyle]}
                 >
