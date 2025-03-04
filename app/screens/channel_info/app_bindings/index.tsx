@@ -49,7 +49,7 @@ const ChannelInfoAppBindings = ({channelId, teamId, dismissChannelInfo, serverUr
 
     const options = bindings.map((binding) => (
         <BindingOptionItem
-            key={binding.app_id + binding.location}
+            key={(binding.app_id || '') + (binding.location || '')}
             binding={binding}
             onPress={onPress}
         />
@@ -65,7 +65,7 @@ const BindingOptionItem = ({binding, onPress}: {binding: AppBinding; onPress: (b
 
     return (
         <OptionItem
-            label={binding.label}
+            label={binding.label || ''}
             icon={binding.icon}
             action={handlePress}
             type='default'
