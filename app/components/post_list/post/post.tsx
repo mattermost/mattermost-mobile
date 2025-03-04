@@ -23,7 +23,6 @@ import {openAsBottomSheet} from '@screens/navigation';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import type {Theme} from '@typings/api/preferences';
 
 import Avatar from './avatar';
 import Body from './body';
@@ -34,11 +33,11 @@ import PreHeader from './pre_header';
 import SystemMessage from './system_message';
 import UnreadDot from './unread_dot';
 
+import type {Theme} from '@typings/api/preferences';
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 import type {SearchPattern} from '@typings/global/markdown';
-import type {MessageAttachment} from '@typings/api/posts';
 
 type PostProps = {
     appsEnabled: boolean;
