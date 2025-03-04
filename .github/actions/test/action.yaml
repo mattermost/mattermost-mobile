@@ -1,6 +1,11 @@
 name: test
 description: Common tests for mobile repo
 
+inputs:
+  github_token:
+    description: The token to use to download the coverage result
+    required: true
+
 runs:
   using: composite
   steps:
@@ -13,12 +18,35 @@ runs:
         echo "::group::check-styles"
         npm run check
         echo "::endgroup::"
+
+    - name: ci/download-current-coverage
+      uses: actions/download-artifact@v4
+      with:
+        # name: test-coverage-result
+        path: current-coverage/coverage-summary.json
+        github-token: ${{ inputs.github_token }}
+
+    - name: ci/read-coverage
+      shell: bash
+      run: |
+        echo "::group::read-coverage"
+        ./scripts/read-coverage.sh ./current-coverage/coverage-summary.json
+        echo "::endgroup::"
+
     - name: ci/run-tests
       shell: bash
       run: |
         echo "::group::run-tests"
-        npm test
+        npm run test:coverage
         echo "::endgroup::"
+
+    - name: ci/upload-coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-coverage-result
+        path: coverage/coverage-summary.json
+        overwrite: true
+
     - name: ci/check-i18n
       shell: bash
       run: |
