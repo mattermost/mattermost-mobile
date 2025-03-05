@@ -384,6 +384,7 @@ const Server = ({
         <View
             style={styles.flex}
             testID='server.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
             <Background theme={theme}/>
             <AnimatedSafeArea

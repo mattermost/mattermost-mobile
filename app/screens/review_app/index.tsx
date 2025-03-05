@@ -16,6 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import SecurityManager from '@managers/security_manager';
 import {dismissOverlay, showShareFeedbackOverlay} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -168,7 +169,10 @@ const ReviewApp = ({
     }), []);
 
     return (
-        <View style={styles.root}>
+        <View
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            style={styles.root}
+        >
             <View
                 style={styles.container}
                 testID='rate_app.screen'
