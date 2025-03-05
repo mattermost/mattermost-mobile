@@ -17,7 +17,7 @@ import {alertServerAlreadyConnected, alertServerError, loginToServer} from '@uti
 
 import type {IntlShape} from 'react-intl';
 
-export async function initializeSecurityManager(serverUrl?: string) {
+export async function initializeSecurityManager() {
     const servers = await queryAllActiveServers()?.fetch();
     if (!servers) {
         return;
@@ -48,6 +48,7 @@ export async function initializeSecurityManager(serverUrl?: string) {
         }
     }
 
+    const serverUrl = await DatabaseManager.getActiveServerUrl();
     SecurityManager.init(results, serverUrl);
 }
 
