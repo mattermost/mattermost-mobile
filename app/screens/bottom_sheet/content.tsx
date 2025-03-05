@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {type GestureResponderEvent, Text, useWindowDimensions, View} from 'react-native';
+import React, {useMemo} from 'react';
+import {type GestureResponderEvent, type StyleProp, Text, useWindowDimensions, View, type ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -21,6 +21,7 @@ type Props = {
     testID?: string;
     title?: string;
     titleSeparator?: boolean;
+    currentSize?: string|number; // passed from parent to communicate the current size of the bottom sheet
 }
 
 const TITLE_MARGIN_TOP = 4;
@@ -53,7 +54,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, onPress, showButton, showTitle, testID, title, titleSeparator}: Props) => {
+const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, onPress, showButton, showTitle, testID, title, titleSeparator, currentSize}: Props) => {
     const dimensions = useWindowDimensions();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -61,9 +62,16 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, on
     const separatorWidth = Math.max(dimensions.width, 450);
     const buttonTestId = `${testID}.${buttonText?.replace(/ /g, '_').toLocaleLowerCase()}.button`;
 
+    const containerWithSize = useMemo((): StyleProp<ViewStyle> => {
+        return {
+            ...styles.container,
+            height: currentSize || 'auto',
+        } as StyleProp<ViewStyle>;
+    }, [currentSize, styles.container]);
+
     return (
         <View
-            style={styles.container}
+            style={containerWithSize}
             testID={`${testID}.screen`}
         >
             {showTitle &&

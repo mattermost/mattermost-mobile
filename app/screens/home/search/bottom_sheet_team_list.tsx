@@ -18,9 +18,10 @@ type Props = {
     setTeamId: (teamId: string) => void;
     title: string;
     crossTeamSearchEnabled: boolean;
+    currentSize?: string|number;
 }
 
-export default function BottomSheetTeamList({teams, title, setTeamId, teamId, crossTeamSearchEnabled}: Props) {
+export default function BottomSheetTeamList({teams, title, setTeamId, teamId, crossTeamSearchEnabled, currentSize}: Props) {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const showTitle = !isTablet && Boolean(teams.length);
@@ -44,6 +45,7 @@ export default function BottomSheetTeamList({teams, title, setTeamId, teamId, cr
             showTitle={showTitle}
             testID='search.select_team_slide_up'
             title={title}
+            currentSize={currentSize}
         >
             <TeamList
                 selectedTeamId={teamId}

@@ -34,6 +34,7 @@ type Props = {
     renderContent: () => ReactNode;
     snapPoints?: Array<string | number>;
     testID?: string;
+    onChange?: (index: number) => void;
 }
 
 const PADDING_TOP_MOBILE = 20;
@@ -96,6 +97,7 @@ const BottomSheet = ({
     renderContent,
     snapPoints = [1, '50%', '80%'],
     testID,
+    onChange,
 }: Props) => {
     const sheetRef = useRef<BottomSheetM>(null);
     const isTablet = useIsTablet();
@@ -142,7 +144,7 @@ const BottomSheet = ({
         } else {
             close();
         }
-    }, []);
+    }, [close]);
 
     const handleChange = useCallback((index: number) => {
         timeoutRef.current = setTimeout(() => {
@@ -155,7 +157,8 @@ const BottomSheet = ({
         if (index <= 0) {
             close();
         }
-    }, []);
+        onChange?.(index);
+    }, [close, onChange]);
 
     useAndroidHardwareBackHandler(componentId, handleClose);
     useNavButtonPressed(closeButtonId || '', componentId, close, [close]);

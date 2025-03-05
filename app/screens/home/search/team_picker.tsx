@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -52,7 +52,7 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
-
+    const [snapPointIndex, setSnapPointIndex] = useState(0);
     let selectedTeam = teams.find((t) => t.id === teamId);
     if (teamId === ALL_TEAMS_ID) {
         selectedTeam = {id: ALL_TEAMS_ID, displayName: intl.formatMessage({id: 'mobile.search.team.all_teams', defaultMessage: 'All teams'})} as TeamModel;
@@ -68,6 +68,7 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
                     teams={teams}
                     teamId={teamId}
                     title={title}
+                    currentSize={snapPoints[snapPointIndex]}
                     crossTeamSearchEnabled={crossTeamSearchEnabled}
                 />
             );
@@ -88,6 +89,9 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
             snapPoints,
             theme,
             title,
+            onChange: (index) => {
+                setSnapPointIndex(index);
+            },
         });
     }), [theme, setTeamId, teamId, teams]);
 

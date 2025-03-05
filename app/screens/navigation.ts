@@ -805,9 +805,10 @@ type BottomSheetArgs = {
     snapPoints: Array<number | string>;
     theme: Theme;
     title: string;
+    onChange?: (index: number) => void;
 }
 
-export function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId}: BottomSheetArgs) {
+export function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId, onChange}: BottomSheetArgs) {
     if (isTablet()) {
         showModal(Screens.BOTTOM_SHEET, title, {
             closeButtonId,
@@ -815,6 +816,7 @@ export function bottomSheet({title, renderContent, footerComponent, snapPoints, 
             renderContent,
             footerComponent,
             snapPoints,
+            onChange,
         }, bottomSheetModalOptions(theme, closeButtonId));
     } else {
         showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
@@ -822,6 +824,7 @@ export function bottomSheet({title, renderContent, footerComponent, snapPoints, 
             renderContent,
             footerComponent,
             snapPoints,
+            onChange,
         }, bottomSheetModalOptions(theme));
     }
 }
