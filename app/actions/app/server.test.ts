@@ -19,11 +19,16 @@ import {alertServerAlreadyConnected, alertServerError, loginToServer} from '@uti
 
 import * as Actions from './server';
 
+import type {Query} from '@nozbe/watermelondb';
+import type {ServerDatabase} from '@typings/database/database';
+import type ServersModel from '@typings/database/models/app/servers';
+
 jest.mock('@queries/app/servers');
 jest.mock('@queries/servers/system');
 jest.mock('@database/manager', () => ({
     getServerDatabaseAndOperator: jest.fn(),
     setActiveServerDatabase: jest.fn(),
+    getActiveServerUrl: jest.fn(),
 }));
 jest.mock('@managers/security_manager');
 jest.mock('@managers/websocket_manager');
@@ -39,30 +44,52 @@ const intl = createIntl({locale: DEFAULT_LOCALE, messages: translations});
 const theme = Preferences.THEMES.denim;
 
 describe('initializeSecurityManager', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('should return when no servers are found', async () => {
-        (queryAllActiveServers as jest.Mock).mockReturnValueOnce({fetch: jest.fn().mockResolvedValueOnce(null)});
+        const mockQuery = {
+            fetch: jest.fn().mockResolvedValueOnce([]),
+        } as unknown as Query<ServersModel>;
+        jest.mocked(queryAllActiveServers).mockReturnValueOnce(mockQuery);
         await Actions.initializeSecurityManager();
         expect(SecurityManager.init).not.toHaveBeenCalled();
     });
 
     it('should initialize SecurityManager with querying configurations', async () => {
         const servers = [{url: 'server1'}, {url: 'server2'}];
-        (queryAllActiveServers as jest.Mock).mockReturnValueOnce({fetch: jest.fn().mockResolvedValueOnce(servers)});
-        (DatabaseManager.getServerDatabaseAndOperator as jest.Mock).mockImplementation((url) => ({database: `db_${url}`}));
-        (getConfig as jest.Mock).mockImplementation((db) => Promise.resolve({key: `config_${db}`}));
+        const mockQuery = {
+            fetch: jest.fn().mockResolvedValueOnce(servers),
+        } as unknown as Query<ServersModel>;
+        jest.mocked(queryAllActiveServers).mockReturnValueOnce(mockQuery);
+        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementation((serverUrl) => ({database: `db_${serverUrl}`} as unknown as ServerDatabase));
+        const config = {
+            AboutLink: '',
+            MobileEnableBiometrics: 'true',
+            MobilePreventScreenCapture: 'true',
+            MobileJailbreakProtection: 'true',
+        } as unknown as ClientConfig;
+        jest.mocked(getConfig).mockImplementation((db) => Promise.resolve({
+            ...config,
+            key: `config_${db}`,
+        }));
 
         await Actions.initializeSecurityManager();
 
         expect(SecurityManager.init).toHaveBeenCalledWith({
-            server1: {key: 'config_db_server1'},
-            server2: {key: 'config_db_server2'},
+            server1: {...config, key: 'config_db_server1'},
+            server2: {...config, key: 'config_db_server2'},
         }, undefined);
     });
 
     it('should log error when querying configuration fails', async () => {
         const servers = [{url: 'server1'}];
-        (queryAllActiveServers as jest.Mock).mockReturnValueOnce({fetch: jest.fn().mockResolvedValueOnce(servers)});
-        (DatabaseManager.getServerDatabaseAndOperator as jest.Mock).mockImplementation(() => {
+        const mockQuery = {
+            fetch: jest.fn().mockResolvedValueOnce(servers),
+        } as unknown as Query<ServersModel>;
+        jest.mocked(queryAllActiveServers).mockReturnValueOnce(mockQuery);
+        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementation(() => {
             throw new Error('test error');
         });
 

@@ -19,7 +19,7 @@ import type {IntlShape} from 'react-intl';
 
 export async function initializeSecurityManager() {
     const servers = await queryAllActiveServers()?.fetch();
-    if (!servers) {
+    if (!servers?.length) {
         return;
     }
 
