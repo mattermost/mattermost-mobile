@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
-import {AccessibilityInfo, Keyboard, Platform} from 'react-native';
+import {Keyboard, Platform} from 'react-native';
 import Animated, {KeyboardState, useAnimatedKeyboard, useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
-import {useIsTablet, useKeyboardHeight} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import NavigationStore from '@store/navigation_store';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -20,7 +20,6 @@ export type ExtraKeyboardContextProps = {
     hideExtraKeyboard: () => void;
     registerTextInputFocus: () => void;
     registerTextInputBlur: () => void;
-    crossFadeIsEnabled: boolean;
 };
 
 // This is based on the size of the tab bar
@@ -53,11 +52,6 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
     const [isExtraKeyboardVisible, setExtraKeyboardVisible] = useState(false);
     const [component, setComponent] = useState<React.ReactElement|null>(null);
     const [isTextInputFocused, setIsTextInputFocused] = useState(false);
-    const [crossFadeIsEnabled, setCrossFade] = useState(false);
-
-    useEffect(() => {
-        AccessibilityInfo.prefersCrossFadeTransitions().then(setCrossFade);
-    }, []);
 
     const showExtraKeyboard = useCallback((newComponent: React.ReactElement|null) => {
         setExtraKeyboardVisible(true);
@@ -109,7 +103,6 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
                 hideExtraKeyboard,
                 registerTextInputBlur,
                 registerTextInputFocus,
-                crossFadeIsEnabled,
             }}
         >
             {children}
@@ -151,16 +144,10 @@ export const useHideExtraKeyboardIfNeeded = (callback: (...args: any) => void, d
 
 export const ExtraKeyboard = () => {
     const keyb = useAnimatedKeyboard({isStatusBarTranslucentAndroid: true});
-    const [isNativeKeyOpen, setNativeOpen] = useState(false);
     const defaultKeyboardHeight = Platform.select({ios: 291, default: 240});
     const context = useExtraKeyboardContext();
     const insets = useSafeAreaInsets();
     const offset = useOffetForCurrentScreen();
-    const nativeHeight = useKeyboardHeight();
-
-    useEffect(() => {
-        setNativeOpen(nativeHeight > 0);
-    }, [nativeHeight]);
 
     const maxKeyboardHeight = useDerivedValue(() => {
         if (keyb.state.value === KeyboardState.OPEN) {
@@ -175,10 +162,6 @@ export const ExtraKeyboard = () => {
         let height = keyb.height.value + offset;
         const isClose = keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.UNKNOWN;
         const isCloseOrClosing = isClose || keyb.state.value === KeyboardState.CLOSING;
-        const shouldClose = context?.crossFadeIsEnabled && !isCloseOrClosing && !isNativeKeyOpen;
-        if (shouldClose) {
-            keyb.state.set(KeyboardState.CLOSED);
-        }
         if (keyb.height.value < 70) {
             height = 0; // When using a hw keyboard
         }
@@ -189,11 +172,10 @@ export const ExtraKeyboard = () => {
         }
 
         return {
-            maxHeight: context?.crossFadeIsEnabled ? nativeHeight : undefined,
             height,
             marginBottom: withTiming(isCloseOrClosing ? insets.bottom : 0, {duration: 250}),
         };
-    }, [context, insets.bottom, offset, isNativeKeyOpen]);
+    }, [context, insets.bottom, offset]);
 
     return (
         <Animated.View style={animatedStyle}>
