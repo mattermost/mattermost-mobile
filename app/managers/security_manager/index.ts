@@ -422,7 +422,7 @@ class SecurityManagerSingleton {
                 id: 'mobile.managed.blocked_by',
                 defaultMessage: 'Blocked by {vendor}',
             },
-        })
+        });
 
         if (Platform.OS === 'android') {
             buttons.push({
