@@ -15,6 +15,7 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import NetworkManager from '@managers/network_manager';
+import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
@@ -213,6 +214,7 @@ const LoginOptions = ({
         <View
             style={styles.flex}
             testID='login.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
             <Background theme={theme}/>
             <AnimatedSafeArea style={[styles.container, transform]}>

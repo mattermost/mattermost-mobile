@@ -14,6 +14,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -96,73 +97,78 @@ const ChannelInfo = ({
     const convertGMOptionAvailable = isConvertGMFeatureAvailable && type === General.GM_CHANNEL && !isGuestUser;
 
     return (
-        <SafeAreaView
-            edges={edges}
+        <View
             style={styles.flex}
-            testID='channel_info.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            <ScrollView
-                bounces={true}
-                alwaysBounceVertical={false}
-                contentContainerStyle={styles.content}
-                testID='channel_info.scroll_view'
+            <SafeAreaView
+                edges={edges}
+                style={styles.flex}
+                testID='channel_info.screen'
             >
-                <Title
-                    channelId={channelId}
-                    type={type}
-                />
-                {isBookmarksEnabled &&
-                    <ChannelBookmarks
+                <ScrollView
+                    bounces={true}
+                    alwaysBounceVertical={false}
+                    contentContainerStyle={styles.content}
+                    testID='channel_info.scroll_view'
+                >
+                    <Title
                         channelId={channelId}
-                        canAddBookmarks={canAddBookmarks}
-                        showInInfo={true}
+                        type={type}
                     />
-                }
-                <ChannelActions
-                    channelId={channelId}
-                    inModal={true}
-                    dismissChannelInfo={onPressed}
-                    callsEnabled={callsAvailable}
-                    testID='channel_info.channel_actions'
-                />
-                <Extra channelId={channelId}/>
-                <View style={styles.separator}/>
-                <Options
-                    channelId={channelId}
-                    type={type}
-                    callsEnabled={callsAvailable}
-                    canManageMembers={canManageMembers}
-                    isCRTEnabled={isCRTEnabled}
-                    canManageSettings={canManageSettings}
-                />
-                <View style={styles.separator}/>
-                {convertGMOptionAvailable &&
-                <>
-                    <ConvertToChannelLabel channelId={channelId}/>
-                    <View style={styles.separator}/>
-                </>
-                }
-                {canEnableDisableCalls &&
-                    <>
-                        <ChannelInfoEnableCalls
+                    {isBookmarksEnabled &&
+                        <ChannelBookmarks
                             channelId={channelId}
-                            enabled={isCallsEnabledInChannel}
+                            canAddBookmarks={canAddBookmarks}
+                            showInInfo={true}
                         />
+                    }
+                    <ChannelActions
+                        channelId={channelId}
+                        inModal={true}
+                        dismissChannelInfo={onPressed}
+                        callsEnabled={callsAvailable}
+                        testID='channel_info.channel_actions'
+                    />
+                    <Extra channelId={channelId}/>
+                    <View style={styles.separator}/>
+                    <Options
+                        channelId={channelId}
+                        type={type}
+                        callsEnabled={callsAvailable}
+                        canManageMembers={canManageMembers}
+                        isCRTEnabled={isCRTEnabled}
+                        canManageSettings={canManageSettings}
+                    />
+                    <View style={styles.separator}/>
+                    {convertGMOptionAvailable &&
+                    <>
+                        <ConvertToChannelLabel channelId={channelId}/>
                         <View style={styles.separator}/>
                     </>
-                }
-                <ChannelInfoAppBindings
-                    channelId={channelId}
-                    serverUrl={serverUrl}
-                    dismissChannelInfo={onPressed}
-                />
-                <DestructiveOptions
-                    channelId={channelId}
-                    componentId={componentId}
-                    type={type}
-                />
-            </ScrollView>
-        </SafeAreaView>
+                    }
+                    {canEnableDisableCalls &&
+                        <>
+                            <ChannelInfoEnableCalls
+                                channelId={channelId}
+                                enabled={isCallsEnabledInChannel}
+                            />
+                            <View style={styles.separator}/>
+                        </>
+                    }
+                    <ChannelInfoAppBindings
+                        channelId={channelId}
+                        serverUrl={serverUrl}
+                        dismissChannelInfo={onPressed}
+                    />
+                    <DestructiveOptions
+                        channelId={channelId}
+                        componentId={componentId}
+                        type={type}
+                    />
+                </ScrollView>
+            </SafeAreaView>
+        </View>
     );
 };
 

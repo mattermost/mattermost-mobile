@@ -14,6 +14,7 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -135,48 +136,53 @@ function ChannelFiles({
     const fileChannels = useMemo(() => [channel], [channel]);
 
     return (
-        <SafeAreaView
-            edges={edges}
+        <View
             style={styles.flex}
-            testID={`${TEST_ID}.screen`}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            <View style={styles.searchBar}>
-                <Search
-                    testID={`${TEST_ID}.search_bar`}
-                    placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    onChangeText={onTextChange}
-                    onCancel={clearSearch}
-                    autoCapitalize='none'
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    value={term}
+            <SafeAreaView
+                edges={edges}
+                style={styles.flex}
+                testID={`${TEST_ID}.screen`}
+            >
+                <View style={styles.searchBar}>
+                    <Search
+                        testID={`${TEST_ID}.search_bar`}
+                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        onChangeText={onTextChange}
+                        onCancel={clearSearch}
+                        autoCapitalize='none'
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        value={term}
+                    />
+                </View>
+                <Header
+                    onFilterChanged={handleFilterChange}
+                    selectedFilter={filter}
                 />
-            </View>
-            <Header
-                onFilterChanged={handleFilterChange}
-                selectedFilter={filter}
-            />
-            {loading &&
+                {loading &&
                 <Loading
                     color={theme.buttonBg}
                     size='large'
                     containerStyle={styles.loading}
                 />
-            }
-            {!loading &&
-            <FileResults
-                canDownloadFiles={canDownloadFiles}
-                fileChannels={fileChannels}
-                fileInfos={fileInfos}
-                paddingTop={styles.noPaddingTop}
-                publicLinkEnabled={publicLinkEnabled}
-                searchValue={term}
-                isChannelFiles={true}
-                isFilterEnabled={filter !== FileFilters.ALL}
-            />
-            }
-        </SafeAreaView>
+                }
+                {!loading &&
+                <FileResults
+                    canDownloadFiles={canDownloadFiles}
+                    fileChannels={fileChannels}
+                    fileInfos={fileInfos}
+                    paddingTop={styles.noPaddingTop}
+                    publicLinkEnabled={publicLinkEnabled}
+                    searchValue={term}
+                    isChannelFiles={true}
+                    isFilterEnabled={filter !== FileFilters.ALL}
+                />
+                }
+            </SafeAreaView>
+        </View>
     );
 }
 

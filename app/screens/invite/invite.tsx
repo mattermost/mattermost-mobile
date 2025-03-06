@@ -15,6 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {isEmail} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
@@ -416,6 +417,7 @@ export default function Invite({
             onLayout={onLayoutWrapper}
             ref={mainView}
             testID='invite.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             {renderContent()}
         </SafeAreaView>

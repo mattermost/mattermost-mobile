@@ -14,6 +14,7 @@ import {getAllServerCredentials, removeServerCredentials} from '@init/credential
 import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
@@ -114,6 +115,7 @@ export class SessionManagerSingleton {
         cancelSessionNotification(serverUrl);
         await removeServerCredentials(serverUrl);
         PushNotifications.removeServerNotifications(serverUrl);
+        SecurityManager.removeServer(serverUrl);
 
         NetworkManager.invalidateClient(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);

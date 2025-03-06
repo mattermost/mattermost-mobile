@@ -67,7 +67,7 @@ export const setServerCredentials = (serverUrl: string, token: string) => {
 };
 
 export const removeServerCredentials = async (serverUrl: string) => {
-    return KeyChain.resetInternetCredentials(serverUrl);
+    return KeyChain.resetInternetCredentials({server: serverUrl});
 };
 
 export const removeActiveServerCredentials = async () => {

@@ -95,7 +95,7 @@ class ManagedAppSingleton {
         const translations = getTranslations(locale);
         Alert.alert(
             translations[t('mobile.managed.blocked_by')].replace('{vendor}', this.vendor),
-            translations[t('mobile.managed.jailbreak')].
+            translations[t('mobile.managed.jailbreak.emm')].
                 replace('{vendor}', this.vendor),
             [{
                 text: translations[t('mobile.managed.exit')],
@@ -158,7 +158,7 @@ class ManagedAppSingleton {
     };
 
     showNotSecuredAlert = (translations: Record<string, string>) => {
-        return new Promise(async (resolve) => { /* eslint-disable-line no-async-promise-executor */
+        return new Promise((resolve) => {
             const buttons: AlertButton[] = [];
 
             if (Platform.OS === 'android') {
@@ -177,16 +177,12 @@ class ManagedAppSingleton {
             });
 
             let message;
-            if (Platform.OS === 'ios') {
-                const {face} = await Emm.deviceSecureWith();
-
-                if (face) {
-                    message = translations[t('mobile.managed.not_secured.ios')];
-                } else {
-                    message = translations[t('mobile.managed.not_secured.ios.touchId')];
-                }
+            if (this.vendor) {
+                const platform = Platform.select({ios: t('mobile.managed.not_secured.ios.vendor'), default: t('mobile.managed.not_secured.android.vendor')});
+                message = translations[platform].replace('{vendor}', this.vendor);
             } else {
-                message = translations[t('mobile.managed.not_secured.android')];
+                const platform = Platform.select({ios: t('mobile.managed.not_secured.ios'), default: t('mobile.managed.not_secured.android')});
+                message = translations[platform];
             }
 
             Alert.alert(

@@ -149,6 +149,9 @@ interface ClientConfig {
     MaxNotificationsPerChannel: string;
     MaxPostSize: string;
     MinimumHashtagLength: string;
+    MobileEnableBiometrics: string;
+    MobileJailbreakProtection: string;
+    MobilePreventScreenCapture: string;
     MobileExternalBrowser: string;
     OpenIdButtonColor: string;
     OpenIdButtonText: string;

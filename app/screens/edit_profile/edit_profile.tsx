@@ -16,6 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -295,7 +296,10 @@ const EditProfile = ({
     ) : null;
 
     return (
-        <>
+        <View
+            style={styles.flex}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+        >
             {isTablet &&
                 <TabletTitle
                     action={buttonText}
@@ -312,7 +316,7 @@ const EditProfile = ({
             >
                 {content}
             </SafeAreaView>
-        </>
+        </View>
     );
 };
 

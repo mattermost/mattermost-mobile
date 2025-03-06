@@ -14,6 +14,7 @@ import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
@@ -152,6 +153,7 @@ function SavedMessages({
             edges={edges}
             style={styles.flex}
             testID='pinned_messages.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             <ExtraKeyboardProvider>
                 <FlatList

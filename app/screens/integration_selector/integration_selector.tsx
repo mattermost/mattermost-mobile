@@ -18,6 +18,7 @@ import {debounce} from '@helpers/api/general';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
+import SecurityManager from '@managers/security_manager';
 import {
     buildNavigationButton,
     popTopScreen, setButtons,
@@ -587,7 +588,10 @@ function IntegrationSelector(
     const selectedOptionsComponent = renderSelectedOptions();
 
     return (
-        <SafeAreaView style={style.container}>
+        <SafeAreaView
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            style={style.container}
+        >
             <View
                 testID='integration_selector.screen'
                 style={style.searchBar}

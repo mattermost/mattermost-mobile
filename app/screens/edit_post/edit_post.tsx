@@ -16,6 +16,7 @@ import {useKeyboardOverlap} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useInputPropagation} from '@hooks/input';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
@@ -207,7 +208,10 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
 
     if (isUpdating) {
         return (
-            <View style={styles.loader}>
+            <View
+                style={styles.loader}
+                nativeID={SecurityManager.getShieldScreenId(componentId)}
+            >
                 <Loading color={theme.buttonBg}/>
             </View>
         );
@@ -219,6 +223,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 testID='edit_post.screen'
                 style={styles.container}
                 onLayout={onLayout}
+                nativeID={SecurityManager.getShieldScreenId(componentId)}
             >
                 <View
                     style={styles.body}

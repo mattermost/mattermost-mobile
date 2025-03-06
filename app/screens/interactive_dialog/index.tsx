@@ -13,6 +13,7 @@ import ErrorText from '@components/error_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import SecurityManager from '@managers/security_manager';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -233,6 +234,7 @@ function InteractiveDialog({
         <SafeAreaView
             testID='interactive_dialog.screen'
             style={style.container}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             <ScrollView
                 ref={scrollView}

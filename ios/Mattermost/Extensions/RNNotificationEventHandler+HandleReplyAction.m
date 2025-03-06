@@ -59,6 +59,7 @@ static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplement
   
   if (serverUrl == nil) {
       [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
+      return;
   }
   
   NSString *sessionToken = [[Keychain default] getTokenObjcFor:serverUrl];

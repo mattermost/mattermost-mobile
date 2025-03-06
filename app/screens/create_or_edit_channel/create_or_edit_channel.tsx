@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard} from 'react-native';
+import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {createChannel, patchChannel as handlePatchChannel, switchToChannelById} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
@@ -13,6 +13,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {buildNavigationButton, dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
 
@@ -67,6 +68,12 @@ const isDirect = (channel?: ChannelModel): boolean => {
 const makeCloseButton = (icon: ImageResource) => {
     return buildNavigationButton(CLOSE_BUTTON_ID, 'close.create_or_edit_channel.button', icon);
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+});
 
 const CreateOrEditChannel = ({
     componentId,
@@ -233,21 +240,26 @@ const CreateOrEditChannel = ({
     useAndroidHardwareBackHandler(componentId, handleClose);
 
     return (
-        <ChannelInfoForm
-            error={appState.error}
-            saving={appState.saving}
-            channelType={channel?.type}
-            editing={editing}
-            onTypeChange={setType}
-            type={type}
-            displayName={displayName}
-            onDisplayNameChange={setDisplayName}
-            header={header}
-            headerOnly={headerOnly}
-            onHeaderChange={setHeader}
-            purpose={purpose}
-            onPurposeChange={setPurpose}
-        />
+        <View
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            style={styles.container}
+        >
+            <ChannelInfoForm
+                error={appState.error}
+                saving={appState.saving}
+                channelType={channel?.type}
+                editing={editing}
+                onTypeChange={setType}
+                type={type}
+                displayName={displayName}
+                onDisplayNameChange={setDisplayName}
+                header={header}
+                headerOnly={headerOnly}
+                onHeaderChange={setHeader}
+                purpose={purpose}
+                onPurposeChange={setPurpose}
+            />
+        </View>
     );
 };
 

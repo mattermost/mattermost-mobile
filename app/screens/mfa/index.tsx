@@ -17,6 +17,7 @@ import Loading from '@components/loading';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAvoidKeyboard} from '@hooks/device';
 import {t} from '@i18n';
+import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
 import {popTopScreen} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -168,7 +169,10 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
     useAndroidHardwareBackHandler(componentId, close);
 
     return (
-        <View style={styles.flex}>
+        <View
+            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
+            style={styles.flex}
+        >
             <Background theme={theme}/>
             <AnimatedSafeArea
                 testID='mfa.screen'
