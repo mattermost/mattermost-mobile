@@ -177,11 +177,12 @@ class ManagedAppSingleton {
             });
 
             let message;
-            const platform = Platform.select({ios: 'ios', default: 'android'});
             if (this.vendor) {
-                message = translations[t(`mobile.managed.not_secured.${platform}.vendor`)].replace('{vendor}', this.vendor);
+                const platform = Platform.select({ios: t('mobile.managed.not_secured.ios.vendor'), default: t('mobile.managed.not_secured.android.vendor')});
+                message = translations[platform].replace('{vendor}', this.vendor);
             } else {
-                message = translations[t(`mobile.managed.not_secured.${platform}`)];
+                const platform = Platform.select({ios: t('mobile.managed.not_secured.ios'), default: t('mobile.managed.not_secured.android')});
+                message = translations[platform];
             }
 
             Alert.alert(

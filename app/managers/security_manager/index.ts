@@ -3,7 +3,7 @@
 
 import Emm from '@mattermost/react-native-emm';
 import {isRootedExperimentalAsync} from 'expo-device';
-import {createIntl} from 'react-intl';
+import {createIntl, defineMessages} from 'react-intl';
 import {Alert, type AlertButton, AppState, type AppStateStatus, Platform} from 'react-native';
 
 import {switchToServer} from '@actions/app/server';
@@ -401,6 +401,28 @@ class SecurityManagerSingleton {
         const buttons: AlertButton[] = [];
         const config = this.serverConfig[server];
         const securedBy = siteName || config?.siteName || 'Mattermost';
+        const messages = defineMessages({
+            not_secured_vendor_ios: {
+                id: 'mobile.managed.not_secured.ios.vendor',
+                defaultMessage: 'his device must be secured with biometrics or passcode to use {vendor}.\n\nGo to Settings > Face ID & Passcode.',
+            },
+            not_secured_vendor_android: {
+                id: 'mobile.managed.not_secured.android.vendor',
+                defaultMessage: 'This device must be secured with a screen lock to use {vendor}.',
+            },
+            not_secured_ios: {
+                id: 'mobile.managed.not_secured.ios',
+                defaultMessage: 'This device must be secured with biometrics or passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode.',
+            },
+            not_secured_android: {
+                id: 'mobile.managed.not_secured.android',
+                defaultMessage: 'This device must be secured with a screen lock to use Mattermost.',
+            },
+            blocked_by: {
+                id: 'mobile.managed.blocked_by',
+                defaultMessage: 'Blocked by {vendor}',
+            },
+        })
 
         if (Platform.OS === 'android') {
             buttons.push({
@@ -415,15 +437,16 @@ class SecurityManagerSingleton {
         buttons.push(...alertButtons);
 
         let message;
-        const platform = Platform.select({ios: 'ios', default: 'android'});
         if (config?.siteName || siteName) {
-            message = translations[t(`mobile.managed.not_secured.${platform}.vendor`)].replace('{vendor}', securedBy);
+            const key = Platform.select({ios: messages.not_secured_vendor_ios.id, default: messages.not_secured_vendor_android.id});
+            message = translations[key].replace('{vendor}', securedBy);
         } else {
-            message = translations[t(`mobile.managed.not_secured.${platform}`)];
+            const key = Platform.select({ios: messages.not_secured_ios.id, default: messages.not_secured_android.id});
+            message = translations[key];
         }
 
         Alert.alert(
-            translations[t('mobile.managed.blocked_by')].replace('{vendor}', securedBy),
+            translations[messages.blocked_by.id].replace('{vendor}', securedBy),
             message,
             buttons,
             {cancelable: false},
