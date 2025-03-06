@@ -3,14 +3,14 @@
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, ScrollView} from 'react-native';
+import {Keyboard} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {type ImageResource, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {submitInteractiveDialog} from '@actions/remote/integrations';
 import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
-import {ExtraKeyboard, ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -107,7 +107,7 @@ function InteractiveDialog({
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const scrollView = useRef<ScrollView>(null);
+    const scrollView = useRef<KeyboardAwareScrollView>(null);
 
     const onChange = useCallback((name: string, value: string | number | boolean) => {
         dispatchValues({name, value});
@@ -186,7 +186,7 @@ function InteractiveDialog({
             if (data.error) {
                 hasErrors = true;
                 setError(data.error);
-                scrollView.current?.scrollTo({x: 0, y: 0});
+                scrollView.current?.scrollToPosition(0, 0, true);
             } else {
                 setError('');
             }
@@ -235,47 +235,54 @@ function InteractiveDialog({
             testID='interactive_dialog.screen'
             style={style.container}
         >
-            <ExtraKeyboardProvider>
-                <ScrollView
-                    ref={scrollView}
-                    style={style.scrollView}
-                >
-                    {Boolean(error) && (
-                        <ErrorText
-                            testID='interactive_dialog.error.text'
-                            textStyle={style.errorContainer}
-                            error={error}
+            <KeyboardAwareScrollView
+                ref={scrollView}
+                bounces={false}
+                style={style.scrollView}
+                enableAutomaticScroll={true}
+                enableOnAndroid={true}
+                noPaddingBottomOnAndroid={true}
+                scrollToOverflowEnabled={true}
+                enableResetScrollToCoords={true}
+                extraScrollHeight={0}
+                extraHeight={0}
+                keyboardDismissMode='interactive'
+                keyboardShouldPersistTaps='handled'
+            >
+                {Boolean(error) && (
+                    <ErrorText
+                        testID='interactive_dialog.error.text'
+                        textStyle={style.errorContainer}
+                        error={error}
+                    />
+                )}
+                {Boolean(introductionText) &&
+                <DialogIntroductionText
+                    value={introductionText}
+                />
+                }
+                {Boolean(elements) && elements.map((e) => {
+                    const value = secureGetFromRecord(values, e.name);
+                    return (
+                        <DialogElement
+                            key={'dialogelement' + e.name}
+                            displayName={e.display_name}
+                            name={e.name}
+                            type={e.type}
+                            subtype={e.subtype}
+                            helpText={e.help_text}
+                            errorText={secureGetFromRecord(errors, e.name)}
+                            placeholder={e.placeholder}
+                            maxLength={e.max_length}
+                            dataSource={e.data_source}
+                            optional={e.optional}
+                            options={e.options}
+                            value={value}
+                            onChange={onChange}
                         />
-                    )}
-                    {Boolean(introductionText) &&
-                        <DialogIntroductionText
-                            value={introductionText}
-                        />
-                    }
-                    {Boolean(elements) && elements.map((e) => {
-                        const value = secureGetFromRecord(values, e.name);
-                        return (
-                            <DialogElement
-                                key={'dialogelement' + e.name}
-                                displayName={e.display_name}
-                                name={e.name}
-                                type={e.type}
-                                subtype={e.subtype}
-                                helpText={e.help_text}
-                                errorText={secureGetFromRecord(errors, e.name)}
-                                placeholder={e.placeholder}
-                                maxLength={e.max_length}
-                                dataSource={e.data_source}
-                                optional={e.optional}
-                                options={e.options}
-                                value={value}
-                                onChange={onChange}
-                            />
-                        );
-                    })}
-                </ScrollView>
-                <ExtraKeyboard/>
-            </ExtraKeyboardProvider>
+                    );
+                })}
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }

@@ -201,7 +201,7 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     CALL_HOST_CONTROLS,
 ]);
 
-export const SCREENS_WITH_EXTRA_KEYBOARD = new Set<string>([CHANNEL, THREAD, INTERACTIVE_DIALOG]);
+export const SCREENS_WITH_EXTRA_KEYBOARD = new Set<string>([CHANNEL, THREAD]);
 
 export const NOT_READY = [
     CREATE_TEAM,
