@@ -14,6 +14,7 @@ import TouchableEmoji from '@components/touchable_emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {EMOJIS_PER_PAGE} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
+import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {useIsTablet} from '@hooks/device';
 import {setEmojiCategoryBarIcons, setEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
 import {CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
@@ -146,6 +147,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
     const [loadedAllCustomEmojis, setLoadedAllCustomEmojis] = useState(false);
     const offset = useRef(0);
     const manualScroll = useRef(false);
+    const {enabled, panResponder} = useBottomSheetListsFix();
 
     const sections: EmojiSection[] = useMemo(() => {
         const emojisPerRow = isTablet ? EMOJIS_PER_ROW_TABLET : EMOJIS_PER_ROW;
@@ -339,6 +341,8 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
                 stickySectionHeadersEnabled={true}
                 showsVerticalScrollIndicator={false}
                 testID='emoji_picker.emoji_sections.section_list'
+                scrollEnabled={enabled}
+                {...panResponder.panHandlers}
             />
             {isTablet &&
             <EmojiCategoryBar/>
