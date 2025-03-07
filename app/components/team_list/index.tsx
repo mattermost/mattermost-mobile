@@ -8,6 +8,7 @@ import {FlatList} from 'react-native-gesture-handler'; // Keep the FlatList from
 
 import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
+import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import TeamListItem from './team_list_item';
@@ -63,6 +64,7 @@ export default function TeamList({
     const List = useMemo(() => (type === 'FlatList' ? FlatList : BottomSheetFlatList), [type]);
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const {enabled, panResponder} = useBottomSheetListsFix();
 
     const renderTeam = useCallback(({item: t, index: i}: ListRenderItemInfo<Team|TeamModel>) => {
         let teamListItem = (
@@ -103,7 +105,8 @@ export default function TeamList({
                 testID={`${testID}.flat_list`}
                 onEndReached={onEndReached}
                 ListFooterComponent={footer}
-                scrollEnabled={teams.length > 3}
+                scrollEnabled={teams.length > 3 && enabled}
+                {...panResponder.panHandlers}
             />
         </View>
     );

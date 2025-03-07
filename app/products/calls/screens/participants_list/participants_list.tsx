@@ -16,6 +16,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -80,6 +81,7 @@ export const ParticipantsList = ({
     const hostControlsAvailable = useHostControlsAvailable();
     const {height} = useWindowDimensions();
     const isTablet = useIsTablet();
+    const {enabled, panResponder} = useBottomSheetListsFix();
     const List = useMemo(() => (isTablet ? FlatList : BottomSheetFlatList), [isTablet]);
     const styles = getStyleSheet(theme);
 
@@ -138,6 +140,8 @@ export const ParticipantsList = ({
                     data={sessions}
                     renderItem={renderItem}
                     overScrollMode={'auto'}
+                    scrollEnabled={enabled}
+                    {...panResponder.panHandlers}
                 />
             </>
         );
