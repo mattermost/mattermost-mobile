@@ -21,7 +21,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>2.26.0</string>
 	<key>CFBundleVersion</key>
-	<string>611</string>
+	<string>612</string>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionPointIdentifier</key>
