@@ -25,12 +25,14 @@ const PickerFooter = (props: BottomSheetFooterProps) => {
         }
         expand();
 
-        // @ts-expect-error wait until the bottom sheet is epanded
-        while (animatedSheetState.value !== SHEET_STATE.EXTENDED) {
-            // do nothing
-        }
-
-        selectEmojiCategoryBarSection(index);
+        requestAnimationFrame(() => {
+            // Moving this inside requestAnimationFrame to avoid
+            // the UI from blocking while the sheet is animating
+            while (animatedSheetState.value !== SHEET_STATE.EXTENDED) {
+                // do nothing
+            }
+            selectEmojiCategoryBarSection(index);
+        });
     }, []);
 
     const animatedStyle = useAnimatedStyle(() => {

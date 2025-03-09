@@ -9,6 +9,14 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+export interface EmojiSection {
+    type: 'section';
+    id: string;
+    defaultMessage?: string;
+    icon: string;
+    key: string;
+}
+
 type Props = {
     section: EmojiSection;
 }

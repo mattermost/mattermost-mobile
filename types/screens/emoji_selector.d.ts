@@ -8,15 +8,6 @@ type EmojiAlias = {
     category?: string;
 }
 
-type EmojiSection = {
-    data: EmojiAlias[][];
-    defaultMessage?: string;
-    icon: string;
-    id: string;
-    key: string;
-    renderItem?: ({item}: ListRenderItemInfo<EmojiAlias[]>) => JSX.Element;
-}
-
 type CategoryTranslation = {
     id: string;
     defaultMessage: string;
