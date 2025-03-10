@@ -33,7 +33,7 @@ runs:
       shell: bash
       run: |
         echo "::group::put-last-run-id-into-env"
-        export LAST_RUN_ID=$(cat run-id.txt)
+        echo "LAST_RUN_ID=$(cat run-id.txt)" >> $GITHUB_ENV
         echo "::endgroup::"
 
     - name: ci/download-current-coverage
