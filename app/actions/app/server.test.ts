@@ -13,13 +13,13 @@ import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerByIdentifier, queryAllActiveServers} from '@queries/app/servers';
 import {getConfig} from '@queries/servers/system';
+import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {alertServerAlreadyConnected, alertServerError, loginToServer} from '@utils/server';
 
 import * as Actions from './server';
 
-import type {Query} from '@nozbe/watermelondb';
 import type {ServerDatabase} from '@typings/database/database';
 import type ServersModel from '@typings/database/models/app/servers';
 
@@ -49,19 +49,15 @@ describe('initializeSecurityManager', () => {
     });
 
     it('should return when no servers are found', async () => {
-        const mockQuery = {
-            fetch: jest.fn().mockResolvedValueOnce([]),
-        } as unknown as Query<ServersModel>;
+        const mockQuery = TestHelper.mockQuery<ServersModel>([]);
         jest.mocked(queryAllActiveServers).mockReturnValueOnce(mockQuery);
         await Actions.initializeSecurityManager();
         expect(SecurityManager.init).not.toHaveBeenCalled();
     });
 
     it('should initialize SecurityManager with querying configurations', async () => {
-        const servers = [{url: 'server1'}, {url: 'server2'}];
-        const mockQuery = {
-            fetch: jest.fn().mockResolvedValueOnce(servers),
-        } as unknown as Query<ServersModel>;
+        const servers = [{url: 'server1'}, {url: 'server2'}] as ServersModel[];
+        const mockQuery = TestHelper.mockQuery<ServersModel>(servers);
         jest.mocked(queryAllActiveServers).mockReturnValueOnce(mockQuery);
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementation((serverUrl) => ({database: `db_${serverUrl}`} as unknown as ServerDatabase));
         const config = {
@@ -84,10 +80,8 @@ describe('initializeSecurityManager', () => {
     });
 
     it('should log error when querying configuration fails', async () => {
-        const servers = [{url: 'server1'}];
-        const mockQuery = {
-            fetch: jest.fn().mockResolvedValueOnce(servers),
-        } as unknown as Query<ServersModel>;
+        const servers = [{url: 'server1'}] as ServersModel[];
+        const mockQuery = TestHelper.mockQuery<ServersModel>(servers);
         jest.mocked(queryAllActiveServers).mockReturnValueOnce(mockQuery);
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementation(() => {
             throw new Error('test error');
@@ -102,16 +96,16 @@ describe('initializeSecurityManager', () => {
 // Tests for switchToServer
 describe('switchToServer', () => {
     it('should log error when server is not found', async () => {
-        (getServer as jest.Mock).mockResolvedValueOnce(null);
+        jest.mocked(getServer).mockResolvedValueOnce(undefined);
         await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
         expect(logError).toHaveBeenCalledWith('Switch to Server with url serverUrl not found');
     });
 
     it('should switch to server when lastActiveAt is set', async () => {
-        const server = {url: 'serverUrl', lastActiveAt: 123};
-        (getServer as jest.Mock).mockResolvedValueOnce(server);
-        (SecurityManager.isDeviceJailbroken as jest.Mock).mockResolvedValueOnce(false);
-        (SecurityManager.authenticateWithBiometricsIfNeeded as jest.Mock).mockResolvedValueOnce(true);
+        const server = {url: 'serverUrl', lastActiveAt: 123} as ServersModel;
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(SecurityManager.isDeviceJailbroken).mockResolvedValueOnce(false);
+        jest.mocked(SecurityManager.authenticateWithBiometricsIfNeeded).mockResolvedValueOnce(true);
 
         await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
 
@@ -122,10 +116,10 @@ describe('switchToServer', () => {
     });
 
     it('should not proceed if device is jailbroken', async () => {
-        const server = {url: 'serverUrl', lastActiveAt: 123};
-        (getServer as jest.Mock).mockResolvedValueOnce(server);
-        (SecurityManager.isDeviceJailbroken as jest.Mock).mockResolvedValueOnce(true);
-        (SecurityManager.authenticateWithBiometricsIfNeeded as jest.Mock).mockResolvedValueOnce(true);
+        const server = {url: 'serverUrl', lastActiveAt: 123} as ServersModel;
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(SecurityManager.isDeviceJailbroken).mockResolvedValueOnce(true);
+        jest.mocked(SecurityManager.authenticateWithBiometricsIfNeeded).mockResolvedValueOnce(true);
 
         await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
 
@@ -140,15 +134,15 @@ describe('switchToServer', () => {
 // Tests for switchToServerAndLogin
 describe('switchToServerAndLogin', () => {
     it('should log error when server is not found', async () => {
-        (getServer as jest.Mock).mockResolvedValueOnce(null);
+        jest.mocked(getServer).mockResolvedValueOnce(undefined);
         await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
         expect(logError).toHaveBeenCalledWith('Switch to Server with url serverUrl not found');
     });
 
     it('should alert server error when ping fails', async () => {
-        const server = {url: 'serverUrl'};
-        (getServer as jest.Mock).mockResolvedValueOnce(server);
-        (doPing as jest.Mock).mockResolvedValueOnce({error: 'ping error'});
+        const server = {url: 'serverUrl'} as ServersModel;
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(doPing).mockResolvedValueOnce({error: 'ping error'});
 
         await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
 
@@ -156,10 +150,10 @@ describe('switchToServerAndLogin', () => {
     });
 
     it('should alert server error when fetching config and license fails', async () => {
-        const server = {url: 'serverUrl'};
-        (getServer as jest.Mock).mockResolvedValueOnce(server);
-        (doPing as jest.Mock).mockResolvedValueOnce({});
-        (fetchConfigAndLicense as jest.Mock).mockResolvedValueOnce({error: 'config error'});
+        const server = {url: 'serverUrl'} as ServersModel;
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({error: 'config error'});
 
         await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
 
@@ -167,12 +161,12 @@ describe('switchToServerAndLogin', () => {
     });
 
     it('should alert server already connected when server is already connected', async () => {
-        const server = {url: 'serverUrl'};
-        const config = {DiagnosticId: 'diagId', MobileEnableBiometrics: 'true', SiteName: 'Site'};
-        (getServer as jest.Mock).mockResolvedValueOnce(server);
-        (doPing as jest.Mock).mockResolvedValueOnce({});
-        (fetchConfigAndLicense as jest.Mock).mockResolvedValueOnce({config});
-        (getServerByIdentifier as jest.Mock).mockResolvedValueOnce({lastActiveAt: 123});
+        const server = {url: 'serverUrl'} as ServersModel;
+        const config = {DiagnosticId: 'diagId', MobileEnableBiometrics: 'true', SiteName: 'Site'} as ClientConfig;
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config});
+        jest.mocked(getServerByIdentifier).mockResolvedValueOnce({lastActiveAt: 123} as ServersModel);
 
         await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
 
@@ -180,14 +174,14 @@ describe('switchToServerAndLogin', () => {
     });
 
     it('should authenticate with biometrics and login to server', async () => {
-        const server = {url: 'serverUrl', displayName: 'Server'};
-        const config = {DiagnosticId: 'diagId', MobileEnableBiometrics: 'true', SiteName: 'Site'};
-        const license = {};
-        (getServer as jest.Mock).mockResolvedValueOnce(server);
-        (doPing as jest.Mock).mockResolvedValueOnce({});
-        (fetchConfigAndLicense as jest.Mock).mockResolvedValueOnce({config, license});
-        (getServerByIdentifier as jest.Mock).mockResolvedValueOnce(null);
-        (SecurityManager.authenticateWithBiometrics as jest.Mock).mockResolvedValueOnce(true);
+        const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
+        const config = {DiagnosticId: 'diagId', MobileEnableBiometrics: 'true', SiteName: 'Site'} as ClientConfig;
+        const license = {} as ClientLicense;
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
+        jest.mocked(SecurityManager.authenticateWithBiometrics).mockResolvedValueOnce(true);
 
         await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
 
@@ -196,13 +190,13 @@ describe('switchToServerAndLogin', () => {
     });
 
     it('should not proceed if device is jailbroken', async () => {
-        const server = {url: 'serverUrl'};
-        const config = {DiagnosticId: 'diagId', MobileJailbreakProtection: 'true'};
-        (getServer as jest.Mock).mockResolvedValueOnce(server);
-        (doPing as jest.Mock).mockResolvedValueOnce({});
-        (fetchConfigAndLicense as jest.Mock).mockResolvedValueOnce({config});
-        (getServerByIdentifier as jest.Mock).mockResolvedValueOnce(null);
-        (SecurityManager.isDeviceJailbroken as jest.Mock).mockResolvedValueOnce(true);
+        const server = {url: 'serverUrl'} as ServersModel;
+        const config = {DiagnosticId: 'diagId', MobileJailbreakProtection: 'true'} as ClientConfig;
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config});
+        jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
+        jest.mocked(SecurityManager.isDeviceJailbroken).mockResolvedValueOnce(true);
 
         const callback = jest.fn();
         await Actions.switchToServerAndLogin('serverUrl', theme, intl, callback);
