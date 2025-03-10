@@ -255,7 +255,7 @@ describe('SecurityManager', () => {
             expect(SecurityManager.serverConfig['server-8'].lastAccessed).toBeLessThanOrEqual(after);
         });
 
-        test('should not change active server or lastAccessed if the same server is set', () => {
+        test('should not change active server or lastAccessed if the same server is set', async () => {
             SecurityManager.addServer('server-9');
             SecurityManager.setActiveServer('server-9');
             const lastAccessed = SecurityManager.serverConfig['server-9'].lastAccessed;

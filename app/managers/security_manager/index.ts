@@ -253,6 +253,11 @@ class SecurityManagerSingleton {
      * Switches the active server.
      */
     setActiveServer = (server: string) => {
+        if (this.activeServer === server) {
+            // active server is not changing, so no need to do anything here
+            return;
+        }
+
         if (this.activeServer && this.serverConfig[this.activeServer]) {
             this.serverConfig[this.activeServer].lastAccessed = Date.now();
         }
