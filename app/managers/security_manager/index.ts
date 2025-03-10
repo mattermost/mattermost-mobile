@@ -44,7 +44,7 @@ class SecurityManagerSingleton {
      * Initializes the class with existing servers on app launch.
      * Should be called when the app starts.
      */
-    async init(servers: Record<string, ClientConfig>, activeServer?: string) {
+    async init(servers: Record<string, SecurityClientConfig>, activeServer?: string) {
         if (this.initialized) {
             return;
         }
@@ -165,7 +165,7 @@ class SecurityManagerSingleton {
     /**
      * Add the config for a server.
      */
-    addServer = (server: string, config?: ClientConfig, authenticated = false) => {
+    addServer = (server: string, config?: SecurityClientConfig, authenticated = false) => {
         const mobileConfig: SecurityManagerServerConfig = {
             siteName: config?.SiteName,
             Biometrics: config?.MobileEnableBiometrics === 'true',

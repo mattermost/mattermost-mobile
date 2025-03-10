@@ -201,3 +201,5 @@ interface ClientConfig {
     WebsocketSecurePort: string;
     WebsocketURL: string;
 }
+
+type SecurityClientConfig = Pick<ClientConfig, 'MobileEnableBiometrics' | 'MobileJailbreakProtection' | 'MobilePreventScreenCapture' | 'SiteName'>

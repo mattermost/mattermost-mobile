@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerByIdentifier, queryAllActiveServers} from '@queries/app/servers';
-import {getConfig} from '@queries/servers/system';
+import {getSecurityConfig} from '@queries/servers/system';
 import {logError} from '@utils/log';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {alertServerAlreadyConnected, alertServerError, loginToServer} from '@utils/server';
@@ -23,13 +23,13 @@ export async function initializeSecurityManager() {
         return;
     }
 
-    const promises: Array<Promise<[string, ClientConfig | null]>> = [];
-    const results: Record<string, ClientConfig> = {};
+    const promises: Array<Promise<[string, SecurityClientConfig | null]>> = [];
+    const results: Record<string, SecurityClientConfig> = {};
 
     for (const server of servers) {
         try {
             const {database} = DatabaseManager.getServerDatabaseAndOperator(server.url);
-            const promise = getConfig(database).then((config) => [server.url, config] as [string, ClientConfig | null]);
+            const promise = getSecurityConfig(database).then((config) => [server.url, config] as [string, SecurityClientConfig | null]);
             promises.push(promise);
         } catch (error) {
             logError('initializeSecurityManager', error);
