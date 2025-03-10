@@ -90,7 +90,9 @@ jest.doMock('react-native', () => {
 
     const AppState = {
         ...RNAppState,
-        addEventListener: jest.fn(),
+        addEventListener: jest.fn(() => ({
+            remove: jest.fn(),
+        })),
     };
 
     const InteractionManager = {

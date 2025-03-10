@@ -12,7 +12,7 @@ import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerByIdentifier, queryAllActiveServers} from '@queries/app/servers';
-import {getConfig} from '@queries/servers/system';
+import {getSecurityConfig} from '@queries/servers/system';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 import {canReceiveNotifications} from '@utils/push_proxy';
@@ -61,12 +61,12 @@ describe('initializeSecurityManager', () => {
         jest.mocked(queryAllActiveServers).mockReturnValueOnce(mockQuery);
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementation((serverUrl) => ({database: `db_${serverUrl}`} as unknown as ServerDatabase));
         const config = {
-            AboutLink: '',
+            SiteName: 'Site',
             MobileEnableBiometrics: 'true',
             MobilePreventScreenCapture: 'true',
             MobileJailbreakProtection: 'true',
         } as unknown as ClientConfig;
-        jest.mocked(getConfig).mockImplementation((db) => Promise.resolve({
+        jest.mocked(getSecurityConfig).mockImplementation((db) => Promise.resolve({
             ...config,
             key: `config_${db}`,
         }));
