@@ -342,7 +342,7 @@ const Server = ({
         }
 
         if (data.config.MobileJailbreakProtection === 'true') {
-            const isJailbroken = await SecurityManager.isDeviceJailbroken(ping.url);
+            const isJailbroken = await SecurityManager.isDeviceJailbroken(ping.url, data.config.SiteName);
             if (isJailbroken) {
                 setConnecting(false);
                 return;
