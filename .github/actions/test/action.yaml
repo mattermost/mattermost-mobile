@@ -63,7 +63,11 @@ runs:
       shell: bash
       run: |
         echo "::group::compare-coverage"
-        ./scripts/compare-coverage.sh ./current-coverage ./coverage
+        ./scripts/compare-coverage.sh \
+          ./current-coverage \
+          ./coverage \
+          ${{ github.event.pull_request.number }} \
+          ${{ inputs.github_token }}
         echo "::endgroup::"
 
     - name: ci/upload-coverage
