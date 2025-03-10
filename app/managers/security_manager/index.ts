@@ -404,7 +404,7 @@ class SecurityManagerSingleton {
         const messages = defineMessages({
             not_secured_vendor_ios: {
                 id: 'mobile.managed.not_secured.ios.vendor',
-                defaultMessage: 'his device must be secured with biometrics or passcode to use {vendor}.\n\nGo to Settings > Face ID & Passcode.',
+                defaultMessage: 'This device must be secured with biometrics or passcode to use {vendor}.\n\nGo to Settings > Face ID & Passcode.',
             },
             not_secured_vendor_android: {
                 id: 'mobile.managed.not_secured.android.vendor',
@@ -422,7 +422,7 @@ class SecurityManagerSingleton {
                 id: 'mobile.managed.blocked_by',
                 defaultMessage: 'Blocked by {vendor}',
             },
-        })
+        });
 
         if (Platform.OS === 'android') {
             buttons.push({
