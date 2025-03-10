@@ -15,7 +15,7 @@ COMMENT_BODY="### Coverage Comparison Report
 
 \`\`\`
 +-----------------+------------+------------+-----------+
-| Metric         | Main       | This PR    | Diff      |
+| Metric          | Main       | This PR    | Diff      |
 +-----------------+------------+------------+-----------+"
 
 # Compare each metric
@@ -26,7 +26,7 @@ for metric in lines statements branches functions; do
     diff=$(echo "$pr - $main" | bc)
     
     # Add row to table with exact spacing
-    row=$(printf "| %-15s | %10.2f%% | %10.2f%% | %9.2f%% |" "${metric^}" "$main" "$pr" "$diff")
+    row=$(printf "| %-15s | %9.2f%% | %9.2f%% | %9.2f%% |" "${metric^}" "$main" "$pr" "$diff")
     COMMENT_BODY+=$'\n'"$row"
     
     if (( $(echo "$diff < -1" | bc -l) )); then
