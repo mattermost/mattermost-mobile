@@ -24,21 +24,6 @@ jest.mock('@utils/post', () => ({
     persistentNotificationsConfirmation: jest.fn(),
 }));
 
-// We need to directly mock the fireEvent.press to make it work
-const originalFireEvent = fireEvent.press;
-fireEvent.press = jest.fn((element) => {
-    const result = originalFireEvent(element);
-
-    // If this is the send button, trigger the sendMessageWithAlert mock
-    if (element.props.testID === 'send_draft_button') {
-        setTimeout(() => {
-            sendMessageWithAlert({} as Parameters<typeof sendMessageWithAlert>[0]);
-        }, 0);
-    }
-
-    return result;
-});
-
 jest.mock('@screens/navigation', () => ({
     dismissBottomSheet: jest.fn(),
 }));
@@ -159,7 +144,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         fireEvent.press(sendDraftButton);
 
         // Use a simple timeout instead of waitFor
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await TestHelper.wait(200);
 
         expect(sendMessageWithAlert).toHaveBeenCalled();
 
@@ -206,8 +191,9 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         const sendButton = wrapper.getByTestId('send_draft_button');
         expect(sendButton).toBeTruthy();
 
-        // Manually trigger the button press
-        fireEvent.press(sendButton);
+        await act(async () => {
+            fireEvent.press(sendButton);
+        });
 
         await waitFor(() => {
             expect(sendMessageWithAlert).toHaveBeenCalledWith(expect.objectContaining({
