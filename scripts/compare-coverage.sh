@@ -26,7 +26,8 @@ for metric in lines statements branches functions; do
     diff=$(echo "$pr - $main" | bc)
     
     # Add row to table with exact spacing
-    COMMENT_BODY+=$'\n'"| %-15s | %10.2f%% | %10.2f%% | %9.2f%% |" "${metric^}" "$main" "$pr" "$diff"
+    row=$(printf "| %-15s | %10.2f%% | %10.2f%% | %9.2f%% |" "${metric^}" "$main" "$pr" "$diff")
+    COMMENT_BODY+=$'\n'"$row"
     
     if (( $(echo "$diff < -1" | bc -l) )); then
         echo "::error::${metric^} coverage has decreased by more than 1% ($diff%)"
@@ -34,7 +35,7 @@ for metric in lines statements branches functions; do
     fi
 done
 
-COMMENT_BODY+=$'\n'+"+-----------------+------------+------------+-----------+
+COMMENT_BODY+=$'\n'"+-----------------+------------+------------+-----------+
 \`\`\`"
 
 if [ "$HAS_DECREASE" -eq 1 ]; then
