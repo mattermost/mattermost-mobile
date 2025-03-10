@@ -10,10 +10,9 @@ import com.facebook.react.bridge.BaseActivityEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.mattermost.rnutils.enums.Events
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -58,15 +57,20 @@ open class SaveDataTask(private val reactContext: ReactApplicationContext) {
                                         taskInstance.mPickerPromise?.reject(Events.SAVE_ERROR_EVENT.event, "No data found")
                                         taskInstance.mPickerPromise = null
                                     } else {
-                                        CoroutineScope(Dispatchers.Main).launch {
-                                            val success = taskInstance.save(taskInstance.fileContent!!, uri)
-                                            if (success) {
-                                                taskInstance.mPickerPromise?.resolve(uri.toString())
-                                            } else {
-                                                taskInstance.mPickerPromise?.reject(Events.SAVE_ERROR_EVENT.event, "Save failed")
-                                            }
-                                            taskInstance.mPickerPromise = null
-                                        }
+                                        taskInstance.save(taskInstance.fileContent!!, uri)
+                                            .subscribeOn(Schedulers.io())
+                                            .observeOn(AndroidSchedulers.mainThread())
+                                            .subscribe({ success ->
+                                                if (success) {
+                                                    taskInstance.mPickerPromise?.resolve(uri.toString())
+                                                } else {
+                                                    taskInstance.mPickerPromise?.reject(Events.SAVE_ERROR_EVENT.event, "Save failed")
+                                                }
+                                                taskInstance.mPickerPromise = null
+                                            }, { error ->
+                                                taskInstance.mPickerPromise?.reject(Events.SAVE_ERROR_EVENT.event, error.message)
+                                                taskInstance.mPickerPromise = null
+                                            })
                                     }
                                 }
                             }
@@ -78,8 +82,8 @@ open class SaveDataTask(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    private suspend fun save(fromFile: String, toFile: Uri): Boolean {
-        return withContext(Dispatchers.IO) {
+    private fun save(fromFile: String, toFile: Uri): Single<Boolean> {
+        return Single.create { emitter ->
             try {
                 val pfd = weakContext.get()?.contentResolver?.openFileDescriptor(toFile, "w")
                 val input = File(fromFile)
@@ -95,10 +99,10 @@ open class SaveDataTask(private val reactContext: ReactApplicationContext) {
                     }
                 }
                 pfd?.close()
-                true // Task successful
+                emitter.onSuccess(true)
             } catch (e: Exception) {
                 e.printStackTrace()
-                false // Task failed
+                emitter.onSuccess(false)
             }
         }
     }
