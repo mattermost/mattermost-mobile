@@ -22,13 +22,27 @@ runs:
         npm run check
         echo "::endgroup::"
 
+    - name: ci/get-last-run-id
+      uses: actions/cache/restore@0c907a75c2c80ebcb7f088228285e798b750cf8f
+      continue-on-error: true
+      with:
+        path: run-id.txt
+        key: last-run-id
+
+    - name: ci/put-last-run-id-into-env
+      shell: bash
+      run: |
+        echo "::group::put-last-run-id-into-env"
+        export LAST_RUN_ID=$(cat run-id.txt)
+        echo "::endgroup::"
+
     - name: ci/download-current-coverage
       uses: actions/download-artifact@v4
       with:
         name: test-coverage-result-13765601687
         path: current-coverage/
         github-token: ${{ inputs.github_token }}
-        run-id: 13765601687
+        run-id: ${{ env.LAST_RUN_ID }}
 
     - name: ci/read-coverage
       shell: bash
@@ -50,6 +64,19 @@ runs:
         name: test-coverage-result-${{ inputs.run-id }}
         path: coverage/coverage-summary.json
         overwrite: true
+
+    - name: ci/generate-run-id-file
+      shell: bash
+      run: |
+        echo "::group::generate-last-run-id"
+        echo "${{ inputs.run-id }}" > run-id.txt
+        echo "::endgroup::"
+
+    - name: ci/cache-run-id-file
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f
+      with:
+        path: run-id.txt
+        key: last-run-id
 
     - name: ci/check-i18n
       shell: bash
