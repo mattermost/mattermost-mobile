@@ -10,6 +10,7 @@ import {logout} from '@actions/remote/session';
 import {Screens} from '@constants';
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
+import TestHelper from '@test/test_helper';
 import {toMilliseconds} from '@utils/datetime';
 import {logError} from '@utils/log';
 
@@ -22,18 +23,7 @@ jest.mock('@mattermost/react-native-emm', () => ({
     exitApp: jest.fn(),
     enableBlurScreen: jest.fn(),
 }));
-jest.mock('react-native', () => ({
-    AppState: {
-        addEventListener: jest.fn(),
-    },
-    Alert: {
-        alert: jest.fn(),
-    },
-    Platform: {
-        OS: 'ios',
-        select: jest.fn((dict) => dict.ios || dict.default),
-    },
-}));
+
 jest.mock('expo-device', () => ({
     isRootedExperimentalAsync: jest.fn(),
 }));
@@ -47,8 +37,6 @@ jest.mock('@utils/helpers', () => ({
 jest.mock('@utils/log', () => ({logError: jest.fn()}));
 jest.mock('@init/managed_app', () => ({enabled: true, inAppPinCode: false}));
 jest.mock('@init/credentials', () => ({getServerCredentials: jest.fn().mockResolvedValue({token: 'token'})}));
-
-const wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
 
 describe('SecurityManager', () => {
     beforeEach(() => {
@@ -391,7 +379,7 @@ describe('SecurityManager', () => {
             SecurityManager.onAppStateChange('background' as AppStateStatus);
             SecurityManager.backgroundSince = Date.now() - toMilliseconds({minutes: 5, seconds: 1});
             SecurityManager.onAppStateChange('active' as AppStateStatus);
-            await wait(300);
+            await TestHelper.wait(300);
             expect(authenticateWithBiometrics).toHaveBeenCalledWith('server-8');
         });
     });
@@ -400,7 +388,7 @@ describe('SecurityManager', () => {
         test('should show not secured alert', async () => {
             SecurityManager.addServer('server-9');
             SecurityManager.showNotSecuredAlert('server-9', 'Test Site', getTranslations(DEFAULT_LOCALE));
-            await wait(300);
+            await TestHelper.wait(300);
             expect(Alert.alert).toHaveBeenCalled();
         });
     });
@@ -476,7 +464,7 @@ describe('SecurityManager', () => {
 
             const result = await SecurityManager.isDeviceJailbroken(server, siteName);
             expect(result).toBe(true);
-            await wait(300);
+            await TestHelper.wait(300);
             expect(Alert.alert).toHaveBeenCalledWith(
                 translations[t('mobile.managed.blocked_by')].replace('{vendor}', siteName),
                 translations[t('mobile.managed.jailbreak')].replace('{vendor}', siteName),
