@@ -456,7 +456,7 @@ class SecurityManagerSingleton {
         const buttons: AlertButton[] = [];
         const config = this.serverConfig[server];
         const securedBy = siteName || config?.siteName || 'Mattermost';
-        
+
         if (Platform.OS === 'android') {
             buttons.push({
                 text: translations[messages.androidSettings.id],

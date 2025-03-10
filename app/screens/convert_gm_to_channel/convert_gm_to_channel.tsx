@@ -149,15 +149,15 @@ const ConvertGMToChannel = ({
                 footerTextStyles={styles.text}
             />
         );
+    } else {
+        component = (
+            <ConvertGMToChannelForm
+                commonTeams={commonTeams}
+                profiles={profiles}
+                channelId={channelId}
+            />
+        );
     }
-
-    component = (
-        <ConvertGMToChannelForm
-            commonTeams={commonTeams}
-            profiles={profiles}
-            channelId={channelId}
-        />
-    );
 
     return (
         <View
