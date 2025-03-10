@@ -39,7 +39,7 @@ COMMENT_BODY+=$'\n'"+-----------------+------------+------------+-----------+
 \`\`\`"
 
 if [ "$HAS_DECREASE" -eq 0 ]; then
-    COMMENT_BODY+="\n\n⚠️ **Warning:** One or more coverage metrics have decreased by more than 1%"
+    COMMENT_BODY+=$'\n\n' + "⚠️ **Warning:** One or more coverage metrics have decreased by more than 1%"
 fi
 
 # Post comment to GitHub PR
