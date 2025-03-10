@@ -5,6 +5,9 @@ inputs:
   github_token:
     description: The token to use to download the coverage result
     required: true
+  run-id:
+    description: The run id to use to download the coverage result
+    required: true
 
 runs:
   using: composite
@@ -19,12 +22,13 @@ runs:
         npm run check
         echo "::endgroup::"
 
-    - name: ci/download-current-coverage
-      uses: actions/download-artifact@v4
-      with:
-        # name: test-coverage-result
-        path: current-coverage/coverage-summary.json
-        github-token: ${{ inputs.github_token }}
+    # - name: ci/download-current-coverage
+    #   uses: actions/download-artifact@v4
+    #   with:
+    #     name: test-coverage-result
+    #     path: current-coverage/coverage-summary.json
+    #     github-token: ${{ inputs.github_token }}
+    #     run-id:
 
     - name: ci/read-coverage
       shell: bash
@@ -43,7 +47,7 @@ runs:
     - name: ci/upload-coverage
       uses: actions/upload-artifact@v4
       with:
-        name: test-coverage-result
+        name: test-coverage-result-${{ inputs.run-id }}
         path: coverage/coverage-summary.json
         overwrite: true
 

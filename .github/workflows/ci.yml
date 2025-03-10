@@ -21,3 +21,4 @@ jobs:
         uses: ./.github/actions/test
         with:
           github_token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+          run-id: ${{ github.run_id }}
