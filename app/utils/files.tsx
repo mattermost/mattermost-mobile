@@ -42,8 +42,3 @@ export const getFileInfosIndexes = (orderedFilesForGallery: FileInfo[]) => {
 export const getOrderedGalleryItems = (orderedFileInfos: FileInfo[]) => {
     return orderedFileInfos.map((f) => fileToGalleryItem(f, f.user_id));
 };
-
-export const pathWithPrefix = (prefix: string, path: string) => {
-    const p = path.startsWith(prefix) ? '' : prefix;
-    return `${p}${path}`;
-};

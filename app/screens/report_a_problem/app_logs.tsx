@@ -9,8 +9,7 @@ import Share from 'react-native-share';
 
 import Button from '@components/button';
 import {useTheme} from '@context/theme';
-import {deleteFile} from '@utils/file';
-import {pathWithPrefix} from '@utils/files';
+import {deleteFile, pathWithPrefix} from '@utils/file';
 import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 

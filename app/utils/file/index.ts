@@ -12,7 +12,6 @@ import {Alert, Linking, Platform} from 'react-native';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
-import {pathWithPrefix} from '@utils/files';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
@@ -573,6 +572,11 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
     } catch (error) {
         return {error};
     }
+};
+
+export const pathWithPrefix = (prefix: string, path: string) => {
+    const p = path.startsWith(prefix) ? '' : prefix;
+    return `${p}${path}`;
 };
 
 export const getFileSize = async (path: string) => {

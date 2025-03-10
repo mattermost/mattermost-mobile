@@ -5,7 +5,7 @@ import {defineMessages} from 'react-intl';
 import {Alert} from 'react-native';
 import Share from 'react-native-share';
 
-import {pathWithPrefix} from '@utils/files';
+import {pathWithPrefix} from '@utils/file';
 
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
 
