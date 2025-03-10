@@ -6,7 +6,7 @@ import React from 'react';
 
 import {removeDraft} from '@actions/local/draft';
 import {General} from '@constants';
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {sendMessageWithAlert} from '@utils/post';
@@ -101,7 +101,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         const props = {
             ...baseProps,
             isFromDraftView: true,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
+            draftType: DRAFT_TYPE_DRAFT,
         };
         const wrapper = renderWithEverything(
             <SendHandler {...props}/>, {database},
@@ -114,7 +114,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         const props = {
             ...baseProps,
             isFromDraftView: true,
-            draftType: DRAFT_TYPE_SCHEDULED as DraftType,
+            draftType: DRAFT_TYPE_SCHEDULED,
         };
         const wrapper = renderWithEverything(
             <SendHandler {...props}/>, {database},
@@ -139,7 +139,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         const props = {
             ...baseProps,
             isFromDraftView: true,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
+            draftType: DRAFT_TYPE_DRAFT,
             channelDisplayName: 'Test Channel',
             draftReceiverUserName: 'test-user',
             postId: 'test-post-id',
@@ -191,7 +191,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         const props = {
             ...baseProps,
             isFromDraftView: true,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
+            draftType: DRAFT_TYPE_DRAFT,
             channelName: 'test-channel',
             value: 'test message',
             postPriority: {
@@ -230,7 +230,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         const props = {
             ...baseProps,
             isFromDraftView: true,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
+            draftType: DRAFT_TYPE_DRAFT,
             value: 'test message',
         };
 

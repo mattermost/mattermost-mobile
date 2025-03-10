@@ -45,7 +45,7 @@ describe('Send Draft', () => {
             persistentNotificationInterval: 0,
             persistentNotificationMaxRecipients: 0,
             draftReceiverUserName: undefined,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
+            draftType: DRAFT_TYPE_DRAFT,
         };
         const wrapper = renderWithIntlAndTheme(
             <SendDraft
@@ -103,7 +103,7 @@ describe('Send Draft', () => {
             persistentNotificationInterval: 0,
             persistentNotificationMaxRecipients: 0,
             draftReceiverUserName: undefined,
-            draftType: DRAFT_TYPE_SCHEDULED as DraftType,
+            draftType: DRAFT_TYPE_SCHEDULED,
         };
         const wrapper = renderWithIntlAndTheme(
             <SendDraft

@@ -5,7 +5,7 @@ import {fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {Screens} from '@constants';
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {deleteDraftConfirmation} from '@utils/draft';
@@ -51,8 +51,7 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
     it('renders draft delete option correctly', () => {
         const props = {
             ...baseProps,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
-            websocketState: 'connected' as WebsocketConnectedState,
+            draftType: DRAFT_TYPE_DRAFT,
         };
 
         renderWithIntl(<DeleteDraft {...props}/>);
@@ -64,9 +63,8 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
     it('renders scheduled post delete option correctly', () => {
         const props = {
             ...baseProps,
-            draftType: DRAFT_TYPE_SCHEDULED as DraftType,
+            draftType: DRAFT_TYPE_SCHEDULED,
             postId: 'post-id',
-            websocketState: 'connected' as WebsocketConnectedState,
         };
 
         renderWithIntl(<DeleteDraft {...props}/>);
@@ -75,11 +73,10 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
         expect(screen.getByTestId('delete_draft')).toBeTruthy();
     });
 
-    it('handles draft deletion correctly when connected', async () => {
+    it('handles draft deletion correctly', async () => {
         const props = {
             ...baseProps,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
-            websocketState: 'connected' as WebsocketConnectedState,
+            draftType: DRAFT_TYPE_DRAFT,
         };
 
         renderWithIntl(<DeleteDraft {...props}/>);
@@ -96,29 +93,11 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
         expect(deleteScheduledPostConfirmation).not.toHaveBeenCalled();
     });
 
-    it('handles draft deletion when not connected', async () => {
+    it('handles scheduled post deletion correctly', async () => {
         const props = {
             ...baseProps,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
-            websocketState: 'not_connected' as WebsocketConnectedState,
-        };
-
-        renderWithIntl(<DeleteDraft {...props}/>);
-
-        const deleteButton = screen.getByTestId('delete_draft');
-        fireEvent.press(deleteButton);
-
-        expect(dismissBottomSheet).toHaveBeenCalledWith(Screens.DRAFT_SCHEDULED_POST_OPTIONS);
-        expect(deleteDraftConfirmation).not.toHaveBeenCalled();
-        expect(deleteScheduledPostConfirmation).not.toHaveBeenCalled();
-    });
-
-    it('handles scheduled post deletion correctly when connected', async () => {
-        const props = {
-            ...baseProps,
-            draftType: DRAFT_TYPE_SCHEDULED as DraftType,
+            draftType: DRAFT_TYPE_SCHEDULED,
             postId: 'post-id',
-            websocketState: 'connected' as WebsocketConnectedState,
         };
 
         renderWithIntl(<DeleteDraft {...props}/>);
@@ -130,24 +109,6 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
         await waitFor(() => expect(deleteScheduledPostConfirmation).toHaveBeenCalledWith(expect.objectContaining({
             scheduledPostId: 'post-id',
         })));
-        expect(deleteDraftConfirmation).not.toHaveBeenCalled();
-    });
-
-    it('handles scheduled post deletion when not connected', async () => {
-        const props = {
-            ...baseProps,
-            draftType: DRAFT_TYPE_SCHEDULED as DraftType,
-            postId: 'post-id',
-            websocketState: 'not_connected' as WebsocketConnectedState,
-        };
-
-        renderWithIntl(<DeleteDraft {...props}/>);
-
-        const deleteButton = screen.getByTestId('delete_draft');
-        fireEvent.press(deleteButton);
-
-        expect(dismissBottomSheet).toHaveBeenCalledWith(Screens.DRAFT_SCHEDULED_POST_OPTIONS);
-        expect(deleteScheduledPostConfirmation).not.toHaveBeenCalled();
         expect(deleteDraftConfirmation).not.toHaveBeenCalled();
     });
 });

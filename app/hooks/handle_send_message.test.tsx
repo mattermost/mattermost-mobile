@@ -12,9 +12,11 @@ import {createPost} from '@actions/remote/post';
 import {createScheduledPost} from '@actions/remote/scheduled_post';
 import {handleCallsSlashCommand} from '@calls/actions';
 import {Events, Screens} from '@constants';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
+import {showSnackBar} from '@utils/snack_bar';
 
 import {useHandleSendMessage} from './handle_send_message';
 
@@ -31,6 +33,9 @@ jest.mock('@actions/remote/user');
 jest.mock('@calls/actions');
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn().mockReturnValue('https://server.com'),
+}));
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
 }));
 
 describe('useHandleSendMessage', () => {
@@ -69,6 +74,9 @@ describe('useHandleSendMessage', () => {
 
     it('should handle basic message send', async () => {
         const {result} = renderHook(() => useHandleSendMessage(defaultProps), {wrapper});
+        jest.mocked(createPost).mockResolvedValueOnce({
+            data: true,
+        });
 
         expect(result.current.canSend).toBe(true);
 
@@ -133,6 +141,10 @@ describe('useHandleSendMessage', () => {
             ...defaultProps,
             rootId: 'root-post-id',
         };
+
+        jest.mocked(createPost).mockResolvedValueOnce({
+            data: true,
+        });
 
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
@@ -460,6 +472,9 @@ describe('useHandleSendMessage', () => {
                 persistent_notifications: true,
             },
         };
+        jest.mocked(createPost).mockResolvedValueOnce({
+            data: true,
+        });
 
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
@@ -492,6 +507,9 @@ describe('useHandleSendMessage', () => {
                 requested_ack: true,
             },
         };
+        jest.mocked(createPost).mockResolvedValueOnce({
+            data: true,
+        });
 
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
@@ -570,6 +588,9 @@ describe('useHandleSendMessage', () => {
                 enableConfirmNotificationsToChannel: false,
                 membersCount: 25,
             };
+            jest.mocked(createPost).mockResolvedValueOnce({
+                data: true,
+            });
 
             const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
@@ -588,6 +609,9 @@ describe('useHandleSendMessage', () => {
                 enableConfirmNotificationsToChannel: true,
                 membersCount: 5,
             };
+            jest.mocked(createPost).mockResolvedValueOnce({
+                data: true,
+            });
 
             const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
@@ -601,6 +625,12 @@ describe('useHandleSendMessage', () => {
     });
 
     describe('command handling', () => {
+        beforeEach(() => {
+            jest.mocked(createScheduledPost).mockResolvedValueOnce({
+                data: true,
+            });
+        });
+
         it('should bypass command handling for scheduled messages', async () => {
             const props = {
                 ...defaultProps,
@@ -629,10 +659,6 @@ describe('useHandleSendMessage', () => {
                 error: new Error('Failed to create post'),
             });
 
-            jest.mock('@utils/snack_bar', () => ({
-                showSnackBar: jest.fn(),
-            }));
-
             const props = {
                 ...defaultProps,
                 value: 'test message',
@@ -645,8 +671,14 @@ describe('useHandleSendMessage', () => {
                 expect(response?.error).toBeDefined();
             });
 
-            expect(defaultProps.clearDraft).toHaveBeenCalled();
-            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_LIST_SCROLL_TO_BOTTOM, Screens.CHANNEL);
+            expect(showSnackBar).toHaveBeenCalledWith({
+                barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
+                customMessage: 'Failed to create post',
+                keepOpen: true,
+                type: 'error',
+            });
+            expect(defaultProps.clearDraft).not.toHaveBeenCalled();
+            expect(DeviceEventEmitter.emit).not.toHaveBeenCalled();
         });
     });
 });
