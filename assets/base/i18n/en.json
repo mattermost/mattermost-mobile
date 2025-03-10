@@ -1084,7 +1084,6 @@
   "server.invalid.pinning.title": "Invalid pinned SSL certificate",
   "server.logout.alert_description": "All associated data will be removed",
   "server.logout.alert_title": "Are you sure you want to log out of {displayName}?",
-  "server.not_connected": "Cannot reach the server",
   "server.remove.alert_description": "This will remove it from your list of servers. All associated data will be removed",
   "server.remove.alert_title": "Are you sure you want to remove {displayName}?",
   "server.tutorial.swipe": "Swipe left on a server to see more actions",
