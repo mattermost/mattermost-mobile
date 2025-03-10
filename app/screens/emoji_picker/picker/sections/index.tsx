@@ -37,6 +37,8 @@ const keyExtractor = (item: SectionListItem) => {
     return (item.type === 'section' ? `${item.key}` : `${item.sectionIndex}-${item.index}-${item.category}`);
 };
 
+const getItemType = (item: SectionListItem) => item.type;
+
 const styles = StyleSheet.create({
     container: {flex: 1, paddingBottom: 20},
     containerStyle: {paddingBottom: 50},
@@ -62,7 +64,7 @@ CategoryNames.forEach((name: string) => {
 });
 
 export default function EmojiSectionList({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress, recentEmojis}: Props) {
-    const [customEmojiPage, setCustomEmojiPage] = useState(Math.ceil(customEmojis.length / EMOJIS_PER_PAGE));
+    const [customEmojiPage, setCustomEmojiPage] = useState(() => Math.ceil(customEmojis.length / EMOJIS_PER_PAGE));
     const [fetchingCustomEmojis, setFetchingCustomEmojis] = useState(false);
     const [loadedAllCustomEmojis, setLoadedAllCustomEmojis] = useState(false);
     const scrollingToIndex = useRef(false);
@@ -249,7 +251,7 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
                 contentContainerStyle={styles.containerStyle}
                 data={sections}
                 estimatedItemSize={EMOJI_SIZE + EMOJI_ROW_MARGIN}
-                getItemType={(item) => item.type}
+                getItemType={getItemType}
                 keyExtractor={keyExtractor}
                 ListFooterComponent={renderFooter}
                 onEndReachedThreshold={0.5}
