@@ -8,19 +8,40 @@ if [ ! -f "$CURRENT_COVERAGE_FILE" ] || [ ! -f "$RECENT_COVERAGE_FILE" ]; then
     exit 0
 fi
 
-# Extract total coverage percentages
-CURRENT_COVERAGE=$(jq '.total.lines.pct' "$CURRENT_COVERAGE_FILE")
-RECENT_COVERAGE=$(jq '.total.lines.pct' "$RECENT_COVERAGE_FILE")
+# Function to print a horizontal line
+print_line() {
+    printf "+-----------------+------------+------------+-----------+\n"
+}
 
-# Calculate difference
-DIFFERENCE=$(echo "$CURRENT_COVERAGE - $RECENT_COVERAGE" | bc)
+# Function to print table row
+print_row() {
+    printf "| %-15s | %10.2f%% | %10.2f%% | %9.2f%% |\n" "$1" "$2" "$3" "$4"
+}
 
-echo "Current coverage: $CURRENT_COVERAGE%"
-echo "Previous coverage: $RECENT_COVERAGE%"
-echo "Difference: $DIFFERENCE%"
+# Track if any metric has decreased
+HAS_DECREASE=0
 
-# Check if coverage decreased by more than 1%
-if (( $(echo "$DIFFERENCE < -1" | bc -l) )); then
-    echo "::error::Test coverage has decreased by more than 1% (${DIFFERENCE}%)"
-    exit 1
-fi 
+echo "Coverage Comparison Report"
+echo "========================="
+print_line
+printf "| %-15s | %-10s | %-10s | %-9s |\n" "Metric" "Current" "Previous" "Diff"
+print_line
+
+# Compare each metric
+for metric in lines statements branches functions; do
+    current=$(jq ".total.${metric}.pct" "$CURRENT_COVERAGE_FILE")
+    recent=$(jq ".total.${metric}.pct" "$RECENT_COVERAGE_FILE")
+    diff=$(echo "$current - $recent" | bc)
+    
+    print_row "${metric^}" "$current" "$recent" "$diff"
+    
+    # Check if coverage decreased by more than 1%
+    if (( $(echo "$diff < -1" | bc -l) )); then
+        echo "::error::${metric^} coverage has decreased by more than 1% ($diff%)"
+        HAS_DECREASE=1
+    fi
+done
+
+print_line
+
+exit $HAS_DECREASE 
