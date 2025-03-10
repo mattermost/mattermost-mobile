@@ -10,14 +10,13 @@ if [ ! -f "$MAIN_COVERAGE_FILE" ] || [ ! -f "$RECENT_COVERAGE_FILE" ]; then
     exit 0
 fi
 
-# Create the comment body with proper newlines
+# Create the comment body with proper newlines and no extra spaces
 COMMENT_BODY="### Coverage Comparison Report
 
 \`\`\`
 +-----------------+------------+------------+-----------+
 | Metric         | Main       | This PR    | Diff      |
-+-----------------+------------+------------+-----------+
-"
++-----------------+------------+------------+-----------+"
 
 # Compare each metric
 HAS_DECREASE=0
@@ -26,9 +25,8 @@ for metric in lines statements branches functions; do
     pr=$(jq ".total.${metric}.pct" "$RECENT_COVERAGE_FILE")
     diff=$(echo "$pr - $main" | bc)
     
-    # Add row to table with proper formatting
-    printf -v row "| %-15s | %10.2f%% | %10.2f%% | %9.2f%% |\n" "${metric^}" "$main" "$pr" "$diff"
-    COMMENT_BODY+="$row"
+    # Add row to table with exact spacing
+    COMMENT_BODY+=$'\n'"| %-15s | %10.2f%% | %10.2f%% | %9.2f%% |" "${metric^}" "$main" "$pr" "$diff"
     
     if (( $(echo "$diff < -1" | bc -l) )); then
         echo "::error::${metric^} coverage has decreased by more than 1% ($diff%)"
@@ -36,7 +34,7 @@ for metric in lines statements branches functions; do
     fi
 done
 
-COMMENT_BODY+="+-----------------+------------+------------+-----------+
+COMMENT_BODY+=$'\n'+"+-----------------+------------+------------+-----------+
 \`\`\`"
 
 if [ "$HAS_DECREASE" -eq 1 ]; then
