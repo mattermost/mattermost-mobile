@@ -30,12 +30,12 @@ runs:
     #     github-token: ${{ inputs.github_token }}
     #     run-id:
 
-    - name: ci/read-coverage
-      shell: bash
-      run: |
-        echo "::group::read-coverage"
-        ./scripts/read-coverage.sh ./current-coverage/coverage-summary.json
-        echo "::endgroup::"
+    # - name: ci/read-coverage
+    #   shell: bash
+    #   run: |
+    #     echo "::group::read-coverage"
+    #     ./scripts/read-coverage.sh ./current-coverage/coverage-summary.json
+    #     echo "::endgroup::"
 
     - name: ci/run-tests
       shell: bash
