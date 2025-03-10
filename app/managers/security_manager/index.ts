@@ -9,7 +9,7 @@ import {Alert, type AlertButton, AppState, type AppStateStatus, Platform} from '
 import {switchToServer} from '@actions/app/server';
 import {logout} from '@actions/remote/session';
 import {Preferences} from '@constants';
-import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import ManagedApp from '@init/managed_app';
 import {toMilliseconds} from '@utils/datetime';
@@ -28,6 +28,61 @@ type SecurityManagerServerConfig = {
 };
 
 type SecurityManagerServersCollection = Record<string, SecurityManagerServerConfig>;
+
+const messages = defineMessages({
+    not_secured_vendor_ios: {
+        id: 'mobile.managed.not_secured.ios.vendor',
+        defaultMessage: 'This device must be secured with biometrics or passcode to use {vendor}.\n\nGo to Settings > Face ID & Passcode.',
+    },
+    not_secured_vendor_android: {
+        id: 'mobile.managed.not_secured.android.vendor',
+        defaultMessage: 'This device must be secured with a screen lock to use {vendor}.',
+    },
+    not_secured_ios: {
+        id: 'mobile.managed.not_secured.ios',
+        defaultMessage: 'This device must be secured with biometrics or passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode.',
+    },
+    not_secured_android: {
+        id: 'mobile.managed.not_secured.android',
+        defaultMessage: 'This device must be secured with a screen lock to use Mattermost.',
+    },
+    blocked_by: {
+        id: 'mobile.managed.blocked_by',
+        defaultMessage: 'Blocked by {vendor}',
+    },
+    androidSettings: {
+        id: 'mobile.managed.settings',
+        defaultMessage: 'Go to settings',
+    },
+    securedBy: {
+        id: 'mobile.managed.secured_by',
+        defaultMessage: 'Secured by {vendor}',
+    },
+    logout: {
+        id: 'mobile.managed.logout',
+        defaultMessage: 'Logout',
+    },
+    ok: {
+        id: 'mobile.managed.OK',
+        defaultMessage: 'OK',
+    },
+    switchServer: {
+        id: 'mobile.managed.switch_server',
+        defaultMessage: 'Switch server',
+    },
+    exit: {
+        id: 'mobile.managed.exit',
+        defaultMessage: 'Exit',
+    },
+    jailbreak: {
+        id: 'mobile.managed.jailbreak',
+        defaultMessage: 'Jailbroken or rooted devices are not trusted by {vendor}.',
+    },
+    biometric_failed: {
+        id: 'mobile.managed.biometric_failed',
+        defaultMessage: 'Biometric or Passcode authentication failed.',
+    },
+});
 
 class SecurityManagerSingleton {
     activeServer?: string;
@@ -284,7 +339,7 @@ class SecurityManagerSingleton {
         const shouldBlurOnAuthenticate = server === this.activeServer && this.isScreenCapturePrevented(server);
         try {
             const auth = await Emm.authenticate({
-                reason: translations[t('mobile.managed.secured_by')].replace('{vendor}', siteName || config?.siteName || 'Mattermost'),
+                reason: translations[messages.securedBy.id].replace('{vendor}', siteName || config?.siteName || 'Mattermost'),
                 fallback: true,
                 supressEnterPassword: true,
                 blurOnAuthenticate: shouldBlurOnAuthenticate,
@@ -337,7 +392,7 @@ class SecurityManagerSingleton {
         const hasSessionToServer = await getServerCredentials(server);
         if (server && hasSessionToServer) {
             buttons.push({
-                text: translations[t('mobile.managed.logout')],
+                text: translations[messages.logout.id],
                 style: 'destructive',
                 onPress: async () => {
                     await logout(server, undefined);
@@ -350,7 +405,7 @@ class SecurityManagerSingleton {
         if (otherServers.length > 0) {
             if (otherServers.length === 1 && otherServers[0] === this.activeServer) {
                 buttons.push({
-                    text: translations[t('mobile.managed.OK')],
+                    text: translations[messages.ok.id],
                     style: 'cancel',
                     onPress: () => {
                         callback?.(true);
@@ -358,7 +413,7 @@ class SecurityManagerSingleton {
                 });
             } else {
                 buttons.push({
-                    text: translations[t('mobile.managed.switch_server')],
+                    text: translations[messages.switchServer.id],
                     style: 'cancel',
                     onPress: () => {
                         this.goToPreviousServer(otherServers);
@@ -370,7 +425,7 @@ class SecurityManagerSingleton {
 
         if (buttons.length === 0) {
             buttons.push({
-                text: translations[t('mobile.managed.exit')],
+                text: translations[messages.exit.id],
                 style: 'destructive',
                 onPress: () => {
                     Emm.exitApp();
@@ -386,8 +441,8 @@ class SecurityManagerSingleton {
         const securedBy = siteName || this.getServerConfig(server)?.siteName || 'Mattermost';
 
         Alert.alert(
-            translations[t('mobile.managed.blocked_by')].replace('{vendor}', securedBy),
-            translations[t('mobile.managed.jailbreak')].
+            translations[messages.blocked_by.id].replace('{vendor}', securedBy),
+            translations[messages.jailbreak.id].
                 replace('{vendor}', securedBy),
             buttons,
             {cancelable: false},
@@ -401,32 +456,10 @@ class SecurityManagerSingleton {
         const buttons: AlertButton[] = [];
         const config = this.serverConfig[server];
         const securedBy = siteName || config?.siteName || 'Mattermost';
-        const messages = defineMessages({
-            not_secured_vendor_ios: {
-                id: 'mobile.managed.not_secured.ios.vendor',
-                defaultMessage: 'This device must be secured with biometrics or passcode to use {vendor}.\n\nGo to Settings > Face ID & Passcode.',
-            },
-            not_secured_vendor_android: {
-                id: 'mobile.managed.not_secured.android.vendor',
-                defaultMessage: 'This device must be secured with a screen lock to use {vendor}.',
-            },
-            not_secured_ios: {
-                id: 'mobile.managed.not_secured.ios',
-                defaultMessage: 'This device must be secured with biometrics or passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode.',
-            },
-            not_secured_android: {
-                id: 'mobile.managed.not_secured.android',
-                defaultMessage: 'This device must be secured with a screen lock to use Mattermost.',
-            },
-            blocked_by: {
-                id: 'mobile.managed.blocked_by',
-                defaultMessage: 'Blocked by {vendor}',
-            },
-        });
-
+        
         if (Platform.OS === 'android') {
             buttons.push({
-                text: translations[t('mobile.managed.settings')],
+                text: translations[messages.androidSettings.id],
                 onPress: () => {
                     Emm.openSecuritySettings();
                 },
@@ -465,8 +498,8 @@ class SecurityManagerSingleton {
         const securedBy = siteName || this.getServerConfig(server)?.siteName || 'Mattermost';
 
         Alert.alert(
-            translations[t('mobile.managed.blocked_by')].replace('{vendor}', securedBy),
-            translations[t('mobile.managed.biometric_failed')],
+            translations[messages.blocked_by.id].replace('{vendor}', securedBy),
+            translations[messages.biometric_failed.id],
             buttons,
             {cancelable: false},
         );
