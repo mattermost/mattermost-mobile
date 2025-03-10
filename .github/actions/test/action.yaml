@@ -58,6 +58,14 @@ runs:
         npm run test:coverage
         echo "::endgroup::"
 
+    # compare coverage between current-coverage and recent coverage
+    - name: ci/compare-coverage
+      shell: bash
+      run: |
+        echo "::group::compare-coverage"
+        ./scripts/compare-coverage.sh ./current-coverage ./coverage
+        echo "::endgroup::"
+
     - name: ci/upload-coverage
       uses: actions/upload-artifact@v4
       with:
