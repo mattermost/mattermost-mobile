@@ -26,7 +26,7 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: test-coverage-result-13765601687
-        path: current-coverage/coverage-summary.json
+        path: current-coverage/
         github-token: ${{ inputs.github_token }}
         run-id: 13765601687
 
