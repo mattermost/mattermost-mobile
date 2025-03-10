@@ -20,12 +20,6 @@ jest.mock('@screens/navigation', () => {
     };
 });
 
-jest.mock('@utils/snack_bar', () => {
-    return {
-        showSnackBar: jest.fn(),
-    };
-});
-
 // Mock CompassIcon as a function component
 jest.mock('@components/compass_icon', () => {
     const MockCompassIcon = () => null;

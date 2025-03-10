@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {useIntl} from 'react-intl';
 
@@ -13,11 +12,10 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
-import {useServerUrl, withServerUrl} from '@context/server';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
-import WebsocketManager from '@managers/websocket_manager';
 import {DRAFT_TYPE_DRAFT, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {getErrorMessage} from '@utils/errors';
@@ -51,7 +49,6 @@ type Props = {
     persistentNotificationMaxRecipients: number;
     draftReceiverUserName?: string;
     postId?: string;
-    websocketState: WebsocketConnectedState;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -71,7 +68,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const SendDraft: React.FC<Props> = ({
+const SendDraft: React.FC<Props> = ({
     channelId,
     channelName,
     channelDisplayName,
@@ -93,7 +90,6 @@ export const SendDraft: React.FC<Props> = ({
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
     draftReceiverUserName,
-    websocketState,
 }) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -143,15 +139,6 @@ export const SendDraft: React.FC<Props> = ({
 
     const draftSendHandler = async () => {
         await dismissBottomSheet(bottomSheetId);
-        if (websocketState !== 'connected') {
-            showSnackBar({
-                barType: SNACK_BAR_TYPE.CONNECTION_ERROR,
-                customMessage: intl.formatMessage({id: 'server.not_connected', defaultMessage: 'Cannot reach the server'}),
-                type: 'error',
-                keepOpen: true,
-            });
-            return;
-        }
         if (persistentNotificationsEnabled) {
             persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, handleSendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
         } else {
@@ -209,8 +196,4 @@ export const SendDraft: React.FC<Props> = ({
     );
 };
 
-const enhanced = withObservables(['serverUrl'], ({serverUrl}: {serverUrl: string}) => ({
-    websocketState: WebsocketManager.observeWebsocketState(serverUrl),
-}));
-
-export default withServerUrl(enhanced(SendDraft));
+export default SendDraft;

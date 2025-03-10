@@ -19,6 +19,7 @@ export const SNACK_BAR_TYPE = keyMirror({
     UNFAVORITE_CHANNEL: null,
     UNMUTE_CHANNEL: null,
     UNFOLLOW_THREAD: null,
+    CREATE_POST_ERROR: null,
     CONNECTION_ERROR: null,
     SCHEDULED_POST_CREATION_ERROR: null,
     RESCHEDULED_POST: null,
