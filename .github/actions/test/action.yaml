@@ -36,11 +36,11 @@ runs:
         echo "LAST_RUN_ID=$(cat run-id.txt)" >> $GITHUB_ENV
         echo "::endgroup::"
 
-    - name: ci/download-current-coverage
+    - name: ci/download-main-coverage
       uses: actions/download-artifact@v4
       with:
         name: test-coverage-result-${{ env.LAST_RUN_ID }}
-        path: current-coverage/
+        path: main-coverage/
         github-token: ${{ inputs.github_token }}
         run-id: ${{ env.LAST_RUN_ID }}
 
@@ -48,7 +48,7 @@ runs:
       shell: bash
       run: |
         echo "::group::read-coverage"
-        ./scripts/read-coverage.sh ./current-coverage/coverage-summary.json
+        ./scripts/read-coverage.sh ./main-coverage/coverage-summary.json
         echo "::endgroup::"
 
     - name: ci/run-tests
@@ -58,13 +58,12 @@ runs:
         npm run test:coverage
         echo "::endgroup::"
 
-    # compare coverage between current-coverage and recent coverage
     - name: ci/compare-coverage
       shell: bash
       run: |
         echo "::group::compare-coverage"
         ./scripts/compare-coverage.sh \
-          ./current-coverage \
+          ./main-coverage \
           ./coverage \
           ${{ github.event.pull_request.number }} \
           ${{ inputs.github_token }}

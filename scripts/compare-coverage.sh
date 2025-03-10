@@ -1,11 +1,11 @@
 #!/bin/bash
 
-CURRENT_COVERAGE_FILE="$1/coverage-summary.json"
+MAIN_COVERAGE_FILE="$1/coverage-summary.json"
 RECENT_COVERAGE_FILE="$2/coverage-summary.json"
 PR_NUMBER="$3"
 GITHUB_TOKEN="$4"
 
-if [ ! -f "$CURRENT_COVERAGE_FILE" ] || [ ! -f "$RECENT_COVERAGE_FILE" ]; then
+if [ ! -f "$MAIN_COVERAGE_FILE" ] || [ ! -f "$RECENT_COVERAGE_FILE" ]; then
     echo "One or both coverage files not found"
     exit 0
 fi
@@ -15,19 +15,19 @@ COMMENT_BODY="### Coverage Comparison Report
 
 \`\`\`
 +-----------------+------------+------------+-----------+
-| Metric         | Current    | Previous   | Diff      |
+| Metric         | Main       | This PR    | Diff      |
 +-----------------+------------+------------+-----------+
 "
 
 # Compare each metric
 HAS_DECREASE=0
 for metric in lines statements branches functions; do
-    current=$(jq ".total.${metric}.pct" "$CURRENT_COVERAGE_FILE")
-    recent=$(jq ".total.${metric}.pct" "$RECENT_COVERAGE_FILE")
-    diff=$(echo "$current - $recent" | bc)
+    main=$(jq ".total.${metric}.pct" "$MAIN_COVERAGE_FILE")
+    pr=$(jq ".total.${metric}.pct" "$RECENT_COVERAGE_FILE")
+    diff=$(echo "$pr - $main" | bc)
     
     # Add row to table with proper formatting
-    printf -v row "| %-15s | %10.2f%% | %10.2f%% | %9.2f%% |\n" "${metric^}" "$current" "$recent" "$diff"
+    printf -v row "| %-15s | %10.2f%% | %10.2f%% | %9.2f%% |\n" "${metric^}" "$main" "$pr" "$diff"
     COMMENT_BODY+="$row"
     
     if (( $(echo "$diff < -1" | bc -l) )); then
