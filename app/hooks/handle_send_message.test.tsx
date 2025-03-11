@@ -70,13 +70,13 @@ describe('useHandleSendMessage', () => {
         jest.mocked(getChannelTimezones).mockResolvedValue({channelTimezones: []});
         jest.mocked(useServerUrl).mockReturnValue('https://server.com');
         jest.spyOn(DeviceEventEmitter, 'emit');
+        jest.mocked(createPost).mockResolvedValue({
+            data: true,
+        });
     });
 
     it('should handle basic message send', async () => {
         const {result} = renderHook(() => useHandleSendMessage(defaultProps), {wrapper});
-        jest.mocked(createPost).mockResolvedValueOnce({
-            data: true,
-        });
 
         expect(result.current.canSend).toBe(true);
 
@@ -141,10 +141,6 @@ describe('useHandleSendMessage', () => {
             ...defaultProps,
             rootId: 'root-post-id',
         };
-
-        jest.mocked(createPost).mockResolvedValueOnce({
-            data: true,
-        });
 
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
@@ -472,9 +468,6 @@ describe('useHandleSendMessage', () => {
                 persistent_notifications: true,
             },
         };
-        jest.mocked(createPost).mockResolvedValueOnce({
-            data: true,
-        });
 
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
@@ -507,9 +500,6 @@ describe('useHandleSendMessage', () => {
                 requested_ack: true,
             },
         };
-        jest.mocked(createPost).mockResolvedValueOnce({
-            data: true,
-        });
 
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
@@ -588,9 +578,6 @@ describe('useHandleSendMessage', () => {
                 enableConfirmNotificationsToChannel: false,
                 membersCount: 25,
             };
-            jest.mocked(createPost).mockResolvedValueOnce({
-                data: true,
-            });
 
             const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
@@ -609,9 +596,6 @@ describe('useHandleSendMessage', () => {
                 enableConfirmNotificationsToChannel: true,
                 membersCount: 5,
             };
-            jest.mocked(createPost).mockResolvedValueOnce({
-                data: true,
-            });
 
             const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 

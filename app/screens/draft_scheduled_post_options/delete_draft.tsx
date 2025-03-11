@@ -41,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const DeleteDraft: React.FC<Props> = ({
+const DeleteDraft: React.FC<Props> = ({
     bottomSheetId,
     channelId,
     rootId,

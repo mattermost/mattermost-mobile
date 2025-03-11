@@ -11,7 +11,7 @@ import {renderWithIntl} from '@test/intl-test-helper';
 import {deleteDraftConfirmation} from '@utils/draft';
 import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
 
-import {DeleteDraft} from './delete_draft';
+import DeleteDraft from './delete_draft';
 
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(() => 'http://baseUrl.com'),
@@ -29,10 +29,6 @@ jest.mock('@screens/navigation', () => ({
     dismissBottomSheet: jest.fn(),
 }));
 
-jest.mock('@utils/snack_bar', () => ({
-    showSnackBar: jest.fn(),
-}));
-
 describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
     const baseProps = {
         bottomSheetId: Screens.DRAFT_SCHEDULED_POST_OPTIONS,
@@ -41,10 +37,6 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
     };
 
     beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    afterEach(() => {
         jest.clearAllMocks();
     });
 
