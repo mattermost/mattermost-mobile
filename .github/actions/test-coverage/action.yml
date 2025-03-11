@@ -12,6 +12,9 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: ci/prepare-node-deps
+      uses: ./.github/actions/prepare-node-deps
+
     - name: ci/get-last-run-id
       uses: actions/cache/restore@0c907a75c2c80ebcb7f088228285e798b750cf8f
       continue-on-error: true
