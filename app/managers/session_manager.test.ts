@@ -15,7 +15,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
 
-import {SessionManager as SessionManagerClass} from './session_manager';
+import {SessionManagerSingleton as SessionManagerClass} from './session_manager';
 
 jest.mock('@react-native-cookies/cookies', () => ({
     get: jest.fn(),

@@ -2,10 +2,12 @@
 // See LICENSE.txt for license information.
 
 import type ClientBase from './base';
+import type {CustomProfileAttributeSimple, CustomProfileField} from '@typings/api/custom_profile_attributes';
 
 export interface ClientCustomAttributesMix {
     getCustomProfileAttributeFields: () => Promise<CustomProfileField[]>;
     getCustomProfileAttributeValues: (userID: string) => Promise<CustomProfileAttributeSimple>;
+    updateCustomProfileAttributeValues: (values: CustomProfileAttributeSimple) => Promise<string>;
 }
 
 const ClientCustomAttributes = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -18,8 +20,17 @@ const ClientCustomAttributes = <TBase extends Constructor<ClientBase>>(superclas
 
     getCustomProfileAttributeValues = async (userID: string) => {
         return this.doFetch(
-            `${this.getUserRoute(userID)}/custom_profile_attributes`,
+            `${this.getUserCustomProfileAttributesRoute(userID)}`,
             {method: 'get'},
+        );
+    };
+    updateCustomProfileAttributeValues = async (values: CustomProfileAttributeSimple) => {
+        return this.doFetch(
+            `${this.getCustomProfileAttributesRoute()}/values`,
+            {
+                method: 'patch',
+                body: values,
+            },
         );
     };
 };

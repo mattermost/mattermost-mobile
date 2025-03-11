@@ -25,6 +25,7 @@ import {fetchGroupsByNames} from './groups';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Model} from '@nozbe/watermelondb';
+import type {CustomAttribute, CustomProfileAttributeSimple, CustomProfileField, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type MyUserRequest = {
@@ -876,5 +877,52 @@ export const getAllSupportedTimezones = async (serverUrl: string) => {
     } catch (error) {
         logDebug('error on getAllSupportedTimezones', getFullErrorMessage(error));
         return [];
+    }
+};
+
+export const fetchCustomAttributes = async (serverUrl: string, userId: string, filterEmpty = false): Promise<{attributes: CustomAttributeSet; error: unknown}> => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const [fields, attrValues] = await Promise.all([
+            client.getCustomProfileAttributeFields(),
+            client.getCustomProfileAttributeValues(userId),
+        ]);
+
+        if (fields?.length > 0) {
+            const attributes: Record<string, CustomAttribute> = {};
+            fields.forEach((field: CustomProfileField) => {
+                const value = attrValues[field.id] || '';
+                if (!filterEmpty || value) {
+                    attributes[field.id] = {
+                        id: field.id,
+                        name: field.name,
+                        value,
+                        sort_order: field.attrs?.sort_order,
+                    };
+                }
+            });
+            return {attributes, error: undefined};
+        }
+        return {attributes: {} as Record<string, CustomAttribute>, error: undefined};
+    } catch (error) {
+        logDebug('error on fetchCustomAttributes', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {attributes: {} as Record<string, CustomAttribute>, error};
+    }
+};
+
+export const updateCustomAttributes = async (serverUrl: string, attributes: CustomAttributeSet): Promise<{success: boolean; error: unknown}> => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const values: CustomProfileAttributeSimple = {};
+        Object.keys(attributes).forEach((field) => {
+            values[field] = attributes[field].value;
+        });
+        await client.updateCustomProfileAttributeValues(values);
+        return {success: true, error: undefined};
+    } catch (error) {
+        logDebug('error on updateCustomAttributes', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error, success: false};
     }
 };

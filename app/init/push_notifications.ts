@@ -35,7 +35,7 @@ import {isMainActivity, isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 
-class PushNotifications {
+class PushNotificationsSingleton {
     configured = false;
     subscriptions?: EmitterSubscription[];
 
@@ -333,4 +333,5 @@ class PushNotifications {
     };
 }
 
-export default new PushNotifications();
+const PushNotifications = new PushNotificationsSingleton();
+export default PushNotifications;
