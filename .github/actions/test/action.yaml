@@ -1,14 +1,6 @@
 name: test
 description: Common tests for mobile repo
 
-inputs:
-  github_token:
-    description: The token to use to download the coverage result
-    required: true
-  run-id:
-    description: The run id to use to download the coverage result
-    required: true
-
 runs:
   using: composite
   steps:
@@ -22,72 +14,12 @@ runs:
         npm run check
         echo "::endgroup::"
 
-    - name: ci/get-last-run-id
-      uses: actions/cache/restore@0c907a75c2c80ebcb7f088228285e798b750cf8f
-      continue-on-error: true
-      with:
-        path: run-id.txt
-        key: last-run-id
-
-    - name: ci/put-last-run-id-into-env
-      shell: bash
-      run: |
-        echo "::group::put-last-run-id-into-env"
-        echo "LAST_RUN_ID=$(cat run-id.txt)" >> $GITHUB_ENV
-        echo "::endgroup::"
-
-    - name: ci/download-main-coverage
-      uses: actions/download-artifact@v4
-      with:
-        name: test-coverage-result-${{ env.LAST_RUN_ID }}
-        path: main-coverage/
-        github-token: ${{ inputs.github_token }}
-        run-id: ${{ env.LAST_RUN_ID }}
-
-    - name: ci/read-coverage
-      shell: bash
-      run: |
-        echo "::group::read-coverage"
-        ./scripts/read-coverage.sh ./main-coverage/coverage-summary.json
-        echo "::endgroup::"
-
     - name: ci/run-tests
       shell: bash
       run: |
         echo "::group::run-tests"
-        npm run test:coverage
+        npm test
         echo "::endgroup::"
-
-    - name: ci/compare-coverage
-      shell: bash
-      run: |
-        echo "::group::compare-coverage"
-        ./scripts/compare-coverage.sh \
-          ./main-coverage \
-          ./coverage \
-          ${{ github.event.pull_request.number }} \
-          ${{ inputs.github_token }}
-        echo "::endgroup::"
-
-    - name: ci/upload-coverage
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-coverage-result-${{ inputs.run-id }}
-        path: coverage/coverage-summary.json
-        overwrite: true
-
-    - name: ci/generate-run-id-file
-      shell: bash
-      run: |
-        echo "::group::generate-last-run-id"
-        echo "${{ inputs.run-id }}" > run-id.txt
-        echo "::endgroup::"
-
-    - name: ci/cache-run-id-file
-      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f
-      with:
-        path: run-id.txt
-        key: last-run-id
 
     - name: ci/check-i18n
       shell: bash
