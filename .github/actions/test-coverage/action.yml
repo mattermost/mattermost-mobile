@@ -63,7 +63,7 @@ runs:
         echo "::endgroup::"
 
     - name: ci/upload-coverage
-      if: github.ref_name == 'main'
+      if: github.ref_name == 'mainX'
       uses: actions/upload-artifact@v4
       with:
         name: test-coverage-result-${{ inputs.run_id }}
@@ -71,7 +71,7 @@ runs:
         overwrite: true
 
     - name: ci/generate-run-id-file
-      if: github.ref_name == 'main'
+      if: github.ref_name == 'mainX'
       shell: bash
       run: |
         echo "::group::generate-last-run-id"
@@ -79,7 +79,7 @@ runs:
         echo "::endgroup::"
 
     - name: ci/cache-run-id-file
-      if: github.ref_name == 'main'
+      if: github.ref_name == 'mainX'
       uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f
       with:
         path: run-id.txt
