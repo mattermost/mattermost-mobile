@@ -84,4 +84,4 @@ runs:
       with:
         path: run-id.txt
         key: last-run-id
-        cache-hit: write
+        save-always: true
