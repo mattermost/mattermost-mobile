@@ -43,7 +43,6 @@ describe('RescheduledDraft', () => {
             rootId: '',
             metadata: {},
         } as unknown as ScheduledPostModel,
-        websocketState: 'connected' as WebsocketConnectedState,
     };
 
     it('renders correctly', () => {
@@ -55,8 +54,12 @@ describe('RescheduledDraft', () => {
         expect(getByText('Reschedule')).toBeTruthy();
     });
 
-    it('calls dismissBottomSheet and showModal when pressed', async () => {
-        jest.mocked(dismissBottomSheet).mockResolvedValue(undefined);
+    it('calls dismissBottomSheet when pressed', async () => {
+        // Reset all mocks before the test
+        jest.clearAllMocks();
+
+        // Mock the functions directly
+        jest.mocked(dismissBottomSheet).mockImplementation(() => Promise.resolve());
 
         const {getByTestId} = renderWithIntlAndTheme(
             <RescheduledDraft {...baseProps}/>,

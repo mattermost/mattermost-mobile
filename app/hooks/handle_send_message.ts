@@ -46,6 +46,7 @@ type Props = {
     currentUserId: string;
     channelType: ChannelType | undefined;
     postPriority: PostPriority;
+    isFromDraftView?: boolean;
     clearDraft: () => void;
 }
 
@@ -63,6 +64,7 @@ export const useHandleSendMessage = ({
     currentUserId,
     channelType,
     postPriority,
+    isFromDraftView,
     clearDraft,
 }: Props) => {
     const intl = useIntl();
@@ -121,7 +123,7 @@ export const useHandleSendMessage = ({
             response = await createPost(serverUrl, post, postFiles);
         }
 
-        if (response.error) {
+        if (response.error && isFromDraftView) {
             showSnackBar({
                 barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
                 customMessage: getErrorMessage(response.error),

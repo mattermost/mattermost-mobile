@@ -4,7 +4,7 @@
 import React from 'react';
 
 import {General, Screens} from '@constants';
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 

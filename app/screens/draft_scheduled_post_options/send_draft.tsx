@@ -134,6 +134,7 @@ const SendDraft: React.FC<Props> = ({
         currentUserId,
         channelType,
         postPriority,
+        isFromDraftView: true,
         clearDraft,
     });
 

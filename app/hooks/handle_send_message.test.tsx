@@ -661,6 +661,7 @@ describe('useHandleSendMessage', () => {
 
             const props = {
                 ...defaultProps,
+                isFromDraftView: true,
                 value: 'test message',
             };
 
