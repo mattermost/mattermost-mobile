@@ -59,3 +59,6 @@ export function deleteScheduledPostConfirmation({
 
 export const isScheduledPostModel = (obj: any): obj is ScheduledPostModel =>
     obj && typeof obj.toApi === 'function';
+
+export const hasScheduledPostError = (scheduledPosts: ScheduledPostModel[]) =>
+    scheduledPosts.some((post) => post.errorCode !== '');

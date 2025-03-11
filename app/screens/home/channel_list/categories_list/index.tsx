@@ -8,6 +8,7 @@ import {switchMap} from 'rxjs/operators';
 import {observeDraftCount} from '@queries/servers/drafts';
 import {observeScheduledPostCount, observeScheduledPostsForTeam} from '@queries/servers/scheduled_post';
 import {observeCurrentTeamId} from '@queries/servers/system';
+import {hasScheduledPostError} from '@utils/scheduled_post';
 
 import CategoriesList from './categories_list';
 
@@ -20,8 +21,7 @@ const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const allScheduledPost = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostsForTeam(database, teamId, true))); // Observe scheduled post count
 
     const scheduledPostHasError = allScheduledPost.pipe(
-        // eslint-disable-next-line max-nested-callbacks
-        switchMap((scheduledPosts) => of(scheduledPosts.some((post) => post.errorCode !== ''))),
+        switchMap((scheduledPosts) => of(hasScheduledPostError(scheduledPosts))),
     );
 
     return {

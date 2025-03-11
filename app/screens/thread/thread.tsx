@@ -41,8 +41,6 @@ const styles = StyleSheet.create({
     flex: {flex: 1},
 });
 
-const EMPTY_STRING = '';
-
 const Thread = ({
     componentId,
     isCRTEnabled,
@@ -128,9 +126,7 @@ const Thread = ({
                         />
                     </View>
                     <ScheduledPostIndicator
-                        isCRTEnabled={isCRTEnabled}
                         rootId={rootId}
-                        channelId={EMPTY_STRING}
                     />
                     <PostDraft
                         channelId={rootPost!.channelId}

@@ -4,7 +4,7 @@ import {Alert} from 'react-native';
 
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 
-import {deleteScheduledPostConfirmation, isScheduledPostModel} from './index';
+import {deleteScheduledPostConfirmation, hasScheduledPostError, isScheduledPostModel} from './index';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {IntlShape} from 'react-intl';
@@ -152,5 +152,25 @@ describe('isScheduledPostModel', () => {
     it('returns false for an invalid scheduled post model', () => {
         const invalidScheduledPostModel = {};
         expect(isScheduledPostModel(invalidScheduledPostModel)).toBe(false);
+    });
+});
+
+describe('hasScheduledPostError', () => {
+    test('should return true if any scheduled post has an error code', () => {
+        const scheduledPosts = [
+            {errorCode: 'error1'},
+            {errorCode: ''},
+            {errorCode: 'error2'},
+        ] as ScheduledPostModel[];
+        expect(hasScheduledPostError(scheduledPosts)).toBe(true);
+    });
+
+    test('should return false if no scheduled post has an error code', () => {
+        const scheduledPosts = [
+            {errorCode: ''},
+            {errorCode: ''},
+            {errorCode: ''},
+        ] as ScheduledPostModel[];
+        expect(hasScheduledPostError(scheduledPosts)).toBe(false);
     });
 });

@@ -53,7 +53,6 @@ type Props = {
     isMilitaryTime: boolean;
     isThread?: boolean;
     scheduledPostCount?: number;
-    channelId: string;
 }
 
 export function ScheduledPostIndicator({
@@ -61,7 +60,6 @@ export function ScheduledPostIndicator({
     isMilitaryTime,
     isThread,
     scheduledPostCount = 0,
-    channelId,
 }: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -78,7 +76,6 @@ export function ScheduledPostIndicator({
     } else if (scheduledPostCount === 1) {
         scheduledPostText = (
             <ScheduledPostIndicatorWithDatetime
-                channelId={channelId}
                 currentUser={currentUser}
                 isMilitaryTime={isMilitaryTime}
             />

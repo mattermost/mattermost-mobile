@@ -11,11 +11,7 @@ import ScheduledPostIndicatorWithDatetime from './scheduled_post_indicator_with_
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type Props = WithDatabaseArgs & {
-    channelId: string;
-}
-
-const enchanced = withObservables(['channelId'], ({database}: Props) => {
+const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
     const scheduledPosts = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostsForTeam(database, teamId, true)));
 

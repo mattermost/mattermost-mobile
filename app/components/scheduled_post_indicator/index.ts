@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {of, switchMap} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {observeScheduledPostCountForChannel, observeScheduledPostCountForDMsAndGMs, observeScheduledPostCountForThread} from '@queries/servers/scheduled_post';
-import {observeCurrentChannelId, observeCurrentTeamId} from '@queries/servers/system';
+import {observeScheduledPostCountForChannel, observeScheduledPostCountForThread} from '@queries/servers/scheduled_post';
+import {observeCurrentChannelId} from '@queries/servers/system';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import {ScheduledPostIndicator} from './scheduled_post_indicator';
@@ -17,26 +18,22 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 type Props = WithDatabaseArgs & {
     channelId?: string;
-    channelType?: ChannelType;
-    isCRTEnabled: boolean;
     rootId?: string;
 }
 
-const enhance = withObservables(['channelId', 'channelType', 'isCRTEnabled', 'rootId'], ({database, channelId, channelType, isCRTEnabled, rootId}: Props) => {
+const enhance = withObservables([], ({database, channelId, rootId}: Props) => {
     const currentUser = observeCurrentUser(database);
-    const currentTeamId = observeCurrentTeamId(database);
     const currentChannelId = observeCurrentChannelId(database);
     const preferences = queryDisplayNamePreferences(database).
         observeWithColumns(['value']);
     const isMilitaryTime = preferences.pipe(map((prefs) => getDisplayNamePreferenceAsBool(prefs, 'use_military_time')));
+    const isCRTEnabled = observeIsCRTEnabled(database);
 
     let scheduledPostCount = of(0);
     if (rootId) {
         scheduledPostCount = observeScheduledPostCountForThread(database, rootId);
-    } else if ((channelType === 'D' || channelType === 'G') && channelId) {
-        scheduledPostCount = observeScheduledPostCountForDMsAndGMs(database, channelId, isCRTEnabled);
-    } else if (channelType === 'O' && channelId) {
-        scheduledPostCount = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostCountForChannel(database, teamId, channelId, isCRTEnabled)));
+    } else if (channelId) {
+        scheduledPostCount = isCRTEnabled.pipe(switchMap((isCRT) => observeScheduledPostCountForChannel(database, channelId, isCRT)));
     }
 
     return {
@@ -44,6 +41,7 @@ const enhance = withObservables(['channelId', 'channelType', 'isCRTEnabled', 'ro
         isMilitaryTime,
         scheduledPostCount,
         currentChannelId,
+        isCRTEnabled,
     };
 });
 
