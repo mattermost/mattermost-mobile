@@ -93,7 +93,7 @@ function RightAction({deletePost, drag, draftType}: { deletePost: () => void; dr
                     {draftType === DRAFT_TYPE_DRAFT ? (
                         <FormattedText
                             id='draft.options.delete.title'
-                            defaultMessage={'Delete'}
+                            defaultMessage={'Delete draft'}
                             style={styles1.deleteText}
                         />
                     ) : (
