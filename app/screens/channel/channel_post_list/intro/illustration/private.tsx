@@ -4,7 +4,6 @@
 import React from 'react';
 import {Svg, G, Path, Circle, Rect, Defs, ClipPath} from 'react-native-svg';
 
-import {withTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
@@ -219,4 +218,4 @@ const PrivateChannelIllustration = ({theme}: Props) => (
     </Svg>
 );
 
-export default withTheme(PrivateChannelIllustration);
+export default PrivateChannelIllustration;
