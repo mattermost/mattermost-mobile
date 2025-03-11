@@ -20,7 +20,8 @@ runs:
       continue-on-error: true
       with:
         path: run-id.txt
-        key: last-run-id
+        restore-keys: |
+          last-run-id
 
     - name: ci/put-last-run-id-into-env
       shell: bash
@@ -79,8 +80,8 @@ runs:
         echo "::endgroup::"
 
     - name: ci/cache-run-id-file
-      if: github.ref_name != 'main' && always()
+      if: github.ref_name != 'main'
       uses: actions/cache/save@0c907a75c2c80ebcb7f088228285e798b750cf8f
       with:
         path: run-id.txt
-        key: last-run-id
+        key: last-run-id-${{ inputs.run_id }}
