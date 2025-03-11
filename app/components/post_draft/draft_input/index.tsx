@@ -9,6 +9,7 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
+import {logDebug} from '@utils/log';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -154,6 +155,7 @@ export default function DraftInput({
     });
 
     const handleSendMessage = useCallback(async () => {
+        logDebug('SEND MESSAGE SLOWNESS: starting send message');
         if (persistentNotificationsEnabled) {
             persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
         } else {

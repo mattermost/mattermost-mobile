@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
 import {goToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 import {isParsableUrl} from '@utils/url';
 
 export const switchToGlobalDrafts = async () => {
@@ -161,18 +161,24 @@ export async function addFilesToDraft(serverUrl: string, channelId: string, root
 }
 
 export const removeDraft = async (serverUrl: string, channelId: string, rootId = '') => {
+    logDebug('SEND MESSAGE SLOWNESS: removeDraft start');
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        logDebug('SEND MESSAGE SLOWNESS: removeDraft getDraft start');
         const draft = await getDraft(database, channelId, rootId);
+        logDebug('SEND MESSAGE SLOWNESS: removeDraft getDraft end');
         if (draft) {
+            logDebug('SEND MESSAGE SLOWNESS: removeDraft destroyPermanently start');
             await database.write(async () => {
                 await draft.destroyPermanently();
             });
+            logDebug('SEND MESSAGE SLOWNESS: removeDraft destroyPermanently end');
         }
-
+        logDebug('SEND MESSAGE SLOWNESS: removeDraft end');
         return {draft};
     } catch (error) {
         logError('Failed removeDraft', error);
+        logDebug('SEND MESSAGE SLOWNESS: removeDraft end with error');
         return {error};
     }
 };

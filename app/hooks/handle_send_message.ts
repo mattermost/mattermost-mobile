@@ -18,6 +18,7 @@ import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
 import {isReactionMatch} from '@utils/emoji/helpers';
 import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
@@ -87,6 +88,7 @@ export const useHandleSendMessage = ({
     }, [serverUrl, rootId, clearDraft]);
 
     const doSubmitMessage = useCallback(() => {
+        logDebug('SEND MESSAGE SLOWNESS: doSubmitMessage start');
         const postFiles = files.filter((f) => !f.failed);
         const post = {
             user_id: currentUserId,
@@ -105,11 +107,13 @@ export const useHandleSendMessage = ({
             };
         }
 
+        logDebug('SEND MESSAGE SLOWNESS: starting async call to createPost');
         createPost(serverUrl, post, postFiles);
-
+        logDebug('SEND MESSAGE SLOWNESS: end async call to createPost');
         clearDraft();
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
+        logDebug('SEND MESSAGE SLOWNESS: doSubmitMessage end');
     }, [files, currentUserId, channelId, rootId, value, postPriority, serverUrl, clearDraft]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean) => {
@@ -168,9 +172,12 @@ export const useHandleSendMessage = ({
     }, [value, userIsOutOfOffice, serverUrl, intl, channelId, rootId, clearDraft, channelType, currentUserId]);
 
     const sendMessage = useCallback(() => {
+        logDebug('SEND MESSAGE SLOWNESS: starting hook sendMessage');
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
+        logDebug('SEND MESSAGE SLOWNESS: regexCheck start');
         const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(value);
         const toHere = DraftUtils.textContainsAtHere(value);
+        logDebug('SEND MESSAGE SLOWNESS: regexCheck done');
 
         if (value.indexOf('/') === 0) {
             sendCommand();
@@ -179,18 +186,25 @@ export const useHandleSendMessage = ({
         } else {
             doSubmitMessage();
         }
+        logDebug('SEND MESSAGE SLOWNESS: hook sendMessage end');
     }, [enableConfirmNotificationsToChannel, useChannelMentions, value, membersCount, sendCommand, showSendToAllOrChannelOrHereAlert, doSubmitMessage]);
 
     const handleSendMessage = useCallback(preventDoubleTap(() => {
+        logDebug('SEND MESSAGE SLOWNESS: handleSendMessage start');
         if (!canSend) {
             return;
         }
 
         setSendingMessage(true);
 
+        logDebug('SEND MESSAGE SLOWNESS: starting isReactionMatch');
+        logDebug('SEND MESSAGE SLOWNESS: customEmojis length: ', customEmojis.length);
         const match = isReactionMatch(value, customEmojis);
+        logDebug('SEND MESSAGE SLOWNESS: isReactionMatch done');
         if (match && !files.length) {
+            logDebug('SEND MESSAGE SLOWNESS: starting handleReaction');
             handleReaction(match.emoji, match.add);
+            logDebug('SEND MESSAGE SLOWNESS: handleReaction done');
             return;
         }
 
@@ -208,6 +222,7 @@ export const useHandleSendMessage = ({
         } else {
             sendMessage();
         }
+        logDebug('SEND MESSAGE SLOWNESS: handleSendMessage end');
     }), [canSend, value, handleReaction, files, sendMessage, customEmojis]);
 
     useEffect(() => {
