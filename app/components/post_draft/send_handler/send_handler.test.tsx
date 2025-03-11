@@ -143,10 +143,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         // Manually trigger the button press
         fireEvent.press(sendDraftButton);
 
-        // Use a simple timeout instead of waitFor
-        await TestHelper.wait(200);
-
-        expect(sendMessageWithAlert).toHaveBeenCalled();
+        await waitFor(() => expect(sendMessageWithAlert).toHaveBeenCalled());
 
         // Reset the mock for the next test
         jest.clearAllMocks();
@@ -167,9 +164,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         expect(emptyButton).toBeTruthy();
 
         fireEvent.press(emptyButton);
-
-        // Check that the function wasn't called
-        expect(sendMessageWithAlert).not.toHaveBeenCalled();
+        await waitFor(() => expect(sendMessageWithAlert).not.toHaveBeenCalled());
     });
 
     it('should call sendMessageWithAlert with correct params when Send button clicked', async () => {
