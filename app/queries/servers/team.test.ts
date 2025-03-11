@@ -37,6 +37,7 @@ import {
     prepareMyTeams,
     queryTeamByName,
     getDefaultTeamId,
+    observeSortedJoinedTeams,
 } from './team';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -1020,5 +1021,109 @@ describe('Team Queries', () => {
                 });
             });
         }, 1500);
+    });
+
+    describe('observeSortedJoinedTeams', () => {
+        it('should return teams sorted by preference order', (done) => {
+            const teamIds = ['team1', 'team2', 'team3'];
+            const teams = teamIds.map((id, index) => createTestTeam(id, `team${index + 1}`, `Team ${index + 1}`));
+            const myTeams = teamIds.map((id) => ({id, roles: 'team_role'}));
+
+            operator.handleTeam({teams, prepareRecordsOnly: false}).then(() => {
+                operator.handleMyTeam({myTeams, prepareRecordsOnly: false}).then(() => {
+                    operator.handlePreferences({
+                        preferences: [{
+                            category: Preferences.CATEGORIES.TEAMS_ORDER,
+                            name: '',
+                            user_id: 'me',
+                            value: 'team2,team1,team3',
+                        }],
+                        prepareRecordsOnly: false,
+                    }).then(() => {
+                        observeSortedJoinedTeams(database).subscribe((sortedTeams) => {
+                            expect(sortedTeams.map((t) => t.id)).toEqual(['team2', 'team1', 'team3']);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('should return teams sorted alphabetically if no preference order', (done) => {
+            const teamIds = ['team1', 'team2', 'team3'];
+            const teams = [
+                createTestTeam('team1', 'team1', 'Zebra'),
+                createTestTeam('team2', 'team2', 'Apple'),
+                createTestTeam('team3', 'team3', 'Banana'),
+            ];
+            const myTeams = teamIds.map((id) => ({id, roles: 'team_role'}));
+
+            operator.handleTeam({teams, prepareRecordsOnly: false}).then(() => {
+                operator.handleMyTeam({myTeams, prepareRecordsOnly: false}).then(() => {
+                    observeSortedJoinedTeams(database).subscribe((sortedTeams) => {
+                        expect(sortedTeams.map((t) => t.displayName)).toEqual(['Apple', 'Banana', 'Zebra']);
+                        done();
+                    });
+                });
+            });
+        });
+
+        it('should return teams sorted alphabetically if preference order is empty', (done) => {
+            const teamIds = ['team1', 'team2', 'team3'];
+            const teams = [
+                createTestTeam('team1', 'team1', 'Zebra'),
+                createTestTeam('team2', 'team2', 'Apple'),
+                createTestTeam('team3', 'team3', 'Banana'),
+            ];
+            const myTeams = teamIds.map((id) => ({id, roles: 'team_role'}));
+
+            operator.handleTeam({teams, prepareRecordsOnly: false}).then(() => {
+                operator.handleMyTeam({myTeams, prepareRecordsOnly: false}).then(() => {
+                    operator.handlePreferences({
+                        preferences: [{
+                            category: Preferences.CATEGORIES.TEAMS_ORDER,
+                            name: '',
+                            user_id: 'me',
+                            value: '',
+                        }],
+                        prepareRecordsOnly: false,
+                    }).then(() => {
+                        observeSortedJoinedTeams(database).subscribe((sortedTeams) => {
+                            expect(sortedTeams.map((t) => t.displayName)).toEqual(['Apple', 'Banana', 'Zebra']);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('should return teams sorted alphabetically if preference order does not match any team', (done) => {
+            const teamIds = ['team1', 'team2', 'team3'];
+            const teams = [
+                createTestTeam('team1', 'team1', 'Zebra'),
+                createTestTeam('team2', 'team2', 'Apple'),
+                createTestTeam('team3', 'team3', 'Banana'),
+            ];
+            const myTeams = teamIds.map((id) => ({id, roles: 'team_role'}));
+
+            operator.handleTeam({teams, prepareRecordsOnly: false}).then(() => {
+                operator.handleMyTeam({myTeams, prepareRecordsOnly: false}).then(() => {
+                    operator.handlePreferences({
+                        preferences: [{
+                            category: Preferences.CATEGORIES.TEAMS_ORDER,
+                            name: '',
+                            user_id: 'me',
+                            value: 'team4,team5',
+                        }],
+                        prepareRecordsOnly: false,
+                    }).then(() => {
+                        observeSortedJoinedTeams(database).subscribe((sortedTeams) => {
+                            expect(sortedTeams.map((t) => t.displayName)).toEqual(['Apple', 'Banana', 'Zebra']);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 });
