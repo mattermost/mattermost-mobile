@@ -15,7 +15,7 @@
     "@types/tough-cookie": "4.0.5",
     "@types/uuid": "10.0.0",
     "async": "3.2.6",
-    "axios": "1.7.9",
+    "axios": "1.8.2",
     "axios-cookiejar-support": "5.0.4",
     "babel-jest": "29.7.0",
     "babel-plugin-module-resolver": "5.0.2",
