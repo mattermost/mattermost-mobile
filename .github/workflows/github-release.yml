@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: ci/test
         uses: ./.github/actions/test
 
@@ -20,7 +20,7 @@ jobs:
       - test
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
@@ -42,7 +42,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-ios-unsigned
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           path: Mattermost-unsigned.ipa
           name: Mattermost-unsigned.ipa
@@ -53,7 +53,7 @@ jobs:
       - test
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
@@ -68,7 +68,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-android-unsigned-build
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           path: Mattermost-unsigned.apk
           name: Mattermost-unsigned.apk
@@ -80,9 +80,9 @@ jobs:
       - build-android-unsigned
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: ruby/setup-ruby@ff740bc00a01b3a50fffc55a1071b1060eeae9dc # v1.180.0
+      - uses: ruby/setup-ruby@32110d4e311bd8996b2a82bf2a43b714ccc91777 # v1.221.0
 
       - name: release/setup-fastlane-dependencies
         run: bundle install

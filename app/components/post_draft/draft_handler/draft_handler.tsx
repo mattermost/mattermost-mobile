@@ -8,6 +8,7 @@ import {addFilesToDraft, removeDraft} from '@actions/local/draft';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
+import {logDebug} from '@utils/log';
 
 import SendHandler from '../send_handler';
 
@@ -62,8 +63,10 @@ export default function DraftHandler(props: Props) {
     const uploadErrorHandlers = useRef<ErrorHandlers>({});
 
     const clearDraft = useCallback(() => {
+        logDebug('SEND MESSAGE SLOWNESS: clearDraft start');
         removeDraft(serverUrl, channelId, rootId);
         updateValue('');
+        logDebug('SEND MESSAGE SLOWNESS: clearDraft end');
     }, [serverUrl, channelId, rootId]);
 
     const newUploadError = useCallback((error: React.ReactNode) => {

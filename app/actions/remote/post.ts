@@ -62,6 +62,7 @@ type AuthorsRequest = {
 }
 
 export async function createPost(serverUrl: string, post: Partial<Post>, files: FileInfo[] = []): Promise<{data?: boolean; error?: unknown}> {
+    logDebug('SEND MESSAGE SLOWNESS: createPost start');
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -75,11 +76,17 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
         return {error};
     }
 
+    logDebug('SEND MESSAGE SLOWNESS: createPost getCurrentUserId start');
     const currentUserId = await getCurrentUserId(database);
+    logDebug('SEND MESSAGE SLOWNESS: createPost getCurrentUserId end');
+
     const timestamp = Date.now();
     const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
 
+    logDebug('SEND MESSAGE SLOWNESS: createPost getPostById start');
     const existing = await getPostById(database, pendingPostId);
+    logDebug('SEND MESSAGE SLOWNESS: createPost getPostById end');
+
     if (existing && !existing.props?.failed) {
         return {data: false};
     }
@@ -118,24 +125,39 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
         initialPostModels.push(...filesModels);
     }
 
+    logDebug('SEND MESSAGE SLOWNESS: createPost handlePosts start (pending post)');
     const postModels = await operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
         order: [databasePost.id],
         posts: [databasePost],
         prepareRecordsOnly: true,
     });
+    logDebug('SEND MESSAGE SLOWNESS: createPost handlePosts end (pending post)');
     initialPostModels.push(...postModels);
 
+    logDebug('SEND MESSAGE SLOWNESS: createPost queryAllCustomEmojis start');
     const customEmojis = await queryAllCustomEmojis(database).fetch();
+    logDebug('SEND MESSAGE SLOWNESS: createPost queryAllCustomEmojis end');
+
+    logDebug('SEND MESSAGE SLOWNESS: createPost matchEmoticons start');
     const emojisInMessage = matchEmoticons(newPost.message);
+    logDebug('SEND MESSAGE SLOWNESS: createPost matchEmoticons end');
+
+    logDebug('SEND MESSAGE SLOWNESS: createPost addRecentReaction start');
     const reactionModels = await addRecentReaction(serverUrl, getValidEmojis(emojisInMessage, customEmojis), true);
+    logDebug('SEND MESSAGE SLOWNESS: createPost addRecentReaction end');
     if (!('error' in reactionModels) && reactionModels.length) {
         initialPostModels.push(...reactionModels);
     }
 
+    logDebug('SEND MESSAGE SLOWNESS: createPost batchRecords start');
+    logDebug('SEND MESSAGE SLOWNESS: createPost batchRecords initialPostModels length: ', initialPostModels.length);
     await operator.batchRecords(initialPostModels, 'createPost - initial');
+    logDebug('SEND MESSAGE SLOWNESS: createPost batchRecords end');
 
+    logDebug('SEND MESSAGE SLOWNESS: createPost getIsCRTEnabled start');
     const isCRTEnabled = await getIsCRTEnabled(database);
+    logDebug('SEND MESSAGE SLOWNESS: createPost getIsCRTEnabled end');
 
     let created;
     try {
@@ -176,6 +198,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
             await operator.batchRecords(models, 'createPost - failure');
         }
 
+        logDebug('SEND MESSAGE SLOWNESS: createPost end with error');
         return {data: true};
     }
 
@@ -202,6 +225,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
 
     newPost = created;
 
+    logDebug('SEND MESSAGE SLOWNESS: createPost end');
     return {data: true};
 }
 
