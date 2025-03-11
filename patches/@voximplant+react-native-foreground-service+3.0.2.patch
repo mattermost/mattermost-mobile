@@ -23,7 +23,7 @@ diff --git a/node_modules/@voximplant/react-native-foreground-service/android/sr
 index afc578c..c8c32e3 100644
 --- a/node_modules/@voximplant/react-native-foreground-service/android/src/main/java/com/voximplant/foregroundservice/VIForegroundServiceModule.java
 +++ b/node_modules/@voximplant/react-native-foreground-service/android/src/main/java/com/voximplant/foregroundservice/VIForegroundServiceModule.java
-@@ -110,7 +110,11 @@ public class VIForegroundServiceModule extends ReactContextBaseJavaModul
+@@ -110,7 +110,11 @@ public class VIForegroundServiceModule extends ReactContextBaseJavaModule {
  
          IntentFilter filter = new IntentFilter();
          filter.addAction(FOREGROUND_SERVICE_BUTTON_PRESSED);
