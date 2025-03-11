@@ -11,9 +11,9 @@ function SearchIllustration() {
 
     return (
         <Svg
-            width='140'
-            height='149'
-            viewBox='0 0 140 149'
+            width='123'
+            height='110'
+            viewBox='0 0 123 110'
             fill='none'
         >
             <G clipPath='url(#clip0_4212_116720)'>

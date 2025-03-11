@@ -29,6 +29,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center' as const,
         },
         result: {
+            marginTop: 32,
             textAlign: 'center',
             color: theme.centerChannelColor,
             ...typography('Heading', 400, 'SemiBold'),

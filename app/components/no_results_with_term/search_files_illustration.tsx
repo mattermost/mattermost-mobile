@@ -10,9 +10,9 @@ function SearchFilesIllustration() {
 
     return (
         <Svg
-            width={185}
-            height={165}
-            viewBox='0 0 185 165'
+            width={132}
+            height={108}
+            viewBox='0 0 132 108'
             fill='none'
         >
             <Rect
