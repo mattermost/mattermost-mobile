@@ -36,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const RescheduledDraft: React.FC<Props> = ({
+const RescheduledDraft: React.FC<Props> = ({
     bottomSheetId,
     draft,
 }) => {
