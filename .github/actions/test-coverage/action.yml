@@ -79,9 +79,8 @@ runs:
         echo "::endgroup::"
 
     - name: ci/cache-run-id-file
-      if: github.ref_name != 'main'
-      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f
+      if: github.ref_name != 'main' && always()
+      uses: actions/cache/save@0c907a75c2c80ebcb7f088228285e798b750cf8f
       with:
         path: run-id.txt
         key: last-run-id
-        save-always: true
