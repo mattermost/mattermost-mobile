@@ -20,6 +20,7 @@ runs:
       continue-on-error: true
       with:
         path: run-id.txt
+        key: last-run-id-${{ inputs.run_id }}
         restore-keys: |
           last-run-id
 
