@@ -13,7 +13,6 @@ import {queryBookmarks} from '@queries/servers/channel_bookmark';
 import {observeHasGMasDMFeature} from '@queries/servers/features';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfigBooleanValue, observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
-import {observeIsCRTEnabled} from '@queries/servers/thread';
 
 import Channel from './channel';
 
@@ -30,7 +29,6 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
     const currentUserId = observeCurrentUserId(database);
     const hasGMasDMFeature = observeHasGMasDMFeature(database);
     const isBookmarksEnabled = observeConfigBooleanValue(database, 'FeatureFlagChannelBookmarks');
-    const isCRTEnabled = observeIsCRTEnabled(database);
     const hasBookmarks = (count: number) => of$(count > 0);
     const includeBookmarkBar = channelId.pipe(
         combineLatestWith(isBookmarksEnabled),
@@ -61,7 +59,6 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         currentUserId,
         hasGMasDMFeature,
         includeBookmarkBar,
-        isCRTEnabled,
     };
 });
 

@@ -49,18 +49,6 @@ export const observeScheduledPostCountForChannel = (
     return query.observeCount();
 };
 
-export const observeScheduledPostCountForDMsAndGMs = (database: Database, channelId: string, isCRTEnabled: boolean) => {
-    let query = database.get<ScheduledPostModel>(SCHEDULED_POST).query(
-        Q.on(CHANNEL, Q.where('id', channelId)),
-    );
-
-    if (isCRTEnabled) {
-        query = query.extend(Q.where('root_id', ''));
-    }
-
-    return query.observeCount();
-};
-
 export const observeScheduledPostCountForThread = (database: Database, rootId: string) => {
     return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
         Q.where('root_id', rootId),
