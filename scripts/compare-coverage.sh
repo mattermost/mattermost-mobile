@@ -20,10 +20,21 @@ COMMENT_BODY="### Coverage Comparison Report
 
 HAS_DECREASE=0
 
+# Initialize variables for calculating average total coverage
+# since the coverage summary doesn't provide an overall total
+main_total=0
+pr_total=0
+metric_count=0
+
 for metric in lines statements branches functions; do
     main=$(jq ".total.${metric}.pct" "$MAIN_COVERAGE_FILE")
     pr=$(jq ".total.${metric}.pct" "$RECENT_COVERAGE_FILE")
     diff=$(echo "$pr - $main" | bc)
+    
+    # Add to totals for average calculation
+    main_total=$(echo "$main_total + $main" | bc)
+    pr_total=$(echo "$pr_total + $pr" | bc)
+    metric_count=$((metric_count + 1))
     
     row=$(printf "| %-15s | %9.2f%% | %9.2f%% | %8.2f%% |" "${metric^}" "$main" "$pr" "$diff")
     COMMENT_BODY+=$'\n'"$row"
@@ -34,13 +45,15 @@ for metric in lines statements branches functions; do
     fi
 done
 
+# Add separator line
 COMMENT_BODY+=$'\n'"+-----------------+------------+------------+-----------+"
 
-main_total=$(jq ".total.total.pct" "$MAIN_COVERAGE_FILE")
-pr_total=$(jq ".total.total.pct" "$RECENT_COVERAGE_FILE")
-total_diff=$(echo "$pr_total - $main_total" | bc)
+# Calculate the average coverage across all metrics
+main_avg=$(echo "scale=2; $main_total / $metric_count" | bc)
+pr_avg=$(echo "scale=2; $pr_total / $metric_count" | bc)
+total_diff=$(echo "$pr_avg - $main_avg" | bc)
 
-row=$(printf "| %-15s | %9.2f%% | %9.2f%% | %8.2f%% |" "Total" "$main_total" "$pr_total" "$total_diff")
+row=$(printf "| %-15s | %9.2f%% | %9.2f%% | %8.2f%% |" "Total" "$main_avg" "$pr_avg" "$total_diff")
 COMMENT_BODY+=$'\n'"$row"
 
 COMMENT_BODY+=$'\n'"+-----------------+------------+------------+-----------+
