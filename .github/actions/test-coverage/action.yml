@@ -16,6 +16,8 @@ runs:
       uses: ./.github/actions/prepare-node-deps
 
     - name: ci/get-last-run-id
+      if: github.event_name == 'pull_request'
+      id: get-last-run-id
       uses: actions/cache/restore@0c907a75c2c80ebcb7f088228285e798b750cf8f
       continue-on-error: true
       with:
@@ -24,7 +26,13 @@ runs:
         restore-keys: |
           last-run-id-
 
+    - name: Set PR condition
+      if: github.event_name == 'pull_request' && steps.get-last-run-id.outcome == 'success'
+      shell: bash
+      run: echo "IS_PR_WITH_CACHE=true" >> $GITHUB_ENV
+
     - name: ci/put-last-run-id-into-env
+      if: env.IS_PR_WITH_CACHE == 'true'
       shell: bash
       run: |
         echo "::group::put-last-run-id-into-env"
@@ -32,6 +40,7 @@ runs:
         echo "::endgroup::"
 
     - name: ci/download-main-coverage
+      if: env.IS_PR_WITH_CACHE == 'true'
       uses: actions/download-artifact@v4
       with:
         name: test-coverage-result-${{ env.LAST_RUN_ID }}
@@ -40,13 +49,14 @@ runs:
         run-id: ${{ env.LAST_RUN_ID }}
 
     - name: ci/read-coverage
+      if: env.IS_PR_WITH_CACHE == 'true'
       shell: bash
       run: |
         echo "::group::read-coverage"
         ./scripts/read-coverage.sh ./main-coverage/coverage-summary.json
         echo "::endgroup::"
 
-    - name: ci/run-tests
+    - name: ci/run-tests-with-coverage
       shell: bash
       run: |
         echo "::group::run-tests"
@@ -54,6 +64,7 @@ runs:
         echo "::endgroup::"
 
     - name: ci/compare-coverage
+      if: env.IS_PR_WITH_CACHE == 'true'
       shell: bash
       run: |
         echo "::group::compare-coverage"
