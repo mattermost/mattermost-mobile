@@ -87,8 +87,8 @@ describe('RescheduledDraft', () => {
         expect(getByTestId('edit_post.screen')).toBeTruthy();
     });
 
-    it('should have navigation component registered on initialization', () => {
-        renderWithEverything(<RescheduledDraft {...baseProps}/>, {database});
+    it('should have navigation component registered on initialization', async () => {
+        const {getByTestId} = renderWithEverything(<RescheduledDraft {...baseProps}/>, {database});
 
         // Verify navigation listener was registered
         expect(Navigation.events().registerComponentListener).toHaveBeenCalledWith(
@@ -100,10 +100,41 @@ describe('RescheduledDraft', () => {
         const registerCall = jest.mocked(Navigation.events().registerComponentListener).mock.calls[0][0];
         expect(registerCall).toBeDefined();
         expect(registerCall.navigationButtonPressed).toBeDefined();
+
+        // Check if save button is in the header and on clicking should call the navigation handler
+        const dateTimeSelector = getByTestId('custom_date_time_picker'); // Ensure testID is set in the component
+        expect(dateTimeSelector).toBeTruthy();
+
+        const newDate = moment().add(2, 'days');
+        await act(async () => {
+            fireEvent(dateTimeSelector, 'handleChange', newDate);
+        });
+
+        // Verify navigation listener was registered
+        expect(Navigation.events().registerComponentListener).toHaveBeenCalledWith(
+            expect.any(Object),
+            baseProps.componentId,
+        );
+
+        // Get the navigationButtonPressed handler
+        const functionToCall = jest.mocked(Navigation.events().registerComponentListener).mock.calls[1][0].navigationButtonPressed;
+
+        // Simulate pressing the save button
+        await act(async () => {
+            functionToCall?.({
+                buttonId: 'reschedule-draft',
+                componentId: '',
+            });
+        });
+
+        expect(dismissModal).toHaveBeenCalledWith({componentId: baseProps.componentId});
     });
 
     it('Should enable save button when data changes', async () => {
         jest.mocked(updateScheduledPost).mockResolvedValue({scheduledPost: {} as ScheduledPost, error: undefined});
+
+        const setButtonsMock = jest.mocked(setButtons);
+        setButtonsMock.mockClear();
 
         const {getByTestId} = renderWithEverything(
             <RescheduledDraft {...baseProps}/>,
@@ -118,10 +149,9 @@ describe('RescheduledDraft', () => {
             fireEvent(dateTimeSelector, 'handleChange', newDate);
         });
 
-        expect(setButtons).toHaveBeenCalled();
+        expect(setButtons).toHaveBeenCalledTimes(1);
 
         // Use jest.mocked for proper type inference
-        const setButtonsMock = jest.mocked(setButtons);
         const mockCalls = setButtonsMock.mock.calls;
 
         const lastCallIndex = mockCalls.length - 1;

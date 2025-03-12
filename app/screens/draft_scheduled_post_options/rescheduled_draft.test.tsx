@@ -7,7 +7,7 @@ import React from 'react';
 import {Screens} from '@constants';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
-import test_helper from '@test/test_helper';
+import TestHelper from '@test/test_helper';
 
 import RescheduledDraft from './rescheduled_draft';
 
@@ -54,8 +54,7 @@ describe('RescheduledDraft', () => {
     });
 
     it('calls dismissBottomSheet and showModal when pressed', async () => {
-        // Mock implementation to resolve immediately
-        (dismissBottomSheet as jest.Mock).mockResolvedValue(undefined);
+        jest.mocked(dismissBottomSheet).mockResolvedValue(undefined);
 
         const {getByTestId} = renderWithIntlAndTheme(
             <RescheduledDraft {...baseProps}/>,
@@ -63,7 +62,7 @@ describe('RescheduledDraft', () => {
 
         fireEvent.press(getByTestId('rescheduled_draft'));
 
-        await test_helper.wait(0);
+        await TestHelper.wait(0);
 
         expect(dismissBottomSheet).toHaveBeenCalledWith(baseProps.bottomSheetId);
         expect(showModal).toHaveBeenCalledWith(

@@ -116,10 +116,8 @@ describe('components/post_draft/send_handler/SendHandler', () => {
             />, {database},
         );
 
-        const draftInput = wrapper.getByTestId('test_send_handler');
-        expect(draftInput).toBeTruthy();
-        const priority = wrapper.getByText('URGENT');
-        expect(priority).toBeTruthy();
+        expect(wrapper.getByTestId('test_send_handler')).toBeTruthy();
+        expect(wrapper.getByText('URGENT')).toBeTruthy();
     });
 
     it('should pass correct props to SendDraft component when in draft view', async () => {

@@ -102,6 +102,7 @@ describe('deleteScheduledPostConfirmation', () => {
 
         // Verify swipeable close is called
         expect(baseProps.swipeable?.current?.close).toHaveBeenCalled();
+        expect(deleteScheduledPost).not.toHaveBeenCalled();
     });
 
     it('handles missing swipeable ref', () => {
@@ -117,7 +118,7 @@ describe('deleteScheduledPostConfirmation', () => {
         const buttons = alertMock.mock.calls[0]?.[2] ?? []; // Ensure buttons array exists
         const cancelButton = buttons[0];
         expect(cancelButton).toBeDefined();
-        const onPress = cancelButton.onPress ?? (() => {});
+        const onPress = cancelButton.onPress!;
         expect(() => onPress()).not.toThrow();
     });
 

@@ -9,7 +9,6 @@ import {updateScheduledPost} from '@actions/remote/scheduled_post';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {usePreventDoubleTap} from '@hooks/utils';
@@ -34,9 +33,6 @@ type Props = {
 const OPTIONS_PADDING = 12;
 
 const styles = StyleSheet.create({
-    body: {
-        flex: 1,
-    },
     container: {
         flex: 1,
     },
@@ -61,8 +57,6 @@ const RescheduledDraft: React.FC<Props> = ({
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-    const mainView = useRef<View>(null);
     const [isUpdating, setIsUpdating] = useState(false);
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
@@ -109,12 +103,11 @@ const RescheduledDraft: React.FC<Props> = ({
             setErrorLine(errorMessage);
             return;
         }
-        const draftPayload = await draft.toApi(database);
-        draftPayload.scheduled_at = parseInt(selectedTime.current, 10);
+        draft.scheduledAt = parseInt(selectedTime.current, 10);
 
-        const res = await updateScheduledPost(serverUrl, draftPayload);
+        const res = await updateScheduledPost(serverUrl, draft);
         handleUIUpdates(res);
-    }, [database, draft, handleUIUpdates, intl, selectedTime, serverUrl, toggleSaveButton]));
+    }, [draft, handleUIUpdates, intl, selectedTime, serverUrl, toggleSaveButton]));
 
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
     useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, []);
@@ -135,32 +128,29 @@ const RescheduledDraft: React.FC<Props> = ({
     }
 
     return (
-        <>
-            <SafeAreaView
-                testID='edit_post.screen'
+        <SafeAreaView
+            testID='edit_post.screen'
+            style={styles.container}
+        >
+            <View
                 style={styles.container}
             >
-                <View
-                    style={styles.body}
-                    ref={mainView}
-                >
-                    {Boolean((errorLine || errorExtra)) &&
-                        <PostError
-                            errorExtra={errorExtra}
-                            errorLine={errorLine}
-                        />
-                    }
-                    <View style={styles.optionsContainer}>
-                        <DateTimeSelector
-                            handleChange={handleCustomTimeChange}
-                            theme={theme}
-                            timezone={userTimezone}
-                            showInitially='date'
-                        />
-                    </View>
+                {Boolean((errorLine || errorExtra)) &&
+                <PostError
+                    errorExtra={errorExtra}
+                    errorLine={errorLine}
+                />
+                }
+                <View style={styles.optionsContainer}>
+                    <DateTimeSelector
+                        handleChange={handleCustomTimeChange}
+                        theme={theme}
+                        timezone={userTimezone}
+                        showInitially='date'
+                    />
                 </View>
-            </SafeAreaView>
-        </>
+            </View>
+        </SafeAreaView>
     );
 };
 

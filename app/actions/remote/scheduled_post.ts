@@ -6,6 +6,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import websocketManager from '@managers/websocket_manager';
 import {getConfigValue} from '@queries/servers/system';
+import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
@@ -41,11 +42,12 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
     }
 }
 
-export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost, connectionId?: string, fetchOnly = false) {
+export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost | ScheduledPostModel, connectionId?: string, fetchOnly = false) {
     try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
-        const response = await client.updateScheduledPost(scheduledPost, connectionId);
+        const normalizedScheduledPost = scheduledPost instanceof ScheduledPostModel ? await scheduledPost.toApi(database) : scheduledPost;
+        const response = await client.updateScheduledPost(normalizedScheduledPost, connectionId);
 
         if (response && !fetchOnly) {
             await operator.handleScheduledPosts({
