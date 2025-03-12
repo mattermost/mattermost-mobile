@@ -76,11 +76,11 @@ export const getRawRecordPairs = (raws: any[]): RecordPair[] => {
  * getUniqueRawsBy: We have to ensure that we are not updating the same record twice in the same operation.
  * Hence, thought it might not occur, prevention is better than cure.  This function removes duplicates from the 'raws' array.
  * @param {RawValue[]} raws
- * @param {string} key
+ * @param {string | ((item: RawValue) => string)} key
  */
-export const getUniqueRawsBy = ({raws, key}: { raws: RawValue[]; key: string}) => {
+export const getUniqueRawsBy = ({raws, key}: { raws: RawValue[]; key: string | ((item: RawValue) => string)}) => {
     return [...new Map(raws.map((item) => {
-        const curItemKey = item[key as keyof typeof item];
+        const curItemKey = typeof key === 'function' ? key(item) : item[key as keyof typeof item];
         return [curItemKey, item];
     })).values()];
 };
