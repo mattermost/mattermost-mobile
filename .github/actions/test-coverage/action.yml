@@ -35,7 +35,7 @@ runs:
           last-run-id-
 
     - name: Set PR condition
-      if: github.event_name == 'pull_request' && steps.get-last-run-id.outcome == 'success'
+      if: github.event_name == 'pull_request' && steps.get-last-run-id.outputs.cache-hit == 'true'
       shell: bash
       run: echo "IS_PR_WITH_CACHE=true" >> $GITHUB_ENV
 
