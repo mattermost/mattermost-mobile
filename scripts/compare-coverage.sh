@@ -15,7 +15,7 @@ COMMENT_BODY="### Coverage Comparison Report
 
 \`\`\`
 +-----------------+------------+------------+-----------+
-| Metric          | Main       | This PR    | Diff      |
+| Metric          | Main       | This XX    | Diff      |
 +-----------------+------------+------------+-----------+"
 
 HAS_DECREASE=0
