@@ -93,6 +93,8 @@ runs:
       with:
         message: ${{ env.report }}
         comment_tag: coverage-report
+        github_token: ${{ inputs.github_token }}
+        create_if_not_exists: true
 
     - name: ci/upload-coverage
       if: github.ref_name == 'main'
