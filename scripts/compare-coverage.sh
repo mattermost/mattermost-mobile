@@ -19,6 +19,7 @@ COMMENT_BODY="### Coverage Comparison Report
 +-----------------+------------+------------+-----------+"
 
 HAS_DECREASE=0
+
 for metric in lines statements branches functions; do
     main=$(jq ".total.${metric}.pct" "$MAIN_COVERAGE_FILE")
     pr=$(jq ".total.${metric}.pct" "$RECENT_COVERAGE_FILE")
@@ -32,6 +33,17 @@ for metric in lines statements branches functions; do
         HAS_DECREASE=1
     fi
 done
+
+# Add separator line
+COMMENT_BODY+=$'\n'"+-----------------+------------+------------+-----------+"
+
+# Add total row using the total from JSON
+main_total=$(jq ".total.total.pct" "$MAIN_COVERAGE_FILE")
+pr_total=$(jq ".total.total.pct" "$RECENT_COVERAGE_FILE")
+total_diff=$(echo "$pr_total - $main_total" | bc)
+
+row=$(printf "| %-15s | %9.2f%% | %9.2f%% | %8.2f%% |" "Total" "$main_total" "$pr_total" "$total_diff")
+COMMENT_BODY+=$'\n'"$row"
 
 COMMENT_BODY+=$'\n'"+-----------------+------------+------------+-----------+
 \`\`\`"
