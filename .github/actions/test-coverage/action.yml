@@ -1,3 +1,11 @@
+# This action is used to test the coverage of the mobile repo
+# It will download the coverage result from the main branch and compare it with the current branch
+# If the coverage is lower than the main branch (1% or more), it will post a warning along with
+# the coverage report to the PR.
+# If this action is run on the main branch, it will upload the coverage result to the main branch
+# It will also generate a run id and cache it, so that the next time the action is run in the PR, 
+# it will use the cached run id to download the coverage result from the main branch
+
 name: test-coverage
 description: Test coverage tracking for mobile repo
 
