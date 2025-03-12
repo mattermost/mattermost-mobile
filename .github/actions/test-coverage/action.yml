@@ -92,9 +92,9 @@ runs:
       uses: thollander/actions-comment-pull-request@v3
       with:
         message: ${{ env.report }}
-        comment_tag: coverage-report
-        github_token: ${{ inputs.github_token }}
-        create_if_not_exists: true
+        comment-tag: coverage-report
+        github-token: ${{ inputs.github_token }}
+        create-if-not-exists: true
 
     - name: ci/upload-coverage
       if: github.ref_name == 'main'
