@@ -40,7 +40,8 @@ for metric in lines statements branches functions; do
     COMMENT_BODY+=$'\n'"$row"
     
     if (( $(echo "$diff > -$COVERAGE_THRESHOLD" | bc -l) )); then
-        echo "::error::${metric^} coverage has decreased by more than ${COVERAGE_THRESHOLD}% ($diff%)"
+        # Write error messages to stderr instead of stdout
+        echo "::error::${metric^} coverage has decreased by more than ${COVERAGE_THRESHOLD}% ($diff%)" >&2
         HAS_DECREASE=1
     fi
 done
@@ -63,6 +64,7 @@ if [ "$HAS_DECREASE" -eq 1 ]; then
     COMMENT_BODY+=$'\n\n'"⚠️ **Warning:** One or more coverage metrics have decreased by more than ${COVERAGE_THRESHOLD}%"
 fi
 
+# Only output the comment body to stdout
 echo "$COMMENT_BODY"
 
 # Not failing the build for now
