@@ -4,6 +4,7 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {updateMe} from '@actions/remote/user';
 import FloatingTextChipsInput from '@components/floating_text_chips_input';
@@ -34,6 +35,7 @@ const COMMA_KEY = ',';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        flex: {flex: 1},
         input: {
             color: theme.centerChannelColor,
             paddingHorizontal: 15,
@@ -166,15 +168,8 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
 
         close();
     }, [
-        channelMentionOn,
-        firstNameMentionOn,
-        usernameMentionOn,
-        mentionKeywords,
-        notifyProps,
-        mentionProps,
-        replyNotificationType,
-        serverUrl,
-        currentUser,
+        currentUser, channelMentionOn, replyNotificationType, firstNameMentionOn,
+        usernameMentionOn, mentionKeywords, mentionProps, close, notifyProps, serverUrl,
     ]);
 
     const handleFirstNameToggle = useCallback(() => {
@@ -226,7 +221,16 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     useAndroidHardwareBackHandler(componentId, saveMention);
 
     return (
-        <>
+        <KeyboardAwareScrollView
+            bounces={false}
+            enableAutomaticScroll={true}
+            enableOnAndroid={true}
+            keyboardShouldPersistTaps='handled'
+            keyboardDismissMode='none'
+            scrollToOverflowEnabled={true}
+            noPaddingBottomOnAndroid={true}
+            style={styles.flex}
+        >
             <SettingBlock
                 headerText={mentionHeaderText}
             >
@@ -303,7 +307,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                     setReplyNotificationType={setReplyNotificationType}
                 />
             )}
-        </>
+        </KeyboardAwareScrollView>
     );
 };
 
