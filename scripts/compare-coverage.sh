@@ -39,7 +39,7 @@ for metric in lines statements branches functions; do
     row=$(printf "| %-15s | %9.2f%% | %9.2f%% | %8.2f%% |" "${metric^}" "$main" "$pr" "$diff")
     COMMENT_BODY+=$'\n'"$row"
     
-    if (( $(echo "$diff < -$COVERAGE_THRESHOLD" | bc -l) )); then
+    if (( $(echo "$diff > -$COVERAGE_THRESHOLD" | bc -l) )); then
         echo "::error::${metric^} coverage has decreased by more than ${COVERAGE_THRESHOLD}% ($diff%)"
         HAS_DECREASE=1
     fi
