@@ -1,5 +1,6 @@
 #!/bin/bash
 
+COVERAGE_THRESHOLD=1.0
 MAIN_COVERAGE_FILE="$1/coverage-summary.json"
 RECENT_COVERAGE_FILE="$2/coverage-summary.json"
 PR_NUMBER="$3"
@@ -29,8 +30,8 @@ for metric in lines statements branches functions; do
     row=$(printf "| %-15s | %9.2f%% | %9.2f%% | %8.2f%% |" "${metric^}" "$main" "$pr" "$diff")
     COMMENT_BODY+=$'\n'"$row"
     
-    if (( $(echo "$diff < -1" | bc -l) )); then
-        echo "::error::${metric^} coverage has decreased by more than 1% ($diff%)"
+    if (( $(echo "$diff < -$COVERAGE_THRESHOLD" | bc -l) )); then
+        echo "::error::${metric^} coverage has decreased by more than ${COVERAGE_THRESHOLD}% ($diff%)"
         HAS_DECREASE=1
     fi
 done
@@ -39,7 +40,7 @@ COMMENT_BODY+=$'\n'"+-----------------+------------+------------+-----------+
 \`\`\`"
 
 if [ "$HAS_DECREASE" -eq 1 ]; then
-    COMMENT_BODY+=$'\n\n'"⚠️ **Warning:** One or more coverage metrics have decreased by more than 1%"
+    COMMENT_BODY+=$'\n\n'"⚠️ **Warning:** One or more coverage metrics have decreased by more than ${COVERAGE_THRESHOLD}%"
 fi
 
 # Post comment to GitHub PR
