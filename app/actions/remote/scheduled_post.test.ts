@@ -93,6 +93,12 @@ jest.mock('@managers/websocket_manager', () => ({
     getClient: jest.fn(() => mockWebSocketClient),
 }));
 
+jest.mock('@utils/scheduled_post', () => {
+    return {
+        isScheduledPostModel: jest.fn(() => false),
+    };
+});
+
 const mockedGetConfigValue = jest.mocked(getConfigValue);
 
 beforeAll(() => {

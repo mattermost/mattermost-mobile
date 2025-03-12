@@ -9,6 +9,7 @@ import {getConfigValue} from '@queries/servers/system';
 import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
+import {isScheduledPostModel} from '@utils/scheduled_post';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -46,7 +47,7 @@ export async function updateScheduledPost(serverUrl: string, scheduledPost: Sche
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
-        const normalizedScheduledPost = scheduledPost instanceof ScheduledPostModel ? await scheduledPost.toApi(database) : scheduledPost;
+        const normalizedScheduledPost = isScheduledPostModel(scheduledPost) ? await scheduledPost.toApi(database) : scheduledPost;
         const response = await client.updateScheduledPost(normalizedScheduledPost, connectionId);
 
         if (response && !fetchOnly) {

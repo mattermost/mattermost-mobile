@@ -5,6 +5,7 @@ import {Alert} from 'react-native';
 
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {IntlShape} from 'react-intl';
 import type {SwipeableMethods} from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
 
@@ -55,3 +56,6 @@ export function deleteScheduledPostConfirmation({
         ],
     );
 }
+
+export const isScheduledPostModel = (obj: any): obj is ScheduledPostModel =>
+    obj && typeof obj.toApi === 'function';

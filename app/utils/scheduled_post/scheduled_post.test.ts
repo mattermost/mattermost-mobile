@@ -4,8 +4,9 @@ import {Alert} from 'react-native';
 
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 
-import {deleteScheduledPostConfirmation} from './index';
+import {deleteScheduledPostConfirmation, isScheduledPostModel} from './index';
 
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {IntlShape} from 'react-intl';
 import type {SwipeableMethods} from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
 
@@ -137,5 +138,19 @@ describe('deleteScheduledPostConfirmation', () => {
         expect(cancelButton).toBeDefined();
         const onPress = cancelButton.onPress ?? (() => {});
         expect(() => onPress()).not.toThrow();
+    });
+});
+
+describe('isScheduledPostModel', () => {
+    it('returns true for a valid scheduled post model', () => {
+        const scheduledPostModel = {
+            toApi: () => { },
+        } as unknown as ScheduledPostModel;
+        expect(isScheduledPostModel(scheduledPostModel)).toBe(true);
+    });
+
+    it('returns false for an invalid scheduled post model', () => {
+        const invalidScheduledPostModel = {};
+        expect(isScheduledPostModel(invalidScheduledPostModel)).toBe(false);
     });
 });
