@@ -63,14 +63,6 @@ if [ "$HAS_DECREASE" -eq 1 ]; then
     COMMENT_BODY+=$'\n\n'"⚠️ **Warning:** One or more coverage metrics have decreased by more than ${COVERAGE_THRESHOLD}%"
 fi
 
-if [ -n "$PR_NUMBER" ] && [ -n "$GITHUB_TOKEN" ]; then
-    curl -X POST \
-        -H "Authorization: token $GITHUB_TOKEN" \
-        -H "Accept: application/vnd.github.v3+json" \
-        "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-        -d "{\"body\":$(echo "$COMMENT_BODY" | jq -R -s .)}"
-fi
-
 echo "$COMMENT_BODY"
 
 # Not failing the build for now

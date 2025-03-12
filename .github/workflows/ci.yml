@@ -17,18 +17,11 @@ jobs:
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Comment PR
-        uses: thollander/actions-comment-pull-request@v3
+      - name: ci/test
+        uses: ./.github/actions/test
+      - name: ci/test-coverage
+        if: github.event_name == 'pull_request' || github.ref_name == 'main'
+        uses: ./.github/actions/test-coverage
         with:
-          message: |
-            Hello world ! :wave:
-
-      # - name: ci/test
-      #   uses: ./.github/actions/test
-      # - name: ci/test-coverage
-      #   if: github.event_name == 'pull_request' || github.ref_name == 'main'
-      #   uses: ./.github/actions/test-coverage
-      #   with:
-      #     github_token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
-      #     run_id: ${{ github.run_id }}
+          github_token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+          run_id: ${{ github.run_id }}
