@@ -293,7 +293,6 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         expect(showSnackBar).toHaveBeenCalledWith({
             barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
             customMessage: 'Failed to create post',
-            keepOpen: true,
             type: 'error',
         });
 

@@ -267,7 +267,6 @@ describe('RescheduledDraft', () => {
                 barType: 'RESCHEDULED_POST',
                 customMessage: expect.stringContaining('No time selected'),
                 type: 'error',
-                keepOpen: true,
             }),
         );
 

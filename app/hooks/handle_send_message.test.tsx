@@ -659,7 +659,6 @@ describe('useHandleSendMessage', () => {
             expect(showSnackBar).toHaveBeenCalledWith({
                 barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
                 customMessage: 'Failed to create post',
-                keepOpen: true,
                 type: 'error',
             });
             expect(defaultProps.clearDraft).not.toHaveBeenCalled();

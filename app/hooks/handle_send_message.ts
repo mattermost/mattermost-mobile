@@ -14,7 +14,7 @@ import {setStatus} from '@actions/remote/user';
 import {handleCallsSlashCommand} from '@calls/actions';
 import {Events, Screens} from '@constants';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
@@ -127,8 +127,7 @@ export const useHandleSendMessage = ({
             showSnackBar({
                 barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
                 customMessage: getErrorMessage(response.error),
-                type: 'error',
-                keepOpen: true,
+                type: MESSAGE_TYPE.ERROR,
             });
             return response;
         }
@@ -138,7 +137,7 @@ export const useHandleSendMessage = ({
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
 
         return response;
-    }, [files, currentUserId, channelId, rootId, value, postPriority, clearDraft, serverUrl]);
+    }, [files, currentUserId, channelId, rootId, value, postPriority, isFromDraftView, clearDraft, serverUrl]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);

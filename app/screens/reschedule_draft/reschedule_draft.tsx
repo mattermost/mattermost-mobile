@@ -7,7 +7,7 @@ import {Keyboard, SafeAreaView, StyleSheet, View} from 'react-native';
 
 import {updateScheduledPost} from '@actions/remote/scheduled_post';
 import Loading from '@components/loading';
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -86,8 +86,7 @@ const RescheduledDraft: React.FC<Props> = ({
             showSnackBar({
                 barType: SNACK_BAR_TYPE.RESCHEDULED_POST,
                 customMessage: errorMessage,
-                keepOpen: true,
-                type: 'error',
+                type: MESSAGE_TYPE.ERROR,
             });
         } else {
             setIsUpdating(false);
@@ -105,8 +104,7 @@ const RescheduledDraft: React.FC<Props> = ({
             showSnackBar({
                 barType: SNACK_BAR_TYPE.RESCHEDULED_POST,
                 customMessage: errorMessage,
-                keepOpen: true,
-                type: 'error',
+                type: MESSAGE_TYPE.ERROR,
             });
             return;
         }

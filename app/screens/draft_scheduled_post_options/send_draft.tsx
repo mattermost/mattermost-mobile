@@ -11,7 +11,7 @@ import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
@@ -107,8 +107,7 @@ const SendDraft: React.FC<Props> = ({
                 showSnackBar({
                     barType: SNACK_BAR_TYPE.DELETE_SCHEDULED_POST_ERROR,
                     customMessage: getErrorMessage(res.error),
-                    keepOpen: true,
-                    type: 'error',
+                    type: MESSAGE_TYPE.ERROR,
                 });
             }
         }
