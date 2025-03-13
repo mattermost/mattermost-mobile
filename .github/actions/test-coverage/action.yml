@@ -104,7 +104,7 @@ runs:
         echo "report<<EOF" >> $GITHUB_ENV
         echo "$output" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
-        echo "::endgroup::
+        echo "::endgroup::"
 
     - name: Post coverage report
       if: env.IS_PR_WITH_CACHE == 'true'
