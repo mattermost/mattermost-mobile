@@ -36,6 +36,8 @@ describe('components/categories_list', () => {
                 moreThanOneTeam={false}
                 hasChannels={true}
                 draftsCount={0}
+                scheduledPostHasError={false}
+                scheduledPostCount={0}
             />,
             {database},
         );
@@ -50,6 +52,8 @@ describe('components/categories_list', () => {
                 moreThanOneTeam={false}
                 hasChannels={true}
                 draftsCount={0}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
             />,
             {database},
         );
@@ -67,6 +71,8 @@ describe('components/categories_list', () => {
                 moreThanOneTeam={false}
                 hasChannels={true}
                 draftsCount={1}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
             />,
             {database},
         );
@@ -85,6 +91,8 @@ describe('components/categories_list', () => {
                 moreThanOneTeam={false}
                 hasChannels={true}
                 draftsCount={0}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
             />,
             {database},
         );
@@ -108,6 +116,8 @@ describe('components/categories_list', () => {
                 moreThanOneTeam={true}
                 hasChannels={false}
                 draftsCount={0}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
             />,
             {database},
         );

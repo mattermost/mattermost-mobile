@@ -1,43 +1,109 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, View} from 'react-native';
+import {Keyboard, Text, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import {observeConfigBooleanValue} from '@queries/servers/system';
+import TabbedContents from '@screens/global_drafts/components/tabbed_contents/tabbed_contents';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import {popTopScreen} from '../navigation';
 
 import GlobalDraftsList from './components/global_drafts_list';
+import {TAB_CONTAINER_HEIGHT} from './contants';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const edges: Edge[] = ['left', 'right'];
 
+export const DRAFT_SCREEN_TAB_DRAFTS = 0;
+export const DRAFT_SCREEN_TAB_SCHEDULED_POSTS = 1;
+export type DraftScreenTab = typeof DRAFT_SCREEN_TAB_DRAFTS | typeof DRAFT_SCREEN_TAB_SCHEDULED_POSTS;
+
 type Props = {
     componentId?: AvailableScreens;
+    scheduledPostsEnabled?: boolean;
+    initialTab?: DraftScreenTab;
 };
 
-const styles = StyleSheet.create({
-    flex: {
-        flex: 1,
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        flex: {
+            flex: 1,
+        },
+        tabItem: {
+            position: 'relative',
+            height: TAB_CONTAINER_HEIGHT,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+        },
+        activeTabItem: {
+            color: theme.buttonBg,
+        },
+        tabItemText: {
+            ...typography('Body', 100, 'SemiBold'),
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+        },
+        activeTabItemText: {
+            color: theme.buttonBg,
+        },
+        tabItemTextActive: {
+            color: theme.buttonBg,
+        },
+        activeTabIndicator: {
+            backgroundColor: theme.buttonBg,
+        },
+        badgeStyles: {
+            position: 'relative',
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+        },
+        activeBadgeStyles: {
+            color: theme.buttonBg,
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+        },
+        badgeStylesActive: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+        },
+        tabView: {
+            width: '100%',
+        },
+    };
 });
 
-const GlobalDrafts = ({componentId}: Props) => {
+export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab}: Props) => {
+    // eslint-disable-next-line no-warning-comments
+    // TODO: replace this hardcoded count with actual count integrated from the database
+    const draftsCount = 10;
+
+    // eslint-disable-next-line no-warning-comments
+    // TODO: replace this hardcoded count with actual count integrated from the database
+    const scheduledPostCount = 100;
+
     const intl = useIntl();
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
 
     const defaultHeight = useDefaultHeaderHeight();
+
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
 
     const headerLeftComponent = useMemo(() => {
         if (isTablet) {
@@ -63,6 +129,18 @@ const GlobalDrafts = ({componentId}: Props) => {
         }
     }, [componentId, isTablet]);
 
+    const draftList = (
+        <GlobalDraftsList
+            location={Screens.GLOBAL_DRAFTS}
+        />
+    );
+
+    const scheduledPostList = (
+        <Text>
+            {'Scheduled posts will be renderred here'}
+        </Text>
+    );
+
     return (
         <SafeAreaView
             edges={edges}
@@ -87,13 +165,28 @@ const GlobalDrafts = ({componentId}: Props) => {
             </View>
             {!switchingTeam &&
             <View style={containerStyle}>
-                <GlobalDraftsList
-                    location={Screens.GLOBAL_DRAFTS}
-                />
+                {
+                    scheduledPostsEnabled ? (
+                        <TabbedContents
+                            initialTab={initialTab || DRAFT_SCREEN_TAB_DRAFTS}
+                            draftsCount={draftsCount}
+                            scheduledPostCount={scheduledPostCount}
+                            drafts={draftList}
+                            scheduledPosts={scheduledPostList}
+                        />
+                    ) : draftList
+                }
             </View>
             }
         </SafeAreaView>
     );
 };
 
-export default GlobalDrafts;
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const scheduledPostsEnabled = observeConfigBooleanValue(database, 'ScheduledPosts');
+    return {
+        scheduledPostsEnabled,
+    };
+});
+
+export default withDatabase(enhanced(GlobalDraftsAndScheduledPosts));

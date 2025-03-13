@@ -317,6 +317,8 @@
   "draft.options.title": "Draft Options",
   "draft.tooltip.description": "Long-press on an item to see draft actions",
   "drafts": "Drafts",
+  "drafts_tab.title.drafts": "Drafts",
+  "drafts_tab.title.scheduled": "Scheduled",
   "drafts.empty.subtitle": "Any message you have started will show here.",
   "drafts.empty.title": "No drafts at the moment",
   "edit_post.editPost": "Edit the post...",

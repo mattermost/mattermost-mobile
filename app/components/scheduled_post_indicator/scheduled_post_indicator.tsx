@@ -1,13 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {FormattedMessage} from 'react-intl';
-import {Text, View} from 'react-native';
+import {DeviceEventEmitter, Text, View} from 'react-native';
 
+import {switchToGlobalDrafts} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
 import FormattedTime from '@components/formatted_time';
+import {Events} from '@constants';
+import {DRAFT} from '@constants/screens';
 import {useTheme} from '@context/theme';
+import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
@@ -48,6 +52,11 @@ type Props = {
 export function ScheduledPostIndicator({currentUser, isMilitaryTime, isThread, scheduledPostCount = 0}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const handleSeeAllScheduledPosts = useCallback(() => {
+        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
+        switchToGlobalDrafts(DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
+    }, []);
 
     let scheduledPostText: React.ReactNode;
 
@@ -109,7 +118,10 @@ export function ScheduledPostIndicator({currentUser, isMilitaryTime, isThread, s
                 <Text style={styles.text}>
                     {scheduledPostText}
                     {' '}
-                    <Text style={styles.link}>
+                    <Text
+                        style={styles.link}
+                        onPress={handleSeeAllScheduledPosts}
+                    >
                         <FormattedMessage
                             id='scheduled_post.channel_indicator.link_to_scheduled_posts.text'
                             defaultMessage='See all.'
