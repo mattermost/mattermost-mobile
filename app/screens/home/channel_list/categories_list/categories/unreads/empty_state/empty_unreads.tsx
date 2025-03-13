@@ -61,25 +61,25 @@ function SvgComponent() {
                 <Path
                     opacity={0.4}
                     d='M67 65H97'
-                    stroke={theme.sidebarText}
+                    stroke={'white'}
                     strokeLinecap='round'
                 />
                 <Path
                     opacity={0.4}
                     d='M67 72H86'
-                    stroke={theme.sidebarText}
+                    stroke={'white'}
                     strokeLinecap='round'
                 />
                 <Path
                     opacity={0.4}
                     d='M67 59H77'
-                    stroke={theme.sidebarText}
+                    stroke={'white'}
                     strokeLinecap='round'
                 />
                 <Path
                     opacity={0.4}
                     d='M80 59H93'
-                    stroke={theme.sidebarText}
+                    stroke={'white'}
                     strokeLinecap='round'
                 />
                 <Path
