@@ -22,3 +22,35 @@ export const queryScheduledPostsForTeam = (database: Database, teamId: string, i
         Q.sortBy('update_at', Q.desc),
     );
 };
+
+export const observeScheduledPostsForTeam = (database: Database, teamId: string, includeDirectChannelPosts?: boolean) => {
+    return queryScheduledPostsForTeam(database, teamId, includeDirectChannelPosts).observeWithColumns(['update_at']);
+};
+
+export const observeScheduledPostCount = (database: Database, teamId: string, includeDirectChannelPosts?: boolean) => {
+    return queryScheduledPostsForTeam(database, teamId, includeDirectChannelPosts).observeCount();
+};
+
+export const observeScheduledPostCountForChannel = (
+    database: Database,
+    channelId: string,
+    isCRTEnabled: boolean,
+) => {
+    let query = database.get<ScheduledPostModel>(SCHEDULED_POST).query(
+        Q.on(CHANNEL,
+            Q.where('id', channelId),
+        ),
+    );
+
+    if (isCRTEnabled) {
+        query = query.extend(Q.where('root_id', ''));
+    }
+
+    return query.observeCount();
+};
+
+export const observeScheduledPostCountForThread = (database: Database, rootId: string) => {
+    return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
+        Q.where('root_id', rootId),
+    ).observeCount();
+};

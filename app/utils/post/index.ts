@@ -267,7 +267,9 @@ export function scheduledPostFromPost(post: Post, schedulingInfo: SchedulingInfo
         ...post,
         scheduled_at: schedulingInfo.scheduled_at,
         priority: postPriority,
-        files: postFiles,
+        metadata: {
+            files: postFiles,
+        },
         file_ids: fileIDs,
     };
 }

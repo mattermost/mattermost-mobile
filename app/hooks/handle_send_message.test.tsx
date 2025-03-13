@@ -12,9 +12,11 @@ import {createPost} from '@actions/remote/post';
 import {createScheduledPost} from '@actions/remote/scheduled_post';
 import {handleCallsSlashCommand} from '@calls/actions';
 import {Events, Screens} from '@constants';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
+import {showSnackBar} from '@utils/snack_bar';
 
 import {useHandleSendMessage} from './handle_send_message';
 
@@ -31,6 +33,9 @@ jest.mock('@actions/remote/user');
 jest.mock('@calls/actions');
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn().mockReturnValue('https://server.com'),
+}));
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
 }));
 
 describe('useHandleSendMessage', () => {
@@ -65,6 +70,9 @@ describe('useHandleSendMessage', () => {
         jest.mocked(getChannelTimezones).mockResolvedValue({channelTimezones: []});
         jest.mocked(useServerUrl).mockReturnValue('https://server.com');
         jest.spyOn(DeviceEventEmitter, 'emit');
+        jest.mocked(createPost).mockResolvedValue({
+            data: true,
+        });
     });
 
     it('should handle basic message send', async () => {
@@ -601,6 +609,12 @@ describe('useHandleSendMessage', () => {
     });
 
     describe('command handling', () => {
+        beforeEach(() => {
+            jest.mocked(createScheduledPost).mockResolvedValueOnce({
+                data: true,
+            });
+        });
+
         it('should bypass command handling for scheduled messages', async () => {
             const props = {
                 ...defaultProps,
@@ -620,6 +634,35 @@ describe('useHandleSendMessage', () => {
 
             expect(executeCommand).not.toHaveBeenCalled();
             expect(createScheduledPost).toHaveBeenCalled();
+        });
+    });
+
+    describe('handle error while failing creating post from scheduled post and draft', () => {
+        it('should handle failed post creation', async () => {
+            jest.mocked(createPost).mockResolvedValueOnce({
+                error: new Error('Failed to create post'),
+            });
+
+            const props = {
+                ...defaultProps,
+                isFromDraftView: true,
+                value: 'test message',
+            };
+
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+            await act(async () => {
+                const response = await result.current.handleSendMessage();
+                expect(response?.error).toBeDefined();
+            });
+
+            expect(showSnackBar).toHaveBeenCalledWith({
+                barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
+                customMessage: 'Failed to create post',
+                type: 'error',
+            });
+            expect(defaultProps.clearDraft).not.toHaveBeenCalled();
+            expect(DeviceEventEmitter.emit).not.toHaveBeenCalled();
         });
     });
 });

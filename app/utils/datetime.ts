@@ -32,3 +32,21 @@ export function toMilliseconds({days, hours, minutes, seconds}: {days?: number; 
     const totalSeconds = (totalMinutes * 60) + (seconds || 0);
     return totalSeconds * 1000;
 }
+
+export function getReadableTimestamp(timestamp: number, timeZone: string, isMilitaryTime: boolean, currentUserLocale: string): string {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isCurrentYear = date.getFullYear() === now.getFullYear();
+
+    const options: Intl.DateTimeFormatOptions = {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: !isMilitaryTime,
+        timeZone: timeZone as string,
+        ...(isCurrentYear ? {} : {year: 'numeric'}),
+    };
+
+    return date.toLocaleString(currentUserLocale, options);
+}

@@ -114,8 +114,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CHANNEL_ADD_MEMBERS:
             screen = withServerDatabase(require('@screens/channel_add_members').default);
             break;
-        case Screens.DRAFT_OPTIONS:
-            screen = withServerDatabase(require('@screens/draft_options').default);
+        case Screens.DRAFT_SCHEDULED_POST_OPTIONS:
+            screen = withServerDatabase(require('@screens/draft_scheduled_post_options').default);
             break;
         case Screens.EDIT_POST:
             screen = withServerDatabase(require('@screens/edit_post').default);
@@ -198,6 +198,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.REACTIONS:
             screen = withServerDatabase(require('@screens/reactions').default);
+            break;
+        case Screens.RESCHEDULE_DRAFT:
+            screen = withServerDatabase(require('@screens/reschedule_draft').default);
             break;
         case Screens.REVIEW_APP:
             screen = withServerDatabase(require('@screens/review_app').default);

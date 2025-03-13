@@ -25,6 +25,7 @@ const scheduledPost = {
     scheduled_at: 123,
     update_at: 456,
     user_id: '',
+    create_at: 789,
 };
 
 beforeEach(async () => {
