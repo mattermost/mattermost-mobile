@@ -12,6 +12,7 @@ import {Screens, Sso} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import NetworkManager from '@managers/network_manager';
+import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
 import {dismissModal, popTopScreen, resetToHome} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
@@ -172,7 +173,10 @@ const SSO = ({
     }
 
     return (
-        <View style={styles.flex}>
+        <View
+            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
+            style={styles.flex}
+        >
             <Background theme={theme}/>
             <AnimatedSafeArea style={[styles.flex, transform]}>
                 {authentication}

@@ -6,14 +6,16 @@ import {createBottomTabNavigator, type BottomTabBarProps} from '@react-navigatio
 import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Platform} from 'react-native';
+import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
+import {initializeSecurityManager} from '@actions/app/server';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import ServerVersion from '@components/server_version';
 import {Events, Launch, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
+import SecurityManager from '@managers/security_manager';
 import {getAllServers} from '@queries/app/servers';
 import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
@@ -57,10 +59,18 @@ const updateTimezoneIfNeeded = async () => {
     }
 };
 
+const styles = StyleSheet.create({
+    flex: {flex: 1},
+});
+
 export function HomeScreen(props: HomeProps) {
     const theme = useTheme();
     const intl = useIntl();
     const appState = useAppState();
+
+    useEffect(() => {
+        initializeSecurityManager();
+    }, []);
 
     const handleFindChannels = useCallback(() => {
         if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS)) {
@@ -136,7 +146,10 @@ export function HomeScreen(props: HomeProps) {
     }, []);
 
     return (
-        <>
+        <View
+            style={styles.flex}
+            nativeID={SecurityManager.getShieldScreenId(Screens.HOME, true)}
+        >
             <NavigationContainer
                 theme={{
                     ...DefaultTheme,
@@ -190,7 +203,7 @@ export function HomeScreen(props: HomeProps) {
                 </Tab.Navigator>
             </NavigationContainer>
             <ServerVersion/>
-        </>
+        </View>
     );
 }
 

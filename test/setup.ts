@@ -73,6 +73,7 @@ jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 jest.mock('@database/manager');
 jest.doMock('react-native', () => {
     const {
+        AppState: RNAppState,
         Platform,
         StyleSheet,
         requireNativeComponent,
@@ -85,6 +86,13 @@ jest.doMock('react-native', () => {
     const Alert = {
         ...RNAlert,
         alert: jest.fn(),
+    };
+
+    const AppState = {
+        ...RNAppState,
+        addEventListener: jest.fn(() => ({
+            remove: jest.fn(),
+        })),
     };
 
     const InteractionManager = {
@@ -214,10 +222,12 @@ jest.doMock('react-native', () => {
                     minor: 64,
                 },
             },
+            select: jest.fn((dict) => dict.ios || dict.default),
         },
         StyleSheet,
         requireNativeComponent,
         Alert,
+        AppState,
         InteractionManager,
         NativeModules,
         Linking,

@@ -15,6 +15,7 @@ import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -116,6 +117,7 @@ const Channel = ({
                 edges={edges}
                 testID='channel.screen'
                 onLayout={onLayout}
+                nativeID={componentId ? SecurityManager.getShieldScreenId(componentId) : undefined}
             >
                 <ChannelHeader
                     channelId={channelId}
