@@ -3,7 +3,14 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, type StyleProp, type ViewStyle} from 'react-native';
+import {
+    DeviceEventEmitter,
+    Text,
+    TouchableOpacity,
+    useWindowDimensions,
+    type StyleProp,
+    type ViewStyle,
+} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
 import {type ComponentEvent, Navigation} from 'react-native-navigation';
 import Animated, {
@@ -16,6 +23,7 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 
+import CompassIcon from '@components/compass_icon';
 import Toast, {TOAST_HEIGHT} from '@components/toast';
 import {Navigation as NavigationConstants, Screens} from '@constants';
 import {MESSAGE_TYPE, SNACK_BAR_CONFIG} from '@constants/snack_bar';
@@ -39,6 +47,8 @@ const SNACK_BAR_HEIGHT = 56;
 const SNACK_BAR_BOTTOM_RATIO = 0.04;
 
 const caseScreens: AvailableScreens[] = [Screens.PERMALINK, Screens.MANAGE_CHANNEL_MEMBERS, Screens.MENTIONS, Screens.SAVED_MESSAGES];
+
+const DEFAULT_ICON = 'alert-outline';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -85,6 +95,9 @@ const SnackBar = ({
     componentId,
     onAction,
     sourceScreen,
+    keepOpen,
+    customMessage,
+    type,
 }: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
@@ -97,7 +110,17 @@ const SnackBar = ({
     const mounted = useRef(false);
     const userHasUndo = useRef(false);
 
-    const config = SNACK_BAR_CONFIG[barType];
+    let config;
+    if (barType && SNACK_BAR_CONFIG[barType]) {
+        config = SNACK_BAR_CONFIG[barType];
+    } else {
+        config = {
+            iconName: DEFAULT_ICON,
+            canUndo: false,
+            type,
+        };
+    }
+
     const styles = getStyleSheet(theme);
     const gestureRootStyle = useMemo(() => {
         return {
@@ -207,20 +230,27 @@ const SnackBar = ({
         animateHiding(false);
     };
 
+    const dismissSnackBar = useCallback(() => {
+        if (!isPanned.value) {
+            animateHiding(false);
+        }
+    }, [animateHiding, isPanned.value]);
+
     // This effect hides the snack bar after 3 seconds
     useEffect(() => {
         mounted.current = true;
-        baseTimer.current = setTimeout(() => {
-            if (!isPanned.value) {
-                animateHiding(false);
-            }
-        }, 3000);
+
+        if (!keepOpen) {
+            baseTimer.current = setTimeout(() => {
+                dismissSnackBar();
+            }, 3000);
+        }
 
         return () => {
             stopTimers();
             mounted.current = false;
         };
-    }, [animateHiding, isPanned]);
+    }, [keepOpen, dismissSnackBar]);
 
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {
@@ -252,7 +282,12 @@ const SnackBar = ({
             tabPress.remove();
             navigateToTab.remove();
         };
-    }, []);
+    }, [animateHiding, componentId, sourceScreen]);
+
+    const message = customMessage || intl.formatMessage(
+        {id: config.id, defaultMessage: config.defaultMessage},
+        messageValues,
+    );
 
     return (
         <GestureHandlerRootView
@@ -268,12 +303,10 @@ const SnackBar = ({
                         <Toast
                             animatedStyle={snackBarStyle}
                             iconName={config.iconName}
-                            message={intl.formatMessage(
-                                {id: config.id, defaultMessage: config.defaultMessage},
-                                messageValues,
-                            )}
+                            message={message}
                             style={toastStyle}
                             textStyle={styles.text}
+                            testID='toast'
                         >
                             {config.canUndo && onAction && (
                                 <TouchableOpacity onPress={onUndoPressHandler}>
@@ -285,6 +318,20 @@ const SnackBar = ({
                                     </Text>
                                 </TouchableOpacity>
                             )}
+                            {
+                                keepOpen &&
+                                <TouchableOpacity
+                                    onPress={dismissSnackBar}
+                                    testID='close-button'
+                                >
+                                    <CompassIcon
+                                        color={theme.buttonColor}
+                                        name={'close'}
+                                        size={18}
+                                        style={styles.text}
+                                    />
+                                </TouchableOpacity>
+                            }
                         </Toast>
                     </Animated.View>
                 </Animated.View>

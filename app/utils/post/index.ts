@@ -252,3 +252,22 @@ export async function sendMessageWithAlert({title, channelName, intl, sendMessag
         buttons,
     );
 }
+
+export function scheduledPostFromPost(post: Post, schedulingInfo: SchedulingInfo, postPriority?: PostPriority, postFiles?: FileInfo[]): ScheduledPost {
+    const fileIDs: string[] = [];
+    if (postFiles) {
+        postFiles.forEach((file) => {
+            if (file.id) {
+                fileIDs.push(file.id);
+            }
+        });
+    }
+
+    return {
+        ...post,
+        scheduled_at: schedulingInfo.scheduled_at,
+        priority: postPriority,
+        files: postFiles,
+        file_ids: fileIDs,
+    };
+}

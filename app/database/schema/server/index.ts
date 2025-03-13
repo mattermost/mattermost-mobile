@@ -27,6 +27,7 @@ import {
     PreferenceSchema,
     ReactionSchema,
     RoleSchema,
+    ScheduledPostSchema,
     SystemSchema,
     TeamChannelHistorySchema,
     TeamMembershipSchema,
@@ -40,7 +41,7 @@ import {
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 6,
+    version: 7,
     tables: [
         CategorySchema,
         CategoryChannelSchema,
@@ -65,6 +66,7 @@ export const serverSchema: AppSchema = appSchema({
         PreferenceSchema,
         ReactionSchema,
         RoleSchema,
+        ScheduledPostSchema,
         SystemSchema,
         TeamChannelHistorySchema,
         TeamMembershipSchema,
