@@ -10,6 +10,7 @@ import {storeScheduledPostsTutorial} from '@actions/app/global';
 import CompassIcon from '@components/compass_icon';
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_list/config';
 import {Screens} from '@constants';
+import {tooltipContentStyle} from '@constants/tooltip';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {DRAFT_SCHEDULED_POST_LAYOUT_PADDING, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
@@ -48,10 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: '100%',
         },
         tooltipContentStyle: {
-            borderRadius: 8,
-            width: 247,
-            padding: 16,
-            height: 160,
+            ...tooltipContentStyle,
         },
         errorContainer: {
             display: 'flex',
@@ -81,7 +79,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
     const [layoutWidth, setLayoutWidth] = useState(0);
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        setLayoutWidth(e.nativeEvent.layout.width - DRAFT_SCHEDULED_POST_LAYOUT_PADDING); // 40 is the padding of the container
+        setLayoutWidth(e.nativeEvent.layout.width - DRAFT_SCHEDULED_POST_LAYOUT_PADDING);
     }, []);
 
     useEffect(() => {

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent} from '@testing-library/react-native';
+import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
 import {renderWithIntl} from '@test/intl-test-helper';
@@ -46,14 +46,14 @@ describe('DraftScheduledPostTooltip', () => {
         expect(getByText('Long-press on an item to see scheduled post actions')).toBeTruthy();
     });
 
-    it('should call onClose when close button is pressed', () => {
+    it('should call onClose when close button is pressed', async () => {
         const {getByTestId} = renderWithIntl(
             <DraftScheduledPostTooltip
                 {...baseProps}
             />,
         );
 
-        fireEvent.press(getByTestId('draft.tooltip.close.button'));
+        await act(() => fireEvent.press(getByTestId('draft.tooltip.close.button')));
         expect(baseProps.onClose).toHaveBeenCalledTimes(1);
     });
 });

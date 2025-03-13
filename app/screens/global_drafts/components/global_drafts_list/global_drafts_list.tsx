@@ -9,6 +9,7 @@ import Tooltip from 'react-native-walkthrough-tooltip';
 import {storeDraftsTutorial} from '@actions/app/global';
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_list/config';
 import {Screens} from '@constants';
+import {tooltipContentStyle} from '@constants/tooltip';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {DRAFT_SCHEDULED_POST_LAYOUT_PADDING, DRAFT_TYPE_DRAFT} from '@screens/global_drafts/constants';
 import DraftTooltip from '@screens/global_drafts/draft_scheduled_post_tooltip';
@@ -44,10 +45,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     tooltipContentStyle: {
-        borderRadius: 8,
-        width: 247,
-        padding: 16,
-        height: 160,
+        ...tooltipContentStyle,
     },
 });
 
@@ -63,7 +61,7 @@ const GlobalDraftsList: React.FC<Props> = ({
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         if (location === Screens.GLOBAL_DRAFTS) {
-            setLayoutWidth(e.nativeEvent.layout.width - DRAFT_SCHEDULED_POST_LAYOUT_PADDING); // 40 is the padding of the container
+            setLayoutWidth(e.nativeEvent.layout.width - DRAFT_SCHEDULED_POST_LAYOUT_PADDING);
         }
     }, [location]);
 
