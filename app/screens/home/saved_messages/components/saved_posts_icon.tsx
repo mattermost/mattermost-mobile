@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import Svg, {Path, Ellipse} from 'react-native-svg';
+import Svg, {Circle, Path, G, Defs, ClipPath, Rect} from 'react-native-svg';
 
 import {useTheme} from '@context/theme';
 
@@ -16,49 +16,135 @@ export default function SavedPostsIcon({style}: Props) {
 
     return (
         <Svg
-            width={155}
-            height={153}
+            width={97}
+            height={87}
+            viewBox='0 0 97 87'
             fill='none'
             style={style}
         >
-            <Ellipse
-                cx={80.5}
-                cy={133}
-                rx={54.5}
-                ry={3}
-                fill='#000'
-                fillOpacity={0.06}
-            />
-            <Path
-                d='M70.27 59.771h59.439a8.307 8.307 0 0 1 5.874 2.405 8.274 8.274 0 0 1 2.449 5.845v37.697a8.271 8.271 0 0 1-5.147 7.63 8.31 8.31 0 0 1-3.176.619h-8.772v14.111l-13.158-14.111H70.291a8.315 8.315 0 0 1-5.873-2.404 8.276 8.276 0 0 1-2.45-5.845V68.021a8.27 8.27 0 0 1 2.442-5.838 8.303 8.303 0 0 1 5.86-2.412Z'
-                fill={theme.buttonBg}
-            />
-            <Path
-                d='M107.779 113.967H70.291a8.315 8.315 0 0 1-5.874-2.404 8.279 8.279 0 0 1-2.449-5.845V82.832s2.618 21.163 3.088 23.026c.47 1.863 1.403 4.65 5.824 5.112 4.422.462 36.899 2.997 36.899 2.997Z'
-                fill='#000'
-                fillOpacity={0.16}
-            />
-            <Path
-                d='M131.863 75.556a16.796 16.796 0 0 0-3.004-5.864 16.836 16.836 0 0 0-5.031-4.262.585.585 0 0 1-.306-.642.577.577 0 0 1 .545-.458c3.747-.224 11.312.575 8.94 11.17a.591.591 0 0 1-1.144.056Z'
-                fill='#fff'
-                fillOpacity={0.16}
-            />
-            <Path
-                d='M107.838 26.436h-75.65a10.577 10.577 0 0 0-7.475 3.06 10.533 10.533 0 0 0-3.117 7.44v47.977a10.516 10.516 0 0 0 3.117 7.44 10.56 10.56 0 0 0 7.475 3.06h11.165v17.959l16.746-17.96h47.712a10.578 10.578 0 0 0 7.476-3.06 10.52 10.52 0 0 0 3.117-7.439V36.937a10.521 10.521 0 0 0-3.108-7.43 10.567 10.567 0 0 0-7.458-3.07Z'
-                fill='#FFBC1F'
-            />
-            <Path
-                d='M60.1 95.413h47.711a10.573 10.573 0 0 0 7.476-3.06 10.53 10.53 0 0 0 3.117-7.44V55.787s-3.331 26.935-3.93 29.306c-.598 2.37-1.786 5.918-7.413 6.506-5.627.588-46.962 3.815-46.962 3.815Z'
-                fill='#CC8F00'
-            />
-            <Path
-                d='M29.447 46.526a21.375 21.375 0 0 1 3.823-7.464 21.426 21.426 0 0 1 6.403-5.424.74.74 0 0 0-.303-1.4c-4.77-.285-14.398.731-11.38 14.217a.749.749 0 0 0 1.171.469.748.748 0 0 0 .286-.398Z'
-                fill='#FFD470'
-            />
-            <Path
-                d='M81.253 75.167 69.5 70.192l-11.753 4.975v-29.63h23.506v29.63Zm0-34.167H57.747c-1.319 0-2.45.456-3.39 1.367-.905.874-1.357 1.931-1.357 3.17V82l16.5-6.833L86 82V45.537c0-1.239-.47-2.296-1.413-3.17-.904-.911-2.015-1.367-3.334-1.367Z'
-                fill={theme.centerChannelBg}
-            />
+            <G clipPath='url(#clip0_4210_81120)'>
+                <Path
+                    d='M3.00391 35L3.00392 56L15.0039 56'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.32}
+                    strokeLinecap='round'
+                />
+                <Path
+                    d='M3.00391 31L3.00391 25'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.32}
+                    strokeLinecap='round'
+                />
+                <Path
+                    d='M3.00391 22L3.00391 20'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.32}
+                    strokeLinecap='round'
+                />
+                <Path
+                    opacity={0.16}
+                    d='M81.873 78.899L90.0039 87V45C90.0039 43.8954 89.1085 43 88.0039 43H49.0039C47.8993 43 47.0039 43.8954 47.0039 45V76.3158C47.0039 77.4204 47.8993 78.3158 49.0039 78.3158H80.4614C80.9906 78.3158 81.4982 78.5255 81.873 78.899Z'
+                    fill={theme.buttonBg}
+                />
+                <Path
+                    d='M65.7734 65.5385H73.4657'
+                    stroke={theme.centerChannelBg}
+                    strokeLinecap='round'
+                />
+                <Path
+                    d='M23.6089 67.5638L10.0039 81V12C10.0039 10.8954 10.8993 10 12.0039 10H78.0039C79.1085 10 80.0039 10.8954 80.0039 12V64.9868C80.0039 66.0914 79.1085 66.9868 78.0039 66.9868H25.0142C24.4881 66.9868 23.9832 67.1941 23.6089 67.5638Z'
+                    fill={theme.centerChannelBg}
+                />
+                <Path
+                    d='M23.2575 67.2081L10.5039 79.8035V12C10.5039 11.1716 11.1755 10.5 12.0039 10.5H78.0039C78.8323 10.5 79.5039 11.1716 79.5039 12V64.9868C79.5039 65.8153 78.8323 66.4868 78.0039 66.4868H25.0142C24.3566 66.4868 23.7254 66.746 23.2575 67.2081Z'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.8}
+                />
+                <Circle
+                    cx={28.0039}
+                    cy={29}
+                    r={9}
+                    fill={theme.centerChannelColor}
+                    fillOpacity={0.32}
+                />
+                <Path
+                    d='M43.0039 25H59.0039'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.48}
+                    strokeLinecap='round'
+                />
+                <Path
+                    d='M20.0039 49H53.0039'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.48}
+                    strokeLinecap='round'
+                />
+                <Path
+                    d='M20.0039 56H42.0039'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.48}
+                    strokeLinecap='round'
+                />
+                <Path
+                    d='M43.0039 31H68.0039'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.48}
+                    strokeLinecap='round'
+                />
+                <Path
+                    d='M20.0039 43H37.0039'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.48}
+                    strokeLinecap='round'
+                />
+                <Path
+                    d='M41.0039 43H59.0039'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.48}
+                    strokeLinecap='round'
+                />
+                <Circle
+                    cx={78.0039}
+                    cy={19}
+                    r={19}
+                    fill='#32539A'
+                />
+                <Path
+                    d='M70.9922 12V27L77.9922 24L84.9922 27V12C84.9922 10.8954 84.0968 10 82.9922 10H72.9922C71.8876 10 70.9922 10.8954 70.9922 12Z'
+                    stroke={theme.buttonColor}
+                />
+                <Path
+                    d='M73.0039 49L94.0039 49L94.0039 37'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.8}
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                />
+                <Path
+                    d='M69.0039 49L63.0039 49'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.8}
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                />
+                <Path
+                    d='M60.0039 49L58.0039 49'
+                    stroke={theme.centerChannelColor}
+                    strokeOpacity={0.8}
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                />
+            </G>
+            <Defs>
+                <ClipPath id='clip0_4210_81120'>
+                    <Rect
+                        width={97}
+                        height={87}
+                        fill='white'
+                        transform='translate(0.00390625)'
+                    />
+                </ClipPath>
+            </Defs>
         </Svg>
     );
 }
