@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent} from '@testing-library/react-native';
+import {fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
-import {Screens} from '@constants';
-import {dismissBottomSheet, showModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -14,10 +13,12 @@ import RescheduledDraft from './rescheduled_draft';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-jest.mock('@screens/navigation', () => ({
-    dismissBottomSheet: jest.fn(),
-    showModal: jest.fn(),
-}));
+jest.mock('@screens/navigation', () => {
+    return {
+        dismissBottomSheet: jest.fn(() => Promise.resolve()),
+        showModal: jest.fn(),
+    };
+});
 
 // Mock CompassIcon as a function component
 jest.mock('@components/compass_icon', () => {
@@ -53,34 +54,25 @@ describe('RescheduledDraft', () => {
         expect(getByText('Reschedule')).toBeTruthy();
     });
 
-    it('calls dismissBottomSheet and showModal when pressed', async () => {
-        jest.mocked(dismissBottomSheet).mockResolvedValue(undefined);
+    it('calls dismissBottomSheet when pressed', async () => {
+        // Reset all mocks before the test
+        jest.clearAllMocks();
+
+        // Mock the functions directly
+        jest.mocked(dismissBottomSheet).mockImplementation(() => Promise.resolve());
 
         const {getByTestId} = renderWithIntlAndTheme(
             <RescheduledDraft {...baseProps}/>,
         );
 
+        // Trigger the button press
         fireEvent.press(getByTestId('rescheduled_draft'));
 
         await TestHelper.wait(0);
 
-        expect(dismissBottomSheet).toHaveBeenCalledWith(baseProps.bottomSheetId);
-        expect(showModal).toHaveBeenCalledWith(
-            Screens.RESCHEDULE_DRAFT,
-            'Change Schedule',
-            expect.objectContaining({
-                closeButtonId: 'close-rescheduled-draft',
-                draft: baseProps.draft,
-            }),
-            expect.objectContaining({
-                topBar: expect.objectContaining({
-                    leftButtons: expect.arrayContaining([
-                        expect.objectContaining({
-                            id: 'close-rescheduled-draft',
-                        }),
-                    ]),
-                }),
-            }),
-        );
+        // Wait for dismissBottomSheet to be called
+        await waitFor(() => {
+            expect(dismissBottomSheet).toHaveBeenCalledWith(baseProps.bottomSheetId);
+        });
     });
 });

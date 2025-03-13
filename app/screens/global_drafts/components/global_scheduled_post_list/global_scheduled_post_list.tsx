@@ -19,7 +19,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import DraftAndScheduledPostSwipeActions from '../draft_and_scheduled_post_swipe_actions';
-import DraftEmptyComponent from '../draft_empty_component';
+import ScheduledPostEmptyComponent from '../scheduled_post_empty_component';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
@@ -179,7 +179,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                 maxToRenderPerBatch={10}
                 nativeID={location}
                 renderItem={renderItem}
-                ListEmptyComponent={DraftEmptyComponent} //TODO: Change this to ScheduledPostEmptyComponent
+                ListEmptyComponent={ScheduledPostEmptyComponent}
             />
         </View>
     );

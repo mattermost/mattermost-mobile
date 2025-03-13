@@ -59,7 +59,7 @@ const RescheduledDraft: React.FC<Props> = ({
             },
         };
         showModal(Screens.RESCHEDULE_DRAFT, title, passProps, options);
-    }, []);
+    }, [bottomSheetId, draft, intl, theme.sidebarHeaderTextColor]);
 
     return (
         <TouchableWithFeedback

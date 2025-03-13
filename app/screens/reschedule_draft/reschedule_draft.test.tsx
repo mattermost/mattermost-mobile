@@ -12,6 +12,7 @@ import {useServerUrl} from '@context/server';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {showSnackBar} from '@utils/snack_bar';
 
 import RescheduledDraft from './reschedule_draft';
 
@@ -20,6 +21,10 @@ import type ScheduledPostModel from '@typings/database/models/servers/scheduled_
 
 jest.mock('@actions/remote/scheduled_post', () => ({
     updateScheduledPost: jest.fn().mockResolvedValue({scheduledPost: {} as ScheduledPost, error: undefined}),
+}));
+
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
 }));
 
 jest.mock('@screens/navigation', () => ({
@@ -223,5 +228,48 @@ describe('RescheduledDraft', () => {
 
         // Verify dismissModal was called
         expect(dismissModal).toHaveBeenCalledWith({componentId: baseProps.componentId});
+    });
+
+    it('should show snackbar when no time is selected', async () => {
+        jest.mocked(updateScheduledPost).mockResolvedValue({scheduledPost: {} as ScheduledPost, error: undefined});
+        const {getByTestId} = renderWithEverything(
+            <RescheduledDraft {...baseProps}/>, {database},
+        );
+
+        // Force selectedTime.current to be null
+        const dateTimeSelector = getByTestId('custom_date_time_picker');
+        expect(dateTimeSelector).toBeTruthy();
+
+        // Reset the mock to clear previous calls
+        jest.mocked(showSnackBar).mockClear();
+
+        await act(async () => {
+            fireEvent(dateTimeSelector, 'handleChange', '');
+        });
+
+        // Get the navigationButtonPressed handler
+        const functionToCall = jest.mocked(Navigation.events().registerComponentListener).mock.calls[1][0].navigationButtonPressed;
+
+        // Simulate pressing the save button without selecting a time
+        await act(async () => {
+            // This will force the component to use the initial null value for selectedTime.current
+            if (functionToCall) {
+                functionToCall({
+                    buttonId: 'reschedule-draft',
+                    componentId: '',
+                });
+            }
+        });
+
+        // Verify showSnackBar was called with error message
+        expect(showSnackBar).toHaveBeenCalledWith(
+            expect.objectContaining({
+                barType: 'RESCHEDULED_POST',
+                customMessage: expect.stringContaining('No time selected'),
+                type: 'error',
+            }),
+        );
+
+        expect(updateScheduledPost).not.toHaveBeenCalled();
     });
 });

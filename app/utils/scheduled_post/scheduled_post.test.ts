@@ -1,23 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {act} from 'react';
 import {Alert} from 'react-native';
 
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
+import {showSnackBar} from '@utils/snack_bar';
 
-import {deleteScheduledPostConfirmation, isScheduledPostModel} from './index';
+import {deleteScheduledPostConfirmation, hasScheduledPostError, isScheduledPostModel, getErrorStringFromCode, type ScheduledPostErrorCode} from './index';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {IntlShape} from 'react-intl';
 import type {SwipeableMethods} from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
 
-jest.mock('@actions/remote/scheduled_post', () => ({
-    deleteScheduledPost: jest.fn(),
+// Mock dependencies before importing the module under test
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
 }));
 
-jest.mock('react-native', () => ({
-    Alert: {
-        alert: jest.fn(),
-    },
+jest.mock('@actions/remote/scheduled_post', () => ({
+    deleteScheduledPost: jest.fn(),
 }));
 
 describe('deleteScheduledPostConfirmation', () => {
@@ -83,6 +84,8 @@ describe('deleteScheduledPostConfirmation', () => {
             baseProps.serverUrl,
             baseProps.scheduledPostId,
         );
+
+        expect(showSnackBar).not.toHaveBeenCalled();
     });
 
     it('closes swipeable when cancelled', () => {
@@ -139,6 +142,39 @@ describe('deleteScheduledPostConfirmation', () => {
         const onPress = cancelButton.onPress ?? (() => {});
         expect(() => onPress()).not.toThrow();
     });
+
+    it('shows error snackbar when deleteScheduledPost fails', async () => {
+        const errorMessage = 'Failed to delete scheduled post';
+
+        jest.mocked(deleteScheduledPost).mockResolvedValueOnce({
+            error: new Error(errorMessage),
+        });
+
+        deleteScheduledPostConfirmation(baseProps);
+
+        const alertMock = jest.mocked(Alert.alert);
+        expect(alertMock).toHaveBeenCalled();
+
+        const alertCall = alertMock.mock.calls[0];
+        expect(alertCall).toBeDefined();
+
+        const buttons = alertCall[2] ?? [];
+        expect(buttons).toHaveLength(2);
+
+        const confirmButton = buttons[1];
+        expect(confirmButton).toBeDefined();
+        expect(confirmButton.onPress).toBeDefined();
+
+        await act(async () => {
+            await confirmButton.onPress?.();
+        });
+
+        expect(showSnackBar).toHaveBeenCalledWith({
+            barType: 'DELETE_SCHEDULED_POST_ERROR',
+            customMessage: errorMessage,
+            type: 'error',
+        });
+    });
 });
 
 describe('isScheduledPostModel', () => {
@@ -152,5 +188,127 @@ describe('isScheduledPostModel', () => {
     it('returns false for an invalid scheduled post model', () => {
         const invalidScheduledPostModel = {};
         expect(isScheduledPostModel(invalidScheduledPostModel)).toBe(false);
+    });
+});
+
+describe('hasScheduledPostError', () => {
+    test('should return true if any scheduled post has an error code', () => {
+        const scheduledPosts = [
+            {errorCode: 'error1'},
+            {errorCode: ''},
+            {errorCode: 'error2'},
+        ] as ScheduledPostModel[];
+        expect(hasScheduledPostError(scheduledPosts)).toBe(true);
+    });
+
+    test('should return false if no scheduled post has an error code', () => {
+        const scheduledPosts = [
+            {errorCode: ''},
+            {errorCode: ''},
+            {errorCode: ''},
+        ] as ScheduledPostModel[];
+        expect(hasScheduledPostError(scheduledPosts)).toBe(false);
+    });
+});
+
+describe('getErrorStringFromCode', () => {
+    const mockIntl = {
+        formatMessage: jest.fn((message) => message.defaultMessage),
+    } as unknown as IntlShape;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should return correct error message for known error codes', () => {
+        const testCases: ScheduledPostErrorCode[] = [
+            'channel_archived',
+            'channel_not_found',
+            'user_missing',
+            'user_deleted',
+            'no_channel_permission',
+            'no_channel_member',
+            'thread_deleted',
+            'unable_to_send',
+            'invalid_post',
+        ];
+
+        const expectedMessages = [
+            'Channel Archived',
+            'Channel Removed',
+            'User Deleted',
+            'User Deleted',
+            'Missing Permission',
+            'Not In Channel',
+            'Thread Deleted',
+            'Unable to Send',
+            'Invalid Post',
+        ];
+
+        testCases.forEach((errorCode, index) => {
+            const result = getErrorStringFromCode(mockIntl, errorCode);
+            expect(result).toBe(expectedMessages[index].toUpperCase());
+        });
+    });
+
+    it('should return "UNKNOWN ERROR" for undefined error code', () => {
+        const result = getErrorStringFromCode(mockIntl);
+        expect(result).toBe('UNKNOWN ERROR');
+    });
+
+    it('should return "UNKNOWN ERROR" for unknown error code', () => {
+        const result = getErrorStringFromCode(mockIntl, 'unknown');
+        expect(result).toBe('UNKNOWN ERROR');
+    });
+});
+
+describe('getErrorStringFromCode', () => {
+    const mockIntl = {
+        formatMessage: jest.fn((message) => message.defaultMessage),
+    } as unknown as IntlShape;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should return correct error message for known error codes', () => {
+        const testCases: ScheduledPostErrorCode[] = [
+            'channel_archived',
+            'channel_not_found',
+            'user_missing',
+            'user_deleted',
+            'no_channel_permission',
+            'no_channel_member',
+            'thread_deleted',
+            'unable_to_send',
+            'invalid_post',
+        ];
+
+        const expectedMessages = [
+            'Channel Archived',
+            'Channel Removed',
+            'User Deleted',
+            'User Deleted',
+            'Missing Permission',
+            'Not In Channel',
+            'Thread Deleted',
+            'Unable to Send',
+            'Invalid Post',
+        ];
+
+        testCases.forEach((errorCode, index) => {
+            const result = getErrorStringFromCode(mockIntl, errorCode);
+            expect(result).toBe(expectedMessages[index].toUpperCase());
+        });
+    });
+
+    it('should return "UNKNOWN ERROR" for undefined error code', () => {
+        const result = getErrorStringFromCode(mockIntl);
+        expect(result).toBe('UNKNOWN ERROR');
+    });
+
+    it('should return "UNKNOWN ERROR" for unknown error code', () => {
+        const result = getErrorStringFromCode(mockIntl, 'unknown');
+        expect(result).toBe('UNKNOWN ERROR');
     });
 });

@@ -5,7 +5,7 @@ import {fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {Screens} from '@constants';
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {deleteDraftConfirmation} from '@utils/draft';
@@ -43,7 +43,7 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
     it('renders draft delete option correctly', () => {
         const props = {
             ...baseProps,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
+            draftType: DRAFT_TYPE_DRAFT,
         };
 
         renderWithIntl(<DeleteDraft {...props}/>);
@@ -55,7 +55,7 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
     it('renders scheduled post delete option correctly', () => {
         const props = {
             ...baseProps,
-            draftType: DRAFT_TYPE_SCHEDULED as DraftType,
+            draftType: DRAFT_TYPE_SCHEDULED,
             postId: 'post-id',
         };
 
@@ -68,7 +68,7 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
     it('handles draft deletion correctly', async () => {
         const props = {
             ...baseProps,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
+            draftType: DRAFT_TYPE_DRAFT,
         };
 
         renderWithIntl(<DeleteDraft {...props}/>);
@@ -88,7 +88,7 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
     it('handles scheduled post deletion correctly', async () => {
         const props = {
             ...baseProps,
-            draftType: DRAFT_TYPE_SCHEDULED as DraftType,
+            draftType: DRAFT_TYPE_SCHEDULED,
             postId: 'post-id',
         };
 
