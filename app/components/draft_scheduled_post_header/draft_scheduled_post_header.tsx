@@ -2,14 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React, {type ReactNode} from 'react';
+import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import ProfileAvatar from '@components/draft_post_header/profile_avatar';
+import ProfileAvatar from '@components/draft_scheduled_post_header/profile_avatar';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import {DEFAULT_LOCALE} from '@i18n';
+import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
+import {getReadableTimestamp} from '@utils/datetime';
+import {getErrorStringFromCode, type ScheduledPostErrorCode} from '@utils/scheduled_post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
@@ -20,12 +25,15 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     channel: ChannelModel;
-    draftReceiverUser?: UserModel;
+    postReceiverUser?: UserModel;
     updateAt: number;
     rootId?: PostModel['rootId'];
     testID?: string;
     currentUser?: UserModel;
     isMilitaryTime: boolean;
+    draftType: DraftType;
+    postScheduledAt?: number;
+    scheduledPostErrorCode?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -69,18 +77,46 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
         },
+        scheduledContainer: {
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 10,
+        },
+        scheduledAtText: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75),
+        },
+        errorState: {
+            backgroundColor: theme.errorTextColor,
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+            marginLeft: 8,
+            paddingHorizontal: 4,
+            borderRadius: 4,
+        },
+        errorText: {
+            color: theme.buttonColor,
+            ...typography('Heading', 25),
+        },
     };
 });
 
-const DraftPostHeader: React.FC<Props> = ({
+const DraftAndScheduledPostHeader: React.FC<Props> = ({
     channel,
-    draftReceiverUser,
+    postReceiverUser,
     updateAt,
     rootId,
     testID,
     currentUser,
     isMilitaryTime,
+    draftType,
+    postScheduledAt,
+    scheduledPostErrorCode,
 }) => {
+    const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isChannelTypeDM = channel.type === General.DM_CHANNEL;
@@ -93,8 +129,8 @@ const DraftPostHeader: React.FC<Props> = ({
                 style={style.category}
             />
             <View style={style.profileComponentContainer}>
-                {draftReceiverUser ? (
-                    <ProfileAvatar author={draftReceiverUser}/>
+                {postReceiverUser ? (
+                    <ProfileAvatar author={postReceiverUser}/>
                 ) : (
                     <View style={style.categoryIconContainer}>
                         <CompassIcon
@@ -135,25 +171,44 @@ const DraftPostHeader: React.FC<Props> = ({
 
     return (
 
-        <View
-            style={style.container}
-            testID={testID}
-        >
-            <View style={style.infoContainer}>
-                {headerComponent}
-                <Text style={style.displayName}>
-                    {channel.displayName}
-                </Text>
+        <View>
+            {draftType === DRAFT_TYPE_SCHEDULED &&
+                <View style={style.scheduledContainer}>
+                    <Text style={style.scheduledAtText}>
+                        {intl.formatMessage({id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'}, {time: getReadableTimestamp(postScheduledAt!, getUserTimezone(currentUser), isMilitaryTime, currentUser?.locale || DEFAULT_LOCALE)})}
+                    </Text>
+                    {scheduledPostErrorCode &&
+                        <View style={style.errorState}>
+                            <CompassIcon
+                                name='alert-outline'
+                                size={12}
+                                color={theme.buttonColor}
+                            />
+                            <Text style={style.errorText}>{getErrorStringFromCode(intl, scheduledPostErrorCode as ScheduledPostErrorCode)}</Text>
+                        </View>
+                    }
+                </View>
+            }
+            <View
+                style={style.container}
+                testID={testID}
+            >
+                <View style={style.infoContainer}>
+                    {headerComponent}
+                    <Text style={style.displayName}>
+                        {channel.displayName}
+                    </Text>
+                </View>
+                <FormattedTime
+                    timezone={getUserTimezone(currentUser)}
+                    isMilitaryTime={isMilitaryTime}
+                    value={updateAt}
+                    style={style.time}
+                    testID='post_header.date_time'
+                />
             </View>
-            <FormattedTime
-                timezone={getUserTimezone(currentUser)}
-                isMilitaryTime={isMilitaryTime}
-                value={updateAt}
-                style={style.time}
-                testID='post_header.date_time'
-            />
         </View>
     );
 };
 
-export default DraftPostHeader;
+export default DraftAndScheduledPostHeader;
