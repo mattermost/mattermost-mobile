@@ -32,20 +32,19 @@ runs:
         path: run-id.txt
         key: last-run-id-${{ inputs.run_id }}
         restore-keys: |
-          last-run-id-
+          last-run-id-purposedly-wrong-key
 
     - name: Debug condition values
       shell: bash
       run: |
         echo "Event name: ${{ github.event_name }}"
-        echo "Cache hit: ${{ steps.get-last-run-id.outputs.cache-hit }}"
-        echo "Cache hit (direct): ${{ steps.get-last-run-id.cache-hit }}"
+        echo "Cache matched key: ${{ steps.get-last-run-id.outputs.cache-matched-key }}"
         echo "All outputs: "
         echo "${{ toJSON(steps.get-last-run-id) }}"
-        exit 0
+        exit 1
 
     - name: Set PR condition
-      if: github.event_name == 'pull_request' && steps.get-last-run-id.outputs.cache-hit == 'true'
+      if: github.event_name == 'pull_request' && steps.get-last-run-id.outputs.cache-matched-key != ''
       shell: bash
       run: echo "IS_PR_WITH_CACHE=true" >> $GITHUB_ENV
 
