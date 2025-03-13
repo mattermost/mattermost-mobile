@@ -35,7 +35,7 @@ runs:
           last-run-id-
 
     - name: Set PR condition
-      if: github.event_name == 'pull_request' && steps.get-last-run-id.outputs.cache-hit == 'true'
+      if: github.event_name == 'pull_request' && steps.get-last-run-id.cache-hit == 'true'
       shell: bash
       run: echo "IS_PR_WITH_CACHE=true" >> $GITHUB_ENV
 
@@ -85,7 +85,7 @@ runs:
         echo "report<<EOF" >> $GITHUB_ENV
         echo "$output" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
-        echo "::endgroup::"
+        echo "::endgroup::
 
     - name: Post coverage report
       if: env.IS_PR_WITH_CACHE == 'true'
