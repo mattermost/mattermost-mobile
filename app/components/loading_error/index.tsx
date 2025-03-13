@@ -4,12 +4,12 @@
 import React, {useMemo} from 'react';
 import {Text, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import LoadingErrorSvg from '@components/illustrations/loading_error';
 import Loading from '@components/loading';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
@@ -25,19 +25,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
-    },
-    iconWrapper: {
-        height: 120,
-        width: 120,
-        backgroundColor: changeOpacity(theme.sidebarText, 0.08),
-        borderRadius: 60,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    icon: {
-        fontSize: 72,
-        lineHeight: 72,
-        color: changeOpacity(theme.sidebarText, 0.48),
     },
     header: {
         color: theme.sidebarHeaderTextColor,
@@ -69,12 +56,7 @@ const LoadingError = ({loading, message, onRetry, title}: Props) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.iconWrapper}>
-                <CompassIcon
-                    name='alert-circle-outline'
-                    style={styles.icon}
-                />
-            </View>
+            <LoadingErrorSvg/>
             <Text style={[typography('Heading', 400), styles.header]}>
                 {title}
             </Text>
