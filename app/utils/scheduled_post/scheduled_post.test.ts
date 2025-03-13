@@ -186,7 +186,7 @@ describe('isScheduledPostModel', () => {
     });
 
     it('returns false for an invalid scheduled post model', () => {
-        const invalidScheduledPostModel = {};
+        const invalidScheduledPostModel = {} as ScheduledPost;
         expect(isScheduledPostModel(invalidScheduledPostModel)).toBe(false);
     });
 });

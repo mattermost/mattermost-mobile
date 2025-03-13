@@ -67,9 +67,6 @@ export function deleteScheduledPostConfirmation({
     );
 }
 
-export const isScheduledPostModel = (obj: any): obj is ScheduledPostModel =>
-    obj && typeof obj.toApi === 'function';
-
 export const hasScheduledPostError = (scheduledPosts: ScheduledPostModel[]) =>
     scheduledPosts.some((post) => post.errorCode !== '');
 
@@ -122,3 +119,6 @@ export function getErrorStringFromCode(intl: IntlShape, errorCode: ScheduledPost
     const textDefinition = errorCodeToErrorMessage[errorCode] ?? errorCodeToErrorMessage.unknown;
     return intl.formatMessage(textDefinition).toUpperCase();
 }
+export const isScheduledPostModel = (obj: ScheduledPostModel | ScheduledPost): obj is ScheduledPostModel => {
+    return 'toApi' in obj && typeof (obj as ScheduledPostModel).toApi === 'function';
+};
