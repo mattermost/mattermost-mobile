@@ -62,6 +62,7 @@ const DeleteDraft: React.FC<Props> = ({
                 channelId,
                 rootId,
             });
+            return;
         }
         if (draftType === DRAFT_TYPE_SCHEDULED && postId) {
             deleteScheduledPostConfirmation({

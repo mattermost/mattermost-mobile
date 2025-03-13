@@ -32,9 +32,10 @@ type Props = {
     userTimezone: string;
     isMilitaryTime: boolean;
     onSelectOption: (selectedTime: string) => void;
+    onCustomTimeSelected: (customTimeSelected: boolean) => void;
 }
 
-export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelectOption}: Props) {
+export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelectOption, onCustomTimeSelected}: Props) {
     const intl = useIntl();
     const theme = useTheme();
 
@@ -47,6 +48,7 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
 
     const handleSelectOption = useCallback((optionKey: string) => {
         setSelectedOptions(optionKey);
+        onCustomTimeSelected(optionKey === optionKeyOptionCustom);
         setShowDateTimePicker(optionKey === optionKeyOptionCustom);
 
         let selectedTime: Moment | undefined;
