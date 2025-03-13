@@ -10,6 +10,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {getServerByDisplayName} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal} from '@screens/navigation';
@@ -93,7 +94,10 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
     useAndroidHardwareBackHandler(componentId, close);
 
     return (
-        <View style={styles.flex}>
+        <View
+            style={styles.flex}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+        >
             <Background theme={theme}/>
             <SafeAreaView
                 key={'server_content'}

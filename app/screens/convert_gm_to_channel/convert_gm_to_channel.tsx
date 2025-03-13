@@ -3,19 +3,24 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
+import {View} from 'react-native';
 
 import {fetchChannelMemberships, fetchGroupMessageMembersCommonTeams} from '@actions/remote/channel';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import SecurityManager from '@managers/security_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import ConvertGMToChannelForm from './convert_gm_to_channel_form';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     channelId: string;
+    componentId: AvailableScreens;
     currentUserId?: string;
 }
 
@@ -61,11 +66,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
             gap: 24,
         },
+        flex: {flex: 1},
     };
 });
 
 const ConvertGMToChannel = ({
     channelId,
+    componentId,
     currentUserId,
 }: Props) => {
     const theme = useTheme();
@@ -131,8 +138,9 @@ const ConvertGMToChannel = ({
 
     const showLoader = !loadingAnimationTimeout || !commonTeamsFetched || !channelMembersFetched;
 
+    let component;
     if (showLoader) {
-        return (
+        component = (
             <Loading
                 containerStyle={styles.loadingContainer}
                 size='large'
@@ -141,14 +149,23 @@ const ConvertGMToChannel = ({
                 footerTextStyles={styles.text}
             />
         );
+    } else {
+        component = (
+            <ConvertGMToChannelForm
+                commonTeams={commonTeams}
+                profiles={profiles}
+                channelId={channelId}
+            />
+        );
     }
 
     return (
-        <ConvertGMToChannelForm
-            commonTeams={commonTeams}
-            profiles={profiles}
-            channelId={channelId}
-        />
+        <View
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            style={styles.flex}
+        >
+            {component}
+        </View>
     );
 };
 
