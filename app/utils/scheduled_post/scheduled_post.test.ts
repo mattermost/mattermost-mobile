@@ -172,7 +172,6 @@ describe('deleteScheduledPostConfirmation', () => {
         expect(showSnackBar).toHaveBeenCalledWith({
             barType: 'DELETE_SCHEDULED_POST_ERROR',
             customMessage: errorMessage,
-            keepOpen: true,
             type: 'error',
         });
     });

@@ -29,7 +29,6 @@ export function deleteScheduledPostConfirmation({
             showSnackBar({
                 barType: SNACK_BAR_TYPE.DELETE_SCHEDULED_POST_ERROR,
                 customMessage: getErrorMessage(res.error),
-                keepOpen: true,
                 type: 'error',
             });
         }
