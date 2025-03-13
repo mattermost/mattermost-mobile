@@ -90,4 +90,3 @@ const ScheduledPostTooltip = ({onClose}: Props) => {
 };
 
 export default ScheduledPostTooltip;
-

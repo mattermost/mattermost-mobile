@@ -43,11 +43,12 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
     }
 }
 
-export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost | ScheduledPostModel, connectionId?: string, fetchOnly = false) {
+export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost | ScheduledPostModel, updateTime: number, connectionId?: string, fetchOnly = false) {
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
         const normalizedScheduledPost = isScheduledPostModel(scheduledPost) ? await scheduledPost.toApi(database) : scheduledPost;
+        normalizedScheduledPost.scheduled_at = updateTime;
         const response = await client.updateScheduledPost(normalizedScheduledPost, connectionId);
 
         if (response && !fetchOnly) {
