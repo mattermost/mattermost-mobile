@@ -43,6 +43,9 @@ const clearThemeCache = () => {
     clearingThemeCache = true;
     themeCache.clear();
     setTimeout(() => {
+        // We set this timeout to avoid clearing the cache multiple times
+        // this would happen as we have a Provider for each screen in the stack
+        // and when the themes changes we only want to invalidate the cache once
         clearingThemeCache = false;
     }, 300);
 };
