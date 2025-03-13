@@ -19,6 +19,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal, goToScreen, openAsBottomSheet, showModal} from '@screens/navigation';
 import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
 import {logDebug} from '@utils/log';
@@ -75,6 +76,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderTopWidth: 1,
         },
+        flex: {flex: 1},
     };
 });
 
@@ -345,7 +347,10 @@ const CustomStatus = ({
     }, [isBtnEnabled]);
 
     return (
-        <>
+        <View
+            style={style.flex}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+        >
             {isTablet &&
                 <TabletTitle
                     action={intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'})}
@@ -411,7 +416,7 @@ const CustomStatus = ({
                     </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
-        </>
+        </View>
     );
 };
 

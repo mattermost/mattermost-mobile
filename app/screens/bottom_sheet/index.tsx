@@ -12,6 +12,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal} from '@screens/navigation';
 import {hapticFeedback} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -198,11 +199,14 @@ const BottomSheet = ({
     if (isTablet) {
         const FooterComponent = footerComponent;
         return (
-            <>
+            <View
+                style={styles.view}
+                nativeID={SecurityManager.getShieldScreenId(componentId)}
+            >
                 <View style={styles.separator}/>
                 {renderContainerContent()}
                 {FooterComponent && (<FooterComponent/>)}
-            </>
+            </View>
         );
     }
 
