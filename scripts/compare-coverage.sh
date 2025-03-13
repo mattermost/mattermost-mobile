@@ -12,7 +12,7 @@ if [ ! -f "$MAIN_COVERAGE_FILE" ] || [ ! -f "$RECENT_COVERAGE_FILE" ]; then
 fi
 
 COMMENT_BODY="### Coverage Comparison Report
-Generated <relative-time datetime=\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\">$(date '+%B %d, %Y at %H:%M:%S UTC')</relative-time>
+<relative-time datetime=\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\">Generated on $(date '+%B %d, %Y at %H:%M:%S UTC')</relative-time>
 
 \`\`\`
 +-----------------+------------+------------+-----------+
