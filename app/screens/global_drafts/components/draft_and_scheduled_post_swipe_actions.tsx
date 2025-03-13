@@ -15,6 +15,7 @@ import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {deleteDraftConfirmation} from '@utils/draft';
+import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -54,7 +55,7 @@ const getStyles = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-function RightAction({deletePost, drag}: { deletePost: () => void; drag: SharedValue<number> }) {
+function RightAction({deletePost, drag, draftType}: { deletePost: () => void; draftType: DraftType; drag: SharedValue<number> }) {
     const theme = useTheme();
     const styles1 = getStyles(theme);
     const containerWidth = useSharedValue(0);
@@ -89,11 +90,20 @@ function RightAction({deletePost, drag}: { deletePost: () => void; drag: SharedV
                         size={18}
                         onPress={deletePost}
                     />
-                    <FormattedText
-                        id='draft.options.delete.title'
-                        defaultMessage={'Delete draft'}
-                        style={styles1.deleteText}
-                    />
+                    {draftType === DRAFT_TYPE_DRAFT ? (
+                        <FormattedText
+                            id='draft.options.delete.title'
+                            defaultMessage={'Delete draft'}
+                            style={styles1.deleteText}
+                        />
+                    ) : (
+                        <FormattedText
+                            id='scheduled_post.options.delete.title'
+                            defaultMessage={'Delete'}
+                            style={styles1.deleteText}
+                        />
+                    )
+                    }
                 </View>
             </Pressable>
         </Reanimated.View>
@@ -116,7 +126,12 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
 
     const deletePost = useCallback(() => {
         if (draftType === DRAFT_TYPE_SCHEDULED) {
-            // TODO: Add swipeable delete for schedule post
+            deleteScheduledPostConfirmation({
+                intl,
+                serverUrl,
+                scheduledPostId: item.id,
+                swipeable,
+            });
             return;
         }
         deleteDraftConfirmation({
@@ -126,16 +141,14 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
             rootId: item.rootId,
             swipeable,
         });
-    }, [intl, item.channelId, item.rootId, draftType, serverUrl]);
+    }, [draftType, intl, serverUrl, item.channelId, item.rootId, item.id]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.DRAFT_SWIPEABLE, (draftId: string) => {
-            if (item.id !== draftId && draftType === DRAFT_TYPE_DRAFT) {
+            if (item.id !== draftId) {
                 swipeable.current?.close();
             }
         });
-
-        //TODO: Add listener for scheduled post
 
         return () => listener.remove();
     }, [item.id, draftType]);
@@ -149,6 +162,7 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
                     <RightAction
                         deletePost={deletePost}
                         drag={drag}
+                        draftType={draftType}
                     />
                 )}
                 ref={swipeable}

@@ -93,6 +93,12 @@ jest.mock('@managers/websocket_manager', () => ({
     getClient: jest.fn(() => mockWebSocketClient),
 }));
 
+jest.mock('@utils/scheduled_post', () => {
+    return {
+        isScheduledPostModel: jest.fn(() => false),
+    };
+});
+
 const mockedGetConfigValue = jest.mocked(getConfigValue);
 
 beforeAll(() => {
@@ -184,7 +190,7 @@ describe('fetchScheduledPosts', () => {
 
 describe('updateScheduledPost', () => {
     it('update Schedule post - handle not found database', async () => {
-        const result = await updateScheduledPost('foo', scheduledPost) as unknown as {error: Error};
+        const result = await updateScheduledPost('foo', scheduledPost, 123) as unknown as {error: Error};
         expect(result).toEqual({error: 'foo database not found'});
         expect(logError).toHaveBeenCalled();
         expect(forceLogoutIfNecessary).toHaveBeenCalled();
@@ -192,7 +198,7 @@ describe('updateScheduledPost', () => {
 
     it('update Schedule post - base case', async () => {
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
-        const result = await updateScheduledPost(serverUrl, scheduledPost);
+        const result = await updateScheduledPost(serverUrl, scheduledPost, 123);
         expect(result.error).toBeUndefined();
         expect(result.scheduledPost).toEqual(scheduledPost);
     });
@@ -200,7 +206,7 @@ describe('updateScheduledPost', () => {
     it('update Schedule post - request error', async () => {
         const error = new Error('custom error');
         mockClient.updateScheduledPost = jest.fn().mockRejectedValueOnce(error);
-        const result = await updateScheduledPost(serverUrl, scheduledPost);
+        const result = await updateScheduledPost(serverUrl, scheduledPost, 123);
         expect(result.error).toBe('custom error');
         expect(logError).toHaveBeenCalledWith('error on updateScheduledPost', error.message);
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
@@ -211,7 +217,7 @@ describe('updateScheduledPost', () => {
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
         const mockResponse = {...scheduledPost, update_at: Date.now()};
         mockClient.updateScheduledPost.mockImplementationOnce(() => Promise.resolve(mockResponse));
-        const result = await updateScheduledPost(serverUrl, scheduledPost, undefined, true);
+        const result = await updateScheduledPost(serverUrl, scheduledPost, 123, undefined, true);
         expect(result.error).toBeUndefined();
         expect(result.scheduledPost).toEqual(mockResponse);
         expect(spyHandleScheduledPosts).not.toHaveBeenCalled();

@@ -8,9 +8,7 @@ import React from 'react';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import GlobalDraftsAndScheduledPosts from './index';
-
-import type ServerDataOperator from '@database/operator/server_data_operator';
+import {GlobalDraftsAndScheduledPosts} from './index';
 
 jest.mock('@hooks/device', () => ({
     useWindowDimensions: jest.fn(() => ({width: 800, height: 600})),
@@ -19,35 +17,18 @@ jest.mock('@hooks/device', () => ({
 
 describe('screens/global_drafts', () => {
     let database: Database;
-    let operator: ServerDataOperator;
 
     beforeAll(async () => {
         const server = await TestHelper.setupServerDatabase();
         database = server.database;
-        operator = server.operator;
-    });
-
-    beforeEach(async () => {
-        await operator.handleConfigs({
-            configs: [
-                {id: 'ScheduledPosts', value: 'true'},
-            ],
-            configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
     });
 
     it('should render drafts list when scheduled posts is disabled', async () => {
-        await operator.handleConfigs({
-            configs: [
-                {id: 'ScheduledPosts', value: 'false'},
-            ],
-            configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
-
         const {getByTestId, queryByTestId} = renderWithEverything(
-            <GlobalDraftsAndScheduledPosts/>,
+            <GlobalDraftsAndScheduledPosts
+                draftsCount={0}
+                scheduledPostCount={0}
+            />,
             {database},
         );
 
@@ -57,7 +38,11 @@ describe('screens/global_drafts', () => {
 
     it('should render tabs when scheduled posts is enabled', async () => {
         const {getByTestId} = renderWithEverything(
-            <GlobalDraftsAndScheduledPosts/>,
+            <GlobalDraftsAndScheduledPosts
+                draftsCount={1}
+                scheduledPostCount={1}
+                scheduledPostsEnabled={true}
+            />,
             {database},
         );
 
@@ -68,7 +53,11 @@ describe('screens/global_drafts', () => {
 
     it('should switch between tabs', async () => {
         const {getByTestId, queryByTestId} = renderWithEverything(
-            <GlobalDraftsAndScheduledPosts/>,
+            <GlobalDraftsAndScheduledPosts
+                draftsCount={1}
+                scheduledPostCount={1}
+                scheduledPostsEnabled={true}
+            />,
             {database},
         );
 
