@@ -1,20 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as React from 'react';
-import Svg, {
-    G,
-    Path,
-    Mask,
-    Ellipse,
-    Defs,
-    Pattern,
-    Use,
-    Image,
-    LinearGradient,
-    Stop,
-    ClipPath,
-} from 'react-native-svg';
+import React from 'react';
+import {Circle, ClipPath, Defs, G, Path, Rect, Svg} from 'react-native-svg';
+
+import {changeOpacity} from '@utils/theme';
 
 type Props = {
     theme: Theme;
@@ -22,218 +12,211 @@ type Props = {
 
 const PublicChannelIllustration = ({theme}: Props) => (
     <Svg
-        width={152}
-        height={149}
-        viewBox='0 0 152 149'
+        width={130}
+        height={102}
+        viewBox='0 0 130 102'
+        fill='none'
     >
-        <G clipPath='url(#clip0_516_33521)'>
+        <G clipPath='url(#clip0_1_2)'>
             <Path
-                d='M136.746 82.978a48.267 48.267 0 0010.837-15.674 48.123 48.123 0 003.916-18.626 48.138 48.138 0 00-3.615-18.686A48.289 48.289 0 00137.3 14.147a48.501 48.501 0 00-15.909-10.542 48.666 48.666 0 00-37.468.292 48.497 48.497 0 00-15.741 10.79L-22.15 104.63l68.577 68.291 90.319-89.944z'
-                fill='url(#paint0_linear_516_33521)'
-                fillOpacity={0.12}
+                d='M2.50001 16L2.5 31L127.5 31L127.5 75L66 75'
+                stroke={changeOpacity(theme.centerChannelColor, 0.32)}
+                strokeLinecap='round'
             />
             <Path
-                d='M76.67 40.442c-2.049 3.408-8.654.681-9.904 7.157 2.432 0 11.4 1.234 11.4 1.234l-1.495-8.391z'
-                fill='#251204'
+                d='M2.5 69L2.5 42L29 42'
+                stroke={changeOpacity(theme.centerChannelColor, 0.32)}
+                strokeLinecap='round'
             />
             <Path
-                d='M66.472 74.38c-2.89 5.119-26.326 15.22-20.739 41.265 3.956 18.452 12.98 25.813 10.732 28.894-1.667 2.25-2.979 4.99.983 1.752 4.782-3.892 6.483-1.309 3.382-10.688-2.958-8.929-5.56-32.718 9.215-41.156C84.82 86.008 89.642 81.789 82.34 71.428c-2.67-3.803-15.868 2.952-15.868 2.952z'
-                fill='#AD831F'
+                d='M18.5 70.5L18.5 56.5L106 56.5'
+                stroke={changeOpacity(theme.centerChannelColor, 0.32)}
+                strokeLinecap='round'
+            />
+            <Circle
+                cx={2.5}
+                cy={13.5}
+                r={2.5}
+                fill={changeOpacity(theme.centerChannelColor, 0.32)}
+            />
+            <Circle
+                cx={2.5}
+                cy={71.5}
+                r={2.5}
+                fill={changeOpacity(theme.centerChannelColor, 0.32)}
+            />
+            <Circle
+                cx={18.5}
+                cy={71.5}
+                r={2.5}
+                fill={changeOpacity(theme.centerChannelColor, 0.32)}
+            />
+            <Circle
+                cx={71}
+                cy={59}
+                r={43}
+                fill={changeOpacity(theme.centerChannelColor, 0.12)}
             />
             <Path
-                d='M54.71 138.159c.491-.136 4.672-1.458 6.257-2.126 2.91 8.861 1.174 6.427-3.518 10.258-3.962 3.238-2.65.498-.984-1.752.902-1.254-.027-3.23-1.756-6.38z'
-                fill={theme.buttonBg}
+                d='M110.748 91.5258L119 100V56C119 54.8954 118.105 54 117 54H76.0005C74.8959 54 74.0005 54.8954 74.0005 56V88.9211C74.0005 90.0256 74.8959 90.9211 76.0005 90.9211H109.316C109.855 90.9211 110.372 91.1391 110.748 91.5258Z'
+                fill={'#28427B'}
+            />
+            <Circle
+                opacity={0.48}
+                cx={86.831}
+                cy={65.831}
+                r={5.83099}
+                fill={theme.buttonColor}
             />
             <Path
-                d='M83.433 48.26l.376-7.573 1.018-2.794c-.629-2.781-2.248-4.09-3.156-4.335-2.05-.505-3.21-.587-4.33.286-.616.525-1.565 2.924-1.975 4.805-.219 1.016-.683 1.827 0 2.454.468.367.964.697 1.482.989l.11 4.77 6.475 1.398z'
-                fill='#AD831F'
+                opacity={0.4}
+                d='M96 64H112'
+                stroke={theme.buttonColor}
+                strokeLinecap='round'
             />
             <Path
-                d='M76.67 35.766a8.726 8.726 0 00-1.85 1.213c-.233.682 1.564 1.363 1.564 1.363l.287-2.576z'
-                fill='#AD831F'
+                opacity={0.4}
+                d='M82 79H103.38'
+                stroke={theme.buttonColor}
+                strokeLinecap='round'
             />
             <Path
-                d='M79.034 42.718a4.953 4.953 0 01-2.159-.606c-.239-.15.438.443.684.579a2.21 2.21 0 001.065.395c.287 0 .697-.347.41-.368z'
-                fill='#8B6918'
+                opacity={0.4}
+                d='M82 83H96.2535'
+                stroke={theme.buttonColor}
+                strokeLinecap='round'
             />
             <Path
-                d='M92.375 77.045c1.366 18.867 1.838 44.176 18.888 48.395 17.05 4.219 16.394 2.133 16.394 8.459 0 6.325-1.319 5.391-2.097 1.363-.998-5.208-19.625 4.09-32.263-6.298C80.66 118.576 75.325 98.495 73.4 77.897c-1.353-14.587 18.976-.852 18.976-.852z'
-                fill='#AD831F'
+                opacity={0.4}
+                d='M96 68H110'
+                stroke={theme.buttonColor}
+                strokeLinecap='round'
             />
             <Path
-                d='M120.662 127.54c7.377 1.561 7.002 1.513 7.002 6.332 0 6.325-1.319 5.392-2.098 1.363-.348-1.806-2.821-1.867-6.427-1.608a29.021 29.021 0 001.523-6.087z'
-                fill={theme.buttonBg}
+                opacity={0.4}
+                d='M82 75H93.0141'
+                stroke={theme.buttonColor}
+                strokeLinecap='round'
             />
             <Path
-                d='M34.025 49.835c.397-.682 3.703-.79 7.59 2.358 3.886 3.15 10.205 7.069 17.234-1.452 6.305-7.654 10.499-4.771 16.886-4.519 2.268.286 11.421 1.452 13.757 1.663 3.416-.061 9.243 1.561 13.273-7.811 1.544-3.592 3.142-8.759 5.362-12.27 1.523-2.399 3.019-3.864 4.433-4.45 1.046-.43.465.395-.341 1.588-.54.811.061.715-.239 1.745-.178.6-.26.954-.458 1.472-.17.466-.312.942-.423 1.425-.089.368-.178.756-.253 1.172l-.062.286c-.819 4.486-1.263 11.063-1.878 13.708-2.145 9.1-6.831 14.47-15.39 16.359a152.69 152.69 0 01-.267 4.253c-1.536 21.471.65 15.677-13.34 15.677S62.196 89.41 64.3 77.406c.99-5.623.683-12.16 1.77-18.826-2.132 1.322-5.575 4.035-9.031 4.887-10.759 2.631-20.684-11.376-20.78-12.27-.15-1.376-2.623-.66-2.234-1.362z'
-                fill='#AD831F'
+                opacity={0.4}
+                d='M95.6064 75H107.268'
+                stroke={theme.buttonColor}
+                strokeLinecap='round'
             />
             <Path
-                d='M63.057 61.722c1.427-.892 2.015-2.528 3.012-3.142a75.26 75.26 0 00-.8 7.675c-.115 1.82-.204 3.613-.327 5.351a56.342 56.342 0 01-.642 5.808c-2.104 11.996 1.619 3.64 15.609 3.619 12.247 0 12.097 4.45 12.903-8.861v-.089c.041-.572.075-1.172.116-1.806.09-1.459.192-3.088.321-4.922.11-1.554.205-2.965.267-4.253 3.75-.831 6.762-1.104 9.146-3.306-1.229-3.524-2.807-8.125-5.164-11.049-2.52 1.452-5.089 1.207-7.097 1.139h-.909l-1.209-.123c-.88-.096-2.049-.232-3.285-.382-.684 3.49-6.107 2.972-7.897 1.752a7.208 7.208 0 01-2.452-2.979 48.347 48.347 0 01-2.186-.252c-.704-.095-1.319-.184-1.954-.26-3.846-.463-7.234-.272-11.66 5.1-.273.333-.547.633-.813.927a88.533 88.533 0 005.02 10.053z'
+                d='M28.605 67.5638L15 81V12C15 10.8954 15.8954 10 17 10H83C84.1046 10 85 10.8954 85 12V64.9868C85 66.0914 84.1046 66.9868 83 66.9868H30.0103C29.4842 66.9868 28.9793 67.1941 28.605 67.5638Z'
                 fill={theme.centerChannelBg}
             />
             <Path
-                d='M63.057 61.722c1.427-.892 2.015-2.528 3.012-3.142a75.26 75.26 0 00-.8 7.675c-.115 1.82-.204 3.613-.327 5.351a56.315 56.315 0 01-.642 5.808c-2.104 11.996 1.619 3.64 15.609 3.619 12.247 0 12.097 4.45 12.903-8.861v-.089c.041-.573.075-1.172.116-1.806.09-1.459.192-3.088.321-4.922.11-1.554.205-2.965.267-4.253 3.75-.831 6.762-1.104 9.146-3.306-1.229-3.524-2.807-8.125-5.164-11.049-2.52 1.452-5.089 1.207-7.097 1.139h-.909l-1.209-.123c-.88-.096-2.049-.232-3.285-.382-.684 3.49-6.107 2.972-7.897 1.752a7.209 7.209 0 01-2.452-2.979 48.475 48.475 0 01-2.186-.252c-.704-.095-1.319-.184-1.954-.26-3.846-.463-7.234-.272-11.66 5.1-.273.333-.547.633-.813.927a88.533 88.533 0 005.02 10.053z'
-                fill={theme.centerChannelBg}
+                d='M28.2536 67.2081L15.5 79.8035V12C15.5 11.1716 16.1716 10.5 17 10.5H83C83.8284 10.5 84.5 11.1716 84.5 12V64.9868C84.5 65.8153 83.8284 66.4868 83 66.4868H30.0103C29.3527 66.4868 28.7215 66.746 28.2536 67.2081Z'
+                stroke={changeOpacity(theme.centerChannelColor, 0.8)}
+            />
+            <Circle
+                cx={33}
+                cy={29}
+                r={9}
+                fill={changeOpacity(theme.centerChannelColor, 0.4)}
             />
             <Path
-                d='M63.057 61.722c1.427-.892 2.015-2.528 3.012-3.142a75.26 75.26 0 00-.8 7.675c-.115 1.82-.204 3.613-.327 5.351a56.315 56.315 0 01-.642 5.808c-2.104 11.996 1.619 3.64 15.609 3.619 12.247 0 12.097 4.45 12.903-8.861v-.089c.041-.573.075-1.172.116-1.806.09-1.459.192-3.088.321-4.922.11-1.554.205-2.965.267-4.253 3.75-.831 6.762-1.104 9.146-3.306-1.229-3.524-2.807-8.125-5.164-11.049-2.52 1.452-5.089 1.207-7.097 1.139h-.909l-1.209-.123c-.88-.096-2.049-.232-3.285-.382-.684 3.49-6.107 2.972-7.897 1.752a7.209 7.209 0 01-2.452-2.979 48.475 48.475 0 01-2.186-.252c-.704-.095-1.319-.184-1.954-.26-3.846-.463-7.234-.272-11.66 5.1-.273.333-.547.633-.813.927a88.533 88.533 0 005.02 10.053z'
-                fill={theme.centerChannelColor}
-                fillOpacity={0.08}
+                d='M48 25H64'
+                stroke={changeOpacity(theme.centerChannelColor, 0.4)}
+                strokeLinecap='round'
             />
             <Path
-                d='M53.179 86.888a62.887 62.887 0 009.065 10.19l.293.259a118.05 118.05 0 002.05 1.772c.275-.324.579-.623.908-.893l.3-.252c1.107-.927 2.692-2.045 4.27-3.156a147.865 147.865 0 015.178-3.408c.56 3.08 1.223 6.134 2.001 9.031l.103.389c.13.457.253.913.382 1.363a65.817 65.817 0 0015.288-2.12l.383-.109.785-.238c.09-.029.18-.051.273-.069a56.796 56.796 0 01-.273-1.956c0-.136 0-.266-.048-.402-.942-8.098-1.434-22.691-1.325-25.09v-.09c-.296-.24-.577-.5-.84-.776-.114-.118-.23-.241-.349-.368-2.547-2.85-3.804-6.987-4.535-9.509.252-5.576.772-8.534 3.313-13.544-.321 0-1.62-.088-2.118-.143a36.398 36.398 0 00-2.978 11.758c-4.782-.866-9.564-1.636-14.345-2.372a66.67 66.67 0 011.469-11.247c-.683-.088-1.319-.184-1.954-.259a56.21 56.21 0 00-1.298 12.733c-.273.681-.813 2.727-1.209 3.476a44.579 44.579 0 01-2.732 4.41c-.117 1.82-.205 3.613-.328 5.351-.123 1.738-.28 3.408-.526 5.037-2.37 2.127-6.203 4.908-9.85 8.718-.09.096-.185.191-.274.293-.341.382-.71.791-1.079 1.22z'
-                fill={theme.buttonBg}
+                d='M25 49H62'
+                stroke={changeOpacity(theme.centerChannelColor, 0.4)}
+                strokeLinecap='round'
             />
             <Path
-                d='M83.495 75.688a2.463 2.463 0 001.51-.381c.594-.437.82-1.261.983-2.448.41-2.896.212-3.142-.867-4.505-.349-.436-.786-.981-1.325-1.779a14.019 14.019 0 01-1.182-2.045c-.683-1.445-.963-1.772-4.447-2.447-5.636-1.09-6.073-.763-7.712 1.404-.3.395-.635.839-1.06 1.363-2.506 2.959-2.526 3.334-2.602 4.724 0 .375-.047.838-.13 1.452-.122.873-.13 1.452.199 1.881.512.682 1.694.811 4.535 1.159 1.168.143 2.623.32 4.406.586 1.367.205 2.562.395 3.6.566 1.352.25 2.719.406 4.092.47zm-5.37-13.448v.19c3.416.682 3.54.934 4.168 2.236.344.741.748 1.453 1.209 2.127.553.811.99 1.363 1.366 1.806 1.045 1.31 1.175 1.48.792 4.206-.177 1.282-.403 1.875-.826 2.188-.738.539-2.261.286-5.308-.218a206.88 206.88 0 00-3.606-.566c-1.79-.266-3.245-.443-4.413-.586-2.569-.314-3.86-.477-4.27-1.009-.245-.32-.232-.825-.123-1.588.09-.627.11-1.104.13-1.486.075-1.288.089-1.629 2.514-4.492.43-.511.772-.96 1.066-1.363 1.502-1.977 1.776-2.338 7.33-1.261l-.028-.184z'
-                fill='#2D3039'
+                d='M25 55H47'
+                stroke={changeOpacity(theme.centerChannelColor, 0.4)}
+                strokeLinecap='round'
             />
             <Path
-                d='M81.377 64.067c.143.296.307.58.492.852.137.211-.198.409-.341.198a6.58 6.58 0 01-.492-.853c-.11-.224.239-.422.341-.197zM82.457 66.03c.232.361.464.682.717 1.05.143.204-.192.402-.342.197a9.525 9.525 0 01-.683-1.05c-.191-.21.178-.408.308-.197zM84.164 68.347c.178.242.375.47.588.682.184.17-.096.45-.28.273a5.416 5.416 0 01-.588-.682c-.15-.198.123-.477.28-.273zM84.943 70.938c0-.253.376-.253.39 0 .02.26.02.522 0 .783 0 .253-.41.253-.39 0 .02-.26.02-.523 0-.783zM84.594 73.044c.041-.252.424-.143.376.102-.048.246-.11.682-.17 1.016-.062.334-.417.143-.376-.11l.17-1.008zM81.52 73.691c.5.137 1.01.233 1.524.287.246 0 .253.415 0 .388a10.03 10.03 0 01-1.626-.293.198.198 0 01-.134-.24.198.198 0 01.237-.142zM77.702 73.255c.5.032.996.091 1.49.177.252.041.143.416-.103.375a13.474 13.474 0 00-1.366-.157c-.274-.02-.274-.395-.02-.395zM73.966 72.826l1.366.17c.246 0 .246.423 0 .389l-1.366-.164c-.246-.034-.253-.43 0-.395zM70.263 72.444l1.148.13c.246 0 .253.422 0 .395l-1.148-.136c-.246-.028-.252-.416 0-.389zM68.296 71.551l.424.389c.184.17-.089.45-.28.28l-.424-.396c-.205-.17.069-.443.28-.273zM67.804 69.268c0-.245.424-.252.396 0-.047.453-.07.908-.068 1.363a.198.198 0 01-.321.116.198.198 0 01-.068-.116c-.008-.455.013-.91.061-1.363zM68.651 67.21l.396-.587c.137-.211.478 0 .335.198l-.39.586c-.143.211-.478.014-.34-.198zM78.358 63.03c.46.023.916.08 1.366.171.246.055.144.43-.102.382a7.119 7.119 0 00-1.257-.157c-.26-.02-.26-.395-.007-.395zM75.373 62.499c.435.02.869.068 1.298.143.252.04.143.416-.103.375a8.764 8.764 0 00-1.195-.123c-.246-.013-.246-.402 0-.395zM72.798 62.349c.3-.05.604-.073.908-.068a.198.198 0 01.162.194.198.198 0 01-.162.194 4.421 4.421 0 00-.799.062c-.253.034-.355-.341-.11-.382zM71.028 64.264l.458-.681c.143-.205.485 0 .335.198l-.458.681c-.157.205-.499.014-.335-.198zM69.894 66.242l.396-.524c.15-.198.492 0 .342.197l-.396.525c-.15.211-.492.02-.342-.198z'
-                fill='#2D3039'
+                d='M48 31H73'
+                stroke={changeOpacity(theme.centerChannelColor, 0.4)}
+                strokeLinecap='round'
             />
             <Path
-                d='M86.104 57.857c1.496.41 1.735.103 1.544 2.148-.191 2.044 0 1.847-1.933 1.485-1.366-.265-1.086-.681-.854-1.963.232-1.281.41-1.895 1.243-1.67zM69.737 55.697c1.537.21 1.735-.13 1.817 1.922.082 2.051-.334 1.901-1.721 1.724-1.387-.177-1.161-.504-1.107-1.827.055-1.322.157-1.935 1.011-1.82z'
-                fill='#FFBC1F'
+                d='M25 43H42'
+                stroke={changeOpacity(theme.centerChannelColor, 0.4)}
+                strokeLinecap='round'
             />
             <Path
-                d='M82.368 42.582s-1.654.982-.909 3.906c-2.008-2.986.629-7.082.629-7.082a.682.682 0 001.12 0c1.994-2.045.567-2.727 0-2.488a9.934 9.934 0 01-2.193.463c-1.161.191-2.295-1.683-2.295-1.683l.293.852a3.297 3.297 0 01-1.673-2.727c1.059-3.374 7.582-3.974 10.014 1.118 2.432 5.092 0 13.878 7.104 12.855-14.112 6.237-12.09-5.214-12.09-5.214z'
-                fill='#251204'
+                d='M46 43H64'
+                stroke={changeOpacity(theme.centerChannelColor, 0.4)}
+                strokeLinecap='round'
             />
-            <Mask
-                id='a'
-                style={{
-                    maskType: 'alpha',
-                }}
-                maskUnits='userSpaceOnUse'
-                x={77}
-                y={31}
-                width={18}
-                height={19}
-            >
-                <Path
-                    d='M82.368 42.583s-1.654.981-.909 3.905c-2.008-2.985.629-7.082.629-7.082a.682.682 0 00.876.215.682.682 0 00.244-.215c1.994-2.044.567-2.726 0-2.488a9.928 9.928 0 01-2.193.464c-1.161.19-2.295-1.684-2.295-1.684l.293.852a3.296 3.296 0 01-1.673-2.726c1.059-3.374 7.582-3.974 10.014 1.118 2.432 5.091 0 13.877 7.104 12.855-14.112 6.237-12.09-5.214-12.09-5.214z'
-                    fill='#66320A'
-                />
-            </Mask>
-            <G mask='url(#a)'>
-                <Path
-                    transform='matrix(-1 0 0 1 94.604 31.044)'
-                    fill='url(#pattern0)'
-                    d='M0 0H17.2626V18.687H0z'
-                />
-            </G>
+            <Circle
+                cx={78}
+                cy={19}
+                r={19}
+                fill={'#32539A'}
+            />
             <Path
-                d='M54.566 85.36c4.037 5.692 11.223 12.59 11.223 12.59M77.245 100.418c7.042.266 16.94-2.727 16.94-2.727'
-                stroke='#1E325C'
-                strokeWidth={0.58}
-                strokeMiterlimit={10}
+                d='M98 49L80 49'
+                stroke={changeOpacity(theme.centerChannelColor, 0.8)}
+                strokeLinecap='round'
+                strokeLinejoin='round'
             />
-            <G clipPath='url(#clip1_516_33521)'>
-                <Path
-                    d='M42.952 9.718h25.591a3.546 3.546 0 012.529 1.046 3.6 3.6 0 011.054 2.542v16.396a3.626 3.626 0 01-1.054 2.542 3.57 3.57 0 01-2.529 1.046h-3.777v6.138l-5.665-6.138h-16.14a3.547 3.547 0 01-2.528-1.046 3.602 3.602 0 01-1.055-2.542V13.306a3.615 3.615 0 011.051-2.539 3.557 3.557 0 012.523-1.05z'
-                    fill={theme.buttonBg}
-                />
-                <Path
-                    d='M59.102 33.29h-16.14a3.547 3.547 0 01-2.53-1.046 3.602 3.602 0 01-1.054-2.542v-9.954s1.127 9.205 1.33 10.015c.202.81.604 2.022 2.507 2.223 1.904.201 15.887 1.304 15.887 1.304z'
-                    fill='#000'
-                    fillOpacity={0.16}
-                />
-                <Path
-                    d='M64.489 19.16c-.456 0-.902.136-1.281.392a2.32 2.32 0 00-.85 1.043 2.341 2.341 0 00.5 2.533 2.299 2.299 0 002.513.503 2.31 2.31 0 001.034-.856 2.338 2.338 0 00-1.034-3.439 2.287 2.287 0 00-.882-.176zM55.748 19.16c-.456 0-.902.136-1.281.392a2.32 2.32 0 00-.85 1.043 2.342 2.342 0 00.5 2.533 2.3 2.3 0 002.513.503 2.31 2.31 0 001.034-.856 2.338 2.338 0 00-1.034-3.439 2.288 2.288 0 00-.882-.176zM47.016 19.16c-.456 0-.902.135-1.282.39a2.32 2.32 0 00-.85 1.043 2.342 2.342 0 00.498 2.533 2.288 2.288 0 002.513.505 2.309 2.309 0 001.035-.855 2.337 2.337 0 00-1.032-3.439 2.286 2.286 0 00-.882-.177z'
-                    fill={theme.centerChannelBg}
-                />
-                <Path
-                    d='M69.47 16.583a7.332 7.332 0 00-1.293-2.55 7.267 7.267 0 00-2.166-1.854.252.252 0 01-.132-.28.254.254 0 01.235-.198c1.613-.098 4.87.25 3.85 4.858a.256.256 0 01-.238.207.253.253 0 01-.255-.183z'
-                    fill='#fff'
-                    fillOpacity={0.16}
-                />
-            </G>
-            <G clipPath='url(#clip2_516_33521)'>
-                <Path
-                    d='M38.63 26.523H5.622a4.63 4.63 0 00-3.262 1.33A4.577 4.577 0 001 31.085v20.847a4.552 4.552 0 001.36 3.232 4.61 4.61 0 003.262 1.33h4.871v7.803l7.308-7.803h20.818a4.634 4.634 0 003.262-1.33 4.576 4.576 0 001.36-3.232V31.085a4.563 4.563 0 00-1.356-3.228 4.62 4.62 0 00-3.255-1.334z'
-                    fill='#FFBC1F'
-                />
-                <Path
-                    d='M17.8 56.494H38.62a4.631 4.631 0 003.261-1.33 4.576 4.576 0 001.36-3.232V39.276s-1.453 11.703-1.714 12.733c-.261 1.03-.78 2.572-3.235 2.827-2.455.256-20.49 1.658-20.49 1.658z'
-                    fill='#CC8F00'
-                />
-                <Path
-                    d='M10.852 38.529c.588 0 1.163.173 1.652.497.489.325.87.787 1.095 1.326a2.937 2.937 0 01-.645 3.22 2.99 2.99 0 01-3.24.64 2.97 2.97 0 01-1.334-1.087 2.942 2.942 0 01.368-3.732 2.97 2.97 0 012.104-.864zM22.127 38.529c.588 0 1.163.173 1.652.497.488.325.87.787 1.095 1.326a2.938 2.938 0 01-.645 3.22 2.99 2.99 0 01-3.24.64 2.97 2.97 0 01-1.335-1.087 2.942 2.942 0 01.369-3.732 2.972 2.972 0 012.104-.864zM33.389 38.529c.588-.001 1.163.171 1.653.495.49.325.871.786 1.097 1.326a2.938 2.938 0 01-.642 3.221 2.98 2.98 0 01-3.241.643 2.97 2.97 0 01-1.335-1.089 2.942 2.942 0 01.367-3.73 2.972 2.972 0 012.1-.867z'
-                    fill={theme.centerChannelBg}
-                />
-                <Path
-                    d='M4.426 35.252a9.273 9.273 0 011.668-3.243 9.337 9.337 0 012.794-2.357.323.323 0 00.17-.354.32.32 0 00-.303-.254c-2.08-.123-6.282.318-4.964 6.177a.325.325 0 00.305.264.329.329 0 00.33-.233z'
-                    fill='#FFD470'
-                />
-            </G>
-            <Ellipse
-                cx={82.245}
-                cy={147.747}
-                rx={26.4894}
-                ry={1.33551}
-                fill='#000'
-                fillOpacity={0.12}
+            <Path
+                d='M76 49L70 49'
+                stroke={changeOpacity(theme.centerChannelColor, 0.8)}
+                strokeLinecap='round'
+                strokeLinejoin='round'
+            />
+            <Path
+                d='M67 49L65 49'
+                stroke={changeOpacity(theme.centerChannelColor, 0.8)}
+                strokeLinecap='round'
+                strokeLinejoin='round'
+            />
+            <Circle
+                cx={44}
+                cy={75}
+                r={2}
+                fill={changeOpacity(theme.centerChannelColor, 0.32)}
+            />
+            <Circle
+                cx={52}
+                cy={75}
+                r={2}
+                fill={changeOpacity(theme.centerChannelColor, 0.32)}
+            />
+            <Circle
+                cx={60}
+                cy={75}
+                r={2}
+                fill={changeOpacity(theme.centerChannelColor, 0.32)}
+            />
+            <Circle
+                cx={78}
+                cy={19}
+                r={9.5}
+                stroke={theme.buttonColor}
+            />
+            <Path
+                d='M87.5 20.2525C86.1859 21.8482 82.4292 23 78 23C73.5708 23 69.8141 21.8482 68.5 20.2525'
+                stroke={theme.buttonColor}
+            />
+            <Path
+                d='M86.6622 15C84.9331 16.1956 81.7014 17 78 17C74.2986 17 71.0669 16.1956 69.3378 15'
+                stroke={theme.buttonColor}
+            />
+            <Path
+                d='M81.5 19C81.5 21.7141 81.059 24.1482 80.3642 25.8854C80.0162 26.7553 79.6144 27.4258 79.1937 27.8706C78.7741 28.3143 78.3705 28.5 78 28.5C77.6295 28.5 77.2259 28.3143 76.8063 27.8706C76.3856 27.4258 75.9838 26.7553 75.6358 25.8854C74.941 24.1482 74.5 21.7141 74.5 19C74.5 16.2859 74.941 13.8518 75.6358 12.1146C75.9838 11.2447 76.3856 10.5742 76.8063 10.1294C77.2259 9.6857 77.6295 9.5 78 9.5C78.3705 9.5 78.7741 9.6857 79.1937 10.1294C79.6144 10.5742 80.0162 11.2447 80.3642 12.1146C81.059 13.8518 81.5 16.2859 81.5 19Z'
+                stroke={theme.buttonColor}
             />
         </G>
         <Defs>
-            <Pattern
-                id='pattern0'
-                patternContentUnits='objectBoundingBox'
-                width={1}
-                height={1}
-            >
-                <Use
-                    xlinkHref='#image0_516_33521'
-                    transform='scale(.01408 .01299)'
-                />
-            </Pattern>
-            <LinearGradient
-                id='paint0_linear_516_33521'
-                x1={64.6751}
-                y1={-0.0000118542}
-                x2={-44.8162}
-                y2={109.952}
-                gradientUnits='userSpaceOnUse'
-            >
-                <Stop
-                    offset={0.0104167}
-                    stopColor={theme.buttonBg}
-                />
-                <Stop
-                    offset={0.765625}
-                    stopColor={theme.buttonBg}
-                    stopOpacity={0}
-                />
-            </LinearGradient>
-            <ClipPath id='clip0_516_33521'>
-                <Path
+            <ClipPath id='clip0_4212_90121'>
+                <Rect
+                    width={130}
+                    height={102}
                     fill={theme.centerChannelBg}
-                    transform='translate(.5)'
-                    d='M0 0H151V149H0z'
                 />
             </ClipPath>
-            <ClipPath id='clip1_516_33521'>
-                <Path
-                    fill={theme.centerChannelBg}
-                    transform='matrix(-1 0 0 1 79.432 .683)'
-                    d='M0 0H47.3591V47.844H0z'
-                />
-            </ClipPath>
-            <ClipPath id='clip2_516_33521'>
-                <Path
-                    fill={theme.centerChannelBg}
-                    transform='translate(-8.423 15.037)'
-                    d='M0 0H61.0864V60.8303H0z'
-                />
-            </ClipPath>
-            <Image
-                id='image0_516_33521'
-                width={72}
-                height={77}
-                xlinkHref='data:image/png;base64,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'
-            />
         </Defs>
     </Svg>
 );
