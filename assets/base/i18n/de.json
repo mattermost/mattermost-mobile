@@ -707,7 +707,6 @@
   "mobile.managed.jailbreak": "Geräten mit Jailbreak wird von {vendor} nicht vertraut.\n\nDie App wird beendet.",
   "mobile.managed.not_secured.android": "Dieses Gerät muss mit einer Bildschirmsperre gesichert werden, um Mattermost verwenden zu können.",
   "mobile.managed.not_secured.ios": "Dieses Gerät muss mit einem Passcode gesichert werden, um Mattermost verwenden zu können.\n \nGehe zu Einstellungen > Face ID & Passwort.",
-  "mobile.managed.not_secured.ios.touchId": "Dieses Gerät muss mit einem Passcode gesichert werden, um Mattermost zu verwenden.\n \nGehe zu Einstellungen > Touch ID & Passwort.",
   "mobile.managed.secured_by": "Gesichert durch {vendor}",
   "mobile.managed.settings": "Zu Einstellungen gehen",
   "mobile.markdown.code.copy_code": "Code kopieren",

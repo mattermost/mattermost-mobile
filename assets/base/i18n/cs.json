@@ -707,7 +707,6 @@
   "mobile.managed.jailbreak": "Zařízení s jailbreakem nebo s root právy nejsou důvěryhodná pro {vendor}.\n\nAplikace se nyní zavře.",
   "mobile.managed.not_secured.android": "Toto zařízení musí být zabezpečeno uzamčením obrazovky, aby bylo možné používat Mattermost.",
   "mobile.managed.not_secured.ios": "Toto zařízení musí být chráněno PINem aby bylo možné používat Mattermost.\n\nJdi do Nastavení > Face ID a heslo.",
-  "mobile.managed.not_secured.ios.touchId": "Toto zařízení musí být chráněno heslem aby bylo možno používat Mattermost.\n\nJděte do Nastavení > Touch ID a heslo.",
   "mobile.managed.secured_by": "Zabezpečeno od {vendor}",
   "mobile.managed.settings": "Jděte do nastavení",
   "mobile.markdown.code.copy_code": "Zkopírovat kód",

@@ -581,7 +581,6 @@
   "mobile.managed.jailbreak": "A {vendor} nem bízik a Rootolt eszközökben.\n\nIndoklás {reason}\n\n\n\nHibakeresés: {debug}\n\nKérjük, lépjen ki az alkalmazásból.",
   "mobile.managed.not_secured.android": "A Mattermost használatához a készüléket képernyőzárral kell beállítani.",
   "mobile.managed.not_secured.ios": "A Mattermost használatához ezt az eszközt zárolási mintával kell védeni.\n\nLépjen a Beállítások > Face ID és jelkód menüpontba.",
-  "mobile.managed.not_secured.ios.touchId": "A Mattermost használatához ezt az eszközt zárolási mintával kell védeni.\n\nLépjen a Beállítások > Face ID és jelkód menüpontba.",
   "mobile.managed.secured_by": "{vendor} által biztosítva",
   "mobile.managed.settings": "Ugrás a beállításokhoz",
   "mobile.markdown.code.copy_code": "Kód másolása",

@@ -201,7 +201,6 @@
   "mobile.managed.jailbreak": "Οι συσκευές Jailbroken δεν είναι αξιόπιστες από τον {vendor}, βγείτε από την εφαρμογή.",
   "mobile.managed.not_secured.android": "Αυτή η συσκευή πρέπει να είναι ασφαλισμένη με κλείδωμα οθόνης για χρήση του Mattermost.",
   "mobile.managed.not_secured.ios": "Αυτή η συσκευή πρέπει να είναι ασφαλισμένη με κωδικό πρόσβασης για τη χρήση του Mattermost.\n\nΜεταβείτε στις Ρυθμίσεις> Αναγνωριστικό Προσώπου και Κωδικός Πρόσβασης.",
-  "mobile.managed.not_secured.ios.touchId": "Αυτή η συσκευή πρέπει να είναι ασφαλισμένη με κωδικό πρόσβασης για τη χρήση του Mattermost.\n\nΜεταβείτε στις Ρυθμίσεις> Touch ID και Κωδικός Πρόσβασης.",
   "mobile.managed.secured_by": "Ασφαλισμένο από {vendor}",
   "mobile.managed.settings": "Μεταβείτε στις ρυθμίσεις",
   "mobile.markdown.code.copy_code": "Αντιγραφή Κώδικα",

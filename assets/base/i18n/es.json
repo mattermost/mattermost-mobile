@@ -669,7 +669,6 @@
   "mobile.managed.jailbreak": "Los dispositivos con jailbrak no son de confianza para {vendor}\n\nMotivo {reason}\n\n\n\nInformación de depuración: {debug}\n\nPor favor salga de la applicación.",
   "mobile.managed.not_secured.android": "Este dispositivo debe estar asegurado con un bloqueo de pantalla para utilizar Mattermost.",
   "mobile.managed.not_secured.ios": "Este dispositivo debe estar protegido con un código de acceso para utilizar Mattermost.\n\nVaya a Configuración > Identificación Facial y clave de acceso.",
-  "mobile.managed.not_secured.ios.touchId": "Este dispositivo debe estar protegido con un código de acceso para utilizar Mattermost.\n\nVaya a Configuración > Identificación Táctil y clave de acceso.",
   "mobile.managed.secured_by": "Asegurado por {vendor}",
   "mobile.managed.settings": "Ir a configuración",
   "mobile.markdown.code.copy_code": "Copiar código",

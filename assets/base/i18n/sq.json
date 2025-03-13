@@ -159,7 +159,6 @@
   "mobile.managed.exit": "Dalje",
   "mobile.managed.not_secured.android": "Kjo pajisje duhet të sigurohet me një kyçje të ekranit për të përdorur Mattermost.",
   "mobile.managed.not_secured.ios": "Kjo pajisje duhet të sigurohet me një kodkalim për të përdorur Mattermost.\n\nShkoni te Settings> Face ID & Passcode.",
-  "mobile.managed.not_secured.ios.touchId": "Kjo pajisje duhet të sigurohet me një kodkalim për të përdorur Mattermost.\n\nShkoni te Settings> Touch ID & Passcode.",
   "mobile.managed.secured_by": "Siguruar nga {shitësi}",
   "mobile.managed.settings": "Shko tek cilësimet",
   "mobile.markdown.code.copy_code": "Kopjo Kodin",

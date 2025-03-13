@@ -687,7 +687,6 @@
   "mobile.managed.jailbreak": "Les dispositifs jailbreakés ne sont pas approuvés par {vendor}.\n\nL'application va se fermer.",
   "mobile.managed.not_secured.android": "Cet appareil doit être sécurisé avec un verrouillage d'écran pour pouvoir utiliser Mattermost.",
   "mobile.managed.not_secured.ios": "Cet appareil doit être sécurisé avec un code pour pouvoir utiliser Mattermost.\n\nAllez dans Réglages > Face ID et code.",
-  "mobile.managed.not_secured.ios.touchId": "Cet appareil doit être sécurisé avec un code pour pouvoir utiliser Mattermost.\n\nAllez dans Réglages > Touch ID et code.",
   "mobile.managed.secured_by": "Sécurisé par {vendor}",
   "mobile.managed.settings": "Aller dans les paramètres",
   "mobile.markdown.code.copy_code": "Copier le code",

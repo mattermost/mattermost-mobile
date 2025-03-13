@@ -704,7 +704,6 @@
   "mobile.managed.jailbreak": "Jailbroken eller rootede enheter er ikke klarert av {vendor}.\n\nAppen vil nå avslutte.",
   "mobile.managed.not_secured.android": "Denne enheten må sikres med en skjermlås for å bruke Mattermost.",
   "mobile.managed.not_secured.ios": "Denne enheten må sikres med adgangskode for å bruke Mattermost.\n\nGå til Innstillinger > Face ID og passord.",
-  "mobile.managed.not_secured.ios.touchId": "Denne enheten må sikres med adgangskode for å bruke Mattermost.\n\nGå til Innstillinger > Touch ID og passord.",
   "mobile.managed.secured_by": "Sikret av {vendor}",
   "mobile.managed.settings": "Gå til Innstillinger",
   "mobile.markdown.code.copy_code": "Kopier kode",

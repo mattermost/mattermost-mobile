@@ -707,7 +707,6 @@
   "mobile.managed.jailbreak": "Jailbroken toestellen worden niet vertrouwd door {vendor}.\n\nDe app gaat nu afsluiten.",
   "mobile.managed.not_secured.android": "Dit apparaat moet eerst beveiligd worden met een schermvergrendeling, zodat je Mattermost kunt gebruiken.",
   "mobile.managed.not_secured.ios": "Dit apparaat moet worden beveiligd met een toegangscode om Mattermost te gebruiken.\n\nGa naar Instellingen > Biometrie en wachtwoord.",
-  "mobile.managed.not_secured.ios.touchId": "Dit apparaat moet worden beveiligd met een toegangscode om Mattermost te gebruiken.\n\nGa naar Instellingen > Vingerafruk-id en wachtwoord.",
   "mobile.managed.secured_by": "Beveiligd door {vendor}",
   "mobile.managed.settings": "Ga naar instellingen",
   "mobile.markdown.code.copy_code": "Kopieer code",

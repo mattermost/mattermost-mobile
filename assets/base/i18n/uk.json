@@ -707,7 +707,6 @@
   "mobile.managed.jailbreak": "Пристрій з джейлбрейком або рутованою системою не довіряється {vendor}.\n\nДодаток зараз закриється.",
   "mobile.managed.not_secured.android": "Щоб використовувати Mattermost, цей пристрій має бути захищено блокуванням екрана.",
   "mobile.managed.not_secured.ios": "Щоб користуватися Mattermost, цей пристрій потрібно захистити паролем.\n\nПерейдіть до Налаштування > Face ID та пароль.",
-  "mobile.managed.not_secured.ios.touchId": "Щоб користуватися Mattermost, цей пристрій потрібно захистити паролем.\n\nПерейдіть до Налаштування > Touch ID та пароль.",
   "mobile.managed.secured_by": "Захищено {vendor}",
   "mobile.managed.settings": "Перейдіть до налаштувань",
   "mobile.markdown.code.copy_code": "Скопіювати Код",

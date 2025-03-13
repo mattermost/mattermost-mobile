@@ -602,7 +602,6 @@
   "mobile.managed.jailbreak": "Các thiết bị bẻ khóa không được {vendor} tin cậy.\n\nLý do {reason}\n\n\n\nThông tin gỡ lỗi: {debug}\n\nVui lòng thoát khỏi ứng dụng.",
   "mobile.managed.not_secured.android": "Thiết bị này phải được bảo mật bằng khóa màn hình để sử dụng Mattermost.",
   "mobile.managed.not_secured.ios": "Thiết bị này phải được bảo mật bằng mật mã để sử dụng Mattermost.\n\nChuyển đến Cài đặt > Face ID & Mật mã.",
-  "mobile.managed.not_secured.ios.touchId": "Thiết bị này phải được bảo mật bằng mật mã để sử dụng Mattermost.\n\nChuyển đến Cài đặt > Face ID & Mật mã.",
   "mobile.managed.secured_by": "Được bảo đảm bởi {vendor}",
   "mobile.managed.settings": "Đi đến cài đặt",
   "mobile.markdown.code.copy_code": "Sao chép mã",

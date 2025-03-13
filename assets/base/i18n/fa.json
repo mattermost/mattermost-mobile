@@ -546,7 +546,6 @@
   "mobile.managed.jailbreak": "دستگاه‌های جیلبریک مورد اعتماد {vendor} نیستند،\n\nدلیل {reason}\n\n\n\nاطلاعات پیگیری: {debug}\n\nلطفاً از برنامه خارج شوید.",
   "mobile.managed.not_secured.android": "برای استفاده از Mattermost، این دستگاه باید با قفل صفحه ایمن شود.",
   "mobile.managed.not_secured.ios": "برای استفاده از Mattermost، این دستگاه باید با یک رمز عبور ایمن شود.\n\nبه Settings > Face ID & Passcode بروید.",
-  "mobile.managed.not_secured.ios.touchId": "برای استفاده از Mattermost، این دستگاه باید با یک رمز عبور ایمن شود.\n\nبه Settings > Touch ID & Passcode بروید.",
   "mobile.managed.secured_by": "تضمین شده توسط {vendor}",
   "mobile.managed.settings": "به تنظیمات بروید",
   "mobile.markdown.code.copy_code": "کد را کپی کنید",

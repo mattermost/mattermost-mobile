@@ -253,7 +253,6 @@
   "mobile.managed.jailbreak": "Прылады з джэйлбрэйкам не з'яўляюцца даверанымі {vendor}, выйдзіце з прыкладання.",
   "mobile.managed.not_secured.android": "Гэта прылада павінна быць абаронена з дапамогай блакавання экрана, каб выкарыстоўваць Mattermost.",
   "mobile.managed.not_secured.ios": "Гэтая прылада павінна быць абаронена паролем для выкарыстання Mattermost.\n\nПерайдзіце ў Налады > Face ID і пароль.",
-  "mobile.managed.not_secured.ios.touchId": "Гэтая прылада павінна быць абаронена паролем для выкарыстання Mattermost.\n\nПерайдзіце ў Налады > Touch ID і пароль.",
   "mobile.managed.secured_by": "Абаронена {vendor}",
   "mobile.managed.settings": "Перайсці да налад",
   "mobile.markdown.code.copy_code": "Скапіяваць код",

@@ -603,7 +603,6 @@
   "mobile.managed.jailbreak": "탈옥된 기기는 {vendor}에서 신뢰하지 않습니다.\n\n사유 {reason}\n\n\n\n디버그 정보: {debug}\n\n앱을 종료해주세요.",
   "mobile.managed.not_secured.android": "Mattermost를 사용하려면 이 장치를 화면 잠금으로 보호해야 합니다.",
   "mobile.managed.not_secured.ios": "Matttermost를 사용하려면 이 장치를 암호로 보호해야 합니다.\n\n설정 > Face ID 및 암호.",
-  "mobile.managed.not_secured.ios.touchId": "Matttermost를 사용하려면 이 장치를 암호로 보호해야 합니다.\n\n설정 > Touch ID 및 암호.",
   "mobile.managed.secured_by": "{vendor}에 의해 보호됨",
   "mobile.managed.settings": "설정으로 이동",
   "mobile.markdown.code.copy_code": "코드 복사",
