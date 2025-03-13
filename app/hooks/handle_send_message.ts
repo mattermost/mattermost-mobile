@@ -14,12 +14,14 @@ import {setStatus} from '@actions/remote/user';
 import {handleCallsSlashCommand} from '@calls/actions';
 import {Events, Screens} from '@constants';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
+import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
 import {isReactionMatch} from '@utils/emoji/helpers';
-import {getFullErrorMessage} from '@utils/errors';
+import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
 import {scheduledPostFromPost} from '@utils/post';
+import {showSnackBar} from '@utils/snack_bar';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
@@ -44,6 +46,7 @@ type Props = {
     currentUserId: string;
     channelType: ChannelType | undefined;
     postPriority: PostPriority;
+    isFromDraftView?: boolean;
     clearDraft: () => void;
 }
 
@@ -61,6 +64,7 @@ export const useHandleSendMessage = ({
     currentUserId,
     channelType,
     postPriority,
+    isFromDraftView,
     clearDraft,
 }: Props) => {
     const intl = useIntl();
@@ -119,12 +123,21 @@ export const useHandleSendMessage = ({
             response = await createPost(serverUrl, post, postFiles);
         }
 
+        if (response.error && isFromDraftView) {
+            showSnackBar({
+                barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
+                customMessage: getErrorMessage(response.error),
+                type: MESSAGE_TYPE.ERROR,
+            });
+            return response;
+        }
+
         clearDraft();
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
 
         return response;
-    }, [files, currentUserId, channelId, rootId, value, postPriority, serverUrl, clearDraft]);
+    }, [files, currentUserId, channelId, rootId, value, postPriority, isFromDraftView, clearDraft, serverUrl]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);

@@ -5,16 +5,20 @@ import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {removeDraft} from '@actions/local/draft';
+import {createPost} from '@actions/remote/post';
 import {General} from '@constants';
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {sendMessageWithAlert} from '@utils/post';
+import {showSnackBar} from '@utils/snack_bar';
 
 import SendHandler from './send_handler';
 
 import type {Database} from '@nozbe/watermelondb';
 
+jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/channel', () => ({
     getChannelTimezones: jest.fn().mockResolvedValue({channelTimezones: []}),
 }));
@@ -30,6 +34,10 @@ jest.mock('@screens/navigation', () => ({
 
 jest.mock('@actions/local/draft', () => ({
     removeDraft: jest.fn(),
+}));
+
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
 }));
 
 describe('components/post_draft/send_handler/SendHandler', () => {
@@ -86,7 +94,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         const props = {
             ...baseProps,
             isFromDraftView: true,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
+            draftType: DRAFT_TYPE_DRAFT,
         };
         const wrapper = renderWithEverything(
             <SendHandler {...props}/>, {database},
@@ -99,7 +107,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         const props = {
             ...baseProps,
             isFromDraftView: true,
-            draftType: DRAFT_TYPE_SCHEDULED as DraftType,
+            draftType: DRAFT_TYPE_SCHEDULED,
         };
         const wrapper = renderWithEverything(
             <SendHandler {...props}/>, {database},
@@ -124,7 +132,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         const props = {
             ...baseProps,
             isFromDraftView: true,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
+            draftType: DRAFT_TYPE_DRAFT,
             channelDisplayName: 'Test Channel',
             draftReceiverUserName: 'test-user',
             postId: 'test-post-id',
@@ -140,8 +148,9 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         expect(sendDraftButton).toBeTruthy();
         expect(wrapper.getByText('Send draft')).toBeTruthy();
 
-        // Verify the button is enabled when there's a message (should be pressable)
+        // Manually trigger the button press
         fireEvent.press(sendDraftButton);
+
         await waitFor(() => expect(sendMessageWithAlert).toHaveBeenCalled());
 
         // Reset the mock for the next test
@@ -163,14 +172,14 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         expect(emptyButton).toBeTruthy();
 
         fireEvent.press(emptyButton);
-        expect(sendMessageWithAlert).not.toHaveBeenCalled();
+        await waitFor(() => expect(sendMessageWithAlert).not.toHaveBeenCalled());
     });
 
     it('should call sendMessageWithAlert with correct params when Send button clicked', async () => {
         const props = {
             ...baseProps,
             isFromDraftView: true,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
+            draftType: DRAFT_TYPE_DRAFT,
             channelName: 'test-channel',
             value: 'test message',
             postPriority: {
@@ -206,11 +215,14 @@ describe('components/post_draft/send_handler/SendHandler', () => {
             capturedHandler = params.sendMessageHandler;
             return Promise.resolve();
         });
+        jest.mocked(createPost).mockResolvedValueOnce({
+            data: true,
+        });
 
         const props = {
             ...baseProps,
             isFromDraftView: true,
-            draftType: DRAFT_TYPE_DRAFT as DraftType,
+            draftType: DRAFT_TYPE_DRAFT,
             value: 'test message',
         };
 
@@ -220,6 +232,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
 
         // Find and press the send button
         const sendButton = wrapper.getByTestId('send_draft_button');
+
         await act(async () => {
             fireEvent.press(sendButton);
         });
@@ -236,5 +249,54 @@ describe('components/post_draft/send_handler/SendHandler', () => {
 
         // Varify removeDraft function is been called.
         expect(removeDraft).toHaveBeenCalled();
+    });
+
+    it('should show snackbar if creating post failing when executing sendMessageHandler when send_draft_button is checked', async () => {
+        // Mock implementation to capture the sendMessageHandler
+        let capturedHandler: Function;
+        jest.mocked(sendMessageWithAlert).mockImplementation((params) => {
+            capturedHandler = params.sendMessageHandler;
+            return Promise.resolve();
+        });
+        jest.mocked(createPost).mockResolvedValueOnce({
+            error: new Error('Failed to create post'),
+        });
+
+        const props = {
+            ...baseProps,
+            isFromDraftView: true,
+            draftType: DRAFT_TYPE_DRAFT,
+            value: 'test message',
+        };
+
+        const wrapper = renderWithEverything(
+            <SendHandler {...props}/>, {database},
+        );
+
+        // Find and press the send button
+        const sendButton = wrapper.getByTestId('send_draft_button');
+
+        await act(async () => {
+            fireEvent.press(sendButton);
+        });
+
+        // Verify sendMessageWithAlert was called
+        expect(sendMessageWithAlert).toHaveBeenCalledWith(expect.objectContaining({
+            sendMessageHandler: expect.any(Function),
+        }));
+
+        // Now execute the captured handler to simulate user confirming the send
+        await act(async () => {
+            await capturedHandler();
+        });
+
+        expect(showSnackBar).toHaveBeenCalledWith({
+            barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
+            customMessage: 'Failed to create post',
+            type: 'error',
+        });
+
+        // Varify removeDraft function is been called.
+        expect(removeDraft).not.toHaveBeenCalled();
     });
 });

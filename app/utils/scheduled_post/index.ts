@@ -5,6 +5,9 @@ import {defineMessages, type IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {getErrorMessage} from '@utils/errors';
+import {showSnackBar} from '@utils/snack_bar';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {SwipeableMethods} from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
@@ -21,7 +24,14 @@ export function deleteScheduledPostConfirmation({
     swipeable?: React.RefObject<SwipeableMethods>;
 }) {
     const deleteScheduledPostOnConfirm = async () => {
-        await deleteScheduledPost(serverUrl, scheduledPostId);
+        const res = await deleteScheduledPost(serverUrl, scheduledPostId);
+        if (res?.error) {
+            showSnackBar({
+                barType: SNACK_BAR_TYPE.DELETE_SCHEDULED_POST_ERROR,
+                customMessage: getErrorMessage(res.error),
+                type: 'error',
+            });
+        }
     };
 
     const onDismiss = () => {
