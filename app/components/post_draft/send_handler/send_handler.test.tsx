@@ -5,6 +5,7 @@ import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {removeDraft} from '@actions/local/draft';
+import {createPost} from '@actions/remote/post';
 import {General} from '@constants';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -15,6 +16,7 @@ import SendHandler from './send_handler';
 
 import type {Database} from '@nozbe/watermelondb';
 
+jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/channel', () => ({
     getChannelTimezones: jest.fn().mockResolvedValue({channelTimezones: []}),
 }));
@@ -30,6 +32,10 @@ jest.mock('@screens/navigation', () => ({
 
 jest.mock('@actions/local/draft', () => ({
     removeDraft: jest.fn(),
+}));
+
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
 }));
 
 describe('components/post_draft/send_handler/SendHandler', () => {
@@ -207,6 +213,9 @@ describe('components/post_draft/send_handler/SendHandler', () => {
             capturedHandler = params.sendMessageHandler;
             return Promise.resolve();
         });
+        jest.mocked(createPost).mockResolvedValueOnce({
+            data: true,
+        });
 
         const props = {
             ...baseProps,
@@ -222,8 +231,14 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         // Find and press the send button
         const sendButton = wrapper.getByTestId('send_draft_button');
 
-        // Manually trigger the button press
-        fireEvent.press(sendButton);
+        await act(async () => {
+            fireEvent.press(sendButton);
+        });
+
+        // Verify sendMessageWithAlert was called
+        expect(sendMessageWithAlert).toHaveBeenCalledWith(expect.objectContaining({
+            sendMessageHandler: expect.any(Function),
+        }));
 
         // Now execute the captured handler to simulate user confirming the send
         await act(async () => {
