@@ -34,8 +34,18 @@ runs:
         restore-keys: |
           last-run-id-
 
+    - name: Debug condition values
+      shell: bash
+      run: |
+        echo "Event name: ${{ github.event_name }}"
+        echo "Cache hit: ${{ steps.get-last-run-id.outputs.cache-hit }}"
+        echo "Cache hit (direct): ${{ steps.get-last-run-id.cache-hit }}"
+        echo "All outputs: "
+        echo "${{ toJSON(steps.get-last-run-id) }}"
+        exit 0
+
     - name: Set PR condition
-      if: github.event_name == 'pull_request' && steps.get-last-run-id.cache-hit == 'true'
+      if: github.event_name == 'pull_request' && steps.get-last-run-id.outputs.cache-hit == 'true'
       shell: bash
       run: echo "IS_PR_WITH_CACHE=true" >> $GITHUB_ENV
 
