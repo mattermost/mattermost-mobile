@@ -21,11 +21,13 @@ import {observeScheduledPostCount} from '@queries/servers/scheduled_post';
 import {observeConfigBooleanValue, observeCurrentTeamId} from '@queries/servers/system';
 import TabbedContents from '@screens/global_drafts/components/tabbed_contents/tabbed_contents';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import {popTopScreen} from '../navigation';
 
 import GlobalDraftsList from './components/global_drafts_list';
 import GlobalScheduledPostList from './components/global_scheduled_post_list';
+import {TAB_CONTAINER_HEIGHT} from './contants';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -51,7 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         tabItem: {
             position: 'relative',
-            height: 44,
+            height: TAB_CONTAINER_HEIGHT,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -61,8 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.buttonBg,
         },
         tabItemText: {
-            fontSize: 14,
-            fontWeight: 600,
+            ...typography('Body', 100, 'SemiBold'),
             color: changeOpacity(theme.centerChannelColor, 0.75),
         },
         activeTabItemText: {
@@ -126,17 +127,17 @@ export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnable
         }
     }, [componentId, isTablet]);
 
-    const draftList = useMemo(() => (
+    const draftList = (
         <GlobalDraftsList
             location={Screens.GLOBAL_DRAFTS}
         />
-    ), []);
+    );
 
-    const scheduledPostList = useMemo(() => (
+    const scheduledPostList = (
         <GlobalScheduledPostList
             location={Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS}
         />
-    ), []);
+    );
 
     return (
         <SafeAreaView

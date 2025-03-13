@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ReactNode, useState} from 'react';
+import React, {type ReactNode, useState, useMemo} from 'react';
 import {Freeze} from 'react-freeze';
 import {StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -43,7 +43,7 @@ export default function TabbedContents({draftsCount, scheduledPostCount, initial
     const [selectedTab, setSelectedTab] = useState(initialTab);
 
     const {width} = useWindowDimensions();
-    const styles = getStyleSheet(width);
+    const styles = useMemo(() => getStyleSheet(width), [width]);
 
     const transform = useAnimatedStyle(() => {
         const translateX = selectedTab === DRAFT_SCREEN_TAB_DRAFTS ? 0 : -width;

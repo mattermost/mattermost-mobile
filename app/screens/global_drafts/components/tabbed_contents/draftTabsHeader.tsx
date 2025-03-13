@@ -8,7 +8,9 @@ import {Pressable, Text, View} from 'react-native';
 import Badge from '@components/badge';
 import {useTheme} from '@context/theme';
 import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS, type DraftScreenTab} from '@screens/global_drafts';
+import {TAB_CONTAINER_HEIGHT} from '@screens/global_drafts/contants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const DRAFT_TAB_INDEX = 0;
 const SCHEDULED_POSTS_TAB_INDEX = 1;
@@ -18,7 +20,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         tabContainer: {
             display: 'flex',
             flexDirection: 'row',
-            height: 44,
+            height: TAB_CONTAINER_HEIGHT,
         },
         tab: {
             width: '50%',
@@ -49,8 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.buttonBg, 0.08),
         },
         tabItemText: {
-            fontSize: 14,
-            fontWeight: 600,
+            ...typography('Body', 100, 'SemiBold'),
             color: changeOpacity(theme.centerChannelColor, 0.75),
         },
         activeTabItemText: {
