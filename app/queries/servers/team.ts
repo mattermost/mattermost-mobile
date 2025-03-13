@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
-import {of as of$, map as map$, Observable} from 'rxjs';
+import {combineLatest, of as of$, map as map$, Observable} from 'rxjs';
 import {switchMap, distinctUntilChanged, combineLatestWith} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, Preferences, Screens} from '@constants';
@@ -415,5 +415,41 @@ export function observeMentionCount(database: Database, teamId?: string, include
         combineLatestWith(threadMentionCountObservable),
         map$(([ccount, tcount]) => ccount + tcount),
         distinctUntilChanged(),
+    );
+}
+
+export function observeSortedJoinedTeams(database: Database) {
+    const myTeams = queryMyTeams(database).observe();
+    const teams = queryJoinedTeams(database).observe();
+    const order = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.TEAMS_ORDER).
+        observeWithColumns(['value']).pipe(
+            switchMap((p) => (p.length ? of$(p[0].value.split(',')) : of$([]))),
+        );
+
+    function reorderTeamsBySet(joinedTeams: TeamModel[], orderedIds: Set<string>): TeamModel[] {
+        const itemMap = new Map(joinedTeams.map((team) => [team.id, team]));
+        return [...orderedIds].map((id) => itemMap.get(id)).filter(Boolean) as TeamModel[];
+    }
+
+    return combineLatest([myTeams, order, teams]).pipe(
+        map$(([memberships, o, joinedTeams]) => {
+            const sortedTeamIds = new Set(o);
+            const membershipMap = new Map(memberships.map((m) => [m.id, m]));
+
+            if (sortedTeamIds.size) {
+                const mySortedTeams = reorderTeamsBySet(joinedTeams, sortedTeamIds).
+                    filter((team) => membershipMap.has(team.id));
+
+                const extraTeams = joinedTeams.
+                    filter((t) => t.id && !sortedTeamIds.has(t.id) && membershipMap.has(t.id)).
+                    sort((a, b) => a.displayName.toLocaleLowerCase().localeCompare(b.displayName.toLocaleLowerCase()));
+
+                return [...mySortedTeams, ...extraTeams];
+            }
+
+            return joinedTeams.
+                filter((t) => t.id && membershipMap.has(t.id)).
+                sort((a, b) => a.displayName.toLocaleLowerCase().localeCompare(b.displayName.toLocaleLowerCase()));
+        }),
     );
 }

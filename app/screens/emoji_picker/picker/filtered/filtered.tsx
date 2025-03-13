@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
+import {BottomSheetFlashList} from '@gorhom/bottom-sheet';
+import {FlashList, type ListRenderItemInfo} from '@shopify/flash-list';
 import Fuse from 'fuse.js';
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useIsTablet} from '@hooks/device';
@@ -46,7 +47,7 @@ const EmojiFiltered = ({customEmojis, skinTone, searchTerm, onEmojiPress}: Props
         return searchEmojis(fuse, searchTerm);
     }, [fuse, searchTerm]);
 
-    const List = useMemo(() => (isTablet ? FlatList : BottomSheetFlatList), [isTablet]);
+    const List = useMemo(() => (isTablet ? FlashList : BottomSheetFlashList), [isTablet]);
 
     const keyExtractor = useCallback((item: string) => item, []);
 
@@ -65,18 +66,17 @@ const EmojiFiltered = ({customEmojis, skinTone, searchTerm, onEmojiPress}: Props
                 name={item}
             />
         );
-    }, []);
+    }, [onEmojiPress]);
 
     return (
         <List
             data={data}
-            initialNumToRender={30}
+            estimatedItemSize={40}
             keyboardDismissMode='interactive'
             keyboardShouldPersistTaps='always'
             keyExtractor={keyExtractor}
             ListEmptyComponent={renderEmpty}
             renderItem={renderItem}
-            removeClippedSubviews={false}
         />
     );
 };

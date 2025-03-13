@@ -7,6 +7,7 @@ import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
+import {prefetchCustomEmojiImages} from '@utils/emoji/prefetch';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
@@ -16,6 +17,7 @@ export const fetchCustomEmojis = async (serverUrl: string, page = 0, perPage = G
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const data = await client.getCustomEmojis(page, perPage, sort);
+        prefetchCustomEmojiImages(client, data);
         await operator.handleCustomEmojis({
             emojis: data,
             prepareRecordsOnly: false,
@@ -39,6 +41,7 @@ export const searchCustomEmojis = async (serverUrl: string, term: string) => {
             const exist = await queryCustomEmojisByName(database, names).fetch();
             const existingNames = new Set(exist.map((e) => e.name));
             const emojis = data.filter((d) => !existingNames.has(d.name));
+            prefetchCustomEmojiImages(client, emojis);
             await operator.handleCustomEmojis({
                 emojis,
                 prepareRecordsOnly: false,
@@ -71,8 +74,10 @@ export const fetchEmojisByName = async (serverUrl: string) => {
             return result;
         }, []);
         if (emojis.length) {
+            prefetchCustomEmojiImages(client, emojis);
             await operator.handleCustomEmojis({emojis, prepareRecordsOnly: false});
         }
+
         return {};
     } catch (error) {
         logDebug('error on debouncedFetchEmojiByNames', getFullErrorMessage(error));
