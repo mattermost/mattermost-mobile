@@ -6,7 +6,7 @@ import {of} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeDraftCount} from '@queries/servers/drafts';
-import {observeScheduledPostCount, observeScheduledPostsForTeam} from '@queries/servers/scheduled_post';
+import {observeScheduledPostsForTeam} from '@queries/servers/scheduled_post';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {hasScheduledPostError} from '@utils/scheduled_post';
 
@@ -17,9 +17,10 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
     const draftsCount = currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))); // Observe draft count
-    const scheduledPostCount = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostCount(database, teamId, true))); // Observe scheduled post count
-    const allScheduledPost = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostsForTeam(database, teamId, true))); // Observe scheduled post count
-
+    const allScheduledPost = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostsForTeam(database, teamId, true)));
+    const scheduledPostCount = allScheduledPost.pipe(
+        switchMap((scheduledPosts) => of(scheduledPosts.length)),
+    );
     const scheduledPostHasError = allScheduledPost.pipe(
         switchMap((scheduledPosts) => of(hasScheduledPostError(scheduledPosts))),
     );
