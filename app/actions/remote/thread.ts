@@ -385,7 +385,7 @@ export const syncTeamThreads = async (
                 // We are fetching the threads for the first time. We get "latest" and "earliest" values.
                 // At this point we may receive threads without replies, so we also check the post.create_at timestamp.
                 const {earliestThread, latestThread} = getThreadsListEdges(latestThreads.threads);
-                syncDataUpdate.latest = Math.max(latestThread.last_viewed_at || latestThread.last_reply_at || latestThread.post.create_at);
+                syncDataUpdate.latest = Math.max(latestThread.last_viewed_at, latestThread.last_reply_at, latestThread.post.create_at);
                 syncDataUpdate.earliest = earliestThread.last_reply_at || earliestThread.post.create_at;
 
                 threads.push(...latestThreads.threads);
