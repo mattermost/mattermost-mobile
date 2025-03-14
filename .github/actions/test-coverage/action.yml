@@ -93,10 +93,13 @@ runs:
         comment-tag: coverage-report
         create-if-not-exists: true
 
-    - name: ci/exit-on-coverage-failure
+    - name: ci/exit-on-test-coverage-failure
       if: env.IS_PR_WITH_CACHE == 'true'
       shell: bash
-      run: exit ${{ steps.compare-coverage.outputs.status }}
+      run: |
+        echo "::group::exit-on-test-coverage-failure"
+        exit ${{ steps.compare-coverage.outputs.status }}
+        echo "::endgroup::"
 
     - name: ci/upload-coverage
       if: github.ref_name == 'main'
