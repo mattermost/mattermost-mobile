@@ -15,6 +15,9 @@ interface ReadOnlyProps {
 }
 
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
+    wrapper: {
+        backgroundColor: theme.centerChannelBg,
+    },
     background: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
     },
@@ -46,26 +49,28 @@ const ReadOnlyChannnel = ({testID}: ReadOnlyProps) => {
     const theme = useTheme();
     const style = getStyle(theme);
     return (
-        <SafeAreaView
-            edges={edges}
-            style={style.background}
-        >
-            <View
-                testID={testID}
-                style={style.container}
+        <View style={style.wrapper}>
+            <SafeAreaView
+                edges={edges}
+                style={style.background}
             >
-                <CompassIcon
-                    name='glasses'
-                    style={style.icon}
-                    color={theme.centerChannelColor}
-                />
-                <FormattedText
-                    id='mobile.create_post.read_only'
-                    defaultMessage='This channel is read-only.'
-                    style={style.text}
-                />
-            </View>
-        </SafeAreaView>
+                <View
+                    testID={testID}
+                    style={style.container}
+                >
+                    <CompassIcon
+                        name='glasses'
+                        style={style.icon}
+                        color={theme.centerChannelColor}
+                    />
+                    <FormattedText
+                        id='mobile.create_post.read_only'
+                        defaultMessage='This channel is read-only.'
+                        style={style.text}
+                    />
+                </View>
+            </SafeAreaView>
+        </View>
     );
 };
 

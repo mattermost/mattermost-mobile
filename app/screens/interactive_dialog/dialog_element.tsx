@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import BoolSetting from '@components/settings/bool_setting';
 import RadioSetting from '@components/settings/radio_setting';
 import TextSetting from '@components/settings/text_setting';
 import {selectKeyboardType as selectKB} from '@utils/integrations';
+import {filterOptions} from '@utils/message_attachment';
 
 import type {KeyboardTypeOptions} from 'react-native';
 
@@ -86,6 +87,10 @@ function DialogElement({
         onChange(name, newValue.value);
     }, [name, onChange]);
 
+    const filteredOptions = useMemo(() => {
+        return filterOptions(options);
+    }, [options]);
+
     switch (type) {
         case 'text':
         case 'textarea':
@@ -111,7 +116,7 @@ function DialogElement({
                 <AutocompleteSelector
                     label={displayName}
                     dataSource={dataSource}
-                    options={options}
+                    options={filteredOptions}
                     optional={optional}
                     onSelected={handleSelect}
                     helpText={helpText}
@@ -129,7 +134,7 @@ function DialogElement({
                     label={displayName}
                     helpText={helpText}
                     errorText={errorText}
-                    options={options}
+                    options={filteredOptions}
                     onChange={handleChange}
                     testID={testID}
                     value={getStringValue(value)}

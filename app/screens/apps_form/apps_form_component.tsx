@@ -15,6 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {filterEmptyOptions} from '@utils/apps';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
@@ -103,6 +104,9 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
 function initValues(fields?: AppField[]) {
     const values: AppFormValues = {};
     fields?.forEach((e) => {
+        if (!e.name) {
+            return;
+        }
         if (e.type === 'bool') {
             values[e.name] = (e.value === true || String(e.value).toLowerCase() === 'true');
         } else if (e.value) {
@@ -327,7 +331,7 @@ function AppsFormComponent({
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const field = form.fields?.find((f) => f.name === name);
-        if (!field) {
+        if (!field?.name) {
             return [];
         }
 
@@ -385,6 +389,7 @@ function AppsFormComponent({
         <SafeAreaView
             testID='interactive_dialog.screen'
             style={style.container}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             <ScrollView
                 ref={scrollView}
@@ -409,6 +414,9 @@ function AppsFormComponent({
                     />
                 }
                 {form.fields && form.fields.filter((f) => f.name !== form.submit_buttons).map((field) => {
+                    if (!field.name) {
+                        return null;
+                    }
                     const value = secureGetFromRecord(values, field.name);
                     if (!value) {
                         return null;

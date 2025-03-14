@@ -14,6 +14,7 @@ import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -61,6 +62,7 @@ const ExpandedAnnouncementBanner = ({
     const isTablet = useIsTablet();
     const intl = useIntl();
     const insets = useSafeAreaInsets();
+    const {enabled, panResponder} = useBottomSheetListsFix();
 
     const dismissBanner = useCallback(() => {
         dismissAnnouncement(serverUrl, bannerText);
@@ -98,6 +100,8 @@ const ExpandedAnnouncementBanner = ({
             )}
             <Scroll
                 style={style.scrollContainer}
+                scrollEnabled={enabled}
+                {...panResponder.panHandlers}
             >
                 <Markdown
                     baseTextStyle={style.baseTextStyle}

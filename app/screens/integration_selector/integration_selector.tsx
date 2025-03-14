@@ -18,11 +18,13 @@ import {debounce} from '@helpers/api/general';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
+import SecurityManager from '@managers/security_manager';
 import {
     buildNavigationButton,
     popTopScreen, setButtons,
 } from '@screens/navigation';
 import {filterChannelsMatchingTerm} from '@utils/channel';
+import {filterOptions} from '@utils/message_attachment';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
@@ -189,6 +191,10 @@ function IntegrationSelector(
     const page = useRef<number>(-1);
     const next = useRef<boolean>(VALID_DATASOURCES.includes(dataSource));
 
+    const filteredOptions = useMemo(() => {
+        return filterOptions(options) || [];
+    }, [options]);
+
     // Callbacks
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -275,8 +281,8 @@ function IntegrationSelector(
     }, [getChannels, dataSource]);
 
     const searchDynamicOptions = useCallback(async (searchTerm = '') => {
-        if (options && options !== integrationData && !searchTerm) {
-            setIntegrationData(options);
+        if (filteredOptions && filteredOptions !== integrationData && !searchTerm) {
+            setIntegrationData(filteredOptions);
         }
 
         if (!getDynamicOptions) {
@@ -291,7 +297,7 @@ function IntegrationSelector(
         } else {
             setIntegrationData(searchData);
         }
-    }, [options, getDynamicOptions, integrationData]);
+    }, [filteredOptions, getDynamicOptions, integrationData]);
 
     const handleSelectProfile = useCallback((user: UserProfile): void => {
         if (!isMultiselect) {
@@ -300,7 +306,7 @@ function IntegrationSelector(
         }
 
         setSelectedIds((current) => handleIdSelection(dataSource, current, user));
-    }, [isMultiselect, handleIdSelection, handleSelect, close, dataSource]);
+    }, [isMultiselect, handleSelect, dataSource]);
 
     const onHandleMultiselectSubmit = useCallback(() => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
@@ -311,7 +317,7 @@ function IntegrationSelector(
             handleSelect(Object.values(multiselectSelected));
         }
         close();
-    }, [multiselectSelected, selectedIds, handleSelect]);
+    }, [dataSource, handleSelect, selectedIds, multiselectSelected]);
 
     const onSearch = useCallback((text: string) => {
         if (!text) {
@@ -347,7 +353,7 @@ function IntegrationSelector(
 
             setLoading(false);
         }, General.SEARCH_TIMEOUT_MILLISECONDS);
-    }, [dataSource, integrationData, currentTeamId]);
+    }, [clearSearch, dataSource, integrationData, serverUrl, currentTeamId, searchDynamicOptions]);
 
     // Effects
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit]);
@@ -400,7 +406,7 @@ function IntegrationSelector(
 
         if (isMultiselect && Array.isArray(selected) && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
             for (const value of selected) {
-                const option = options?.find((opt) => opt.value === value);
+                const option = filteredOptions?.find((opt) => opt.value === value);
                 if (option) {
                     multiselectItems[value] = option;
                 }
@@ -440,7 +446,7 @@ function IntegrationSelector(
                 />
             </View>
         );
-    }, [style, dataSource, loading, intl]);
+    }, [style, dataSource, loading]);
 
     const renderNoResults = useCallback((): JSX.Element | null => {
         if (loading || page.current === -1) {
@@ -518,7 +524,7 @@ function IntegrationSelector(
                 <View style={style.separator}/>
             </>
         );
-    }, [multiselectSelected, selectedIds, style, theme]);
+    }, [dataSource, handleRemoveOption, multiselectSelected, selectedIds, style.separator, theme]);
 
     const userFetchFunction = useCallback(async (userFetchPage: number) => {
         const result = await fetchProfiles(serverUrl, userFetchPage, General.PROFILE_CHUNK_SIZE);
@@ -587,7 +593,10 @@ function IntegrationSelector(
     const selectedOptionsComponent = renderSelectedOptions();
 
     return (
-        <SafeAreaView style={style.container}>
+        <SafeAreaView
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            style={style.container}
+        >
             <View
                 testID='integration_selector.screen'
                 style={style.searchBar}

@@ -3,7 +3,8 @@
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, ScrollView} from 'react-native';
+import {Keyboard} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {type ImageResource, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -13,6 +14,7 @@ import ErrorText from '@components/error_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import SecurityManager from '@managers/security_manager';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -106,7 +108,7 @@ function InteractiveDialog({
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const scrollView = useRef<ScrollView>(null);
+    const scrollView = useRef<KeyboardAwareScrollView>(null);
 
     const onChange = useCallback((name: string, value: string | number | boolean) => {
         dispatchValues({name, value});
@@ -185,7 +187,7 @@ function InteractiveDialog({
             if (data.error) {
                 hasErrors = true;
                 setError(data.error);
-                scrollView.current?.scrollTo({x: 0, y: 0});
+                scrollView.current?.scrollToPosition(0, 0, true);
             } else {
                 setError('');
             }
@@ -233,10 +235,21 @@ function InteractiveDialog({
         <SafeAreaView
             testID='interactive_dialog.screen'
             style={style.container}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            <ScrollView
+            <KeyboardAwareScrollView
                 ref={scrollView}
+                bounces={false}
                 style={style.scrollView}
+                enableAutomaticScroll={true}
+                enableOnAndroid={true}
+                noPaddingBottomOnAndroid={true}
+                scrollToOverflowEnabled={true}
+                enableResetScrollToCoords={true}
+                extraScrollHeight={0}
+                extraHeight={0}
+                keyboardDismissMode='interactive'
+                keyboardShouldPersistTaps='handled'
             >
                 {Boolean(error) && (
                     <ErrorText
@@ -246,9 +259,9 @@ function InteractiveDialog({
                     />
                 )}
                 {Boolean(introductionText) &&
-                    <DialogIntroductionText
-                        value={introductionText}
-                    />
+                <DialogIntroductionText
+                    value={introductionText}
+                />
                 }
                 {Boolean(elements) && elements.map((e) => {
                     const value = secureGetFromRecord(values, e.name);
@@ -271,7 +284,7 @@ function InteractiveDialog({
                         />
                     );
                 })}
-            </ScrollView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }
