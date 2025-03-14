@@ -23,7 +23,6 @@ COMMENT_BODY="### Coverage Comparison Report
 HAS_DECREASE=0
 BELOW_THRESHOLD=0
 
-
 # Calculate average total coverage since the summary doesn't provide an overall total
 main_total=0
 pr_total=0
@@ -54,7 +53,14 @@ main_avg=$(echo "scale=2; $main_total / $metric_count" | bc)
 pr_avg=$(echo "scale=2; $pr_total / $metric_count" | bc)
 total_diff=$(echo "$pr_avg - $main_avg" | bc)
 
-if (( $(echo "$pr_avg < $PR_COVERAGE_THRESHOLD" | bc -l) )); then
+# Debug output
+echo "Debug: PR average coverage is $pr_avg%" >&2
+echo "Debug: Threshold is $PR_COVERAGE_THRESHOLD%" >&2
+echo "Debug: Comparison command: echo \"$pr_avg < $PR_COVERAGE_THRESHOLD\" | bc -l" >&2
+comparison_result=$(echo "$pr_avg < $PR_COVERAGE_THRESHOLD" | bc -l)
+echo "Debug: Comparison result: $comparison_result" >&2
+
+if (( $comparison_result )); then
     echo "::error::Total coverage ($pr_avg%) is below the minimum required coverage of ${PR_COVERAGE_THRESHOLD}%" >&2
     BELOW_THRESHOLD=1
     HAS_DECREASE=1
@@ -73,5 +79,4 @@ elif [ "$HAS_DECREASE" -eq 1 ]; then
 fi
 
 echo "$COMMENT_BODY"
-
-exit $HAS_DECREASE 
+exit $BELOW_THRESHOLD 
