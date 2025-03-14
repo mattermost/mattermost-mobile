@@ -9,7 +9,31 @@ import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {urlSafeBase64Encode} from '@utils/security';
 
-import {deleteFileCache, deleteFileCacheByDir, deleteV1Data, extractFileInfo, fileExists, fileMaxWarning, fileSizeWarning, filterFileExtensions, getAllFilesInCachesDirectory, getAllowedServerMaxFileSize, getExtensionFromContentDisposition, getExtensionFromMime, getFileType, getFormattedFileSize, getLocalFilePathFromFile, hasWriteStoragePermission, isDocument, isGif, isImage, isVideo, lookupMimeType, uploadDisabledWarning} from '.';
+import {
+    deleteFileCache,
+    deleteFileCacheByDir,
+    deleteV1Data,
+    extractFileInfo,
+    fileExists,
+    fileMaxWarning,
+    fileSizeWarning,
+    filterFileExtensions,
+    getAllFilesInCachesDirectory,
+    getAllowedServerMaxFileSize,
+    getExtensionFromContentDisposition,
+    getExtensionFromMime,
+    getFileType,
+    getFormattedFileSize,
+    getLocalFilePathFromFile,
+    hasWriteStoragePermission,
+    isDocument,
+    isGif,
+    isImage,
+    isVideo,
+    lookupMimeType,
+    pathWithPrefix,
+    uploadDisabledWarning,
+} from '.';
 
 jest.mock('expo-file-system');
 jest.mock('react-native', () => {
@@ -270,6 +294,13 @@ describe('Image utils', () => {
         it('should get all files in caches directory', async () => {
             const result = await getAllFilesInCachesDirectory('http://server.com');
             expect(result.files).toEqual(expect.any(Array));
+        });
+    });
+
+    describe('pathWithPrefix', () => {
+        it('should return correct path with prefix', () => {
+            expect(pathWithPrefix('file://', 'file://something')).toEqual('file://something');
+            expect(pathWithPrefix('file://', 'something')).toEqual('file://something');
         });
     });
 });

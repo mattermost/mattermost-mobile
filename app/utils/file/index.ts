@@ -573,3 +573,17 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
         return {error};
     }
 };
+
+export const pathWithPrefix = (prefix: string, path: string) => {
+    const p = path.startsWith(prefix) ? '' : prefix;
+    return `${p}${path}`;
+};
+
+export const getFileSize = async (path: string) => {
+    const file = await getInfoAsync(pathWithPrefix('file://', path));
+    return 'size' in file ? file.size : 0;
+};
+
+export const deleteFile = async (path: string) => {
+    await deleteAsync(pathWithPrefix('file://', path));
+};
