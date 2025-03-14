@@ -68,9 +68,7 @@ COMMENT_BODY+=$'\n'"+-----------------+------------+------------+-----------+
 
 if [ "$BELOW_THRESHOLD" -eq 1 ]; then
     COMMENT_BODY+=$'\n\n'"🚨 **Error:** Total coverage ($pr_avg%) is below the minimum required coverage of ${PR_COVERAGE_THRESHOLD}%"
-fi
-
-if [ "$HAS_DECREASE" -eq 1 ]; then
+elif [ "$HAS_DECREASE" -eq 1 ]; then
     COMMENT_BODY+=$'\n\n'"⚠️ **Warning:** One or more coverage metrics have decreased by more than ${COVERAGE_THRESHOLD}%"
 fi
 
