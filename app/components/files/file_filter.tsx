@@ -62,6 +62,11 @@ export const FilterData = {
         defaultMessage: 'Images',
         filterType: FileFilters.IMAGES,
     },
+    [FileFilters.SVG]: {
+        id: t('screen.search.results.filter.images'),
+        defaultMessage: 'Images',
+        filterType: FileFilters.SVG,
+    },
     [FileFilters.AUDIO]: {
         id: t('screen.search.results.filter.audio'),
         defaultMessage: 'Audio',
