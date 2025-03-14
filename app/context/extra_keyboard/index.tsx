@@ -183,18 +183,20 @@ const ExtraKeyboardComponent = () => {
 
     const animatedStyle = useAnimatedStyle(() => {
         let height = keyb.height.value + offset;
+        const isClose = keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.UNKNOWN;
+        const isCloseOrClosing = isClose || keyb.state.value === KeyboardState.CLOSING;
         if (keyb.height.value < 70) {
             height = 0; // When using a hw keyboard
         }
         if (context?.isExtraKeyboardVisible) {
             height = withTiming(maxKeyboardHeight.value, {duration: 250});
-        } else if (keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.UNKNOWN) {
+        } else if (isClose) {
             height = withTiming(0, {duration: 250});
         }
 
         return {
             height,
-            marginBottom: withTiming((keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.CLOSING || keyb.state.value === KeyboardState.UNKNOWN) ? insets.bottom : 0, {duration: 250}),
+            marginBottom: withTiming(isCloseOrClosing ? insets.bottom : 0, {duration: 250}),
         };
     }, [context, insets.bottom, offset]);
 
