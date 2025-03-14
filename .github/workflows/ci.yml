@@ -8,7 +8,7 @@ on:
   pull_request:
 
 env:
-  NODE_VERSION: 20.13.1
+  NODE_VERSION: 22.14.0
   TERM: xterm
 
 jobs:
