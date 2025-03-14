@@ -91,11 +91,10 @@ runs:
       with:
         message: ${{ env.report }}
         comment-tag: coverage-report
-        # github-token: ${{ inputs.github_token }}
         create-if-not-exists: true
 
     - name: ci/upload-coverage
-      if: github.ref_name == 'main'
+      if: github.ref_name == 'main' || github.event.label.name == 'Reset Test Coverage'
       id: upload-coverage
       uses: actions/upload-artifact@v4
       with:
@@ -104,7 +103,7 @@ runs:
         overwrite: true
 
     - name: Set upload success
-      if: github.ref_name == 'main' && steps.upload-coverage.outcome == 'success'
+      if: (github.ref_name == 'main' || github.event.label.name == 'Reset Test Coverage') && steps.upload-coverage.outcome == 'success'
       shell: bash
       run: echo "UPLOAD_SUCCESS=true" >> $GITHUB_ENV
 
