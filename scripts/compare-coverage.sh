@@ -1,6 +1,7 @@
 #!/bin/bash
 
 COVERAGE_THRESHOLD=0.5
+PR_COVERAGE_THRESHOLD=80.0
 MAIN_COVERAGE_FILE="$1/coverage-summary.json"
 RECENT_COVERAGE_FILE="$2/coverage-summary.json"
 PR_NUMBER="$3"
@@ -20,9 +21,10 @@ COMMENT_BODY="### Coverage Comparison Report
 +-----------------+------------+------------+-----------+"
 
 HAS_DECREASE=0
+BELOW_THRESHOLD=0
 
-# Initialize variables for calculating average total coverage
-# since the coverage summary doesn't provide an overall total
+
+# Calculate average total coverage since the summary doesn't provide an overall total
 main_total=0
 pr_total=0
 metric_count=0
@@ -32,7 +34,6 @@ for metric in lines statements branches functions; do
     pr=$(jq ".total.${metric}.pct" "$RECENT_COVERAGE_FILE")
     diff=$(echo "$pr - $main" | bc)
     
-    # Add to totals for average calculation
     main_total=$(echo "$main_total + $main" | bc)
     pr_total=$(echo "$pr_total + $pr" | bc)
     metric_count=$((metric_count + 1))
@@ -41,19 +42,23 @@ for metric in lines statements branches functions; do
     COMMENT_BODY+=$'\n'"$row"
     
     if (( $(echo "$diff < -$COVERAGE_THRESHOLD" | bc -l) )); then
-        # Write error messages to stderr instead of stdout
+        # Write error messages to stderr instead of stdout, since we don't want them to be shown in the PR comment
         echo "::error::${metric^} coverage has decreased by more than ${COVERAGE_THRESHOLD}% ($diff%)" >&2
         HAS_DECREASE=1
     fi
 done
 
-# Add separator line
 COMMENT_BODY+=$'\n'"+-----------------+------------+------------+-----------+"
 
-# Calculate the average coverage across all metrics
 main_avg=$(echo "scale=2; $main_total / $metric_count" | bc)
 pr_avg=$(echo "scale=2; $pr_total / $metric_count" | bc)
 total_diff=$(echo "$pr_avg - $main_avg" | bc)
+
+if (( $(echo "$pr_avg < $PR_COVERAGE_THRESHOLD" | bc -l) )); then
+    echo "::error::Total coverage ($pr_avg%) is below the minimum required coverage of ${PR_COVERAGE_THRESHOLD}%" >&2
+    BELOW_THRESHOLD=1
+    HAS_DECREASE=1
+fi
 
 row=$(printf "| %-15s | %9.2f%% | %9.2f%% | %8.2f%% |" "Total" "$main_avg" "$pr_avg" "$total_diff")
 COMMENT_BODY+=$'\n'"$row"
@@ -61,12 +66,14 @@ COMMENT_BODY+=$'\n'"$row"
 COMMENT_BODY+=$'\n'"+-----------------+------------+------------+-----------+
 \`\`\`"
 
+if [ "$BELOW_THRESHOLD" -eq 1 ]; then
+    COMMENT_BODY+=$'\n\n'"🚨 **Error:** Total coverage ($pr_avg%) is below the minimum required coverage of ${PR_COVERAGE_THRESHOLD}%"
+fi
+
 if [ "$HAS_DECREASE" -eq 1 ]; then
     COMMENT_BODY+=$'\n\n'"⚠️ **Warning:** One or more coverage metrics have decreased by more than ${COVERAGE_THRESHOLD}%"
 fi
 
-# Only output the comment body to stdout
 echo "$COMMENT_BODY"
 
-# Not failing the build for now
-# exit $HAS_DECREASE 
+exit $HAS_DECREASE 
