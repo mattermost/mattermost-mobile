@@ -112,7 +112,7 @@ export class ParsedCommand {
     };
 
     private findBindings(b: AppBinding) {
-        return b.label.toLowerCase() === this.incomplete.toLowerCase();
+        return b.label?.toLowerCase() === this.incomplete.toLowerCase();
     }
 
     // matchBinding finds the closest matching command binding.
@@ -321,7 +321,7 @@ export class ParsedCommand {
                             let field = fields.find((f: AppField) => f.position === this.position);
                             if (!field) {
                                 field = fields.find((f) => f.position === -1 && f.type === AppFieldTypes.TEXT);
-                                if (!field || this.values[field.name]) {
+                                if (!field?.name || this.values[field.name]) {
                                     return this.asError(this.intl.formatMessage({
                                         id: 'apps.error.parser.no_argument_pos_x',
                                         defaultMessage: 'Unable to identify argument.',
@@ -346,6 +346,13 @@ export class ParsedCommand {
                         return this.asError(this.intl.formatMessage({
                             id: 'apps.error.parser.missing_field_value',
                             defaultMessage: 'Field value is missing.',
+                        }));
+                    }
+
+                    if (!this.field.name) {
+                        return this.asError(this.intl.formatMessage({
+                            id: 'apps.error.parser.missing_field_name',
+                            defaultMessage: 'Field name is missing.',
                         }));
                     }
 
@@ -595,6 +602,13 @@ export class ParsedCommand {
                         }));
                     }
 
+                    if (!this.field.name) {
+                        return this.asError(this.intl.formatMessage({
+                            id: 'apps.error.parser.missing_field_name',
+                            defaultMessage: 'Field name is missing.',
+                        }));
+                    }
+
                     // special handling for optional BOOL values ('--boolflag true'
                     // vs '--boolflag next-positional' vs '--boolflag
                     // --next-flag...')
@@ -628,7 +642,14 @@ export class ParsedCommand {
                         }));
                     }
 
-                this.values![this.field.name] = [];
+                    if (!this.field.name) {
+                        return this.asError(this.intl.formatMessage({
+                            id: 'apps.error.parser.missing_field_name',
+                            defaultMessage: 'Field name is missing.',
+                        }));
+                    }
+
+                    this.values![this.field.name] = [];
                     switch (c) {
                         case ' ':
                         case '\t':
@@ -781,6 +802,13 @@ export class ParsedCommand {
                         return this.asError(this.intl.formatMessage({
                             id: 'apps.error.parser.missing_field_value',
                             defaultMessage: 'Field value is missing.',
+                        }));
+                    }
+
+                    if (!this.field.name) {
+                        return this.asError(this.intl.formatMessage({
+                            id: 'apps.error.parser.missing_field_name',
+                            defaultMessage: 'Field name is missing.',
                         }));
                     }
 
@@ -961,7 +989,7 @@ export class AppCommandParser {
         }
 
         await Promise.all(parsed.resolvedForm?.fields.map(async (f) => {
-            if (!f.value) {
+            if (!f.value || !f.name) {
                 return;
             }
 
@@ -975,6 +1003,9 @@ export class AppCommandParser {
                         break;
                     case AppFieldTypes.USER: {
                         const userID = (f.value as AppSelectOption).value;
+                        if (!userID) {
+                            return;
+                        }
                         let user: UserModel | UserProfile | undefined = await getUserById(this.database, userID);
                         if (!user) {
                             const res = await fetchUsersByIds(this.serverUrl, [userID]);
@@ -992,6 +1023,9 @@ export class AppCommandParser {
                     }
                     case AppFieldTypes.CHANNEL: {
                         const channelID = (f.value as AppSelectOption).label;
+                        if (!channelID) {
+                            return;
+                        }
                         let channel: ChannelModel | Channel | undefined = await getChannelById(this.database, channelID);
                         if (!channel) {
                             const res = await fetchChannelById(this.serverUrl, channelID);
@@ -1008,9 +1042,14 @@ export class AppCommandParser {
                         break;
                     }
                     case AppFieldTypes.STATIC_SELECT:
-                    case AppFieldTypes.DYNAMIC_SELECT:
-                        parsed.values[f.name] = (f.value as AppSelectOption).value;
+                    case AppFieldTypes.DYNAMIC_SELECT: {
+                        const optionValue = (f.value as AppSelectOption).value;
+                        if (!optionValue) {
+                            return;
+                        }
+                        parsed.values[f.name] = optionValue;
                         break;
+                    }
                     case AppFieldTypes.MARKDOWN:
 
                     // Do nothing
@@ -1026,10 +1065,11 @@ export class AppCommandParser {
 
         const bindings = this.getCommandBindings();
         for (const binding of bindings) {
-            let base = binding.label;
-            if (!base) {
+            if (!binding.label) {
                 continue;
             }
+
+            let base = binding.label;
 
             if (base[0] !== '/') {
                 base = '/' + base;
@@ -1100,7 +1140,7 @@ export class AppCommandParser {
         ];
         const call = parsed.resolvedForm?.submit || parsed.binding?.form?.submit;
         const hasRequired = this.getMissingFields(parsed).length === 0;
-        const hasValue = (parsed.state !== ParseState.EndValue || (parsed.field && parsed.values[parsed.field.name] !== undefined));
+        const hasValue = (parsed.state !== ParseState.EndValue || (parsed.field && parsed.field.name && parsed.values[parsed.field.name] !== undefined));
 
         if (executableStates.includes(parsed.state) && call && hasRequired && hasValue) {
             const execute = getExecuteSuggestion(parsed);
@@ -1181,7 +1221,11 @@ export class AppCommandParser {
 
         const errors: {[key: string]: string} = {};
         await Promise.all(parsed.resolvedForm.fields.map(async (f) => {
-            const fieldValue = values[f.name];
+            const fieldName = f.name;
+            if (!fieldName) {
+                return;
+            }
+            const fieldValue = values[fieldName];
             if (!fieldValue) {
                 return;
             }
@@ -1198,20 +1242,20 @@ export class AppCommandParser {
                         const options: AppSelectOption[] = [];
                         for (const value of commandValues) {
                             if (options.find((o) => o.value === value)) {
-                                errors[f.name] = this.intl.formatMessage({
+                                errors[fieldName] = this.intl.formatMessage({
                                     id: 'apps.error.command.same_option',
                                     defaultMessage: 'Option repeated for field `{fieldName}`: `{option}`.',
                                 }, {
-                                    fieldName: f.name,
+                                    fieldName,
                                     option: value,
                                 });
                             }
                         }
-                        values[f.name] = options;
+                        values[fieldName] = options;
                         break;
                     }
 
-                    values[f.name] = {label: fieldValue, value: fieldValue};
+                    values[fieldName] = {label: fieldValue, value: fieldValue};
                     break;
                 case AppFieldTypes.STATIC_SELECT: {
                     const getOption = (value: string) => {
@@ -1219,14 +1263,14 @@ export class AppCommandParser {
                     };
 
                     const setOptionError = (value: string) => {
-                        errors[f.name] = this.intl.formatMessage({
+                        errors[fieldName] = this.intl.formatMessage({
                             id: 'apps.error.command.unknown_option',
                             defaultMessage: 'Unknown option for field `{fieldName}`: `{option}`.',
                         }, {
-                            fieldName: f.name,
+                            fieldName,
                             option: value,
                         });
-                        values[f.name] = undefined;
+                        values[fieldName] = undefined;
                     };
 
                     if (f.multiselect) {
@@ -1245,17 +1289,17 @@ export class AppCommandParser {
                                 return;
                             }
                             if (options.find((o) => o.value === option.value)) {
-                                errors[f.name] = this.intl.formatMessage({
+                                errors[fieldName] = this.intl.formatMessage({
                                     id: 'apps.error.command.same_option',
                                     defaultMessage: 'Option repeated for field `{fieldName}`: `{option}`.',
                                 }, {
-                                    fieldName: f.name,
+                                    fieldName,
                                     option: value,
                                 });
                             }
                             options.push(option);
                         }
-                        values[f.name] = options;
+                        values[fieldName] = options;
                         break;
                     }
 
@@ -1264,7 +1308,7 @@ export class AppCommandParser {
                         setOptionError(fieldValue);
                         return;
                     }
-                    values[f.name] = option;
+                    values[fieldName] = option;
                     break;
                 }
                 case AppFieldTypes.USER: {
@@ -1281,11 +1325,11 @@ export class AppCommandParser {
                     };
 
                     const setUserError = (username: string) => {
-                        errors[f.name] = this.intl.formatMessage({
+                        errors[fieldName] = this.intl.formatMessage({
                             id: 'apps.error.command.unknown_user',
                             defaultMessage: 'Unknown user for field `{fieldName}`: `{option}`.',
                         }, {
-                            fieldName: f.name,
+                            fieldName,
                             option: username,
                         });
                     };
@@ -1312,22 +1356,22 @@ export class AppCommandParser {
                             }
 
                             if (options.find((o) => o.value === user?.id)) {
-                                errors[f.name] = this.intl.formatMessage({
+                                errors[fieldName] = this.intl.formatMessage({
                                     id: 'apps.error.command.same_user',
                                     defaultMessage: 'User repeated for field `{fieldName}`: `{option}`.',
                                 }, {
-                                    fieldName: f.name,
+                                    fieldName,
                                     option: userName,
                                 });
                             }
                             options.push({label: user.username, value: user.id});
                         }
                         /* eslint-enable no-await-in-loop */
-                        values[f.name] = options;
+                        values[fieldName] = options;
                         break;
                     }
 
-                    let userName = values[f.name] as string;
+                    let userName = values[fieldName] as string;
                     if (userName[0] === '@') {
                         userName = userName.substr(1);
                     }
@@ -1336,7 +1380,7 @@ export class AppCommandParser {
                         setUserError(userName);
                         return;
                     }
-                    values[f.name] = {label: user.username, value: user.id};
+                    values[fieldName] = {label: user.username, value: user.id};
                     break;
                 }
                 case AppFieldTypes.CHANNEL: {
@@ -1353,11 +1397,11 @@ export class AppCommandParser {
                     };
 
                     const setChannelError = (channelName: string) => {
-                        errors[f.name] = this.intl.formatMessage({
+                        errors[fieldName] = this.intl.formatMessage({
                             id: 'apps.error.command.unknown_channel',
                             defaultMessage: 'Unknown channel for field `{fieldName}`: `{option}`.',
                         }, {
-                            fieldName: f.name,
+                            fieldName,
                             option: channelName,
                         });
                     };
@@ -1384,11 +1428,11 @@ export class AppCommandParser {
                             }
 
                             if (options.find((o) => o.value === channel.id)) {
-                                errors[f.name] = this.intl.formatMessage({
+                                errors[fieldName] = this.intl.formatMessage({
                                     id: 'apps.error.command.same_channel',
                                     defaultMessage: 'Channel repeated for field `{fieldName}`: `{option}`.',
                                 }, {
-                                    fieldName: f.name,
+                                    fieldName,
                                     option: channelName,
                                 });
                             }
@@ -1397,11 +1441,11 @@ export class AppCommandParser {
                             options.push({label, value: channel.id});
                         }
                         /* eslint-enable no-await-in-loop */
-                        values[f.name] = options;
+                        values[fieldName] = options;
                         break;
                     }
 
-                    let channelName = values[f.name] as string;
+                    let channelName = values[fieldName] as string;
                     if (channelName[0] === '~') {
                         channelName = channelName.substr(1);
                     }
@@ -1411,15 +1455,15 @@ export class AppCommandParser {
                         return;
                     }
                     const label = 'display_name' in channel ? channel.display_name : channel.displayName;
-                    values[f.name] = {label, value: channel.id};
+                    values[fieldName] = {label, value: channel.id};
                     break;
                 }
                 case AppFieldTypes.BOOL: {
-                    const strValue = values[f.name] as string;
+                    const strValue = values[fieldName] as string;
                     if (strValue.toLowerCase() === 'true') {
-                        values[f.name] = true;
+                        values[fieldName] = true;
                     } else {
-                        values[f.name] = false;
+                        values[fieldName] = false;
                     }
                 }
             }
@@ -1501,7 +1545,7 @@ export class AppCommandParser {
     // getAppContext collects post/channel/team info for performing calls
     private getAppContext = async (binding: AppBinding): Promise<AppContext> => {
         const context: AppContext = {
-            app_id: binding.app_id,
+            app_id: binding.app_id!, // At this point is safe to assume we have an app_id
             location: binding.location,
             root_id: this.rootPostID,
         };
@@ -1591,7 +1635,7 @@ export class AppCommandParser {
         const result: AutocompleteSuggestion[] = [];
 
         bindings.forEach((b) => {
-            if (b.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase())) {
+            if (b.label?.toLowerCase().startsWith(parsed.incomplete.toLowerCase())) {
                 result.push({
                     Complete: b.label,
                     Suggestion: b.label,
@@ -1690,7 +1734,7 @@ export class AppCommandParser {
         const values = parsed.values || [];
         const fields = form.fields || [];
         for (const field of fields) {
-            if (field.is_required && !values[field.name]) {
+            if (field.is_required && field.name && !values[field.name]) { // fields without names shouldn't be considered
                 missing.push(field);
             }
         }
@@ -1717,6 +1761,7 @@ export class AppCommandParser {
         const applicable = parsed.resolvedForm.fields.filter((field) => (
             field.label &&
             field.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()) &&
+            field.name &&
             !parsed.values[field.name] &&
             !field.readonly &&
             field.type !== AppFieldTypes.MARKDOWN
@@ -1780,7 +1825,7 @@ export class AppCommandParser {
     // getStaticSelectSuggestions returns suggestions specified in the field's options property
     private getStaticSelectSuggestions = (parsed: ParsedCommand, delimiter?: string): AutocompleteSuggestion[] => {
         const f = parsed.field as AutocompleteStaticSelect;
-        const opts = f.options?.filter((opt) => opt.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()));
+        const opts = f.options?.filter((opt) => opt.label?.toLowerCase().startsWith(parsed.incomplete.toLowerCase()));
         if (!opts?.length) {
             return [{
                 Complete: '',
@@ -1794,15 +1839,15 @@ export class AppCommandParser {
             }];
         }
         return opts.map((opt) => {
-            let complete = opt.value;
+            let complete = opt.value || '';
             if (delimiter) {
                 complete = delimiter + complete + delimiter;
-            } else if (isMultiword(opt.value)) {
+            } else if (isMultiword(complete)) {
                 complete = '`' + complete + '`';
             }
             return {
                 Complete: complete,
-                Suggestion: opt.label,
+                Suggestion: opt.label || '',
                 Hint: f.hint || '',
                 Description: f.description || '',
                 IconData: opt.icon_data || parsed.binding?.icon || '',
@@ -1883,16 +1928,16 @@ export class AppCommandParser {
         }
 
         return items.map((s): AutocompleteSuggestion => {
-            let complete = s.value;
+            let complete = s.value || '';
             if (delimiter) {
                 complete = delimiter + complete + delimiter;
-            } else if (isMultiword(s.value)) {
+            } else if (isMultiword(complete)) {
                 complete = '`' + complete + '`';
             }
             return ({
                 Complete: complete,
-                Description: s.label || s.value,
-                Suggestion: s.value,
+                Description: s.label || s.value || '',
+                Suggestion: s.value || '',
                 Hint: '',
                 IconData: s.icon_data || parsed.binding?.icon || '',
             });
