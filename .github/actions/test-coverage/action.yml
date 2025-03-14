@@ -85,13 +85,18 @@ runs:
         echo "EOF" >> $GITHUB_ENV
         echo "::endgroup::"
 
-    - name: Post coverage report
+    - name: ci/post-coverage-report
       if: env.IS_PR_WITH_CACHE == 'true'
       uses: thollander/actions-comment-pull-request@v3
       with:
         message: ${{ env.report }}
         comment-tag: coverage-report
         create-if-not-exists: true
+
+    - name: ci/exit-on-coverage-failure
+      if: env.IS_PR_WITH_CACHE == 'true'
+      shell: bash
+      run: exit ${{ steps.compare-coverage.outputs.status }}
 
     - name: ci/upload-coverage
       if: github.ref_name == 'main'
@@ -102,7 +107,7 @@ runs:
         path: coverage/coverage-summary.json
         overwrite: true
 
-    - name: Set upload success
+    - name: ci/set-upload-success
       if: github.ref_name == 'main' && steps.upload-coverage.outcome == 'success'
       shell: bash
       run: echo "UPLOAD_SUCCESS=true" >> $GITHUB_ENV
