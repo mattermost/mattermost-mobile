@@ -1,0 +1,74 @@
+diff --git a/node_modules/react-native-keyboard-aware-scroll-view/index.d.ts b/node_modules/react-native-keyboard-aware-scroll-view/index.d.ts
+index bf03b26..e11063b 100644
+--- a/node_modules/react-native-keyboard-aware-scroll-view/index.d.ts
++++ b/node_modules/react-native-keyboard-aware-scroll-view/index.d.ts
+@@ -69,6 +69,7 @@ interface KeyboardAwareProps {
+    * @memberof KeyboardAwareProps
+    */
+   enableOnAndroid?: boolean
++  noPaddingBottomOnAndroid?: boolean
+ 
+   /**
+    * Adds an extra offset when focusing the TextInputs.
+diff --git a/node_modules/react-native-keyboard-aware-scroll-view/lib/KeyboardAwareHOC.js b/node_modules/react-native-keyboard-aware-scroll-view/lib/KeyboardAwareHOC.js
+index 03f46af..f58175f 100644
+--- a/node_modules/react-native-keyboard-aware-scroll-view/lib/KeyboardAwareHOC.js
++++ b/node_modules/react-native-keyboard-aware-scroll-view/lib/KeyboardAwareHOC.js
+@@ -57,6 +57,7 @@ export type KeyboardAwareHOCProps = {
+   update?: Function,
+   contentContainerStyle?: any,
+   enableOnAndroid?: boolean,
++  noPaddingBottomOnAndroid?: boolean,
+   innerRef?: Function,
+   ...keyboardAwareHOCTypeEvents
+ }
+@@ -92,6 +93,7 @@ export type ScrollIntoViewOptions = ?{
+ 
+ export type KeyboardAwareHOCOptions = ?{
+   enableOnAndroid: boolean,
++  noPaddingBottomOnAndroid: boolean,
+   contentContainerStyle: ?Object,
+   enableAutomaticScroll: boolean,
+   extraHeight: number,
+@@ -113,6 +115,7 @@ function getDisplayName(WrappedComponent: React$Component) {
+ 
+ const ScrollIntoViewDefaultOptions: KeyboardAwareHOCOptions = {
+   enableOnAndroid: false,
++  noPaddingBottomOnAndroid: false,
+   contentContainerStyle: undefined,
+   enableAutomaticScroll: true,
+   extraHeight: _KAM_EXTRA_HEIGHT,
+@@ -181,6 +184,7 @@ function KeyboardAwareHOC(
+       update: PropTypes.func,
+       contentContainerStyle: PropTypes.any,
+       enableOnAndroid: PropTypes.bool,
++      noPaddingBottomOnAndroid: PropTypes.bool,
+       innerRef: PropTypes.func,
+       ...keyboardEventPropTypes
+     }
+@@ -193,7 +197,8 @@ function KeyboardAwareHOC(
+       enableResetScrollToCoords: hocOptions.enableResetScrollToCoords,
+       keyboardOpeningTime: hocOptions.keyboardOpeningTime,
+       viewIsInsideTabBar: hocOptions.viewIsInsideTabBar,
+-      enableOnAndroid: hocOptions.enableOnAndroid
++      enableOnAndroid: hocOptions.enableOnAndroid,
++      noPaddingBottomOnAndroid: hocOptions.noPaddingBottomOnAndroid
+     }
+ 
+     constructor(props: KeyboardAwareHOCProps) {
+@@ -523,13 +528,13 @@ function KeyboardAwareHOC(
+     }
+ 
+     render() {
+-      const { enableOnAndroid, contentContainerStyle, onScroll } = this.props
++      const { enableOnAndroid, contentContainerStyle, noPaddingBottomOnAndroid, onScroll } = this.props
+       let newContentContainerStyle
+       if (Platform.OS === 'android' && enableOnAndroid) {
+         newContentContainerStyle = [].concat(contentContainerStyle).concat({
+           paddingBottom:
+             ((contentContainerStyle || {}).paddingBottom || 0) +
+-            this.state.keyboardSpace
++            noPaddingBottomOnAndroid ? 0 : this.state.keyboardSpace
+         })
+       }
+       const refProps = { [hocOptions.refPropName]: this._handleRef }

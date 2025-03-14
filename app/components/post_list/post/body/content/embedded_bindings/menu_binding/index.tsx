@@ -61,8 +61,8 @@ const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
         finish();
     }, [handleBindingSubmit, binding.bindings]);
 
-    const options = useMemo(() => binding.bindings?.map<PostActionOption>((b: AppBinding) => ({
-        text: b.label,
+    const options = useMemo(() => binding.bindings?.map<DialogOption>((b: AppBinding) => ({
+        text: b.label || '',
         value: b.location || '',
     })), [binding.bindings]);
 

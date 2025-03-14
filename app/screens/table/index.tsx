@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Platform, ScrollView, StyleSheet} from 'react-native';
+import {Platform, ScrollView, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -48,15 +49,20 @@ const Table = ({componentId, renderAsFlex, renderRows, width}: Props) => {
 
     if (Platform.OS === 'android') {
         return (
-            <ScrollView testID='table.screen'>
-                <ScrollView
-                    contentContainerStyle={viewStyle}
-                    horizontal={true}
-                    testID='table.scroll_view'
-                >
-                    {content}
+            <View
+                style={styles.container}
+                nativeID={SecurityManager.getShieldScreenId(componentId)}
+            >
+                <ScrollView testID='table.screen'>
+                    <ScrollView
+                        contentContainerStyle={viewStyle}
+                        horizontal={true}
+                        testID='table.scroll_view'
+                    >
+                        {content}
+                    </ScrollView>
                 </ScrollView>
-            </ScrollView>
+            </View>
         );
     }
 
@@ -64,6 +70,7 @@ const Table = ({componentId, renderAsFlex, renderRows, width}: Props) => {
         <SafeAreaView
             style={styles.container}
             testID='table.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             <ScrollView
                 style={styles.fullHeight}

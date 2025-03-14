@@ -7,6 +7,7 @@ import assert from 'assert';
 
 import {random} from 'lodash';
 import nock from 'nock';
+import {of as of$} from 'rxjs';
 
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
@@ -18,6 +19,7 @@ import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
+import type {Model, Query} from '@nozbe/watermelondb';
 
 const DEFAULT_LOCALE = 'en';
 
@@ -771,6 +773,13 @@ class TestHelperSingleton {
 
     wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
     tick = () => new Promise((r) => setImmediate(r));
+
+    mockQuery = <T extends Model>(returnValue: T | T[]) => {
+        return {
+            fetch: async () => returnValue,
+            observe: of$(returnValue),
+        } as unknown as Query<T>;
+    };
 }
 
 const TestHelper = new TestHelperSingleton();

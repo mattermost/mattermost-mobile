@@ -9,6 +9,8 @@ import {logDebug} from '@utils/log';
 
 import {fetchCustomEmojis, searchCustomEmojis, fetchCustomEmojiInBatchForTest} from './custom_emoji';
 
+import type {Client} from '@client/rest';
+
 jest.mock('@managers/network_manager');
 jest.mock('@utils/log');
 jest.mock('@utils/errors');
@@ -30,8 +32,9 @@ describe('fetchCustomEmojis', () => {
     it('should fetch custom emojis successfully', async () => {
         const mockClient = {
             getCustomEmojis: jest.fn().mockResolvedValue(mockEmojis),
+            getCustomEmojiImageUrl: jest.fn(),
         };
-        (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
+        jest.mocked(NetworkManager.getClient).mockReturnValue(mockClient as unknown as Client);
 
         const result = await fetchCustomEmojis(serverUrl);
 
@@ -43,6 +46,7 @@ describe('fetchCustomEmojis', () => {
     it('should handle error during fetch custom emojis', async () => {
         const mockClient = {
             getCustomEmojis: jest.fn().mockRejectedValue(error),
+            getCustomEmojiImageUrl: jest.fn(),
         };
         (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
         (getFullErrorMessage as jest.Mock).mockReturnValue('Full error message');
@@ -62,6 +66,7 @@ describe('searchCustomEmojis', () => {
         const term = 'emoji';
         const mockClient = {
             searchCustomEmoji: jest.fn().mockResolvedValue(mockEmojis),
+            getCustomEmojiImageUrl: jest.fn(),
         };
         (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
 
@@ -76,6 +81,7 @@ describe('searchCustomEmojis', () => {
         const term = 'emoji';
         const mockClient = {
             searchCustomEmoji: jest.fn().mockRejectedValue(error),
+            getCustomEmojiImageUrl: jest.fn(),
         };
         (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
         (getFullErrorMessage as jest.Mock).mockReturnValue('Full error message');
@@ -94,6 +100,7 @@ describe('fetchEmojisByName', () => {
     it('should fetch emojis by name successfully', async () => {
         const mockClient = {
             getCustomEmojiByName: jest.fn().mockResolvedValue(emoji),
+            getCustomEmojiImageUrl: jest.fn(),
         };
         (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
 
@@ -106,6 +113,7 @@ describe('fetchEmojisByName', () => {
     it('should handle no emojis', async () => {
         const mockClient = {
             getCustomEmojiByName: jest.fn().mockRejectedValue('error message'),
+            getCustomEmojiImageUrl: jest.fn(),
         };
         (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
 

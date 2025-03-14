@@ -84,7 +84,7 @@ static URLSessionTaskDidReceiveChallengeIMP originalURLSessionTaskDidReceiveChal
                                                         delegateQueue:session.delegateQueue];
     NSURLRequest *authorizedRequest = [BearerAuthenticationAdapter addAuthorizationBearerTokenTo:request withSessionBaseUrlString:sessionBaseUrl.absoluteString];
     
-    return originalInitWithRequestInSessionOptionsContextImplementation(self, @selector(initWithRequest:inSession:options:context:), authorizedRequest, session, &options, context);
+    return originalInitWithRequestInSessionOptionsContextImplementation(self, @selector(initWithRequest:inSession:options:context:), authorizedRequest, newSession, &options, context);
   }
   
   return originalInitWithRequestInSessionOptionsContextImplementation(self, @selector(initWithRequest:inSession:options:context:), request, session, &options, context);

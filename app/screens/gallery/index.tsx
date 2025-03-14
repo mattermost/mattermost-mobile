@@ -3,13 +3,14 @@
 
 import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Platform} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native';
 
 import {CaptionsEnabledContext} from '@calls/context';
 import {hasCaptions} from '@calls/utils';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
+import SecurityManager from '@managers/security_manager';
 import {dismissOverlay, setScreensOrientation} from '@screens/navigation';
 import {freezeOtherScreens} from '@utils/gallery';
 
@@ -27,6 +28,10 @@ type Props = {
     initialIndex: number;
     items: GalleryItemType[];
 }
+
+const styles = StyleSheet.create({
+    flex: {flex: 1},
+});
 
 const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialIndex, items}: Props) => {
     const dim = useWindowDimensions();
@@ -84,30 +89,35 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
 
     return (
         <CaptionsEnabledContext.Provider value={captionsEnabled}>
-            <Header
-                index={localIndex}
-                onClose={onClose}
-                style={headerStyles}
-                total={items.length}
-            />
-            <Gallery
-                galleryIdentifier={galleryIdentifier}
-                initialIndex={initialIndex}
-                items={items}
-                onHide={close}
-                onIndexChange={onIndexChange}
-                onShouldHideControls={setControlsHidden}
-                ref={galleryRef}
-                targetDimensions={dimensions}
-            />
-            <Footer
-                hideActions={hideActions}
-                item={items[localIndex]}
-                style={footerStyles}
-                hasCaptions={captionsAvailable[localIndex]}
-                captionEnabled={captionsEnabled[localIndex]}
-                onCaptionsPress={onCaptionsPress}
-            />
+            <View
+                style={styles.flex}
+                nativeID={SecurityManager.getShieldScreenId(componentId)}
+            >
+                <Header
+                    index={localIndex}
+                    onClose={onClose}
+                    style={headerStyles}
+                    total={items.length}
+                />
+                <Gallery
+                    galleryIdentifier={galleryIdentifier}
+                    initialIndex={initialIndex}
+                    items={items}
+                    onHide={close}
+                    onIndexChange={onIndexChange}
+                    onShouldHideControls={setControlsHidden}
+                    ref={galleryRef}
+                    targetDimensions={dimensions}
+                />
+                <Footer
+                    hideActions={hideActions}
+                    item={items[localIndex]}
+                    style={footerStyles}
+                    hasCaptions={captionsAvailable[localIndex]}
+                    captionEnabled={captionsEnabled[localIndex]}
+                    onCaptionsPress={onCaptionsPress}
+                />
+            </View>
         </CaptionsEnabledContext.Provider>
     );
 };

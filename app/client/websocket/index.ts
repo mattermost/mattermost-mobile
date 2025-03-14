@@ -15,6 +15,7 @@ const MAX_WEBSOCKET_FAILS = 7;
 const WEBSOCKET_TIMEOUT = toMilliseconds({seconds: 30});
 const MIN_WEBSOCKET_RETRY_TIME = toMilliseconds({seconds: 3});
 const MAX_WEBSOCKET_RETRY_TIME = toMilliseconds({minutes: 5});
+const PING_INTERVAL = toMilliseconds({seconds: 30});
 const DEFAULT_OPTIONS = {
     forceConnection: true,
 };
@@ -29,6 +30,9 @@ export default class WebSocketClient {
     private url = '';
     private serverUrl: string;
     private connectFailCount = 0;
+
+    private pingInterval: NodeJS.Timeout | undefined;
+    private waitingForPong: boolean = false;
 
     // The first time we connect to a server (on init or login)
     // we do the sync out of the websocket lifecycle.
@@ -138,6 +142,7 @@ export default class WebSocketClient {
                 // the websocket will call onClose then onError then initialize again with readyState CLOSED, we need to open it again
                 if (this.conn.readyState === WebSocketReadyState.CLOSED) {
                     clearTimeout(this.connectionTimeout);
+                    clearInterval(this.pingInterval);
                     this.conn.open();
                 }
                 return;
@@ -149,6 +154,7 @@ export default class WebSocketClient {
 
         this.conn!.onOpen(() => {
             clearTimeout(this.connectionTimeout);
+            clearInterval(this.pingInterval);
 
             // No need to reset sequence number here.
             if (!reliableWebSockets) {
@@ -177,11 +183,30 @@ export default class WebSocketClient {
                 }
             }
 
+            this.waitingForPong = false;
+            this.pingInterval = setInterval(
+                () => {
+                    if (!this.waitingForPong) {
+                        this.waitingForPong = true;
+                        this.ping();
+                        return;
+                    }
+
+                    // We are not calling this.close() because we need to auto-restart.
+                    this.responseSequence = 1;
+                    clearInterval(this.pingInterval);
+                    this.conn?.close();
+                },
+                PING_INTERVAL,
+            );
+
             this.connectFailCount = 0;
         });
 
         this.conn!.onClose((ev) => {
             clearTimeout(this.connectionTimeout);
+            clearInterval(this.pingInterval);
+
             this.conn = undefined;
             this.responseSequence = 1;
 
@@ -252,6 +277,9 @@ export default class WebSocketClient {
             if (msg.seq_reply) {
                 if (msg.error) {
                     logWarning(msg);
+                }
+                if (msg.data?.text === WebsocketEvents.PONG) {
+                    this.waitingForPong = false;
                 }
             } else if (this.eventCallback) {
                 if (reliableWebSockets) {
@@ -339,13 +367,26 @@ export default class WebSocketClient {
         this.connectFailCount = 0;
         this.responseSequence = 1;
         clearTimeout(this.connectionTimeout);
+        clearInterval(this.pingInterval);
         this.conn?.close();
     }
 
     public invalidate() {
         clearTimeout(this.connectionTimeout);
+        clearInterval(this.pingInterval);
         this.conn?.invalidate();
         this.conn = undefined;
+    }
+
+    private ping() {
+        const msg = {
+            action: WebsocketEvents.PING,
+            seq: this.responseSequence++,
+        };
+
+        if (this.conn && this.conn.readyState === WebSocketReadyState.OPEN) {
+            this.conn.send(JSON.stringify(msg));
+        }
     }
 
     private sendMessage(action: string, data: any) {
@@ -357,9 +398,6 @@ export default class WebSocketClient {
 
         if (this.conn && this.conn.readyState === WebSocketReadyState.OPEN) {
             this.conn.send(JSON.stringify(msg));
-        } else if (!this.conn || this.conn.readyState === WebSocketReadyState.CLOSED) {
-            this.conn = undefined;
-            this.initialize(this.token);
         }
     }
 
