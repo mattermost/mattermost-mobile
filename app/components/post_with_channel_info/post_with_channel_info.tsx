@@ -20,6 +20,7 @@ type Props = {
     testID?: string;
     searchPatterns?: SearchPattern[];
     skipSavedPostsHighlight?: boolean;
+    skipTeam?: boolean;
     isSaved?: boolean;
 }
 
@@ -34,11 +35,23 @@ const styles = StyleSheet.create({
     },
 });
 
-function PostWithChannelInfo({appsEnabled, customEmojiNames, isCRTEnabled, post, location, testID, searchPatterns, skipSavedPostsHighlight = false, isSaved}: Props) {
+function PostWithChannelInfo({
+    appsEnabled,
+    customEmojiNames,
+    isCRTEnabled,
+    post,
+    location,
+    testID,
+    searchPatterns,
+    skipSavedPostsHighlight = false,
+    skipTeam = false,
+    isSaved,
+}: Props) {
     return (
         <View style={styles.container}>
             <ChannelInfo
                 post={post}
+                skipTeam={skipTeam}
                 testID={`${testID}.post_channel_info.${post.id}`}
             />
             <View style={styles.content}>
