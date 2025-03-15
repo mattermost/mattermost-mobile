@@ -140,7 +140,7 @@ describe('dataRetention', () => {
     });
 
     it('rentention off - dataRetentionCleanup', async () => {
-        const post = {...TestHelper.fakePost('channelid1'), id: 'postid', create_at: 1};
+        const post = TestHelper.fakePost({channel_id: 'channelid1', id: 'postid', create_at: 1});
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post.id],
