@@ -70,7 +70,7 @@ export function deleteScheduledPostConfirmation({
 export const hasScheduledPostError = (scheduledPosts: ScheduledPostModel[]) =>
     scheduledPosts.some((post) => post.errorCode !== '');
 
-export type ScheduledPostErrorCode = 'unknown' | 'channel_archived' | 'channel_not_found' | 'user_missing' | 'user_deleted' | 'no_channel_permission' | 'no_channel_member' | 'thread_deleted' | 'unable_to_send' | 'invalid_post';
+export type ScheduledPostErrorCode = 'unknown' | 'channel_archived' | 'channel_not_found' | 'user_missing' | 'user_deleted' | 'no_channel_permission' | 'no_channel_member' | 'thread_deleted' | 'unable_to_send' | 'invalid_post' | 'post_send_success_delete_failed';
 
 const errorCodeToErrorMessage = defineMessages<ScheduledPostErrorCode>({
     unknown: {
@@ -112,6 +112,10 @@ const errorCodeToErrorMessage = defineMessages<ScheduledPostErrorCode>({
     invalid_post: {
         id: 'scheduled_post.error_code.invalid_post',
         defaultMessage: 'Invalid Post',
+    },
+    post_send_success_delete_failed: {
+        id: 'scheduled_post.error_code.post_send_success_delete_failed',
+        defaultMessage: 'Post already Sent, Delete Manually',
     },
 });
 

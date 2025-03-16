@@ -5,6 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import {removeDraft} from '@actions/local/draft';
+import {handleUpdateScheduledPostErrorCode} from '@actions/local/scheduled_post';
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -104,6 +105,11 @@ const SendDraft: React.FC<Props> = ({
         if (postId) {
             const res = await deleteScheduledPost(serverUrl, postId);
             if (res?.error) {
+                try {
+                    await handleUpdateScheduledPostErrorCode(serverUrl, postId, 'post_send_success_delete_failed');
+                } catch {
+                    // do nothing
+                }
                 showSnackBar({
                     barType: SNACK_BAR_TYPE.DELETE_SCHEDULED_POST_ERROR,
                     customMessage: getErrorMessage(res.error),

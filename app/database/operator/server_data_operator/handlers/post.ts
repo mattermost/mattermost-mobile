@@ -27,7 +27,7 @@ import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
 import type ServerDataOperatorBase from '.';
 import type Database from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
-import type {HandleDraftArgs, HandleFilesArgs, HandlePostsArgs, HandleScheduledPostsArgs, RecordPair} from '@typings/database/database';
+import type {HandleDraftArgs, HandleFilesArgs, HandlePostsArgs, HandleScheduledPostErrorCodeArgs, HandleScheduledPostsArgs, RecordPair} from '@typings/database/database';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -46,6 +46,7 @@ type PostActionType = keyof typeof ActionType.POSTS;
 
 export interface PostHandlerMix {
     handleScheduledPosts: ({actionType, scheduledPosts, includeDirectChannelPosts, prepareRecordsOnly}: HandleScheduledPostsArgs) => Promise<ScheduledPostModel[]>;
+    handleUpdateScheduledPostErrorCode: ({scheduledPostId, errorCode, prepareRecordsOnly}: HandleScheduledPostErrorCodeArgs) => Promise<ScheduledPostModel>;
     handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Promise<DraftModel[]>;
     handleFiles: ({files, prepareRecordsOnly}: HandleFilesArgs) => Promise<FileModel[]>;
     handlePosts: ({actionType, order, posts, previousPostId, prepareRecordsOnly}: HandlePostsArgs) => Promise<Model[]>;
@@ -164,6 +165,29 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         }
 
         return batch;
+    };
+
+    handleUpdateScheduledPostErrorCode = async ({scheduledPostId, errorCode, prepareRecordsOnly}: HandleScheduledPostErrorCodeArgs): Promise<ScheduledPostModel | null> => {
+        const database: Database = this.database;
+        const scheduledPost = await database.get<ScheduledPostModel>(SCHEDULED_POST).find(scheduledPostId);
+
+        if (!scheduledPost) {
+            logWarning(
+                `Scheduled Post with id ${scheduledPostId} not found in the database`,
+            );
+            return null;
+        }
+
+        const updatedScheduledPost = scheduledPost.prepareUpdate((record) => {
+            record.errorCode = errorCode;
+            record.updateAt = scheduledPost.updateAt; // We don't want to update the updateAt field
+        });
+
+        if (!prepareRecordsOnly) {
+            await this.batchRecords([updatedScheduledPost], 'handleScheduledPostErrorCode');
+        }
+
+        return updatedScheduledPost;
     };
 
     _createOrUpdateScheduledPost = async (scheduledPosts: ScheduledPost[], prepareRecordsOnly = false): Promise<ScheduledPostModel[]> => {
