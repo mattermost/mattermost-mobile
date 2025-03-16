@@ -8,6 +8,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
+import {goToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 
 import {
@@ -265,7 +266,7 @@ describe('switchToGlobalDrafts', () => {
     });
 
     it('should emit navigation event on tablet', () => {
-        (isTablet as jest.Mock).mockReturnValue(true);
+        jest.mocked(isTablet).mockReturnValue(true);
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
 
         switchToGlobalDrafts();
@@ -275,8 +276,6 @@ describe('switchToGlobalDrafts', () => {
 
     it('should call goToScreen on non-tablet', () => {
         (isTablet as jest.Mock).mockReturnValue(false);
-        const {goToScreen} = require('@screens/navigation');
-
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
 
         switchToGlobalDrafts();
