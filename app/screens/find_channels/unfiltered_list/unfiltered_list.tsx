@@ -21,6 +21,7 @@ type Props = {
     recentChannels: ChannelModel[];
     showTeamName: boolean;
     testID?: string;
+    onPress?: (c: Channel | ChannelModel) => unknown;
 }
 
 const sectionNames = {
@@ -46,13 +47,17 @@ const buildSections = (recentChannels: ChannelModel[]) => {
     return sections;
 };
 
-const UnfilteredList = ({close, keyboardOverlap, recentChannels, showTeamName, testID}: Props) => {
+const UnfilteredList = ({close, keyboardOverlap, recentChannels, showTeamName, testID, onPress: onPressFunc}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [sections, setSections] = useState(buildSections(recentChannels));
     const sectionListStyle = useMemo(() => ({paddingBottom: keyboardOverlap}), [keyboardOverlap]);
 
     const onPress = useCallback(async (c: Channel | ChannelModel) => {
+        if (onPressFunc) {
+            await onPressFunc(c);
+        }
+
         await close();
         switchToChannelById(serverUrl, c.id);
     }, [serverUrl, close]);

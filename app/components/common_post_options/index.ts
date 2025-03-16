@@ -6,3 +6,4 @@ export {default as CopyPermalinkOption} from './copy_permalink_option';
 export {default as FollowThreadOption} from './follow_thread_option';
 export {default as ReplyOption} from './reply_option';
 export {default as SaveOption} from './save_option';
+export {default as ForwardOption} from './forward_option';

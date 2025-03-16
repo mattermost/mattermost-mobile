@@ -49,6 +49,7 @@ type Props = {
     usersMatch: UserModel[];
     usersMatchStart: UserModel[];
     testID?: string;
+    onPress?: (c: Channel | ChannelModel) => unknown;
 }
 
 const style = StyleSheet.create({
@@ -76,7 +77,7 @@ const sortByUserOrChannel = <T extends Channel |UserModel>(locale: string, teamm
 const FilteredList = ({
     archivedChannels, close, channelsMatch, channelsMatchStart, currentTeamId,
     isCRTEnabled, keyboardOverlap, loading, onLoading, restrictDirectMessage, showTeamName,
-    teamIds, teammateDisplayNameSetting, term, usersMatch, usersMatchStart, testID,
+    teamIds, teammateDisplayNameSetting, term, usersMatch, usersMatchStart, testID, onPress: onPressFunc
 }: Props) => {
     const bounce = useRef<DebouncedFunc<() => void>>();
     const mounted = useRef(false);
@@ -156,6 +157,10 @@ const FilteredList = ({
             return;
         }
 
+        if (onPressFunc) {
+            await onPressFunc(c);
+        }
+
         await close();
         switchToChannelById(serverUrl, c.id, undefined, true);
     }, [serverUrl, close, locale]);
@@ -174,11 +179,19 @@ const FilteredList = ({
             return;
         }
 
+        if (onPressFunc) {
+            await onPressFunc(data);
+        }
+
         await close();
         switchToChannelById(serverUrl, data.id);
     }, [serverUrl, close, locale, teammateDisplayNameSetting]);
 
     const onSwitchToChannel = useCallback(async (c: Channel | ChannelModel) => {
+        if (onPressFunc) {
+            await onPressFunc(c);
+        }
+
         await close();
         switchToChannelById(serverUrl, c.id);
     }, [serverUrl, close]);
