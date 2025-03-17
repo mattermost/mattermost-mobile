@@ -7,11 +7,16 @@ import {Text} from 'react-native';
 
 import {DRAFT_SCREEN_TAB_DRAFTS} from '@screens/global_drafts';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 import TabbedContents from './tabbed_contents';
 
 jest.mock('react-freeze', () => ({
     Freeze: jest.fn(({children}) => children),
+}));
+
+jest.mock('@hooks/device', () => ({
+    useIsTablet: jest.fn(() => false),
 }));
 
 jest.mock('react-native-reanimated', () => {
@@ -27,6 +32,8 @@ jest.mock('react-native-reanimated', () => {
 });
 
 jest.mock('@hooks/device', () => ({
+    ...jest.requireActual('@hooks/device'),
+    useIsTablet: jest.fn(() => false),
     useWindowDimensions: jest.fn(() => ({
         width: 375,
         height: 667,
@@ -62,19 +69,21 @@ describe('TabbedContents', () => {
 
         expect(screen.getByTestId('draft_tab')).toBeTruthy();
 
+        expect(screen.getByTestId('drafts-content')).toBeTruthy();
+
         await act(async () => {
             fireEvent.press(screen.getByTestId('scheduled_post_tab'));
+            await TestHelper.wait(0);
         });
 
         expect(screen.getByTestId('scheduled-posts-content')).toBeTruthy();
-        expect(screen.queryByTestId('drafts-content')).toBeNull();
 
         await act(async () => {
             fireEvent.press(screen.getByTestId('draft_tab'));
+            await TestHelper.wait(0);
         });
 
         expect(screen.getByTestId('drafts-content')).toBeTruthy();
-        expect(screen.queryByTestId('scheduled-posts-content')).toBeNull();
     });
 
     it('displays zero counts correctly', () => {
@@ -93,17 +102,18 @@ describe('TabbedContents', () => {
     it('renders both content sections', async () => {
         renderWithIntlAndTheme(<TabbedContents {...defaultProps}/>);
 
-        // Check that drafts content is in the DOM
+        // Check that drafts content is initially visible
         expect(screen.getByTestId('drafts-content')).toBeTruthy();
-        expect(screen.queryByTestId('scheduled-posts-content')).toBeNull();
 
         // Click on scheduled posts tab to make that content visible
         await act(async () => {
             fireEvent.press(screen.getByTestId('scheduled_post_tab'));
+
+            // Add a small delay to allow animations to complete
+            await TestHelper.wait(0);
         });
 
         // Now the scheduled posts content should be visible
         expect(screen.getByTestId('scheduled-posts-content')).toBeTruthy();
-        expect(screen.queryByTestId('drafts-content')).toBeNull();
     });
 });

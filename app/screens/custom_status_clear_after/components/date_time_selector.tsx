@@ -77,7 +77,10 @@ const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme, showIn
     };
 
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            testID='custom_date_time_picker'
+        >
             <View style={styles.buttonContainer}>
                 <Button
                     testID={'custom_status_clear_after.menu_item.date_and_time.button.date'}

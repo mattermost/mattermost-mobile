@@ -167,7 +167,7 @@ export const transformSchedulePostsRecord = ({action, database, value}: Transfor
         scheduledPost.rootId = raw?.root_id ?? '';
         scheduledPost.message = raw?.message ?? '';
         scheduledPost.channelId = raw?.channel_id ?? '';
-        scheduledPost.files = raw?.files ?? emptyFileInfo;
+        scheduledPost.files = raw?.metadata?.files ?? emptyFileInfo;
         scheduledPost.metadata = raw?.metadata ?? null;
         if (raw.priority) {
             if (!scheduledPost.metadata) {
@@ -176,9 +176,10 @@ export const transformSchedulePostsRecord = ({action, database, value}: Transfor
             scheduledPost.metadata.priority = raw.priority;
         }
         scheduledPost.updateAt = raw.update_at ?? Date.now();
+        scheduledPost.createAt = raw.create_at;
         scheduledPost.scheduledAt = raw.scheduled_at;
         scheduledPost.processedAt = raw.processed_at ?? 0;
-        scheduledPost.errorCode = raw.error_code ?? '';
+        scheduledPost.errorCode = raw.error_code || scheduledPost.errorCode;
     };
 
     return prepareBaseRecord({
