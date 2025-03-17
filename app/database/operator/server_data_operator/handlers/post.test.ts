@@ -11,6 +11,7 @@ import {buildDraftKey} from '@database/operator/server_data_operator/comparators
 import {transformDraftRecord, transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 import {createPostsChain} from '@database/operator/utils/post';
 import * as ScheduledPostQueries from '@queries/servers/scheduled_post';
+import {logWarning} from '@utils/log';
 
 import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
 
@@ -23,6 +24,10 @@ import type ScheduledPostModel from '@typings/database/models/servers/scheduled_
 Q.sortBy = jest.fn().mockImplementation((field) => {
     return Q.where(field, Q.gte(0));
 });
+
+jest.mock('@utils/log', () => ({
+    logWarning: jest.fn(),
+}));
 describe('*** Operator: Post Handlers tests ***', () => {
     let operator: ServerDataOperator;
     let database: Database;
@@ -691,7 +696,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
     it('HandleUpdateScheduledPostErrorCode: should return null when post is not found', async () => {
         const errorCode = 'ERROR_CODE_TEST';
-        const logWarningSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
         jest.spyOn(database, 'get').mockReturnValue({
             find: jest.fn().mockReturnValue(null),
@@ -704,7 +708,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
         });
 
         expect(result).toBeNull();
-        expect(logWarningSpy).toHaveBeenCalled();
+        expect(logWarning).toHaveBeenCalled();
     });
 
     it('=> HandlePosts: should not remove files if file ids are present but metadata is missing', async () => {

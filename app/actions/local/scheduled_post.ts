@@ -22,10 +22,10 @@ export async function handleScheduledPosts(serverUrl: string, actionType: string
     }
 }
 
-export async function handleUpdateScheduledPostErrorCode(serverUrl: string, scheduledPostId: string, errorCode: ScheduledPostErrorCode, prepareRecordsOnly = false): Promise<{models?: ScheduledPostModel; error?: any}> {
+export async function handleUpdateScheduledPostErrorCode(serverUrl: string, scheduledPostId: string, errorCode: ScheduledPostErrorCode, prepareRecordsOnly = false): Promise<{models?: ScheduledPostModel[]; error?: any}> {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const models = await operator.handleUpdateScheduledPostErrorCode({scheduledPostId, errorCode, prepareRecordsOnly});
+        const models = [await operator.handleUpdateScheduledPostErrorCode({scheduledPostId, errorCode, prepareRecordsOnly})];
         return {models};
     } catch (error) {
         logError('handleUpdateScheduledPostErrorCode cannot update scheduled post error code', error);

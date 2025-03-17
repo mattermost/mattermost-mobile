@@ -147,11 +147,9 @@ describe('Send Draft', () => {
     });
 
     test('should handle deleteScheduledPost failure and call handleUpdateScheduledPostErrorCode', async () => {
-        let capturedHandler: Function;
         const mockError = new Error('Failed to delete scheduled post');
         jest.mocked(deleteScheduledPost).mockResolvedValue({error: mockError});
-        jest.mocked(sendMessageWithAlert).mockImplementation((params) => {
-            capturedHandler = params.sendMessageHandler;
+        jest.mocked(sendMessageWithAlert).mockImplementation(() => {
             return Promise.resolve();
         });
         jest.mocked(createPost).mockResolvedValueOnce({
@@ -199,7 +197,7 @@ describe('Send Draft', () => {
 
         // Now execute the captured handler to simulate user confirming the send
         await act(async () => {
-            await capturedHandler();
+            jest.mocked(sendMessageWithAlert).mock.calls[0][0].sendMessageHandler();
         });
 
         // Verify deleteScheduledPost was called with correct params

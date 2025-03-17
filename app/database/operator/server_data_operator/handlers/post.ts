@@ -167,7 +167,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         return batch;
     };
 
-    handleUpdateScheduledPostErrorCode = async ({scheduledPostId, errorCode, prepareRecordsOnly}: HandleScheduledPostErrorCodeArgs): Promise<ScheduledPostModel | null> => {
+    handleUpdateScheduledPostErrorCode = async ({scheduledPostId, errorCode, prepareRecordsOnly}: HandleScheduledPostErrorCodeArgs) => {
         const database: Database = this.database;
         const scheduledPost = await database.get<ScheduledPostModel>(SCHEDULED_POST).find(scheduledPostId);
 
@@ -180,7 +180,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
         const updatedScheduledPost = scheduledPost.prepareUpdate((record) => {
             record.errorCode = errorCode;
-            record.updateAt = scheduledPost.updateAt; // We don't want to update the updateAt field
+            record.updateAt = scheduledPost.updateAt; // We don't want to update the updateAt field as prepareUpdate will do it is not set
         });
 
         if (!prepareRecordsOnly) {

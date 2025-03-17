@@ -139,6 +139,7 @@ describe('handleUpdateScheduledPostErrorCode', () => {
 
         expect(result).toBeDefined();
         expect(result.models).toBeDefined();
+        expect(result.models![0].errorCode).toBe(errorCode);
     });
 
     it('should handle errors when updating scheduled post error code', async () => {
