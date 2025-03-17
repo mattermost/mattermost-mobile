@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
+import {Alert} from 'react-native';
 
 import {removeDraft} from '@actions/local/draft';
 import {handleUpdateScheduledPostErrorCode} from '@actions/local/scheduled_post';
@@ -12,16 +13,13 @@ import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
-import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
 import {DRAFT_TYPE_DRAFT, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
-import {getErrorMessage} from '@utils/errors';
 import {persistentNotificationsConfirmation, sendMessageWithAlert} from '@utils/post';
-import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -110,11 +108,18 @@ const SendDraft: React.FC<Props> = ({
                 } catch {
                     // do nothing
                 }
-                showSnackBar({
-                    barType: SNACK_BAR_TYPE.DELETE_SCHEDULED_POST_ERROR,
-                    customMessage: getErrorMessage(res.error),
-                    type: MESSAGE_TYPE.ERROR,
-                });
+                Alert.alert(
+                    intl.formatMessage({id: 'scheduled_post.delete_fails', defaultMessage: 'Delete fails'}),
+                    intl.formatMessage({
+                        id: 'scheduled_post.delete_fails.message',
+                        defaultMessage: 'Post has been create successfully but failed to delete. Please delete the scheduled post manually from the scheduled post list.',
+                    }),
+                    [{
+                        text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                        style: 'cancel',
+                    },
+                    ], {cancelable: false},
+                );
             }
         }
     };

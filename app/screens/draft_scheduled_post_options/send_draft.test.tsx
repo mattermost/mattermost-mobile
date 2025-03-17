@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Alert} from 'react-native';
 
 import {handleUpdateScheduledPostErrorCode} from '@actions/local/scheduled_post';
 import {createPost} from '@actions/remote/post';
@@ -12,7 +13,6 @@ import {dismissBottomSheet} from '@screens/navigation';
 import {act, fireEvent, renderWithEverything, renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {sendMessageWithAlert} from '@utils/post';
-import {showSnackBar} from '@utils/snack_bar';
 
 import SendDraft from './send_draft';
 
@@ -34,10 +34,6 @@ jest.mock('@actions/remote/scheduled_post', () => ({
 
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(() => 'https://server.com'),
-}));
-
-jest.mock('@utils/snack_bar', () => ({
-    showSnackBar: jest.fn(),
 }));
 
 jest.mock('@utils/post', () => ({
@@ -219,11 +215,15 @@ describe('Send Draft', () => {
             'post_send_success_delete_failed',
         );
 
-        // Verify showSnackBar was called with error message
-        expect(showSnackBar).toHaveBeenCalledWith({
-            barType: 'DELETE_SCHEDULED_POST_ERROR',
-            customMessage: 'Failed to delete scheduled post',
-            type: 'error',
-        });
+        // Verify Alert was called with error message
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Delete fails',
+            'Post has been create successfully but failed to delete. Please delete the scheduled post manually from the scheduled post list.',
+            [{
+                style: 'cancel',
+                text: 'Cancel',
+            }],
+            {cancelable: false},
+        );
     });
 });
