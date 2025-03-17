@@ -300,6 +300,11 @@ export type HandleScheduledPostsArgs = PrepareOnly & {
   includeDirectChannelPosts?: boolean;
 };
 
+export type HandleScheduledPostErrorCodeArgs = PrepareOnly & {
+  scheduledPostId: string;
+  errorCode: string;
+};
+
 export type LoginArgs = {
   config: Partial<ClientConfig>;
   ldapOnly?: boolean;

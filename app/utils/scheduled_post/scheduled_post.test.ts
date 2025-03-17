@@ -282,6 +282,7 @@ describe('getErrorStringFromCode', () => {
             'thread_deleted',
             'unable_to_send',
             'invalid_post',
+            'post_send_success_delete_failed',
         ];
 
         const expectedMessages = [
@@ -294,6 +295,7 @@ describe('getErrorStringFromCode', () => {
             'Thread Deleted',
             'Unable to Send',
             'Invalid Post',
+            'Post already Sent, Delete Manually',
         ];
 
         testCases.forEach((errorCode, index) => {

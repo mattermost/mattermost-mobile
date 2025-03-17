@@ -11,6 +11,7 @@ import {buildDraftKey} from '@database/operator/server_data_operator/comparators
 import {transformDraftRecord, transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 import {createPostsChain} from '@database/operator/utils/post';
 import * as ScheduledPostQueries from '@queries/servers/scheduled_post';
+import {logWarning} from '@utils/log';
 
 import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
 
@@ -23,6 +24,10 @@ import type ScheduledPostModel from '@typings/database/models/servers/scheduled_
 Q.sortBy = jest.fn().mockImplementation((field) => {
     return Q.where(field, Q.gte(0));
 });
+
+jest.mock('@utils/log', () => ({
+    logWarning: jest.fn(),
+}));
 describe('*** Operator: Post Handlers tests ***', () => {
     let operator: ServerDataOperator;
     let database: Database;
@@ -655,6 +660,55 @@ describe('*** Operator: Post Handlers tests ***', () => {
         });
 
         expect(spyOnBatchRecords).toHaveBeenCalledWith(scheduledPosts, 'handleScheduledPosts');
+    });
+
+    it('HandleUpdateScheduledPostErrorCode: should update error code for a scheduled post', async () => {
+        // First create a scheduled post
+        await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+            scheduledPosts: [scheduledPosts[0]],
+            prepareRecordsOnly: false,
+        });
+
+        const errorCode = 'ERROR_CODE_TEST';
+        const spyOnBatchRecords = jest.spyOn(operator, 'batchRecords');
+
+        // Update the error code
+        const updatedPost = await operator.handleUpdateScheduledPostErrorCode({
+            scheduledPostId: scheduledPosts[0].id,
+            errorCode,
+            prepareRecordsOnly: false,
+        });
+
+        expect(updatedPost).toBeTruthy();
+        expect(updatedPost?.id).toBe(scheduledPosts[0].id);
+        expect(updatedPost?.errorCode).toBe(errorCode);
+        expect(spyOnBatchRecords).toHaveBeenCalledWith([updatedPost], 'handleScheduledPostErrorCode');
+
+        // Verify the post was updated in the database
+        const scheduledPost = await operator.database.get('ScheduledPost').query(
+            Q.where('id', scheduledPosts[0].id),
+        ).fetch() as ScheduledPostModel[];
+
+        expect(scheduledPost.length).toBe(1);
+        expect(scheduledPost[0].errorCode).toBe(errorCode);
+    });
+
+    it('HandleUpdateScheduledPostErrorCode: should return null when post is not found', async () => {
+        const errorCode = 'ERROR_CODE_TEST';
+
+        jest.spyOn(database, 'get').mockReturnValue({
+            find: jest.fn().mockReturnValue(null),
+        } as any);
+
+        const result = await operator.handleUpdateScheduledPostErrorCode({
+            scheduledPostId: 'non_existent_id',
+            errorCode,
+            prepareRecordsOnly: false,
+        });
+
+        expect(result).toBeNull();
+        expect(logWarning).toHaveBeenCalled();
     });
 
     it('=> HandlePosts: should not remove files if file ids are present but metadata is missing', async () => {

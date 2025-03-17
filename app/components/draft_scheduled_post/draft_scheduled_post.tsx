@@ -12,9 +12,8 @@ import Header from '@components/post_draft/draft_input/header';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {DRAFT_OPTIONS_BUTTON} from '@screens/draft_scheduled_post_options';
-import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {openAsBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -77,13 +76,17 @@ const DraftAndScheduledPost: React.FC<Props> = ({
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const showPostPriority = Boolean(isPostPriorityEnabled && post.metadata?.priority && post.metadata?.priority?.priority);
 
     const onLongPress = useCallback(() => {
         Keyboard.dismiss();
-        const title = isTablet ? intl.formatMessage({id: 'draft.options.title', defaultMessage: 'Draft Options'}) : 'Draft Options';
+        let title;
+        if (draftType === DRAFT_TYPE_DRAFT) {
+            title = intl.formatMessage({id: 'draft.options.title', defaultMessage: 'Draft Options'});
+        } else {
+            title = intl.formatMessage({id: 'scheduled_post.options.title', defaultMessage: 'Message actions'});
+        }
         openAsBottomSheet({
             closeButtonId: DRAFT_OPTIONS_BUTTON,
             screen: Screens.DRAFT_SCHEDULED_POST_OPTIONS,
@@ -91,7 +94,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
             title,
             props: {channel, rootId: post.rootId, draftType, draft: post, draftReceiverUserName: postReceiverUser?.username},
         });
-    }, [isTablet, intl, draftType, theme, channel, post, postReceiverUser?.username]);
+    }, [intl, draftType, theme, channel, post, postReceiverUser?.username]);
 
     const onPress = useCallback(() => {
         if (post.rootId) {
