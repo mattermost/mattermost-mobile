@@ -1410,7 +1410,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-emm (1.6.0):
+  - react-native-emm (1.6.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2550,7 +2550,7 @@ SPEC CHECKSUMS:
   react-native-cameraroll: 5f180ef5e9b52b6c3c3a2645fa33a921d1e37a6c
   react-native-cookies: d648ab7025833b977c0b19e142503034f5f29411
   react-native-document-picker: 530879d9e89b490f0954bcc4ab697c5b5e35d659
-  react-native-emm: 710fa6ce569cf04084224fa61a038e6143ea7fe0
+  react-native-emm: afc895b726861262e1b7fecaccb1339492c0bbdc
   react-native-image-picker: 130fad649d07e4eec8faaed361d3bba570e1e5ff
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-network-client: fdbd7f5f4c2818d6b90b4dcf9613d0a54ab41303
