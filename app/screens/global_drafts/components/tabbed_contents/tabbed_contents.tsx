@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ReactNode, useState, useMemo} from 'react';
+import React, {type ReactNode, useState, useMemo, useCallback} from 'react';
 import {Freeze} from 'react-freeze';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, type LayoutChangeEvent} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
-import {useWindowDimensions} from '@hooks/device';
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS, type DraftScreenTab} from '@screens/global_drafts';
 import {DraftTabsHeader} from '@screens/global_drafts/components/tabbed_contents/draftTabsHeader';
 
@@ -28,7 +27,6 @@ const getStyleSheet = (width: number) => {
         tabContentContainer: {
             flex: 1,
             flexDirection: 'row',
-            width: width * 2,
         },
         tabContent: {
             width,
@@ -41,8 +39,11 @@ const getStyleSheet = (width: number) => {
 
 export default function TabbedContents({draftsCount, scheduledPostCount, initialTab, drafts, scheduledPosts}: Props) {
     const [selectedTab, setSelectedTab] = useState(initialTab);
+    const [width, setWidth] = useState(0);
 
-    const {width} = useWindowDimensions();
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setWidth(e.nativeEvent.layout.width);
+    }, []);
     const styles = useMemo(() => getStyleSheet(width), [width]);
 
     const transform = useAnimatedStyle(() => {
@@ -55,7 +56,10 @@ export default function TabbedContents({draftsCount, scheduledPostCount, initial
     }, [selectedTab, width]);
 
     return (
-        <View style={styles.tabContainer}>
+        <View
+            style={styles.tabContainer}
+            onLayout={onLayout}
+        >
             <DraftTabsHeader
                 draftsCount={draftsCount}
                 scheduledPostCount={scheduledPostCount}
