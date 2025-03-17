@@ -62,7 +62,7 @@
   "apps.error.parser.no_argument_pos_x": "Kan het argument niet identificeren.",
   "apps.error.parser.no_bindings": "Geen command bindings.",
   "apps.error.parser.no_form": "Geen formulier gevonden.",
-  "apps.error.parser.no_match": "`{command}`: Geen overeenkomend opdracht gevonden in deze werkruimte.",
+  "apps.error.parser.no_match": "`{command}`: Geen overeenkomende opdracht gevonden in deze werkruimte.",
   "apps.error.parser.no_slash_start": "Commando moet beginnen met een `/`.",
   "apps.error.parser.unexpected_character": "Onverwacht karakter.",
   "apps.error.parser.unexpected_comma": "Onverwachte komma.",
