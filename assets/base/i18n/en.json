@@ -1031,6 +1031,7 @@
   "scheduled_post.options.delete.confirmation": "Are you sure you want to delete this scheduled post?",
   "scheduled_post.options.delete.title": "Delete",
   "scheduled_post.options.send.title": "Send",
+  "scheduled_post.options.title": "Message actions",
   "scheduled_post.picker.custom": "Custom Time",
   "scheduled_post.picker.monday": "Monday at {9amTime}",
   "scheduled_post.picker.next_monday": "Next Monday at {9amTime}",
