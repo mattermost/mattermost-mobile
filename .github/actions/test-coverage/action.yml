@@ -49,7 +49,7 @@ runs:
       with:
         name: test-coverage-result-${{ env.LAST_RUN_ID }}
         path: main-coverage/
-        github-token: ${{ inputs.github_token }}
+        github-token: ${{ github.token }}
         run-id: ${{ env.LAST_RUN_ID }}
 
     - name: ci/check-coverage-download
