@@ -116,6 +116,7 @@ runs:
         name: test-coverage-result-${{ inputs.run_id }}
         path: coverage/coverage-summary.json
         overwrite: true
+        permissions: write
 
     - name: ci/set-upload-success
       if: github.ref_name == 'main' && steps.upload-coverage.outcome == 'success'
