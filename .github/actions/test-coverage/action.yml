@@ -116,7 +116,6 @@ runs:
         name: test-coverage-result-${{ inputs.run_id }}
         path: coverage/coverage-summary.json
         overwrite: true
-        permissions: write
         github-token: ${{ github.token }}
 
     - name: ci/set-upload-success
