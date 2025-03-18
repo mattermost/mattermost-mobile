@@ -1904,7 +1904,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNLocalize (3.3.0):
+  - RNLocalize (3.4.1):
     - React-Core
   - RNPermissions (5.2.1):
     - React-Core
@@ -2628,7 +2628,7 @@ SPEC CHECKSUMS:
   RNFlashList: 38687b560ba32d51c3992f26e375891f9e0bc33f
   RNGestureHandler: fc491c834d09b0538618a3f328ab75fe8f90f5b4
   RNKeychain: 70f06d5879ab630bd91cced70d52c04ff6436781
-  RNLocalize: d024afa9204c13885e61dc88b8190651bcaabac9
+  RNLocalize: 15463c4d79c7da45230064b4adcf5e9bb984667e
   RNPermissions: 318634eacdb21addd8c709467035b2304d2963d3
   RNReactNativeHapticFeedback: 00ba111b82aa266bb3ee1aa576831c2ea9a9dfad
   RNReanimated: 17a1990801a6a324816dcc52a9a44dfb99d556b3
