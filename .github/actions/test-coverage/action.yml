@@ -40,13 +40,14 @@ runs:
       run: |
         echo "::group::set-pr-condition"
         if [ -f "run-id.txt" ]; then
-          echo "IS_PR_WITH_CACHE=true" >> $GITHUB_ENV
+          echo "HAS_MAIN_RUN_ID=true" >> $GITHUB_ENV
           echo "LAST_RUN_ID=$(cat run-id.txt)" >> $GITHUB_ENV
         fi
         echo "::endgroup::"
 
     - name: ci/download-main-coverage
-      if: env.IS_PR_WITH_CACHE == 'true'
+      if: env.HAS_MAIN_RUN_ID == 'true'
+      continue-on-error: true
       uses: actions/download-artifact@v4
       with:
         name: test-coverage-result-${{ env.LAST_RUN_ID }}
@@ -54,8 +55,18 @@ runs:
         github-token: ${{ inputs.github_token }}
         run-id: ${{ env.LAST_RUN_ID }}
 
+    - name: ci/check-coverage-download
+      if: env.HAS_MAIN_RUN_ID == 'true'
+      shell: bash
+      run: |
+        echo "::group::check-coverage-download"
+        if [ -f "main-coverage/coverage-summary.json" ]; then
+          echo "HAS_COVERAGE_FROM_MAIN=true" >> $GITHUB_ENV
+        fi
+        echo "::endgroup::"
+
     - name: ci/read-coverage
-      if: env.IS_PR_WITH_CACHE == 'true'
+      if: env.HAS_COVERAGE_FROM_MAIN == 'true'
       shell: bash
       run: |
         echo "::group::read-coverage"
@@ -70,7 +81,7 @@ runs:
         echo "::endgroup::"
 
     - name: ci/compare-coverage
-      if: env.IS_PR_WITH_CACHE == 'true'
+      if: env.HAS_COVERAGE_FROM_MAIN == 'true'
       id: compare-coverage
       shell: bash
       run: |
@@ -86,7 +97,7 @@ runs:
         echo "::endgroup::"
 
     - name: ci/post-coverage-report
-      if: env.IS_PR_WITH_CACHE == 'true'
+      if: env.HAS_COVERAGE_FROM_MAIN == 'true'
       uses: thollander/actions-comment-pull-request@v3
       with:
         message: ${{ env.report }}
@@ -94,7 +105,7 @@ runs:
         create-if-not-exists: true
 
     - name: ci/exit-on-test-coverage-failure
-      if: env.IS_PR_WITH_CACHE == 'true'
+      if: env.HAS_COVERAGE_FROM_MAIN == 'true'
       shell: bash
       run: |
         echo "::group::exit-on-test-coverage-failure"
