@@ -90,10 +90,16 @@ runs:
         echo "report<<EOF" >> $GITHUB_ENV
         echo "$output" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
+        if [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then
+          echo "IS_FORK=true" >> $GITHUB_ENV
+          echo "::warning::PR is from a fork. Coverage report will be displayed in the workflow summary."
+          echo "### Coverage Report from Fork" >> $GITHUB_STEP_SUMMARY
+          echo "$output" >> $GITHUB_STEP_SUMMARY
+        fi
         echo "::endgroup::"
 
     - name: ci/post-coverage-report
-      if: env.HAS_COVERAGE_FROM_MAIN == 'true'
+      if: env.HAS_COVERAGE_FROM_MAIN == 'true' && github.event.pull_request.head.repo.fork != 'true'
       uses: thollander/actions-comment-pull-request@v3
       with:
         message: ${{ env.report }}
