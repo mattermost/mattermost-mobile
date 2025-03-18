@@ -3,7 +3,7 @@
 
 import {EventEmitter} from 'events';
 
-import {encode} from '@msgpack/msgpack/dist';
+import {encode} from '@msgpack/msgpack';
 
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
