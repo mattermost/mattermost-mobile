@@ -10,9 +10,6 @@ name: test-coverage
 description: Test coverage tracking for mobile repo
 
 inputs:
-  github_token:
-    description: The token to use to download the coverage result
-    required: true
   run_id:
     description: The run id to use to download the coverage result
     required: true
@@ -89,8 +86,7 @@ runs:
         output=$(./scripts/compare-coverage.sh \
           ./main-coverage \
           ./coverage \
-          ${{ github.event.pull_request.number }} \
-          ${{ inputs.github_token }})
+          ${{ github.event.pull_request.number }})
         echo "report<<EOF" >> $GITHUB_ENV
         echo "$output" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV

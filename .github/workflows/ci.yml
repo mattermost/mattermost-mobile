@@ -23,5 +23,4 @@ jobs:
         if: github.event_name == 'pull_request' || github.ref_name == 'main'
         uses: ./.github/actions/test-coverage
         with:
-          github_token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
           run_id: ${{ github.run_id }}
