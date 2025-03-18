@@ -77,7 +77,7 @@
     "react-native-dotenv": "3.4.11",
     "react-native-exception-handler": "2.10.10",
     "react-native-file-viewer": "2.1.5",
-    "react-native-gesture-handler": "2.21.2",
+    "react-native-gesture-handler": "2.24.0",
     "react-native-haptic-feedback": "2.3.3",
     "react-native-image-picker": "7.2.3",
     "react-native-incall-manager": "4.2.0",
