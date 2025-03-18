@@ -122,6 +122,7 @@
     "@react-native/eslint-config": "0.76.5",
     "@react-native/metro-config": "0.76.5",
     "@react-native/typescript-config": "0.76.5",
+    "@stylistic/eslint-plugin-ts": "4.2.0",
     "@testing-library/react-hooks": "8.0.1",
     "@testing-library/react-native": "12.9.0",
     "@types/base-64": "1.0.2",
@@ -143,17 +144,17 @@
     "@types/tough-cookie": "4.0.5",
     "@types/url-parse": "1.4.11",
     "@types/uuid": "10.0.0",
-    "@typescript-eslint/eslint-plugin": "7.14.1",
-    "@typescript-eslint/parser": "7.14.1",
+    "@typescript-eslint/eslint-plugin": "8.26.1",
+    "@typescript-eslint/parser": "8.26.1",
     "babel-jest": "29.7.0",
     "babel-loader": "10.0.0",
     "babel-plugin-module-resolver": "5.0.2",
-    "eslint": "8.57.1",
+    "eslint": "9.22.0",
     "eslint-plugin-header": "3.1.1",
     "eslint-plugin-import": "2.31.0",
-    "eslint-plugin-jest": "28.9.0",
-    "eslint-plugin-react": "7.37.2",
-    "eslint-plugin-react-hooks": "5.1.0",
+    "eslint-plugin-jest": "28.11.0",
+    "eslint-plugin-react": "7.37.4",
+    "eslint-plugin-react-hooks": "5.2.0",
     "husky": "9.1.7",
     "isomorphic-fetch": "3.0.0",
     "jest": "29.7.0",
@@ -188,7 +189,7 @@
     "ios": "react-native run-ios",
     "ios-gems": "bundle install",
     "ios-gems-m1": "arch -arm64 bundle install",
-    "lint": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
+    "lint": "eslint --ignore-pattern .gitignore --ignore-pattern node_modules --quiet .",
     "mmjstool": "mmjstool",
     "pod-install": "cd ios && RCT_NEW_ARCH_ENABLED=0 pod install",
     "pod-install-m1": "cd ios && RCT_NEW_ARCH_ENABLED=0 arch -x86_64 pod install",
@@ -210,8 +211,7 @@
     },
     "@testing-library/react-hooks": {
       "@types/react": "^18.2.37",
-      "react": "^18.3.1",
-      "react-test-renderer": "^18.2.0"
+      "react": "^18.3.1"
     },
     "@react-native-community/datetimepicker": {
       "react-native": "^0.76.5"
@@ -221,6 +221,9 @@
     },
     "react-native-windows": {
       "react-native": "^0.76.5"
+    },
+    "@react-native/eslint-config@0.76.5": {
+      "@typescript-eslint/eslint-plugin": "^8.26.1"
     }
   },
   "expo": {

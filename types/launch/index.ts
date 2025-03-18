@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {DeepLink, Launch} from '@constants';
+import type {DeepLink as DeepLinkConstant, Launch} from '@constants';
 
 export interface DeepLink {
     serverUrl: string;
@@ -33,7 +33,7 @@ export interface DeepLinkPlugin extends DeepLink {
     route?: string;
 }
 
-export type DeepLinkType = typeof DeepLink[keyof typeof DeepLink];
+export type DeepLinkType = typeof DeepLinkConstant[keyof typeof DeepLinkConstant];
 
 export interface DeepLinkWithData {
     type: DeepLinkType;
