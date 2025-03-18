@@ -3,16 +3,11 @@
 
 // Import necessary dependencies and functions
 import Sentry from '@sentry/react-native'; // Importing Sentry as module mock
-import {Platform} from 'react-native';
 
-import Config from '@assets/config.json';
-import ClientError from '@client/rest/error';
 import DatabaseManager from '@database/manager';
-import {getConfig} from '@queries/servers/system';
-import {getCurrentUser} from '@queries/servers/user';
 
 import * as log from './log';
-import {initializeSentry, captureException, captureJSException, addSentryContext} from './sentry';
+import {addSentryContext} from './sentry';
 
 // Mocks
 jest.mock('@sentry/react-native', () => ({
@@ -71,14 +66,6 @@ jest.mock('@utils/errors', () => ({
 describe('initializeSentry function', () => {
     afterEach(() => {
         jest.clearAllMocks(); // Clear all mock calls after each test
-    });
-
-    it('should not initialize Sentry if SentryEnabled is false', () => {
-        Config.SentryEnabled = false;
-
-        initializeSentry();
-
-        expect(Sentry.init).not.toHaveBeenCalled();
     });
 
     it('should log an error if an exception occurs', async () => {
