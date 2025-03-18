@@ -44,9 +44,9 @@ const teamId = 'teamid1';
 const user1 = {id: 'userid1', username: 'user1', email: 'user1@mattermost.com', roles: ''} as UserProfile;
 const user2 = {id: 'userid2', username: 'user2', email: 'user2@mattermost.com', roles: ''} as UserProfile;
 
-const post1 = {...TestHelper.fakePost(channelId), id: 'postid1', user_id: user1.id};
-const post2 = {...TestHelper.fakePost(channelId), id: 'postid2', user_id: user2.id};
-const reply1 = {...TestHelper.fakePost(channelId), id: 'replyid1', root_id: post1.id, user_id: user2.id};
+const post1 = TestHelper.fakePost({channel_id: channelId, id: 'postid1', user_id: user1.id});
+const post2 = TestHelper.fakePost({channel_id: channelId, id: 'postid2', user_id: user2.id});
+const reply1 = TestHelper.fakePost({channel_id: channelId, id: 'replyid1', root_id: post1.id, user_id: user2.id});
 
 const channel1 = {
     id: channelId,

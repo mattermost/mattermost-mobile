@@ -5,7 +5,7 @@
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {of as of$, Observable} from 'rxjs';
-import {map as map$, switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {map as map$, switchMap, distinctUntilChanged, combineLatestWith} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -534,6 +534,19 @@ export function observeMyChannelMentionCount(database: Database, teamId?: string
             }, 0))),
             distinctUntilChanged(),
         );
+}
+
+export function observeMyChannelUnreads(database: Database, teamId: string) {
+    const myChannels = queryMyChannelsByTeam(database, teamId).observeWithColumns(['is_unread']);
+    const notifyProps = observeAllMyChannelNotifyProps(database);
+    return myChannels.pipe(
+        combineLatestWith(notifyProps),
+        switchMap(([mycs, notify]) => of$(mycs.reduce((acc, v) => {
+            const isMuted = notify?.[v.id]?.mark_unread === 'mention';
+            return acc || (v.isUnread && !isMuted);
+        }, false))),
+        distinctUntilChanged(),
+    );
 }
 
 export function queryMyRecentChannels(database: Database, take: number) {
