@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {View} from 'react-native';
 
 import {renderWithIntlAndTheme, fireEvent} from '@test/intl-test-helper';
 import {FileFilters} from '@utils/file';
@@ -29,12 +30,12 @@ describe('Header', () => {
             <Header
                 teamId='team1'
                 setTeamId={setTeamId}
-                onTabSelect={onTabSelect}
                 onFilterChanged={onFilterChanged}
                 selectedTab={TabTypes.MESSAGES}
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
                 crossTeamSearchEnabled={false}
+                tabsComponent={<View/>}
             />,
         );
 
@@ -47,12 +48,12 @@ describe('Header', () => {
             <Header
                 teamId='team1'
                 setTeamId={setTeamId}
-                onTabSelect={onTabSelect}
                 onFilterChanged={onFilterChanged}
                 selectedTab={TabTypes.MESSAGES}
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
                 crossTeamSearchEnabled={false}
+                tabsComponent={<View/>}
             />,
         );
 
@@ -65,12 +66,12 @@ describe('Header', () => {
             <Header
                 teamId='team1'
                 setTeamId={setTeamId}
-                onTabSelect={onTabSelect}
                 onFilterChanged={onFilterChanged}
                 selectedTab={TabTypes.MESSAGES}
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
                 crossTeamSearchEnabled={false}
+                tabsComponent={<View/>}
             />,
         );
 
@@ -83,12 +84,12 @@ describe('Header', () => {
             <Header
                 teamId='team1'
                 setTeamId={setTeamId}
-                onTabSelect={onTabSelect}
                 onFilterChanged={onFilterChanged}
                 selectedTab={TabTypes.MESSAGES}
                 selectedFilter={FileFilters.ALL}
                 teams={[teams[0]]}
                 crossTeamSearchEnabled={false}
+                tabsComponent={<View/>}
             />,
         );
 
@@ -100,12 +101,12 @@ describe('Header', () => {
             <Header
                 teamId='team1'
                 setTeamId={setTeamId}
-                onTabSelect={onTabSelect}
                 onFilterChanged={onFilterChanged}
                 selectedTab={TabTypes.MESSAGES}
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
                 crossTeamSearchEnabled={false}
+                tabsComponent={<View/>}
             />,
         );
 
@@ -120,12 +121,12 @@ describe('Header', () => {
             <Header
                 teamId='team1'
                 setTeamId={setTeamId}
-                onTabSelect={onTabSelect}
                 onFilterChanged={onFilterChanged}
                 selectedTab={selectedTab}
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
                 crossTeamSearchEnabled={false}
+                tabsComponent={<View/>}
             />,
         );
 

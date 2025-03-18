@@ -17,12 +17,9 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {TabTypes, type TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import SelectButton from './header_button';
-
 import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
-    onTabSelect: (tab: TabType) => void;
     onFilterChanged: (filter: FileFilter) => void;
     selectedTab: TabType;
     selectedFilter: FileFilter;
@@ -30,6 +27,7 @@ type Props = {
     teamId: string;
     teams: TeamModel[];
     crossTeamSearchEnabled: boolean;
+    tabsComponent: React.ReactNode;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -72,32 +70,22 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 const Header = ({
     teamId,
     setTeamId,
-    onTabSelect,
     onFilterChanged,
     selectedTab,
     selectedFilter,
     teams,
     crossTeamSearchEnabled,
+    tabsComponent,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
     const isTablet = useIsTablet();
 
-    const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
-    const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
     const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     const showFilterIcon = selectedTab === TabTypes.FILES;
     const hasFilters = selectedFilter !== FileFilters.ALL;
-
-    const handleMessagesPress = useCallback(() => {
-        onTabSelect(TabTypes.MESSAGES);
-    }, [onTabSelect]);
-
-    const handleFilesPress = useCallback(() => {
-        onTabSelect(TabTypes.FILES);
-    }, [onTabSelect]);
 
     const snapPoints = useMemo(() => {
         return [
@@ -131,18 +119,7 @@ const Header = ({
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <View style={styles.buttonContainer}>
-                    <SelectButton
-                        selected={selectedTab === TabTypes.MESSAGES}
-                        onPress={handleMessagesPress}
-                        text={messagesText}
-                    />
-                    <SelectButton
-                        selected={selectedTab === TabTypes.FILES}
-                        onPress={handleFilesPress}
-                        text={filesText}
-                    />
-                </View>
+                {tabsComponent}
                 {showFilterIcon && (
                     <View style={styles.filterContainer}>
                         <CompassIcon

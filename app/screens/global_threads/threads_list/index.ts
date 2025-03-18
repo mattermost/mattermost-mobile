@@ -27,7 +27,6 @@ const enhanced = withObservables(['tab', 'teamId'], ({database, tab, teamId}: Pr
     const teamThreadsSyncObserver = queryTeamThreadsSync(database, teamId).observeWithColumns(['earliest']);
 
     return {
-        unreadsCount: queryThreadsInTeam(database, teamId, true, true, true).observeCount(false),
         teammateNameDisplay: observeTeammateNameDisplay(database),
         threads: teamThreadsSyncObserver.pipe(
             switchMap((teamThreadsSync) => {
