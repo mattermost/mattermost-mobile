@@ -1431,7 +1431,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-image-picker (7.2.3):
+  - react-native-image-picker (8.2.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2583,7 +2583,7 @@ SPEC CHECKSUMS:
   react-native-cookies: d648ab7025833b977c0b19e142503034f5f29411
   react-native-document-picker: 530879d9e89b490f0954bcc4ab697c5b5e35d659
   react-native-emm: afc895b726861262e1b7fecaccb1339492c0bbdc
-  react-native-image-picker: 130fad649d07e4eec8faaed361d3bba570e1e5ff
+  react-native-image-picker: 86f8954a0b8c0f85d56fa1d85ae87936ae74e615
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-network-client: fdbd7f5f4c2818d6b90b4dcf9613d0a54ab41303
   react-native-notifications: 3bafa1237ae8a47569a84801f17d80242fe9f6a5

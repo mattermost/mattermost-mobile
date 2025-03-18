@@ -79,7 +79,7 @@
     "react-native-file-viewer": "2.1.5",
     "react-native-gesture-handler": "2.24.0",
     "react-native-haptic-feedback": "2.3.3",
-    "react-native-image-picker": "7.2.3",
+    "react-native-image-picker": "8.2.0",
     "react-native-incall-manager": "4.2.0",
     "react-native-keyboard-aware-scroll-view": "0.9.5",
     "react-native-keychain": "9.2.2",
