@@ -10,19 +10,24 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
+import CopyTextOption from '@screens/post_options/options/copy_text_option';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import DeleteDraft from './delete_draft';
 import EditDraft from './edit_draft';
+import RescheduledDraft from './rescheduled_draft';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 type Props = {
+    draftType: DraftType;
     channel: ChannelModel;
     rootId: string;
-    draft: DraftModel;
+    draft: DraftModel | ScheduledPostModel;
     draftReceiverUserName: string | undefined;
 }
 
@@ -42,7 +47,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const TITLE_HEIGHT = 54;
 const ITEM_HEIGHT = 48;
 
-const DraftOptions: React.FC<Props> = ({
+const DraftScheduledPostOptions: React.FC<Props> = ({
+    draftType,
     channel,
     rootId,
     draft,
@@ -53,26 +59,43 @@ const DraftOptions: React.FC<Props> = ({
     const styles = getStyleSheet(theme);
     const snapPoints = useMemo(() => {
         const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
-        const COMPONENT_HIEGHT = TITLE_HEIGHT + (3 * ITEM_HEIGHT) + bottomSheetAdjust;
-        return [1, COMPONENT_HIEGHT];
+        const COMPONENT_HEIGHT = TITLE_HEIGHT + (4 * ITEM_HEIGHT) + bottomSheetAdjust;
+        return [1, COMPONENT_HEIGHT];
     }, []);
 
     const renderContent = () => {
         return (
             <View>
-                {!isTablet &&
-                <FormattedText
-                    id='draft.option.header'
-                    defaultMessage='Draft actions'
-                    style={styles.header}
-                />}
-                <EditDraft
-                    bottomSheetId={Screens.DRAFT_OPTIONS}
-                    channel={channel}
-                    rootId={rootId}
+                {!isTablet && (
+                    draftType === DRAFT_TYPE_DRAFT ? (
+                        <FormattedText
+                            id='draft.option.header'
+                            defaultMessage='Draft actions'
+                            style={styles.header}
+                        />
+                    ) : (
+                        <FormattedText
+                            id='scheduled_post.option.header'
+                            defaultMessage='Message actions'
+                            style={styles.header}
+                        />
+                    )
+                )}
+                <CopyTextOption
+                    bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+                    postMessage={draft.message}
+                    sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+                    key={draft.id}
                 />
+                {draftType === DRAFT_TYPE_DRAFT &&
+                    <EditDraft
+                        bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+                        channel={channel}
+                        rootId={rootId}
+                    />
+                }
                 <SendHandler
-                    bottomSheetId={Screens.DRAFT_OPTIONS}
+                    bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     channelId={channel.id}
                     rootId={rootId}
                     files={draft.files}
@@ -81,6 +104,8 @@ const DraftOptions: React.FC<Props> = ({
                     isFromDraftView={true}
                     uploadFileError={null}
                     cursorPosition={0}
+                    draftType={draftType}
+                    postId={draft.id}
                     /* eslint-disable no-empty-function */
                     clearDraft={() => {}}
                     updateCursorPosition={() => {}}
@@ -90,10 +115,18 @@ const DraftOptions: React.FC<Props> = ({
                     updateValue={() => {}}
                     /* eslint-enable no-empty-function */
                 />
+                {draftType === DRAFT_TYPE_SCHEDULED &&
+                    <RescheduledDraft
+                        bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+                        draft={draft as ScheduledPostModel}
+                    />
+                }
                 <DeleteDraft
-                    bottomSheetId={Screens.DRAFT_OPTIONS}
+                    bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     channelId={channel.id}
                     rootId={rootId}
+                    draftType={draftType}
+                    postId={draft.id}
                 />
             </View>
         );
@@ -101,7 +134,7 @@ const DraftOptions: React.FC<Props> = ({
 
     return (
         <BottomSheet
-            componentId={Screens.DRAFT_OPTIONS}
+            componentId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
             renderContent={renderContent}
             closeButtonId={DRAFT_OPTIONS_BUTTON}
             snapPoints={snapPoints}
@@ -110,4 +143,4 @@ const DraftOptions: React.FC<Props> = ({
     );
 };
 
-export default DraftOptions;
+export default DraftScheduledPostOptions;

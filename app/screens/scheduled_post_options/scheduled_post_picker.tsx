@@ -61,6 +61,7 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     const theme = useTheme();
     const [isScheduling, setIsScheduling] = useState(false);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
+    const [customTimeSelected, setCustomTimeSelected] = useState(false);
     const userTimezone = getTimezone(currentUserTimezone);
 
     const style = getStyleSheet(theme);
@@ -68,11 +69,12 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     const snapPoints = useMemo(() => {
         const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
 
-        // iOS needs higher number of items to accommodate space for inline date-time picker
-        const numberOfItems = Platform.select({ios: 9, default: 3});
+        // 9 items to display inline date-time picker, 4 items otherwise
+        const iosNumberOfItems = customTimeSelected ? 9 : 4;
+        const numberOfItems = Platform.select({ios: iosNumberOfItems, default: 3});
         const COMPONENT_HEIGHT = TITLE_HEIGHT + (numberOfItems * ITEM_HEIGHT) + FOOTER_HEIGHT + bottomSheetAdjust;
         return [1, COMPONENT_HEIGHT];
-    }, []);
+    }, [customTimeSelected]);
 
     const onSelectTime = useCallback((selectedValue: string) => {
         setSelectedTime(selectedValue);
@@ -117,6 +119,7 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
                     <ScheduledPostCoreOptions
                         userTimezone={userTimezone}
                         onSelectOption={onSelectTime}
+                        onCustomTimeSelected={setCustomTimeSelected}
                     />
                 </View>
             </View>

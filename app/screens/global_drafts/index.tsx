@@ -1,44 +1,108 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, View} from 'react-native';
+import {Keyboard, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
+import {switchMap} from 'rxjs/operators';
 
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import SecurityManager from '@managers/security_manager';
+import {observeDraftCount} from '@queries/servers/drafts';
+import {observeScheduledPostCount} from '@queries/servers/scheduled_post';
+import {observeConfigBooleanValue, observeCurrentTeamId} from '@queries/servers/system';
+import TabbedContents from '@screens/global_drafts/components/tabbed_contents/tabbed_contents';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import {popTopScreen} from '../navigation';
 
 import GlobalDraftsList from './components/global_drafts_list';
+import GlobalScheduledPostList from './components/global_scheduled_post_list';
+import {TAB_CONTAINER_HEIGHT} from './contants';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const edges: Edge[] = ['left', 'right'];
 
+export const DRAFT_SCREEN_TAB_DRAFTS = 0;
+export const DRAFT_SCREEN_TAB_SCHEDULED_POSTS = 1;
+export type DraftScreenTab = typeof DRAFT_SCREEN_TAB_DRAFTS | typeof DRAFT_SCREEN_TAB_SCHEDULED_POSTS;
+
 type Props = {
     componentId?: AvailableScreens;
+    scheduledPostsEnabled?: boolean;
+    initialTab?: DraftScreenTab;
+    draftsCount: number;
+    scheduledPostCount: number;
 };
 
-const styles = StyleSheet.create({
-    flex: {
-        flex: 1,
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        flex: {
+            flex: 1,
+        },
+        tabItem: {
+            position: 'relative',
+            height: TAB_CONTAINER_HEIGHT,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+        },
+        activeTabItem: {
+            color: theme.buttonBg,
+        },
+        tabItemText: {
+            ...typography('Body', 100, 'SemiBold'),
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+        },
+        activeTabItemText: {
+            color: theme.buttonBg,
+        },
+        tabItemTextActive: {
+            color: theme.buttonBg,
+        },
+        activeTabIndicator: {
+            backgroundColor: theme.buttonBg,
+        },
+        badgeStyles: {
+            position: 'relative',
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+        },
+        activeBadgeStyles: {
+            color: theme.buttonBg,
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+        },
+        badgeStylesActive: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+        },
+        tabView: {
+            width: '100%',
+        },
+    };
 });
 
-const GlobalDrafts = ({componentId}: Props) => {
+export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab, draftsCount, scheduledPostCount}: Props) => {
     const intl = useIntl();
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
 
     const defaultHeight = useDefaultHeaderHeight();
+
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
 
     const headerLeftComponent = useMemo(() => {
         if (isTablet) {
@@ -63,6 +127,18 @@ const GlobalDrafts = ({componentId}: Props) => {
             popTopScreen(componentId);
         }
     }, [componentId, isTablet]);
+
+    const draftList = (
+        <GlobalDraftsList
+            location={Screens.GLOBAL_DRAFTS}
+        />
+    );
+
+    const scheduledPostList = useMemo(() => (
+        <GlobalScheduledPostList
+            location={Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS}
+        />
+    ), []);
 
     return (
         <SafeAreaView
@@ -89,13 +165,33 @@ const GlobalDrafts = ({componentId}: Props) => {
             </View>
             {!switchingTeam &&
             <View style={containerStyle}>
-                <GlobalDraftsList
-                    location={Screens.GLOBAL_DRAFTS}
-                />
+                {
+                    scheduledPostsEnabled ? (
+                        <TabbedContents
+                            initialTab={initialTab || DRAFT_SCREEN_TAB_DRAFTS}
+                            draftsCount={draftsCount}
+                            scheduledPostCount={scheduledPostCount}
+                            drafts={draftList}
+                            scheduledPosts={scheduledPostList}
+                        />
+                    ) : draftList
+                }
             </View>
             }
         </SafeAreaView>
     );
 };
 
-export default GlobalDrafts;
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const currentTeamId = observeCurrentTeamId(database);
+    const scheduledPostsEnabled = observeConfigBooleanValue(database, 'ScheduledPosts');
+    const draftsCount = currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))); // Observe draft count
+    const scheduledPostCount = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostCount(database, teamId, true)));
+    return {
+        scheduledPostsEnabled,
+        draftsCount,
+        scheduledPostCount,
+    };
+});
+
+export default withDatabase(enhanced(GlobalDraftsAndScheduledPosts));

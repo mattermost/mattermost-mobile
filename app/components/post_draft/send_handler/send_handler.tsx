@@ -8,8 +8,9 @@ import DraftInput from '@components/post_draft/draft_input/draft_input';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
-import SendDraft from '@screens/draft_options/send_draft';
+import SendDraft from '@screens/draft_scheduled_post_options/send_draft';
 
+import type {DraftType} from '@screens/global_drafts/constants';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -45,6 +46,8 @@ type Props = {
     persistentNotificationMaxRecipients: number;
     postPriority: PostPriority;
 
+    draftType?: DraftType;
+    postId?: string;
     bottomSheetId?: AvailableScreens;
     channelDisplayName?: string;
     isFromDraftView?: boolean;
@@ -88,6 +91,8 @@ export default function SendHandler({
     bottomSheetId,
     draftReceiverUserName,
     isFromDraftView,
+    draftType,
+    postId,
 }: Props) {
     const serverUrl = useServerUrl();
 
@@ -134,6 +139,8 @@ export default function SendHandler({
                 persistentNotificationInterval={persistentNotificationInterval}
                 persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
                 draftReceiverUserName={draftReceiverUserName}
+                draftType={draftType}
+                postId={postId}
             />
         );
     }

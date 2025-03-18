@@ -4,16 +4,17 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import DraftMessage from '@components/draft/draft_post/draft_message';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import DraftFiles from './draft_files';
+import DraftFiles from './draft_and_scheduled_post_files';
+import DraftAndScheduledPostMessage from './draft_and_scheduled_post_message';
 
 import type DraftModel from '@typings/database/models/servers/draft';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 type Props = {
-    draft: DraftModel;
+    post: DraftModel | ScheduledPostModel;
     location: string;
     layoutWidth: number;
 }
@@ -37,13 +38,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const DraftPost: React.FC<Props> = ({
-    draft,
+const DraftAndScheduledPostContainer: React.FC<Props> = ({
+    post,
     location,
     layoutWidth,
 }) => {
     const theme = useTheme();
-    const hasFiles = draft.files.length > 0;
+    const hasFiles = post.files.length > 0;
     const style = getStyleSheet(theme);
 
     return (
@@ -51,15 +52,15 @@ const DraftPost: React.FC<Props> = ({
             style={style.container}
             testID='draft_post_with_message_and_file'
         >
-            <DraftMessage
+            <DraftAndScheduledPostMessage
                 layoutWidth={layoutWidth}
                 location={location}
-                draft={draft}
+                post={post}
             />
             {
                 hasFiles &&
                 <DraftFiles
-                    filesInfo={draft.files}
+                    filesInfo={post.files}
                     isReplyPost={false}
                     location={location}
                     layoutWidth={layoutWidth}
@@ -69,4 +70,4 @@ const DraftPost: React.FC<Props> = ({
     );
 };
 
-export default DraftPost;
+export default DraftAndScheduledPostContainer;

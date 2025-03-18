@@ -14,10 +14,11 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type DraftModel from '@typings/database/models/servers/draft';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {UserMentionKey} from '@typings/global/markdown';
 
 type Props = {
-    draft: DraftModel;
+    post: DraftModel | ScheduledPostModel;
     layoutWidth: number;
     location: string;
 }
@@ -43,8 +44,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const DraftMessage: React.FC<Props> = ({
-    draft,
+const DraftAndScheduledPostMessage: React.FC<Props> = ({
+    post,
     layoutWidth,
     location,
 }) => {
@@ -80,15 +81,15 @@ const DraftMessage: React.FC<Props> = ({
                         <Markdown
                             baseTextStyle={style.message}
                             blockStyles={blockStyles}
-                            channelId={draft.channelId}
+                            channelId={post.channelId}
                             layoutWidth={layoutWidth}
                             location={location}
-                            postId={draft.id}
+                            postId={post.id}
                             textStyles={textStyles}
-                            value={draft.message}
+                            value={post.message}
                             mentionKeys={EMPTY_MENTION_KEYS}
                             theme={theme}
-                            imagesMetadata={draft.metadata?.images}
+                            imagesMetadata={post.metadata?.images}
                         />
                     </View>
                 </ScrollView>
@@ -105,4 +106,4 @@ const DraftMessage: React.FC<Props> = ({
     );
 };
 
-export default DraftMessage;
+export default DraftAndScheduledPostMessage;

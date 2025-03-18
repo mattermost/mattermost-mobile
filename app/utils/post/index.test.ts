@@ -619,7 +619,7 @@ describe('post utils', () => {
 
         it('should include the post files if provided', () => {
             const result: ScheduledPost = scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles);
-            expect(result.files).toEqual(postFiles);
+            expect(result.metadata?.files).toEqual(postFiles);
         });
 
         it('should return a scheduled post with the same properties as the original post', () => {

@@ -8,22 +8,23 @@ import type {ClientScheduledPostMix} from './scheduled_post';
 
 describe('ClientScheduledPost', () => {
     let client: ClientScheduledPostMix & ClientBase;
+    const scheduledPost: ScheduledPost = {
+        id: 'scheduled_post_id',
+        channel_id: 'channel_id',
+        message: 'scheduled post message',
+        scheduled_at: 1738925211,
+        user_id: 'current_user_id',
+        root_id: '',
+        update_at: 1738925211,
+        create_at: 1738925211,
+    };
+
     beforeAll(() => {
         client = TestHelper.createClient();
         client.doFetch = jest.fn();
     });
 
     test('createScheduledPost', async () => {
-        const scheduledPost: ScheduledPost = {
-            id: 'scheduled_post_id',
-            channel_id: 'channel_id',
-            message: 'scheduled post message',
-            scheduled_at: 1738925211,
-            user_id: 'current_user_id',
-            root_id: '',
-            update_at: 1738925211,
-        };
-
         await client.createScheduledPost(scheduledPost, 'connection_id');
 
         const expectedUrl = client.getScheduledPostRoute();
@@ -36,16 +37,6 @@ describe('ClientScheduledPost', () => {
     });
 
     test('createScheduledPost without connection ID', async () => {
-        const scheduledPost: ScheduledPost = {
-            id: 'scheduled_post_id',
-            channel_id: 'channel_id',
-            message: 'scheduled post message',
-            scheduled_at: 1738925211,
-            user_id: 'current_user_id',
-            root_id: '',
-            update_at: 1738925211,
-        };
-
         await client.createScheduledPost(scheduledPost);
 
         const expectedUrl = client.getScheduledPostRoute();
@@ -87,6 +78,37 @@ describe('ClientScheduledPost', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
+    test('updateScheduledPost', async () => {
+        const updatedPost = {
+            ...scheduledPost,
+            message: 'updated scheduled post message',
+        };
+        const connectionId = 'connection_id';
+        await client.updateScheduledPost(updatedPost, connectionId);
+        const expectedUrl = `${client.getScheduledPostActionsRoute()}/${scheduledPost.id}`;
+        const expectedOptions = {
+            method: 'put',
+            body: updatedPost,
+            headers: {'Connection-Id': connectionId},
+        };
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('updateScheduledPost without connection ID', async () => {
+        const updatedPost = {
+            ...scheduledPost,
+            message: 'updated scheduled post message',
+        };
+        await client.updateScheduledPost(updatedPost);
+        const expectedUrl = `${client.getScheduledPostActionsRoute()}/${scheduledPost.id}`;
+        const expectedOptions = {
+            method: 'put',
+            body: updatedPost,
+            headers: {'Connection-Id': ''},
+        };
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
     test('deleteScheduledPost', async () => {
         const scheduledPostId = 'scheduled_post_id';
         const connectionId = 'connection_id';
@@ -95,9 +117,7 @@ describe('ClientScheduledPost', () => {
             method: 'delete',
             headers: {'Connection-Id': connectionId},
         };
-
         await client.deleteScheduledPost(scheduledPostId, connectionId);
-
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
@@ -108,9 +128,7 @@ describe('ClientScheduledPost', () => {
             method: 'delete',
             headers: {'Connection-Id': ''},
         };
-
         await client.deleteScheduledPost(scheduledPostId);
-
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 });

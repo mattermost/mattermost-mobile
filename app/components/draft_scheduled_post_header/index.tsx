@@ -8,7 +8,7 @@ import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCurrentUser} from '@queries/servers/user';
 
-import DraftPostHeader from './draft_post_header';
+import DraftAndScheduledPostHeader from './draft_scheduled_post_header';
 
 const enhance = withObservables([], ({database}) => {
     const currentUser = observeCurrentUser(database);
@@ -22,4 +22,4 @@ const enhance = withObservables([], ({database}) => {
     };
 });
 
-export default withDatabase(enhance(DraftPostHeader));
+export default withDatabase(enhance(DraftAndScheduledPostHeader));

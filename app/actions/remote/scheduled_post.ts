@@ -6,8 +6,10 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import websocketManager from '@managers/websocket_manager';
 import {getConfigValue} from '@queries/servers/system';
+import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
+import {isScheduledPostModel} from '@utils/scheduled_post';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -25,10 +27,41 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.createScheduledPost(schedulePost, connectionId);
 
-        // TODO - record scheduled post in database here
+        if (response) {
+            await operator.handleScheduledPosts({
+                actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                scheduledPosts: [response],
+                prepareRecordsOnly: false,
+            });
+        }
+
         return {data: true, response};
     } catch (error) {
         logError('error on createScheduledPost', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error: getFullErrorMessage(error)};
+    }
+}
+
+export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost | ScheduledPostModel, updateTime: number, connectionId?: string, fetchOnly = false) {
+    try {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+        const normalizedScheduledPost = isScheduledPostModel(scheduledPost) ? await scheduledPost.toApi(database) : scheduledPost;
+        normalizedScheduledPost.scheduled_at = updateTime;
+        const response = await client.updateScheduledPost(normalizedScheduledPost, connectionId);
+
+        if (response && !fetchOnly) {
+            await operator.handleScheduledPosts({
+                actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                scheduledPosts: [response],
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {scheduledPost: response};
+    } catch (error) {
+        logError('error on updateScheduledPost', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error: getFullErrorMessage(error)};
     }

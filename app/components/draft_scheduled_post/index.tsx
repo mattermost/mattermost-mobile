@@ -9,12 +9,13 @@ import {observeChannel, observeChannelMembers} from '@queries/servers/channel';
 import {observeIsPostPriorityEnabled} from '@queries/servers/post';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
 
-import Drafts from './draft';
+import DraftAndScheduledPost from './draft_scheduled_post';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type DraftModel from '@typings/database/models/servers/draft';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
@@ -22,7 +23,7 @@ type Props = {
     currentUser?: UserModel;
     members?: ChannelMembershipModel[];
     channel?: ChannelModel;
-    draft: DraftModel;
+    post: DraftModel | ScheduledPostModel;
 } & WithDatabaseArgs;
 
 const withCurrentUser = withObservables([], ({database}: WithDatabaseArgs) => ({
@@ -50,7 +51,7 @@ const withChannelMembers = withObservables(['channelId'], ({channelId, database}
     };
 });
 
-const observeDraftReceiverUser = ({
+const observePostReceiverUser = ({
     members,
     database,
     channelData,
@@ -74,12 +75,12 @@ const observeDraftReceiverUser = ({
     return of(undefined);
 };
 
-const enhance = withObservables(['channel', 'members', 'draft'], ({channel, database, currentUser, members, draft}: Props) => {
-    const draftReceiverUser = observeDraftReceiverUser({members, database, channelData: channel, currentUser});
+const enhance = withObservables(['channel', 'members', 'post'], ({channel, database, currentUser, members, post}: Props) => {
+    const postReceiverUser = observePostReceiverUser({members, database, channelData: channel, currentUser});
     return {
-        draft: draft.observe(),
+        post: post.observe(),
         channel,
-        draftReceiverUser,
+        postReceiverUser,
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
     };
 });
@@ -89,7 +90,7 @@ export default React.memo(
         withChannel(
             withCurrentUser(
                 withChannelMembers(
-                    enhance(Drafts),
+                    enhance(DraftAndScheduledPost),
                 ),
             ),
         ),

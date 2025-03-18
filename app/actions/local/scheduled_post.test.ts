@@ -4,14 +4,14 @@
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 
-import {handleScheduledPosts} from './scheduled_post';
+import {handleScheduledPosts, handleUpdateScheduledPostErrorCode} from './scheduled_post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
 
-const scheduledPosts = [
+const scheduledPosts: ScheduledPost[] = [
     {
         channel_id: 'channel_id',
         error_code: '',
@@ -23,6 +23,7 @@ const scheduledPosts = [
         root_id: '',
         scheduled_at: 123,
         update_at: 456,
+        create_at: 789,
         user_id: '',
     },
     {
@@ -36,6 +37,7 @@ const scheduledPosts = [
         user_id: 'user_id',
         processed_at: 0,
         update_at: 456,
+        create_at: 789,
         error_code: '',
     },
 ];
@@ -114,5 +116,40 @@ describe('handleScheduledPosts', () => {
     it('handleScheduledPosts - should return undefined if no scheduled post', async () => {
         const {models} = await handleScheduledPosts(serverUrl, ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST, []);
         expect(models).toBeUndefined();
+    });
+});
+
+describe('handleUpdateScheduledPostErrorCode', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should update scheduled post error code successfully', async () => {
+        await handleScheduledPosts(
+            serverUrl,
+            ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+            scheduledPosts,
+            false,
+        );
+
+        const scheduledPostId = scheduledPosts[0].id;
+        const errorCode = 'channel_not_found';
+
+        const result = await handleUpdateScheduledPostErrorCode(serverUrl, scheduledPostId, errorCode);
+
+        expect(result).toBeDefined();
+        expect(result.models).toBeDefined();
+        expect(result.models![0].errorCode).toBe(errorCode);
+    });
+
+    it('should handle errors when updating scheduled post error code', async () => {
+        const scheduledPostId = 'post123';
+        const errorCode = 'channel_not_found';
+
+        const invalidServerUrl = 'foo';
+        const result = await handleUpdateScheduledPostErrorCode(invalidServerUrl, scheduledPostId, errorCode);
+
+        expect(result.error).toBeDefined();
+        expect(result.error.message).toBe('foo database not found');
     });
 });

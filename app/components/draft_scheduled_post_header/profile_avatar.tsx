@@ -20,12 +20,12 @@ type Props = {
 const styles = StyleSheet.create({
     avatarContainer: {
         backgroundColor: 'rgba(255, 255, 255, 0.4)',
-        width: 24,
-        height: 24,
+        width: 20,
+        height: 20,
     },
     avatar: {
-        height: 24,
-        width: 24,
+        height: 20,
+        width: 20,
     },
     avatarRadius: {
         borderRadius: 18,

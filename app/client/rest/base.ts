@@ -211,6 +211,10 @@ export default class ClientBase extends ClientTracking {
         return `${this.urlVersion}/custom_profile_attributes`;
     }
 
+    getScheduledPostRoute() {
+        return `${this.getPostsRoute()}/schedule`;
+    }
+
     getUserCustomProfileAttributesRoute(userId: string) {
         return `${this.getUsersRoute()}/${userId}/custom_profile_attributes`;
     }
