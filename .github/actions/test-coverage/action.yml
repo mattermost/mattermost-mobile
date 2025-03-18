@@ -117,6 +117,7 @@ runs:
         path: coverage/coverage-summary.json
         overwrite: true
         permissions: write
+        github-token: ${{ github.token }}
 
     - name: ci/set-upload-success
       if: github.ref_name == 'main' && steps.upload-coverage.outcome == 'success'
