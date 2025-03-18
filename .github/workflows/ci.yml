@@ -23,7 +23,7 @@ jobs:
       - name: ci/test
         uses: ./.github/actions/test
       - name: ci/test-coverage
-        if: github.event_name == 'pull_request' || github.ref_name == 'main'
+        if: github.event_name == 'pull_request_target' || github.ref_name == 'main'
         uses: ./.github/actions/test-coverage
         with:
           run_id: ${{ github.run_id }}
