@@ -3,12 +3,12 @@
 
 import React from 'react';
 
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {renderWithIntlAndTheme, waitFor} from '@test/intl-test-helper';
 
 import Icon from './index';
 
 describe('Server Icon', () => {
-    test('Server Icon Component should match snapshot', () => {
+    test('Server Icon Component should match snapshot', async () => {
         const {toJSON} = renderWithIntlAndTheme(
             <Icon
                 hasUnreads={false}
@@ -16,10 +16,12 @@ describe('Server Icon', () => {
             />,
         );
 
-        expect(toJSON()).toMatchSnapshot();
+        await waitFor(() => {
+            expect(toJSON()).toMatchSnapshot();
+        });
     });
 
-    test('Server Icon Component should match snapshot with unreads', () => {
+    test('Server Icon Component should match snapshot with unreads', async () => {
         const {toJSON} = renderWithIntlAndTheme(
             <Icon
                 hasUnreads={true}
@@ -28,10 +30,12 @@ describe('Server Icon', () => {
             />,
         );
 
-        expect(toJSON()).toMatchSnapshot();
+        await waitFor(() => {
+            expect(toJSON()).toMatchSnapshot();
+        });
     });
 
-    test('Server Icon Component should match snapshot with mentions', () => {
+    test('Server Icon Component should match snapshot with mentions', async () => {
         const {toJSON} = renderWithIntlAndTheme(
             <Icon
                 hasUnreads={false}
@@ -40,6 +44,8 @@ describe('Server Icon', () => {
             />,
         );
 
-        expect(toJSON()).toMatchSnapshot();
+        await waitFor(() => {
+            expect(toJSON()).toMatchSnapshot();
+        });
     });
 });

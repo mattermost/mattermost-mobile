@@ -124,7 +124,7 @@
     "@react-native/typescript-config": "0.76.5",
     "@stylistic/eslint-plugin-ts": "4.2.0",
     "@testing-library/react-hooks": "8.0.1",
-    "@testing-library/react-native": "12.9.0",
+    "@testing-library/react-native": "13.2.0",
     "@types/base-64": "1.0.2",
     "@types/commonmark": "0.27.9",
     "@types/commonmark-react-renderer": "4.3.4",
@@ -137,7 +137,6 @@
     "@types/react": "18.3.12",
     "@types/react-native-background-timer": "2.0.2",
     "@types/react-native-dotenv": "0.2.2",
-    "@types/react-native-share": "6.0.0",
     "@types/react-syntax-highlighter": "15.5.13",
     "@types/semver": "7.5.8",
     "@types/tinycolor2": "1.4.6",
@@ -164,7 +163,8 @@
     "mmjstool": "github:mattermost/mattermost-utilities#83b1b311972b8f5e750aae4019457a40abb5aa44",
     "nock": "14.0.1",
     "patch-package": "8.0.0",
-    "react-devtools-core": "6.0.1",
+    "react-devtools-core": "6.1.1",
+    "react-test-renderer": "18.3.1",
     "timezones.json": "1.7.1",
     "tough-cookie": "5.1.2",
     "ts-jest": "29.2.6",
@@ -204,6 +204,7 @@
     "updatesnapshot": "jest --updateSnapshot"
   },
   "overrides": {
+    "react-test-renderer": "18.3.1",
     "@babel/runtime": "7.26.10",
     "@babel/runtime-corejs3": "7.26.10",
     "@testing-library/react-native": {
@@ -211,7 +212,8 @@
     },
     "@testing-library/react-hooks": {
       "@types/react": "^18.2.37",
-      "react": "^18.3.1"
+      "react": "^18.3.1",
+      "react-test-renderer": "^18.3.1"
     },
     "@react-native-community/datetimepicker": {
       "react-native": "^0.76.5"

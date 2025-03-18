@@ -56,11 +56,9 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       handlerTag={1}
       handlerType="NativeViewGestureHandler"
       innerRef={null}
-      onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
-      onHandlerStateChange={[Function]}
-      rippleColor={0}
+      rippleColor="transparent"
       style={
         [
           undefined,
@@ -97,11 +95,9 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       handlerTag={2}
       handlerType="NativeViewGestureHandler"
       innerRef={null}
-      onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
-      onHandlerStateChange={[Function]}
-      rippleColor={0}
+      rippleColor="transparent"
       style={
         [
           undefined,

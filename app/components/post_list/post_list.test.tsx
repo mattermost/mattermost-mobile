@@ -31,8 +31,6 @@ jest.mock('@actions/local/post', () => ({
 import type {PostModel} from '@database/models/server';
 import type Database from '@nozbe/watermelondb/Database';
 
-const {PostListProps} = exportedForTesting;
-
 describe('components/post_list/PostList', () => {
     let database: Database;
     const serverUrl = 'https://server.com';
@@ -68,7 +66,7 @@ describe('components/post_list/PostList', () => {
         mockPostModel(),
     ];
 
-    const baseProps: typeof PostListProps = {
+    const baseProps: typeof exportedForTesting.PostListProps = {
         appsEnabled: false,
         channelId: 'channel-id',
         currentTimezone: 'UTC',

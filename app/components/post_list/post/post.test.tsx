@@ -6,7 +6,7 @@ import React, {type ComponentProps} from 'react';
 import NetworkManager from '@managers/network_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getPostById} from '@queries/servers/post';
-import {renderWithEverything} from '@test/intl-test-helper';
+import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import Post from './post';
@@ -52,24 +52,30 @@ describe('performance metrics', () => {
         NetworkManager.invalidateClient(serverUrl);
     });
 
-    it('do not call the performance metrics if it is not the last post', () => {
+    it('do not call the performance metrics if it is not the last post', async () => {
         const props = getBaseProps();
         props.isLastPost = false;
         renderWithEverything(<Post {...props}/>, {database, serverUrl});
-        expect(PerformanceMetricsManager.finishLoad).not.toHaveBeenCalled();
-        expect(PerformanceMetricsManager.endMetric).not.toHaveBeenCalled();
+        await waitFor(() => {
+            expect(PerformanceMetricsManager.finishLoad).not.toHaveBeenCalled();
+            expect(PerformanceMetricsManager.endMetric).not.toHaveBeenCalled();
+        });
     });
-    it('on channel', () => {
+    it('on channel', async () => {
         const props = getBaseProps();
         renderWithEverything(<Post {...props}/>, {database, serverUrl});
-        expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('CHANNEL', serverUrl);
-        expect(PerformanceMetricsManager.endMetric).toHaveBeenCalledWith('mobile_channel_switch', serverUrl);
+        await waitFor(() => {
+            expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('CHANNEL', serverUrl);
+            expect(PerformanceMetricsManager.endMetric).toHaveBeenCalledWith('mobile_channel_switch', serverUrl);
+        });
     });
-    it('on thread', () => {
+    it('on thread', async () => {
         const props = getBaseProps();
         props.location = 'Thread';
         renderWithEverything(<Post {...props}/>, {database, serverUrl});
-        expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('THREAD', serverUrl);
-        expect(PerformanceMetricsManager.endMetric).toHaveBeenCalledWith('mobile_channel_switch', serverUrl);
+        await waitFor(() => {
+            expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('THREAD', serverUrl);
+            expect(PerformanceMetricsManager.endMetric).toHaveBeenCalledWith('mobile_channel_switch', serverUrl);
+        });
     });
 });

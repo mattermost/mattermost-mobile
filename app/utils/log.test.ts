@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Config from '@assets/config.json';
 import keyMirror from '@utils/key_mirror';
 
 import {logError, logWarning, logInfo, logDebug} from './log';
@@ -25,12 +26,17 @@ describe('Logging functions', () => {
     const Sentry = require('@sentry/react-native');
     const SentryLevels = keyMirror({debug: null, info: null, warning: null, error: null});
 
+    beforeAll(() => {
+        Config.SentryEnabled = true;
+    });
+
     afterEach(() => {
         jest.clearAllMocks();
     });
 
     afterAll(() => {
         global.console = originalConsole;
+        Config.SentryEnabled = false;
     });
 
     test('logError logs error and adds breadcrumb', () => {
