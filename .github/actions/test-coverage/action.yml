@@ -83,6 +83,7 @@ runs:
       shell: bash
       run: |
         echo "::group::compare-coverage"
+        echo "IS_FORK=false" >> $GITHUB_ENV
         output=$(./scripts/compare-coverage.sh \
           ./main-coverage \
           ./coverage \
@@ -99,7 +100,7 @@ runs:
         echo "::endgroup::"
 
     - name: ci/post-coverage-report
-      if: env.HAS_COVERAGE_FROM_MAIN == 'true' && github.event.pull_request.head.repo.fork != 'true'
+      if: env.HAS_COVERAGE_FROM_MAIN == 'true' && env.IS_FORK == 'false'
       uses: thollander/actions-comment-pull-request@v3
       with:
         message: ${{ env.report }}
