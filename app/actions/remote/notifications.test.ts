@@ -39,7 +39,7 @@ const channel: Channel = {
 
 const user1 = {id: 'userid1', username: 'user1', email: 'user1@mattermost.com', roles: ''} as UserProfile;
 
-const post1 = {...TestHelper.fakePost(channelId), id: 'postid1'};
+const post1 = TestHelper.fakePost({channel_id: channelId, id: 'postid1'});
 
 const notificationExtraData = {
     channel,
