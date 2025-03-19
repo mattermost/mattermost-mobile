@@ -3,7 +3,7 @@
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, DeviceEventEmitter} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 
 import {getChannelTimezones} from '@actions/remote/channel';
 import {executeCommand, handleGotoLocation} from '@actions/remote/command';
@@ -16,13 +16,12 @@ import {Events, Screens} from '@constants';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
-import DatabaseManager from '@database/manager';
 import DraftUploadManager from '@managers/draft_upload_manager';
-import {getPostById} from '@queries/servers/post';
 import * as DraftUtils from '@utils/draft';
 import {isReactionMatch} from '@utils/emoji/helpers';
 import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
 import {scheduledPostFromPost} from '@utils/post';
+import {canPostDraftInChannelOrThread} from '@utils/scheduled_post';
 import {showSnackBar} from '@utils/snack_bar';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
@@ -50,6 +49,10 @@ type Props = {
     postPriority: PostPriority;
     isFromDraftView?: boolean;
     clearDraft: () => void;
+    canPost?: boolean;
+    channelIsArchived?: boolean;
+    channelIsReadOnly?: boolean;
+    deactivatedChannel?: boolean;
 }
 
 export const useHandleSendMessage = ({
@@ -67,6 +70,10 @@ export const useHandleSendMessage = ({
     channelType,
     postPriority,
     isFromDraftView,
+    canPost,
+    channelIsArchived,
+    channelIsReadOnly,
+    deactivatedChannel,
     clearDraft,
 }: Props) => {
     const intl = useIntl();
@@ -120,23 +127,15 @@ export const useHandleSendMessage = ({
 
         let shouldClearDraft = true;
         if (isFromDraftView) {
-            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const rootPost = await getPostById(database, rootId);
-            if (!rootPost) {
-                shouldClearDraft = false;
-                Alert.alert(
-                    intl.formatMessage({id: 'scheduled_post.root_post_not_exist', defaultMessage: 'Sending post failed'}),
-                    intl.formatMessage({
-                        id: 'scheduled_post.root_post_not_exist.message',
-                        defaultMessage: 'Someone delete the message on which you tried to post a comment.',
-                    }),
-                    [{
-                        text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
-                        style: 'cancel',
-                    },
-                    ], {cancelable: false},
-                );
-            }
+            shouldClearDraft = await canPostDraftInChannelOrThread({
+                serverUrl,
+                rootId,
+                intl,
+                canPost,
+                channelIsArchived,
+                channelIsReadOnly,
+                deactivatedChannel,
+            });
         }
 
         let response: CreateResponse;
@@ -162,7 +161,7 @@ export const useHandleSendMessage = ({
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
 
         return response;
-    }, [files, currentUserId, channelId, rootId, value, postPriority, isFromDraftView, clearDraft, serverUrl, intl]);
+    }, [files, currentUserId, channelId, rootId, value, postPriority, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);
