@@ -47,7 +47,7 @@ const messages = defineMessages({
     },
 });
 
-class NetworkManager {
+class NetworkManagerSingleton {
     private clients: Record<string, Client> = {};
 
     private intl = getIntlShape();
@@ -174,4 +174,5 @@ class NetworkManager {
     };
 }
 
-export default new NetworkManager();
+const NetworkManager = new NetworkManagerSingleton();
+export default NetworkManager;

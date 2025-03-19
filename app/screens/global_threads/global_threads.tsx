@@ -16,6 +16,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 
 import ThreadsList from './threads_list';
@@ -84,6 +85,7 @@ const GlobalThreads = ({componentId, globalThreadsTab}: Props) => {
             mode='margin'
             style={styles.flex}
             testID='global_threads.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId || Screens.GLOBAL_THREADS)}
         >
             <NavigationHeader
                 showBackButton={!isTablet}

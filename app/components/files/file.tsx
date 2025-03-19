@@ -8,9 +8,10 @@ import Animated from 'react-native-reanimated';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {useGalleryItem} from '@hooks/gallery';
-import {isDocument, isImage, isVideo} from '@utils/file';
+import {isAudio, isDocument, isImage, isVideo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import AudioFile from './audio_file';
 import DocumentFile from './document_file';
 import FileIcon from './file_icon';
 import FileInfo from './file_info';
@@ -61,6 +62,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 40,
             width: 40,
             margin: 4,
+        },
+        audioFile: {
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
         },
     };
 });
@@ -128,6 +134,18 @@ const File = ({
             </View>
         );
     };
+
+    const touchableWithPreview = (
+        <TouchableWithFeedback
+            onPress={handlePreviewPress}
+            disabled={isPressDisabled}
+            type={'opacity'}
+        >
+            <FileIcon
+                file={file}
+            />
+        </TouchableWithFeedback>
+    );
 
     let fileComponent;
     if (isVideo(file) && publicLinkEnabled) {
@@ -216,19 +234,18 @@ const File = ({
                 }
             </View>
         );
-    } else {
-        const touchableWithPreview = (
-            <TouchableWithFeedback
-                onPress={handlePreviewPress}
-                disabled={isPressDisabled}
-                type={'opacity'}
-            >
-                <FileIcon
+    } else if (isAudio(file)) {
+        const renderAudioFile = (
+            <Animated.View style={[styles, asCard ? style.imageVideo : style.audioFile]}>
+                <AudioFile
                     file={file}
+                    canDownloadFiles={canDownloadFiles}
                 />
-            </TouchableWithFeedback>
+            </Animated.View>
         );
 
+        fileComponent = asCard ? renderCardWithImage(touchableWithPreview) : renderAudioFile;
+    } else {
         fileComponent = renderCardWithImage(touchableWithPreview);
     }
     return fileComponent;

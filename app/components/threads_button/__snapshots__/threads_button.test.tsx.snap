@@ -79,7 +79,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
             "lineHeight": 24,
           },
           {
-            "color": "#ffffff",
+            "color": "rgba(255,255,255,0.72)",
           },
           false,
           false,
@@ -174,7 +174,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
             "lineHeight": 24,
           },
           {
-            "color": "#ffffff",
+            "color": "rgba(255,255,255,0.72)",
           },
           false,
           false,

@@ -8,14 +8,16 @@ import {FlatList} from 'react-native-gesture-handler';
 
 import UserProfileLabel from './label';
 
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
+
 type Props = {
     nickname?: string;
     position?: string;
     localTime?: string;
-    customAttributes?: DisplayCustomAttribute[];
+    customAttributes?: CustomAttribute[];
 }
 
-const renderAttribute: ListRenderItem<DisplayCustomAttribute> = ({item}) => (
+const renderAttribute: ListRenderItem<CustomAttribute> = ({item}) => (
     <UserProfileLabel
         title={item.name}
         description={item.value}

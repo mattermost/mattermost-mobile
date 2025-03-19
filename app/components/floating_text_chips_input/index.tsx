@@ -280,6 +280,7 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>(({
                                 key={chipValue}
                                 id={chipValue}
                                 text={chipValue}
+                                testID={`${testID}.${chipValue}`}
                                 onRemove={onChipRemove}
                                 containerStyle={styles.chipContainer}
                             />

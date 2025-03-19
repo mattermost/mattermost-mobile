@@ -592,7 +592,6 @@
   "mobile.managed.jailbreak": "I dispositivi jailbroken non sono considerati affidabili da {vendor}.\n\nMotivo {reason}\n\n\n\nInformazioni di debug: {debug}\n\nSi prega di uscire dall'applicazione.",
   "mobile.managed.not_secured.android": "Questo dispositivo deve essere protetto da un blocco schermo per utilizzare Mattermost.",
   "mobile.managed.not_secured.ios": "Questo dispositivo deve essere protetto da un codice per utilizzare Mattermost.\n\nAprire Impostazioni > Face ID & codice.",
-  "mobile.managed.not_secured.ios.touchId": "Questo dispositivo deve essere protetto da un codice per utilizzare Mattermost.\n\nAprire Impostazioni > Touch ID & codice.",
   "mobile.managed.secured_by": "Verificato da {vendor}",
   "mobile.managed.settings": "Vai a impostazioni",
   "mobile.markdown.code.copy_code": "Copia codice",

@@ -224,6 +224,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         }
 
         return res;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, multilineInputHeight, editable]);
 
     const textAnimatedTextStyle = useAnimatedStyle(() => {

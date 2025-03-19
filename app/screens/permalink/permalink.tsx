@@ -21,6 +21,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import SecurityManager from '@managers/security_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -355,6 +356,7 @@ function Permalink({
         <SafeAreaView
             style={containerStyle}
             testID='permalink.screen'
+            nativeID={SecurityManager.getShieldScreenId(Screens.PERMALINK)}
             edges={edges}
         >
             <Animated.View style={style.wrapper}>

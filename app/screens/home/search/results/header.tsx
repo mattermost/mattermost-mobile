@@ -38,6 +38,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             marginTop: 10,
             borderBottomWidth: 1,
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+            backgroundColor: theme.centerChannelBg,
         },
         badge: {
             backgroundColor: theme.buttonBg,

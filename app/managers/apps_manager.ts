@@ -17,7 +17,7 @@ const emptyBindings: AppBinding[] = [];
 
 const normalizeBindings = (bindings: AppBinding[]) => bindings.reduce<AppBinding[]>((acc, v) => (v.bindings ? acc.concat(v.bindings) : acc), []);
 
-export class AppsManager {
+export class AppsManagerSingleton {
     private enabled: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
 
     private bindings: {[serverUrl: string]: BehaviorSubject<AppBinding[]>} = {};
@@ -209,4 +209,5 @@ export class AppsManager {
     };
 }
 
-export default new AppsManager();
+const AppsManager = new AppsManagerSingleton();
+export default AppsManager;

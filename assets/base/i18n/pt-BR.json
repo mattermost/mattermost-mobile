@@ -607,7 +607,6 @@
   "mobile.managed.jailbreak": "Os dispositivos com Jailbroken não são confiáveis para {vendor}, por favor saia do aplicativo.",
   "mobile.managed.not_secured.android": "Este dispositivo deve ser protegido com um bloqueio de tela para usar o Mattermost.",
   "mobile.managed.not_secured.ios": "Este dispositivo deve ser protegido por uma senha para usar o Mattermost.\n\nVá para Configurações > Face ID & Passcode.",
-  "mobile.managed.not_secured.ios.touchId": "Este dispositivo deve ser protegido por uma senha para usar o Mattermost.\n\nVá em Ajustes > Touch ID & Código.",
   "mobile.managed.secured_by": "Garantido por {vendor}",
   "mobile.managed.settings": "Vá para configurações",
   "mobile.markdown.code.copy_code": "Copiar Código",

@@ -99,12 +99,13 @@ const saveReport = async () => {
     // Merge all XML reports into one single XML report
     const platform = process.env.IOS === 'true' ? 'ios' : 'android';
     const combinedFilePath = `${ARTIFACTS_DIR}/${platform}-combined.xml`;
+
     await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/${platform}-results*/${platform}-junit*.xml`]);
     console.log(`Merged, check ${combinedFilePath}`);
 
     // Read XML from a file
     const xml = fse.readFileSync(combinedFilePath);
-    const {testsuites} = convertXmlToJson(xml);
+    const {testsuites} = convertXmlToJson(xml, platform);
 
     // Generate short summary, write to file and then send report via webhook
     const allTests = getAllTests(testsuites);

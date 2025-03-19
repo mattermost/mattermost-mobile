@@ -67,7 +67,12 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
     const blockStyles = getMarkdownBlockStyles(theme);
     const textStyles = getMarkdownTextStyles(theme);
 
-    const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);
+    const onLayout = useCallback((event: LayoutChangeEvent) => {
+        const h = event.nativeEvent.layout.height;
+        if (h > maxHeight) {
+            setHeight(event.nativeEvent.layout.height);
+        }
+    }, [maxHeight]);
     const onPress = () => setOpen(!open);
 
     const channelMentions = useMemo(() => {

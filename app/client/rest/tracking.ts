@@ -9,6 +9,7 @@ import {t} from '@i18n';
 import {setServerCredentials} from '@init/credentials';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
+import {isErrorWithStatusCode} from '@utils/errors';
 import {getFormattedFileSize} from '@utils/file';
 import {logDebug, logInfo} from '@utils/log';
 import {semverFromServerVersion} from '@utils/server';
@@ -376,6 +377,7 @@ export default class ClientTracking {
         try {
             response = await request!(url, this.buildRequestOptions(options));
         } catch (error) {
+            const status_code = isErrorWithStatusCode(error) ? error.status_code : undefined;
             throw new ClientError(this.apiClient.baseUrl, {
                 message: 'Received invalid response from the server.',
                 intl: {
@@ -384,6 +386,7 @@ export default class ClientTracking {
                 },
                 url,
                 details: error,
+                status_code,
             });
         } finally {
             if (groupLabel && CollectNetworkMetrics) {
