@@ -546,7 +546,6 @@
   "mobile.managed.jailbreak": "{Vendor} не се доверява на Jailbroken устройства, моля излезте от приложението.",
   "mobile.managed.not_secured.android": "Това устройство трябва да бъде защитено със заключване на екрана, за да се използва Mattermost.",
   "mobile.managed.not_secured.ios": "Това устройство трябва да бъде защитено с парола за използване на Mattermost.\n\nОтидете в Настройки> лицево ID и парола.",
-  "mobile.managed.not_secured.ios.touchId": "Това устройство трябва да бъде защитено с парола за използване на Mattermost.\n\nОтидете в Настройки> докосване ID и парола.",
   "mobile.managed.secured_by": "Защитено от {vendor}",
   "mobile.managed.settings": "Отидете на настройките",
   "mobile.markdown.code.copy_code": "Копирай кода",

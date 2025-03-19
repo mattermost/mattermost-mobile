@@ -707,7 +707,6 @@
   "mobile.managed.jailbreak": "Din jailbrejkade eller rootade enhet är inte betrodd av {vendor}.\n\nAppen kommer stängas.",
   "mobile.managed.not_secured.android": "Enheten behöver säkras med skärmlås för att använda Mattermost.",
   "mobile.managed.not_secured.ios": "Enheten behöver säkras med en passcode för att använda Mattermost.\n\nGå till Inställningar > Face ID & Passcode.",
-  "mobile.managed.not_secured.ios.touchId": "Enheten behöver säkras med en passcode för att använda Mattermost.\n\nGå till Inställningar > Touch ID & Passcode.",
   "mobile.managed.secured_by": "Säkrad av {vendor}",
   "mobile.managed.settings": "Gå till Inställningar",
   "mobile.markdown.code.copy_code": "Kopiera kod",

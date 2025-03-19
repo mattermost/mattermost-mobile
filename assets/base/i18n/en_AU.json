@@ -707,7 +707,6 @@
   "mobile.managed.jailbreak": "Jailbroken or rooted devices are not trusted by {vendor}.\n\nThe app will now close.",
   "mobile.managed.not_secured.android": "This device must be secured with a screen lock to use Mattermost.",
   "mobile.managed.not_secured.ios": "This device must be secured with a passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode.",
-  "mobile.managed.not_secured.ios.touchId": "This device must be secured with a passcode to use Mattermost.\n\nGo to Settings > Touch ID & Passcode.",
   "mobile.managed.secured_by": "Secured by {vendor}",
   "mobile.managed.settings": "Go to settings",
   "mobile.markdown.code.copy_code": "Copy Code",
