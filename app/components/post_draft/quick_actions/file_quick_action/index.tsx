@@ -48,7 +48,7 @@ export default function FileQuickAction({
             onUploadFiles);
 
         picker.attachFileFromFiles(undefined, true);
-    }, [onUploadFiles]);
+    }, [intl, maxFileCount, maxFilesReached, onUploadFiles]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
