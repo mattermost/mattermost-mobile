@@ -2093,7 +2093,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - Sentry/HybridSDK (= 8.45.0)
     - Yoga
-  - RNShare (12.0.3):
+  - RNShare (12.0.9):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2114,7 +2114,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSVG (15.10.1):
+  - RNSVG (15.11.2):
     - React-Core
   - RNVectorIcons (10.2.0):
     - DoubleConversion
@@ -2634,8 +2634,8 @@ SPEC CHECKSUMS:
   RNReanimated: 17a1990801a6a324816dcc52a9a44dfb99d556b3
   RNScreens: 0e8829648c78f4168f3e96cdc2e219213cb1907c
   RNSentry: 0a2b90ac4e85f8f28029edd3d76619a5eb0f46ba
-  RNShare: d40e9e8d071f845fff5072173ffb7a3bf3918c6d
-  RNSVG: 3421710ac15f4f2dc47e5c122f2c2e4282116830
+  RNShare: 381ed02f6c0dc42b8c24bb5a1e5df0ee5fd91354
+  RNSVG: a07e14363aa208062c6483bad24a438d5986d490
   RNVectorIcons: 182892e7d1a2f27b52d3c627eca5d2665a22ee28
   SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
