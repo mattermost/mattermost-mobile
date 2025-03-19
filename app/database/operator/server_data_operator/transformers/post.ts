@@ -168,7 +168,6 @@ export const transformPostsInChannelRecord = ({action, database, value}: Transfo
  */
 export const transformSchedulePostsRecord = ({action, database, value}: TransformerArgs<ScheduledPostModel, ScheduledPost>): Promise<ScheduledPostModel> => {
     const emptyFileInfo: FileInfo[] = [];
-    const emptyPostMetadata: PostMetadata = {};
     const raw = value.raw;
 
     const fieldsMapper = (scheduledPost: ScheduledPostModel) => {
@@ -179,10 +178,10 @@ export const transformSchedulePostsRecord = ({action, database, value}: Transfor
         scheduledPost.files = raw?.metadata?.files ?? emptyFileInfo;
         scheduledPost.metadata = raw?.metadata ?? null;
         if (raw.priority) {
-            if (!scheduledPost.metadata) {
-                scheduledPost.metadata = emptyPostMetadata;
-            }
-            scheduledPost.metadata.priority = raw.priority;
+            scheduledPost.metadata = {
+                ...scheduledPost.metadata,
+                priority: raw.priority,
+            };
         }
         scheduledPost.updateAt = raw.update_at ?? Date.now();
         scheduledPost.createAt = raw.create_at;
