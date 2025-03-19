@@ -3,7 +3,7 @@
 
 import React, {useEffect, useState, useRef} from 'react';
 
-import {fetchCustomAttributes} from '@actions/remote/user';
+import {fetchCustomProfileAttributes} from '@actions/remote/custom_profile';
 import {useServerUrl} from '@context/server';
 import {getUserCustomStatus, sortCustomProfileAttributes} from '@utils/user';
 
@@ -37,7 +37,7 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
             const fetchData = async () => {
                 const reqTime = Date.now();
                 lastRequest.current = reqTime;
-                const {attributes, error} = await fetchCustomAttributes(serverUrl, user.id, true);
+                const {attributes, error} = await fetchCustomProfileAttributes(serverUrl, user.id, true);
                 if (!error && lastRequest.current === reqTime) {
                     const attributesList = Object.values(attributes).sort(sortCustomProfileAttributes);
                     setCustomAttributes(attributesList);

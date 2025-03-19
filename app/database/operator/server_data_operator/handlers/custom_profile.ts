@@ -11,7 +11,6 @@ import {logWarning} from '@utils/log';
 
 import type ServerDataOperatorBase from '.';
 import type Model from '@nozbe/watermelondb/Model';
-import type {CustomProfileAttributeSimple} from '@typings/api/custom_profile_attributes';
 import type {
     HandleCustomProfileFieldsArgs,
     HandleCustomProfileAttributesArgs,
@@ -71,7 +70,7 @@ const CustomProfileHandler = <TBase extends Constructor<ServerDataOperatorBase>>
         // since different users can have different values for the same field
         const createOrUpdateRawValues = getUniqueRawsBy({
             raws: attributes,
-            key: (attr: CustomProfileAttributeSimple) => `${attr.field_id}-${attr.user_id}`,
+            key: 'id',
         });
 
         return this.handleRecords({

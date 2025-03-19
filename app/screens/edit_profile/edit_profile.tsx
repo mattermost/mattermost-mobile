@@ -8,7 +8,8 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalUser} from '@actions/local/user';
-import {setDefaultProfileImage, updateMe, uploadUserProfileImage, fetchCustomAttributes, updateCustomAttributes} from '@actions/remote/user';
+import {fetchCustomProfileAttributes, updateCustomProfileAttributes} from '@actions/remote/custom_profile';
+import {setDefaultProfileImage, updateMe, uploadUserProfileImage} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
@@ -125,7 +126,7 @@ const EditProfile = ({
             if (!currentUser) {
                 return;
             }
-            const {error: fetchError, attributes} = await fetchCustomAttributes(serverUrl, currentUser.id);
+            const {error: fetchError, attributes} = await fetchCustomProfileAttributes(serverUrl, currentUser.id);
             if (!fetchError && attributes) {
                 setUserInfo((prev: UserInfo) => ({...prev, customAttributes: attributes} as UserInfo));
             }
@@ -173,7 +174,7 @@ const EditProfile = ({
 
                 // Update custom attributes if changed
                 if (userInfo.customAttributes) {
-                    const {error: attrError} = await updateCustomAttributes(serverUrl, userInfo.customAttributes);
+                    const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, userInfo.customAttributes);
                     if (attrError) {
                         resetScreen(attrError);
                         return;

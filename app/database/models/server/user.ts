@@ -7,6 +7,7 @@ import Model, {type Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
+import type CustomProfileAttributeModel from './custom_profile_attribute';
 import type {Query} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -157,7 +158,7 @@ export default class UserModel extends Model implements UserModelInterface {
     @children(THREAD_PARTICIPANT) threadParticipations!: Query<ThreadParticipantsModel>;
 
     /** USER has a 1:N relationship with CUSTOM_PROFILE_ATTRIBUTE.  A user can have multiple custom profile attributes */
-    @children(CUSTOM_PROFILE_ATTRIBUTE) customProfileAttributes!: Query<Model>;
+    @children(CUSTOM_PROFILE_ATTRIBUTE) customProfileAttributes!: Query<CustomProfileAttributeModel> | undefined;
 
     prepareStatus = (status: string) => {
         this.prepareUpdate((u) => {

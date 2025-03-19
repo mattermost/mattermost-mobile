@@ -6,7 +6,7 @@ import {prepareBaseRecord} from '@database/operator/server_data_operator/transfo
 
 import type {CustomProfileAttributeModel, CustomProfileFieldModel} from '@database/models/server';
 import type Model from '@nozbe/watermelondb/Model';
-import type {CustomProfileField, CustomProfileAttributeSimple} from '@typings/api/custom_profile_attributes';
+import type {CustomProfileField, CustomProfileAttribute} from '@typings/api/custom_profile_attributes';
 import type {TransformerArgs} from '@typings/database/database';
 
 const {CUSTOM_PROFILE_FIELD, CUSTOM_PROFILE_ATTRIBUTE} = MM_TABLES.SERVER;
@@ -53,12 +53,12 @@ export const transformCustomProfileFieldRecord = ({action, database, value}: Tra
  * @returns {Promise<Model>}
  */
 export const transformCustomProfileAttributeRecord = ({action, database, value}: TransformerArgs): Promise<Model> => {
-    const raw = value.raw as unknown as CustomProfileAttributeSimple;
+    const raw = value.raw as unknown as CustomProfileAttribute;
     const record = value.record as Model;
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (attribute: CustomProfileAttributeModel) => {
-        attribute._raw.id = isCreateAction ? attribute.id : record.id;
+        attribute._raw.id = isCreateAction ? `${raw.field_id}-${raw.user_id}` : record.id;
         attribute.fieldId = raw.field_id;
         attribute.userId = raw.user_id;
         attribute.value = raw.value;

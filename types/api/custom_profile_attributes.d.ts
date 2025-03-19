@@ -39,7 +39,10 @@ type CustomProfileField = {
  * CustomProfileAttributeSimple
  * @description Type representing a custom profile attribute with its field ID, user ID, and value.
  **/
-type CustomProfileAttributeSimple = {
+type CustomProfileAttribute = {
+
+    /** ID of the custom profile attribute */
+    id: string;
 
     /** ID of the custom profile field this attribute is for */
     field_id: string;
@@ -49,6 +52,14 @@ type CustomProfileAttributeSimple = {
 
     /** Value of the attribute */
     value: string;
+}
+
+/**
+ * UserCustomProfileAttributeSimple
+ * @description simpler type to display a field id with its value, when we already know it all belongs to the same user
+ **/
+type UserCustomProfileAttributeSimple = {
+    [field_id: string]: string;
 }
 
 export type CustomAttribute = {
