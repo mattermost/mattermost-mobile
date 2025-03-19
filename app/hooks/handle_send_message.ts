@@ -3,7 +3,7 @@
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter} from 'react-native';
+import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {getChannelTimezones} from '@actions/remote/channel';
 import {executeCommand, handleGotoLocation} from '@actions/remote/command';
@@ -16,7 +16,9 @@ import {Events, Screens} from '@constants';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
+import DatabaseManager from '@database/manager';
 import DraftUploadManager from '@managers/draft_upload_manager';
+import {getPostById} from '@queries/servers/post';
 import * as DraftUtils from '@utils/draft';
 import {isReactionMatch} from '@utils/emoji/helpers';
 import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
@@ -116,6 +118,27 @@ export const useHandleSendMessage = ({
             };
         }
 
+        let shouldClearDraft = true;
+        if (isFromDraftView) {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const rootPost = await getPostById(database, rootId);
+            if (!rootPost) {
+                shouldClearDraft = false;
+                Alert.alert(
+                    intl.formatMessage({id: 'scheduled_post.root_post_not_exist', defaultMessage: 'Sending post failed'}),
+                    intl.formatMessage({
+                        id: 'scheduled_post.root_post_not_exist.message',
+                        defaultMessage: 'Someone delete the message on which you tried to post a comment.',
+                    }),
+                    [{
+                        text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                        style: 'cancel',
+                    },
+                    ], {cancelable: false},
+                );
+            }
+        }
+
         let response: CreateResponse;
         if (schedulingInfo) {
             response = await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles));
@@ -132,12 +155,14 @@ export const useHandleSendMessage = ({
             return response;
         }
 
-        clearDraft();
+        if (shouldClearDraft) {
+            clearDraft();
+        }
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
 
         return response;
-    }, [files, currentUserId, channelId, rootId, value, postPriority, isFromDraftView, clearDraft, serverUrl]);
+    }, [files, currentUserId, channelId, rootId, value, postPriority, isFromDraftView, clearDraft, serverUrl, intl]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);
