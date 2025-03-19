@@ -695,6 +695,7 @@ describe('useHandleSendMessage', () => {
             const props = {
                 ...defaultProps,
                 isFromDraftView: true,
+                rootId: 'root-post-id',
                 value: 'test message',
             };
 

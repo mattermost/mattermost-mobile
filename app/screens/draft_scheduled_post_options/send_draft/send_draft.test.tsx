@@ -13,6 +13,7 @@ import {dismissBottomSheet} from '@screens/navigation';
 import {act, fireEvent, renderWithEverything, renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {sendMessageWithAlert} from '@utils/post';
+import {canPostDraftInChannelOrThread} from '@utils/scheduled_post';
 
 import SendDraft from './send_draft';
 
@@ -41,6 +42,8 @@ jest.mock('@utils/post', () => ({
     persistentNotificationsConfirmation: jest.fn(),
 }));
 
+jest.mock('@utils/scheduled_post');
+
 jest.mock('@actions/remote/post', () => ({
     deleteScheduledPost: jest.fn(),
     createPost: jest.fn(),
@@ -49,6 +52,8 @@ jest.mock('@actions/remote/post', () => ({
 jest.mock('@actions/local/scheduled_post', () => ({
     handleUpdateScheduledPostErrorCode: jest.fn(),
 }));
+jest.mock('@database/manager');
+jest.mock('@queries/servers/post');
 
 describe('Send Draft', () => {
     let database: Database;
@@ -155,6 +160,7 @@ describe('Send Draft', () => {
         jest.mocked(createPost).mockResolvedValueOnce({
             data: true,
         });
+        jest.mocked(canPostDraftInChannelOrThread).mockResolvedValueOnce(true);
 
         const baseProps: Parameters<typeof SendDraft>[0] = {
             channelId: 'channel-id',
