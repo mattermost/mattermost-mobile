@@ -1505,7 +1505,7 @@ PODS:
     - React-Core
   - react-native-safe-area-context (5.3.0):
     - React-Core
-  - react-native-video (6.8.2):
+  - react-native-video (6.11.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1518,7 +1518,7 @@ PODS:
     - React-featureflags
     - React-graphics
     - React-ImageManager
-    - react-native-video/Video (= 6.8.2)
+    - react-native-video/Video (= 6.11.0)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-rendererdebug
@@ -1527,7 +1527,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-video/Video (6.8.2):
+  - react-native-video/Video (6.11.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1548,7 +1548,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-webrtc (124.0.4):
+  - react-native-webrtc (124.0.5):
     - JitsiWebRTC (~> 124.0.0)
     - React-Core
   - React-nativeconfig (0.76.5)
@@ -2590,8 +2590,8 @@ SPEC CHECKSUMS:
   react-native-paste-input: d33daa183942fa57f34dff2088805a60895f14d2
   react-native-performance: 125a96c145e29918b55b45ce25cbba54f1e24dcd
   react-native-safe-area-context: fdb0a66feac038cb6eb1edafcf2ccee2b5cf0284
-  react-native-video: cab619600c0d1283080c80298a2abe3a6a9157f3
-  react-native-webrtc: 2261a482150195092246fe70b3aff976f2e11ec5
+  react-native-video: 11ad1501910486a22bd4f9acd623660df4a9c1a9
+  react-native-webrtc: 62659d18a13f6b50ad95c99a9a48cf9872a15815
   React-nativeconfig: f7ab6c152e780b99a8c17448f2d99cf5f69a2311
   React-NativeModulesApple: 9aeb901b9bfcc9235e912445fb3cf4780a99baf4
   React-perflogger: 16e049953d21b37e9871ddf0b02f414e12ff14ba
