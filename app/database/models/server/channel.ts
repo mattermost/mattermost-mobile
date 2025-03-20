@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {children, field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import {children, field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
@@ -18,6 +18,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
+import {safeParseJSON} from '@utils/helpers';
 
 const {
     CATEGORY_CHANNEL,
@@ -109,7 +110,7 @@ export default class ChannelModel extends Model implements ChannelModelInterface
     @field('type') type!: ChannelType;
 
     /** bannerInfo : The banner information for the channel */
-    @field('banner_info') bannerInfo?: ChannelBannerInfo;
+    @json('banner_info', safeParseJSON) bannerInfo?: ChannelBannerInfo;
 
     /** members : Users belonging to this channel */
     @children(CHANNEL_MEMBERSHIP) members!: Query<ChannelMembershipModel>;

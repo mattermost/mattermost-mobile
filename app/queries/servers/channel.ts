@@ -40,6 +40,12 @@ export function prepareChannels(
     isCRTEnabled?: boolean,
 ): Array<Promise<Model[]>> {
     try {
+        channels?.forEach((channel) => {
+            if (channel.banner_info) {
+                console.log('####### 44444 found a channel with banner info', {channel});
+            }
+        });
+
         const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
         const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
         const membershipRecords = operator.handleChannelMembership({channelMemberships, prepareRecordsOnly: true});
@@ -128,6 +134,12 @@ const buildChannelInfos = async (database: Database, channels: Channel[]) => {
 };
 
 export const prepareAllMyChannels = async (operator: ServerDataOperator, channels: Channel[], channelMemberships: ChannelMembership[], isCRTEnabled?: boolean) => {
+    channels.forEach((channel) => {
+        if (channel.banner_info) {
+            console.log('####### 22222 found a channel with banner info', {channel});
+        }
+    });
+
     const {database} = operator;
 
     const fetchedChannelIds = new Set(channels.map((c) => c.id));

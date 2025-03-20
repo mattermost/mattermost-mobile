@@ -56,6 +56,12 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
      * @returns {Promise<ChannelModel[]>}
      */
     handleChannel = async ({channels, prepareRecordsOnly = true}: HandleChannelArgs): Promise<ChannelModel[]> => {
+        channels?.forEach((channel) => {
+            if (channel.banner_info) {
+                console.log('####### 55555 found a channel with banner info', {channel});
+            }
+        });
+
         if (!channels?.length) {
             logWarning(
                 'An empty or undefined "channels" array has been passed to the handleChannel method',
@@ -64,21 +70,42 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
         }
 
         const uniqueRaws = getUniqueRawsBy({raws: channels, key: 'id'}) as Channel[];
+
+        uniqueRaws?.forEach((c) => {
+            if (c.banner_info) {
+                console.log('####### 666666 found a channel with banner info', {c});
+            }
+        });
+
         const keys = uniqueRaws.map((c) => c.id);
         const db: Database = this.database;
         const existing = await db.get<ChannelModel>(CHANNEL).query(
             Q.where('id', Q.oneOf(keys)),
         ).fetch();
+
+        console.log({existing});
+
         const channelMap = new Map<string, ChannelModel>(existing.map((c) => [c.id, c]));
         const createOrUpdateRawValues = uniqueRaws.reduce((res: Channel[], c) => {
             const e = channelMap.get(c.id);
             if (!e) {
                 res.push(c);
+
+                if (c.banner_info) {
+                    console.log('###### DECISION A', {name: c.display_name});
+                }
                 return res;
             }
 
             if (e.updateAt !== c.update_at || e.deleteAt !== c.delete_at || c.fake) {
+                if (c.banner_info) {
+                    console.log('###### DECISION B', {name: c.display_name});
+                }
                 res.push(c);
+            }
+
+            if (c.banner_info) {
+                console.log('###### DECISION C', {name: c.display_name});
             }
 
             return res;
