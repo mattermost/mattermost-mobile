@@ -9,7 +9,7 @@ import {General, Post} from '@constants';
 import {mockedPosts} from '@database/operator/utils/mock';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getUserById} from '@queries/servers/user';
-import {mockFileInfo} from '@test/api_mocks/file';
+import TestHelper from '@test/test_helper';
 import {toMilliseconds} from '@utils/datetime';
 
 import {
@@ -598,8 +598,8 @@ describe('post utils', () => {
         };
 
         const postFiles: FileInfo[] = [
-            mockFileInfo({id: 'fileid1'}),
-            mockFileInfo({id: 'fileid2'}),
+            TestHelper.fakeFileInfo({id: 'fileid1'}),
+            TestHelper.fakeFileInfo({id: 'fileid2'}),
         ];
 
         it('should create a scheduled post with the given scheduling info', () => {
