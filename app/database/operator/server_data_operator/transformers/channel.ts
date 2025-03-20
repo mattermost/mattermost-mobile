@@ -34,6 +34,10 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
     const record = value.record as ChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 
+    if (raw.banner_info) {
+        console.log('transforers', {raw});
+    }
+
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (channel: ChannelModel) => {
         channel._raw.id = isCreateAction ? (raw?.id ?? channel.id) : record.id;
@@ -48,6 +52,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.shared = Boolean(raw.shared);
         channel.teamId = raw.team_id;
         channel.type = raw.type;
+        channel.bannerInfo = raw.banner_info;
     };
 
     return prepareBaseRecord({

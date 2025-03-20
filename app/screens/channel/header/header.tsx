@@ -31,6 +31,7 @@ import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
 import type {HeaderRightButton} from '@components/navigation_header/header';
 import type {AvailableScreens} from '@typings/screens/navigation';
+import ChannelBanner from '@screens/channel/header/channel_banner';
 
 type ChannelProps = {
     canAddBookmarks: boolean;
@@ -266,6 +267,7 @@ const ChannelHeader = ({
                 channelId={channelId}
             />
             }
+            <ChannelBanner channelId={channelId}/>
         </>
     );
 };

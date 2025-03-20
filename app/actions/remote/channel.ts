@@ -439,6 +439,13 @@ export async function fetchAllMyChannelsForAllTeams(serverUrl: string, since: nu
         const [channels, memberships] = await Promise.all(promises);
         const categoriesPromises = [];
 
+        // LOL
+        channels.forEach((channel) => {
+            if (channel.banner_info) {
+                console.log('####### found a channel with banner info', {channel});
+            }
+        });
+
         const teamIdsSet = channels.reduce<Set<string>>((set, c) => {
             if (c.team_id) {
                 set.add(c.team_id);

@@ -43,6 +43,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
         if (member) {
             const channel = await member.channel.fetch();
             if (channel) {
+                console.log({channel});
                 if (!channel.teamId && teamId) {
                     const team = await getTeamById(database, teamId);
                     if (!team) {

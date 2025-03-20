@@ -54,6 +54,8 @@ declare class ChannelModel extends Model {
     /** type : The type of the channel ( e.g. G: group messages, D: direct messages, P: private channel and O: public channel) */
     type: ChannelType;
 
+    bannerInfo?: ChannelBannerInfo;
+
     /** members : Users belonging to this channel */
     members: Query<ChannelMembershipModel>;
 
