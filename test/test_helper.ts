@@ -7,6 +7,7 @@ import assert from 'assert';
 
 import {random} from 'lodash';
 import nock from 'nock';
+import {of as of$} from 'rxjs';
 
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
@@ -18,10 +19,11 @@ import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
+import type {Model, Query} from '@nozbe/watermelondb';
 
 const DEFAULT_LOCALE = 'en';
 
-class TestHelper {
+class TestHelperSingleton {
     basicClient: Client | null;
     basicUser: UserProfile | null;
     basicTeam: Team | null;
@@ -218,10 +220,10 @@ class TestHelper {
         };
     };
 
-    fakeChannel = (teamId: string): Channel => {
+    fakeChannel = (overwrite: Partial<Channel>): Channel => {
         return {
             name: 'channel',
-            team_id: teamId,
+            team_id: this.generateId(),
 
             // @to-do: Make tests more detriministic;
             // https://jestjs.io/docs/snapshot-testing#2-tests-should-be-deterministic
@@ -241,12 +243,13 @@ class TestHelper {
             create_at: 1507840900004,
             update_at: 1507840900004,
             id: '',
+            ...overwrite,
         };
     };
 
     fakeChannelWithId = (teamId: string): Channel => {
         return {
-            ...this.fakeChannel(teamId),
+            ...this.fakeChannel({team_id: teamId}),
             id: this.generateId(),
         };
     };
@@ -264,11 +267,11 @@ class TestHelper {
         };
     };
 
-    fakeChannelMember = (userId: string, channelId: string): ChannelMembership => {
+    fakeChannelMember = (overwrite: Partial<ChannelMembership>): ChannelMembership => {
         return {
-            id: channelId,
-            user_id: userId,
-            channel_id: channelId,
+            id: this.generateId(),
+            user_id: this.generateId(),
+            channel_id: this.generateId(),
             notify_props: {},
             roles: 'system_user',
             msg_count: 0,
@@ -277,13 +280,15 @@ class TestHelper {
             scheme_admin: false,
             last_viewed_at: 0,
             last_update_at: 0,
+            ...overwrite,
         };
     };
 
-    fakeMyChannel = (userId: string, channelId: string): ChannelMembership => {
+    fakeMyChannel = (overwrite: Partial<ChannelMembership>): ChannelMembership => {
         return {
-            id: channelId,
-            channel_id: channelId,
+            id: this.generateId(),
+            user_id: this.generateId(),
+            channel_id: this.generateId(),
             last_post_at: 0,
             last_viewed_at: 0,
             manually_unread: false,
@@ -291,15 +296,15 @@ class TestHelper {
             msg_count: 0,
             is_unread: false,
             roles: '',
-            user_id: userId,
             notify_props: {},
             last_update_at: 0,
+            ...overwrite,
         };
     };
 
     fakeMyChannelSettings = (userId: string, channelId: string): ChannelMembership => {
         return {
-            ...this.fakeMyChannel(userId, channelId),
+            ...this.fakeMyChannel({user_id: userId, channel_id: channelId}),
             notify_props: {
                 desktop: 'default',
                 email: 'default',
@@ -314,12 +319,12 @@ class TestHelper {
         return 'success' + this.generateId() + '@simulator.amazonses.com';
     };
 
-    fakePost = (channelId: string, userId?: string): Post => {
+    fakePost = (overwrite: Partial<Post>): Post => {
         const time = Date.now();
 
         return {
             id: this.generateId(),
-            channel_id: channelId,
+            channel_id: this.generateId(),
             create_at: time,
             update_at: time,
             message: `Unit Test ${this.generateId()}`,
@@ -334,21 +339,40 @@ class TestHelper {
             props: {},
             reply_count: 0,
             root_id: '',
-            user_id: userId || this.generateId(),
+            user_id: this.generateId(),
+            ...overwrite,
         };
     };
 
     fakePostWithId = (channelId: string) => {
         return {
-            ...this.fakePost(channelId),
-            id: this.generateId(),
-            create_at: 1507840900004,
-            update_at: 1507840900004,
-            delete_at: 0,
+            ...this.fakePost({
+                channel_id: channelId,
+                id: this.generateId(),
+                create_at: 1507840900004,
+                update_at: 1507840900004,
+                delete_at: 0,
+            }),
         };
     };
 
-    fakeTeam = (): Team => {
+    fakeThread = (overwrite: Partial<Thread>): Thread => {
+        const id = overwrite.id ?? this.generateId();
+        return {
+            id,
+            delete_at: 0,
+            participants: [],
+            post: this.fakePost({id}),
+            last_reply_at: 0,
+            last_viewed_at: 0,
+            reply_count: 0,
+            unread_mentions: 0,
+            unread_replies: 0,
+            ...overwrite,
+        };
+    };
+
+    fakeTeam = (overwrite?: Partial<Team>): Team => {
         const name = this.generateId();
         let inviteId = this.generateId();
         if (inviteId.length > 32) {
@@ -372,6 +396,7 @@ class TestHelper {
             create_at: 0,
             delete_at: 0,
             update_at: 0,
+            ...overwrite,
         };
     };
 
@@ -524,6 +549,23 @@ class TestHelper {
         };
     };
 
+    fakeFileInfo = (overwrite: Partial<FileInfo> = {}): FileInfo => {
+        return {
+            id: '1',
+            localPath: 'path/to/image1',
+            uri: '',
+            has_preview_image: true,
+            extension: 'png',
+            height: 100,
+            width: 100,
+            mime_type: 'image/png',
+            name: 'image1',
+            size: 100,
+            user_id: '1',
+            ...overwrite,
+        };
+    };
+
     mockLogin = () => {
         nock(this.basicClient?.getBaseRoute() || '').
             post('/users/login').
@@ -554,8 +596,8 @@ class TestHelper {
         this.basicCategory = this.fakeCategoryWithId(this.basicTeam.id);
         this.basicChannel = this.fakeChannelWithId(this.basicTeam.id);
         this.basicCategoryChannel = this.fakeCategoryChannelWithId(this.basicTeam.id, this.basicCategory.id, this.basicChannel.id);
-        this.basicChannelMember = this.fakeChannelMember(this.basicUser.id, this.basicChannel.id);
-        this.basicMyChannel = this.fakeMyChannel(this.basicUser.id, this.basicChannel.id);
+        this.basicChannelMember = this.fakeChannelMember({user_id: this.basicUser.id, channel_id: this.basicChannel.id});
+        this.basicMyChannel = this.fakeMyChannel({user_id: this.basicUser.id, channel_id: this.basicChannel.id});
         this.basicMyChannelSettings = this.fakeMyChannelSettings(this.basicUser.id, this.basicChannel.id);
         this.basicPost = {...this.fakePostWithId(this.basicChannel.id), create_at: 1507841118796} as Post;
         this.basicRoles = {
@@ -731,6 +773,14 @@ class TestHelper {
 
     wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
     tick = () => new Promise((r) => setImmediate(r));
+
+    mockQuery = <T extends Model>(returnValue: T | T[]) => {
+        return {
+            fetch: async () => returnValue,
+            observe: of$(returnValue),
+        } as unknown as Query<T>;
+    };
 }
 
-export default new TestHelper();
+const TestHelper = new TestHelperSingleton();
+export default TestHelper;

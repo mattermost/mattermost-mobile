@@ -1,18 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetSectionList} from '@gorhom/bottom-sheet';
-import {Image} from 'expo-image';
+import {BottomSheetFlashList} from '@gorhom/bottom-sheet';
+import {FlashList, type ListRenderItemInfo} from '@shopify/flash-list';
 import {chunk} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, SectionList, type SectionListData, StyleSheet, View} from 'react-native';
-import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
+import {View, StyleSheet} from 'react-native';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
-import FileIcon from '@components/files/file_icon';
-import TouchableEmoji from '@components/touchable_emoji';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {EMOJIS_PER_PAGE} from '@constants/emoji';
+import {EMOJI_CATEGORY_ICONS, EMOJI_ROW_MARGIN, EMOJI_SIZE, EMOJIS_PER_PAGE, EMOJIS_PER_ROW, EMOJIS_PER_ROW_TABLET} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {setEmojiCategoryBarIcons, setEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
@@ -21,58 +17,32 @@ import {fillEmoji} from '@utils/emoji/helpers';
 
 import EmojiCategoryBar from '../emoji_category_bar';
 
+import EmojiRow, {type EmojiSectionRow} from './emoji_row';
 import SectionFooter from './section_footer';
-import SectionHeader, {SECTION_HEADER_HEIGHT} from './section_header';
+import SectionHeader, {type EmojiSection} from './section_header';
 
-import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type {CustomEmojiModel} from '@database/models/server';
 
-const EMOJI_SIZE = 34;
-const EMOJIS_PER_ROW = 7;
-const EMOJIS_PER_ROW_TABLET = 9;
-const EMOJI_ROW_MARGIN = 12;
-
-const ICONS: Record<string, string> = {
-    recent: 'clock-outline',
-    'smileys-emotion': 'emoticon-happy-outline',
-    'people-body': 'account-outline',
-    'animals-nature': 'leaf-outline',
-    'food-drink': 'food-apple',
-    'travel-places': 'airplane-variant',
-    activities: 'basketball',
-    objects: 'lightbulb-outline',
-    symbols: 'heart-outline',
-    flags: 'flag-outline',
-    custom: 'emoticon-custom-outline',
-};
+type SectionListItem = EmojiSection | EmojiSectionRow;
 
 const categoryToI18n: Record<string, CategoryTranslation> = {};
-let emojiSectionsByOffset: number[] = [];
 
-const getItemLayout = sectionListGetItemLayout({
-    getItemHeight: () => EMOJI_SIZE + EMOJI_ROW_MARGIN,
-    getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
-    sectionOffsetsCallback: (offsetsById) => {
-        emojiSectionsByOffset = offsetsById;
-    },
+const emptyEmoji: EmojiAlias = {
+    name: '',
+    short_name: '',
+    aliases: [],
+};
+
+const keyExtractor = (item: SectionListItem) => {
+    return (item.type === 'section' ? `${item.key}` : `${item.sectionIndex}-${item.index}-${item.category}`);
+};
+
+const getItemType = (item: SectionListItem) => item.type;
+
+const styles = StyleSheet.create({
+    container: {flex: 1, paddingBottom: 20},
+    containerStyle: {paddingBottom: 50},
 });
-
-const styles = StyleSheet.create(({
-    flex: {flex: 1},
-    contentContainerStyle: {paddingBottom: 50},
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: EMOJI_ROW_MARGIN,
-    },
-    emoji: {
-        height: EMOJI_SIZE,
-        width: EMOJI_SIZE,
-    },
-    imageEmoji: {
-        width: 28,
-        height: 28,
-    },
-}));
 
 type Props = {
     customEmojis: CustomEmojiModel[];
@@ -83,158 +53,152 @@ type Props = {
     recentEmojis: string[];
 }
 
-type ImageEmojiProps = {
-    onEmojiPress: (emoji: string) => void;
-    file?: ExtractedFileInfo;
-    imageUrl?: string;
-    path: string;
-}
-
 CategoryNames.forEach((name: string) => {
     if (CategoryTranslations.has(name) && CategoryMessage.has(name)) {
         categoryToI18n[name] = {
             id: CategoryTranslations.get(name)!,
             defaultMessage: CategoryMessage.get(name)!,
-            icon: ICONS[name],
+            icon: EMOJI_CATEGORY_ICONS[name],
         };
     }
 });
 
-const emptyEmoji: EmojiAlias = {
-    name: '',
-    short_name: '',
-    aliases: [],
-};
-
-const ImageEmoji = ({file, imageUrl, onEmojiPress, path}: ImageEmojiProps) => {
-    const onPress = useCallback(() => {
-        onEmojiPress('');
-    }, [onEmojiPress]);
-
-    return (
-        <View style={styles.row}>
-            <View style={styles.emoji}>
-                <TouchableWithFeedback onPress={onPress}>
-                    <>
-                        {Boolean(file) &&
-                        <FileIcon
-                            file={file}
-                            iconSize={30}
-                        />
-                        }
-                        {Boolean(imageUrl) &&
-                        <Image
-                            source={{uri: path}}
-                            style={styles.imageEmoji}
-                        />
-                        }
-                    </>
-                </TouchableWithFeedback>
-            </View>
-        </View>
-    );
-};
-
-const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress, recentEmojis}: Props) => {
+export default function EmojiSectionList({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress, recentEmojis}: Props) {
+    const [customEmojiPage, setCustomEmojiPage] = useState(() => Math.ceil(customEmojis.length / EMOJIS_PER_PAGE));
+    const [fetchingCustomEmojis, setFetchingCustomEmojis] = useState(false);
+    const [loadedAllCustomEmojis, setLoadedAllCustomEmojis] = useState(false);
+    const scrollingToIndex = useRef(false);
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const {currentIndex, selectedIndex} = useEmojiCategoryBar();
-    const list = useRef<SectionList<EmojiSection>>(null);
-    const categoryIndex = useRef(currentIndex);
-    const [customEmojiPage, setCustomEmojiPage] = useState(0);
-    const [fetchingCustomEmojis, setFetchingCustomEmojis] = useState(false);
-    const [loadedAllCustomEmojis, setLoadedAllCustomEmojis] = useState(false);
-    const offset = useRef(0);
-    const manualScroll = useRef(false);
 
-    const sections: EmojiSection[] = useMemo(() => {
+    const list = useRef<FlashList<SectionListItem> | null>(null);
+
+    const sections: SectionListItem[] = useMemo(() => {
         const emojisPerRow = isTablet ? EMOJIS_PER_ROW_TABLET : EMOJIS_PER_ROW;
-
         const sectionsArray = CategoryNames.map<EmojiSection>((category) => {
-            const emojiIndices = EmojiIndicesByCategory.get('default')?.get(category);
-
-            let data: EmojiAlias[][];
-            switch (category) {
-                case 'custom': {
-                    const builtInCustom = emojiIndices.map(fillEmoji.bind(null, 'custom'));
-
-                    // eslint-disable-next-line max-nested-callbacks
-                    const custom = customEmojisEnabled ? customEmojis.map((ce) => ({
-                        aliases: [],
-                        name: ce.name,
-                        short_name: '',
-                    })) : [];
-
-                    data = chunk<EmojiAlias>(builtInCustom.concat(custom), emojisPerRow);
-                    break;
-                }
-                case 'recent':
-                    // eslint-disable-next-line max-nested-callbacks
-                    data = chunk<EmojiAlias>(recentEmojis.map((emoji) => ({
-                        aliases: [],
-                        name: emoji,
-                        short_name: '',
-                    })), EMOJIS_PER_ROW);
-                    break;
-                default:
-                    data = chunk(emojiIndices.map(fillEmoji.bind(null, category)), emojisPerRow);
-                    break;
-            }
-
-            for (const d of data) {
-                if (d.length < emojisPerRow) {
-                    d.push(
-                        ...(new Array(emojisPerRow - d.length).fill(emptyEmoji)),
-                    );
-                }
-            }
-
             return {
+                type: 'section',
                 ...categoryToI18n[category],
-                data,
                 key: category,
             };
-        }).filter((s: EmojiSection) => s.data.length);
+        });
 
         if (imageUrl || file) {
             sectionsArray.unshift({
-                data: [[{
-                    aliases: [],
-                    name: imageUrl || file?.name || '',
-                    short_name: imageUrl || file?.name || '',
-                    category: 'image',
-                }]],
+                type: 'section',
+                id: 'emoji_picker.default',
                 defaultMessage: 'Default',
                 icon: 'bookmark-outline',
-                id: 'emoji_picker.default',
                 key: 'default',
-                renderItem: ({item}: ListRenderItemInfo<EmojiAlias[]>) => {
-                    return (
-                        <ImageEmoji
-                            file={file}
-                            onEmojiPress={onEmojiPress}
-                            imageUrl={imageUrl}
-                            path={item[0].name}
-                        />
-                    );
-                },
             });
         }
 
-        return sectionsArray;
-    }, [customEmojis, customEmojisEnabled, isTablet, imageUrl, file]);
+        return sectionsArray.reduce<SectionListItem[]>((acc, section, sectionIndex) => {
+            acc.push(section);
+            const emojiIndices = EmojiIndicesByCategory.get('default')?.get(section.key);
+            let emojiArray: EmojiAlias[][];
+            switch (section.key) {
+                case 'custom': {
+                    const builtInCustom = emojiIndices.map(fillEmoji.bind(null, 'custom'));
+                    const mapCustom = (ce: CustomEmojiModel) => ({
+                        aliases: [],
+                        name: ce.name,
+                        short_name: '',
+                    });
+                    const custom = customEmojisEnabled ? customEmojis.map(mapCustom) : [];
+                    emojiArray = chunk<EmojiAlias>(builtInCustom.concat(custom), emojisPerRow);
+                    break;
+                }
+                case 'recent': {
+                    const recentMap = (emoji: string) => ({
+                        aliases: [],
+                        name: emoji,
+                        short_name: '',
+                    });
+                    if (recentEmojis.length === 0) {
+                        acc.pop();
+                        return acc;
+                    }
+                    emojiArray = chunk<EmojiAlias>(recentEmojis.map(recentMap), emojisPerRow);
+                    break;
+                }
+                case 'default':
+                    acc.push({
+                        type: 'row',
+                        emojis: [{
+                            aliases: [],
+                            name: imageUrl || file?.name || '',
+                            short_name: imageUrl || file?.name || '',
+                            category: 'image',
+                        }],
+                        sectionIndex,
+                        category: section.key,
+                        index: 0,
+                    });
+                    return acc;
+                default:
+                    emojiArray = chunk(emojiIndices.map(fillEmoji.bind(null, section.key)), emojisPerRow);
+                    break;
+            }
 
-    useEffect(() => {
-        setEmojiCategoryBarIcons(sections.map((s) => ({
-            key: s.key,
-            icon: s.icon,
-        })));
-    }, [sections]);
+            for (let index = 0; index < emojiArray.length; index++) {
+                const d = emojiArray[index];
+                const emojis = d.length < emojisPerRow ? d.concat(new Array(emojisPerRow - d.length).fill(emptyEmoji)) : d;
+                acc.push({
+                    type: 'row',
+                    emojis,
+                    sectionIndex,
+                    category: section.key,
+                    index,
+                });
+            }
 
-    const onLoadMoreCustomEmojis = useCallback(async () => {
+            return acc;
+        }, []);
+    }, [customEmojis, customEmojisEnabled, file, imageUrl, isTablet, recentEmojis]);
+
+    const stickyHeaderIndices = useMemo(() =>
+       sections.
+           map((item, index) => (item.type === 'section' ? index : undefined)).
+           filter((item) => item !== undefined) as number[],
+    [sections]);
+
+    const renderItem = useCallback(({item}: ListRenderItemInfo<SectionListItem>) => {
+        if (item.type === 'section') {
+            return (
+                <SectionHeader
+                    key={item.key}
+                    section={item}
+                />
+            );
+        }
+
+        return (
+            <EmojiRow
+                key={`${item.sectionIndex}-${item.index}-${item.category}`}
+                emojis={item.emojis}
+                file={file}
+                imageUrl={imageUrl}
+                onEmojiPress={onEmojiPress}
+            />
+        );
+    }, [file, imageUrl, onEmojiPress]);
+
+    const scrollToIndex = useCallback((index: number) => {
+        scrollingToIndex.current = true;
+        list.current?.scrollToIndex({animated: false, index: stickyHeaderIndices[index], viewOffset: 0});
+        setEmojiCategoryBarSection(index);
+        setTimeout(() => {
+            scrollingToIndex.current = false;
+        }, 250);
+    }, [stickyHeaderIndices]);
+
+    const loadMoreCustomEmojis = useCallback(async () => {
         if (!customEmojisEnabled || fetchingCustomEmojis || loadedAllCustomEmojis) {
             return;
         }
+
         setFetchingCustomEmojis(true);
         const {data, error} = await fetchCustomEmojis(serverUrl, customEmojiPage, EMOJIS_PER_PAGE);
         if (data?.length) {
@@ -244,107 +208,64 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmo
         }
 
         setFetchingCustomEmojis(false);
-    }, [customEmojiPage, customEmojisEnabled, loadedAllCustomEmojis, fetchingCustomEmojis]);
+    }, [customEmojisEnabled, fetchingCustomEmojis, loadedAllCustomEmojis, serverUrl, customEmojiPage]);
 
-    const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const {contentOffset} = e.nativeEvent;
-        const direction = contentOffset.y > offset.current ? 'up' : 'down';
-        offset.current = contentOffset.y;
-
-        if (manualScroll.current) {
+    const handleStickyHeaderIndexChanged = useCallback((index: number) => {
+        if (scrollingToIndex.current) {
             return;
         }
 
-        const nextIndex = contentOffset.y >= emojiSectionsByOffset[categoryIndex.current + 1] - SECTION_HEADER_HEIGHT ? categoryIndex.current + 1 : categoryIndex.current;
-        const prevIndex = Math.max(0, contentOffset.y <= emojiSectionsByOffset[categoryIndex.current] - SECTION_HEADER_HEIGHT ? categoryIndex.current - 1 : categoryIndex.current);
-        if (nextIndex > categoryIndex.current && direction === 'up') {
-            categoryIndex.current = nextIndex;
-            setEmojiCategoryBarSection(nextIndex);
-        } else if (prevIndex < categoryIndex.current && direction === 'down') {
-            categoryIndex.current = prevIndex;
-            setEmojiCategoryBarSection(prevIndex);
+        const stickyIndex = stickyHeaderIndices.indexOf(index);
+        if (stickyIndex !== -1 && currentIndex !== stickyIndex) {
+            requestAnimationFrame(() => {
+                setEmojiCategoryBarSection(stickyIndex);
+            });
         }
-    }, []);
-
-    const scrollToIndex = (index: number) => {
-        manualScroll.current = true;
-        list.current?.scrollToLocation({sectionIndex: index, itemIndex: 0, animated: false, viewOffset: 0});
-        setEmojiCategoryBarSection(index);
-        setTimeout(() => {
-            manualScroll.current = false;
-        }, 350);
-    };
-
-    const renderSectionHeader = useCallback(({section}: {section: SectionListData<EmojiAlias[], EmojiSection>}) => {
-        return (
-            <SectionHeader section={section}/>
-        );
-    }, []);
+    }, [currentIndex, stickyHeaderIndices]);
 
     const renderFooter = useMemo(() => {
         return fetchingCustomEmojis ? <SectionFooter/> : null;
     }, [fetchingCustomEmojis]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<EmojiAlias[]>) => {
-        return (
-            <View style={styles.row}>
-                {item.map((emoji: EmojiAlias, index: number) => {
-                    if (!emoji.name && !emoji.short_name) {
-                        return (
-                            <View
-                                key={`empty-${index.toString()}`}
-                                style={styles.emoji}
-                            />
-                        );
-                    }
+    const List = useMemo(() => (isTablet ? FlashList : BottomSheetFlashList), [isTablet]);
 
-                    return (
-                        <TouchableEmoji
-                            key={emoji.name}
-                            name={emoji.name}
-                            onEmojiPress={onEmojiPress}
-                            category={emoji.category}
-                        />
-                    );
-                })}
-            </View>
-        );
-    }, []);
-
-    const List = useMemo(() => (isTablet ? SectionList : BottomSheetSectionList), [isTablet]);
+    useEffect(() => {
+        setEmojiCategoryBarIcons(sections.filter((s) => s.type === 'section').map((s) => ({
+            key: s.key,
+            icon: s.icon,
+        })));
+    }, [sections]);
 
     useEffect(() => {
         if (selectedIndex != null) {
             scrollToIndex(selectedIndex);
         }
+
+        // do not include scrollToIndex in dependencies
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedIndex]);
 
     return (
-        <View style={styles.flex}>
+        <View style={styles.container}>
             <List
-
-                // @ts-expect-error bottom sheet definition
-                getItemLayout={getItemLayout}
-                keyboardDismissMode='interactive'
-                keyboardShouldPersistTaps='always'
+                contentContainerStyle={styles.containerStyle}
+                data={sections}
+                estimatedItemSize={EMOJI_SIZE + EMOJI_ROW_MARGIN}
+                getItemType={getItemType}
+                keyExtractor={keyExtractor}
                 ListFooterComponent={renderFooter}
-                onEndReached={onLoadMoreCustomEmojis}
-                onEndReachedThreshold={2}
-                onScroll={onScroll}
+                onEndReachedThreshold={0.5}
+                onEndReached={loadMoreCustomEmojis}
+                onStickyHeaderIndexChanged={handleStickyHeaderIndexChanged}
+
+                //@ts-expect-error type definition for ref
                 ref={list}
                 renderItem={renderItem}
-                renderSectionHeader={renderSectionHeader}
-                sections={sections}
-                contentContainerStyle={styles.contentContainerStyle}
-                stickySectionHeadersEnabled={true}
-                showsVerticalScrollIndicator={false}
-                testID='emoji_picker.emoji_sections.section_list'
+                stickyHeaderIndices={stickyHeaderIndices}
             />
             {isTablet &&
             <EmojiCategoryBar/>
             }
         </View>
     );
-};
-
-export default EmojiSections;
+}

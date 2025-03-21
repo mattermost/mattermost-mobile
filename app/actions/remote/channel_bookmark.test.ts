@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 
@@ -54,6 +55,7 @@ describe('channel bookmarks', () => {
             configsToDelete: [],
             prepareRecordsOnly: false,
         });
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true'}}], prepareRecordsOnly: false});
         bookmarkSpy = jest.spyOn(operator, 'handleChannelBookmark');
     });
 
@@ -154,5 +156,14 @@ describe('channel bookmarks', () => {
         const result = await deleteChannelBookmark(serverUrl, channelId, bookmarkId);
         expect(result).toBeDefined();
         expect(result.bookmarks).toBeDefined();
+    });
+
+    it('should not fetch bookmarks if license is not licensed', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'false'}}], prepareRecordsOnly: false});
+        const result = await fetchChannelBookmarks(serverUrl, channelId);
+        expect(result).toBeDefined();
+        expect(result.bookmarks).toBeDefined();
+        expect(result.bookmarks?.length).toBe(0);
+        expect(mockClient.getChannelBookmarksForChannel).not.toHaveBeenCalled();
     });
 });

@@ -11,11 +11,12 @@ import {getAllServerCredentials, removeServerCredentials} from '@init/credential
 import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
 
-import {SessionManager as SessionManagerClass} from './session_manager';
+import {SessionManagerSingleton as SessionManagerClass} from './session_manager';
 
 jest.mock('@react-native-cookies/cookies', () => ({
     get: jest.fn(),
@@ -37,6 +38,7 @@ jest.mock('@init/credentials');
 jest.mock('@init/launch');
 jest.mock('@init/push_notifications');
 jest.mock('@managers/network_manager');
+jest.mock('@managers/security_manager');
 jest.mock('@managers/websocket_manager');
 jest.mock('@queries/app/servers');
 jest.mock('@queries/servers/user');
@@ -107,6 +109,7 @@ describe('SessionManager', () => {
             expect(PushNotifications.removeServerNotifications).toHaveBeenCalledWith(mockServerUrl);
             expect(NetworkManager.invalidateClient).toHaveBeenCalledWith(mockServerUrl);
             expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(mockServerUrl);
+            expect(SecurityManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
         });
 
         it('should handle session expiration', async () => {

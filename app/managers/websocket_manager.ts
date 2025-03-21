@@ -23,7 +23,7 @@ import {logError} from '@utils/log';
 const WAIT_TO_CLOSE = toMilliseconds({seconds: 15});
 const WAIT_UNTIL_NEXT = toMilliseconds({seconds: 5});
 
-class WebsocketManager {
+class WebsocketManagerSingleton {
     private connectedSubjects: {[serverUrl: string]: BehaviorSubject<WebsocketConnectedState>} = {};
 
     private clients: Record<string, WebSocketClient> = {};
@@ -292,4 +292,5 @@ class WebsocketManager {
     };
 }
 
-export default new WebsocketManager();
+const WebsocketManager = new WebsocketManagerSingleton();
+export default WebsocketManager;

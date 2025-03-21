@@ -8,7 +8,9 @@ import {of as of$} from 'rxjs';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
+import TestHelper from '@test/test_helper';
 import {hasPermission} from '@utils/role';
 
 import {prepareChannels,
@@ -62,6 +64,8 @@ import {prepareChannels,
     queryChannelMembers,
     queryChannelsForAutocomplete,
     observeChannelMembers,
+    observeMyChannelUnreads,
+    prepareAllMyChannels,
 } from './channel';
 import {queryRoles} from './role';
 import {getCurrentChannelId, observeCurrentChannelId, observeCurrentUserId} from './system';
@@ -788,15 +792,15 @@ describe('Channel Functions', () => {
     describe('getChannelById', () => {
         it('should return the channel if found', async () => {
             const channelId = 'channel_id';
-            const mockChannel = {id: channelId} as ChannelModel;
+            const mockedChannel = {id: channelId} as ChannelModel;
             (database.get as jest.Mock).mockReturnValue({
-                find: jest.fn().mockResolvedValue(mockChannel),
+                find: jest.fn().mockResolvedValue(mockedChannel),
             });
 
             const result = await getChannelById(database, channelId);
 
             expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.CHANNEL);
-            expect(result).toEqual(mockChannel);
+            expect(result).toEqual(mockedChannel);
         });
 
         it('should return undefined if the channel is not found', async () => {
@@ -854,17 +858,17 @@ describe('Channel Functions', () => {
         it('should return the channel if found', async () => {
             const teamId = 'team_id';
             const channelName = 'channel_name';
-            const mockChannel = {id: 'channel_id', name: channelName} as ChannelModel;
+            const mockedChannel = {id: 'channel_id', name: channelName} as ChannelModel;
             (database.get as jest.Mock).mockReturnValue({
                 query: jest.fn().mockReturnValue({
-                    fetch: jest.fn().mockResolvedValue([mockChannel]),
+                    fetch: jest.fn().mockResolvedValue([mockedChannel]),
                 }),
             });
 
             const result = await getChannelByName(database, teamId, channelName);
 
             expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.CHANNEL);
-            expect(result).toEqual(mockChannel);
+            expect(result).toEqual(mockedChannel);
         });
 
         it('should return undefined if the channel is not found', async () => {
@@ -1033,17 +1037,17 @@ describe('Channel Functions', () => {
     describe('getCurrentChannel', () => {
         it('should return the current channel if found', async () => {
             const currentChannelId = 'current_channel_id';
-            const mockChannel = {id: currentChannelId} as ChannelModel;
+            const mockedChannel = {id: currentChannelId} as ChannelModel;
             (getCurrentChannelId as jest.Mock).mockResolvedValue(currentChannelId);
             (database.get as jest.Mock).mockReturnValue({
-                find: jest.fn().mockResolvedValue(mockChannel),
+                find: jest.fn().mockResolvedValue(mockedChannel),
             });
 
             const result = await getCurrentChannel(database);
 
             expect(getCurrentChannelId).toHaveBeenCalledWith(database);
             expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.CHANNEL);
-            expect(result).toEqual(mockChannel);
+            expect(result).toEqual(mockedChannel);
         });
 
         it('should return undefined if no current channel is found', async () => {
@@ -1085,9 +1089,9 @@ describe('Channel Functions', () => {
     describe('observeCurrentChannel', () => {
         it('should observe the current channel', () => {
             const currentChannelId = 'current_channel_id';
-            const mockChannel = {id: currentChannelId, observe: jest.fn().mockReturnValue(of$({id: currentChannelId}))} as unknown as ChannelModel;
+            const mockedChannel = {id: currentChannelId, observe: jest.fn().mockReturnValue(of$({id: currentChannelId}))} as unknown as ChannelModel;
             const mockQuery = jest.fn().mockReturnValue({
-                observe: jest.fn().mockReturnValue(of$([mockChannel])),
+                observe: jest.fn().mockReturnValue(of$([mockedChannel])),
             });
             (database.get as jest.Mock).mockReturnValue({
                 query: mockQuery,
@@ -1550,5 +1554,218 @@ describe('Channel Observations', () => {
         result.subscribe((value) => {
             expect(value).toEqual(mockMembers);
         });
+    });
+});
+
+describe('observeMyChannelUnreads', () => {
+    const teamId = 'team_id';
+    const userId = 'user_id';
+    const serverUrl = 'baseHandler.test.com';
+    const waitTime = 50;
+    let database: Database;
+    let operator: ServerDataOperator;
+
+    jest.restoreAllMocks();
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = serverDatabaseAndOperator.database;
+        operator = serverDatabaseAndOperator.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.deleteServerDatabase(serverUrl);
+    });
+
+    it('should return true when there are unread channels that are not muted', async () => {
+        const subscriptionNext = jest.fn();
+        const notify_props = {mark_unread: 'all' as const};
+        const result = observeMyChannelUnreads(database, teamId);
+        result.subscribe({next: subscriptionNext});
+
+        TestHelper.wait(waitTime);
+
+        // Subscription always returns the first value
+        expect(subscriptionNext).toHaveBeenCalledWith(false);
+        subscriptionNext.mockClear();
+
+        let models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 20})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        // No change
+        expect(subscriptionNext).not.toHaveBeenCalled();
+
+        models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        expect(subscriptionNext).toHaveBeenCalledWith(true);
+        subscriptionNext.mockClear();
+
+        models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 30})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        expect(subscriptionNext).toHaveBeenCalledWith(false);
+    });
+
+    it('should return false when all unread channels are muted', async () => {
+        const subscriptionNext = jest.fn();
+        const notify_props = {mark_unread: 'mention' as const};
+        const result = observeMyChannelUnreads(database, teamId);
+        result.subscribe({next: subscriptionNext});
+
+        TestHelper.wait(waitTime);
+
+        // Subscription always returns the first value
+        expect(subscriptionNext).toHaveBeenCalledWith(false);
+        subscriptionNext.mockClear();
+
+        let models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 20})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        // No change
+        expect(subscriptionNext).not.toHaveBeenCalled();
+
+        models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        expect(subscriptionNext).not.toHaveBeenCalled();
+
+        models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 30})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        expect(subscriptionNext).not.toHaveBeenCalled();
+    });
+
+    it('missing notify props are considered unmuted', async () => {
+        const subscriptionNext = jest.fn();
+        const notify_props = {};
+        const result = observeMyChannelUnreads(database, teamId);
+        result.subscribe({next: subscriptionNext});
+
+        TestHelper.wait(waitTime);
+
+        // Subscription always returns the first value
+        expect(subscriptionNext).toHaveBeenCalledWith(false);
+        subscriptionNext.mockClear();
+
+        let models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 20})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        // No change
+        expect(subscriptionNext).not.toHaveBeenCalled();
+
+        models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        expect(subscriptionNext).toHaveBeenCalledWith(true);
+        subscriptionNext.mockClear();
+
+        models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 30})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        expect(subscriptionNext).toHaveBeenCalledWith(false);
+    });
+
+    it('should not retrigger the subscription when there are changes in other teams', async () => {
+        const subscriptionNext = jest.fn();
+        const otherTeamId = 'other_team_id';
+        const notify_props = {mark_unread: 'all' as const};
+        const result = observeMyChannelUnreads(database, teamId);
+        result.subscribe({next: subscriptionNext});
+
+        TestHelper.wait(waitTime);
+
+        // Subscription always returns the first value
+        expect(subscriptionNext).toHaveBeenCalledWith(false);
+        subscriptionNext.mockClear();
+
+        let models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: otherTeamId, total_msg_count: 20})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        // No change
+        expect(subscriptionNext).not.toHaveBeenCalled();
+
+        models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: otherTeamId, total_msg_count: 30})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        expect(subscriptionNext).not.toHaveBeenCalled();
+
+        models = (await Promise.all((await prepareAllMyChannels(
+            operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: otherTeamId, total_msg_count: 30})],
+            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 30})],
+            false,
+        )))).flat();
+        await operator.batchRecords(models, 'test');
+        TestHelper.wait(waitTime);
+
+        expect(subscriptionNext).not.toHaveBeenCalled();
     });
 });

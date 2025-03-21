@@ -2,6 +2,7 @@ package com.mattermost.rnutils
 
 import android.app.Activity
 import android.net.Uri
+import android.os.Build
 import android.view.WindowManager
 import androidx.core.view.OnApplyWindowInsetsListener
 import com.facebook.react.bridge.Arguments
@@ -128,6 +129,9 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
 
     fun setSoftKeyboardToAdjustNothing() {
         val currentActivity: Activity = reactContext.currentActivity ?: return
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+            return
+        }
 
         currentActivity.runOnUiThread {
             currentActivity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
@@ -136,6 +140,9 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
 
     fun setSoftKeyboardToAdjustResize() {
         val currentActivity: Activity = reactContext.currentActivity ?: return
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+            return
+        }
 
         currentActivity.runOnUiThread {
             currentActivity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)

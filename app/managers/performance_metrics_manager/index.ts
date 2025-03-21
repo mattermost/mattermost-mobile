@@ -20,7 +20,7 @@ type MetricName = 'mobile_channel_switch' |
 const RETRY_TIME = 100;
 const MAX_RETRIES = 3;
 
-class PerformanceMetricsManager {
+class PerformanceMetricsManagerSingleton {
     private target: Target;
     private batchers: {[serverUrl: string]: Batcher} = {};
     private lastAppStateIsActive = AppState.currentState === 'active';
@@ -136,9 +136,10 @@ class PerformanceMetricsManager {
 }
 
 export const testExports = {
-    PerformanceMetricsManager,
+    PerformanceMetricsManagerSingleton,
     RETRY_TIME,
     MAX_RETRIES,
 };
 
-export default new PerformanceMetricsManager();
+const PerformanceMetricsManager = new PerformanceMetricsManagerSingleton();
+export default PerformanceMetricsManager;

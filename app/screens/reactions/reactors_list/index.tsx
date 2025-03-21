@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, PanResponder} from 'react-native';
+import React, {useCallback, useEffect, useRef} from 'react';
+import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
+import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 
 import Reactor from './reactor';
 
@@ -21,22 +22,8 @@ type Props = {
 
 const ReactorsList = ({location, reactions, type = 'FlatList'}: Props) => {
     const serverUrl = useServerUrl();
-    const [enabled, setEnabled] = useState(false);
-    const [direction, setDirection] = useState<'down' | 'up'>('down');
+    const {direction, enabled, panResponder, setEnabled} = useBottomSheetListsFix();
     const listRef = useRef<FlatList>(null);
-    const prevOffset = useRef(0);
-    const panResponder = useRef(PanResponder.create({
-        onMoveShouldSetPanResponderCapture: (evt, g) => {
-            const dir = prevOffset.current < g.dy ? 'down' : 'up';
-            prevOffset.current = g.dy;
-            if (!enabled && dir === 'up') {
-                setEnabled(true);
-            }
-            setDirection(dir);
-            return false;
-        },
-    })).current;
-
     const renderItem = useCallback(({item}: ListRenderItemInfo<ReactionModel>) => (
         <Reactor
             location={location}
@@ -65,6 +52,8 @@ const ReactorsList = ({location, reactions, type = 'FlatList'}: Props) => {
                 renderItem={renderItem}
                 overScrollMode={'always'}
                 testID='reactions.reactors_list.flat_list'
+                scrollEnabled={enabled}
+                {...panResponder.panHandlers}
             />
         );
     }

@@ -23,7 +23,7 @@ type LinkingCallbackArg = {url: string};
 
 const splitViewEmitter = new NativeEventEmitter(RNUtils);
 
-class GlobalEventHandler {
+class GlobalEventHandlerSingleton {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
 
     constructor() {
@@ -112,4 +112,5 @@ class GlobalEventHandler {
     };
 }
 
-export default new GlobalEventHandler();
+const GlobalEventHandler = new GlobalEventHandlerSingleton();
+export default GlobalEventHandler;

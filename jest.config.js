@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// eslint-disable-next-line no-process-env
+process.env.TZ = 'UTC';
+
 module.exports = {
     preset: 'jest-expo',
     verbose: true,
@@ -13,7 +16,7 @@ module.exports = {
     clearMocks: true,
     setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
     collectCoverageFrom: ['app/**/*.{js,jsx,ts,tsx}'],
-    coverageReporters: ['lcov', 'text-summary'],
+    coverageReporters: ['lcov', 'text-summary', 'json-summary'],
     testPathIgnorePatterns: ['/node_modules/'],
     coveragePathIgnorePatterns: ['/node_modules/', '/components/', '/screens/'],
     transformIgnorePatterns: [

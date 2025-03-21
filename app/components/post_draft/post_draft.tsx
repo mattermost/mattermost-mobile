@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
+import {Platform} from 'react-native';
 
 import Autocomplete from '@components/autocomplete';
 import {ExtraKeyboard} from '@context/extra_keyboard';
@@ -122,7 +123,7 @@ function PostDraft({
         <>
             {draftHandler}
             {autoComplete}
-            <ExtraKeyboard/>
+            {Platform.OS !== 'android' && <ExtraKeyboard/>}
         </>
     );
 }

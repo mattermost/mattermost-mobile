@@ -8,6 +8,7 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import {Preferences} from '@constants';
 import {CustomThemeProvider} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 
 import ButtonComponentLibrary from './button.cl';
@@ -111,7 +112,10 @@ const ComponentLibrary = ({componentId}: Props) => {
 
     const SelectedComponent = componentMap[selectedComponent];
     return (
-        <ScrollView style={{margin: 10}}>
+        <ScrollView
+            style={{margin: 10}}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+        >
             <AutocompleteSelector
                 testID='selectedComponent'
                 label='Component'
