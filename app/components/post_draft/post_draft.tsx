@@ -52,7 +52,7 @@ function PostDraft({
     const [postInputTop, setPostInputTop] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
     const keyboardHeight = useKeyboardHeight();
-    const kbHeight = Platform.OS === 'ios' ? keyboardHeight : 0;
+    const kbHeight = Platform.OS === 'ios' ? keyboardHeight : 0; // useKeyboardHeight is already deducting the keyboard height on Android
     const headerHeight = useDefaultHeaderHeight();
     const serverUrl = useServerUrl();
 
