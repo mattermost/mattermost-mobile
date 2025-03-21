@@ -39,7 +39,7 @@ type Props = {
 }
 
 export function ChannelBanner({bannerInfo, license, channelType}: Props) {
-    const show = useMemo(() => showChannelBanner(channelType, license, bannerInfo), [channelType, license, bannerInfo]);
+    const shouldDisplayChannelBanner = useMemo(() => showChannelBanner(channelType, license, bannerInfo), [channelType, license, bannerInfo]);
     const theme = useTheme();
     const bannerTextColor = getContrastingSimpleColor(bannerInfo?.background_color || '');
 
@@ -57,6 +57,11 @@ export function ChannelBanner({bannerInfo, license, channelType}: Props) {
 
     const markdownTextStyle = useMemo(() => {
         const textStyle = getMarkdownTextStyles(theme);
+
+        // channel banner colors are theme independent.
+        // If we let the link color being set by the theme, it will be unreadable in some cases.
+        // So we set the link color to the banner text color explicitly. This, with the controlled
+        // background color, ensures the banner text is always readable.
         textStyle.link = {
             ...textStyle.link,
             color: bannerTextColor,
@@ -64,7 +69,7 @@ export function ChannelBanner({bannerInfo, license, channelType}: Props) {
         return textStyle;
     }, [bannerTextColor, theme]);
 
-    if (!show) {
+    if (!shouldDisplayChannelBanner) {
         return null;
     }
 

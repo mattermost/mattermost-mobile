@@ -80,7 +80,7 @@ export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
 export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
-export const GENERIC_OVERLAY = 'GeneriOverlay';
+export const GENERIC_OVERLAY = 'GenericOverlay';
 export const CHANNEL_BANNER = 'ChannelBanner';
 
 export default {

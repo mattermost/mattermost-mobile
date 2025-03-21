@@ -69,7 +69,6 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
         const existing = await db.get<ChannelModel>(CHANNEL).query(
             Q.where('id', Q.oneOf(keys)),
         ).fetch();
-
         const channelMap = new Map<string, ChannelModel>(existing.map((c) => [c.id, c]));
         const createOrUpdateRawValues = uniqueRaws.reduce((res: Channel[], c) => {
             const e = channelMap.get(c.id);
