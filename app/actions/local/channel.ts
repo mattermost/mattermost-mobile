@@ -43,7 +43,6 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
         if (member) {
             const channel = await member.channel.fetch();
             if (channel) {
-                console.log({channel});
                 if (!channel.teamId && teamId) {
                     const team = await getTeamById(database, teamId);
                     if (!team) {
@@ -264,12 +263,6 @@ const resolveAndFlattenModels = async (
 
 export async function storeAllMyChannels(serverUrl: string, channels: Channel[], memberships: ChannelMembership[], isCRTEnabled: boolean, prepareRecordsOnly = false) {
     try {
-        channels.forEach((channel) => {
-            if (channel.banner_info) {
-                console.log('####### 1111 found a channel with banner info', {channel});
-            }
-        });
-
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const cs = new Set(channels.map((c) => c.id));
         const modelPromises: Array<Promise<Model[]>> = [
