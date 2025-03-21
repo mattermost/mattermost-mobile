@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
-import {Text, View} from 'react-native';
+import React, {useCallback, useMemo} from 'react';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import Markdown from '@components/markdown';
 import {General, License, Screens} from '@constants';
@@ -11,6 +11,18 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import {getContrastingSimpleColor} from '@utils/general';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {typography} from '@utils/typography';
+import {useIntl} from 'react-intl';
+import {bottomSheetSnapPoint} from '@utils/helpers';
+import {bottomSheet} from '@screens/navigation';
+import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
+
+const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
+const TITLE_HEIGHT = 30 + 12; // typography 600 line height
+const MARGINS = 12 + 24 + 10; // (after title + after text + after content) from ./expanded_announcement_banner
+const TEXT_CONTAINER_HEIGHT = 150;
+const SNAP_POINT = TITLE_HEIGHT + BUTTON_HEIGHT + MARGINS + TEXT_CONTAINER_HEIGHT + BUTTON_HEIGHT + 10;
+
+const CLOSE_BUTTON_ID = 'channel-banner-close';
 
 const getStyleSheet = (bannerTextColor: string) => ({
     container: {
@@ -39,6 +51,7 @@ type Props = {
 }
 
 export function ChannelBanner({bannerInfo, license, channelType}: Props) {
+    const intl = useIntl();
     const shouldDisplayChannelBanner = useMemo(() => showChannelBanner(channelType, license, bannerInfo), [channelType, license, bannerInfo]);
     const theme = useTheme();
     const bannerTextColor = getContrastingSimpleColor(bannerInfo?.background_color || '');
@@ -69,27 +82,55 @@ export function ChannelBanner({bannerInfo, license, channelType}: Props) {
         return textStyle;
     }, [bannerTextColor, theme]);
 
+    const renderExpandedChannelBannerContent = useCallback(() => (
+        <ExpandedAnnouncementBanner
+            allowDismissal={true}
+            bannerText={bannerInfo?.text || ''}
+        />
+    ), [bannerInfo?.text]);
+
+    const handlePress = useCallback(() => {
+        const title = intl.formatMessage({
+            id: 'channel.banner.bottom_sheet.title',
+            defaultMessage: 'Channel Banner',
+        });
+
+        const snapPoint = bottomSheetSnapPoint(1, SNAP_POINT);
+
+        bottomSheet({
+            closeButtonId: CLOSE_BUTTON_ID,
+            title,
+            renderContent: renderExpandedChannelBannerContent,
+            snapPoints: [1, snapPoint],
+            theme,
+        });
+    }, [intl, renderExpandedChannelBannerContent, theme]);
+
     if (!shouldDisplayChannelBanner) {
         return null;
     }
 
     return (
         <View style={containerStyle}>
-            <Text
+            <TouchableOpacity
+                onPress={handlePress}
                 style={style.bannerTextContainer}
-                ellipsizeMode='tail'
-                numberOfLines={1}
             >
-                <Markdown
-                    baseTextStyle={style.baseTextStyle}
-                    blockStyles={getMarkdownBlockStyles(theme)}
-                    disableGallery={true}
-                    textStyles={markdownTextStyle}
-                    value={bannerInfo!.text}
-                    theme={theme}
-                    location={Screens.CHANNEL_BANNER}
-                />
-            </Text>
+                <Text
+                    ellipsizeMode='tail'
+                    numberOfLines={1}
+                >
+                    <Markdown
+                        baseTextStyle={style.baseTextStyle}
+                        blockStyles={getMarkdownBlockStyles(theme)}
+                        disableGallery={true}
+                        textStyles={markdownTextStyle}
+                        value={bannerInfo!.text}
+                        theme={theme}
+                        location={Screens.CHANNEL_BANNER}
+                    />
+                </Text>
+            </TouchableOpacity>
         </View>
     );
 }
