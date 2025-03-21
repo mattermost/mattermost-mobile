@@ -7,6 +7,7 @@ import {observeChannel} from '@queries/servers/channel';
 import {switchMap} from 'rxjs/operators';
 import {of as of$} from 'rxjs';
 import {ChannelBanner} from '@screens/channel/header/channel_banner/channel_banner';
+import {getLicense, observeLicense} from '@queries/servers/system';
 
 type Props = WithDatabaseArgs & {
     channelId: string;
@@ -14,10 +15,15 @@ type Props = WithDatabaseArgs & {
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
     const channel = observeChannel(database, channelId);
+    const channelType = channel.pipe(switchMap((c) => of$(c?.type)));
     const bannerInfo = channel.pipe(switchMap((c) => of$(c?.bannerInfo)));
 
+    const license = observeLicense(database);
+
     return {
+        channelType,
         bannerInfo,
+        license,
     };
 });
 
