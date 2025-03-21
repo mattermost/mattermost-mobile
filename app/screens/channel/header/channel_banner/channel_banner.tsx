@@ -19,7 +19,7 @@ import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
 const TITLE_HEIGHT = 30 + 12; // typography 600 line height
 const MARGINS = 12 + 24 + 10; // (after title + after text + after content) from ./expanded_announcement_banner
-const TEXT_CONTAINER_HEIGHT = 150;
+const TEXT_CONTAINER_HEIGHT = 500;
 const SNAP_POINT = TITLE_HEIGHT + BUTTON_HEIGHT + MARGINS + TEXT_CONTAINER_HEIGHT + BUTTON_HEIGHT + 10;
 
 const CLOSE_BUTTON_ID = 'channel-banner-close';
@@ -68,6 +68,11 @@ export function ChannelBanner({bannerInfo, license, channelType}: Props) {
         zIndex: 1,
     }), [bannerInfo?.background_color, defaultHeight, style.container]);
 
+    const expandedChannelBannerTitle = intl.formatMessage({
+        id: 'channel.banner.bottom_sheet.title',
+        defaultMessage: 'Channel Banner',
+    });
+
     const markdownTextStyle = useMemo(() => {
         const textStyle = getMarkdownTextStyles(theme);
 
@@ -84,22 +89,18 @@ export function ChannelBanner({bannerInfo, license, channelType}: Props) {
 
     const renderExpandedChannelBannerContent = useCallback(() => (
         <ExpandedAnnouncementBanner
-            allowDismissal={true}
+            allowDismissal={false}
             bannerText={bannerInfo?.text || ''}
+            headingText={expandedChannelBannerTitle}
         />
     ), [bannerInfo?.text]);
 
     const handlePress = useCallback(() => {
-        const title = intl.formatMessage({
-            id: 'channel.banner.bottom_sheet.title',
-            defaultMessage: 'Channel Banner',
-        });
-
         const snapPoint = bottomSheetSnapPoint(1, SNAP_POINT);
 
         bottomSheet({
             closeButtonId: CLOSE_BUTTON_ID,
-            title,
+            title: expandedChannelBannerTitle,
             renderContent: renderExpandedChannelBannerContent,
             snapPoints: [1, snapPoint],
             theme,
