@@ -67,6 +67,10 @@ jest.mock('expo-web-browser', () => ({
     })),
 }));
 
+jest.mock('@mattermost/react-native-turbo-log', () => ({
+    getLogPaths: jest.fn(),
+}));
+
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 
 /* eslint-disable no-console */
@@ -164,6 +168,9 @@ jest.doMock('react-native', () => {
             removeChannelNotifications: jest.fn().mockImplementation(),
             removeThreadNotifications: jest.fn().mockImplementation(),
             removeServerNotifications: jest.fn().mockImplementation(),
+
+            createZipFile: jest.fn(),
+            saveFile: jest.fn(),
 
             unlockOrientation: jest.fn(),
         },
@@ -412,6 +419,13 @@ jest.mock('react-native-haptic-feedback', () => {
     };
 });
 
+jest.mock('@utils/log', () => ({
+    logError: jest.fn(),
+    logDebug: jest.fn(),
+    logInfo: jest.fn(),
+    logWarning: jest.fn(),
+}));
+
 declare const global: {
     requestAnimationFrame: (callback: () => void) => void;
     performance: {
@@ -424,3 +438,7 @@ global.requestAnimationFrame = (callback) => {
 };
 
 global.performance.now = () => Date.now();
+
+// Silence warnings about missing EXPO_OS environment variable
+// on tests
+process.env.EXPO_OS = 'ios'; // eslint-disable-line no-process-env
