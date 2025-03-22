@@ -51,6 +51,7 @@ interface ClientConfig {
     EnableCommands: string;
     EnableCompliance: string;
     EnableConfirmNotificationsToChannel: string;
+    EnableCrossTeamSearch: 'true' | 'false';
     EnableCustomBrand: string;
     EnableCustomEmoji: string;
     EnableCustomTermsOfService: string;
@@ -121,7 +122,6 @@ interface ClientConfig {
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagPostPriority?: string;
     FeatureFlagChannelBookmarks?: string;
-    FeatureFlagExperimentalCrossTeamSearch?: string;
     FeatureFlagCustomProfileAttributes?: string;
     ForgotPasswordLink?: string;
     GfycatApiKey: string;

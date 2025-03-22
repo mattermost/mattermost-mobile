@@ -23,7 +23,7 @@ const enhance = withObservables(['teamId'], ({database, teamId}: EnhanceProps) =
             switchMap((t) => of$(t?.displayName || '')),
             distinctUntilChanged(),
         ),
-        crossTeamSearchEnabled: observeConfigBooleanValue(database, 'FeatureFlagExperimentalCrossTeamSearch'),
+        crossTeamSearchEnabled: observeConfigBooleanValue(database, 'EnableCrossTeamSearch'),
     };
 });
 

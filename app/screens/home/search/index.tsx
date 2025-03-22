@@ -16,7 +16,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         teamId: currentTeamId,
         teams: observeSortedJoinedTeams(database),
-        crossTeamSearchEnabled: observeConfigBooleanValue(database, 'FeatureFlagExperimentalCrossTeamSearch'),
+        crossTeamSearchEnabled: observeConfigBooleanValue(database, 'EnableCrossTeamSearch'),
     };
 });
 
