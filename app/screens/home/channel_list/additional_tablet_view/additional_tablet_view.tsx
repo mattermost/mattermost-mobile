@@ -6,12 +6,13 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
 import Channel from '@screens/channel';
-import GlobalDrafts from '@screens/global_drafts';
+import GlobalDraftsAndScheduledPosts from '@screens/global_drafts';
 import GlobalThreads from '@screens/global_threads';
 
 type SelectedView = {
     id: string;
     Component: any;
+    params?: unknown;
 }
 
 type Props = {
@@ -23,7 +24,7 @@ type Props = {
 const ComponentsList: Record<string, React.ComponentType<any>> = {
     [Screens.CHANNEL]: Channel,
     [Screens.GLOBAL_THREADS]: GlobalThreads,
-    [Screens.GLOBAL_DRAFTS]: GlobalDrafts,
+    [Screens.GLOBAL_DRAFTS]: GlobalDraftsAndScheduledPosts,
 };
 
 const channelScreen: SelectedView = {id: Screens.CHANNEL, Component: Channel};
@@ -34,12 +35,13 @@ const AdditionalTabletView = ({onTeam, currentChannelId, isCRTEnabled}: Props) =
     const [initiaLoad, setInitialLoad] = useState(true);
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, (id: string) => {
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, (id: string, params?: unknown) => {
             const component = ComponentsList[id];
             if (component) {
                 setSelected({
                     Component: component,
                     id,
+                    params,
                 });
             }
         });
@@ -59,7 +61,7 @@ const AdditionalTabletView = ({onTeam, currentChannelId, isCRTEnabled}: Props) =
         return null;
     }
 
-    return React.createElement(selected.Component, {componentId: selected.id, isTabletView: true});
+    return React.createElement(selected.Component, {componentId: selected.id, isTabletView: true, ...(selected.params || {})});
 };
 
 export default AdditionalTabletView;

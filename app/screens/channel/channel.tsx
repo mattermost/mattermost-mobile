@@ -9,6 +9,7 @@ import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} f
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
+import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
@@ -135,6 +136,9 @@ const Channel = ({
                             nativeID={channelId}
                         />
                     </View>
+                    <ScheduledPostIndicator
+                        channelId={channelId}
+                    />
                     <PostDraft
                         channelId={channelId}
                         testID='channel.post_draft'

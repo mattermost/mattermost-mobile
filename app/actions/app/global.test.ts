@@ -31,6 +31,7 @@ import {
     removeLastViewedThreadIdAndServer,
     storePushDisabledInServerAcknowledged,
     removePushDisabledInServerAcknowledged,
+    storeScheduledPostTutorial,
 } from './global';
 
 const serverUrl = 'server.test.com';
@@ -182,5 +183,14 @@ describe('/app/actions/app/global', () => {
 
         // @ts-expect-error testing error message
         expect(response.error.message).toBe('App database not found');
+    });
+
+    test('storeScheduledPostTutorial', async () => {
+        let records = await queryGlobalValue(Tutorial.SCHEDULED_POST)?.fetch();
+        expect(records?.[0]?.value).toBeUndefined();
+
+        await storeScheduledPostTutorial();
+        records = await queryGlobalValue(Tutorial.SCHEDULED_POST)?.fetch();
+        expect(records?.[0]?.value).toBe(true);
     });
 });
