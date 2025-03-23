@@ -7,7 +7,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
-import {observeChannel, observeChannelInfo, observeCurrentChannel} from '@queries/servers/channel';
+import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {observeFirstDraft, queryDraft} from '@queries/servers/drafts';
 import {observePermissionForChannel} from '@queries/servers/role';
@@ -27,12 +27,7 @@ type OwnProps = {
 const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
     const database = ownProps.database;
     const {rootId, channelId} = ownProps;
-    let channel;
-    if (rootId) {
-        channel = observeChannel(database, channelId);
-    } else {
-        channel = observeCurrentChannel(database);
-    }
+    const channel = observeChannel(database, channelId);
 
     const currentUserId = observeCurrentUserId(database);
     const currentUser = currentUserId.pipe(
