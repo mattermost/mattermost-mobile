@@ -29,7 +29,7 @@
     "@mattermost/rnutils": "file:./libraries/@mattermost/rnutils",
     "@msgpack/msgpack": "3.1.1",
     "@nozbe/watermelondb": "0.28.0-2",
-    "@react-native-camera-roll/camera-roll": "7.9.0",
+    "@react-native-camera-roll/camera-roll": "7.10.0",
     "@react-native-clipboard/clipboard": "1.15.0",
     "@react-native-community/cli": "15.1.3",
     "@react-native-community/cli-platform-android": "15.1.3",
