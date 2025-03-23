@@ -97,6 +97,11 @@ const GlobalScheduledPostList: React.FC<Props> = ({
         return allScheduledPosts.some((post) => post.errorCode !== '');
     }, [allScheduledPosts]);
 
+    const scheduledPostsInSequence = allScheduledPosts.filter((post) => post.errorCode === '');
+    if (isErrorInScheduledPosts) {
+        scheduledPostsInSequence.unshift(...allScheduledPosts.filter((post) => post.errorCode !== ''));
+    }
+
     const collapse = useCallback(() => {
         popTopScreen(Screens.GLOBAL_DRAFTS);
     }, []);

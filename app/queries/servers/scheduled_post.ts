@@ -19,7 +19,7 @@ export const queryScheduledPostsForTeam = (database: Database, teamId: string, i
                 ] : []),
             ),
         ),
-        Q.sortBy('update_at', Q.desc),
+        Q.sortBy('scheduled_at', Q.asc),
     );
 };
 
