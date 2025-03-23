@@ -1835,7 +1835,7 @@ PODS:
     - React-CoreModules
     - React-RCTImage
     - React-RCTText
-  - RNCClipboard (1.15.0):
+  - RNCClipboard (1.16.2):
     - React-Core
   - RNDateTimePicker (8.3.0):
     - React-Core
@@ -2622,7 +2622,7 @@ SPEC CHECKSUMS:
   ReactNativeExceptionHandler: a23922ca00122b050ae9412f960061791c232c47
   ReactNativeIncallManager: ef7b845e166f04cf8ddf433d8a23227b01cef87a
   ReactNativeNavigation: 1be1769ba07b05f5f7065294d6001e84e6c3a2a0
-  RNCClipboard: dbcf25b8f666b4685c02eeb65be981d30198e505
+  RNCClipboard: e1d17c9d093d8129ef50b39b63a17a0e8ccd0ade
   RNDateTimePicker: 29264364ea7b8cc0fb355b3843cf276a4ff78966
   RNFileViewer: 4b5d83358214347e4ab2d4ca8d5c1c90d869e251
   RNFlashList: 38687b560ba32d51c3992f26e375891f9e0bc33f
