@@ -200,6 +200,12 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.CALLS_USER_UNMUTED:
             calls.handleCallUserUnmuted(serverUrl, msg);
             break;
+        case WebsocketEvents.CALLS_USER_VIDEO_ON:
+            calls.handleCallUserVideoOn(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_VIDEO_OFF:
+            calls.handleCallUserVideoOff(serverUrl, msg);
+            break;
         case WebsocketEvents.CALLS_USER_VOICE_ON:
             calls.handleCallUserVoiceOn(msg);
             break;

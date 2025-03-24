@@ -21,6 +21,7 @@ import {
     setChannelEnabled,
     setHost,
     setRaisedHand,
+    setUserVideo,
     setRecordingState,
     setUserMuted,
     setUserVoiceOn,
@@ -58,6 +59,8 @@ import {
     handleHostMute,
     handleHostRemoved,
     handleUserDismissedNotification,
+    handleCallUserVideoOff,
+    handleCallUserVideoOn,
 } from './websocket_event_handlers';
 
 import type {
@@ -77,6 +80,7 @@ import type {
     UserReactionData,
     UserScreenOnOffData,
     UserVoiceOnOffData,
+    UserVideoOnOffData,
 } from '@mattermost/calls/lib/types';
 
 jest.mock('@actions/remote/user');
@@ -218,6 +222,24 @@ describe('websocket event handlers', () => {
                 data: {session_id: sessionId},
             } as WebSocketMessage<UserVoiceOnOffData>);
             expect(setUserVoiceOn).toHaveBeenCalledWith(channelId, sessionId, false);
+        });
+    });
+
+    describe('handleCallUserVideoOn/Off', () => {
+        it('should handle video on', () => {
+            handleCallUserVideoOn(serverUrl, {
+                broadcast: {channel_id: channelId},
+                data: {session_id: sessionId},
+            } as WebSocketMessage<UserVideoOnOffData>);
+            expect(setUserVideo).toHaveBeenCalledWith(serverUrl, channelId, sessionId, true);
+        });
+
+        it('should handle video off', () => {
+            handleCallUserVideoOff(serverUrl, {
+                broadcast: {channel_id: channelId},
+                data: {session_id: sessionId},
+            } as WebSocketMessage<UserVideoOnOffData>);
+            expect(setUserVideo).toHaveBeenCalledWith(serverUrl, channelId, sessionId, false);
         });
     });
 

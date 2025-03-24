@@ -372,6 +372,18 @@ describe('handleWebSocketEvent', () => {
         expect(calls.handleCallUserVoiceOff).toHaveBeenCalledWith(msg);
     });
 
+    it('should handle CALLS_USER_VIDEO_ON event', async () => {
+        msg.event = WebsocketEvents.CALLS_USER_VIDEO_ON;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(calls.handleCallUserVideoOn).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle CALLS_USER_VIDEO_OFF event', async () => {
+        msg.event = WebsocketEvents.CALLS_USER_VIDEO_OFF;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(calls.handleCallUserVideoOff).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
     it('should handle CALLS_CALL_START event', async () => {
         msg.event = WebsocketEvents.CALLS_CALL_START;
         await handleWebSocketEvent(serverUrl, msg);

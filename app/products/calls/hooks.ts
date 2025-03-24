@@ -8,11 +8,12 @@ import {useIntl} from 'react-intl';
 import {Alert, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
-import {initializeVoiceTrack} from '@calls/actions/calls';
+import {initializeVoiceTrack, initializeVideoTrack} from '@calls/actions/calls';
 import {
     getCallsConfig,
     getCurrentCall,
     setMicPermissionsGranted,
+    setCameraPermissionsGranted,
     useCallsState,
     useChannelsWithCalls,
     useCurrentCall,
@@ -113,27 +114,49 @@ const micPermission = Platform.select({
     default: Permissions.PERMISSIONS.ANDROID.RECORD_AUDIO,
 });
 
-export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
+const cameraPermission = Platform.select({
+    ios: Permissions.PERMISSIONS.IOS.CAMERA,
+    default: Permissions.PERMISSIONS.ANDROID.CAMERA,
+});
+
+export const usePermissionsChecker = (micPermissionsGranted: boolean, cameraPermissionsGranted: boolean) => {
     const appState = useAppState();
-    const [hasPermission, setHasPermission] = useState(micPermissionsGranted);
+    const [hasMicPermission, setHasMicPermission] = useState(micPermissionsGranted);
+    const [hasCameraPermission, setHasCameraPermission] = useState(cameraPermissionsGranted);
 
     useEffect(() => {
-        const asyncFn = async () => {
+        const micCheck = async () => {
             if (appState === 'active') {
                 const result = (await Permissions.check(micPermission)) === Permissions.RESULTS.GRANTED;
-                setHasPermission(result);
+                setHasMicPermission(result);
                 if (result) {
                     initializeVoiceTrack();
                     setMicPermissionsGranted(result);
                 }
             }
         };
+
+        const camCheck = async () => {
+            if (appState === 'active') {
+                const result = (await Permissions.check(cameraPermission)) === Permissions.RESULTS.GRANTED;
+                setHasCameraPermission(result);
+                if (result) {
+                    initializeVideoTrack();
+                    setCameraPermissionsGranted(result);
+                }
+            }
+        };
+
         if (!micPermissionsGranted) {
-            asyncFn();
+            micCheck();
+        }
+
+        if (!cameraPermissionsGranted) {
+            camCheck();
         }
     }, [appState]);
 
-    return hasPermission;
+    return [hasMicPermission, hasCameraPermission];
 };
 
 export const useCallsAdjustment = (serverUrl: string, channelId: string): number => {
@@ -143,7 +166,7 @@ export const useCallsAdjustment = (serverUrl: string, channelId: string): number
     const globalCallsState = useGlobalCallsState();
     const currentCall = useCurrentCall();
     const [numServers, setNumServers] = useState(1);
-    const micPermissionsGranted = usePermissionsChecker(globalCallsState.micPermissionsGranted);
+    const [micPermissionsGranted, cameraPermissionsGranted] = usePermissionsChecker(globalCallsState.micPermissionsGranted, globalCallsState.cameraPermissionsGranted);
     const dismissed = Boolean(callsState.calls[channelId]?.dismissed[callsState.myUserId]);
     const inCurrentCall = currentCall?.id === channelId;
     const joinCallBannerVisible = Boolean(channelsWithCalls[channelId]) && !dismissed && !inCurrentCall;
@@ -159,12 +182,14 @@ export const useCallsAdjustment = (serverUrl: string, channelId: string): number
     // Do we have calls banners?
     const currentCallBarVisible = Boolean(currentCall);
     const micPermissionsError = !micPermissionsGranted && (currentCall && !currentCall.micPermissionsErrorDismissed);
+    const camPermissionsError = !cameraPermissionsGranted && (currentCall && !currentCall.cameraPermissionsErrorDismissed);
     const callQualityAlert = Boolean(currentCall?.callQualityAlert);
     const incomingCallsShowing = incomingCalls.filter((ic) => ic.channelID !== channelId);
     const notificationBarHeight = CALL_NOTIFICATION_BAR_HEIGHT + (numServers > 1 ? 8 : 0);
     const callsIncomingAdjustment = (incomingCallsShowing.length * notificationBarHeight) + (incomingCallsShowing.length * 8);
     return (currentCallBarVisible ? CURRENT_CALL_BAR_HEIGHT + 8 : 0) +
         (micPermissionsError ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
+        (camPermissionsError ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
         (callQualityAlert ? CALL_ERROR_BAR_HEIGHT + 8 : 0) +
         (joinCallBannerVisible ? JOIN_CALL_BAR_HEIGHT + 8 : 0) +
         callsIncomingAdjustment;
