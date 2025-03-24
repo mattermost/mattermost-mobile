@@ -1906,7 +1906,7 @@ PODS:
     - Yoga
   - RNLocalize (3.4.1):
     - React-Core
-  - RNPermissions (5.2.6):
+  - RNPermissions (5.3.0):
     - React-Core
   - RNReactNativeHapticFeedback (2.3.3):
     - DoubleConversion
@@ -2629,7 +2629,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: fc491c834d09b0538618a3f328ab75fe8f90f5b4
   RNKeychain: 70f06d5879ab630bd91cced70d52c04ff6436781
   RNLocalize: 15463c4d79c7da45230064b4adcf5e9bb984667e
-  RNPermissions: d272fdb65c5f48343f1114d2e459d4ab517ac5ac
+  RNPermissions: 84ae3e68efdd6d4a5142c8969df11869bfb06fa8
   RNReactNativeHapticFeedback: 00ba111b82aa266bb3ee1aa576831c2ea9a9dfad
   RNReanimated: 17a1990801a6a324816dcc52a9a44dfb99d556b3
   RNScreens: 0e8829648c78f4168f3e96cdc2e219213cb1907c
