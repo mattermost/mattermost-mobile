@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import type {WithDatabaseArgs} from '@typings/database/database';
-import {observeChannel} from '@queries/servers/channel';
-import {switchMap} from 'rxjs/operators';
 import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
+
+import {observeChannel} from '@queries/servers/channel';
+import {observeLicense} from '@queries/servers/system';
 import {ChannelBanner} from '@screens/channel/header/channel_banner/channel_banner';
-import {getLicense, observeLicense} from '@queries/servers/system';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 type Props = WithDatabaseArgs & {
     channelId: string;

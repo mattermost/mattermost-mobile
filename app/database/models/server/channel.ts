@@ -5,6 +5,7 @@ import {children, field, immutableRelation, json} from '@nozbe/watermelondb/deco
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import {safeParseJSON} from '@utils/helpers';
 
 import type {Query, Relation} from '@nozbe/watermelondb';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
@@ -18,7 +19,6 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
-import {safeParseJSON} from '@utils/helpers';
 
 const {
     CATEGORY_CHANNEL,

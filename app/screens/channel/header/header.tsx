@@ -19,6 +19,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
+import ChannelBanner from '@screens/channel/header/channel_banner';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -31,7 +32,6 @@ import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
 import type {HeaderRightButton} from '@components/navigation_header/header';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import ChannelBanner from '@screens/channel/header/channel_banner';
 
 type ChannelProps = {
     canAddBookmarks: boolean;
