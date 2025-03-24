@@ -47,8 +47,20 @@ class ChannelScreen {
         postPriorityUrgentMessage: 'post_priority_picker_item.urgent',
         postPriorityRequestAck: 'post_priority_picker_item.requested_ack.toggled.false.button',
         postPriorityPersistentNotification: 'post_priority_picker_item.persistent_notifications.toggled.undefined.button',
+        scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
+        scheduleMessageTomorrowOption: 'post_priority_picker_item.scheduledPostOptionTomorrow',
+        scheduleMessageOnMondayOption: 'post_priority_picker_item.scheduledPostOptionMonday',
+        scheduledPostOptionTomorrowSelected: 'post_priority_picker_item.scheduledPostOptionTomorrow.selected',
+        scheduledPostOptionMondaySelected: 'post_priority_picker_item.scheduledPostOptionMonday.selected',
+        clickOnScheduledMessageButton: 'scheduled_post_create_button',
     };
 
+    clickOnScheduledMessageButton = element(by.id(this.testID.clickOnScheduledMessageButton));
+    scheduledPostOptionTomorrowSelected = element(by.id(this.testID.scheduledPostOptionTomorrowSelected));
+    scheduledPostOptionMondaySelected = element(by.id(this.testID.scheduledPostOptionMondaySelected));
+    scheduleMessageTomorrowOption = element(by.id(this.testID.scheduleMessageTomorrowOption));
+    scheduleMessageOnMondayOption = element(by.id(this.testID.scheduleMessageTomorrowOption));
+    scheduledPostTooltipCloseButton = element(by.id(this.testID.scheduledPostTooltipCloseButton));
     postPriorityPersistentNotification = element(by.id(this.testID.postPriorityPersistentNotification));
     postPriorityUrgentMessage = element(by.id(this.testID.postPriorityUrgentMessage));
     postPriorityRequestAck = element(by.id(this.testID.postPriorityRequestAck));
@@ -132,7 +144,12 @@ class ChannelScreen {
     open = async (categoryKey: string, channelName: string) => {
         // # Open channel screen
         await ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName).tap();
-
+        try {
+            await this.scheduledPostTooltipCloseButton.tap();
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log('Element not visible, skipping click');
+        }
         return this.toBeVisible();
     };
 
@@ -190,11 +207,24 @@ class ChannelScreen {
         await this.tapSendButton();
     };
 
+    scheduleMessage = async (message: string) => {
+        // # Post message
+        await this.postInput.tap();
+        await this.postInput.clearText();
+        await this.postInput.replaceText(message);
+        await this.longPressSendButton();
+    };
+
     tapSendButton = async () => {
         // # Tap send button
         await this.sendButton.tap();
         await expect(this.sendButton).not.toExist();
         await expect(this.sendButtonDisabled).toBeVisible();
+    };
+
+    longPressSendButton = async () => {
+        // # Long press send button
+        await this.sendButton.longPress();
     };
 
     hasPostMessage = async (postId: string, postMessage: string) => {
@@ -230,6 +260,21 @@ class ChannelScreen {
 
     applyPostPrioritySettings = async () => {
         await this.applyPostPriority.tap();
+    };
+
+    scheduleMessageForTomorrow = async () => {
+        await this.scheduleMessageTomorrowOption.tap();
+        await expect(this.scheduledPostOptionTomorrowSelected).toBeVisible();
+    };
+
+    scheduleMessageForMonday = async () => {
+        await this.scheduleMessageOnMondayOption.tap();
+        await expect(this.scheduledPostOptionTomorrowSelected).toBeVisible();
+    };
+
+    clickOnScheduledMessage = async () => {
+        await this.clickOnScheduledMessageButton.tap();
+        await expect(this.clickOnScheduledMessageButton).not.toExist();
     };
 }
 

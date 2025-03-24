@@ -170,6 +170,13 @@ jobs:
       - name: Start React Native Metro Server
         run: npm run start &
 
+      - name: Wait for Metro Server to be up
+        run: |
+          echo "Waiting for Metro Server to be up..."
+          while ! nc -z localhost 8081; do
+            sleep 1
+          done
+
       - name: Install Detox Dependencies
         run: cd detox && npm i
 
