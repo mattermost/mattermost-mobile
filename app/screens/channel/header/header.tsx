@@ -245,6 +245,8 @@ const ChannelHeader = ({
         return undefined;
     }, [memberCount, customStatus, isCustomStatusExpired]);
 
+    const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;
+
     return (
         <>
             <NavigationHeader
@@ -261,13 +263,16 @@ const ChannelHeader = ({
             <View style={contextStyle}>
                 <RoundedHeaderContext/>
             </View>
-            {isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks &&
+            {showBookmarkBar &&
             <ChannelHeaderBookmarks
                 canAddBookmarks={canAddBookmarks}
                 channelId={channelId}
             />
             }
-            <ChannelBanner channelId={channelId}/>
+            <ChannelBanner
+                channelId={channelId}
+                isTopItem={!showBookmarkBar}
+            />
         </>
     );
 };

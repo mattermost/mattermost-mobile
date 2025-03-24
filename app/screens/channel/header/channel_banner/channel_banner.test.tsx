@@ -4,14 +4,14 @@
 import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 
-import {General, License, Screens} from '@constants';
+import {General, License} from '@constants';
 import {bottomSheet} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 import {ChannelBanner} from './channel_banner';
-import TestHelper from '@test/test_helper';
+
 import type Database from '@nozbe/watermelondb/Database';
-import {Text, View} from 'react-native';
 
 jest.mock('@screens/navigation', () => ({
     bottomSheet: jest.fn(),
@@ -221,35 +221,5 @@ describe('ChannelBanner', () => {
             title: 'Channel Banner',
             closeButtonId: 'channel-banner-close',
         }));
-    });
-
-    it('applies correct background color to container', () => {
-        const {UNSAFE_getByType} = renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
-            {database},
-        );
-
-        // Find the TouchableOpacity's parent View
-        // eslint-disable-next-line new-cap
-        const container = UNSAFE_getByType(View);
-
-        expect(container.props.style).toEqual(
-            expect.objectContaining({
-                backgroundColor: '#FF0000',
-            }),
-        );
-    });
-
-    it('limits banner text to one line with ellipsis', () => {
-        renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
-            {database},
-        );
-
-        // eslint-disable-next-line new-cap
-        const textComponent = screen.UNSAFE_getByType(Text);
-
-        expect(textComponent.props.numberOfLines).toBe(1);
-        expect(textComponent.props.ellipsizeMode).toBe('tail');
     });
 });

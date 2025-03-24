@@ -18,7 +18,7 @@ import {typography} from '@utils/typography';
 
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
 const TITLE_HEIGHT = 30 + 12; // typography 600 line height
-const MARGINS = 12 + 24 + 10; // (after title + after text + after content) from ./expanded_announcement_banner
+const MARGINS = 12 + 24 + 10; // (after title + after text + after content)
 const TEXT_CONTAINER_HEIGHT = 500;
 const SNAP_POINT = TITLE_HEIGHT + BUTTON_HEIGHT + MARGINS + TEXT_CONTAINER_HEIGHT + BUTTON_HEIGHT + 10;
 
@@ -31,6 +31,10 @@ const getStyleSheet = (bannerTextColor: string) => ({
         paddingLeft: 16,
         paddingRight: 16,
         height: 40,
+    },
+    containerTopItem: {
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
     },
     baseTextStyle: {
         borderWidth: 2,
@@ -48,9 +52,10 @@ type Props = {
     channelType: ChannelType;
     bannerInfo?: ChannelBannerInfo;
     license?: ClientLicense;
+    isTopItem?: Boolean;
 }
 
-export function ChannelBanner({bannerInfo, license, channelType}: Props) {
+export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Props) {
     const intl = useIntl();
     const shouldDisplayChannelBanner = useMemo(() => showChannelBanner(channelType, license, bannerInfo), [channelType, license, bannerInfo]);
     const theme = useTheme();
@@ -112,7 +117,7 @@ export function ChannelBanner({bannerInfo, license, channelType}: Props) {
     }
 
     return (
-        <View style={containerStyle}>
+        <View style={[containerStyle, isTopItem && style.containerTopItem]}>
             <TouchableOpacity
                 onPress={handlePress}
                 style={style.bannerTextContainer}
