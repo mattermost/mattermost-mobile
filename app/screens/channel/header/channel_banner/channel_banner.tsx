@@ -2,19 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
+import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
+import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
 import Markdown from '@components/markdown';
 import {General, License, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {bottomSheet} from '@screens/navigation';
 import {getContrastingSimpleColor} from '@utils/general';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {typography} from '@utils/typography';
-import {useIntl} from 'react-intl';
-import {bottomSheetSnapPoint} from '@utils/helpers';
-import {bottomSheet} from '@screens/navigation';
-import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
 
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
 const TITLE_HEIGHT = 30 + 12; // typography 600 line height
@@ -93,7 +93,7 @@ export function ChannelBanner({bannerInfo, license, channelType}: Props) {
             bannerText={bannerInfo?.text || ''}
             headingText={expandedChannelBannerTitle}
         />
-    ), [bannerInfo?.text]);
+    ), [bannerInfo?.text, expandedChannelBannerTitle]);
 
     const handlePress = useCallback(() => {
         const snapPoint = bottomSheetSnapPoint(1, SNAP_POINT);
@@ -105,7 +105,7 @@ export function ChannelBanner({bannerInfo, license, channelType}: Props) {
             snapPoints: [1, snapPoint],
             theme,
         });
-    }, [intl, renderExpandedChannelBannerContent, theme]);
+    }, [expandedChannelBannerTitle, renderExpandedChannelBannerContent, theme]);
 
     if (!shouldDisplayChannelBanner) {
         return null;
@@ -124,11 +124,16 @@ export function ChannelBanner({bannerInfo, license, channelType}: Props) {
                     <Markdown
                         baseTextStyle={style.baseTextStyle}
                         blockStyles={getMarkdownBlockStyles(theme)}
-                        disableGallery={true}
                         textStyles={markdownTextStyle}
                         value={bannerInfo!.text}
                         theme={theme}
                         location={Screens.CHANNEL_BANNER}
+                        disableBlockQuote={true}
+                        disableCodeBlock={true}
+                        disableGallery={true}
+                        disableHeading={true}
+                        disableTables={true}
+                        disableQuotes={true}
                     />
                 </Text>
             </TouchableOpacity>
