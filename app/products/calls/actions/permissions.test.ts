@@ -4,17 +4,19 @@
 import {Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
-import {hasBluetoothPermission, hasMicrophonePermission} from './permissions';
+import {hasBluetoothPermission, hasCameraPermission, hasMicrophonePermission} from './permissions';
 
 jest.mock('react-native-permissions', () => ({
     PERMISSIONS: {
         IOS: {
             BLUETOOTH: 'ios.bluetooth',
             MICROPHONE: 'ios.microphone',
+            CAMERA: 'ios.camera',
         },
         ANDROID: {
             BLUETOOTH_CONNECT: 'android.bluetooth_connect',
             RECORD_AUDIO: 'android.record_audio',
+            CAMERA: 'android.camera',
         },
     },
     RESULTS: {
@@ -88,6 +90,35 @@ describe('Permissions', () => {
             jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.GRANTED);
             await hasMicrophonePermission();
             expect(Permissions.check).toHaveBeenCalledWith(Permissions.PERMISSIONS.ANDROID.RECORD_AUDIO);
+        });
+    });
+
+    describe('hasCameraPermission', () => {
+        it('should return true when permission is granted', async () => {
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.GRANTED);
+            const result = await hasCameraPermission();
+            expect(result).toBe(true);
+        });
+
+        it('should request permission when denied', async () => {
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.DENIED);
+            jest.mocked(Permissions.request).mockResolvedValue(Permissions.RESULTS.GRANTED);
+            const result = await hasCameraPermission();
+            expect(result).toBe(true);
+            expect(Permissions.request).toHaveBeenCalled();
+        });
+
+        it('should return false when blocked', async () => {
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.BLOCKED);
+            const result = await hasCameraPermission();
+            expect(result).toBe(false);
+        });
+
+        it('should handle Android permissions', async () => {
+            Platform.select = jest.fn((options: Record<string, unknown>) => options.default);
+            jest.mocked(Permissions.check).mockResolvedValue(Permissions.RESULTS.GRANTED);
+            await hasCameraPermission();
+            expect(Permissions.check).toHaveBeenCalledWith(Permissions.PERMISSIONS.ANDROID.CAMERA);
         });
     });
 });

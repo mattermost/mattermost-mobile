@@ -14,11 +14,13 @@ import type UserModel from '@typings/database/models/servers/user';
 
 export type GlobalCallsState = {
     micPermissionsGranted: boolean;
+    cameraPermissionsGranted: boolean;
     joiningChannelId: string | null;
 }
 
 export const DefaultGlobalCallsState: GlobalCallsState = {
     micPermissionsGranted: false,
+    cameraPermissionsGranted: false,
     joiningChannelId: null,
 };
 
@@ -101,10 +103,13 @@ export type CurrentCall = Call & {
     myUserId: string;
     mySessionId: string;
     screenShareURL: string;
+    localVideoURL: string;
+    remoteVideoURL: string;
     speakerphoneOn: boolean;
     audioDeviceInfo: AudioDeviceInfo;
     voiceOn: Dictionary<boolean>;
     micPermissionsErrorDismissed: boolean;
+    cameraPermissionsErrorDismissed: boolean;
     reactionStream: ReactionStreamEmoji[];
     callQualityAlert: boolean;
     callQualityAlertDismissed: number;
@@ -118,10 +123,13 @@ export const DefaultCurrentCall: CurrentCall = {
     myUserId: '',
     mySessionId: '',
     screenShareURL: '',
+    localVideoURL: '',
+    remoteVideoURL: '',
     speakerphoneOn: false,
     audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
     voiceOn: {},
     micPermissionsErrorDismissed: false,
+    cameraPermissionsErrorDismissed: false,
     reactionStream: [],
     callQualityAlert: false,
     callQualityAlertDismissed: 0,
@@ -132,6 +140,7 @@ export type CallSession = {
     sessionId: string;
     userId: string;
     muted: boolean;
+    video?: boolean;
     raisedHand: number;
     userModel?: UserModel;
     reaction?: UserReactionData;
@@ -141,12 +150,15 @@ export type ChannelsWithCalls = Dictionary<boolean>;
 
 export type CallsConnection = {
     disconnect: (err?: Error) => void;
+    stopVideo: () => void;
+    startVideo: () => void;
     mute: () => void;
     unmute: () => void;
     waitForPeerConnection: () => Promise<string>;
     raiseHand: () => void;
     unraiseHand: () => void;
     initializeVoiceTrack: () => void;
+    initializeVideoTrack: (start: boolean) => void;
     sendReaction: (emoji: EmojiData) => void;
 }
 
@@ -181,6 +193,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     TranscribeAPI: TranscribeAPI.WhisperCPP,
     GroupCallsAllowed: true, // Set to true to keep backward compatibility with older servers.
     EnableDCSignaling: false,
+    EnableVideo: false,
 };
 
 export type ApiResp = {

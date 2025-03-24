@@ -3,7 +3,7 @@
 
 import {Alert, type AlertButton, Platform} from 'react-native';
 
-import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
+import {hasMicrophonePermission, hasCameraPermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
 import {dismissIncomingCall, hostRemove} from '@calls/actions/calls';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {hostRemovedErr, userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
@@ -14,6 +14,7 @@ import {
     getCurrentCall,
     removeIncomingCall,
     setMicPermissionsGranted,
+    setCameraPermissionsGranted,
 } from '@calls/state';
 import {EndCallReturn} from '@calls/types/calls';
 import {errorAlert} from '@calls/utils';
@@ -165,6 +166,8 @@ const doJoinCall = async (
 ) => {
     const {formatMessage} = intl;
 
+    const config = getCallsConfig(serverUrl);
+
     let user;
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -177,7 +180,6 @@ const doJoinCall = async (
 
         if (newCall) {
             const enabled = getCallsState(serverUrl).enabled[channelId];
-            const {DefaultEnabled} = getCallsConfig(serverUrl);
             const isAdmin = isSystemAdmin(user.roles);
 
             // if explicitly disabled, we wouldn't get to this point.
@@ -191,7 +193,7 @@ const doJoinCall = async (
             //   if !explicitly enabled and defaultEnabled, everyone can start
             //   if !explicitly enabled and !defaultEnabled, system admins can start, regular users get alert
             // Note: the below is a 'badly' coded if. But it's clear, which trumps.
-            if (enabled || (!enabled && DefaultEnabled) || (!enabled && !DefaultEnabled && isAdmin)) {
+            if (enabled || (!enabled && config.DefaultEnabled) || (!enabled && !config.DefaultEnabled && isAdmin)) {
                 // continue through and start the call
             } else {
                 contactAdminAlert(intl);
@@ -207,8 +209,14 @@ const doJoinCall = async (
     recordingWillBePostedLock = true; // only unlock if/when the user stops a recording.
 
     await hasBluetoothPermission();
-    const hasPermission = await hasMicrophonePermission();
-    setMicPermissionsGranted(hasPermission);
+    const hasMicPermission = await hasMicrophonePermission();
+    setMicPermissionsGranted(hasMicPermission);
+
+    let hasCamPermission = false;
+    if (config.EnableVideo) {
+        hasCamPermission = await hasCameraPermission();
+        setCameraPermissionsGranted(hasCamPermission);
+    }
 
     if (!newCall && joinChannelIsDMorGM) {
         // we're joining an existing call, so dismiss any notifications (for all clients, too)
@@ -217,7 +225,7 @@ const doJoinCall = async (
         removeIncomingCall(serverUrl, callId, channelId);
     }
 
-    const res = await joinCall(serverUrl, channelId, user.id, hasPermission, intl, title, rootId);
+    const res = await joinCall(serverUrl, channelId, user.id, hasMicPermission, hasCamPermission, intl, title, rootId);
     if (res.error) {
         const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);

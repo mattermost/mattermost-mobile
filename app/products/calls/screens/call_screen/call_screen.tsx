@@ -21,7 +21,7 @@ import {
 import {Navigation} from 'react-native-navigation';
 import {RTCView} from 'react-native-webrtc';
 
-import {muteMyself, unmuteMyself} from '@calls/actions';
+import {muteMyself, unmuteMyself, startMyVideo, stopMyVideo} from '@calls/actions';
 import {leaveCallConfirmation, startCallRecording, stopCallRecording} from '@calls/actions/calls';
 import {
     recordingAlert,
@@ -89,9 +89,11 @@ export type Props = {
     currentCall: CurrentCall | null;
     sessionsDict: Dictionary<CallSession>;
     micPermissionsGranted: boolean;
+    cameraPermissionsGranted: boolean;
     teammateNameDisplay: string;
     fromThreadScreen?: boolean;
     displayName?: string;
+    isDM: boolean;
     isOwnDirectMessage: boolean;
     otherParticipants: boolean;
     isAdmin: boolean;
@@ -320,9 +322,11 @@ const CallScreen = ({
     currentCall,
     sessionsDict,
     micPermissionsGranted,
+    cameraPermissionsGranted,
     teammateNameDisplay,
     fromThreadScreen,
     displayName,
+    isDM,
     isOwnDirectMessage,
     otherParticipants,
     isAdmin,
@@ -333,8 +337,8 @@ const CallScreen = ({
     const {width, height} = useWindowDimensions();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
-    const {EnableRecordings, EnableTranscriptions} = useCallsConfig(serverUrl);
-    usePermissionsChecker(micPermissionsGranted);
+    const {EnableRecordings, EnableTranscriptions, EnableVideo} = useCallsConfig(serverUrl);
+    usePermissionsChecker(micPermissionsGranted, !EnableVideo || cameraPermissionsGranted);
     const incomingCalls = useIncomingCalls();
     const {hostControlsAvailable, onPress, openUserProfile} = useHostMenus();
 
@@ -369,6 +373,10 @@ const CallScreen = ({
     });
     const showCCTitle = intl.formatMessage({id: 'mobile.calls_show_cc', defaultMessage: 'Show live captions'});
     const hideCCTitle = intl.formatMessage({id: 'mobile.calls_hide_cc', defaultMessage: 'Hide live captions'});
+
+    // TODO: remove this when implementing UX (MM-63547)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const enableVideo = EnableVideo && isDM;
 
     useEffect(() => {
         const setOrientation = () => {
@@ -431,6 +439,16 @@ const CallScreen = ({
             muteMyself();
         }
     }, [mySession?.muted]);
+
+    // TODO: remove this when implementing UX (MM-63547)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const startStopVideoHandler = useCallback(() => {
+        if (mySession?.video) {
+            stopMyVideo();
+        } else {
+            startMyVideo();
+        }
+    }, [mySession?.video]);
 
     const toggleReactions = useCallback(() => {
         setShowReactions((prev) => !prev);
@@ -825,6 +843,7 @@ const CallScreen = ({
                                 {mySession.muted ? UnmuteText : MuteText}
                             </Pressable>
                         }
+
                         <View style={[style.otherButtons, isLandscape && style.otherButtonsLandscape]}>
                             <Pressable
                                 testID='leave'

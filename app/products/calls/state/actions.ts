@@ -339,6 +339,7 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
         sessionId,
         muted: true,
         raisedHand: 0,
+        video: false,
     };
     const nextCalls = {...callsState.calls, [channelId]: nextCall};
 
@@ -560,6 +561,38 @@ export const setUserMuted = (serverUrl: string, channelId: string, sessionId: st
     setCurrentCall(nextCurrentCall);
 };
 
+export const setUserVideo = (serverUrl: string, channelId: string, sessionId: string, video: boolean) => {
+    const callsState = getCallsState(serverUrl);
+    if (!callsState.calls[channelId] || !callsState.calls[channelId].sessions[sessionId]) {
+        return;
+    }
+
+    const nextUser = {...callsState.calls[channelId].sessions[sessionId], video};
+    const nextCall = {
+        ...callsState.calls[channelId],
+        sessions: {...callsState.calls[channelId].sessions},
+    };
+    nextCall.sessions[sessionId] = nextUser;
+    const nextCalls = {...callsState.calls};
+    nextCalls[channelId] = nextCall;
+    setCallsState(serverUrl, {...callsState, calls: nextCalls});
+
+    // Was it the current call? If so, update that too.
+    const currentCall = getCurrentCall();
+    if (!currentCall || currentCall.channelId !== channelId) {
+        return;
+    }
+
+    const nextCurrentCall = {
+        ...currentCall,
+        sessions: {
+            ...currentCall.sessions,
+            [sessionId]: {...currentCall.sessions[sessionId], video},
+        },
+    };
+    setCurrentCall(nextCurrentCall);
+};
+
 export const setUserVoiceOn = (channelId: string, sessionId: string, voiceOn: boolean) => {
     const currentCall = getCurrentCall();
     if (!currentCall || currentCall.channelId !== channelId) {
@@ -674,6 +707,20 @@ export const setScreenShareURL = (url: string) => {
     }
 };
 
+export const setLocalVideoURL = (url: string) => {
+    const call = getCurrentCall();
+    if (call) {
+        setCurrentCall({...call, localVideoURL: url});
+    }
+};
+
+export const setRemoteVideoURL = (url: string) => {
+    const call = getCurrentCall();
+    if (call) {
+        setCurrentCall({...call, remoteVideoURL: url});
+    }
+};
+
 export const setSpeakerPhone = (speakerphoneOn: boolean) => {
     const call = getCurrentCall();
     if (call) {
@@ -725,6 +772,29 @@ export const setMicPermissionsErrorDismissed = () => {
     const nextCurrentCall = {
         ...currentCall,
         micPermissionsErrorDismissed: true,
+    };
+    setCurrentCall(nextCurrentCall);
+};
+
+export const setCameraPermissionsGranted = (granted: boolean) => {
+    const globalState = getGlobalCallsState();
+
+    const nextGlobalState = {
+        ...globalState,
+        cameraPermissionsGranted: granted,
+    };
+    setGlobalCallsState(nextGlobalState);
+};
+
+export const setCameraPermissionsErrorDismissed = () => {
+    const currentCall = getCurrentCall();
+    if (!currentCall) {
+        return;
+    }
+
+    const nextCurrentCall = {
+        ...currentCall,
+        cameraPermissionsErrorDismissed: true,
     };
     setCurrentCall(nextCurrentCall);
 };

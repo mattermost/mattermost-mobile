@@ -28,6 +28,8 @@ import {
     setConfig,
     setPluginEnabled,
     setScreenShareURL,
+    setLocalVideoURL,
+    setRemoteVideoURL,
     setSpeakerPhone,
 } from '@calls/state';
 import {type AudioDevice, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
@@ -140,6 +142,30 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
     return {data: {call, enabled: resp.enabled}};
 };
 
+// Converts pre-0.21.0 call to 0.21.0+ call. Can be removed when we stop supporting pre-0.21.0
+// Also can be removed: all code prefaced with a "Pre v0.21.0, sessionID == userID" comment
+// Does nothing if the call is in the new format.
+const convertOldCallToNew = (call: CallState): CallState => {
+    if (call.sessions) {
+        return call;
+    }
+
+    return {
+        ...call,
+        sessions: call.users.reduce((accum, cur, curIdx) => {
+            accum.push({
+                session_id: cur,
+                user_id: cur,
+                unmuted: call.states && call.states[curIdx] ? call.states[curIdx].unmuted : false,
+                raised_hand: call.states && call.states[curIdx] ? call.states[curIdx].raised_hand : 0,
+                video: call.states && call.states[curIdx] ? call.states[curIdx].video : false,
+            });
+            return accum;
+        }, [] as SessionState[]),
+        screen_sharing_session_id: call.screen_sharing_id,
+    };
+};
+
 export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: Set<string>) => {
     // Don't cast so that we get alerted to missing types
     const convertedCall: Call = {
@@ -153,6 +179,7 @@ export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: 
                 sessionId: cur.session_id,
                 raisedHand: cur.raised_hand || 0,
                 muted: !cur.unmuted,
+                video: cur.video,
             };
             return accum;
         }, {} as Dictionary<CallSession>),
@@ -218,6 +245,7 @@ export const joinCall = async (
     channelId: string,
     userId: string,
     hasMicPermission: boolean,
+    hasCameraPermission: boolean,
     intl: IntlShape,
     title?: string,
     rootId?: string,
@@ -243,7 +271,7 @@ export const joinCall = async (
                 logDebug('calls: error on close', getFullErrorMessage(err));
                 showErrorAlertOnClose(err, intl);
             }
-        }, setScreenShareURL, hasMicPermission, title, rootId);
+        }, setScreenShareURL, setLocalVideoURL, setRemoteVideoURL, hasMicPermission, hasCameraPermission, title, rootId);
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error);
         return {error};
@@ -322,9 +350,27 @@ export const unmuteMyself = () => {
     }
 };
 
+export const startMyVideo = () => {
+    if (connection) {
+        connection.startVideo();
+    }
+};
+
+export const stopMyVideo = () => {
+    if (connection) {
+        connection.stopVideo();
+    }
+};
+
 export const initializeVoiceTrack = () => {
     if (connection) {
         connection.initializeVoiceTrack();
+    }
+};
+
+export const initializeVideoTrack = () => {
+    if (connection) {
+        connection.initializeVideoTrack(false);
     }
 };
 
