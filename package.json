@@ -63,7 +63,7 @@
     "expo-web-browser": "14.0.2",
     "fflate": "0.8.2",
     "fuse.js": "7.1.0",
-    "html-entities": "2.5.2",
+    "html-entities": "2.5.3",
     "mime-db": "1.53.0",
     "moment-timezone": "0.5.48",
     "node-html-parser": "7.0.1",
