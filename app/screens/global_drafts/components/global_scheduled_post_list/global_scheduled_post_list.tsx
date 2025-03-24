@@ -170,9 +170,9 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                 </View>
             }
             <FlatList
-                data={allScheduledPosts}
+                data={scheduledPostsInSequence}
                 keyExtractor={keyExtractor}
-                contentContainerStyle={!allScheduledPosts.length && styles.empty}
+                contentContainerStyle={!scheduledPostsInSequence.length && styles.empty}
                 maxToRenderPerBatch={10}
                 nativeID={location}
                 renderItem={renderItem}
