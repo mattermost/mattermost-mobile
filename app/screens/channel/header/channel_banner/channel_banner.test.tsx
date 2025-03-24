@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {fireEvent, render, screen} from '@testing-library/react-native';
+import {fireEvent, screen} from '@testing-library/react-native';
 
 import {General, License, Screens} from '@constants';
+import {renderWithEverything} from '@test/intl-test-helper';
 import {bottomSheet} from '@screens/navigation';
 
 import {ChannelBanner} from './channel_banner';
@@ -30,12 +31,39 @@ describe('ChannelBanner', () => {
         },
     };
 
+    const initialState = {
+        entities: {
+            general: {
+                config: {},
+                license: {
+                    IsLicensed: 'true',
+                    SkuShortName: License.SKU_SHORT_NAME.Enterprise,
+                },
+            },
+            preferences: {
+                myPreferences: {},
+            },
+            users: {
+                currentUserId: 'current-user-id',
+                profiles: {
+                    'current-user-id': {
+                        id: 'current-user-id',
+                        username: 'testuser',
+                    },
+                },
+            },
+        },
+    };
+
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
     it('renders correctly with valid props', () => {
-        render(<ChannelBanner {...defaultProps} />);
+        renderWithEverything(
+            <ChannelBanner {...defaultProps} />,
+            {state: initialState}
+        );
         
         expect(screen.getByText('Test Banner Text')).toBeTruthy();
     });
@@ -46,7 +74,10 @@ describe('ChannelBanner', () => {
             license: undefined,
         };
         
-        const {queryByText} = render(<ChannelBanner {...props} />);
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner {...props} />,
+            {state: initialState}
+        );
         
         expect(queryByText('Test Banner Text')).toBeNull();
     });
@@ -57,7 +88,10 @@ describe('ChannelBanner', () => {
             bannerInfo: undefined,
         };
         
-        const {queryByText} = render(<ChannelBanner {...props} />);
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner {...props} />,
+            {state: initialState}
+        );
         
         expect(queryByText('Test Banner Text')).toBeNull();
     });
@@ -71,7 +105,10 @@ describe('ChannelBanner', () => {
             },
         };
         
-        const {queryByText} = render(<ChannelBanner {...props} />);
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner {...props} />,
+            {state: initialState}
+        );
         
         expect(queryByText('Test Banner Text')).toBeNull();
     });
@@ -85,7 +122,10 @@ describe('ChannelBanner', () => {
             },
         };
         
-        const {queryByText} = render(<ChannelBanner {...props} />);
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner {...props} />,
+            {state: initialState}
+        );
         
         expect(queryByText('Test Banner Text')).toBeNull();
     });
@@ -99,7 +139,10 @@ describe('ChannelBanner', () => {
             },
         };
         
-        const {queryByText} = render(<ChannelBanner {...props} />);
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner {...props} />,
+            {state: initialState}
+        );
         
         expect(queryByText('Test Banner Text')).toBeNull();
     });
@@ -110,7 +153,10 @@ describe('ChannelBanner', () => {
             channelType: General.DM_CHANNEL as ChannelType,
         };
         
-        const {queryByText} = render(<ChannelBanner {...props} />);
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner {...props} />,
+            {state: initialState}
+        );
         
         expect(queryByText('Test Banner Text')).toBeNull();
     });
@@ -121,7 +167,10 @@ describe('ChannelBanner', () => {
             channelType: General.GM_CHANNEL as ChannelType,
         };
         
-        const {queryByText} = render(<ChannelBanner {...props} />);
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner {...props} />,
+            {state: initialState}
+        );
         
         expect(queryByText('Test Banner Text')).toBeNull();
     });
@@ -132,7 +181,10 @@ describe('ChannelBanner', () => {
             channelType: General.PRIVATE_CHANNEL as ChannelType,
         };
         
-        render(<ChannelBanner {...props} />);
+        renderWithEverything(
+            <ChannelBanner {...props} />,
+            {state: initialState}
+        );
         
         expect(screen.getByText('Test Banner Text')).toBeTruthy();
     });
@@ -145,13 +197,19 @@ describe('ChannelBanner', () => {
             },
         };
         
-        const {queryByText} = render(<ChannelBanner {...props} />);
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner {...props} />,
+            {state: initialState}
+        );
         
         expect(queryByText('Test Banner Text')).toBeNull();
     });
 
     it('opens bottom sheet when banner is pressed', () => {
-        render(<ChannelBanner {...defaultProps} />);
+        renderWithEverything(
+            <ChannelBanner {...defaultProps} />,
+            {state: initialState}
+        );
         
         const banner = screen.getByText('Test Banner Text');
         fireEvent.press(banner);
@@ -163,7 +221,10 @@ describe('ChannelBanner', () => {
     });
 
     it('applies correct background color to container', () => {
-        const {UNSAFE_getByType} = render(<ChannelBanner {...defaultProps} />);
+        const {UNSAFE_getByType} = renderWithEverything(
+            <ChannelBanner {...defaultProps} />,
+            {state: initialState}
+        );
         
         // Find the TouchableOpacity's parent View
         const container = UNSAFE_getByType('View');
@@ -176,7 +237,10 @@ describe('ChannelBanner', () => {
     });
 
     it('limits banner text to one line with ellipsis', () => {
-        render(<ChannelBanner {...defaultProps} />);
+        renderWithEverything(
+            <ChannelBanner {...defaultProps} />,
+            {state: initialState}
+        );
         
         const textComponent = screen.UNSAFE_getByType('Text');
         
