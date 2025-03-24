@@ -9,13 +9,13 @@ PODS:
     - ExpoModulesCore
   - EXConstants (17.0.8):
     - ExpoModulesCore
-  - Expo (52.0.39):
+  - Expo (52.0.40):
     - ExpoModulesCore
   - ExpoCrypto (14.0.2):
     - ExpoModulesCore
   - ExpoDevice (7.0.2):
     - ExpoModulesCore
-  - ExpoFileSystem (18.0.11):
+  - ExpoFileSystem (18.0.12):
     - ExpoModulesCore
   - ExpoImage (2.0.6):
     - ExpoModulesCore
@@ -2529,10 +2529,10 @@ SPEC CHECKSUMS:
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   EXApplication: 4c72f6017a14a65e338c5e74fca418f35141e819
   EXConstants: fcfc75800824ac2d5c592b5bc74130bad17b146b
-  Expo: dc113fa18a3212dfdab60fc543b052ef4299f8a9
+  Expo: 4f645fc381f88e6acacfb0dcb63b45fb9eff25b9
   ExpoCrypto: e97e864c8d7b9ce4a000bca45dddb93544a1b2b4
   ExpoDevice: 1662ecdf42a8b5b2cf60ef7cecaf5a297639dd63
-  ExpoFileSystem: 2d804c73034c0d65eb2a640e0a77627033b69edc
+  ExpoFileSystem: 42d363d3b96f9afab980dcef60d5657a4443c655
   ExpoImage: eefe750743772ec0ca1a8055f56c8653e7de21fc
   ExpoLinearGradient: 35ebd83b16f80b3add053a2fd68cc328ed927f60
   ExpoModulesCore: 15f60d00e33ca0cea27147543877ca6e70c42ef5
