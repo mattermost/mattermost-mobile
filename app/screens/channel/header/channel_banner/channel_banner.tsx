@@ -19,8 +19,10 @@ import {typography} from '@utils/typography';
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
 const TITLE_HEIGHT = 30 + 12; // typography 600 line height
 const MARGINS = 12 + 24 + 10; // (after title + after text + after content)
-const TEXT_CONTAINER_HEIGHT = 500;
-const SNAP_POINT = TITLE_HEIGHT + BUTTON_HEIGHT + MARGINS + TEXT_CONTAINER_HEIGHT + BUTTON_HEIGHT + 10;
+const SNAP_POINT = TITLE_HEIGHT + BUTTON_HEIGHT + MARGINS + BUTTON_HEIGHT + 10;
+
+const MAX_TEXT_CONTAINER_HEIGHT = 500;
+const MIN_TEXT_CONTAINER_HEIGHT = 40;
 
 const CLOSE_BUTTON_ID = 'channel-banner-close';
 
@@ -101,7 +103,10 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
     ), [bannerInfo?.text, expandedChannelBannerTitle]);
 
     const handlePress = useCallback(() => {
-        const snapPoint = bottomSheetSnapPoint(1, SNAP_POINT);
+        // set snap point based on text length, with a defined
+        // minimum and maximum height for the text container
+        const length = bannerInfo!.text!.length / 100;
+        const snapPoint = SNAP_POINT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
 
         bottomSheet({
             closeButtonId: CLOSE_BUTTON_ID,
@@ -110,7 +115,7 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
             snapPoints: [1, snapPoint],
             theme,
         });
-    }, [expandedChannelBannerTitle, renderExpandedChannelBannerContent, theme]);
+    }, [bannerInfo, expandedChannelBannerTitle, renderExpandedChannelBannerContent, theme]);
 
     if (!shouldDisplayChannelBanner) {
         return null;
