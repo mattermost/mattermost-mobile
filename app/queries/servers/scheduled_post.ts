@@ -40,6 +40,7 @@ export const observeScheduledPostCountForChannel = (
         Q.on(CHANNEL,
             Q.where('id', channelId),
         ),
+        Q.where('error_code', ''),
     );
 
     if (isCRTEnabled) {
