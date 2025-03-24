@@ -1,14 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {fireEvent, screen} from '@testing-library/react-native';
+import React from 'react';
 
 import {General, License, Screens} from '@constants';
-import {renderWithEverything} from '@test/intl-test-helper';
 import {bottomSheet} from '@screens/navigation';
+import {renderWithEverything} from '@test/intl-test-helper';
 
 import {ChannelBanner} from './channel_banner';
+import TestHelper from '@test/test_helper';
+import type Database from '@nozbe/watermelondb/Database';
+import {Text, View} from 'react-native';
 
 jest.mock('@screens/navigation', () => ({
     bottomSheet: jest.fn(),
@@ -28,32 +31,15 @@ describe('ChannelBanner', () => {
         },
         license: {
             SkuShortName: License.SKU_SHORT_NAME.Enterprise,
-        },
+        } as ClientLicense,
     };
 
-    const initialState = {
-        entities: {
-            general: {
-                config: {},
-                license: {
-                    IsLicensed: 'true',
-                    SkuShortName: License.SKU_SHORT_NAME.Enterprise,
-                },
-            },
-            preferences: {
-                myPreferences: {},
-            },
-            users: {
-                currentUserId: 'current-user-id',
-                profiles: {
-                    'current-user-id': {
-                        id: 'current-user-id',
-                        username: 'testuser',
-                    },
-                },
-            },
-        },
-    };
+    let database: Database;
+
+    beforeAll(async () => {
+        const server = await TestHelper.setupServerDatabase();
+        database = server.database;
+    });
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -61,11 +47,11 @@ describe('ChannelBanner', () => {
 
     it('renders correctly with valid props', () => {
         renderWithEverything(
-            <ChannelBanner {...defaultProps} />,
-            {state: initialState}
+            <ChannelBanner {...defaultProps}/>,
+            {database},
         );
-        
-        expect(screen.getByText('Test Banner Text')).toBeTruthy();
+
+        expect(screen.getByText('Test Banner Text')).toBeVisible();
     });
 
     it('does not render when license is missing', () => {
@@ -73,26 +59,59 @@ describe('ChannelBanner', () => {
             ...defaultProps,
             license: undefined,
         };
-        
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...props} />,
-            {state: initialState}
+            <ChannelBanner {...props}/>,
+            {database},
         );
-        
+
         expect(queryByText('Test Banner Text')).toBeNull();
     });
+
+    it('does not render when license is professional', () => {
+        const props = {
+            ...defaultProps,
+            license: {
+                SkuShortName: License.SKU_SHORT_NAME.Professional,
+            } as ClientLicense,
+        };
+
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner {...props}/>,
+            {database},
+        );
+
+        expect(queryByText('Test Banner Text')).toBeNull();
+    });
+
+    // it('does not render when license is Enterprise', () => {
+    //     // TODO: update this test when Premium SKU is added
+    //     const props = {
+    //         ...defaultProps,
+    //         license: {
+    //             SkuShortName: License.SKU_SHORT_NAME.Enterprise,
+    //         } as ClientLicense,
+    //     };
+    //
+    //     const {queryByText} = renderWithEverything(
+    //         <ChannelBanner {...props}/>,
+    //         {database},
+    //     );
+    //
+    //     expect(queryByText('Test Banner Text')).toBeNull();
+    // });
 
     it('does not render when banner info is missing', () => {
         const props = {
             ...defaultProps,
             bannerInfo: undefined,
         };
-        
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...props} />,
-            {state: initialState}
+            <ChannelBanner {...props}/>,
+            {database},
         );
-        
+
         expect(queryByText('Test Banner Text')).toBeNull();
     });
 
@@ -104,12 +123,12 @@ describe('ChannelBanner', () => {
                 enabled: false,
             },
         };
-        
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...props} />,
-            {state: initialState}
+            <ChannelBanner {...props}/>,
+            {database},
         );
-        
+
         expect(queryByText('Test Banner Text')).toBeNull();
     });
 
@@ -121,12 +140,12 @@ describe('ChannelBanner', () => {
                 text: '',
             },
         };
-        
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...props} />,
-            {state: initialState}
+            <ChannelBanner {...props}/>,
+            {database},
         );
-        
+
         expect(queryByText('Test Banner Text')).toBeNull();
     });
 
@@ -138,12 +157,12 @@ describe('ChannelBanner', () => {
                 background_color: '',
             },
         };
-        
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...props} />,
-            {state: initialState}
+            <ChannelBanner {...props}/>,
+            {database},
         );
-        
+
         expect(queryByText('Test Banner Text')).toBeNull();
     });
 
@@ -152,12 +171,12 @@ describe('ChannelBanner', () => {
             ...defaultProps,
             channelType: General.DM_CHANNEL as ChannelType,
         };
-        
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...props} />,
-            {state: initialState}
+            <ChannelBanner {...props}/>,
+            {database},
         );
-        
+
         expect(queryByText('Test Banner Text')).toBeNull();
     });
 
@@ -166,12 +185,12 @@ describe('ChannelBanner', () => {
             ...defaultProps,
             channelType: General.GM_CHANNEL as ChannelType,
         };
-        
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...props} />,
-            {state: initialState}
+            <ChannelBanner {...props}/>,
+            {database},
         );
-        
+
         expect(queryByText('Test Banner Text')).toBeNull();
     });
 
@@ -180,40 +199,24 @@ describe('ChannelBanner', () => {
             ...defaultProps,
             channelType: General.PRIVATE_CHANNEL as ChannelType,
         };
-        
-        renderWithEverything(
-            <ChannelBanner {...props} />,
-            {state: initialState}
-        );
-        
-        expect(screen.getByText('Test Banner Text')).toBeTruthy();
-    });
 
-    it('does not render with non-enterprise license', () => {
-        const props = {
-            ...defaultProps,
-            license: {
-                SkuShortName: 'professional',
-            },
-        };
-        
-        const {queryByText} = renderWithEverything(
-            <ChannelBanner {...props} />,
-            {state: initialState}
+        renderWithEverything(
+            <ChannelBanner {...props}/>,
+            {database},
         );
-        
-        expect(queryByText('Test Banner Text')).toBeNull();
+
+        expect(screen.getByText('Test Banner Text')).toBeVisible();
     });
 
     it('opens bottom sheet when banner is pressed', () => {
         renderWithEverything(
-            <ChannelBanner {...defaultProps} />,
-            {state: initialState}
+            <ChannelBanner {...defaultProps}/>,
+            {database},
         );
-        
+
         const banner = screen.getByText('Test Banner Text');
         fireEvent.press(banner);
-        
+
         expect(bottomSheet).toHaveBeenCalledWith(expect.objectContaining({
             title: 'Channel Banner',
             closeButtonId: 'channel-banner-close',
@@ -222,28 +225,30 @@ describe('ChannelBanner', () => {
 
     it('applies correct background color to container', () => {
         const {UNSAFE_getByType} = renderWithEverything(
-            <ChannelBanner {...defaultProps} />,
-            {state: initialState}
+            <ChannelBanner {...defaultProps}/>,
+            {database},
         );
-        
+
         // Find the TouchableOpacity's parent View
-        const container = UNSAFE_getByType('View');
-        
+        // eslint-disable-next-line new-cap
+        const container = UNSAFE_getByType(View);
+
         expect(container.props.style).toEqual(
             expect.objectContaining({
                 backgroundColor: '#FF0000',
-            })
+            }),
         );
     });
 
     it('limits banner text to one line with ellipsis', () => {
         renderWithEverything(
-            <ChannelBanner {...defaultProps} />,
-            {state: initialState}
+            <ChannelBanner {...defaultProps}/>,
+            {database},
         );
-        
-        const textComponent = screen.UNSAFE_getByType('Text');
-        
+
+        // eslint-disable-next-line new-cap
+        const textComponent = screen.UNSAFE_getByType(Text);
+
         expect(textComponent.props.numberOfLines).toBe(1);
         expect(textComponent.props.ellipsizeMode).toBe('tail');
     });
