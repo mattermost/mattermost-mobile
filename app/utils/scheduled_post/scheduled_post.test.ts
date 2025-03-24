@@ -4,10 +4,12 @@ import {act} from 'react';
 import {Alert} from 'react-native';
 
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
+import DatabaseManager from '@database/manager';
 import {showSnackBar} from '@utils/snack_bar';
 
-import {deleteScheduledPostConfirmation, hasScheduledPostError, isScheduledPostModel, getErrorStringFromCode} from './index';
+import {deleteScheduledPostConfirmation, hasScheduledPostError, isScheduledPostModel, getErrorStringFromCode, canPostDraftInChannelOrThread} from './index';
 
+import type {ServerDatabase} from '@typings/database/database';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {ScheduledPostErrorCode} from '@typings/utils/scheduled_post';
 import type {IntlShape} from 'react-intl';
@@ -20,6 +22,10 @@ jest.mock('@utils/snack_bar', () => ({
 
 jest.mock('@actions/remote/scheduled_post', () => ({
     deleteScheduledPost: jest.fn(),
+}));
+
+jest.mock('@database/manager', () => ({
+    getServerDatabaseAndOperator: jest.fn(),
 }));
 
 describe('deleteScheduledPostConfirmation', () => {
@@ -260,5 +266,80 @@ describe('getErrorStringFromCode', () => {
     it('should return "UNKNOWN ERROR" for unknown error code', () => {
         const result = getErrorStringFromCode(mockIntl, 'unknown');
         expect(result).toBe('UNKNOWN ERROR');
+    });
+});
+
+describe('canPostDraftInChannelOrThread', () => {
+    const intl = {
+        formatMessage: ({defaultMessage}) => defaultMessage,
+    } as IntlShape;
+    const serverUrl = 'testServer';
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementation((newServerUrl) => ({database: `db_${newServerUrl}`} as unknown as ServerDatabase));
+    });
+
+    it('should return false and show alert if root post does not exist', async () => {
+        const result = await canPostDraftInChannelOrThread({serverUrl, rootId: '123', intl});
+        expect(result).toBe(false);
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Sending post failed',
+            'Someone delete the message on which you tried to post a comment.',
+            expect.any(Array),
+            {cancelable: false},
+        );
+    });
+
+    it('should return false and show alert if channel is archived', async () => {
+        const result = await canPostDraftInChannelOrThread({serverUrl, intl, channelIsArchived: true});
+        expect(result).toBe(false);
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Sending post failed',
+            'You cannot post to an archived channel.',
+            expect.any(Array),
+            {cancelable: false},
+        );
+    });
+
+    it('should return false and show alert if channel is read-only', async () => {
+        const result = await canPostDraftInChannelOrThread({serverUrl, intl, channelIsReadOnly: true});
+        expect(result).toBe(false);
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Sending post failed',
+            'You cannot post to a read-only channel.',
+            expect.any(Array),
+            {cancelable: false},
+        );
+    });
+
+    it('should return false and show alert if channel is deactivated', async () => {
+        const result = await canPostDraftInChannelOrThread({serverUrl, intl, deactivatedChannel: true});
+        expect(result).toBe(false);
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Sending post failed',
+            'You cannot post to a deactivated channel.',
+            expect.any(Array),
+            {cancelable: false},
+        );
+    });
+
+    it('should return false and show alert if user cannot post', async () => {
+        const result = await canPostDraftInChannelOrThread({serverUrl, intl, canPost: false});
+        expect(result).toBe(false);
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Sending post failed',
+            'You do not have permission to post in this channel.',
+            expect.any(Array),
+            {cancelable: false},
+        );
+    });
+
+    it('should return true if all conditions are met', async () => {
+        const result = await canPostDraftInChannelOrThread({
+            serverUrl, intl, canPost: true, channelIsArchived: false, channelIsReadOnly: false, deactivatedChannel: false,
+        });
+        expect(result).toBe(true);
+        expect(Alert.alert).not.toHaveBeenCalled();
     });
 });
