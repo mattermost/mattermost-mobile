@@ -21,7 +21,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>2.26.1</string>
 	<key>CFBundleVersion</key>
-	<string>617</string>
+	<string>620</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-Bold.ttf</string>
