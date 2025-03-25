@@ -2,12 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {InteractionManager, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
-import Animated from 'react-native-reanimated';
+import {FlatList, InteractionManager, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {storeDraftsTutorial} from '@actions/app/global';
-import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_list/config';
 import {Screens} from '@constants';
 import {tooltipContentStyle} from '@constants/tooltip';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -49,7 +47,6 @@ const styles = StyleSheet.create({
     },
 });
 
-const AnimatedFlatList = Animated.FlatList;
 const keyExtractor = (item: DraftModel) => item.id;
 
 const GlobalDraftsList: React.FC<Props> = ({
@@ -136,11 +133,9 @@ const GlobalDraftsList: React.FC<Props> = ({
             onLayout={onLayout}
             testID='global_drafts_list'
         >
-            <AnimatedFlatList
+            <FlatList
                 data={allDrafts}
                 keyExtractor={keyExtractor}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                 contentContainerStyle={!allDrafts.length && styles.empty}
                 maxToRenderPerBatch={10}
                 nativeID={location}

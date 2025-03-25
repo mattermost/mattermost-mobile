@@ -2,13 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {View, type LayoutChangeEvent, InteractionManager, type ListRenderItemInfo, Text} from 'react-native';
-import Animated from 'react-native-reanimated';
+import {View, type LayoutChangeEvent, InteractionManager, type ListRenderItemInfo, Text, FlatList} from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {storeScheduledPostsTutorial} from '@actions/app/global';
 import CompassIcon from '@components/compass_icon';
-import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_list/config';
 import {Screens} from '@constants';
 import {tooltipContentStyle} from '@constants/tooltip';
 import {useTheme} from '@context/theme';
@@ -66,7 +64,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const AnimatedFlatList = Animated.FlatList;
 const keyExtractor = (item: ScheduledPostModel) => item.id;
 
 const GlobalScheduledPostList: React.FC<Props> = ({
@@ -167,11 +164,9 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                     <Text style={styles.errorText}>{'Error in scheduled posts'}</Text>
                 </View>
             }
-            <AnimatedFlatList
+            <FlatList
                 data={allScheduledPosts}
                 keyExtractor={keyExtractor}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                 contentContainerStyle={!allScheduledPosts.length && styles.empty}
                 maxToRenderPerBatch={10}
                 nativeID={location}

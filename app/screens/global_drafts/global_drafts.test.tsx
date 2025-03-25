@@ -46,13 +46,17 @@ describe('screens/global_drafts', () => {
             {database},
         );
 
+        await act(async () => {
+            await TestHelper.wait(200); // Wait until the badge renders
+        });
+
         expect(getByTestId('draft_tab_container')).toBeVisible();
         expect(getByTestId('draft_tab')).toBeVisible();
         expect(getByTestId('scheduled_post_tab')).toBeVisible();
     });
 
     it('should switch between tabs', async () => {
-        const {getByTestId, queryByTestId} = renderWithEverything(
+        const {getByTestId} = renderWithEverything(
             <GlobalDraftsAndScheduledPosts
                 draftsCount={1}
                 scheduledPostCount={1}
@@ -63,12 +67,22 @@ describe('screens/global_drafts', () => {
 
         const draftTab = getByTestId('draft_tab');
         const scheduledTab = getByTestId('scheduled_post_tab');
+        const tabbedContents = getByTestId('tabbed_contents');
+
+        await act(async () => {
+            fireEvent(tabbedContents, 'layout', {
+                nativeEvent: {layout: {width: 300}}, // Simulated width change
+            });
+            await TestHelper.wait(200); // Wait until the badge renders
+        });
 
         // Initially drafts list should be visible
-        expect(getByTestId('draft_list_container')).toBeVisible();
+        const draftsList = getByTestId('draft_list_container');
+        expect(draftsList.props.style[0].transform[0].translateX).toBe(0);
 
         // And scheduled posts tab should not be visible
-        expect(queryByTestId('scheduled_posts_list_container')).not.toBeVisible();
+        const scheduledPostsList = getByTestId('scheduled_posts_list_container');
+        expect(scheduledPostsList.props.style[0].transform[0].translateX).toBe(300);
 
         // Switch to scheduled posts
         act(() => {
@@ -76,10 +90,10 @@ describe('screens/global_drafts', () => {
         });
 
         // Scheduled posts list should now be visible
-        expect(getByTestId('scheduled_posts_list_container')).toBeVisible();
+        expect(scheduledPostsList.props.style[0].transform[0].translateX).toBe(0);
 
         // And draft tab not be visible
-        expect(queryByTestId('draft_list_container')).not.toBeVisible();
+        expect(draftsList.props.style[0].transform[0].translateX).toBe(-300);
 
         // Switch back to drafts
         act(() => {
@@ -87,9 +101,9 @@ describe('screens/global_drafts', () => {
         });
 
         // Drafts list should be visible again
-        expect(getByTestId('draft_list_container')).toBeVisible();
+        expect(draftsList.props.style[0].transform[0].translateX).toBe(0);
 
         // And scheduled posts tab should not be visible again
-        expect(queryByTestId('scheduled_posts_list_container')).not.toBeVisible();
+        expect(scheduledPostsList.props.style[0].transform[0].translateX).toBe(300);
     });
 });
