@@ -424,7 +424,7 @@
   "join_team.error.group_error": "Vous devez être membre d'un groupe lié pour rejoindre cette équipe.",
   "join_team.error.message": "Il y a eu une erreur en rejoignant l'équipe",
   "join_team.error.title": "Erreur lors de l'intégration dans une équipe",
-  "last_users_message.added_to_channel.type": "a été **ajouté au canal** par {actor}.",
+  "last_users_message.added_to_channel.type": "ont été **ajoutés au canal** par {actor}.",
   "last_users_message.added_to_team.type": "a été **ajouté à l'équipe** par {actor}.",
   "last_users_message.first": "{firstUser} et ",
   "last_users_message.joined_channel.type": "a **rejoint le canal**.",
