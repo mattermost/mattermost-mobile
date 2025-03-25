@@ -207,7 +207,7 @@ jobs:
           cd detox
           npm run detox:config-gen
           # npm run e2e:ios-test -- ${{ matrix.specs }}
-          npm run e2e:ios-test -- about.e2e.ts
+          DETOX_LOGLEVEL=trace npm run e2e:ios-test -- about.e2e.ts
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
