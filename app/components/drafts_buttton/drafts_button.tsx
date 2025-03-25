@@ -11,16 +11,19 @@ import {
 } from '@components/channel_item/channel_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {Events} from '@constants';
+import {Events, Screens} from '@constants';
 import {DRAFT} from '@constants/screens';
 import {HOME_PADDING} from '@constants/view';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type DraftListProps = {
+    currentChannelId: string;
+    lastChannelId?: string;
     shouldHighlightActive?: boolean;
     draftsCount: number;
     scheduledPostCount: number;
@@ -73,22 +76,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const DraftsButton: React.FC<DraftListProps> = ({
+    currentChannelId,
+    lastChannelId,
     shouldHighlightActive = false,
     draftsCount,
     scheduledPostCount,
     scheduledPostHasError,
 }) => {
+    const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getChannelItemStyleSheet(theme);
     const customStyles = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
-    const handlePress = useCallback(preventDoubleTap(() => {
-        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
-        switchToGlobalDrafts();
-    }), []);
+    const handlePress = usePreventDoubleTap(useCallback(async () => {
+        const {error} = await switchToGlobalDrafts(serverUrl);
+        if (!error) {
+            DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
+        }
+    }, [serverUrl]));
 
-    const isActive = isTablet && shouldHighlightActive;
+    const isActive = isTablet && ((shouldHighlightActive && !currentChannelId) || (!currentChannelId && lastChannelId === Screens.GLOBAL_DRAFTS));
 
     const [containerStyle, iconStyle, textStyle] = useMemo(() => {
         const container = [

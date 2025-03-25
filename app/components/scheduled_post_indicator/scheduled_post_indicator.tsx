@@ -10,6 +10,7 @@ import CompassIcon from '@components/compass_icon';
 import ScheduledPostIndicatorWithDatetime from '@components/scheduled_post_indicator_with_datetime';
 import {Events} from '@constants';
 import {DRAFT} from '@constants/screens';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -54,13 +55,16 @@ export function ScheduledPostIndicator({
     isThread,
     scheduledPostCount = 0,
 }: Props) {
+    const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const handleSeeAllScheduledPosts = useCallback(() => {
-        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
-        switchToGlobalDrafts(DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
-    }, []);
+    const handleSeeAllScheduledPosts = useCallback(async () => {
+        const {error} = await switchToGlobalDrafts(serverUrl, undefined, DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
+        if (!error) {
+            DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
+        }
+    }, [serverUrl]);
 
     let scheduledPostText: React.ReactNode;
 
