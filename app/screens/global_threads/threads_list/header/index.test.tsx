@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {render} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 import {View} from 'react-native';
+
+import {renderWithIntl} from '@test/intl-test-helper';
 
 import Header from './index';
 
@@ -20,7 +21,7 @@ describe('components/global_threads/threads_list/header', () => {
             ...baseProps,
         };
 
-        const {getByTestId} = render(
+        const {getByTestId} = renderWithIntl(
             <Header {...props}/>,
         );
 
