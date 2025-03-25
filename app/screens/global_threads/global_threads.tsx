@@ -60,7 +60,7 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
                 defaultMessage: 'All your threads',
             }),
             id: 'all',
-            hasDot: true,
+            hasDot: false,
         },
         {
             name: defineMessage({

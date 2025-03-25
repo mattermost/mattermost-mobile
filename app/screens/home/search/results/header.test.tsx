@@ -136,4 +136,23 @@ describe('Header', () => {
             expect(queryByTestId('search.filters.file_type_icon')).toBeFalsy();
         }
     });
+
+    it('should render the provided tabsComponent', () => {
+        const testId = 'tabsComponent';
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <Header
+                teamId='team1'
+                setTeamId={setTeamId}
+                onFilterChanged={onFilterChanged}
+                selectedTab={TabTypes.MESSAGES}
+                selectedFilter={FileFilters.ALL}
+                teams={teams}
+                crossTeamSearchEnabled={false}
+                tabsComponent={<View testID={testId}/>}
+            />,
+        );
+
+        expect(getByTestId(testId)).toBeTruthy();
+    });
 });

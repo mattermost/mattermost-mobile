@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import React, {useCallback, useMemo} from 'react';
+import {TouchableOpacity, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
@@ -11,19 +11,7 @@ import {typography} from '@utils/typography';
 
 import type {MessageDescriptor} from 'react-intl';
 
-const baseStyle = StyleSheet.create({
-    menuContainer: {
-        alignItems: 'center',
-        flexGrow: 1,
-        flexDirection: 'row',
-        paddingLeft: 12,
-        marginVertical: 12,
-        flex: 1,
-        overflow: 'hidden',
-    },
-});
-
-const getTabStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         menuItemContainer: {
             paddingVertical: 8,
@@ -53,12 +41,6 @@ const getTabStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export type TabDefinition<T extends string> = {
-    name: MessageDescriptor;
-    id: T;
-    hasDot?: boolean;
-}
-
 type TabProps<T extends string> = {
     name: MessageDescriptor;
     id: T;
@@ -77,7 +59,7 @@ const Tab = <T extends string>({
     testID,
 }: TabProps<T>) => {
     const theme = useTheme();
-    const styles = getTabStyleSheet(theme);
+    const styles = getStyleSheetFromTheme(theme);
     const onPress = useCallback(() => {
         handleTabChange(id);
     }, [handleTabChange, id]);
@@ -114,37 +96,4 @@ const Tab = <T extends string>({
     );
 };
 
-function useTabs<T extends string>(defaultTab: T, tabs: Array<TabDefinition<T>>, changeCallback?: (value: T) => void, testID?: string) {
-    const [tab, setTab] = useState(defaultTab);
-
-    const handleTabChange = useCallback((value: T) => {
-        setTab(value);
-        changeCallback?.(value);
-    }, [changeCallback]);
-
-    const component = useMemo(() => {
-        const tabsComponents = tabs.map(({name, id, hasDot}) => {
-            const isSelected = tab === id;
-            return (
-                <Tab
-                    key={id}
-                    name={name}
-                    id={id}
-                    hasDot={hasDot}
-                    handleTabChange={handleTabChange}
-                    isSelected={isSelected}
-                    testID={testID || id}
-                />
-            );
-        });
-        return (
-            <View style={baseStyle.menuContainer}>
-                {tabsComponents}
-            </View>
-        );
-    }, [handleTabChange, tab, tabs, testID]);
-
-    return [tab, component] as const;
-}
-
-export default useTabs;
+export default Tab;
