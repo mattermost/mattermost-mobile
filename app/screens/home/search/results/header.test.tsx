@@ -4,7 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {renderWithIntlAndTheme, fireEvent} from '@test/intl-test-helper';
+import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import {FileFilters} from '@utils/file';
 import {TabTypes} from '@utils/search';
 
