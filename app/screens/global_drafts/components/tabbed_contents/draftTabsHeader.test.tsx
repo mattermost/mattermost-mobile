@@ -6,6 +6,7 @@ import React from 'react';
 
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 import {DraftTabsHeader} from './draftTabsHeader';
 
@@ -21,8 +22,12 @@ describe('DraftTabsHeader', () => {
         jest.clearAllMocks();
     });
 
-    it('renders correctly with default props', () => {
+    it('renders correctly with default props', async () => {
         renderWithIntlAndTheme(<DraftTabsHeader {...baseProps}/>);
+
+        await act(async () => {
+            await TestHelper.wait(200); // Wait until the badge renders
+        });
 
         expect(screen.getByTestId('draft_tab_container')).toBeTruthy();
         expect(screen.getByTestId('draft_tab')).toBeTruthy();
@@ -43,7 +48,10 @@ describe('DraftTabsHeader', () => {
             />,
         );
 
-        await act(() => fireEvent.press(screen.getByTestId('draft_tab')));
+        await act(async () => {
+            await TestHelper.wait(200); // Wait until the badge renders
+            fireEvent.press(screen.getByTestId('draft_tab'));
+        });
 
         expect(baseProps.onTabChange).toHaveBeenCalledWith(DRAFT_SCREEN_TAB_DRAFTS);
     });
@@ -51,7 +59,10 @@ describe('DraftTabsHeader', () => {
     it('calls onTabChange when scheduled post tab is pressed', async () => {
         renderWithIntlAndTheme(<DraftTabsHeader {...baseProps}/>);
 
-        await act(() => fireEvent.press(screen.getByTestId('scheduled_post_tab')));
+        await act(async () => {
+            await TestHelper.wait(200); // Wait until the badge renders
+            fireEvent.press(screen.getByTestId('scheduled_post_tab'));
+        });
 
         expect(baseProps.onTabChange).toHaveBeenCalledWith(DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
     });
