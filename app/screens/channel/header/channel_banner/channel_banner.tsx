@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
+import RemoveMarkdown from '@components/remove_markdown';
 import {General, License} from '@constants';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
@@ -14,7 +15,6 @@ import {getContrastingSimpleColor} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {typography} from '@utils/typography';
-import RemoveMarkdown from '@components/remove_markdown';
 
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
 const TITLE_HEIGHT = 30 + 12; // typography 600 line height
