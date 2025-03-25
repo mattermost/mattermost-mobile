@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {act} from '@testing-library/react-hooks';
-import {fireEvent} from '@testing-library/react-native';
+import {fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import AvailableScreens from '@constants/screens';
@@ -32,8 +32,20 @@ jest.mock('@actions/remote/user', () => ({
             attr1: {
                 id: 'attr1',
                 name: 'Custom Attribute 1',
-                value: 'original value',
+                value: 'original value 1',
                 sort_order: 1,
+            },
+            attr3: {
+                id: 'attr3',
+                name: 'Custom Attribute 3',
+                value: 'original value 3',
+                sort_order: 3,
+            },
+            attr2: {
+                id: 'attr2',
+                name: 'Custom Attribute 2',
+                value: 'original value 2',
+                sort_order: 2,
             },
         },
         error: undefined,
@@ -61,7 +73,7 @@ describe('EditProfile', () => {
     });
 
     it('should update custom attribute value while preserving name and sort order', async () => {
-        const {getByTestId} = renderWithIntlAndTheme(
+        const {findAllByTestId} = renderWithIntlAndTheme(
             <EditProfile
                 componentId={AvailableScreens.EDIT_PROFILE}
                 currentUser={mockCurrentUser}
@@ -76,25 +88,26 @@ describe('EditProfile', () => {
             />,
         );
 
-        await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 0));
+        await waitFor(() => {
+            const {fetchCustomAttributes} = require('@actions/remote/user');
+            expect(fetchCustomAttributes).toHaveBeenCalledWith('http://localhost:8065', 'user1');
         });
 
-        const {fetchCustomAttributes} = require('@actions/remote/user');
-        expect(fetchCustomAttributes).toHaveBeenCalledWith('http://localhost:8065', 'user1');
-        const TEST_ID = 'edit_profile_form.customAttributes.attr1.input';
+        const customAttributeItems = await findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
+        expect(customAttributeItems.length).toBe(3);
 
-        const input = getByTestId(TEST_ID);
+        expect(customAttributeItems[0].props.value).toBe('original value 1');
+        expect(customAttributeItems[1].props.value).toBe('original value 2');
+        expect(customAttributeItems[2].props.value).toBe('original value 3');
 
         await act(async () => {
-            fireEvent.changeText(input, 'new value');
+            fireEvent.changeText(customAttributeItems[1], 'new value');
         });
 
-        const updatedCustomAttr = getByTestId(TEST_ID);
-
-        expect(updatedCustomAttr.props.value).toBe('new value');
-
-        expect(updatedCustomAttr.props.name).toBe(input.props.name);
-        expect(updatedCustomAttr.props.sort_order).toBe(input.props.sort_order);
+        const newCustomAttributeItems = await findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
+        expect(newCustomAttributeItems.length).toBe(3);
+        expect(newCustomAttributeItems[0].props.value).toBe('original value 1');
+        expect(newCustomAttributeItems[1].props.value).toBe('new value');
+        expect(newCustomAttributeItems[2].props.value).toBe('original value 3');
     });
 });
