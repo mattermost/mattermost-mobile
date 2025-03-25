@@ -168,14 +168,37 @@ jobs:
           latency: "500"
 
       - name: Start React Native Metro Server
-        run: npm run start &
-
-      - name: Wait for Metro Server to be up
         run: |
-          echo "Waiting for Metro Server to be up..."
-          while ! nc -z localhost 8081; do
-            sleep 1
+          # Start the server
+          npm run start &
+
+          echo "Waiting for Metro and Watchman to be ready..."
+
+          # Wait for Metro to respond
+          while ! curl --silent http://localhost:8081/status | grep -q "packager-status:running"; do
+            sleep 2
           done
+
+          # Wait for Watchman query to complete
+          TIMEOUT=120
+          WAIT_TIME=0
+
+          while [ $WAIT_TIME -lt $TIMEOUT ]; do
+            if watchman watch-list | grep -q "$GITHUB_WORKSPACE"; then
+              echo "Watchman is ready!"
+              break
+            fi
+            echo "Waiting for Watchman query ($WAIT_TIME/$TIMEOUT)..."
+            sleep 5
+            ((WAIT_TIME+=5))
+          done
+
+          if [ $WAIT_TIME -ge $TIMEOUT ]; then
+            echo "Watchman took too long to respond. Check logs."
+            exit 1
+          fi
+
+          echo "Proceeding to next step..."
 
       - name: Install Detox Dependencies
         run: cd detox && npm i
@@ -192,6 +215,13 @@ jobs:
         run: |
           cd detox
           npm run detox:config-gen
+          echo "*******************************************************"
+          echo "*******************************************************"
+
+          curl http://localhost:8081/status
+
+          echo "*******************************************************"
+          echo "*******************************************************"
           npm run e2e:ios-test -- ${{ matrix.specs }}
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
