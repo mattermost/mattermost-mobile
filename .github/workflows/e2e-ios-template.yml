@@ -153,9 +153,13 @@ jobs:
               -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2815314936/zip"
 
-              mkdir detox/mobile-artifacts
-              unzip -o artifact.zip -d detox/mobile-artifacts/
-              rm artifact.zip
+              unzip -o artifact.zip -d mobile-artifacts/
+              inner_zip=$(find mobile-artifacts/ -name "*.zip" | head -n 1)
+              if [ -n "$inner_zip" ]; then
+                unzip -o "$inner_zip" -d mobile-artifacts/
+              else
+                echo "❌ No inner zip file found!"
+              fi
 
       # - name: Download iOS Simulator Build from Previous Run
       #   uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
