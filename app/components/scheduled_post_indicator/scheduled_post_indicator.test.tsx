@@ -25,7 +25,7 @@ jest.mock('@utils/theme', () => ({
 }));
 
 jest.mock('@actions/local/draft', () => ({
-    switchToGlobalDrafts: jest.fn(),
+    switchToGlobalDrafts: jest.fn().mockResolvedValue({error: null}),
 }));
 
 jest.mock('@components/formatted_time', () => {
@@ -102,6 +102,7 @@ describe('ScheduledPostIndicator', () => {
         renderWithEverything(<ScheduledPostIndicator {...props}/>, {database});
 
         fireEvent.press(screen.getByText('See all.'));
+        jest.runOnlyPendingTimers();
 
         expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SCREEN, DRAFT);
         expect(emitSpy).toHaveBeenCalledTimes(1);

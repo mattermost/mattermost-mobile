@@ -4,9 +4,8 @@
 import React, {type ReactNode, useState, useMemo, useCallback} from 'react';
 import {Freeze} from 'react-freeze';
 import {StyleSheet, View, type LayoutChangeEvent} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {runOnJS, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
-import {useIsTablet} from '@hooks/device';
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS, type DraftScreenTab} from '@screens/global_drafts';
 import {DraftTabsHeader} from '@screens/global_drafts/components/tabbed_contents/draftTabsHeader';
 
@@ -20,7 +19,7 @@ type Props = {
     scheduledPosts: ReactNode;
 }
 
-const getStyleSheet = (width: number, isTablet: boolean) => {
+const getStyleSheet = (width: number) => {
     return StyleSheet.create({
         tabContainer: {
             height: '100%',
@@ -28,66 +27,88 @@ const getStyleSheet = (width: number, isTablet: boolean) => {
         tabContentContainer: {
             flex: 1,
             flexDirection: 'row',
+            overflow: 'hidden',
         },
         tabContent: {
             width,
-        },
-        hiddenTabContent: {
-            opacity: isTablet ? 1 : 0,
-            display: isTablet ? 'none' : 'flex',
+            height: '100%',
+            position: 'absolute',
         },
     });
 };
 
 export default function TabbedContents({draftsCount, scheduledPostCount, initialTab, drafts, scheduledPosts}: Props) {
     const [selectedTab, setSelectedTab] = useState(initialTab);
+    const [freezeDraft, setFreezeDraft] = useState(false);
+    const [freezeScheduledPosts, setFreezeScheduledPosts] = useState(true);
     const [width, setWidth] = useState(0);
-    const isTablet = useIsTablet();
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        setWidth(e.nativeEvent.layout.width);
-    }, []);
-    const styles = useMemo(() => getStyleSheet(width, isTablet), [isTablet, width]);
+        const newWidth = e.nativeEvent.layout.width;
+        if (newWidth !== width) {
+            setWidth(newWidth);
+        }
+    }, [width]);
+    const styles = useMemo(() => getStyleSheet(width), [width]);
 
-    const transform = useAnimatedStyle(() => {
-        const translateX = selectedTab === DRAFT_SCREEN_TAB_DRAFTS ? 0 : -width;
-        return {
-            transform: [
-                {translateX: withTiming(isTablet ? 0 : translateX, {duration})},
-            ],
-        };
-    }, [selectedTab, width]);
+    const firstTabStyle = useAnimatedStyle(() => ({
+        transform: [{translateX: withTiming(selectedTab === DRAFT_SCREEN_TAB_DRAFTS ? 0 : -width, {duration}, (finished) => {
+            if (finished && selectedTab === DRAFT_SCREEN_TAB_DRAFTS && !freezeScheduledPosts) {
+                runOnJS(setFreezeScheduledPosts)(true);
+            }
+        })}],
+        zIndex: 1,
+    }));
+
+    const secondTabStyle = useAnimatedStyle(() => ({
+        transform: [{translateX: withTiming(selectedTab === DRAFT_SCREEN_TAB_SCHEDULED_POSTS ? 0 : width, {duration}, (finished) => {
+            if (finished && selectedTab === DRAFT_SCREEN_TAB_SCHEDULED_POSTS && !freezeDraft) {
+                runOnJS(setFreezeDraft)(true);
+            }
+        })}],
+        zIndex: 0,
+    }));
+
+    const onSelectTab = useCallback((tab: DraftScreenTab) => {
+        setSelectedTab(tab);
+        if (tab === DRAFT_SCREEN_TAB_DRAFTS) {
+            setFreezeDraft(false);
+        } else {
+            setFreezeScheduledPosts(false);
+        }
+    }, []);
 
     return (
         <View
             style={styles.tabContainer}
             onLayout={onLayout}
+            testID='tabbed_contents'
         >
             <DraftTabsHeader
                 draftsCount={draftsCount}
                 scheduledPostCount={scheduledPostCount}
                 selectedTab={selectedTab}
-                onTabChange={setSelectedTab}
+                onTabChange={onSelectTab}
             />
 
-            <Animated.View style={[styles.tabContentContainer, transform]}>
-                <View
-                    style={[styles.tabContent, selectedTab !== DRAFT_SCREEN_TAB_DRAFTS && styles.hiddenTabContent]}
+            <Animated.View style={[styles.tabContentContainer]}>
+                <Animated.View
+                    style={[firstTabStyle, styles.tabContent]}
                     testID='draft_list_container'
                 >
-                    <Freeze freeze={selectedTab !== DRAFT_SCREEN_TAB_DRAFTS}>
+                    <Freeze freeze={freezeDraft}>
                         {drafts}
                     </Freeze>
-                </View>
+                </Animated.View>
 
-                <View
-                    style={[styles.tabContent, selectedTab !== DRAFT_SCREEN_TAB_SCHEDULED_POSTS && styles.hiddenTabContent]}
+                <Animated.View
+                    style={[secondTabStyle, styles.tabContent]}
                     testID='scheduled_posts_list_container'
                 >
-                    <Freeze freeze={selectedTab !== DRAFT_SCREEN_TAB_SCHEDULED_POSTS}>
+                    <Freeze freeze={freezeScheduledPosts}>
                         {scheduledPosts}
                     </Freeze>
-                </View>
+                </Animated.View>
             </Animated.View>
         </View>
     );

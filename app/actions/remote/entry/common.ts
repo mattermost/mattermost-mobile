@@ -222,7 +222,7 @@ export async function entryInitialChannelId(database: Database, requestedChannel
     // Check if we are still members of any channel on the history
     const teamChannelHistory = await getTeamChannelHistory(database, initialTeamId);
     for (const c of teamChannelHistory) {
-        if (membershipIds.has(c) || c === Screens.GLOBAL_THREADS) {
+        if (membershipIds.has(c) || c === Screens.GLOBAL_THREADS || c === Screens.GLOBAL_DRAFTS) {
             return c;
         }
     }

@@ -10,6 +10,7 @@ import DraftsButton from '@components/drafts_buttton/drafts_button';
 import {Events} from '@constants';
 import {DRAFT} from '@constants/screens';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 jest.mock('@actions/local/draft', () => ({
     switchToGlobalDrafts: jest.fn(),
@@ -24,6 +25,7 @@ describe('components/drafts_button/DraftsButton', () => {
         draftsCount: 0,
         scheduledPostCount: 0,
         scheduledPostHasError: false,
+        currentChannelId: '',
     };
 
     test('should show draft count when greater than 0', () => {
@@ -103,7 +105,7 @@ describe('components/drafts_button/DraftsButton', () => {
         expect(countElement).toHaveStyle({backgroundColor: expect.any(String)});
     });
 
-    test('should handle press and emit events', () => {
+    test('should handle press and emit events', async () => {
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
 
         const {getByTestId} = renderWithIntlAndTheme(
@@ -111,11 +113,13 @@ describe('components/drafts_button/DraftsButton', () => {
         );
 
         const button = getByTestId('channel_list.drafts.button');
-        act(() => {
+        jest.mocked(switchToGlobalDrafts).mockResolvedValue({error: null});
+        await act(async () => {
             fireEvent.press(button);
+            await TestHelper.wait(0);
         });
 
-        expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SCREEN, DRAFT);
         expect(switchToGlobalDrafts).toHaveBeenCalled();
+        expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SCREEN, DRAFT);
     });
 });

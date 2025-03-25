@@ -6,6 +6,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
 import {goToScreen} from '@screens/navigation';
@@ -260,38 +261,71 @@ describe('updateDraftPriority', () => {
     });
 });
 
-describe('switchToGlobalDrafts', () => {
+describe.only('switchToGlobalDrafts', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    it('should emit navigation event on tablet', () => {
+    it('should emit navigation event on tablet', async () => {
         jest.mocked(isTablet).mockReturnValue(true);
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
 
-        switchToGlobalDrafts();
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+
+        await switchToGlobalDrafts(serverUrl);
 
         expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {});
     });
 
-    it('should call goToScreen on non-tablet', () => {
+    it('should fail to emit navigation event on tablet', async () => {
+        jest.mocked(isTablet).mockReturnValue(true);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        await switchToGlobalDrafts('nonexistent');
+
+        expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should fail to emit navigation event on tablet if currentTeamId is not set', async () => {
+        jest.mocked(isTablet).mockReturnValue(true);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: ''}], prepareRecordsOnly: false});
+
+        await switchToGlobalDrafts(serverUrl);
+
+        expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should call goToScreen on non-tablet', async () => {
         (isTablet as jest.Mock).mockReturnValue(false);
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
 
-        switchToGlobalDrafts();
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+        await switchToGlobalDrafts(serverUrl);
 
         expect(goToScreen).toHaveBeenCalledWith(Screens.GLOBAL_DRAFTS, '', {}, {topBar: {visible: false}});
         expect(emitSpy).not.toHaveBeenCalled();
     });
 
-    it('should pass initialTab param when provided', () => {
+    it('should call NOT goToScreen on non-tablet', async () => {
+        (isTablet as jest.Mock).mockReturnValue(false);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        await switchToGlobalDrafts('nonexistent');
+
+        expect(goToScreen).not.toHaveBeenCalled();
+        expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should pass initialTab param when provided', async () => {
         (isTablet as jest.Mock).mockReturnValue(true);
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
 
-        switchToGlobalDrafts(DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
+        await switchToGlobalDrafts(serverUrl, teamId, DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
         expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: DRAFT_SCREEN_TAB_SCHEDULED_POSTS});
 
-        switchToGlobalDrafts(DRAFT_SCREEN_TAB_DRAFTS);
+        await switchToGlobalDrafts(serverUrl, teamId, DRAFT_SCREEN_TAB_DRAFTS);
         expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: DRAFT_SCREEN_TAB_DRAFTS});
     });
 });

@@ -52,8 +52,12 @@ describe('TabbedContents', () => {
         scheduledPosts: mockScheduledPostsContent,
     };
 
-    it('renders correctly with initial tab set to drafts', () => {
+    it('renders correctly with initial tab set to drafts', async () => {
         renderWithIntlAndTheme(<TabbedContents {...defaultProps}/>);
+
+        await act(async () => {
+            await TestHelper.wait(300); // Wait until the badge renders
+        });
 
         // Check that the drafts tab is selected
         expect(screen.getByTestId('draft_tab')).toBeTruthy();
@@ -66,6 +70,10 @@ describe('TabbedContents', () => {
 
     it('switches tabs when clicked', async () => {
         renderWithIntlAndTheme(<TabbedContents {...defaultProps}/>);
+
+        await act(async () => {
+            await TestHelper.wait(300); // Wait until the badge renders
+        });
 
         expect(screen.getByTestId('draft_tab')).toBeTruthy();
 
@@ -86,7 +94,7 @@ describe('TabbedContents', () => {
         expect(screen.getByTestId('drafts-content')).toBeTruthy();
     });
 
-    it('displays zero counts correctly', () => {
+    it('displays zero counts correctly', async () => {
         renderWithIntlAndTheme(
             <TabbedContents
                 {...defaultProps}
@@ -95,12 +103,16 @@ describe('TabbedContents', () => {
             />,
         );
 
-        // Check that zero counts are displayed
-        expect(screen.getAllByText('0')).toHaveLength(2);
+        // Check that zero counts are NOT displayed
+        expect(screen.queryAllByText('0')).toHaveLength(0);
     });
 
     it('renders both content sections', async () => {
         renderWithIntlAndTheme(<TabbedContents {...defaultProps}/>);
+
+        await act(async () => {
+            await TestHelper.wait(300); // Wait until the badge renders
+        });
 
         // Check that drafts content is initially visible
         expect(screen.getByTestId('drafts-content')).toBeTruthy();

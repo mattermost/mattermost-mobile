@@ -6,31 +6,61 @@ import {DeviceEventEmitter, Image} from 'react-native';
 import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
+import {getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {addChannelToTeamHistory} from '@queries/servers/team';
 import {goToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {isParsableUrl} from '@utils/url';
 
+import type {Model} from '@nozbe/watermelondb';
 import type {DraftScreenTab} from '@screens/global_drafts';
 
 type goToScreenParams = {
     initialTab?: DraftScreenTab;
 }
 
-export const switchToGlobalDrafts = async (initialTab?: DraftScreenTab) => {
-    const params: goToScreenParams = {};
+export const switchToGlobalDrafts = async (serverUrl: string, teamId?: string, initialTab?: DraftScreenTab, prepareRecordsOnly = false) => {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const models: Model[] = [];
 
-    // explicitly checking for undefined because 0 is a valid value
-    // that shouldn't be missed in this case.
-    if (initialTab !== undefined) {
-        params.initialTab = initialTab;
-    }
+        let teamIdToUse = teamId;
+        if (!teamId) {
+            teamIdToUse = await getCurrentTeamId(database);
+        }
 
-    const isTabletDevice = isTablet();
-    if (isTabletDevice) {
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, params);
-    } else {
-        goToScreen(Screens.GLOBAL_DRAFTS, '', params, {topBar: {visible: false}});
+        if (!teamIdToUse) {
+            throw new Error('no team to switch to');
+        }
+
+        await setCurrentTeamAndChannelId(operator, teamIdToUse, '');
+        const history = await addChannelToTeamHistory(operator, teamIdToUse, Screens.GLOBAL_DRAFTS, true);
+        models.push(...history);
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords(models, 'switchToGlobalThreads');
+        }
+        const params: goToScreenParams = {};
+
+        // explicitly checking for undefined because 0 is a valid value
+        // that shouldn't be missed in this case.
+        if (initialTab !== undefined) {
+            params.initialTab = initialTab;
+        }
+
+        const isTabletDevice = isTablet();
+        if (isTabletDevice) {
+            DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, params);
+        } else {
+            goToScreen(Screens.GLOBAL_DRAFTS, '', params, {topBar: {visible: false}});
+        }
+
+        return {models};
+    } catch (error) {
+        logError('Failed switchToGlobalDrafts', error);
+
+        return {error};
     }
 };
 
