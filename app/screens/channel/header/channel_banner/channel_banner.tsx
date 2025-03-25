@@ -6,15 +6,15 @@ import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
-import Markdown from '@components/markdown';
-import {General, License, Screens} from '@constants';
+import {General, License} from '@constants';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet} from '@screens/navigation';
 import {getContrastingSimpleColor} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import {getMarkdownTextStyles} from '@utils/markdown';
 import {typography} from '@utils/typography';
+import RemoveMarkdown from '@components/remove_markdown';
 
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
 const TITLE_HEIGHT = 30 + 12; // typography 600 line height
@@ -117,7 +117,9 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
         });
     }, [bannerInfo, expandedChannelBannerTitle, renderExpandedChannelBannerContent, theme]);
 
-    if (!shouldDisplayChannelBanner) {
+    // we only really need shouldDisplayChannelBanner check here, rest is for satisfying TS in following code
+    // and avoid having to use non-null assertion everywhere.
+    if (!shouldDisplayChannelBanner || !bannerInfo || !bannerInfo.text || !bannerInfo.background_color) {
         return null;
     }
 
@@ -131,19 +133,10 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
                     ellipsizeMode='tail'
                     numberOfLines={1}
                 >
-                    <Markdown
-                        baseTextStyle={style.baseTextStyle}
-                        blockStyles={getMarkdownBlockStyles(theme)}
-                        textStyles={markdownTextStyle}
-                        value={bannerInfo!.text}
-                        theme={theme}
-                        location={Screens.CHANNEL_BANNER}
-                        disableBlockQuote={true}
-                        disableCodeBlock={true}
-                        disableGallery={true}
-                        disableHeading={true}
-                        disableTables={true}
-                        disableQuotes={true}
+                    <RemoveMarkdown
+                        value={bannerInfo.text}
+                        textStyle={markdownTextStyle}
+                        baseStyle={style.baseTextStyle}
                     />
                 </Text>
             </TouchableOpacity>
