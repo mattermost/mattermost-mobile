@@ -16,7 +16,6 @@ import type TeamModel from '@typings/database/models/servers/team';
 jest.mock('@react-native-camera-roll/camera-roll', () => ({}));
 
 describe('Header', () => {
-    const onTabSelect = jest.fn();
     const onFilterChanged = jest.fn();
     const setTeamId = jest.fn();
 
@@ -24,60 +23,6 @@ describe('Header', () => {
         {id: 'team1', displayName: 'Team 1'},
         {id: 'team2', displayName: 'Team 2'},
     ] as TeamModel[];
-
-    it('should render correctly', () => {
-        const {getByText} = renderWithIntlAndTheme(
-            <Header
-                teamId='team1'
-                setTeamId={setTeamId}
-                onFilterChanged={onFilterChanged}
-                selectedTab={TabTypes.MESSAGES}
-                selectedFilter={FileFilters.ALL}
-                teams={teams}
-                crossTeamSearchEnabled={false}
-                tabsComponent={<View/>}
-            />,
-        );
-
-        expect(getByText('Messages')).toBeTruthy();
-        expect(getByText('Files')).toBeTruthy();
-    });
-
-    it('should call onTabSelect with MESSAGES when Messages button is pressed', () => {
-        const {getByText} = renderWithIntlAndTheme(
-            <Header
-                teamId='team1'
-                setTeamId={setTeamId}
-                onFilterChanged={onFilterChanged}
-                selectedTab={TabTypes.MESSAGES}
-                selectedFilter={FileFilters.ALL}
-                teams={teams}
-                crossTeamSearchEnabled={false}
-                tabsComponent={<View/>}
-            />,
-        );
-
-        fireEvent.press(getByText('Messages'));
-        expect(onTabSelect).toHaveBeenCalledWith(TabTypes.MESSAGES);
-    });
-
-    it('should call onTabSelect with FILES when Files button is pressed', () => {
-        const {getByText} = renderWithIntlAndTheme(
-            <Header
-                teamId='team1'
-                setTeamId={setTeamId}
-                onFilterChanged={onFilterChanged}
-                selectedTab={TabTypes.MESSAGES}
-                selectedFilter={FileFilters.ALL}
-                teams={teams}
-                crossTeamSearchEnabled={false}
-                tabsComponent={<View/>}
-            />,
-        );
-
-        fireEvent.press(getByText('Files'));
-        expect(onTabSelect).toHaveBeenCalledWith(TabTypes.FILES);
-    });
 
     it('should not render TeamPicker when there is only one team', () => {
         const {queryByText} = renderWithIntlAndTheme(
