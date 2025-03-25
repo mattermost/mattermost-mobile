@@ -47,6 +47,7 @@ const ScheduledPostEmptyComponent = () => {
         >
             <Image
                 source={scheduled_message_image}
+                style={styles.image}
             />
             <FormattedText
                 id='scheduled_post.empty.title'
