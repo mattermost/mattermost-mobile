@@ -11,7 +11,6 @@ import EditProfile from './edit_profile';
 
 import type {UserModel} from '@database/models/server';
 
-// Mock CompassIcon
 jest.mock('@components/compass_icon', () => {
     function CompassIcon() {
         return null;
@@ -23,12 +22,10 @@ jest.mock('@components/compass_icon', () => {
     };
 });
 
-// Mock server context
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn().mockReturnValue('http://localhost:8065'),
 }));
 
-// Mock remote user actions
 jest.mock('@actions/remote/user', () => ({
     fetchCustomAttributes: jest.fn().mockResolvedValue({
         attributes: {
@@ -79,17 +76,14 @@ describe('EditProfile', () => {
             />,
         );
 
-        // Wait for the custom attributes to be loaded
         await act(async () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
         });
 
-        // Verify the mock was called with correct arguments
         const {fetchCustomAttributes} = require('@actions/remote/user');
         expect(fetchCustomAttributes).toHaveBeenCalledWith('http://localhost:8065', 'user1');
         const TEST_ID = 'edit_profile_form.customAttributes.attr1.input';
 
-        // Find the input field and update its value
         const input = getByTestId(TEST_ID);
 
         await act(async () => {
@@ -98,10 +92,8 @@ describe('EditProfile', () => {
 
         const updatedCustomAttr = getByTestId(TEST_ID);
 
-        // Verify the value was updated
         expect(updatedCustomAttr.props.value).toBe('new value');
 
-        // Verify name and sort_order were preserved
         expect(updatedCustomAttr.props.name).toBe(input.props.name);
         expect(updatedCustomAttr.props.sort_order).toBe(input.props.sort_order);
     });
