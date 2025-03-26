@@ -15,6 +15,7 @@ class ChannelListScreen {
         draftChannelInfo: 'draft_post.channel_info',
         draftbuttonListScreen: 'channel_list.drafts.button',
         draftCountListScreen: 'channel_list.drafts.count',
+        scheduledMessageCountListScreen: 'channel_list.scheduled_post.count',
         teamItemPrefix: 'team_sidebar.team_list.team_item.',
         channelListScreen: 'channel_list.screen',
         serverIcon: 'channel_list.servers.server_icon',

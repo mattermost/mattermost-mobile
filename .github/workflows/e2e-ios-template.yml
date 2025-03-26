@@ -138,6 +138,13 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      - name: Clean Simulators
+        run: |
+          xcrun simctl shutdown all
+          xcrun simctl erase all
+          killall "Simulator" || true
+          killall "CoreSimulator" || true
+
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
@@ -146,14 +153,46 @@ jobs:
           brew tap wix/brew
           brew install applesimutils
 
-      - name: Download iOS Simulator Build
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
-        with:
-          name: ios-build-simulator-${{ github.run_id }}
-          path: mobile-artifacts
+      - name: Download iOS Simulator Build from Previous Run
+        run: |
+             curl -L -o artifact.zip \
+                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2815314936/zip"
 
-      - name: Unzip iOS Simulator Build
-        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+              unzip -o artifact.zip -d mobile-artifacts/
+              inner_zip=$(find mobile-artifacts/ -name "*.zip" | head -n 1)
+              if [ -n "$inner_zip" ]; then
+                unzip -o "$inner_zip" -d mobile-artifacts/
+              else
+                echo "❌ No inner zip file found!"
+              fi
+
+              echo "✅ iOS Simulator Build Downloaded*******************"
+              ls mobile-artifacts
+
+      # - name: Download iOS Simulator Build from Previous Run
+      #   uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+      #   with:
+      #     name: ios-build-simulator-14058976025
+      #     path: mobile-artifacts
+      #     run-id: 14058976025
+
+      - name: Boot Simulator
+        run: |
+          # Get the UDID of your iPhone 16 Pro (iOS 18.1)
+            UDID=$(xcrun simctl list devices | grep "${{ env.DEVICE_NAME }}" | grep -Eo "[0-9A-F-]{36}" | head -n 1)
+
+            # Boot it
+            xcrun simctl boot "$UDID"
+
+      - name: Ensure App is Installed
+        run: |
+          xcrun simctl install booted mobile-artifacts/Mattermost.app
+
+      - name: Check if App is Installed
+        run: |
+          xcrun simctl listapps booted | grep "com.mattermost.rnbeta"
 
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth
@@ -168,7 +207,12 @@ jobs:
           latency: "500"
 
       - name: Start React Native Metro Server
-        run: npm run start &
+        run: |
+          # Start the server
+          npm run start &
+
+      - name: Wait for 90 sec for watchman to query the files
+        run: sleep 90
 
       - name: Install Detox Dependencies
         run: cd detox && npm i
@@ -186,6 +230,7 @@ jobs:
           cd detox
           npm run detox:config-gen
           npm run e2e:ios-test -- ${{ matrix.specs }}
+          # DETOX_LOGLEVEL=trace npm run e2e:ios-test -- about.e2e.ts
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}

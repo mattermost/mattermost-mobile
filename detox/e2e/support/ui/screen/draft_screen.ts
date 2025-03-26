@@ -12,7 +12,7 @@ class DraftScreen {
         draftMessageContent: 'draft_message',
         draftScreen: 'global_drafts_list',
         draftTooltipCloseButton: 'draft.tooltip.close.button',
-        draftPost: 'draft_post',
+        draftPost: 'draft_message',
         draftSendButton: 'send_draft_button',
         draftEmptyTitle: 'drafts.empty.title',
         requestACKIcon: 'drafts.requested_ack.icon',
