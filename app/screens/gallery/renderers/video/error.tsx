@@ -49,13 +49,13 @@ type Props = {
     height: number;
     isDownloading: boolean;
     isRemote: boolean;
-    onShouldHideControls: () => void;
+    handleTouchEnd: () => void;
     posterUri?: string;
     setDownloading: Dispatch<SetStateAction<boolean>>;
     width: number;
 }
 
-const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideControls, posterUri, setDownloading, width}: Props) => {
+const VideoError = ({filename, height, isDownloading, isRemote, handleTouchEnd, posterUri, setDownloading, width}: Props) => {
     const [hasPoster, setHasPoster] = useState(false);
     const [loadPosterError, setLoadPosterError] = useState(false);
     const dimensions = useWindowDimensions();
@@ -96,7 +96,7 @@ const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideCont
 
     return (
         <TouchableWithoutFeedback
-            onPress={onShouldHideControls}
+            onPress={handleTouchEnd}
             style={styles.container}
         >
             <Animated.View style={styles.container}>

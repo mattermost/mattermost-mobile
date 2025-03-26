@@ -4,11 +4,9 @@
 import React, {useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, StyleSheet} from 'react-native';
 import Animated, {
-    Easing,
     useAnimatedStyle,
     useSharedValue,
     withTiming,
-    type WithTimingConfig,
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Video, {SelectedTrackType, type OnPlaybackRateChangeData, type VideoRef} from 'react-native-video';
@@ -19,24 +17,18 @@ import {getTranscriptionUri} from '@calls/utils';
 import {Events} from '@constants';
 import {GALLERY_FOOTER_HEIGHT, VIDEO_INSET} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
-
-import DownloadWithAction from '../footer/download_with_action';
+import {transformerTimingConfig} from '@screens/gallery/animation_config/timing';
+import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 
 import VideoError from './error';
 
-import type {ImageRendererProps} from '../image_renderer';
-import type {GalleryAction} from '@typings/screens/gallery';
+import type {GalleryAction, GalleryPagerItem} from '@typings/screens/gallery';
 
-interface VideoRendererProps extends ImageRendererProps {
+interface VideoRendererProps extends GalleryPagerItem {
     index: number;
     initialIndex: number;
-    onShouldHideControls: (hide: boolean) => void;
+    setControlsHidden: (hide?: boolean) => void;
 }
-
-const timingConfig: WithTimingConfig = {
-    duration: 250,
-    easing: Easing.bezier(0.33, 0.01, 0, 1),
-};
 
 const styles = StyleSheet.create({
     video: {
@@ -46,7 +38,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShouldHideControls, width}: VideoRendererProps) => {
+const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPagerInProgress, setControlsHidden, width}: VideoRendererProps) => {
     const fullscreen = useSharedValue(false);
     const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
@@ -73,11 +65,11 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
 
     const onEnd = useCallback(() => {
         setFullscreen(false);
-        onShouldHideControls(true);
+        setControlsHidden(true);
         showControls.current = true;
         setPaused(true);
         videoRef.current?.dismissFullscreenPlayer();
-    }, [onShouldHideControls]);
+    }, [setControlsHidden]);
 
     const onError = useCallback(() => {
         setHasError(true);
@@ -86,22 +78,22 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const onFullscreenPlayerWillDismiss = useCallback(() => {
         setFullscreen(false);
         showControls.current = !paused;
-        onShouldHideControls(showControls.current);
-    }, [paused, onShouldHideControls]);
+        setControlsHidden(showControls.current);
+    }, [paused, setControlsHidden]);
 
     const onFullscreenPlayerWillPresent = useCallback(() => {
         setFullscreen(true);
-        onShouldHideControls(true);
+        setControlsHidden(true);
         showControls.current = true;
-    }, [onShouldHideControls]);
+    }, [setControlsHidden]);
 
     const onPlaybackRateChange = useCallback(({playbackRate}: OnPlaybackRateChangeData) => {
-        if (isPageActive.value) {
+        if (isPageActive?.value) {
             const isPlaying = Boolean(playbackRate);
             showControls.current = isPlaying;
-            onShouldHideControls(isPlaying);
+            setControlsHidden(isPlaying);
         }
-    }, [onShouldHideControls]);
+    }, [setControlsHidden]);
 
     const onPlaybackStateChange = useCallback(({isPlaying}: {isPlaying: boolean}) => {
         setPaused(!isPlaying);
@@ -112,10 +104,12 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
         setHasError(false);
     }, []);
 
-    const handleTouchStart = useCallback(() => {
-        showControls.current = !showControls.current;
-        onShouldHideControls(showControls.current);
-    }, [onShouldHideControls]);
+    const handleTouchEnd = useCallback(() => {
+        if (!isPagerInProgress.value) {
+            showControls.current = !showControls.current;
+            setControlsHidden(showControls.current);
+        }
+    }, [setControlsHidden]);
 
     const setGalleryAction = useCallback((action: GalleryAction) => {
         DeviceEventEmitter.emit(Events.GALLERY_ACTIONS, action);
@@ -133,8 +127,8 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
-            width: withTiming(dimensionsStyle.width, timingConfig),
-            height: withTiming(dimensionsStyle.height, timingConfig),
+            width: withTiming(dimensionsStyle.width, transformerTimingConfig),
+            height: withTiming(dimensionsStyle.height, transformerTimingConfig),
         };
     }, [dimensionsStyle]);
 
@@ -147,11 +141,11 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     }, [index, initialIndex, videoReady]);
 
     useEffect(() => {
-        if (!isPageActive.value && !paused) {
+        if (!isPageActive?.value && !paused) {
             setPaused(true);
             videoRef.current?.dismissFullscreenPlayer();
         }
-    }, [isPageActive.value, paused]);
+    }, [isPageActive?.value, paused]);
 
     return (
         <Animated.View style={animatedStyle}>
@@ -165,14 +159,14 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 posterResizeMode='center'
                 onError={onError}
                 style={[styles.video, dimensionsStyle]}
-                controls={isPageActive.value}
+                controls={isPageActive?.value}
                 onPlaybackRateChange={onPlaybackRateChange}
                 onFullscreenPlayerWillDismiss={onFullscreenPlayerWillDismiss}
                 onFullscreenPlayerWillPresent={onFullscreenPlayerWillPresent}
                 onPlaybackStateChanged={onPlaybackStateChange}
                 onReadyForDisplay={onReadyForDisplay}
                 onEnd={onEnd}
-                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
                 resizeMode='none'
                 textTracks={tracks}
                 selectedTextTrack={captionsEnabled[index] ? selected : {type: SelectedTrackType.DISABLED, value: ''}}
@@ -182,7 +176,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 filename={item.name}
                 isDownloading={downloading}
                 isRemote={videoUri.startsWith('http')}
-                onShouldHideControls={handleTouchStart}
+                handleTouchEnd={handleTouchEnd}
                 posterUri={item.posterUri}
                 setDownloading={setDownloading}
                 height={item.height}

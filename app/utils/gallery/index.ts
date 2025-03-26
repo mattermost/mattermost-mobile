@@ -168,16 +168,6 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
 
 export const typedMemo: <T>(c: T) => T = React.memo;
 
-export const workletNoop = () => {
-    'worklet';
-};
-
-export const workletNoopTrue = () => {
-    'worklet';
-
-    return true;
-};
-
 export const getImageSize = (uri: string) => {
     return new Promise<{width: number; height: number}>((resolve, reject) => {
         Image.getSize(uri, (width, height) => resolve({width, height}), reject);

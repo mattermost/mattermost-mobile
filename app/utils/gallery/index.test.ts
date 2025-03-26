@@ -5,7 +5,7 @@ import {DeviceEventEmitter, Image, Keyboard} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
-import {clamp, clampVelocity, fileToGalleryItem, freezeOtherScreens, friction, galleryItemToFileInfo, getImageSize, getShouldRender, measureItem, openGalleryAtIndex, typedMemo, workletNoop, workletNoopTrue} from '.';
+import {clamp, clampVelocity, fileToGalleryItem, freezeOtherScreens, friction, galleryItemToFileInfo, getImageSize, getShouldRender, measureItem, openGalleryAtIndex, typedMemo} from '.';
 
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
 
@@ -246,18 +246,6 @@ describe('Gallery utils', () => {
 
             // @ts-expect-error type in typedef
             expect(memoizedComponent.type).toBe(component);
-        });
-    });
-
-    describe('workletNoop', () => {
-        it('should execute without doing anything', () => {
-            expect(workletNoop()).toBeUndefined();
-        });
-    });
-
-    describe('workletNoopTrue', () => {
-        it('should always return true', () => {
-            expect(workletNoopTrue()).toBe(true);
         });
     });
 
