@@ -261,7 +261,7 @@ describe('updateDraftPriority', () => {
     });
 });
 
-describe.only('switchToGlobalDrafts', () => {
+describe('switchToGlobalDrafts', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
