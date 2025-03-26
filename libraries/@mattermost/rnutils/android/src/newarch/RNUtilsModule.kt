@@ -45,7 +45,7 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
     }
 
     override fun renameDatabase(databaseName: String?, newDatabaseName: String?): WritableMap {
-        return implementation.renameDatabase()
+        return implementation.renameDatabase(databaseName, newDatabaseName)
     }
 
     override fun deleteEntitiesFile(): Boolean {

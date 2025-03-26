@@ -98,7 +98,7 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
         return map
     }
 
-    fun renameDatabase(): WritableMap {
+    fun renameDatabase(databaseName: String?, newDatabaseName: String?): WritableMap {
         val map = Arguments.createMap()
         map.putNull("error")
         map.putBoolean("success", true)

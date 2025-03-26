@@ -71,7 +71,7 @@ class RNUtilsModule(context: ReactApplicationContext) :
 
     @ReactMethod(isBlockingSynchronousMethod = true)
     fun renameDatabase(databaseName: String?, newDatabaseName: String?): WritableMap {
-        return implementation.renameDatabase()
+        return implementation.renameDatabase(databaseName, newDatabaseName)
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
