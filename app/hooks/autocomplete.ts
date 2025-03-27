@@ -10,11 +10,11 @@ export const useAutocompleteDefaultAnimatedValues = (position: number, available
 
     useEffect(() => {
         animatedPosition.value = position;
-    }, [position]);
+    }, [position, animatedPosition]);
 
     useEffect(() => {
         animatedAvailableSpace.value = availableSpace;
-    }, [availableSpace]);
+    }, [availableSpace, animatedAvailableSpace]);
 
     return [animatedPosition, animatedAvailableSpace];
 };

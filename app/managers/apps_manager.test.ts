@@ -9,7 +9,7 @@ import {getChannelById} from '@queries/servers/channel';
 import {getConfig} from '@queries/servers/system';
 import {logDebug} from '@utils/log';
 
-import {AppsManager as AppsManagerClass} from './apps_manager';
+import {AppsManagerSingleton as AppsManagerClass} from './apps_manager';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 

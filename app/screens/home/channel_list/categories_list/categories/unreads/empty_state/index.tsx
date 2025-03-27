@@ -31,6 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         top: -20,
     },
     title: {
+        marginTop: 24,
         color: theme.sidebarText,
         textAlign: 'center',
         ...typography('Heading', 400, 'SemiBold'),

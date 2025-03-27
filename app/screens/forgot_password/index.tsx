@@ -16,6 +16,7 @@ import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAvoidKeyboard} from '@hooks/device';
+import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isEmail} from '@utils/helpers';
@@ -141,6 +142,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                 <View
                     style={styles.successContainer}
                     testID={'password_send.link.sent'}
+                    nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
                 >
                     <Inbox/>
                     <FormattedText
@@ -184,6 +186,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                 ref={keyboardAwareRef}
                 scrollToOverflowEnabled={true}
                 style={styles.flex}
+                nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
             >
                 <View
                     style={styles.centered}

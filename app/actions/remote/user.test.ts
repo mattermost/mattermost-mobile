@@ -364,17 +364,55 @@ describe('get users', () => {
 });
 
 describe('Custom Profile Attributes', () => {
-    it('fetchCustomAttributes - base case', async () => {
+    it('fetchCustomAttributes - base case without filter', async () => {
         mockClient.getCustomProfileAttributeFields = jest.fn().mockResolvedValue([
-            {id: 'field1', name: 'Field 1'},
-            {id: 'field2', name: 'Field 2'},
+            {id: 'field1', name: 'Field 1', attrs: {sort_order: 1}},
+            {id: 'field2', name: 'Field 2', attrs: {sort_order: 2}},
+            {id: 'field3', name: 'Field 3', attrs: {sort_order: 3}},
         ]);
         mockClient.getCustomProfileAttributeValues = jest.fn().mockResolvedValue({
             field1: 'value1',
-            field2: 'value2',
+            field2: '',
+            field3: 'value3',
         });
 
         const result = await fetchCustomAttributes(serverUrl, 'user1');
+        expect(result.error).toBeUndefined();
+        expect(result.attributes).toBeDefined();
+        expect(Object.keys(result.attributes!)).toHaveLength(3);
+        expect(result.attributes!.field1).toEqual({
+            id: 'field1',
+            name: 'Field 1',
+            value: 'value1',
+            sort_order: 1,
+        });
+        expect(result.attributes!.field2).toEqual({
+            id: 'field2',
+            name: 'Field 2',
+            value: '',
+            sort_order: 2,
+        });
+        expect(result.attributes!.field3).toEqual({
+            id: 'field3',
+            name: 'Field 3',
+            value: 'value3',
+            sort_order: 3,
+        });
+    });
+
+    it('fetchCustomAttributes - with filter empty values', async () => {
+        mockClient.getCustomProfileAttributeFields = jest.fn().mockResolvedValue([
+            {id: 'field1', name: 'Field 1'},
+            {id: 'field2', name: 'Field 2'},
+            {id: 'field3', name: 'Field 3'},
+        ]);
+        mockClient.getCustomProfileAttributeValues = jest.fn().mockResolvedValue({
+            field1: 'value1',
+            field2: '',
+            field3: 'value3',
+        });
+
+        const result = await fetchCustomAttributes(serverUrl, 'user1', true);
         expect(result.error).toBeUndefined();
         expect(result.attributes).toBeDefined();
         expect(Object.keys(result.attributes!)).toHaveLength(2);
@@ -383,10 +421,11 @@ describe('Custom Profile Attributes', () => {
             name: 'Field 1',
             value: 'value1',
         });
-        expect(result.attributes!.field2).toEqual({
-            id: 'field2',
-            name: 'Field 2',
-            value: 'value2',
+        expect(result.attributes!.field2).toBeUndefined();
+        expect(result.attributes!.field3).toEqual({
+            id: 'field3',
+            name: 'Field 3',
+            value: 'value3',
         });
     });
 

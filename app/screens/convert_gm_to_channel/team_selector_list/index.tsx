@@ -8,9 +8,12 @@ import {StyleSheet, View} from 'react-native';
 import SearchBar from '@components/search';
 import TeamList from '@components/team_list';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
+import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const styles = StyleSheet.create({
     container: {
@@ -22,11 +25,12 @@ const styles = StyleSheet.create({
 });
 
 type Props = {
+    componentId: AvailableScreens;
     teams: Team[];
     selectTeam: (teamId: string) => void;
 }
 
-const TeamSelectorList = ({teams, selectTeam}: Props) => {
+const TeamSelectorList = ({componentId, teams, selectTeam}: Props) => {
     const theme = useTheme();
     const [filteredTeams, setFilteredTeam] = useState(teams);
     const color = useMemo(() => changeOpacity(theme.centerChannelColor, 0.72), [theme]);
@@ -39,13 +43,16 @@ const TeamSelectorList = ({teams, selectTeam}: Props) => {
         }
     }, 200), [teams]);
 
-    const handleOnPress = useCallback(preventDoubleTap((teamId: string) => {
+    const handleOnPress = usePreventDoubleTap(useCallback((teamId: string) => {
         selectTeam(teamId);
         popTopScreen();
-    }), []);
+    }, []));
 
     return (
-        <View style={styles.container}>
+        <View
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            style={styles.container}
+        >
             <SearchBar
                 autoCapitalize='none'
                 autoFocus={true}

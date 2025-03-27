@@ -57,6 +57,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {
     allOrientations,
@@ -736,7 +737,10 @@ const CallScreen = ({
     );
 
     return (
-        <SafeAreaView style={style.wrapper}>
+        <SafeAreaView
+            style={style.wrapper}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+        >
             <StatusBar barStyle={'light-content'}/>
             <View style={style.container}>
                 {!isLandscape && header}

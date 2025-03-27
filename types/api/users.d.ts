@@ -53,14 +53,6 @@ type CustomProfileAttribute = {
     delete_at: number;
 }
 
-/**
- * CustomProfileAttributeSimple
- * @description simpler type to display a field id with its value.
- **/
-type CustomProfileAttributeSimple = {
-    [field_id: string]: string;
-}
-
 type UserProfile = {
     id: string;
     create_at: number;

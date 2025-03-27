@@ -8,6 +8,7 @@ import {renderWithIntl} from '@test/intl-test-helper';
 
 import ProfileForm from './form';
 
+import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
 import type {UserInfo} from '@typings/screens/edit_profile';
 
@@ -125,5 +126,50 @@ describe('ProfileForm', () => {
         );
 
         expect(queryByTestId('edit_profile_form.customAttributes.field1')).toBeNull();
+    });
+
+    test('should maintain custom attributes sort order', () => {
+        const customAttributes: CustomAttributeSet = {
+            attr1: {
+                id: 'attr1',
+                name: 'Department',
+                value: 'Engineering',
+                sort_order: 1,
+            },
+            attr2: {
+                id: 'attr2',
+                name: 'Location',
+                value: 'Remote',
+                sort_order: 0,
+            },
+            attr3: {
+                id: 'attr3',
+                name: 'Start Date',
+                value: '2023',
+                sort_order: 2,
+            },
+        };
+
+        const props = {
+            ...baseProps,
+            enableCustomAttributes: true,
+            userInfo: {
+                ...baseProps.userInfo,
+                customAttributes,
+            },
+        };
+
+        const {getAllByTestId} = renderWithIntl(
+            <ProfileForm
+                {...props}
+            />,
+        );
+
+        const attributeFields = getAllByTestId(/^edit_profile_form.customAttributes\.attr\d$/);
+
+        // Verify fields are rendered in sort order
+        expect(attributeFields[0].props.testID).toBe('edit_profile_form.customAttributes.attr2'); // sort_order: 0
+        expect(attributeFields[1].props.testID).toBe('edit_profile_form.customAttributes.attr1'); // sort_order: 1
+        expect(attributeFields[2].props.testID).toBe('edit_profile_form.customAttributes.attr3'); // sort_order: 2
     });
 });

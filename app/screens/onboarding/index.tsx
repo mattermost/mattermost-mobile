@@ -18,6 +18,7 @@ import Animated, {ReduceMotion, useAnimatedStyle, useDerivedValue, useSharedValu
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@constants';
+import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
 import {goToScreen, loginAnimationOptions} from '@screens/navigation';
 
@@ -27,8 +28,10 @@ import SlideItem from './slide';
 import useSlidesData from './slides_data';
 
 import type {LaunchProps} from '@typings/launch';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 interface OnboardingProps extends LaunchProps {
+    componentId: AvailableScreens;
     theme: Theme;
 }
 
@@ -49,6 +52,7 @@ const styles = StyleSheet.create({
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const Onboarding = ({
+    componentId,
     theme,
     ...props
 }: OnboardingProps) => {
@@ -133,6 +137,7 @@ const Onboarding = ({
         <View
             style={styles.onBoardingContainer}
             testID='onboarding.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
             <Background theme={theme}/>
             <AnimatedSafeArea

@@ -61,10 +61,19 @@ export function useKeyboardHeightWithDuration() {
 
     useEffect(() => {
         const show = Keyboard.addListener(Platform.select({ios: 'keyboardWillShow', default: 'keyboardDidShow'}), async (event) => {
+            // Do not use set the height on Android versions below 11
+            if (Platform.OS === 'android' && Platform.Version < 30) {
+                return;
+            }
             setKeyboardHeight({height: event.endCoordinates.height, duration: event.duration});
         });
 
         const hide = Keyboard.addListener(Platform.select({ios: 'keyboardWillHide', default: 'keyboardDidHide'}), (event) => {
+            // Do not use set the height on Android versions below 11
+            if (Platform.OS === 'android' && Platform.Version < 30) {
+                return;
+            }
+
             if (updateTimeout.current != null) {
                 clearTimeout(updateTimeout.current);
                 updateTimeout.current = null;

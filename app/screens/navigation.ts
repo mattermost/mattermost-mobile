@@ -3,15 +3,14 @@
 
 /* eslint-disable max-lines */
 
-import RNUtils from '@mattermost/rnutils';
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, StatusBar, Platform, Alert, type EmitterSubscription} from 'react-native';
-import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription, type ComponentDidAppearEvent} from 'react-native-navigation';
+import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
 import {Events, Screens, Launch} from '@constants';
-import {NOT_READY, SCREENS_WITH_EXTRA_KEYBOARD} from '@constants/screens';
+import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
@@ -40,8 +39,15 @@ export function registerNavigationListeners() {
         Navigation.events().registerScreenPoppedListener(onPoppedListener),
         Navigation.events().registerCommandListener(onCommandListener),
         Navigation.events().registerComponentWillAppearListener(onScreenWillAppear),
-        Navigation.events().registerComponentDidAppearListener(onScreenDidAppear),
-        Navigation.events().registerComponentDidDisappearListener(onScreenDidDisappear),
+
+        /**
+         * For the time being and until we add the emoji picker in the keyboard area
+         * will keep Android as adjustResize cause useAnimatedKeyboard from reanimated
+         * is reporting the wrong values when the keyboard was opened but we switch
+         * to a different channel or thread.
+         */
+        // Navigation.events().registerComponentDidAppearListener(onScreenDidAppear),
+        // Navigation.events().registerComponentDidDisappearListener(onScreenDidDisappear),
     ];
 }
 
@@ -79,31 +85,10 @@ function onPoppedListener({componentId}: ScreenPoppedEvent) {
     NavigationStore.removeScreenFromStack(componentId as AvailableScreens);
 }
 
-function setAndroidSoftKeyboard(screen: AvailableScreens) {
-    if (Platform.OS !== 'android') {
-        return;
-    }
-
-    if (SCREENS_WITH_EXTRA_KEYBOARD.has(screen) || (isTablet() && screen === Screens.HOME)) {
-        RNUtils.setSoftKeyboardToAdjustNothing();
-    } else {
-        RNUtils.setSoftKeyboardToAdjustResize();
-    }
-}
-
 function onScreenWillAppear(event: ComponentWillAppearEvent) {
     if (event.componentId === Screens.HOME) {
         DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
     }
-}
-
-function onScreenDidAppear(event: ComponentDidAppearEvent) {
-    setAndroidSoftKeyboard(event.componentId as AvailableScreens);
-}
-
-function onScreenDidDisappear() {
-    const screen = NavigationStore.getVisibleScreen();
-    setAndroidSoftKeyboard(screen);
 }
 
 export const loginAnimationOptions = () => {

@@ -14,6 +14,7 @@ import {getAllServerCredentials, removeServerCredentials} from '@init/credential
 import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
@@ -31,7 +32,7 @@ type LogoutCallbackArg = {
     removeServer: boolean;
 }
 
-export class SessionManager {
+export class SessionManagerSingleton {
     private previousAppState: AppStateStatus;
     private scheduling = false;
     private terminatingSessionUrl = new Set<string>();
@@ -114,6 +115,7 @@ export class SessionManager {
         cancelSessionNotification(serverUrl);
         await removeServerCredentials(serverUrl);
         PushNotifications.removeServerNotifications(serverUrl);
+        SecurityManager.removeServer(serverUrl);
 
         NetworkManager.invalidateClient(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);
@@ -207,4 +209,5 @@ export class SessionManager {
     };
 }
 
-export default new SessionManager();
+const SessionManager = new SessionManagerSingleton();
+export default SessionManager;

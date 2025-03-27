@@ -3,11 +3,10 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
-import {combineLatestWith, map, switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {observeAllMyChannelNotifyProps, queryMyChannelsByTeam} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {observeMentionCount, observeTeam} from '@queries/servers/team';
+import {observeIsTeamUnread, observeMentionCount, observeTeam} from '@queries/servers/team';
 
 import TeamItem from './team_item';
 
@@ -19,17 +18,6 @@ type WithTeamsArgs = WithDatabaseArgs & {
 }
 
 const enhance = withObservables(['myTeam'], ({myTeam, database}: WithTeamsArgs) => {
-    const myChannels = queryMyChannelsByTeam(database, myTeam.id).observeWithColumns(['mentions_count', 'is_unread']);
-    const notifyProps = observeAllMyChannelNotifyProps(database);
-    const hasUnreads = myChannels.pipe(
-        combineLatestWith(notifyProps),
-        // eslint-disable-next-line max-nested-callbacks
-        map(([mycs, notify]) => mycs.reduce((acc, v) => {
-            const isMuted = notify?.[v.id]?.mark_unread === 'mention';
-            return acc || (v.isUnread && !isMuted);
-        }, false)),
-    );
-
     const selected = observeCurrentTeamId(database).pipe(
         switchMap((ctid) => of$(ctid === myTeam.id)),
         distinctUntilChanged(),
@@ -39,7 +27,7 @@ const enhance = withObservables(['myTeam'], ({myTeam, database}: WithTeamsArgs) 
         selected,
         team: observeTeam(database, myTeam.id),
         mentionCount: observeMentionCount(database, myTeam.id, false),
-        hasUnreads,
+        hasUnreads: observeIsTeamUnread(database, myTeam.id),
     };
 });
 

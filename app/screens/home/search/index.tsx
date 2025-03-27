@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import compose from 'lodash/fp/compose';
 
 import {observeConfigBooleanValue, observeCurrentTeamId} from '@queries/servers/system';
-import {queryJoinedTeams} from '@queries/servers/team';
+import {observeSortedJoinedTeams} from '@queries/servers/team';
 
 import SearchScreen from './search';
 
@@ -15,8 +15,8 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
     return {
         teamId: currentTeamId,
-        teams: queryJoinedTeams(database).observe(),
-        crossTeamSearchEnabled: observeConfigBooleanValue(database, 'FeatureFlagExperimentalCrossTeamSearch'),
+        teams: observeSortedJoinedTeams(database),
+        crossTeamSearchEnabled: observeConfigBooleanValue(database, 'EnableCrossTeamSearch'),
     };
 });
 

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useMemo} from 'react';
-import {URL, URLSearchParams} from 'react-native-url-polyfill';
+import {URL} from 'react-native-url-polyfill';
 
 export type ExternalLinkQueryParams = {
     utm_source?: string;
@@ -30,7 +30,7 @@ export function useExternalLink(
     overwriteQueryParams: ExternalLinkQueryParams = {},
 ): [string, Record<string, string>] {
     return useMemo(() => {
-        if (!href?.includes('mattermost.com')) {
+        if (!href?.includes('mattermost.com') || href.startsWith('mailto:')) {
             return [href, {}];
         }
 
@@ -47,7 +47,7 @@ export function useExternalLink(
             ...overwriteQueryParams,
             ...existingQueryParamsObj,
         };
-        parsedUrl.search = new URLSearchParams(queryParams).toString();
+        parsedUrl.search = Object.entries(queryParams).map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
 
         return [parsedUrl.toString(), queryParams];
     }, [href, isCloud, location, overwriteQueryParams, telemetryId, userId]);

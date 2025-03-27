@@ -3,10 +3,13 @@
 
 /* eslint-disable max-lines */
 
-import {Preferences, Screens} from '@constants';
+import {processReceivedThreads} from '@actions/local/thread';
+import {Config, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import TestHelper from '@test/test_helper';
 
+import {prepareAllMyChannels} from './channel';
 import {getTeamHistory} from './system';
 import {
     getCurrentTeam,
@@ -37,6 +40,8 @@ import {
     prepareMyTeams,
     queryTeamByName,
     getDefaultTeamId,
+    observeIsTeamUnread,
+    observeSortedJoinedTeams,
 } from './team';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -1020,5 +1025,292 @@ describe('Team Queries', () => {
                 });
             });
         }, 1500);
+    });
+
+    describe('observeIsTeamUnread', () => {
+        const userId = 'user_id';
+        const waitTime = 50;
+
+        beforeEach(async () => {
+            await DatabaseManager.init([serverUrl]);
+            const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            database = serverDatabaseAndOperator.database;
+            operator = serverDatabaseAndOperator.operator;
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: userId}],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'CollapsedThreads', value: Config.ALWAYS_ON},
+                    {id: 'Version', value: '7.6.0'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+        });
+
+        afterEach(async () => {
+            await DatabaseManager.destroyServerDatabase(serverUrl);
+        });
+
+        it('should return true when there are channel unreads', async () => {
+            const subscriptionNext = jest.fn();
+            const notify_props = {mark_unread: 'all' as const};
+            const result = observeIsTeamUnread(database, teamId);
+
+            result.subscribe({next: subscriptionNext});
+            await TestHelper.wait(waitTime);
+
+            // The subscription always return the first value
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            // Setup initial state - channel with no unreads
+            let models = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 20})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'channel1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            await operator.batchRecords(models, 'test');
+            await TestHelper.wait(waitTime);
+
+            // No change
+            expect(subscriptionNext).not.toHaveBeenCalled();
+
+            // Update channel with new messages
+            models = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'channel1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            await operator.batchRecords(models, 'test');
+            await TestHelper.wait(waitTime);
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
+        });
+
+        it('should return true when there are thread unreads', async () => {
+            const subscriptionNext = jest.fn();
+            const channelId = 'channel1';
+            const threadId = 'thread1';
+
+            const result = observeIsTeamUnread(database, teamId);
+
+            result.subscribe({next: subscriptionNext});
+            await TestHelper.wait(waitTime);
+
+            // The subscription always return the first value
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            const channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: channelId, team_id: teamId, total_msg_count: 20})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: channelId,
+                    user_id: userId,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            const threadModels = await processReceivedThreads(serverUrl, [TestHelper.fakeThread({
+                id: threadId,
+                reply_count: 1,
+                unread_replies: 0,
+                post: TestHelper.fakePost({id: threadId, channel_id: channelId}),
+                is_following: true,
+            })], teamId, true);
+            await operator.batchRecords([...channelModels, ...threadModels.models!], 'test');
+
+            // No change
+            expect(subscriptionNext).not.toHaveBeenCalled();
+
+            await processReceivedThreads(serverUrl, [TestHelper.fakeThread({
+                id: threadId,
+                reply_count: 1,
+                unread_replies: 1,
+                post: TestHelper.fakePost({id: threadId, channel_id: channelId}),
+                is_following: true,
+            })], teamId, false);
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
+        });
+
+        it('changes in other teams should not trigger the subscription', async () => {
+            const subscriptionNext = jest.fn();
+            const channelId = 'channel1';
+            const threadId = 'thread1';
+            const otherTeamId = 'other_team';
+
+            const result = observeIsTeamUnread(database, teamId);
+
+            result.subscribe({next: subscriptionNext});
+            await TestHelper.wait(waitTime);
+
+            // The subscription always return the first value
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            let channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: channelId, team_id: otherTeamId, total_msg_count: 20})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: channelId,
+                    user_id: userId,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            let threadModels = await processReceivedThreads(serverUrl, [TestHelper.fakeThread({
+                id: threadId,
+                reply_count: 1,
+                unread_replies: 0,
+                post: TestHelper.fakePost({id: threadId, channel_id: channelId}),
+                is_following: true,
+            })], teamId, true);
+            await operator.batchRecords([...channelModels, ...threadModels.models!], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+
+            channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: channelId, team_id: otherTeamId, total_msg_count: 30})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: channelId,
+                    user_id: userId,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            threadModels = await processReceivedThreads(serverUrl, [TestHelper.fakeThread({
+                id: threadId,
+                reply_count: 1,
+                unread_replies: 1,
+                post: TestHelper.fakePost({id: threadId, channel_id: channelId}),
+                is_following: true,
+            })], teamId, true);
+            await operator.batchRecords([...channelModels, ...threadModels.models!], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('observeSortedJoinedTeams', () => {
+        it('should return teams sorted by preference order', (done) => {
+            const teamIds = ['team1', 'team2', 'team3'];
+            const teams = teamIds.map((id, index) => createTestTeam(id, `team${index + 1}`, `Team ${index + 1}`));
+            const myTeams = teamIds.map((id) => ({id, roles: 'team_role'}));
+
+            operator.handleTeam({teams, prepareRecordsOnly: false}).then(() => {
+                operator.handleMyTeam({myTeams, prepareRecordsOnly: false}).then(() => {
+                    operator.handlePreferences({
+                        preferences: [{
+                            category: Preferences.CATEGORIES.TEAMS_ORDER,
+                            name: '',
+                            user_id: 'me',
+                            value: 'team2,team1,team3',
+                        }],
+                        prepareRecordsOnly: false,
+                    }).then(() => {
+                        observeSortedJoinedTeams(database).subscribe((sortedTeams) => {
+                            expect(sortedTeams.map((t) => t.id)).toEqual(['team2', 'team1', 'team3']);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('should return teams sorted alphabetically if no preference order', (done) => {
+            const teamIds = ['team1', 'team2', 'team3'];
+            const teams = [
+                createTestTeam('team1', 'team1', 'Zebra'),
+                createTestTeam('team2', 'team2', 'Apple'),
+                createTestTeam('team3', 'team3', 'Banana'),
+            ];
+            const myTeams = teamIds.map((id) => ({id, roles: 'team_role'}));
+
+            operator.handleTeam({teams, prepareRecordsOnly: false}).then(() => {
+                operator.handleMyTeam({myTeams, prepareRecordsOnly: false}).then(() => {
+                    observeSortedJoinedTeams(database).subscribe((sortedTeams) => {
+                        expect(sortedTeams.map((t) => t.displayName)).toEqual(['Apple', 'Banana', 'Zebra']);
+                        done();
+                    });
+                });
+            });
+        });
+
+        it('should return teams sorted alphabetically if preference order is empty', (done) => {
+            const teamIds = ['team1', 'team2', 'team3'];
+            const teams = [
+                createTestTeam('team1', 'team1', 'Zebra'),
+                createTestTeam('team2', 'team2', 'Apple'),
+                createTestTeam('team3', 'team3', 'Banana'),
+            ];
+            const myTeams = teamIds.map((id) => ({id, roles: 'team_role'}));
+
+            operator.handleTeam({teams, prepareRecordsOnly: false}).then(() => {
+                operator.handleMyTeam({myTeams, prepareRecordsOnly: false}).then(() => {
+                    operator.handlePreferences({
+                        preferences: [{
+                            category: Preferences.CATEGORIES.TEAMS_ORDER,
+                            name: '',
+                            user_id: 'me',
+                            value: '',
+                        }],
+                        prepareRecordsOnly: false,
+                    }).then(() => {
+                        observeSortedJoinedTeams(database).subscribe((sortedTeams) => {
+                            expect(sortedTeams.map((t) => t.displayName)).toEqual(['Apple', 'Banana', 'Zebra']);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('should return teams sorted alphabetically if preference order does not match any team', (done) => {
+            const teamIds = ['team1', 'team2', 'team3'];
+            const teams = [
+                createTestTeam('team1', 'team1', 'Zebra'),
+                createTestTeam('team2', 'team2', 'Apple'),
+                createTestTeam('team3', 'team3', 'Banana'),
+            ];
+            const myTeams = teamIds.map((id) => ({id, roles: 'team_role'}));
+
+            operator.handleTeam({teams, prepareRecordsOnly: false}).then(() => {
+                operator.handleMyTeam({myTeams, prepareRecordsOnly: false}).then(() => {
+                    operator.handlePreferences({
+                        preferences: [{
+                            category: Preferences.CATEGORIES.TEAMS_ORDER,
+                            name: '',
+                            user_id: 'me',
+                            value: 'team4,team5',
+                        }],
+                        prepareRecordsOnly: false,
+                    }).then(() => {
+                        observeSortedJoinedTeams(database).subscribe((sortedTeams) => {
+                            expect(sortedTeams.map((t) => t.displayName)).toEqual(['Apple', 'Banana', 'Zebra']);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 });

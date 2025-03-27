@@ -16,6 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -126,7 +127,7 @@ const EditProfile = ({
             }
             const {error: fetchError, attributes} = await fetchCustomAttributes(serverUrl, currentUser.id);
             if (!fetchError && attributes) {
-                setUserInfo((prev) => ({...prev, customAttributes: attributes} as UserInfo));
+                setUserInfo((prev: UserInfo) => ({...prev, customAttributes: attributes} as UserInfo));
             }
         };
 
@@ -199,7 +200,7 @@ const EditProfile = ({
         const update = {...userInfo};
         if (fieldKey.startsWith(CUSTOM_ATTRS_PREFIX_NAME)) {
             const attrKey = fieldKey.slice(CUSTOM_ATTRS_PREFIX_NAME.length);
-            update.customAttributes = {...update.customAttributes, [attrKey]: {id: attrKey, name: userInfo.customAttributes[attrKey].name, value}};
+            update.customAttributes = {...update.customAttributes, [attrKey]: {id: attrKey, name: userInfo.customAttributes[attrKey].name, value, sort_order: userInfo.customAttributes[attrKey].sort_order}};
         } else {
             switch (fieldKey) {
             // typescript doesn't like to do update[fieldkey] as it might containg a customAttribute case
@@ -295,7 +296,10 @@ const EditProfile = ({
     ) : null;
 
     return (
-        <>
+        <View
+            style={styles.flex}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+        >
             {isTablet &&
                 <TabletTitle
                     action={buttonText}
@@ -312,7 +316,7 @@ const EditProfile = ({
             >
                 {content}
             </SafeAreaView>
-        </>
+        </View>
     );
 };
 

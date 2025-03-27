@@ -5,6 +5,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
+import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 
 type AfterLoginArgs = {
@@ -33,8 +34,10 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
 
         const credentials = await getServerCredentials(serverUrl);
         if (credentials?.token) {
+            SecurityManager.addServer(serverUrl, clData.config, true);
             WebsocketManager.createClient(serverUrl, credentials.token);
             await WebsocketManager.initializeClient(serverUrl, 'Login');
+            SecurityManager.setActiveServer(serverUrl);
         }
 
         return {};
