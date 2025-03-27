@@ -10,6 +10,7 @@ import {MM_TABLES} from '@constants/database';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type TeamModelInterface from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
@@ -21,6 +22,7 @@ const {
     CHANNEL,
     TEAM,
     MY_TEAM,
+    SCHEDULED_POST,
     TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
     TEAM_SEARCH_HISTORY,
@@ -46,6 +48,9 @@ export default class TeamModel extends Model implements TeamModelInterface {
 
         /** A TEAM can be associated to one MY_TEAM (relationship is 1:1) */
         [MY_TEAM]: {type: 'has_many', foreignKey: 'id'},
+
+        /** A TEAM has a 1:N relationship with SCHEDULED_POST. A TEAM can have multiple scheduled posts */
+        [SCHEDULED_POST]: {type: 'has_many', foreignKey: 'team_id'},
 
         /** A TEAM has a 1:N relationship with TEAM_MEMBERSHIP. A TEAM can regroup multiple users */
         [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'team_id'},
@@ -101,6 +106,9 @@ export default class TeamModel extends Model implements TeamModelInterface {
 
     /** teamChannelHistory : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
     @immutableRelation(TEAM_CHANNEL_HISTORY, 'id') teamChannelHistory!: Relation<TeamChannelHistoryModel>;
+
+    /** scheduledPosts : All scheduled posts associated with this team */
+    @children(SCHEDULED_POST) scheduledPosts!: Query<ScheduledPostModel>;
 
     /** members : All the users associated with this team */
     @children(TEAM_MEMBERSHIP) members!: Query<TeamMembershipModel>;

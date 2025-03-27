@@ -18,6 +18,7 @@ export default schemaMigrations({migrations: [
                 name: SCHEDULED_POST,
                 columns: [
                     {name: 'channel_id', type: 'string', isIndexed: true},
+                    {name: 'team_id', type: 'string', isIndexed: true},
                     {name: 'message', type: 'string'},
                     {name: 'files', type: 'string'},
                     {name: 'root_id', type: 'string', isIndexed: true},

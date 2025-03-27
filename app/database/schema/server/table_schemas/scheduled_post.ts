@@ -11,6 +11,7 @@ export default tableSchema({
     name: SCHEDULED_POST,
     columns: [
         {name: 'channel_id', type: 'string', isIndexed: true},
+        {name: 'team_id', type: 'string', isIndexed: true},
         {name: 'files', type: 'string'},
         {name: 'message', type: 'string'},
         {name: 'root_id', type: 'string', isIndexed: true},

@@ -11,7 +11,7 @@ import {safeParseJSON} from '@utils/helpers';
 import type {Database} from '@nozbe/watermelondb';
 import type ScheduledPostModelInterface from '@typings/database/models/servers/scheduled_post';
 
-const {CHANNEL, POST, SCHEDULED_POST} = MM_TABLES.SERVER;
+const {CHANNEL, POST, SCHEDULED_POST, TEAM} = MM_TABLES.SERVER;
 
 /**
  * The Scheduled post model represents a scheduled post anywhere in Mattermost - channels, DMs, or GMs.
@@ -26,12 +26,18 @@ export default class ScheduledPostModel extends Model implements ScheduledPostMo
         /** A SCHEDULED_POST can belong to only one CHANNEL  */
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
 
+        /** A SCHEDULED_POST can belong to only one team */
+        [TEAM]: {type: 'belongs_to', key: 'team_id'},
+
         /** A SCHEDULED_POST is associated to only one POST */
         [POST]: {type: 'belongs_to', key: 'root_id'},
     };
 
     /** channel_id : The foreign key pointing to the channel in which the schedule post was made */
     @field('channel_id') channelId!: string;
+
+     /** team_id : The foreign key pointing to the team in which the scheduled post was made */
+     @field('team_id') teamId!: string;
 
     /** message : The scheduled post message */
     @field('message') message!: string;
@@ -63,6 +69,7 @@ export default class ScheduledPostModel extends Model implements ScheduledPostMo
         const scheduledPost: ScheduledPost = {
             id: this.id,
             channel_id: this.channelId,
+            team_id: this.teamId,
             root_id: this.rootId,
             message: this.message,
             files: this.files,

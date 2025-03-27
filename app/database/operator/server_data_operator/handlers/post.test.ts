@@ -187,6 +187,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
             {
                 id: 'scheduled_post_id',
                 channel_id: 'channel_id',
+                team_id: 'team_id',
                 root_id: '',
                 message: 'test scheduled post',
                 scheduled_at: 123,
@@ -199,6 +200,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
             {
                 id: 'scheduled_post_id_2',
                 channel_id: 'channel_id',
+                team_id: 'team_id',
                 root_id: '',
                 message: 'test scheduled post 2',
                 scheduled_at: 123,

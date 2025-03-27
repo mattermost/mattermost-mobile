@@ -17,6 +17,9 @@ declare class ScheduledPostModel extends Model {
     /** channel_id : The foreign key pointing to the channel in which the scheduled post was made */
     channelId: string;
 
+    /** team_id : The foreign key pointing to the team in which the scheduled post was made */
+    teamId: string;
+
     /** message : The schedule post message */
     message: string;
 
