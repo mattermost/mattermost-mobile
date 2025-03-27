@@ -30,10 +30,13 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs<
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // id of group comes from server response
     const fieldsMapper = (group: GroupModel) => {
-        group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record?.id || '';
+        group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record!.id;
         group.name = raw.name;
         group.displayName = raw.display_name;
         group.source = raw.source;

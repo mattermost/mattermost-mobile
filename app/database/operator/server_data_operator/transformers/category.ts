@@ -24,15 +24,18 @@ export const transformCategoryRecord = ({action, database, value}: TransformerAr
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // id of category comes from server response
     const fieldsMapper = (category: CategoryModel) => {
-        category._raw.id = isCreateAction ? (raw?.id ?? category.id) : record?.id || '';
+        category._raw.id = isCreateAction ? (raw?.id ?? category.id) : record!.id;
         category.displayName = raw.display_name;
         category.sorting = raw.sorting || 'recent';
         category.sortOrder = raw.sort_order === 0 ? 0 : raw.sort_order / 10; // Sort order from server is in multiples of 10
         category.muted = raw.muted ?? false;
-        category.collapsed = isCreateAction ? false : record?.collapsed ?? false;
+        category.collapsed = isCreateAction ? false : record!.collapsed;
         category.type = raw.type;
         category.teamId = raw.team_id;
     };
@@ -57,10 +60,13 @@ export const transformCategoryChannelRecord = ({action, database, value}: Transf
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (categoryChannel: CategoryChannelModel) => {
-        categoryChannel._raw.id = isCreateAction ? (raw?.id ?? categoryChannel.id) : record?.id || '';
+        categoryChannel._raw.id = isCreateAction ? (raw?.id ?? categoryChannel.id) : record!.id;
         categoryChannel.channelId = raw.channel_id;
         categoryChannel.categoryId = raw.category_id;
         categoryChannel.sortOrder = raw.sort_order;

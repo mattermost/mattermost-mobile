@@ -28,10 +28,13 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (thread: ThreadModel) => {
-        thread._raw.id = isCreateAction ? (raw?.id ?? thread.id) : record?.id || '';
+        thread._raw.id = isCreateAction ? (raw?.id ?? thread.id) : record!.id;
 
         // When post is individually fetched, we get last_reply_at as 0, so we use the record's value.
         // If there is no reply at, we default to the post's create_at
@@ -66,10 +69,13 @@ export const transformThreadParticipantRecord = ({action, database, value}: Tran
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // id of participant comes from server response
     const fieldsMapper = (participant: ThreadParticipantModel) => {
-        participant._raw.id = isCreateAction ? `${raw.thread_id}-${raw.id}` : record?.id || '';
+        participant._raw.id = isCreateAction ? `${raw.thread_id}-${raw.id}` : record!.id;
         participant.threadId = raw.thread_id;
         participant.userId = raw.id;
     };
@@ -87,9 +93,12 @@ export const transformThreadInTeamRecord = ({action, database, value}: Transform
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (threadInTeam: ThreadInTeamModel) => {
-        threadInTeam._raw.id = isCreateAction ? `${raw.thread_id}-${raw.team_id}` : record?.id || '';
+        threadInTeam._raw.id = isCreateAction ? `${raw.thread_id}-${raw.team_id}` : record!.id;
         threadInTeam.threadId = raw.thread_id;
         threadInTeam.teamId = raw.team_id;
     };
@@ -107,9 +116,12 @@ export const transformTeamThreadsSyncRecord = ({action, database, value}: Transf
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (teamThreadsSync: TeamThreadsSyncModel) => {
-        teamThreadsSync._raw.id = isCreateAction ? (raw?.id ?? teamThreadsSync.id) : record?.id || '';
+        teamThreadsSync._raw.id = isCreateAction ? (raw?.id ?? teamThreadsSync.id) : record!.id;
         teamThreadsSync.earliest = raw.earliest || record?.earliest || 0;
         teamThreadsSync.latest = raw.latest || record?.latest || 0;
     };

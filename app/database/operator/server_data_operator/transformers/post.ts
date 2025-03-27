@@ -28,10 +28,13 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs<P
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (post: PostModel) => {
-        post._raw.id = isCreateAction ? (raw?.id ?? post.id) : record?.id || '';
+        post._raw.id = isCreateAction ? (raw?.id ?? post.id) : record!.id;
         post.channelId = raw.channel_id;
         post.createAt = raw.create_at;
         post.deleteAt = raw.delete_at || raw.delete_at === 0 ? raw?.delete_at : 0;
@@ -75,9 +78,12 @@ export const transformPostInThreadRecord = ({action, database, value}: Transform
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (postsInThread: PostsInThreadModel) => {
-        postsInThread._raw.id = isCreateAction ? (raw.id || postsInThread.id) : record?.id || '';
+        postsInThread._raw.id = isCreateAction ? (raw.id || postsInThread.id) : record!.id;
         postsInThread.rootId = raw.root_id;
         postsInThread.earliest = raw.earliest;
         postsInThread.latest = raw.latest!;
@@ -135,9 +141,12 @@ export const transformPostsInChannelRecord = ({action, database, value}: Transfo
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (postsInChannel: PostsInChannelModel) => {
-        postsInChannel._raw.id = isCreateAction ? (raw.id || postsInChannel.id) : record?.id || '';
+        postsInChannel._raw.id = isCreateAction ? (raw.id || postsInChannel.id) : record!.id;
         postsInChannel.channelId = raw.channel_id;
         postsInChannel.earliest = raw.earliest;
         postsInChannel.latest = raw.latest;

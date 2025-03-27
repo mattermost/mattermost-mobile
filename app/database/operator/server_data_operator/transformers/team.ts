@@ -30,10 +30,13 @@ export const transformTeamMembershipRecord = ({action, database, value}: Transfo
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (teamMembership: TeamMembershipModel) => {
-        teamMembership._raw.id = isCreateAction ? (raw?.id ?? teamMembership.id) : record?.id || '';
+        teamMembership._raw.id = isCreateAction ? (raw?.id ?? teamMembership.id) : record!.id;
         teamMembership.teamId = raw.team_id;
         teamMembership.userId = raw.user_id;
         teamMembership.schemeAdmin = raw.scheme_admin;
@@ -59,10 +62,13 @@ export const transformTeamRecord = ({action, database, value}: TransformerArgs<T
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (team: TeamModel) => {
-        team._raw.id = isCreateAction ? (raw?.id ?? team.id) : record?.id || '';
+        team._raw.id = isCreateAction ? (raw?.id ?? team.id) : record!.id;
         team.isAllowOpenInvite = raw.allow_open_invite;
         team.description = raw.description;
         team.displayName = raw.display_name;
@@ -95,9 +101,12 @@ export const transformTeamChannelHistoryRecord = ({action, database, value}: Tra
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (teamChannelHistory: TeamChannelHistoryModel) => {
-        teamChannelHistory._raw.id = isCreateAction ? (raw.id || teamChannelHistory.id) : record?.id || '';
+        teamChannelHistory._raw.id = isCreateAction ? (raw.id || teamChannelHistory.id) : record!.id;
         teamChannelHistory.channelIds = raw.channel_ids;
     };
 
@@ -121,9 +130,12 @@ export const transformTeamSearchHistoryRecord = ({action, database, value}: Tran
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (teamSearchHistory: TeamSearchHistoryModel) => {
-        teamSearchHistory._raw.id = isCreateAction ? (teamSearchHistory.id) : record?.id || '';
+        teamSearchHistory._raw.id = isCreateAction ? (teamSearchHistory.id) : record!.id;
         teamSearchHistory.createdAt = raw.created_at;
         teamSearchHistory.displayTerm = raw.display_term;
         teamSearchHistory.term = raw.term;
@@ -150,9 +162,12 @@ export const transformMyTeamRecord = ({action, database, value}: TransformerArgs
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (myTeam: MyTeamModel) => {
-        myTeam._raw.id = isCreateAction ? (raw.id || myTeam.id) : record?.id || '';
+        myTeam._raw.id = isCreateAction ? (raw.id || myTeam.id) : record!.id;
         myTeam.roles = raw.roles;
     };
 

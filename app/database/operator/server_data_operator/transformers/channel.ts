@@ -33,10 +33,13 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (channel: ChannelModel) => {
-        channel._raw.id = isCreateAction ? (raw?.id ?? channel.id) : record?.id || '';
+        channel._raw.id = isCreateAction ? (raw?.id ?? channel.id) : record!.id;
         channel.createAt = raw.create_at;
         channel.creatorId = raw.creator_id;
         channel.deleteAt = raw.delete_at;
@@ -70,9 +73,12 @@ export const transformMyChannelSettingsRecord = ({action, database, value}: Tran
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (myChannelSetting: MyChannelSettingsModel) => {
-        myChannelSetting._raw.id = isCreateAction ? (raw.channel_id || myChannelSetting.id) : record?.id || '';
+        myChannelSetting._raw.id = isCreateAction ? (raw.channel_id || myChannelSetting.id) : record!.id;
         myChannelSetting.notifyProps = raw.notify_props;
     };
 
@@ -96,9 +102,12 @@ export const transformChannelInfoRecord = ({action, database, value}: Transforme
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (channelInfo: ChannelInfoModel) => {
-        channelInfo._raw.id = isCreateAction ? (raw.id || channelInfo.id) : record?.id || '';
+        channelInfo._raw.id = isCreateAction ? (raw.id || channelInfo.id) : record!.id;
         channelInfo.guestCount = raw.guest_count ?? channelInfo.guestCount ?? 0;
         channelInfo.header = raw.header ?? channelInfo.header ?? '';
         channelInfo.memberCount = raw.member_count ?? channelInfo.memberCount ?? 0;
@@ -127,9 +136,12 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (myChannel: MyChannelModel) => {
-        myChannel._raw.id = isCreateAction ? (raw.channel_id || myChannel.id) : record?.id || '';
+        myChannel._raw.id = isCreateAction ? (raw.channel_id || myChannel.id) : record!.id;
         myChannel.roles = raw.roles;
 
         // ignoring msg_count_root because msg_count, mention_count, last_post_at is already calculated in "handleMyChannel" based on CRT is enabled or not
@@ -163,10 +175,13 @@ export const transformChannelMembershipRecord = ({action, database, value}: Tran
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (channelMember: ChannelMembershipModel) => {
-        channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record?.id || '';
+        channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record!.id;
         channelMember.channelId = raw.channel_id;
         channelMember.userId = raw.user_id;
         channelMember.schemeAdmin = raw.scheme_admin ?? false;
@@ -192,10 +207,13 @@ export const transformChannelBookmarkRecord = ({action, database, value}: Transf
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (bookmark: ChannelBookmarkModel) => {
-        bookmark._raw.id = isCreateAction ? (raw?.id ?? bookmark.id) : record?.id || '';
+        bookmark._raw.id = isCreateAction ? (raw?.id ?? bookmark.id) : record!.id;
         bookmark.createAt = raw.create_at;
         bookmark.deleteAt = raw.delete_at;
         bookmark.updateAt = raw.update_at;

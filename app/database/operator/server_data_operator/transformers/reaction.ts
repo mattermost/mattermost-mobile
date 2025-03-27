@@ -20,10 +20,13 @@ export const transformReactionRecord = ({action, database, value}: TransformerAr
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // id of reaction comes from server response
     const fieldsMapper = (reaction: ReactionModel) => {
-        reaction._raw.id = isCreateAction ? (raw?.id ?? reaction.id) : record?.id || '';
+        reaction._raw.id = isCreateAction ? (raw?.id ?? reaction.id) : record!.id;
         reaction.userId = raw.user_id;
         reaction.postId = raw.post_id;
         reaction.emojiName = raw.emoji_name;

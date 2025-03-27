@@ -30,10 +30,13 @@ export const transformCustomEmojiRecord = ({action, database, value}: Transforme
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (emoji: CustomEmojiModel) => {
-        emoji._raw.id = isCreateAction ? (raw?.id ?? emoji.id) : record?.id || '';
+        emoji._raw.id = isCreateAction ? (raw?.id ?? emoji.id) : record!.id;
         emoji.name = raw.name;
     };
 
@@ -57,10 +60,13 @@ export const transformRoleRecord = ({action, database, value}: TransformerArgs<R
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (role: RoleModel) => {
-        role._raw.id = isCreateAction ? (raw?.id ?? role.id) : record?.id || '';
+        role._raw.id = isCreateAction ? (raw?.id ?? role.id) : record!.id;
         role.name = raw?.name;
         role.permissions = raw?.permissions;
     };
@@ -135,10 +141,13 @@ export const transformFileRecord = ({action, database, value}: TransformerArgs<F
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (file: FileModel) => {
-        file._raw.id = isCreateAction ? (raw.id || file.id) : record?.id || '';
+        file._raw.id = isCreateAction ? (raw.id || file.id) : record!.id;
         file.postId = raw.post_id || '';
         file.name = raw.name;
         file.extension = raw.extension;
