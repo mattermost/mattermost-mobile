@@ -8,10 +8,12 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {Preferences, License} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
+import {CHANNEL} from '@constants/screens';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type ConfigModel from '@typings/database/models/servers/config';
 import type SystemModel from '@typings/database/models/servers/system';
 
@@ -50,6 +52,15 @@ export const getCurrentTeamId = async (serverDatabase: Database): Promise<string
     try {
         const currentTeamId = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID);
         return currentTeamId?.value || '';
+    } catch {
+        return '';
+    }
+};
+
+export const getTeamIdByChannelId = async (serverDatabase: Database, channelId: string): Promise<string> => {
+    try {
+        const channel = await serverDatabase.get<ChannelModel>(CHANNEL).find(channelId);
+        return channel?.teamId || '';
     } catch {
         return '';
     }

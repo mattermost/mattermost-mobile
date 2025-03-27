@@ -253,7 +253,7 @@ export async function sendMessageWithAlert({title, channelName, intl, sendMessag
     );
 }
 
-export function scheduledPostFromPost(post: Post, schedulingInfo: SchedulingInfo, postPriority?: PostPriority, postFiles?: FileInfo[]): ScheduledPost {
+export function scheduledPostFromPost(post: Post, schedulingInfo: SchedulingInfo, postPriority?: PostPriority, postFiles?: FileInfo[], teamId?: string): ScheduledPost {
     const fileIDs: string[] = [];
     if (postFiles) {
         postFiles.forEach((file) => {
@@ -271,5 +271,6 @@ export function scheduledPostFromPost(post: Post, schedulingInfo: SchedulingInfo
             files: postFiles,
         },
         file_ids: fileIDs,
+        team_id: teamId || '',
     };
 }

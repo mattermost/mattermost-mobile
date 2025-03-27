@@ -25,7 +25,7 @@ import type DraftModel from '@typings/database/models/servers/draft';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    channel: ChannelModel;
+    channel?: ChannelModel;
     location: string;
     postReceiverUser?: UserModel;
     post: DraftModel | ScheduledPostModel;
@@ -101,8 +101,10 @@ const DraftAndScheduledPost: React.FC<Props> = ({
             switchToThread(serverUrl, post.rootId, false);
             return;
         }
-        switchToChannelById(serverUrl, channel.id, channel.teamId, false);
-    }, [channel.id, channel.teamId, post.rootId, serverUrl]);
+        if (channel && channel.id) {
+            switchToChannelById(serverUrl, channel.id, channel.teamId, false);
+        }
+    }, [channel, post.rootId, serverUrl]);
 
     return (
         <TouchableHighlight

@@ -11,13 +11,11 @@ const {SERVER: {CHANNEL, SCHEDULED_POST}} = MM_TABLES;
 
 export const queryScheduledPostsForTeam = (database: Database, teamId: string, includeDirectChannelPosts?: boolean) => {
     return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
-        Q.on(CHANNEL,
-            Q.or(
-                Q.where('team_id', teamId),
-                ...(includeDirectChannelPosts ? [
-                    Q.where('team_id', ''), // Direct messages
-                ] : []),
-            ),
+        Q.or(
+            Q.where('team_id', teamId),
+            ...(includeDirectChannelPosts ? [
+                Q.where('team_id', ''), // Direct messages
+            ] : []),
         ),
         Q.sortBy('scheduled_at', Q.asc),
     );

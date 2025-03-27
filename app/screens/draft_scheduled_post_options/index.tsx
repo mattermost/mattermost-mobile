@@ -63,6 +63,10 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
         return [1, COMPONENT_HEIGHT];
     }, []);
 
+    const showEditDraft = draftType === DRAFT_TYPE_DRAFT && channel;
+    const showRescheduledDraft = draftType === DRAFT_TYPE_SCHEDULED && channel;
+    const showSendHandler = Boolean(channel);
+
     const renderContent = () => {
         return (
             <View>
@@ -87,13 +91,14 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                     sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     key={draft.id}
                 />
-                {draftType === DRAFT_TYPE_DRAFT &&
+                {showEditDraft &&
                     <EditDraft
                         bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                         channel={channel}
                         rootId={rootId}
                     />
                 }
+                {showSendHandler &&
                 <SendHandler
                     bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     channelId={channel.id}
@@ -115,7 +120,8 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                     updateValue={() => {}}
                     /* eslint-enable no-empty-function */
                 />
-                {draftType === DRAFT_TYPE_SCHEDULED &&
+                }
+                {showRescheduledDraft &&
                     <RescheduledDraft
                         bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                         draft={draft as ScheduledPostModel}
@@ -123,7 +129,7 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                 }
                 <DeleteDraft
                     bottomSheetId={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
-                    channelId={channel.id}
+                    channelId={draftType === DRAFT_TYPE_DRAFT ? channel.id : ''} // Passing an empty string intentionally instead of making the prop optional, since drafts currently always require a channel.
                     rootId={rootId}
                     draftType={draftType}
                     postId={draft.id}

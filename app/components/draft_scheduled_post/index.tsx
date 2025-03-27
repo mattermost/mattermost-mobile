@@ -79,7 +79,7 @@ const enhance = withObservables(['channel', 'members', 'post'], ({channel, datab
     const postReceiverUser = observePostReceiverUser({members, database, channelData: channel, currentUser});
     return {
         post: post.observe(),
-        channel,
+        channel: channel || of(undefined),
         postReceiverUser,
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
     };
