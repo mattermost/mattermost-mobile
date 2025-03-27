@@ -11,6 +11,7 @@ describe('ClientScheduledPost', () => {
     const scheduledPost: ScheduledPost = {
         id: 'scheduled_post_id',
         channel_id: 'channel_id',
+        team_id: 'team_id',
         message: 'scheduled post message',
         scheduled_at: 1738925211,
         user_id: 'current_user_id',
