@@ -12,7 +12,7 @@ export default {
     CRT_CHUNK_SIZE: 60,
     STATUS_INTERVAL: 60000,
     AUTOCOMPLETE_LIMIT_DEFAULT: 25,
-    MENTION: 'mention',
+    MENTION: 'mention' as const,
     OUT_OF_OFFICE: 'ooo',
     OFFLINE: 'offline',
     AWAY: 'away',

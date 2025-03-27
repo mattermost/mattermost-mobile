@@ -424,7 +424,7 @@ class TestHelperSingleton {
         };
     };
 
-    fakeUser = (): UserProfile => {
+    fakeUser = (overwrite?: Partial<UserProfile>): UserProfile => {
         return {
             email: this.fakeEmail(),
             locale: DEFAULT_LOCALE,
@@ -440,6 +440,7 @@ class TestHelperSingleton {
             notify_props: this.fakeNotifyProps(),
             position: '',
             update_at: 0,
+            ...overwrite,
         };
     };
 

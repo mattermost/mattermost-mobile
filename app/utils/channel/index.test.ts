@@ -6,7 +6,20 @@ import {createIntl} from 'react-intl';
 import {Channel, General, Permissions} from '@constants';
 import {hasPermission} from '@utils/role';
 
-import {compareNotifyProps, filterChannelsMatchingTerm, generateChannelNameFromDisplayName, getDirectChannelName, isArchived, isDMorGM, isTypeDMorGM, selectDefaultChannelForTeam, sortChannelsByDisplayName, sortChannelsModelByDisplayName, validateDisplayName} from '.';
+import {
+    compareNotifyProps,
+    filterChannelsMatchingTerm,
+    generateChannelNameFromDisplayName,
+    getDirectChannelName,
+    isArchived,
+    isDefaultChannel,
+    isDMorGM,
+    isTypeDMorGM,
+    selectDefaultChannelForTeam,
+    sortChannelsByDisplayName,
+    sortChannelsModelByDisplayName,
+    validateDisplayName,
+} from '.';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
@@ -244,3 +257,18 @@ describe('filterChannelsMatchingTerm', () => {
     });
 });
 
+describe('isDefaultChannel', () => {
+    it('should return true if channel is the default channel', () => {
+        const channel = {name: General.DEFAULT_CHANNEL} as Channel; // using casting instead of TestHelper to avoid circular dependency
+        expect(isDefaultChannel(channel)).toBe(true);
+    });
+
+    it('should return false if channel is not the default channel', () => {
+        const channel = {name: 'random'} as Channel; // using casting instead of TestHelper to avoid circular dependency
+        expect(isDefaultChannel(channel)).toBe(false);
+    });
+
+    it('should return false if channel is undefined', () => {
+        expect(isDefaultChannel(undefined)).toBe(false);
+    });
+});
