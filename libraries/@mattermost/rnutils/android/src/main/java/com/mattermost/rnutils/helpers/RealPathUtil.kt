@@ -67,7 +67,7 @@ object RealPathUtil {
                         contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
                     }
                 }
-                val selectionArgs = arrayOf<String>(split[1])
+                val selectionArgs = arrayOf(split[1])
                 return contentUri?.let { getDataColumn(context, it, selectionArgs) }
             }
         }
@@ -94,7 +94,8 @@ object RealPathUtil {
             val returnCursor = context.contentResolver.query(uri, null, null, null, null)
             val nameIndex = returnCursor?.getColumnIndex(OpenableColumns.DISPLAY_NAME)
             returnCursor?.moveToFirst()
-            fileName = sanitizeFilename(nameIndex?.let { returnCursor?.getString(it) })
+            fileName = sanitizeFilename(nameIndex?.let { returnCursor.getString(it) })
+            returnCursor?.close()
         } catch (e:Exception) {
             // just continue to get the filename with the last segment of the path
         }
@@ -126,18 +127,18 @@ object RealPathUtil {
 
     private fun sanitizeFilename(filename: String?): String? {
         if (filename == null) {
-            return null;
+            return null
         }
 
-        val f = File(filename);
-        return f.name;
+        val f = File(filename)
+        return f.name
     }
 
     private fun getDataColumn(context:Context, uri:Uri, selectionArgs:Array<String>): String? {
         var cursor: Cursor? = null
         val column = "_data"
         val selection = "_id=?"
-        val projection = arrayOf<String>(column)
+        val projection = arrayOf(column)
         try
         {
             cursor = context.contentResolver.query(uri, projection, selection, selectionArgs, null)
@@ -185,7 +186,7 @@ object RealPathUtil {
         }
     }
 
-    fun getMimeType(file: File): String? {
+    private fun getMimeType(file: File): String? {
         val extension = getExtension(file.name)
         if (extension?.length!! > 0) {
             return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.substring(1))

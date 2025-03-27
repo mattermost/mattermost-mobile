@@ -5,17 +5,17 @@
 // See LICENSE.txt for license information.
 import type {Caption} from '@mattermost/calls/lib/types';
 import type {GestureHandlerGestureEvent} from 'react-native-gesture-handler';
-import type Animated from 'react-native-reanimated';
+import type {SharedValue} from 'react-native-reanimated';
 
 export type GalleryManagerSharedValues = {
-    width: Animated.SharedValue<number>;
-    height: Animated.SharedValue<number>;
-    x: Animated.SharedValue<number>;
-    y: Animated.SharedValue<number>;
-    opacity: Animated.SharedValue<number>;
-    activeIndex: Animated.SharedValue<number>;
-    targetWidth: Animated.SharedValue<number>;
-    targetHeight: Animated.SharedValue<number>;
+    width: SharedValue<number>;
+    height: SharedValue<number>;
+    x: SharedValue<number>;
+    y: SharedValue<number>;
+    opacity: SharedValue<number>;
+    activeIndex: SharedValue<number>;
+    targetWidth: SharedValue<number>;
+    targetHeight: SharedValue<number>;
 }
 
 export type Context = { [key: string]: any };

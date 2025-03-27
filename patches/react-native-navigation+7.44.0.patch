@@ -1,14 +1,13 @@
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
-index 481aaf0..609e359 100644
+index f3f0d5a..3af346d 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
-@@ -1,18 +1,15 @@
+@@ -1,13 +1,12 @@
  package com.reactnativenavigation;
  
 -import android.annotation.TargetApi;
  import android.content.Intent;
  import android.content.res.Configuration;
--import android.graphics.Color;
 -import android.os.Build;
  import android.os.Bundle;
  import android.view.KeyEvent;
@@ -18,11 +17,7 @@ index 481aaf0..609e359 100644
  import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
  import com.facebook.react.modules.core.PermissionAwareActivity;
  import com.facebook.react.modules.core.PermissionListener;
--import com.reactnativenavigation.options.Options;
- import com.reactnativenavigation.viewcontrollers.overlay.OverlayManager;
- import com.reactnativenavigation.viewcontrollers.viewcontroller.RootPresenter;
- import com.reactnativenavigation.react.JsDevReloadHandler;
-@@ -25,9 +22,8 @@ import com.reactnativenavigation.viewcontrollers.navigator.Navigator;
+@@ -24,9 +23,8 @@ import com.reactnativenavigation.viewcontrollers.navigator.Navigator;
  import androidx.activity.OnBackPressedCallback;
  import androidx.annotation.NonNull;
  import androidx.annotation.Nullable;
@@ -33,16 +28,16 @@ index 481aaf0..609e359 100644
      @Nullable
      private PermissionListener mPermissionListener;
  
-@@ -50,7 +46,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+@@ -49,7 +47,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
          );
          navigator.bindViews();
          getReactGateway().onActivityCreated(this);
 -        setBackPressedCallback();
 +        // setBackPressedCallback();
+         StatusBarPresenter.Companion.init(this);
      }
  
-     @Override
-@@ -96,15 +92,16 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+@@ -96,15 +94,15 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
  
      @Override
      public void invokeDefaultOnBackPressed() {
@@ -56,7 +51,6 @@ index 481aaf0..609e359 100644
 +        //     NavigationActivity.super.onBackPressed();
 +        //     callback.setEnabled(true);
 +        // }
-+        super.invokeDefaultOnBackPressed();
      }
  
      @Override
@@ -65,7 +59,7 @@ index 481aaf0..609e359 100644
          super.onActivityResult(requestCode, resultCode, data);
          getReactGateway().onActivityResult(this, requestCode, resultCode, data);
      }
-@@ -126,7 +123,6 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+@@ -126,7 +124,6 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
          return navigator;
      }
  
@@ -73,31 +67,6 @@ index 481aaf0..609e359 100644
      public void requestPermissions(String[] permissions, int requestCode, PermissionListener listener) {
          mPermissionListener = listener;
          requestPermissions(permissions, requestCode);
-diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationApplication.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationApplication.java
-index 0eced0f..251d72c 100644
---- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationApplication.java
-+++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationApplication.java
-@@ -4,6 +4,7 @@ import android.app.Application;
- 
- import com.facebook.react.ReactApplication;
- import com.facebook.react.ReactNativeHost;
-+import com.facebook.react.soloader.OpenSourceMergedSoMapping;
- import com.facebook.soloader.SoLoader;
- import com.reactnativenavigation.react.ReactGateway;
- import com.reactnativenavigation.viewcontrollers.externalcomponent.ExternalComponentCreator;
-@@ -23,7 +24,11 @@ public abstract class NavigationApplication extends Application implements React
- 	public void onCreate() {
- 		super.onCreate();
-         instance = this;
--        SoLoader.init(this, false);
-+        try {
-+            SoLoader.init(this, OpenSourceMergedSoMapping.INSTANCE);
-+        } catch (Exception e) {
-+            e.printStackTrace();
-+        }
-         reactGateway = createReactGateway();
- 	}
- 
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 index 4cc09eb..857bbd4 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
@@ -302,50 +271,43 @@ index 4cc09eb..857bbd4 100644
 +        super.invalidate();
      }
  }
-diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
-index 834d734..3fc00c3 100644
---- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
-+++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
-@@ -96,12 +96,12 @@ public class ReactTypefaceUtils {
- 
-     int want = 0;
-     if ((weight == Typeface.BOLD)
--        || ((oldStyle & Typeface.BOLD) != 0 && weight == ReactTextShadowNode.UNSET)) {
-+        || ((oldStyle & Typeface.BOLD) != 0 && weight == -1)) {
-       want |= Typeface.BOLD;
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/ReactView.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/ReactView.java
+index 0db6f39..0b265b7 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/ReactView.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/ReactView.java
+@@ -10,7 +10,6 @@ import androidx.annotation.RestrictTo;
+ import com.facebook.react.ReactInstanceManager;
+ import com.facebook.react.ReactRootView;
+ import com.facebook.react.bridge.ReactContext;
+-import com.facebook.react.config.ReactFeatureFlags;
+ import com.facebook.react.uimanager.JSTouchDispatcher;
+ import com.facebook.react.uimanager.UIManagerModule;
+ import com.facebook.react.uimanager.events.EventDispatcher;
+@@ -35,7 +34,7 @@ public class ReactView extends ReactRootView implements IReactView, Renderable {
+         this.componentId = componentId;
+         this.componentName = componentName;
+         jsTouchDispatcher = new JSTouchDispatcher(this);
+-        setIsFabric(ReactFeatureFlags.enableFabricRenderer);
++        setIsFabric(false);
      }
  
-     if ((style == Typeface.ITALIC)
--        || ((oldStyle & Typeface.ITALIC) != 0 && style == ReactTextShadowNode.UNSET)) {
-+        || ((oldStyle & Typeface.ITALIC) != 0 && style == -1)) {
-       want |= Typeface.ITALIC;
-     }
- 
-diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactViewGroup.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactViewGroup.kt
-index f92580c..a58fa7b 100644
---- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactViewGroup.kt
-+++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactViewGroup.kt
-@@ -4,4 +4,4 @@ import com.facebook.react.views.view.ReactViewBackgroundDrawable
- import com.facebook.react.views.view.ReactViewGroup
- 
- val ReactViewGroup.borderRadius: Float
--    get() = (background as? ReactViewBackgroundDrawable)?.fullBorderRadius ?: 0f
-\ No newline at end of file
-+    get() = 0f
-\ No newline at end of file
+     @Override
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildController.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildController.java
-index 3acc41d..ebc8d18 100644
+index f014bff..e4ccc55 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildController.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildController.java
-@@ -7,6 +7,7 @@ import android.util.Log;
- import android.view.View;
+@@ -6,8 +6,10 @@ import android.view.View;
  import android.view.ViewGroup;
- import android.view.WindowInsets;
+ 
+ import androidx.annotation.CallSuper;
++import androidx.core.graphics.Insets;
+ import androidx.core.view.ViewCompat;
+ import androidx.core.view.WindowInsetsCompat;
 +import android.view.WindowManager;
  
  import com.reactnativenavigation.options.Options;
- import com.reactnativenavigation.utils.LogKt;
-@@ -100,6 +101,18 @@ public abstract class ChildController<T extends ViewGroup> extends ViewControlle
+ import com.reactnativenavigation.viewcontrollers.navigator.Navigator;
+@@ -93,6 +95,18 @@ public abstract class ChildController<T extends ViewGroup> extends ViewControlle
      }
  
      protected WindowInsetsCompat onApplyWindowInsets(View view, WindowInsetsCompat insets) {
@@ -364,32 +326,6 @@ index 3acc41d..ebc8d18 100644
         return insets;
      }
  
-diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/LayoutDirectionApplier.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/LayoutDirectionApplier.kt
-index 89216ae..345207a 100644
---- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/LayoutDirectionApplier.kt
-+++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/LayoutDirectionApplier.kt
-@@ -1,15 +1,17 @@
- package com.reactnativenavigation.viewcontrollers.viewcontroller
- 
-+import com.facebook.react.bridge.ReactContext
- import com.facebook.react.ReactInstanceManager
- import com.facebook.react.modules.i18nmanager.I18nUtil
- import com.reactnativenavigation.options.Options
- 
- class LayoutDirectionApplier {
-     fun apply(root: ViewController<*>, options: Options, instanceManager: ReactInstanceManager) {
--        if (options.layout.direction.hasValue() && instanceManager.currentReactContext != null) {
-+        val reactContext = instanceManager.currentReactContext as? ReactContext
-+        if (reactContext != null && options.layout.direction.hasValue()) {
-             root.activity.window.decorView.layoutDirection = options.layout.direction.get()
--            I18nUtil.getInstance().allowRTL(instanceManager.currentReactContext, options.layout.direction.isRtl)
--            I18nUtil.getInstance().forceRTL(instanceManager.currentReactContext, options.layout.direction.isRtl)
-+            I18nUtil.getInstance().allowRTL(reactContext, options.layout.direction.isRtl)
-+            I18nUtil.getInstance().forceRTL(reactContext, options.layout.direction.isRtl)
-         }
-     }
- }
-\ No newline at end of file
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
 index 035ec31..630b8d4 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
@@ -406,74 +342,61 @@ index 035ec31..630b8d4 100644
 +    }
  }
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
-index ea8516f..f275c18 100644
+index 551f72b..f275c18 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
 +++ b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
-@@ -50,13 +50,19 @@ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
+@@ -49,17 +49,23 @@ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
+             updateFirstChildView()
          }
      }
-     override fun onChildStartedNativeGesture(child: View, androidEvent: MotionEvent?) {
+-    override fun onChildStartedNativeGesture(child: View, androidEvent: MotionEvent) {
 -        mJSTouchDispatcher.onChildStartedNativeGesture(androidEvent, this.getEventDispatcher())
++    override fun onChildStartedNativeGesture(child: View, androidEvent: MotionEvent?) {
 +        androidEvent?.let {
 +            mJSTouchDispatcher.onChildStartedNativeGesture(it, this.getEventDispatcher()!!)
 +        }
      }
-     override fun onChildStartedNativeGesture(androidEvent: MotionEvent?) {
+-    override fun onChildStartedNativeGesture(androidEvent: MotionEvent) {
 -        mJSTouchDispatcher.onChildStartedNativeGesture(androidEvent, this.getEventDispatcher())
++    override fun onChildStartedNativeGesture(androidEvent: MotionEvent?) {
 +        androidEvent?.let {
 +            mJSTouchDispatcher.onChildStartedNativeGesture(it, this.getEventDispatcher()!!)
 +        }
      }
-     override fun onChildEndedNativeGesture(child: View, androidEvent: MotionEvent?) {
+-    override fun onChildEndedNativeGesture(child: View, androidEvent: MotionEvent) {
 -        mJSTouchDispatcher.onChildEndedNativeGesture(androidEvent, this.getEventDispatcher())
++    override fun onChildEndedNativeGesture(child: View, androidEvent: MotionEvent?) {
 +        androidEvent?.let {
 +            mJSTouchDispatcher.onChildEndedNativeGesture(it, this.getEventDispatcher()!!)
 +        }
      }
      override fun requestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
-     private fun getEventDispatcher(): EventDispatcher? {
-@@ -74,12 +80,16 @@ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
+-    private fun getEventDispatcher(): EventDispatcher {
++    private fun getEventDispatcher(): EventDispatcher? {
+         val reactContext: ReactContext = this.getReactContext()
+         return reactContext.getNativeModule(UIManagerModule::class.java)!!.eventDispatcher
+     }
+@@ -73,13 +79,17 @@ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
+         return this.context as ReactContext
      }
  
-     override fun onInterceptTouchEvent(event: MotionEvent?): Boolean {
+-    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
 -        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
++    override fun onInterceptTouchEvent(event: MotionEvent?): Boolean {
 +        event?.let {
 +            mJSTouchDispatcher.handleTouchEvent(it, getEventDispatcher()!!)
 +        }
          return super.onInterceptTouchEvent(event)
      }
  
-     override fun onTouchEvent(event: MotionEvent?): Boolean {
+-    override fun onTouchEvent(event: MotionEvent): Boolean {
 -        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
++    override fun onTouchEvent(event: MotionEvent?): Boolean {
 +        event?.let {
 +            mJSTouchDispatcher.handleTouchEvent(it, getEventDispatcher()!!)
 +        }
          super.onTouchEvent(event)
          return true
-     }
-diff --git a/node_modules/react-native-navigation/lib/ios/BottomTabsBasePresenter.m b/node_modules/react-native-navigation/lib/ios/BottomTabsBasePresenter.m
-index 75aa424..f0a7e08 100644
---- a/node_modules/react-native-navigation/lib/ios/BottomTabsBasePresenter.m
-+++ b/node_modules/react-native-navigation/lib/ios/BottomTabsBasePresenter.m
-@@ -29,8 +29,6 @@
-     [self applyBackgroundColor:[withDefault.bottomTabs.backgroundColor withDefault:nil]
-                    translucent:[withDefault.bottomTabs.translucent withDefault:NO]];
-     [bottomTabs setTabBarHideShadow:[withDefault.bottomTabs.hideShadow withDefault:NO]];
--    [bottomTabs setTabBarStyle:[RCTConvert UIBarStyle:[withDefault.bottomTabs.barStyle
--                                                          withDefault:@"default"]]];
-     [self applyTabBarBorder:withDefault.bottomTabs];
-     [self applyTabBarShadow:withDefault.bottomTabs.shadow];
- }
-@@ -59,10 +57,6 @@
-         [self setTabBarBackgroundColor:mergeOptions.bottomTabs.backgroundColor.get];
-     }
- 
--    if (mergeOptions.bottomTabs.barStyle.hasValue) {
--        [bottomTabs setTabBarStyle:[RCTConvert UIBarStyle:mergeOptions.bottomTabs.barStyle.get]];
--    }
--
-     if (mergeOptions.bottomTabs.translucent.hasValue) {
-         [bottomTabs setTabBarTranslucent:mergeOptions.bottomTabs.translucent.get];
      }
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
 index fc482a6..9406bbf 100644
@@ -509,32 +432,8 @@ index b44f24f..bf4e1c3 100644
          [hitTestResult isKindOfClass:[RCTModalHostView class]] ||
          [hitTestResult isKindOfClass:NSClassFromString(@"RCTRootComponentView")]) {
          return nil;
-diff --git a/node_modules/react-native-navigation/lib/ios/RNNStackPresenter.m b/node_modules/react-native-navigation/lib/ios/RNNStackPresenter.m
-index 5f4218e..8513863 100644
---- a/node_modules/react-native-navigation/lib/ios/RNNStackPresenter.m
-+++ b/node_modules/react-native-navigation/lib/ios/RNNStackPresenter.m
-@@ -67,8 +67,6 @@
-     [_interactivePopGestureDelegate setEnabled:[withDefault.popGesture withDefault:YES]];
-     stack.interactivePopGestureRecognizer.delegate = _interactivePopGestureDelegate;
- 
--    [stack
--        setBarStyle:[RCTConvert UIBarStyle:[withDefault.topBar.barStyle withDefault:@"default"]]];
-     [stack setRootBackgroundImage:[withDefault.rootBackgroundImage withDefault:nil]];
-     [stack setNavigationBarTestId:[withDefault.topBar.testID withDefault:nil]];
-     [stack setNavigationBarVisible:[withDefault.topBar.visible withDefault:YES]
-@@ -125,10 +123,6 @@
-         [stack hideBarsOnScroll:[mergeOptions.topBar.hideOnScroll get]];
-     }
- 
--    if (mergeOptions.topBar.barStyle.hasValue) {
--        [stack setBarStyle:[RCTConvert UIBarStyle:mergeOptions.topBar.barStyle.get]];
--    }
--
-     if (mergeOptions.topBar.background.clipToBounds.hasValue) {
-         [stack setNavigationBarClipsToBounds:[mergeOptions.topBar.background.clipToBounds get]];
-     }
 diff --git a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts b/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
-index 1ab5b4e..ccd0b74 100644
+index f0923ed..b0ea7fc 100644
 --- a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
 +++ b/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
 @@ -1,5 +1,5 @@

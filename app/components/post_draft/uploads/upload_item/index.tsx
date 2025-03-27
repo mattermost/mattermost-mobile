@@ -40,7 +40,6 @@ const style = StyleSheet.create({
         borderRadius: 4,
     },
     progress: {
-        alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.1)',
         height: 53,
         width: 53,
@@ -48,6 +47,11 @@ const style = StyleSheet.create({
         position: 'absolute',
         borderRadius: 4,
         paddingLeft: 3,
+    },
+    progressContainer: {
+        paddingVertical: undefined,
+        position: undefined,
+        justifyContent: undefined,
     },
     filePreview: {
         width: 56,
@@ -122,7 +126,7 @@ export default function UploadItem({
                 file={file}
             />
         );
-    }, [file]);
+    }, [file, ref, theme.centerChannelColor]);
 
     return (
         <View
@@ -145,6 +149,7 @@ export default function UploadItem({
                     <ProgressBar
                         progress={progress || 0}
                         color={theme.buttonBg}
+                        containerStyle={style.progressContainer}
                     />
                 </View>
                 }

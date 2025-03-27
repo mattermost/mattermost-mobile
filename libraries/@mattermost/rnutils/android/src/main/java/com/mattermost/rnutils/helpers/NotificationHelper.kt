@@ -8,6 +8,7 @@ import android.text.TextUtils
 import androidx.core.app.NotificationManagerCompat
 import org.json.JSONException
 import org.json.JSONObject
+import androidx.core.content.edit
 
 object NotificationHelper {
     private const val PUSH_NOTIFICATIONS: String = "PUSH_NOTIFICATIONS"
@@ -33,10 +34,8 @@ object NotificationHelper {
             }
 
             if (version != storedVersion) {
-                if (pSharedPref != null) {
-                    val editor = pSharedPref.edit()
-                    editor.putString(PREF_VERSION, version)
-                    editor.apply()
+                pSharedPref?.edit {
+                    putString(PREF_VERSION, version)
                 }
 
                 val inputMap: Map<String?, JSONObject?> = HashMap()
@@ -98,7 +97,7 @@ object NotificationHelper {
                 // Add the summary notification id as well
                 notificationsInGroup.put((notificationId + 1).toString(), true)
             }
-            notificationsInServer.put(groupId, notificationsInGroup)
+            groupId?.let { notificationsInServer.put(it, notificationsInGroup) }
             notificationsPerServer[serverUrl] = notificationsInServer
             saveMap(context, notificationsPerServer)
 
@@ -148,7 +147,7 @@ object NotificationHelper {
                 notificationsInServer.remove(groupId)
             } else {
                 try {
-                    notificationsInServer.put(groupId, notificationsInGroup)
+                    groupId?.let { notificationsInServer.put(it, notificationsInGroup) }
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
@@ -295,10 +294,10 @@ object NotificationHelper {
             try {
                 if (pSharedPref != null) {
                     val jsonString = pSharedPref.getString(NOTIFICATIONS_IN_GROUP, JSONObject().toString())
-                    val json = JSONObject(jsonString)
-                    val servers = json.keys()
+                    val json = jsonString?.let { JSONObject(it) }
+                    val servers = json?.keys()
 
-                    while (servers.hasNext()) {
+                    while (servers?.hasNext() == true) {
                         val serverUrl = servers.next()
                         val notificationGroup = json.getJSONObject(serverUrl)
                         outputMap[serverUrl] = notificationGroup

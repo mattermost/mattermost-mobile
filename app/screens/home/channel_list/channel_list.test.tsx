@@ -4,7 +4,7 @@
 import React, {type ComponentProps} from 'react';
 
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {renderWithEverything} from '@test/intl-test-helper';
+import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import ChannelListScreen from './channel_list';
@@ -47,11 +47,11 @@ describe('performance metrics', () => {
         database = server.database;
     });
 
-    it('finish load on load', () => {
-        jest.useFakeTimers();
+    it('finish load on load', async () => {
         const props = getBaseProps();
         renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
-        expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('HOME', serverUrl);
-        jest.useRealTimers();
+        await waitFor(() => {
+            expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('HOME', serverUrl);
+        });
     });
 });

@@ -5,7 +5,7 @@
 // eslint-disable-next-line
 // @ts-nocheck
 
-import {encode} from '@msgpack/msgpack/dist';
+import {encode} from '@msgpack/msgpack';
 
 import DatabaseManager from '@database/manager';
 

@@ -1,7 +1,8 @@
 package com.mattermost.rnshare
 
-import android.content.pm.ServiceInfo
 import android.content.Context
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -199,7 +200,11 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
                 .setSmallIcon(applicationContext.resources.getIdentifier("ic_notification", "mipmap", applicationContext.packageName))
                 .setOngoing(true)
                 .build()
-        return ForegroundInfo(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            ForegroundInfo(1, notification)
+        }
 
     }
 }

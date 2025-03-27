@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.webkit.URLUtil
+import androidx.core.net.toUri
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
@@ -95,7 +96,7 @@ object ShareUtils {
 
                 retriever.setDataSource(decodedPath.replace("file://", ""))
             } else if (filePath.contains("content://")) {
-                retriever.setDataSource(context, Uri.parse(filePath))
+                retriever.setDataSource(context, filePath.toUri())
             }
 
             val image = retriever.getFrameAtTime((time * 1000).toLong(), MediaMetadataRetriever.OPTION_CLOSEST_SYNC)

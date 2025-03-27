@@ -105,7 +105,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
         let lastDisconnectedAt = since || await getLastFullSync(database);
 
         const [confResp, prefData] = await Promise.all([
-            fetchConfigAndLicense(serverUrl, true, groupLabel),
+            fetchConfigAndLicense(serverUrl, false, groupLabel),
             fetchMyPreferences(serverUrl, true, groupLabel),
         ]);
 

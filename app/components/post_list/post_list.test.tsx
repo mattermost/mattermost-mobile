@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {act} from '@testing-library/react-native';
-import React from 'react';
+import React, {type ComponentProps} from 'react';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
 import * as localPostFunctions from '@actions/local/post';
@@ -11,7 +11,7 @@ import {Events, Screens} from '@constants';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import PostList, {exportedForTesting} from './post_list';
+import PostList from './post_list';
 
 jest.mock('@components/post_list/post', () => 'Post');
 jest.mock('@components/post_list/thread_overview', () => 'ThreadOverview');
@@ -30,8 +30,6 @@ jest.mock('@actions/local/post', () => ({
 
 import type {PostModel} from '@database/models/server';
 import type Database from '@nozbe/watermelondb/Database';
-
-const {PostListProps} = exportedForTesting;
 
 describe('components/post_list/PostList', () => {
     let database: Database;
@@ -68,7 +66,7 @@ describe('components/post_list/PostList', () => {
         mockPostModel(),
     ];
 
-    const baseProps: typeof PostListProps = {
+    const baseProps: ComponentProps<typeof PostList> = {
         appsEnabled: false,
         channelId: 'channel-id',
         currentTimezone: 'UTC',

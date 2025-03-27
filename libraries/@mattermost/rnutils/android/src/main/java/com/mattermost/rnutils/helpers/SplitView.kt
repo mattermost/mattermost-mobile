@@ -41,7 +41,7 @@ class SplitView {
         private fun getSplitViewResults(folded: Boolean): WritableMap? {
             if (context?.currentActivity != null) {
                 val map = Arguments.createMap()
-                var isSplitView = folded;
+                var isSplitView = folded
                 if (context?.currentActivity?.isInMultiWindowMode == true) {
                     isSplitView = FoldableObserver.getInstance()?.isCompactView() == true
                 }

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import com.facebook.react.bridge.ActivityEventListener
 import com.facebook.react.bridge.BaseActivityEventListener
 import com.facebook.react.bridge.Promise
@@ -25,12 +26,14 @@ open class SaveDataTask(val reactContext: ReactApplicationContext) {
     private val weakContext = WeakReference(reactContext.applicationContext)
     private val myExecutor = Executors.newSingleThreadExecutor()
 
+    private lateinit var mActivityEventListener: ActivityEventListener
+
     companion object {
         const val SAVE_REQUEST: Int = 38641
     }
 
     init {
-        var mActivityEventListener: ActivityEventListener = object : BaseActivityEventListener() {
+        mActivityEventListener = object : BaseActivityEventListener() {
             override fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, intent: Intent?) {
                 if (requestCode == SAVE_REQUEST) {
                     if (resultCode == Activity.RESULT_CANCELED) {
@@ -50,11 +53,13 @@ open class SaveDataTask(val reactContext: ReactApplicationContext) {
                     }
 
                     mPickerPromise = null
+                    reactContext.removeActivityEventListener(mActivityEventListener)
                 }
             }
         }
-    }
 
+        reactContext.addActivityEventListener(mActivityEventListener)
+    }
 
     private fun save(fromFile: String, toFile: Uri) {
         myExecutor.execute {
@@ -84,7 +89,7 @@ open class SaveDataTask(val reactContext: ReactApplicationContext) {
         var filename = ""
 
         if (filePath?.startsWith("content://") == true) {
-            contentUri = Uri.parse(filePath)
+            contentUri = filePath.toUri()
         } else {
             val newFile = filePath?.let { File(it) }
             filename = newFile?.name ?: ""

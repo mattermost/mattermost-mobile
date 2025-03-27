@@ -41,7 +41,7 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
     }
 
     override fun deleteDatabaseDirectory(databaseName: String?, shouldRemoveDirectory: Boolean): WritableMap {
-        return implementation.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory)
+        return implementation.deleteDatabaseDirectory()
     }
 
     override fun renameDatabase(databaseName: String?, newDatabaseName: String?): WritableMap {
