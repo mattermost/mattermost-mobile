@@ -5,13 +5,19 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {metadataToString} from '@utils/share_logs';
+import {showSnackBar} from '@utils/snack_bar';
 
 import CopyMetadata from './copy_metadata';
 
 jest.mock('@react-native-clipboard/clipboard', () => ({
     setString: jest.fn(),
+}));
+
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
 }));
 
 describe('screens/report_a_problem/copy_metadata', () => {
@@ -22,6 +28,7 @@ describe('screens/report_a_problem/copy_metadata', () => {
         appVersion: '2.0.0',
         appPlatform: 'ios',
     };
+    const componentId = 'ReportProblem';
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -29,7 +36,10 @@ describe('screens/report_a_problem/copy_metadata', () => {
 
     it('renders all metadata fields', () => {
         const {getByText} = renderWithIntl(
-            <CopyMetadata metadata={metadata}/>,
+            <CopyMetadata
+                metadata={metadata}
+                componentId={componentId}
+            />,
         );
 
         // Check title
@@ -45,7 +55,10 @@ describe('screens/report_a_problem/copy_metadata', () => {
 
     it('copies metadata to clipboard when copy button is pressed', () => {
         const {getByText} = renderWithIntl(
-            <CopyMetadata metadata={metadata}/>,
+            <CopyMetadata
+                metadata={metadata}
+                componentId={componentId}
+            />,
         );
 
         const copyButton = getByText('Copy');
@@ -54,6 +67,10 @@ describe('screens/report_a_problem/copy_metadata', () => {
         expect(Clipboard.setString).toHaveBeenCalledWith(
             metadataToString(metadata),
         );
+        expect(showSnackBar).toHaveBeenCalledWith({
+            barType: SNACK_BAR_TYPE.INFO_COPIED,
+            sourceScreen: componentId,
+        });
     });
 
     it('handles empty metadata', () => {
@@ -66,7 +83,10 @@ describe('screens/report_a_problem/copy_metadata', () => {
         };
 
         const {getByText} = renderWithIntl(
-            <CopyMetadata metadata={emptyMetadata}/>,
+            <CopyMetadata
+                metadata={emptyMetadata}
+                componentId={componentId}
+            />,
         );
 
         // Check that empty values are displayed correctly
@@ -82,5 +102,9 @@ describe('screens/report_a_problem/copy_metadata', () => {
         expect(Clipboard.setString).toHaveBeenCalledWith(
             metadataToString(emptyMetadata),
         );
+        expect(showSnackBar).toHaveBeenCalledWith({
+            barType: SNACK_BAR_TYPE.INFO_COPIED,
+            sourceScreen: componentId,
+        });
     });
 });

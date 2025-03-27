@@ -67,7 +67,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.BOTTOM_SHEET:
             screen = withServerDatabase(require('@screens/bottom_sheet').default);
-            return;
+            break;
         case Screens.BROWSE_CHANNELS:
             screen = withServerDatabase(require('@screens/browse_channels').default);
             break;

@@ -6,15 +6,19 @@ import {useIntl} from 'react-intl';
 import {View, Text, StyleSheet} from 'react-native';
 
 import Button from '@components/button';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useTheme} from '@context/theme';
 import {metadataToString, reportAProblemMessages} from '@utils/share_logs';
+import {showSnackBar} from '@utils/snack_bar';
 
 import {getCommonStyleSheet} from './styles';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
 
 type Props = {
     metadata: ReportAProblemMetadata;
+    componentId: AvailableScreens;
 }
 
 const styles = StyleSheet.create({
@@ -26,14 +30,18 @@ const styles = StyleSheet.create({
     },
 });
 
-const CopyMetadata = ({metadata}: Props) => {
+const CopyMetadata = ({
+    metadata,
+    componentId,
+}: Props) => {
     const theme = useTheme();
     const commonStyles = getCommonStyleSheet(theme);
     const intl = useIntl();
 
     const handleCopy = useCallback(() => {
         Clipboard.setString(metadataToString(metadata));
-    }, [metadata]);
+        showSnackBar({barType: SNACK_BAR_TYPE.INFO_COPIED, sourceScreen: componentId});
+    }, [componentId, metadata]);
 
     return (
         <View style={styles.container}>

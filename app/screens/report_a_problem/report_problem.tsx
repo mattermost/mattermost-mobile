@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text} from 'react-native';
+import {View, Text, ScrollView} from 'react-native';
 
 import Button from '@components/button';
 import MenuDivider from '@components/menu_divider';
@@ -115,7 +115,7 @@ const ReportProblem = ({
 
     return (
         <View style={styles.container}>
-            <View style={styles.content}>
+            <ScrollView style={styles.content}>
                 <View style={styles.detailsSection}>
                     <Text style={styles.detailsTitle}>
                         {intl.formatMessage({
@@ -128,14 +128,17 @@ const ReportProblem = ({
                     </Text>
                 </View>
                 <MenuDivider/>
-                <CopyMetadata metadata={metadata}/>
+                <CopyMetadata
+                    metadata={metadata}
+                    componentId={componentId}
+                />
                 {allowDownloadLogs && (
                     <>
                         <MenuDivider/>
                         <AppLogs/>
                     </>
                 )}
-            </View>
+            </ScrollView>
             <View style={styles.buttonContainer}>
                 <Button
                     theme={theme}
