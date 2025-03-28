@@ -54,6 +54,7 @@ CREATE TABLE [Channel] (
     [team_id] string  NOT NULL ,
     [type] string  NOT NULL ,
     [update_at] number  NOT NULL ,
+    [banner_info] string,
     CONSTRAINT [PK_Channel] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
