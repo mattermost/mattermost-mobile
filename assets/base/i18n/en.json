@@ -1011,6 +1011,7 @@
   "saved_messages.empty.paragraph": "To save something for later, long-press on a message and choose Save from the menu. Saved messages are only visible to you.",
   "saved_messages.empty.title": "No saved messages yet",
   "schedule_post.options.delete.title": "Delete scheduled post",
+  "scheduled_post_header.no_destination": "No Destination",
   "scheduled_post_options.confirm_button.processing.text": "Scheduling",
   "scheduled_post_options.confirm_button.text": "Schedule Draft",
   "scheduled_post.channel_archived": "Sending post failed",

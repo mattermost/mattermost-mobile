@@ -204,7 +204,10 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
                         numberOfLines={1}
                         style={style.displayName}
                     >
-                        {channel ? channel.displayName : 'No Destination'}
+                        {channel ? channel.displayName : intl.formatMessage({
+                            id: 'scheduled_post_header.no_destination',
+                            defaultMessage: 'No Destination',
+                        })}
                     </Text>
                 </View>
                 <FormattedTime
