@@ -286,8 +286,12 @@ describe('WebSocketClient', () => {
             },
         }));
         expect(mockConn.send).toHaveBeenNthCalledWith(2, JSON.stringify({
-            action: 'user_typing',
+            action: 'ping',
             seq: 2,
+        }));
+        expect(mockConn.send).toHaveBeenNthCalledWith(3, JSON.stringify({
+            action: 'user_typing',
+            seq: 3,
             data: {
                 channel_id: 'channel1',
                 parent_id: 'parent1',
@@ -311,8 +315,8 @@ describe('WebSocketClient', () => {
     it('should send ping messages on interval and handle pong responses', async () => {
         await client.initialize();
 
-        // Wait until we get a client PING
-        await advanceTimers(30100);
+        // Wait until we get a client PING (which should happen almost immediately)
+        await advanceTimers(10);
         expect(mockConn.send).toHaveBeenNthCalledWith(1, JSON.stringify({
             action: 'authentication_challenge',
             seq: 1,
@@ -350,8 +354,8 @@ describe('WebSocketClient', () => {
     it('should handle ping timeouts and reconnect', async () => {
         await client.initialize();
 
-        // Send first ping
-        await advanceTimers(30100);
+        // Send first PING (which should happen almost immediately)
+        await advanceTimers(10);
         expect(mockConn.send).toHaveBeenNthCalledWith(1, JSON.stringify({
             action: 'authentication_challenge',
             seq: 1,
@@ -375,20 +379,20 @@ describe('WebSocketClient', () => {
         // Should attempt to reconnect after timeout
         await advanceTimers(3000);
 
-        // Should start pinging again after reconnect
+        // Should start pinging again immediately after reconnect
         mockConn.onOpen.mock.calls[0][0]();
-        await advanceTimers(30000);
+        await advanceTimers(10);
 
-        expect(mockConn.send).toHaveBeenNthCalledWith(2, JSON.stringify({
+        expect(mockConn.send).toHaveBeenNthCalledWith(1, JSON.stringify({
             action: 'authentication_challenge',
-            seq: 2,
+            seq: 1,
             data: {
                 token: 'test-token',
             },
         }));
-        expect(mockConn.send).toHaveBeenNthCalledWith(3, JSON.stringify({
+        expect(mockConn.send).toHaveBeenNthCalledWith(2, JSON.stringify({
             action: 'ping',
-            seq: 3,
+            seq: 2,
         }));
     });
 
@@ -421,8 +425,8 @@ describe('WebSocketClient', () => {
 
         await client.initialize();
 
-        // Wait until we get a client PING
-        await advanceTimers(30100);
+        // Wait until we get a client PING (which should be almost immediate)
+        await advanceTimers(10);
 
         expect(mockConn.send).toHaveBeenNthCalledWith(1, JSON.stringify({
             action: 'authentication_challenge',
@@ -442,7 +446,7 @@ describe('WebSocketClient', () => {
         await advanceTimers(5100);
 
         // And client for PINGs to start again
-        await advanceTimers(30100);
+        await advanceTimers(10);
 
         expect(connectingCallback).toHaveBeenCalledTimes(2);
         expect(closeCallback).toHaveBeenCalledTimes(1);
