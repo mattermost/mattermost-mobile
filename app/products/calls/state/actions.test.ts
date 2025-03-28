@@ -26,6 +26,8 @@ import {
     setJoiningChannelId,
     setMicPermissionsErrorDismissed,
     setMicPermissionsGranted,
+    setCameraPermissionsGranted,
+    setCameraPermissionsErrorDismissed,
     setRecordingState,
     useCallsConfig,
     useCallsState,
@@ -48,9 +50,12 @@ import {
     setPluginEnabled,
     setRaisedHand,
     setScreenShareURL,
+    setLocalVideoURL,
+    setRemoteVideoURL,
     setSpeakerPhone,
     setUserMuted,
     setUserVoiceOn,
+    setUserVideo,
     userJoinedCall,
     userLeftCall,
     callsOnAppStateChange,
@@ -119,8 +124,8 @@ jest.mock('react-native-navigation', () => ({
 const call1: Call = {
     id: 'call1',
     sessions: {
-        session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0},
-        session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0},
+        session1: {sessionId: 'session1', userId: 'user-1', muted: false, video: false, raisedHand: 0},
+        session2: {sessionId: 'session2', userId: 'user-2', muted: true, video: false, raisedHand: 0},
     },
     channelId: 'channel-1',
     startTime: 123,
@@ -133,8 +138,8 @@ const call1: Call = {
 const call2: Call = {
     id: 'call2',
     sessions: {
-        session3: {sessionId: 'session3', userId: 'user-3', muted: false, raisedHand: 0},
-        session4: {sessionId: 'session4', userId: 'user-4', muted: true, raisedHand: 0},
+        session3: {sessionId: 'session3', userId: 'user-3', muted: false, video: false, raisedHand: 0},
+        session4: {sessionId: 'session4', userId: 'user-4', muted: true, video: false, raisedHand: 0},
     },
     channelId: 'channel-2',
     startTime: 123,
@@ -147,8 +152,8 @@ const call2: Call = {
 const call3: Call = {
     id: 'call3',
     sessions: {
-        session5: {sessionId: 'session5', userId: 'user-5', muted: false, raisedHand: 0},
-        session6: {sessionId: 'session6', userId: 'user-6', muted: true, raisedHand: 0},
+        session5: {sessionId: 'session5', userId: 'user-5', muted: false, video: false, raisedHand: 0},
+        session6: {sessionId: 'session6', userId: 'user-6', muted: true, video: false, raisedHand: 0},
     },
     channelId: 'channel-3',
     startTime: 123,
@@ -161,7 +166,7 @@ const call3: Call = {
 const callDM: Call = {
     id: 'callDM',
     sessions: {
-        session5: {sessionId: 'session5', userId: 'user-5', muted: false, raisedHand: 0},
+        session5: {sessionId: 'session5', userId: 'user-5', muted: false, video: false, raisedHand: 0},
     },
     channelId: 'channel-private',
     startTime: 123,
@@ -296,9 +301,9 @@ describe('useCallsState', () => {
             'channel-1': {
                 id: 'call1',
                 sessions: {
-                    session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0},
-                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0},
-                    session3: {sessionId: 'session3', userId: 'user-3', muted: true, raisedHand: 0},
+                    session1: {sessionId: 'session1', userId: 'user-1', muted: false, video: false, raisedHand: 0},
+                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, video: false, raisedHand: 0},
+                    session3: {sessionId: 'session3', userId: 'user-3', muted: true, video: false, raisedHand: 0},
                 },
                 channelId: 'channel-1',
                 startTime: 123,
@@ -358,7 +363,7 @@ describe('useCallsState', () => {
             'channel-1': {
                 id: 'call1',
                 sessions: {
-                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0},
+                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, video: false, raisedHand: 0},
                 },
                 channelId: 'channel-1',
                 startTime: 123,
@@ -424,7 +429,7 @@ describe('useCallsState', () => {
             'channel-1': {
                 id: 'call1',
                 sessions: {
-                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0},
+                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, video: false, raisedHand: 0},
                 },
                 channelId: 'channel-1',
                 startTime: 123,
@@ -569,6 +574,52 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[0], initialCallsState);
     });
 
+    it('setUserVideo', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const initialChannelsWithCallsState = {'channel-1': true, 'channel-2': true};
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useChannelsWithCalls('server1'), useCurrentCall()];
+        });
+        act(() => {
+            setCallsState('server1', initialCallsState);
+            setChannelsWithCalls('server1', initialChannelsWithCallsState);
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], initialChannelsWithCallsState);
+        assert.deepEqual(result.current[2], initialCurrentCallState);
+
+        // test
+        act(() => setUserVideo('server1', 'channel-1', 'session1', true));
+        assert.deepEqual((result.current[0] as CallsState).calls['channel-1'].sessions.session1.video, true);
+        assert.deepEqual((result.current[2] as CurrentCall | null)?.sessions.session1.video, true);
+        act(() => {
+            setUserVideo('server1', 'channel-1', 'session1', false);
+            setUserVideo('server1', 'channel-1', 'session2', true);
+        });
+        assert.deepEqual((result.current[0] as CallsState).calls['channel-1'].sessions.session1.video, false);
+        assert.deepEqual((result.current[0] as CallsState).calls['channel-1'].sessions.session2.video, true);
+        assert.deepEqual((result.current[2] as CurrentCall | null)?.sessions.session1.video, false);
+        assert.deepEqual((result.current[2] as CurrentCall | null)?.sessions.session2.video, true);
+        act(() => {
+            setUserVideo('server1', 'invalid-channel', 'session1', true);
+            setUserVideo('server1', 'channel-1', 'session2', false);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+    });
+
     it('setCallScreenOn/Off', () => {
         const initialCallsState = {
             ...DefaultCallsState,
@@ -623,8 +674,8 @@ describe('useCallsState', () => {
             'channel-1': {
                 id: 'call1',
                 sessions: {
-                    session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0},
-                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 345},
+                    session1: {sessionId: 'session1', userId: 'user-1', muted: false, video: false, raisedHand: 0},
+                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, video: false, raisedHand: 345},
                 },
                 channelId: 'channel-1',
                 startTime: 123,
@@ -683,7 +734,7 @@ describe('useCallsState', () => {
             ...call1,
             sessions: {
                 ...call1.sessions,
-                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0},
+                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, video: false, raisedHand: 0},
             },
         };
         const expectedCallsState = {
@@ -799,6 +850,68 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
     });
 
+    it('setLocalVideoURL', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => setCallsState('server1', initialCallsState));
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+
+        // test joining a call and setting local video url:
+        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
+        act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
+        assert.deepEqual((result.current[1] as CurrentCall | null)?.localVideoURL, '');
+        act(() => setLocalVideoURL('localVideoUrl'));
+        assert.deepEqual((result.current[1] as CurrentCall | null)?.localVideoURL, 'localVideoUrl');
+
+        act(() => {
+            myselfLeftCall();
+            userLeftCall('server1', 'channel-1', 'mySessionId');
+            setLocalVideoURL('test');
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+    });
+
+    it('setRemoteVideoURL', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => setCallsState('server1', initialCallsState));
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+
+        // test joining a call and setting remote video url:
+        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
+        act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
+        assert.deepEqual((result.current[1] as CurrentCall | null)?.remoteVideoURL, '');
+        act(() => setRemoteVideoURL('remoteVideoUrl'));
+        assert.deepEqual((result.current[1] as CurrentCall | null)?.remoteVideoURL, 'remoteVideoUrl');
+
+        act(() => {
+            myselfLeftCall();
+            userLeftCall('server1', 'channel-1', 'mySessionId');
+            setRemoteVideoURL('test');
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+    });
+
     it('setSpeakerPhoneOn', () => {
         const initialCallsState = {
             ...DefaultCallsState,
@@ -809,7 +922,7 @@ describe('useCallsState', () => {
             ...call1,
             sessions: {
                 ...call1.sessions,
-                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0},
+                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, video: false, raisedHand: 0},
             },
         };
         const expectedCallsState = {
@@ -855,7 +968,7 @@ describe('useCallsState', () => {
             ...call1,
             sessions: {
                 ...call1.sessions,
-                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0},
+                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, video: false, raisedHand: 0},
             },
         };
         const expectedCallsState = {
@@ -909,7 +1022,7 @@ describe('useCallsState', () => {
             ...call1,
             sessions: {
                 ...call1.sessions,
-                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0},
+                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, video: false, raisedHand: 0},
             },
         };
         const expectedCallsState: CallsState = {
@@ -930,9 +1043,11 @@ describe('useCallsState', () => {
         const secondExpectedCurrentCallState: CurrentCall = {
             ...expectedCurrentCallState,
             micPermissionsErrorDismissed: true,
+            cameraPermissionsErrorDismissed: false,
         };
         const expectedGlobalState: GlobalCallsState = {
             micPermissionsGranted: true,
+            cameraPermissionsGranted: false,
             joiningChannelId: null,
         };
 
@@ -978,6 +1093,87 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
     });
 
+    it('CameraPermissions', () => {
+        const initialGlobalState = DefaultGlobalCallsState;
+        const initialCallsState: CallsState = {
+            ...DefaultCallsState,
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const newCall1: Call = {
+            ...call1,
+            sessions: {
+                ...call1.sessions,
+                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, video: false, raisedHand: 0},
+            },
+        };
+        const expectedCallsState: CallsState = {
+            ...initialCallsState,
+            calls: {
+                ...initialCallsState.calls,
+                'channel-1': newCall1,
+            },
+        };
+        const expectedCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            mySessionId: 'mySessionId',
+            connected: true,
+            ...newCall1,
+        };
+        const secondExpectedCurrentCallState: CurrentCall = {
+            ...expectedCurrentCallState,
+            cameraPermissionsErrorDismissed: true,
+        };
+        const expectedGlobalState: GlobalCallsState = {
+            micPermissionsGranted: false,
+            cameraPermissionsGranted: true,
+            joiningChannelId: null,
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall(), useGlobalCallsState()];
+        });
+        act(() => setCallsState('server1', initialCallsState));
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+        assert.deepEqual(result.current[2], initialGlobalState);
+
+        // join call
+        act(() => {
+            setCameraPermissionsGranted(false);
+            newCurrentCall('server1', 'channel-1', 'myUserId');
+            userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId');
+        });
+        assert.deepEqual(result.current[0], expectedCallsState);
+        assert.deepEqual(result.current[1], expectedCurrentCallState);
+        assert.deepEqual(result.current[2], initialGlobalState);
+
+        // dismiss camera error
+        act(() => setCameraPermissionsErrorDismissed());
+        assert.deepEqual(result.current[0], expectedCallsState);
+        assert.deepEqual(result.current[1], secondExpectedCurrentCallState);
+        assert.deepEqual(result.current[2], initialGlobalState);
+
+        // grant permissions
+        act(() => setCameraPermissionsGranted(true));
+        assert.deepEqual(result.current[0], expectedCallsState);
+        assert.deepEqual(result.current[1], secondExpectedCurrentCallState);
+        assert.deepEqual(result.current[2], expectedGlobalState);
+
+        act(() => {
+            myselfLeftCall();
+            userLeftCall('server1', 'channel-1', 'mySessionId');
+
+            // reset state to default
+            setCameraPermissionsGranted(false);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+    });
+
     it('joining call', () => {
         const initialGlobalState = DefaultGlobalCallsState;
         const expectedGlobalState: GlobalCallsState = {
@@ -1009,7 +1205,7 @@ describe('useCallsState', () => {
             ...call1,
             sessions: {
                 ...call1.sessions,
-                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0},
+                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, video: false, raisedHand: 0},
             },
         };
         const expectedCallsState: CallsState = {
@@ -1113,7 +1309,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[0], initialCallsState);
 
         // test that voice state is cleared on reconnect
-        await act(() => setCalls('server1', 'myUserId', initialCallsState.calls, {}));
+        await act(async () => setCalls('server1', 'myUserId', initialCallsState.calls, {}));
         assert.deepEqual(result.current[1], initialCurrentCallState);
         assert.deepEqual(result.current[0], initialCallsState);
     });

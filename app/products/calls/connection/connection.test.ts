@@ -154,6 +154,9 @@ describe('newConnection', () => {
             'channelID',
             () => {},
             () => {},
+            () => {},
+            () => {},
+            true,
             true,
         );
         expect(connection).toBeDefined();
@@ -197,18 +200,21 @@ describe('newConnection', () => {
             'channelID',
             () => {},
             () => {},
+            () => {},
+            () => {},
+            true,
             true,
         );
 
         // First unmute should use addStream
-        connection.unmute();
+        await connection.unmute();
         expect(mockAddStream).toHaveBeenCalledWith(expect.any(Object));
         expect(wsSend).toHaveBeenCalledWith('unmute');
 
         connection.mute();
 
         // Subsequent unmute should use replaceTrack
-        connection.unmute();
+        await connection.unmute();
         expect(mockReplaceTrack).toHaveBeenCalledWith(expect.any(String), expect.any(Object));
         expect(wsSend).toHaveBeenCalledWith('unmute');
     });
@@ -229,6 +235,9 @@ describe('newConnection', () => {
             'channelID',
             () => {},
             () => {},
+            () => {},
+            () => {},
+            false,
             false,
         );
 
@@ -255,6 +264,9 @@ describe('newConnection', () => {
             'channelID',
             () => {},
             () => {},
+            () => {},
+            () => {},
+            false,
             false,
         );
 
@@ -287,6 +299,9 @@ describe('newConnection', () => {
             'channelID',
             mockCloseCb,
             () => {},
+            () => {},
+            () => {},
+            false,
             false,
         );
 
@@ -322,6 +337,9 @@ describe('newConnection', () => {
             'channelID',
             mockCloseCb,
             () => {},
+            () => {},
+            () => {},
+            false,
             false,
         );
 
@@ -339,6 +357,9 @@ describe('newConnection', () => {
             'channelID',
             () => {},
             () => {},
+            () => {},
+            () => {},
+            true,
             true,
         );
 
@@ -352,11 +373,229 @@ describe('newConnection', () => {
         expect(getUserMedia).toHaveBeenCalledTimes(1);
     });
 
+    it('initialize video track, start=true', async () => {
+        const getUserMedia = require('react-native-webrtc').mediaDevices.getUserMedia;
+        const mockVideoTrack = {
+            id: 'videoTrackId',
+            enabled: false,
+            stop: jest.fn(),
+            release: jest.fn(),
+        };
+
+        const setLocalVideoURL = jest.fn();
+        const connection = await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            setLocalVideoURL,
+            () => {},
+            true,
+            true,
+        );
+
+        getUserMedia.mockResolvedValueOnce({
+            getVideoTracks: () => [mockVideoTrack],
+            id: 'videoStreamId',
+            toURL: jest.fn(() => 'video-url'),
+        });
+
+        // Test initializing video track with start=true
+        await connection.initializeVideoTrack(true);
+
+        expect(getUserMedia).toHaveBeenCalledWith({
+            video: {
+                frameRate: 30,
+                facingMode: 'user',
+            },
+            audio: false,
+        });
+        expect(getUserMedia).toHaveBeenCalledTimes(2);
+        expect(setLocalVideoURL).toHaveBeenCalledWith('video-url');
+        expect(mockVideoTrack.enabled).toBe(true);
+    });
+
+    it('initialize video track, start=false', async () => {
+        const getUserMedia = require('react-native-webrtc').mediaDevices.getUserMedia;
+
+        const setLocalVideoURL = jest.fn();
+        const connection = await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            setLocalVideoURL,
+            () => {},
+            true,
+            true,
+        );
+
+        // Create a new video track mock that will be released
+        const mockVideoTrackToRelease = {
+            id: 'videoTrackId2',
+            enabled: false,
+            stop: jest.fn(),
+            release: jest.fn(),
+        };
+
+        getUserMedia.mockResolvedValueOnce({
+            getVideoTracks: () => [mockVideoTrackToRelease],
+            id: 'videoStreamId2',
+            toURL: jest.fn(() => 'video-url-2'),
+        });
+
+        // Test initializing video track with start=false
+        await connection.initializeVideoTrack(false);
+
+        expect(getUserMedia).toHaveBeenCalledTimes(2);
+        expect(setLocalVideoURL).not.toHaveBeenCalled();
+        expect(mockVideoTrackToRelease.stop).toHaveBeenCalled();
+        expect(mockVideoTrackToRelease.release).toHaveBeenCalled();
+        expect(mockVideoTrackToRelease.enabled).toBe(false);
+    });
+
+    it('does not initialize video track when EnableVideo is false', async () => {
+        const getUserMedia = require('react-native-webrtc').mediaDevices.getUserMedia;
+        getUserMedia.mockClear();
+
+        // Mock client to return config with EnableVideo: false
+        const mockClientWithVideoDisabled = {
+            getWebSocketUrl: jest.fn(() => 'ws://localhost:8065'),
+            getCallsConfig: jest.fn(() => ({
+                ICEServers: ['stun:stun.example.com'],
+                ICEServersConfigs: [{urls: ['stun:stun.example.com']}],
+                AllowEnableCalls: true,
+                EnableVideo: false,
+                EnableAV1: true,
+            })),
+            genTURNCredentials: jest.fn(() => Promise.resolve([{
+                urls: ['turn:turn.example.com'],
+                username: 'user',
+                credential: 'pass',
+            }])),
+        };
+
+        // Override the NetworkManager.getClient mock for this test
+        // eslint-disable-next-line
+        // @ts-ignore
+        NetworkManager.getClient = jest.fn(() => mockClientWithVideoDisabled);
+
+        const setLocalVideoURL = jest.fn();
+        await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            setLocalVideoURL,
+            () => {},
+            true,
+            true,
+        );
+
+        // Should only call getUserMedia for voice track, not for video
+        expect(getUserMedia).toHaveBeenCalledTimes(1);
+        expect(getUserMedia).toHaveBeenCalledWith({
+            video: false,
+            audio: true,
+        });
+    });
+
+    it('initializes video track when EnableVideo is true', async () => {
+        const getUserMedia = require('react-native-webrtc').mediaDevices.getUserMedia;
+        getUserMedia.mockClear();
+
+        // Mock client to return config with EnableVideo: true
+        const mockClientWithVideoEnabled = {
+            getWebSocketUrl: jest.fn(() => 'ws://localhost:8065'),
+            getCallsConfig: jest.fn(() => ({
+                ICEServers: ['stun:stun.example.com'],
+                ICEServersConfigs: [{urls: ['stun:stun.example.com']}],
+                AllowEnableCalls: true,
+                EnableVideo: true,
+                EnableAV1: true,
+            })),
+            genTURNCredentials: jest.fn(() => Promise.resolve([{
+                urls: ['turn:turn.example.com'],
+                username: 'user',
+                credential: 'pass',
+            }])),
+        };
+
+        // Mock video track
+        const mockVideoTrack = {
+            id: 'videoTrackId',
+            enabled: true,
+            stop: jest.fn(),
+            release: jest.fn(),
+        };
+
+        // Set up getUserMedia to return a video track on second call
+        getUserMedia.mockImplementation((config: {video?: boolean | object; audio?: boolean | object}) => {
+            if (config.video) {
+                return Promise.resolve({
+                    getVideoTracks: () => [mockVideoTrack],
+                    id: 'videoStreamId',
+                    toURL: jest.fn(() => 'video-url'),
+                });
+            }
+
+            return Promise.resolve({
+                getAudioTracks: () => [{
+                    id: 'audioTrackId',
+                    enabled: true,
+                }],
+                getTracks: () => [{
+                    id: 'audioTrackId',
+                    enabled: true,
+                    stop: jest.fn(),
+                    release: jest.fn(),
+                }],
+            });
+        });
+
+        // Override the NetworkManager.getClient mock for this test
+        // eslint-disable-next-line
+        // @ts-ignore
+        NetworkManager.getClient = jest.fn(() => mockClientWithVideoEnabled);
+
+        const setLocalVideoURL = jest.fn();
+        await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            setLocalVideoURL,
+            () => {},
+            true,
+            true,
+        );
+
+        // Should call getUserMedia twice - once for voice and once for video
+        expect(getUserMedia).toHaveBeenCalledTimes(2);
+        expect(getUserMedia).toHaveBeenCalledWith({
+            video: false,
+            audio: true,
+        });
+        expect(getUserMedia).toHaveBeenCalledWith({
+            video: {
+                frameRate: 30,
+                facingMode: 'user',
+            },
+            audio: false,
+        });
+
+        // Video track should be initialized but stopped since start=false
+        expect(mockVideoTrack.stop).toHaveBeenCalled();
+        expect(mockVideoTrack.release).toHaveBeenCalled();
+    });
+
     it('rtc peer', async () => {
         const wsSend = jest.fn();
         const wsClose = jest.fn();
         const peerDestroy = jest.fn();
         const peerSignal = jest.fn();
+        const peerReplaceTrack = jest.fn();
+        const peerAddStream = jest.fn();
 
         const handlers: Record<string, any> = {};
 
@@ -369,6 +608,8 @@ describe('newConnection', () => {
             getStats: jest.fn(),
             destroy: peerDestroy,
             signal: peerSignal,
+            replaceTrack: peerReplaceTrack,
+            addStream: peerAddStream,
         }));
 
         // eslint-disable-next-line
@@ -396,6 +637,9 @@ describe('newConnection', () => {
             'channelID',
             () => {},
             () => {},
+            () => {},
+            () => {},
+            true,
             true,
         );
         expect(connection).toBeDefined();
@@ -481,6 +725,9 @@ describe('newConnection', () => {
             'channelID',
             () => {},
             () => {},
+            () => {},
+            () => {},
+            true,
             true,
         );
         expect(connection).toBeDefined();
@@ -535,11 +782,123 @@ describe('newConnection', () => {
         // @ts-ignore
         parseRTCStats.mockImplementation(() => mockRTCStats);
 
-        newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false).
+        newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, () => {}, () => {}, false, false).
             then((connection) => {
                 expect(connection).toBeDefined();
                 expect(joinHandler).toHaveBeenCalled();
             });
+    });
+
+    it('start and stop video', async () => {
+        const wsSend = jest.fn();
+        const mockReplaceTrack = jest.fn();
+        const mockAddStream = jest.fn();
+        const setLocalVideoURL = jest.fn();
+
+        // Mock video track and stream
+        const mockVideoTrack = {
+            id: 'videoTrackId',
+            enabled: false,
+            stop: jest.fn(),
+            release: jest.fn(),
+        };
+
+        const mockVideoStream = {
+            id: 'videoStreamId',
+            toURL: jest.fn(() => 'video-url'),
+        };
+
+        const getUserMedia = require('react-native-webrtc').mediaDevices.getUserMedia;
+
+        // eslint-disable-next-line
+        // @ts-ignore
+        RTCPeer.mockImplementation(() => ({
+            replaceTrack: mockReplaceTrack,
+            addStream: mockAddStream,
+            on: jest.fn(),
+            getStats: jest.fn(),
+        }));
+
+        // eslint-disable-next-line
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: (event: string, handler: any) => {
+                if (event === 'join') {
+                    handler();
+                }
+            },
+            send: wsSend,
+        }));
+
+        const connection = await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            setLocalVideoURL,
+            () => {},
+            true,
+            true,
+        );
+
+        getUserMedia.mockResolvedValueOnce({
+            getVideoTracks: () => [mockVideoTrack],
+            id: 'videoStreamId',
+            toURL: mockVideoStream.toURL,
+        });
+
+        // Test startVideo when no video track exists yet
+        await connection.startVideo();
+
+        // Should have initialized video
+        expect(getUserMedia).toHaveBeenCalledWith({
+            video: {
+                frameRate: 30,
+                facingMode: 'user',
+            },
+            audio: false,
+        });
+
+        // Should have added stream since track wasn't added before
+        expect(mockAddStream).toHaveBeenCalled();
+        expect(mockVideoTrack.enabled).toBe(true);
+        expect(setLocalVideoURL).toHaveBeenCalledWith('video-url');
+        expect(wsSend).toHaveBeenCalledWith('video_on', {
+            data: JSON.stringify({
+                videoStreamID: 'videoStreamId',
+            }),
+        });
+
+        // Reset mocks for stopVideo test
+        wsSend.mockClear();
+        mockReplaceTrack.mockClear();
+        mockVideoTrack.enabled = true;
+
+        // Test stopVideo
+        connection.stopVideo();
+
+        expect(mockReplaceTrack).toHaveBeenCalledWith('videoTrackId', null);
+        expect(mockVideoTrack.enabled).toBe(false);
+        expect(wsSend).toHaveBeenCalledWith('video_off');
+
+        // Reset mocks for second startVideo test
+        wsSend.mockClear();
+        mockReplaceTrack.mockClear();
+        mockAddStream.mockClear();
+
+        // Test startVideo when video track already exists
+        await connection.startVideo();
+
+        // Should have used replaceTrack since track was already added
+        expect(mockReplaceTrack).toHaveBeenCalledWith('videoTrackId', mockVideoTrack);
+        expect(mockAddStream).not.toHaveBeenCalled();
+        expect(mockVideoTrack.enabled).toBe(true);
+        expect(wsSend).toHaveBeenCalledWith('video_on', {
+            data: JSON.stringify({
+                videoStreamID: 'videoStreamId',
+            }),
+        });
     });
 
     it('waitForPeerConnection', async () => {
@@ -548,6 +907,9 @@ describe('newConnection', () => {
             'channelID',
             () => {},
             () => {},
+            () => {},
+            () => {},
+            true,
             true,
         );
         expect(connection).toBeDefined();
@@ -589,6 +951,9 @@ describe('newConnection', () => {
             'channelID',
             () => {},
             () => {},
+            () => {},
+            () => {},
+            true,
             true,
         );
         expect(connection).toBeDefined();

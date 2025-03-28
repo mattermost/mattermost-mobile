@@ -46,3 +46,24 @@ export const hasMicrophonePermission = async () => {
     }
 };
 
+export const hasCameraPermission = async () => {
+    const camera = Platform.select({
+        ios: Permissions.PERMISSIONS.IOS.CAMERA,
+        default: Permissions.PERMISSIONS.ANDROID.CAMERA,
+    });
+
+    const hasCamera = await Permissions.check(camera);
+
+    switch (hasCamera) {
+        case Permissions.RESULTS.DENIED:
+        case Permissions.RESULTS.UNAVAILABLE: {
+            const permissionRequest = await Permissions.request(camera);
+            return permissionRequest === Permissions.RESULTS.GRANTED;
+        }
+        case Permissions.RESULTS.BLOCKED:
+            return false;
+        default:
+            return true;
+    }
+};
+

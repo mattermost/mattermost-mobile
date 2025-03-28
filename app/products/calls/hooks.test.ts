@@ -5,11 +5,12 @@ import {act, renderHook} from '@testing-library/react-hooks';
 import {Alert, AppState} from 'react-native';
 import Permissions from 'react-native-permissions';
 
-import {initializeVoiceTrack} from '@calls/actions/calls';
+import {initializeVoiceTrack, initializeVideoTrack} from '@calls/actions/calls';
 import {
     getCurrentCall,
     getCallsConfig,
     setMicPermissionsGranted,
+    setCameraPermissionsGranted,
     useCallsState,
     useChannelsWithCalls,
     useCurrentCall,
@@ -47,12 +48,14 @@ jest.mock('@context/theme', () => ({
 
 jest.mock('@calls/actions/calls', () => ({
     initializeVoiceTrack: jest.fn(),
+    initializeVideoTrack: jest.fn(),
 }));
 
 jest.mock('@calls/state', () => ({
     getCurrentCall: jest.fn(),
     getCallsConfig: jest.fn(),
     setMicPermissionsGranted: jest.fn(),
+    setCameraPermissionsGranted: jest.fn(),
     useCallsState: jest.fn(),
     useChannelsWithCalls: jest.fn(),
     useCurrentCall: jest.fn(),
@@ -129,9 +132,11 @@ describe('Calls Hooks', () => {
 
         it('checks permissions when not granted', async () => {
             const mockCheck = jest.spyOn(Permissions, 'check').mockResolvedValue(Permissions.RESULTS.GRANTED);
-            const {result} = renderHook(() => usePermissionsChecker(false));
+            const {result} = renderHook(() => usePermissionsChecker(false, false));
+            const [micResult, camResult] = result.current;
 
-            expect(result.current).toBe(false);
+            expect(micResult).toBe(false);
+            expect(camResult).toBe(false);
 
             // Simulate app becoming active
             await act(async () => {
@@ -140,15 +145,35 @@ describe('Calls Hooks', () => {
                 await callback('active');
             });
 
-            expect(mockCheck).toHaveBeenCalled();
+            expect(mockCheck).toHaveBeenCalledTimes(2);
+
             expect(initializeVoiceTrack).toHaveBeenCalled();
+            expect(initializeVideoTrack).toHaveBeenCalled();
+
             expect(setMicPermissionsGranted).toHaveBeenCalledWith(true);
-            expect(result.current).toBe(true);
+            expect(result.current[0]).toBe(true);
+
+            expect(setCameraPermissionsGranted).toHaveBeenCalledWith(true);
+            expect(result.current[1]).toBe(true);
         });
 
-        it('skips check when already granted', () => {
+        it('skips mic check when already granted', () => {
             const mockCheck = jest.spyOn(Permissions, 'check');
-            renderHook(() => usePermissionsChecker(true));
+            renderHook(() => usePermissionsChecker(true, false));
+            expect(mockCheck).toHaveBeenCalledTimes(1);
+            expect(mockCheck).toHaveBeenCalledWith(Permissions.PERMISSIONS.IOS.CAMERA);
+        });
+
+        it('skips camera check when already granted', () => {
+            const mockCheck = jest.spyOn(Permissions, 'check');
+            renderHook(() => usePermissionsChecker(false, true));
+            expect(mockCheck).toHaveBeenCalledTimes(1);
+            expect(mockCheck).toHaveBeenCalledWith(Permissions.PERMISSIONS.IOS.MICROPHONE);
+        });
+
+        it('skips both checks when already granted', () => {
+            const mockCheck = jest.spyOn(Permissions, 'check');
+            renderHook(() => usePermissionsChecker(true, true));
             expect(mockCheck).not.toHaveBeenCalled();
         });
     });
@@ -158,7 +183,7 @@ describe('Calls Hooks', () => {
             (useIncomingCalls as jest.Mock).mockReturnValue({incomingCalls: []});
             (useChannelsWithCalls as jest.Mock).mockReturnValue({});
             (useCallsState as jest.Mock).mockReturnValue({calls: {}, myUserId: 'user1'});
-            (useGlobalCallsState as jest.Mock).mockReturnValue({micPermissionsGranted: true});
+            (useGlobalCallsState as jest.Mock).mockReturnValue({micPermissionsGranted: true, cameraPermissionsGranted: true});
             (useCurrentCall as jest.Mock).mockReturnValue(null);
             (queryAllActiveServers as jest.Mock).mockReturnValue({
                 fetch: () => Promise.resolve([{id: 'server1'}]),

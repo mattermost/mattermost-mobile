@@ -26,6 +26,7 @@ jest.mock('@calls/actions', () => ({
     leaveCall: jest.fn(),
     joinCall: jest.fn().mockResolvedValue({}),
     hasMicrophonePermission: jest.fn().mockResolvedValue(true),
+    hasCameraPermission: jest.fn().mockResolvedValue(true),
     unmuteMyself: jest.fn(),
     dismissIncomingCall: jest.fn(),
     removeIncomingCall: jest.fn(),
@@ -39,6 +40,7 @@ jest.mock('@calls/state', () => ({
     getCurrentCall: jest.fn(),
     getCallsConfig: jest.fn(),
     setMicPermissionsGranted: jest.fn(),
+    setCameraPermissionsGranted: jest.fn(),
 }));
 jest.mock('@calls/actions/calls');
 jest.mock('@screens/navigation', () => ({
@@ -371,7 +373,7 @@ describe('alerts', () => {
         });
 
         it('joins new call when not in a call', async () => {
-            const {getCallsState, getChannelsWithCalls, getCurrentCall, getCallsConfig, setMicPermissionsGranted} = require('@calls/state');
+            const {getCallsState, getChannelsWithCalls, getCurrentCall, getCallsConfig, setMicPermissionsGranted, setCameraPermissionsGranted} = require('@calls/state');
             getCallsState.mockReturnValue({
                 enabled: {
                     'join-channel': true,
@@ -381,6 +383,7 @@ describe('alerts', () => {
             getCurrentCall.mockReturnValue(null);
             getCallsConfig.mockReturnValue({});
             setMicPermissionsGranted.mockReturnValue(true);
+            setCameraPermissionsGranted.mockReturnValue(true);
 
             const mockAlert = jest.spyOn(Alert, 'alert');
             const result = await leaveAndJoinWithAlert(intl as any, 'server1', 'join-channel');
@@ -389,7 +392,7 @@ describe('alerts', () => {
         });
 
         it('shows leave and join confirmation when in a call', async () => {
-            const {getCallsState, getChannelsWithCalls, getCurrentCall, getCallsConfig, setMicPermissionsGranted} = require('@calls/state');
+            const {getCallsState, getChannelsWithCalls, getCurrentCall, getCallsConfig, setMicPermissionsGranted, setCameraPermissionsGranted} = require('@calls/state');
             getCallsState.mockReturnValue({
                 enabled: {
                     'join-channel': true,
@@ -405,6 +408,7 @@ describe('alerts', () => {
             });
             getCallsConfig.mockReturnValue({});
             setMicPermissionsGranted.mockReturnValue(true);
+            setCameraPermissionsGranted.mockReturnValue(true);
 
             const mockAlert = jest.spyOn(Alert, 'alert').mockImplementationOnce(async (title, message, buttons) => {
                 // Simulate cancel
@@ -412,8 +416,6 @@ describe('alerts', () => {
             });
 
             expect(await leaveAndJoinWithAlert(intl as any, 'server1', 'join-channel')).toBe(false);
-
-            console.log('rar');
 
             expect(mockAlert).toHaveBeenCalledWith(
                 'Are you sure you want to switch to a different call?',

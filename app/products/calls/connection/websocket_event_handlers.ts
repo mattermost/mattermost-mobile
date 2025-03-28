@@ -24,6 +24,7 @@ import {
     setRecordingState,
     setUserMuted,
     setUserVoiceOn,
+    setUserVideo,
     userJoinedCall,
     userLeftCall,
     userReacted,
@@ -54,6 +55,7 @@ import type {
     UserReactionData,
     UserScreenOnOffData,
     UserVoiceOnOffData,
+    UserVideoOnOffData,
 } from '@mattermost/calls/lib/types';
 
 // DEPRECATED in favour of user_joined (since v0.21.0)
@@ -108,6 +110,14 @@ export const handleCallUserVoiceOn = (msg: WebSocketMessage<UserVoiceOnOffData>)
 export const handleCallUserVoiceOff = (msg: WebSocketMessage<UserVoiceOnOffData>) => {
     // pre v0.21.0, sessionID == userID
     setUserVoiceOn(msg.broadcast.channel_id, msg.data.session_id || msg.data.userID, false);
+};
+
+export const handleCallUserVideoOn = (serverUrl: string, msg: WebSocketMessage<UserVideoOnOffData>) => {
+    setUserVideo(serverUrl, msg.broadcast.channel_id, msg.data.session_id, true);
+};
+
+export const handleCallUserVideoOff = (serverUrl: string, msg: WebSocketMessage<UserVideoOnOffData>) => {
+    setUserVideo(serverUrl, msg.broadcast.channel_id, msg.data.session_id, false);
 };
 
 export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage<CallStartData>) => {
