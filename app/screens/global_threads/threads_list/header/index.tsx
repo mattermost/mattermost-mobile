@@ -6,19 +6,16 @@ import {Alert, TouchableOpacity, View} from 'react-native';
 
 import {updateTeamThreadsAsRead} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 export type Props = {
-    setTab: (tab: GlobalThreadsTab) => void;
-    tab: GlobalThreadsTab;
+    tabsComponent: React.ReactNode;
     teamId: string;
     testID: string;
-    unreadsCount: number;
+    hasUnreads: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -29,41 +26,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomWidth: 1,
             flexDirection: 'row',
         },
-        menuContainer: {
-            alignItems: 'center',
-            flexGrow: 1,
-            flexDirection: 'row',
-            paddingLeft: 12,
-            marginVertical: 12,
-            flex: 1,
-            overflow: 'hidden',
-        },
-        menuItemContainer: {
-            paddingVertical: 8,
-            paddingHorizontal: 16,
-        },
-        menuItemContainerSelected: {
-            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
-            borderRadius: 4,
-        },
-        menuItem: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            alignSelf: 'center',
-            ...typography('Body', 200, 'SemiBold'),
-        },
-        menuItemSelected: {
-            color: theme.buttonBg,
-        },
-        unreadsDot: {
-            position: 'absolute',
-            width: 6,
-            height: 6,
-            borderRadius: 3,
-            backgroundColor: theme.sidebarTextActiveBorder,
-            right: -6,
-            top: 4,
-        },
-
         markAllReadIconContainer: {
             paddingHorizontal: 20,
         },
@@ -78,16 +40,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const Header = ({setTab, tab, teamId, testID, unreadsCount}: Props) => {
+const Header = ({tabsComponent, teamId, testID, hasUnreads}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
-    const hasUnreads = unreadsCount > 0;
-    const viewingUnreads = tab === 'unreads';
-
-    const handleMarkAllAsRead = useCallback(preventDoubleTap(() => {
+    const handleMarkAllAsRead = usePreventDoubleTap(useCallback(() => {
         Alert.alert(
             intl.formatMessage({
                 id: 'global_threads.markAllRead.title',
@@ -114,31 +73,7 @@ const Header = ({setTab, tab, teamId, testID, unreadsCount}: Props) => {
                 },
             }],
         );
-    }), [intl, serverUrl, teamId]);
-
-    const handleViewAllThreads = useCallback(preventDoubleTap(() => setTab('all')), []);
-    const handleViewUnreadThreads = useCallback(preventDoubleTap(() => setTab('unreads')), []);
-
-    const {allThreadsContainerStyle, allThreadsStyle, unreadsContainerStyle, unreadsStyle} = useMemo(() => {
-        return {
-            allThreadsContainerStyle: [
-                styles.menuItemContainer,
-                viewingUnreads ? undefined : styles.menuItemContainerSelected,
-            ],
-            allThreadsStyle: [
-                styles.menuItem,
-                viewingUnreads ? undefined : styles.menuItemSelected,
-            ],
-            unreadsContainerStyle: [
-                styles.menuItemContainer,
-                viewingUnreads ? styles.menuItemContainerSelected : undefined,
-            ],
-            unreadsStyle: [
-                styles.menuItem,
-                viewingUnreads ? styles.menuItemSelected : undefined,
-            ],
-        };
-    }, [styles, viewingUnreads]);
+    }, [intl, serverUrl, teamId]));
 
     const markAllStyle = useMemo(() => [
         styles.markAllReadIcon,
@@ -147,40 +82,7 @@ const Header = ({setTab, tab, teamId, testID, unreadsCount}: Props) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.menuContainer}>
-                <TouchableOpacity
-                    onPress={handleViewAllThreads}
-                    testID={`${testID}.all_threads.button`}
-                >
-                    <View style={allThreadsContainerStyle}>
-                        <FormattedText
-                            id='global_threads.allThreads'
-                            defaultMessage='All your threads'
-                            style={allThreadsStyle}
-                        />
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={handleViewUnreadThreads}
-                    testID={`${testID}.unread_threads.button`}
-                >
-                    <View style={unreadsContainerStyle}>
-                        <View>
-                            <FormattedText
-                                id='global_threads.unreads'
-                                defaultMessage='Unreads'
-                                style={unreadsStyle}
-                            />
-                            {hasUnreads ? (
-                                <View
-                                    style={styles.unreadsDot}
-                                    testID={`${testID}.unreads_dot.badge`}
-                                />
-                            ) : null}
-                        </View>
-                    </View>
-                </TouchableOpacity>
-            </View>
+            {tabsComponent}
             <View style={styles.markAllReadIconContainer}>
                 <TouchableOpacity
                     disabled={!hasUnreads}
