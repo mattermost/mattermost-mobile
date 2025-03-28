@@ -14,6 +14,7 @@ let operator: ServerDataOperator;
 const scheduledPosts: ScheduledPost[] = [
     {
         channel_id: 'channel_id',
+        team_id: 'team_id',
         error_code: '',
         files: [],
         id: 'scheduled_post_id',
@@ -29,6 +30,7 @@ const scheduledPosts: ScheduledPost[] = [
     {
         id: 'scheduled_post_id_2',
         channel_id: 'channel_id',
+        team_id: 'team_id',
         root_id: '',
         message: 'test scheduled post 2',
         files: [],

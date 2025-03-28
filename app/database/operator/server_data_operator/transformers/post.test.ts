@@ -139,6 +139,7 @@ describe('***  POST Prepare Records Test ***', () => {
                 raw: {
                     id: 'schedule_post_id',
                     channel_id: 'channel_id',
+                    team_id: 'team_id',
                     root_id: '',
                     message: 'schedule post message',
                     user_id: 'user_id',

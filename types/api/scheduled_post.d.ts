@@ -12,6 +12,7 @@ type ScheduledPost = Draft & SchedulingInfo & {
     create_at: number;
     priority?: PostPriority;
     file_ids?: string[];
+    team_id: string;
     user_id: string;
 }
 

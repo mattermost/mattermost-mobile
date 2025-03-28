@@ -4,6 +4,7 @@
 import type CategoryModel from './category';
 import type ChannelModel from './channel';
 import type MyTeamModel from './my_team';
+import type ScheduledPostModel from './scheduled_post';
 import type TeamChannelHistoryModel from './team_channel_history';
 import type TeamMembershipModel from './team_membership';
 import type TeamSearchHistoryModel from './team_search_history';
@@ -55,6 +56,9 @@ declare class TeamModel extends Model {
 
     /** channels : All the channels associated with this team */
     channels: Query<ChannelModel>;
+
+    /** scheduled_posts: All the scheduled post associated with this team */
+    scheduledPosts: Query<ScheduledPostModel>;
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of.  This query might yield no result if the user isn't part of a team. */
     myTeam: Relation<MyTeamModel>;

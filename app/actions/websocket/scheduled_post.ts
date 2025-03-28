@@ -3,6 +3,8 @@
 
 import {handleScheduledPosts} from '@actions/local/scheduled_post';
 import {ActionType} from '@constants';
+import DatabaseManager from '@database/manager';
+import {getTeamIdByChannelId} from '@queries/servers/system';
 import {logError} from '@utils/log';
 
 export type ScheduledPostWebsocketEventPayload = {
@@ -11,8 +13,11 @@ export type ScheduledPostWebsocketEventPayload = {
 
 export async function handleCreateOrUpdateScheduledPost(serverUrl: string, msg: WebSocketMessage<ScheduledPostWebsocketEventPayload>, prepareRecordsOnly = false) {
     try {
-        const scheduledPost: ScheduledPost[] = msg.data.scheduledPost ? [JSON.parse(msg.data.scheduledPost)] : [];
-        return handleScheduledPosts(serverUrl, ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST, scheduledPost, prepareRecordsOnly);
+        const scheduledPost: ScheduledPost = msg.data.scheduledPost ? JSON.parse(msg.data.scheduledPost) : [];
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const currentTeamId = await getTeamIdByChannelId(database, scheduledPost.channel_id);
+        const scheduledPostWithTeamId: ScheduledPost = {...scheduledPost, team_id: currentTeamId};
+        return handleScheduledPosts(serverUrl, ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST, [scheduledPostWithTeamId], prepareRecordsOnly);
     } catch (error) {
         logError('handleCreateOrUpdateScheduledPost cannot handle scheduled post added/update websocket event', error);
         return {error};

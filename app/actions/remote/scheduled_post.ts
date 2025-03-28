@@ -5,7 +5,7 @@ import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import websocketManager from '@managers/websocket_manager';
-import {getConfigValue} from '@queries/servers/system';
+import {getConfigValue, getTeamIdByChannelId} from '@queries/servers/system';
 import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
@@ -28,9 +28,11 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
         const response = await client.createScheduledPost(schedulePost, connectionId);
 
         if (response) {
+            const currentTeamId = await getTeamIdByChannelId(operator.database, response.channel_id);
+            const scheduledPosts = [{...response, team_id: currentTeamId}];
             await operator.handleScheduledPosts({
                 actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
-                scheduledPosts: [response],
+                scheduledPosts,
                 prepareRecordsOnly: false,
             });
         }
@@ -83,7 +85,14 @@ export async function fetchScheduledPosts(serverUrl: string, teamId: string, inc
 
         const scheduledPostsResponse = await client.getScheduledPostsForTeam(teamId, includeDirectChannels, groupLabel);
         const {directChannels = [], ...scheduledPostsByTeam} = scheduledPostsResponse;
-        const scheduledPosts = [...Object.values(scheduledPostsByTeam).flat(), ...directChannels];
+        const transformedScheduledPostsByTeam = Object.entries(scheduledPostsByTeam).reduce(
+            (acc, [fetchedTeamId, posts]) => {
+                acc[fetchedTeamId] = posts.map((post) => ({...post, team_id: teamId}));
+                return acc;
+            },
+            {} as Record<string, ScheduledPost[]>,
+        );
+        const scheduledPosts = [...Object.values(transformedScheduledPostsByTeam).flat(), ...directChannels];
         await operator.handleScheduledPosts({
             actionType: ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS,
             scheduledPosts,

@@ -29,6 +29,7 @@ const scheduledPost: ScheduledPost = {
     root_id: '',
     update_at: 0,
     channel_id: 'channelid1',
+    team_id: 'teamid1',
     message: 'Test message',
     scheduled_at: Date.now() + 10000,
     create_at: Date.now(),
@@ -42,6 +43,7 @@ const scheduledPostsResponse: FetchScheduledPostsResponse = {
         {
             id: 'scheduled_post_id',
             channel_id: 'channel_id',
+            team_id: 'team_id',
             root_id: '',
             message: 'test scheduled post',
             scheduled_at: 123,
@@ -54,6 +56,7 @@ const scheduledPostsResponse: FetchScheduledPostsResponse = {
         {
             id: 'scheduled_post_id_2',
             channel_id: 'channel_id',
+            team_id: 'team_id',
             root_id: '',
             message: 'test scheduled post 2',
             scheduled_at: 123,

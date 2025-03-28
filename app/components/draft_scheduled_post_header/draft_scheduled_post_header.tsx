@@ -24,7 +24,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    channel: ChannelModel;
+    channel?: ChannelModel;
     postReceiverUser?: UserModel;
     updateAt: number;
     rootId?: PostModel['rootId'];
@@ -123,7 +123,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const isChannelTypeDM = channel.type === General.DM_CHANNEL;
+    const isChannelTypeDM = channel && channel.type === General.DM_CHANNEL;
 
     const ChannelInfo = ({id, defaultMessage}: {id: string; defaultMessage: string}) => (
         <View style={style.channelInfo}>
@@ -204,7 +204,10 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
                         numberOfLines={1}
                         style={style.displayName}
                     >
-                        {channel.displayName}
+                        {channel ? channel.displayName : intl.formatMessage({
+                            id: 'scheduled_post_header.no_destination',
+                            defaultMessage: 'No Destination',
+                        })}
                     </Text>
                 </View>
                 <FormattedTime

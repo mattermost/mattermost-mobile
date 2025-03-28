@@ -15,6 +15,7 @@ let operator: ServerDataOperator;
 
 const scheduledPost = {
     channel_id: 'channel_id',
+    team_id: 'team_id',
     error_code: '',
     files: [],
     id: 'scheduled_post_id',
