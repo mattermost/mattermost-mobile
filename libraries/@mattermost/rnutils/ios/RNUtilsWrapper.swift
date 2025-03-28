@@ -274,6 +274,77 @@ import React
             UINavigationController.attemptRotationToDeviceOrientation()
         }
     }
+
+    @objc public func createZipFile(sourcePaths: [String]) -> Dictionary<String, Any> {
+        let fileManager = FileManager.default
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd-HHmmss"
+        let currentDate = dateFormatter.string(from: Date())
+        let destinationURL = fileManager.temporaryDirectory.appendingPathComponent("Logs_\(currentDate).zip")
+        let tempDirectory = fileManager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        
+        do {
+            try fileManager.createDirectory(at: destinationURL.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
+            
+            let coordinator = NSFileCoordinator()
+            var coordinatorError: NSError?
+            var zipFilePath: String?
+            
+            try fileManager.createDirectory(at: tempDirectory, withIntermediateDirectories: true, attributes: nil)
+            
+            // Copy files to temp directory
+            for sourcePath in sourcePaths {
+                let sourceURL = URL(fileURLWithPath: sourcePath)
+                let destinationTempURL = tempDirectory.appendingPathComponent(sourceURL.lastPathComponent)
+                do {
+                    try fileManager.copyItem(at: sourceURL, to: destinationTempURL)
+                } catch {
+                    // Clean up temp directory if copy fails
+                    try? fileManager.removeItem(at: tempDirectory)
+                    return [
+                        "error": "Failed to copy file: \(error.localizedDescription)",
+                        "success": false
+                    ]
+                }
+            }
+            
+            var moveError: Error?
+            coordinator.coordinate(readingItemAt: tempDirectory, options: [.forUploading], error: &coordinatorError) { (zipURL) in
+                do {
+                    try fileManager.moveItem(at: zipURL, to: destinationURL)
+                    zipFilePath = destinationURL.path
+                } catch let error {
+                    moveError = error
+                }
+            }
+            
+            // Clean up temp directory regardless of success or failure
+            try? fileManager.removeItem(at: tempDirectory)
+            
+            if let error = moveError ?? coordinatorError {
+                // Clean up destination file if move failed
+                try? fileManager.removeItem(at: destinationURL)
+                return [
+                    "error": error.localizedDescription,
+                    "success": false
+                ]
+            }
+            
+            return [
+                "error": "",
+                "success": true,
+                "zipFilePath": zipFilePath ?? ""
+            ]
+        } catch {
+            // Clean up both temp directory and destination file in case of any other errors
+            try? fileManager.removeItem(at: tempDirectory)
+            try? fileManager.removeItem(at: destinationURL)
+            return [
+                "error": error.localizedDescription,
+                "success": false
+            ]
+        }
+    }
 }
 
 
