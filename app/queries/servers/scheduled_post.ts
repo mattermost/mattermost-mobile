@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
-
 const {SERVER: {CHANNEL, SCHEDULED_POST}} = MM_TABLES;
 
 export const queryScheduledPostsForTeam = (database: Database, teamId: string, includeDirectChannelPosts?: boolean) => {
@@ -22,6 +22,17 @@ export const queryScheduledPostsForTeam = (database: Database, teamId: string, i
         Q.sortBy('scheduled_at', Q.asc),
     );
 };
+
+export const queryScheduledPost = (database: Database, channelId: string, rootId = '') => {
+    return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
+        Q.where('channel_id', channelId),
+        Q.where('root_id', rootId),
+    );
+};
+
+export function observeFirstScheduledPost(v: ScheduledPostModel[]) {
+    return v[0]?.observe() || of$(undefined);
+}
 
 export const observeScheduledPostsForTeam = (database: Database, teamId: string, includeDirectChannelPosts?: boolean) => {
     return queryScheduledPostsForTeam(database, teamId, includeDirectChannelPosts).observeWithColumns(['update_at', 'error_code']);
