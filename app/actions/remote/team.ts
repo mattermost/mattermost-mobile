@@ -5,6 +5,7 @@ import {chunk} from 'lodash';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -436,6 +437,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
 
     // Fetch Groups + GroupTeams
     fetchGroupsForTeamIfConstrained(serverUrl, teamId);
+    fetchScheduledPosts(serverUrl, teamId, false);
     return {};
 }
 
