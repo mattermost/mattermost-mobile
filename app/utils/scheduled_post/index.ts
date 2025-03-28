@@ -6,6 +6,8 @@ import {Alert} from 'react-native';
 
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import DatabaseManager from '@database/manager';
+import {getPostById} from '@queries/servers/post';
 import {getErrorMessage} from '@utils/errors';
 import {showSnackBar} from '@utils/snack_bar';
 
@@ -126,3 +128,109 @@ export function getErrorStringFromCode(intl: IntlShape, errorCode: ScheduledPost
 export const isScheduledPostModel = (obj: ScheduledPostModel | ScheduledPost): obj is ScheduledPostModel => {
     return 'toApi' in obj && typeof (obj as ScheduledPostModel).toApi === 'function';
 };
+
+type CanPostDraftInChannelOrThreadProps = {
+    intl: IntlShape;
+    serverUrl: string;
+    rootId?: string;
+    canPost?: boolean;
+    channelIsArchived?: boolean;
+    channelIsReadOnly?: boolean;
+    deactivatedChannel?: boolean;
+}
+
+export async function canPostDraftInChannelOrThread({
+    serverUrl,
+    rootId,
+    intl,
+    canPost,
+    channelIsArchived,
+    channelIsReadOnly,
+    deactivatedChannel,
+}: CanPostDraftInChannelOrThreadProps) {
+    if (rootId) {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const rootPost = await getPostById(database, rootId);
+        if (!rootPost) {
+            Alert.alert(
+                intl.formatMessage({id: 'scheduled_post.root_post_not_exist', defaultMessage: 'Sending post failed'}),
+                intl.formatMessage({
+                    id: 'scheduled_post.root_post_not_exist.message',
+                    defaultMessage: 'Someone delete the message on which you tried to post a comment.',
+                }),
+                [{
+                    text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                    style: 'cancel',
+                },
+                ], {cancelable: false},
+            );
+            return false;
+        }
+    }
+
+    if (channelIsArchived) {
+        Alert.alert(
+            intl.formatMessage({id: 'scheduled_post.channel_archived', defaultMessage: 'Sending post failed'}),
+            intl.formatMessage({
+                id: 'scheduled_post.channel_archived.message',
+                defaultMessage: 'You cannot post to an archived channel.',
+            }),
+            [{
+                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
+            },
+            ], {cancelable: false},
+        );
+        return false;
+    }
+
+    if (channelIsReadOnly) {
+        Alert.alert(
+            intl.formatMessage({id: 'scheduled_post.channel_read_only', defaultMessage: 'Sending post failed'}),
+            intl.formatMessage({
+                id: 'scheduled_post.channel_read_only.message',
+                defaultMessage: 'You cannot post to a read-only channel.',
+            }),
+            [{
+                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
+            },
+            ], {cancelable: false},
+        );
+        return false;
+    }
+
+    if (deactivatedChannel) {
+        Alert.alert(
+            intl.formatMessage({id: 'scheduled_post.channel_deactivated', defaultMessage: 'Sending post failed'}),
+            intl.formatMessage({
+                id: 'scheduled_post.channel_deactivated.message',
+                defaultMessage: 'You cannot post to a deactivated channel.',
+            }),
+            [{
+                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
+            },
+            ], {cancelable: false},
+        );
+        return false;
+    }
+
+    if (!canPost) {
+        Alert.alert(
+            intl.formatMessage({id: 'scheduled_post.no_permission', defaultMessage: 'Sending post failed'}),
+            intl.formatMessage({
+                id: 'scheduled_post.no_permission.message',
+                defaultMessage: 'You do not have permission to post in this channel.',
+            }),
+            [{
+                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
+            },
+            ], {cancelable: false},
+        );
+        return false;
+    }
+
+    return true;
+}

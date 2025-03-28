@@ -7,7 +7,6 @@ import {DeviceEventEmitter, Text, View} from 'react-native';
 
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
-import ScheduledPostIndicatorWithDatetime from '@components/scheduled_post_indicator_with_datetime';
 import {Events} from '@constants';
 import {DRAFT} from '@constants/screens';
 import {useServerUrl} from '@context/server';
@@ -15,8 +14,6 @@ import {useTheme} from '@context/theme';
 import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import type UserModel from '@typings/database/models/servers/user';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -43,15 +40,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type Props = {
-    currentUser?: UserModel;
-    isMilitaryTime: boolean;
     isThread?: boolean;
     scheduledPostCount?: number;
 }
 
 export function ScheduledPostIndicator({
-    currentUser,
-    isMilitaryTime,
     isThread,
     scheduledPostCount = 0,
 }: Props) {
@@ -66,36 +59,26 @@ export function ScheduledPostIndicator({
         }
     }, [serverUrl]);
 
-    let scheduledPostText: React.ReactNode;
-
     if (scheduledPostCount === 0) {
         return null;
-    } else if (scheduledPostCount === 1) {
-        scheduledPostText = (
-            <ScheduledPostIndicatorWithDatetime
-                currentUser={currentUser}
-                isMilitaryTime={isMilitaryTime}
-            />
-        );
-    } else {
-        scheduledPostText = isThread ? (
-            <FormattedMessage
-                id='scheduled_post.channel_indicator.thread.multiple'
-                defaultMessage='{count} scheduled messages in thread.'
-                values={{
-                    count: scheduledPostCount,
-                }}
-            />
-        ) : (
-            <FormattedMessage
-                id='scheduled_post.channel_indicator.multiple'
-                defaultMessage='{count} scheduled messages in channel.'
-                values={{
-                    count: scheduledPostCount,
-                }}
-            />
-        );
     }
+    const scheduledPostText = isThread ? (
+        <FormattedMessage
+            id='scheduled_post.channel_indicator.thread.multiple'
+            defaultMessage='{count} scheduled messages in thread.'
+            values={{
+                count: scheduledPostCount,
+            }}
+        />
+    ) : (
+        <FormattedMessage
+            id='scheduled_post.channel_indicator.multiple'
+            defaultMessage='{count} scheduled messages in channel.'
+            values={{
+                count: scheduledPostCount,
+            }}
+        />
+    );
 
     return (
         <View

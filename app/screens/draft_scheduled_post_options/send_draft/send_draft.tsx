@@ -48,6 +48,10 @@ type Props = {
     persistentNotificationMaxRecipients: number;
     draftReceiverUserName?: string;
     postId?: string;
+    canPost?: boolean;
+    channelIsArchived?: boolean;
+    channelIsReadOnly?: boolean;
+    deactivatedChannel?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -89,6 +93,10 @@ const SendDraft: React.FC<Props> = ({
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
     draftReceiverUserName,
+    canPost,
+    channelIsArchived,
+    channelIsReadOnly,
+    deactivatedChannel,
 }) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -145,6 +153,10 @@ const SendDraft: React.FC<Props> = ({
         channelType,
         postPriority,
         isFromDraftView: true,
+        canPost,
+        channelIsArchived,
+        channelIsReadOnly,
+        deactivatedChannel,
         clearDraft,
     });
 

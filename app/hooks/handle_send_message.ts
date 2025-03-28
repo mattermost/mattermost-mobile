@@ -21,6 +21,7 @@ import * as DraftUtils from '@utils/draft';
 import {isReactionMatch} from '@utils/emoji/helpers';
 import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
 import {scheduledPostFromPost} from '@utils/post';
+import {canPostDraftInChannelOrThread} from '@utils/scheduled_post';
 import {showSnackBar} from '@utils/snack_bar';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
@@ -48,6 +49,10 @@ type Props = {
     postPriority: PostPriority;
     isFromDraftView?: boolean;
     clearDraft: () => void;
+    canPost?: boolean;
+    channelIsArchived?: boolean;
+    channelIsReadOnly?: boolean;
+    deactivatedChannel?: boolean;
 }
 
 export const useHandleSendMessage = ({
@@ -65,6 +70,10 @@ export const useHandleSendMessage = ({
     channelType,
     postPriority,
     isFromDraftView,
+    canPost,
+    channelIsArchived,
+    channelIsReadOnly,
+    deactivatedChannel,
     clearDraft,
 }: Props) => {
     const intl = useIntl();
@@ -116,6 +125,19 @@ export const useHandleSendMessage = ({
             };
         }
 
+        let shouldClearDraft = true;
+        if (isFromDraftView) {
+            shouldClearDraft = await canPostDraftInChannelOrThread({
+                serverUrl,
+                rootId,
+                intl,
+                canPost,
+                channelIsArchived,
+                channelIsReadOnly,
+                deactivatedChannel,
+            });
+        }
+
         let response: CreateResponse;
         if (schedulingInfo) {
             response = await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles));
@@ -132,12 +154,14 @@ export const useHandleSendMessage = ({
             return response;
         }
 
-        clearDraft();
+        if (shouldClearDraft) {
+            clearDraft();
+        }
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
 
         return response;
-    }, [files, currentUserId, channelId, rootId, value, postPriority, isFromDraftView, clearDraft, serverUrl]);
+    }, [files, currentUserId, channelId, rootId, value, postPriority, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);
