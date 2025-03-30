@@ -6,7 +6,7 @@ export const PROFILE_LONG_PRESS = 'profileLongPressTutorial';
 export const EMOJI_SKIN_SELECTOR = 'emojiSkinSelectorTutorial';
 export const DRAFTS = 'draftsTutorial';
 export const SCHEDULED_POST = 'scheduledPostTutorial';
-export const SCHEDULED_POSTS = 'scheduledPostsTutorial';
+export const SCHEDULED_POSTS_LIST = 'scheduledPostsListTutorial';
 
 export default {
     MULTI_SERVER,
@@ -14,5 +14,5 @@ export default {
     EMOJI_SKIN_SELECTOR,
     DRAFTS,
     SCHEDULED_POST,
-    SCHEDULED_POSTS,
+    SCHEDULED_POSTS_LIST,
 };

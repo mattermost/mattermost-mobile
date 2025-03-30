@@ -48,8 +48,8 @@ export const storeScheduledPostTutorial = async () => {
     return storeGlobal(Tutorial.SCHEDULED_POST, 'true', false);
 };
 
-export const storeScheduledPostsTutorial = async () => {
-    return storeGlobal(Tutorial.SCHEDULED_POSTS, 'true', false);
+export const storeScheduledPostsListTutorial = async () => {
+    return storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
 };
 
 export const storeDontAskForReview = async (prepareRecordsOnly = false) => {

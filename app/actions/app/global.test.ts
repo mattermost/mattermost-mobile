@@ -32,6 +32,7 @@ import {
     storePushDisabledInServerAcknowledged,
     removePushDisabledInServerAcknowledged,
     storeScheduledPostTutorial,
+    storeScheduledPostsListTutorial,
 } from './global';
 
 const serverUrl = 'server.test.com';
@@ -191,6 +192,15 @@ describe('/app/actions/app/global', () => {
 
         await storeScheduledPostTutorial();
         records = await queryGlobalValue(Tutorial.SCHEDULED_POST)?.fetch();
+        expect(records?.[0]?.value).toBe(true);
+    });
+
+    test('storeScheduledPostsListTutorial', async () => {
+        let records = await queryGlobalValue(Tutorial.SCHEDULED_POSTS_LIST)?.fetch();
+        expect(records?.[0]?.value).toBeUndefined();
+
+        await storeScheduledPostsListTutorial();
+        records = await queryGlobalValue(Tutorial.SCHEDULED_POSTS_LIST)?.fetch();
         expect(records?.[0]?.value).toBe(true);
     });
 });
