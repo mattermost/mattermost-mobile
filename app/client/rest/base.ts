@@ -171,10 +171,6 @@ export default class ClientBase extends ClientTracking {
         return `${this.urlVersion}/redirect_location`;
     }
 
-    getScheduledPostActionsRoute() {
-        return `${this.getPostsRoute()}/schedule`;
-    }
-
     getTeamAndDirectChannelScheduledPostsRoute() {
         return `${this.getPostsRoute()}/scheduled`;
     }

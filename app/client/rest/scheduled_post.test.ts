@@ -85,7 +85,7 @@ describe('ClientScheduledPost', () => {
         };
         const connectionId = 'connection_id';
         await client.updateScheduledPost(updatedPost, connectionId);
-        const expectedUrl = `${client.getScheduledPostActionsRoute()}/${scheduledPost.id}`;
+        const expectedUrl = `${client.getScheduledPostRoute()}/${scheduledPost.id}`;
         const expectedOptions = {
             method: 'put',
             body: updatedPost,
@@ -100,7 +100,7 @@ describe('ClientScheduledPost', () => {
             message: 'updated scheduled post message',
         };
         await client.updateScheduledPost(updatedPost);
-        const expectedUrl = `${client.getScheduledPostActionsRoute()}/${scheduledPost.id}`;
+        const expectedUrl = `${client.getScheduledPostRoute()}/${scheduledPost.id}`;
         const expectedOptions = {
             method: 'put',
             body: updatedPost,
@@ -112,7 +112,7 @@ describe('ClientScheduledPost', () => {
     test('deleteScheduledPost', async () => {
         const scheduledPostId = 'scheduled_post_id';
         const connectionId = 'connection_id';
-        const expectedUrl = `${client.getScheduledPostActionsRoute()}/${scheduledPostId}`;
+        const expectedUrl = `${client.getScheduledPostRoute()}/${scheduledPostId}`;
         const expectedOptions = {
             method: 'delete',
             headers: {'Connection-Id': connectionId},
@@ -123,7 +123,7 @@ describe('ClientScheduledPost', () => {
 
     test('deleteScheduledPost without connection ID', async () => {
         const scheduledPostId = 'scheduled_post_id';
-        const expectedUrl = `${client.getScheduledPostActionsRoute()}/${scheduledPostId}`;
+        const expectedUrl = `${client.getScheduledPostRoute()}/${scheduledPostId}`;
         const expectedOptions = {
             method: 'delete',
             headers: {'Connection-Id': ''},

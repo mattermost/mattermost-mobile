@@ -27,7 +27,7 @@ const ClientScheduledPost = <TBase extends Constructor<ClientBase>>(superclass: 
     updateScheduledPost = async (scheduledPost: ScheduledPost, connectionId = '') => {
         const scheduledPostId = scheduledPost.id;
         return this.doFetch(
-            `${this.getScheduledPostActionsRoute()}/${scheduledPostId}`,
+            `${this.getScheduledPostRoute()}/${scheduledPostId}`,
             {
                 method: 'put',
                 body: scheduledPost,
@@ -45,7 +45,7 @@ const ClientScheduledPost = <TBase extends Constructor<ClientBase>>(superclass: 
 
     deleteScheduledPost(scheduledPostId: string, connectionId = '') {
         return this.doFetch(
-            `${this.getScheduledPostActionsRoute()}/${scheduledPostId}`,
+            `${this.getScheduledPostRoute()}/${scheduledPostId}`,
             {
                 method: 'delete',
                 headers: {'Connection-Id': connectionId},
