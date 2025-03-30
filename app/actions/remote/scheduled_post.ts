@@ -16,14 +16,13 @@ import {forceLogoutIfNecessary} from './session';
 import type {CreateResponse} from '@hooks/handle_send_message';
 
 export async function createScheduledPost(serverUrl: string, schedulePost: ScheduledPost): Promise<CreateResponse> {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
-
     try {
+        const operator = DatabaseManager.getServerDatabaseAndOperator(serverUrl).operator;
+        if (!operator) {
+            return {error: `${serverUrl} database not found`};
+        }
+
+        const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.createScheduledPost(schedulePost, connectionId);
 
@@ -68,12 +67,12 @@ export async function updateScheduledPost(serverUrl: string, scheduledPost: Sche
 }
 
 export async function fetchScheduledPosts(serverUrl: string, teamId: string, includeDirectChannels = false, groupLabel?: RequestGroupLabel) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!operator || !database) {
-        return {error: `${serverUrl} database not found`};
-    }
     try {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        if (!operator || !database) {
+            return {error: `${serverUrl} database not found`};
+        }
+
         const client = NetworkManager.getClient(serverUrl);
 
         const scheduledPostEnabled = (await getConfigValue(database, 'ScheduledPosts')) === 'true';
@@ -100,11 +99,12 @@ export async function fetchScheduledPosts(serverUrl: string, teamId: string, inc
 }
 
 export async function deleteScheduledPost(serverUrl: string, scheduledPostId: string) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
     try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        if (!operator) {
+            return {error: `${serverUrl} database not found`};
+        }
+
         const client = NetworkManager.getClient(serverUrl);
         const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
 
