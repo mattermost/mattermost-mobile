@@ -43,11 +43,7 @@ export const switchToGlobalDrafts = async (serverUrl: string, teamId?: string, i
         }
         const params: goToScreenParams = {};
 
-        // explicitly checking for undefined because 0 is a valid value
-        // that shouldn't be missed in this case.
-        if (initialTab !== undefined) {
-            params.initialTab = initialTab;
-        }
+        params.initialTab = initialTab;
 
         const isTabletDevice = isTablet();
         if (isTabletDevice) {
