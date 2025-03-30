@@ -52,17 +52,19 @@ afterEach(async () => {
 });
 
 describe('handleScheduledPosts', () => {
-    it('handleScheduledPosts - handle not found database', async () => {
+    it('handle not found database', async () => {
         const {error} = await handleScheduledPosts('foo', ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST, scheduledPosts) as {error: Error};
         expect(error.message).toBe('foo database not found');
     });
 
-    it('handleScheduledPosts - should create scheduled post', async () => {
+    it('should create scheduled post', async () => {
         const {models} = await handleScheduledPosts(serverUrl, ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST, scheduledPosts);
         expect(models?.length).toBe(2);
+        expect(models![0].id).toBe(scheduledPosts[0].id);
+        expect(models![1].id).toBe(scheduledPosts[1].id);
     });
 
-    it('handleScheduledPosts - should call operator handleScheduledPosts', async () => {
+    it('should call operator handleScheduledPosts', async () => {
         const spyHandledScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
         await handleScheduledPosts(serverUrl, ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST, scheduledPosts);
         expect(spyHandledScheduledPosts).toHaveBeenCalledTimes(1);
@@ -73,7 +75,15 @@ describe('handleScheduledPosts', () => {
         });
     });
 
-    it('handleScheduledPosts - should update scheduled post', async () => {
+    it('should prepare records only', async () => {
+        const spybatchRecords = jest.spyOn(operator, 'batchRecords');
+        const {models} = await handleScheduledPosts(serverUrl, ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST, scheduledPosts, true);
+        expect(spybatchRecords).not.toHaveBeenCalled();
+        expect(models).toHaveLength(2);
+        expect(models![0].id).toBe(scheduledPosts[0].id);
+    });
+
+    it('should update scheduled post', async () => {
         await operator.handleScheduledPosts({
             actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
             scheduledPosts,
@@ -94,9 +104,11 @@ describe('handleScheduledPosts', () => {
         );
 
         expect(models![0].message).toEqual(updatedScheduledPost.message);
+        expect(models![0].id).toEqual(updatedScheduledPost.id);
     });
 
-    it('handleScheduledPosts - should delete scheduled post', async () => {
+    it('should delete scheduled post', async () => {
+        const spyBatchRecords = jest.spyOn(operator, 'batchRecords');
         await operator.handleScheduledPosts({
             actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
             scheduledPosts,
@@ -110,12 +122,19 @@ describe('handleScheduledPosts', () => {
             false,
         );
 
+        expect(spyBatchRecords).toHaveBeenCalledWith(models, '_deleteScheduledPostByIds');
         expect(models![0].id).toEqual(scheduledPosts[0].id);
     });
 
-    it('handleScheduledPosts - should return undefined if no scheduled post', async () => {
+    it('should return undefined if no scheduled post', async () => {
         const {models} = await handleScheduledPosts(serverUrl, ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST, []);
         expect(models).toBeUndefined();
+    });
+
+    it('should not call batchRecords if perpareRecordsOnly is true', async () => {
+        const spyBatchRecords = jest.spyOn(operator, 'batchRecords');
+        await handleScheduledPosts(serverUrl, ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST, scheduledPosts, true);
+        expect(spyBatchRecords).not.toHaveBeenCalled();
     });
 });
 
@@ -150,6 +169,6 @@ describe('handleUpdateScheduledPostErrorCode', () => {
         const result = await handleUpdateScheduledPostErrorCode(invalidServerUrl, scheduledPostId, errorCode);
 
         expect(result.error).toBeDefined();
-        expect(result.error.message).toBe('foo database not found');
+        expect((result.error as Error).message).toBe('foo database not found');
     });
 });

@@ -40,7 +40,7 @@ afterEach(async () => {
 describe('handleCreateOrUpdateSchedulePost', () => {
     it('handleCreateOrUpdateScheduledPost - handle empty payload', async () => {
         const {error} = await handleCreateOrUpdateScheduledPost('foo', {data: {scheduledPost: JSON.stringify(scheduledPost)}} as WebSocketMessage);
-        expect(error.message).toBe('foo database not found');
+        expect((error as Error).message).toBe('foo database not found');
     });
 
     it('handleCreateOrUpdateScheduledPost - wrong websocket scheduled post message', async () => {

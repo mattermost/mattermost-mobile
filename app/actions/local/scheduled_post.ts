@@ -7,7 +7,7 @@ import {logError} from '@utils/log';
 
 import type {ScheduledPostErrorCode} from '@utils/scheduled_post';
 
-export async function handleScheduledPosts(serverUrl: string, actionType: string, scheduledPosts: ScheduledPost[], prepareRecordsOnly = false): Promise<{models?: ScheduledPostModel[]; error?: any}> {
+export async function handleScheduledPosts(serverUrl: string, actionType: string, scheduledPosts: ScheduledPost[], prepareRecordsOnly = false): Promise<{models?: ScheduledPostModel[]; error?: unknown}> {
     if (!scheduledPosts.length) {
         return {models: undefined};
     }
@@ -22,7 +22,7 @@ export async function handleScheduledPosts(serverUrl: string, actionType: string
     }
 }
 
-export async function handleUpdateScheduledPostErrorCode(serverUrl: string, scheduledPostId: string, errorCode: ScheduledPostErrorCode, prepareRecordsOnly = false): Promise<{models?: ScheduledPostModel[]; error?: any}> {
+export async function handleUpdateScheduledPostErrorCode(serverUrl: string, scheduledPostId: string, errorCode: ScheduledPostErrorCode, prepareRecordsOnly = false): Promise<{models?: ScheduledPostModel[]; error?: unknown}> {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const models = [await operator.handleUpdateScheduledPostErrorCode({scheduledPostId, errorCode, prepareRecordsOnly})];
