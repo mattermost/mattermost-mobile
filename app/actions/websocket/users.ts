@@ -14,6 +14,7 @@ import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/c
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import {logError} from '@utils/log';
 import {displayUsername} from '@utils/user';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -119,4 +120,29 @@ export const userTyping = async (serverUrl: string, channelId: string, rootId?: 
 export async function handleStatusChangedEvent(serverUrl: string, msg: WebSocketMessage) {
     const newStatus = msg.data.status;
     setCurrentUserStatus(serverUrl, newStatus);
+}
+
+export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        logError('No operator found');
+        return;
+    }
+
+    const {user_id, values} = msg.data;
+    const attributesForDatabase = Object.entries(values).map(([fieldId, value]) => ({
+        id: `${fieldId}-${user_id}`,
+        field_id: fieldId,
+        user_id,
+        value: value as string,
+    }));
+
+    try {
+        await operator.handleCustomProfileAttributes({
+            attributes: attributesForDatabase,
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('Error handling custom profile attributes values updated event', error);
+    }
 }

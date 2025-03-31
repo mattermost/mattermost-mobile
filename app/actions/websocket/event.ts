@@ -16,7 +16,7 @@ import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRole
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 import * as teams from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
-import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent} from './users';
+import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent, handleCustomProfileAttributesValuesUpdatedEvent} from './users';
 
 export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMessage) {
     switch (msg.event) {
@@ -293,6 +293,10 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.CHANNEL_BOOKMARK_SORTED:
             bookmark.handleBookmarkSorted(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_VALUES_UPDATED:
+            handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
             break;
     }
 }

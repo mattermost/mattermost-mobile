@@ -11,6 +11,7 @@ import {logWarning} from '@utils/log';
 
 import type ServerDataOperatorBase from '.';
 import type Model from '@nozbe/watermelondb/Model';
+import type {CustomProfileAttribute} from '@typings/api/custom_profile_attributes';
 import type {
     HandleCustomProfileFieldsArgs,
     HandleCustomProfileAttributesArgs,
@@ -66,12 +67,7 @@ const CustomProfileHandler = <TBase extends Constructor<ServerDataOperatorBase>>
             return [];
         }
 
-        // For custom profile attributes, we need to use a composite key of field_id and user_id
-        // since different users can have different values for the same field
-        const createOrUpdateRawValues = getUniqueRawsBy({
-            raws: attributes,
-            key: 'id',
-        });
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: attributes, key: 'id'}) as CustomProfileAttribute[];
 
         return this.handleRecords({
             fieldName: 'id',

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Q, type Database} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
+import {of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
@@ -85,12 +85,10 @@ export const observeCustomProfileAttribute = (database: Database, fieldId: strin
  * @param userId - The user ID
  * @returns Observable of the custom profile attributes
  */
-export const observeCustomProfileAttributesByUserId = (database: Database, userId: string) => {
+export const observeCustomProfileAttributesByUserId = (database: Database, userId: string): Observable<CustomProfileAttributeModel[]> => {
     return database.get<CustomProfileAttributeModel>(CUSTOM_PROFILE_ATTRIBUTE).query(
         Q.where('user_id', userId),
-    ).observe().pipe(
-        distinctUntilChanged(),
-    );
+    ).observeWithColumns(['value']).pipe(distinctUntilChanged());
 };
 
 /**

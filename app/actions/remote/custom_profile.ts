@@ -83,6 +83,12 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
                     prepareRecordsOnly: false,
                 });
             }
+            if (fields?.length > 0) {
+                await operator.handleCustomProfileFields({
+                    fields,
+                    prepareRecordsOnly: false,
+                });
+            }
 
             return {attributes, error: undefined};
         }

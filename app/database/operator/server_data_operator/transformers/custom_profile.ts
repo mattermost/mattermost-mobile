@@ -54,11 +54,9 @@ export const transformCustomProfileFieldRecord = ({action, database, value}: Tra
  */
 export const transformCustomProfileAttributeRecord = ({action, database, value}: TransformerArgs): Promise<Model> => {
     const raw = value.raw as unknown as CustomProfileAttribute;
-    const record = value.record as Model;
-    const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (attribute: CustomProfileAttributeModel) => {
-        attribute._raw.id = isCreateAction ? `${raw.field_id}-${raw.user_id}` : record.id;
+        attribute._raw.id = `${raw.field_id}-${raw.user_id}`;
         attribute.fieldId = raw.field_id;
         attribute.userId = raw.user_id;
         attribute.value = raw.value;
