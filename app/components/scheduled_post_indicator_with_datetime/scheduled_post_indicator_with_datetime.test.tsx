@@ -5,7 +5,7 @@ import React from 'react';
 
 import {renderWithIntl} from '@test/intl-test-helper';
 
-import ScheduledPostIndicatorWithDatetime from '../scheduled_post_indicator_with_datetime';
+import ScheduledPostIndicatorWithDatetime from './scheduled_post_indicator_with_datetime';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type UserModel from '@typings/database/models/servers/user';
