@@ -25,20 +25,22 @@ describe('components/drafts_button/DraftsButton', () => {
         draftsCount: 0,
         scheduledPostCount: 0,
         scheduledPostHasError: false,
-        currentChannelId: '',
+        isActiveTab: true,
     };
 
     test('should show draft count when greater than 0', () => {
-        const props = {
+        const props: Parameters<typeof DraftsButton>[0] = {
             ...baseProps,
             draftsCount: 5,
+            isActiveTab: true,
         };
 
-        const {getByTestId} = renderWithIntlAndTheme(
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
             <DraftsButton {...props}/>,
         );
 
         expect(getByTestId('channel_list.drafts.count')).toHaveTextContent('5');
+        expect(queryByTestId('channel_list.scheduled_post.count')).toBeNull();
     });
 
     test('should show scheduled post count when greater than 0', () => {
@@ -47,11 +49,12 @@ describe('components/drafts_button/DraftsButton', () => {
             scheduledPostCount: 3,
         };
 
-        const {getByTestId} = renderWithIntlAndTheme(
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
             <DraftsButton {...props}/>,
         );
 
         expect(getByTestId('channel_list.scheduled_post.count')).toHaveTextContent('3');
+        expect(queryByTestId('channel_list.drafts.count')).toBeNull();
     });
 
     test('should show both drafts and scheduled post count when greater than 0', () => {

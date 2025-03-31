@@ -11,7 +11,7 @@ import {
 } from '@components/channel_item/channel_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {Events, Screens} from '@constants';
+import {Events} from '@constants';
 import {DRAFT} from '@constants/screens';
 import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
@@ -22,9 +22,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type DraftListProps = {
-    currentChannelId: string;
-    lastChannelId?: string;
-    shouldHighlightActive?: boolean;
+    isActiveTab: boolean;
     draftsCount: number;
     scheduledPostCount: number;
     scheduledPostHasError: boolean;
@@ -76,9 +74,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const DraftsButton: React.FC<DraftListProps> = ({
-    currentChannelId,
-    lastChannelId,
-    shouldHighlightActive = false,
+    isActiveTab,
     draftsCount,
     scheduledPostCount,
     scheduledPostHasError,
@@ -96,7 +92,7 @@ const DraftsButton: React.FC<DraftListProps> = ({
         }
     }, [serverUrl]));
 
-    const isActive = isTablet && ((shouldHighlightActive && !currentChannelId) || (!currentChannelId && lastChannelId === Screens.GLOBAL_DRAFTS));
+    const isActive = isTablet && isActiveTab;
 
     const [containerStyle, iconStyle, textStyle] = useMemo(() => {
         const container = [
