@@ -125,8 +125,8 @@ const DraftAndScheduledPost: React.FC<Props> = ({
                         testID='draft_post.channel_info'
                         updateAt={post.updateAt}
                         draftType={draftType}
-                        postScheduledAt={(post as ScheduledPostModel).scheduledAt}
-                        scheduledPostErrorCode={(post as ScheduledPostModel).errorCode}
+                        postScheduledAt={'scheduledAt' in post ? post.scheduledAt : undefined}
+                        scheduledPostErrorCode={'errorCode' in post ? post.errorCode : undefined}
                     />
                     {showPostPriority && post.metadata?.priority &&
                     <View style={style.postPriority}>
