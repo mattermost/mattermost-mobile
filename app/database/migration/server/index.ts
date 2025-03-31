@@ -8,9 +8,20 @@ import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozb
 
 import {MM_TABLES} from '@constants/database';
 
-const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, POST} = MM_TABLES.SERVER;
+const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, POST, CHANNEL} = MM_TABLES.SERVER;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 7,
+        steps: [
+            addColumns({
+                table: CHANNEL,
+                columns: [
+                    {name: 'banner_info', type: 'string', isOptional: true},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 6,
         steps: [
