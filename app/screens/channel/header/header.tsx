@@ -19,6 +19,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
+import ChannelBanner from '@screens/channel/header/channel_banner';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -244,6 +245,8 @@ const ChannelHeader = ({
         return undefined;
     }, [memberCount, customStatus, isCustomStatusExpired]);
 
+    const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;
+
     return (
         <>
             <NavigationHeader
@@ -260,12 +263,16 @@ const ChannelHeader = ({
             <View style={contextStyle}>
                 <RoundedHeaderContext/>
             </View>
-            {isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks &&
+            {showBookmarkBar &&
             <ChannelHeaderBookmarks
                 canAddBookmarks={canAddBookmarks}
                 channelId={channelId}
             />
             }
+            <ChannelBanner
+                channelId={channelId}
+                isTopItem={!showBookmarkBar}
+            />
         </>
     );
 };

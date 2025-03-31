@@ -8,6 +8,7 @@ export default {
         Starter: 'starter',
         Professional: 'professional',
         Enterprise: 'enterprise',
+        Premium: 'premium', // TODO: update the SKU name once final name is decided
     },
     SelfHostedProducts: {
         STARTER: 'starter',

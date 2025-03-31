@@ -31,6 +31,7 @@ describe('components/channel_list_row', () => {
         group_constrained: null,
         shared: true,
     };
+
     beforeAll(async () => {
         const server = await TestHelper.setupServerDatabase();
         database = server.database;
