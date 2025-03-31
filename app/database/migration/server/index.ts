@@ -17,7 +17,7 @@ export default schemaMigrations({migrations: [
             addColumns({
                 table: CHANNEL,
                 columns: [
-                    {name: 'banner_info', type: 'string'},
+                    {name: 'banner_info', type: 'string', isOptional: true},
                 ],
             }),
         ],

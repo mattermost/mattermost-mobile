@@ -59,7 +59,7 @@ type Props = {
 
 export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Props) {
     const intl = useIntl();
-    const shouldDisplayChannelBanner = useMemo(() => showChannelBanner(channelType, license, bannerInfo), [channelType, license, bannerInfo]);
+    const shouldDisplayChannelBanner = showChannelBanner(channelType, license, bannerInfo);
     const theme = useTheme();
     const bannerTextColor = getContrastingSimpleColor(bannerInfo?.background_color || '');
 
@@ -75,11 +75,6 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
         zIndex: 1,
     }), [bannerInfo?.background_color, defaultHeight, style.container]);
 
-    const expandedChannelBannerTitle = intl.formatMessage({
-        id: 'channel.banner.bottom_sheet.title',
-        defaultMessage: 'Channel Banner',
-    });
-
     const markdownTextStyle = useMemo(() => {
         const textStyle = getMarkdownTextStyles(theme);
 
@@ -94,28 +89,33 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
         return textStyle;
     }, [bannerTextColor, theme]);
 
-    const renderExpandedChannelBannerContent = useCallback(() => (
-        <ExpandedAnnouncementBanner
-            allowDismissal={false}
-            bannerText={bannerInfo?.text || ''}
-            headingText={expandedChannelBannerTitle}
-        />
-    ), [bannerInfo?.text, expandedChannelBannerTitle]);
-
     const handlePress = useCallback(() => {
         // set snap point based on text length, with a defined
         // minimum and maximum height for the text container
         const length = bannerInfo!.text!.length / 100;
         const snapPoint = SNAP_POINT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
 
+        const expandedChannelBannerTitle = intl.formatMessage({
+            id: 'channel.banner.bottom_sheet.title',
+            defaultMessage: 'Channel Banner',
+        });
+
+        const renderContent = () => (
+            <ExpandedAnnouncementBanner
+                allowDismissal={false}
+                bannerText={bannerInfo?.text || ''}
+                headingText={expandedChannelBannerTitle}
+            />
+        );
+
         bottomSheet({
             closeButtonId: CLOSE_BUTTON_ID,
             title: expandedChannelBannerTitle,
-            renderContent: renderExpandedChannelBannerContent,
             snapPoints: [1, snapPoint],
+            renderContent,
             theme,
         });
-    }, [bannerInfo, expandedChannelBannerTitle, renderExpandedChannelBannerContent, theme]);
+    }, [bannerInfo, intl, theme]);
 
     // we only really need shouldDisplayChannelBanner check here, rest is for satisfying TS in following code
     // and avoid having to use non-null assertion everywhere.

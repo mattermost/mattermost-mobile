@@ -5,12 +5,16 @@ import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 
 import {General, License} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import DatabaseManager from '@database/manager';
+import {getChannelById} from '@queries/servers/channel';
 import {bottomSheet} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import ChannelBanner from './index';
 
+import type ServerDataOperator from '@database/operator/server_data_operator';
 import type Database from '@nozbe/watermelondb/Database';
 
 jest.mock('@screens/navigation', () => ({
@@ -22,40 +26,37 @@ jest.mock('@hooks/header', () => ({
 }));
 
 describe('ChannelBanner', () => {
-    const defaultProps = {
-        channelId: 'channel-id',
-    };
-
     let database: Database;
+    let operator: ServerDataOperator;
 
     beforeAll(async () => {
-        const server = await TestHelper.setupServerDatabase();
+        const serverUrl = 'baseHandler.test.com';
+        const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
-        
-        // Set up mock data for the channel
-        await TestHelper.basicClient4.createChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
-        
-        // Set up mock license data
-        await TestHelper.basicClient4.saveLicense({
-            SkuShortName: License.SKU_SHORT_NAME.Enterprise,
-        });
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
         jest.clearAllMocks();
+
+        const channel = await getChannelById(database, TestHelper.basicChannel!.id);
+        await database.write(async () => {
+            await channel?.update(() => {
+                channel.bannerInfo = {
+                    enabled: true,
+                    text: 'Test Banner Text',
+                    background_color: '#FF0000',
+                };
+            });
+        });
+
+        // TODO: use premium license here
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Enterprise}}], prepareRecordsOnly: false});
     });
 
     it('renders correctly with valid props', () => {
         renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
+            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
             {database},
         );
 
@@ -64,38 +65,26 @@ describe('ChannelBanner', () => {
 
     it('does not render when license is missing', async () => {
         // Clear license data
-        await TestHelper.basicClient4.removeLicense();
-        
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: undefined}], prepareRecordsOnly: false});
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
+            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
             {database},
         );
 
         expect(queryByText('Test Banner Text')).toBeNull();
-        
-        // Restore license for other tests
-        await TestHelper.basicClient4.saveLicense({
-            SkuShortName: License.SKU_SHORT_NAME.Enterprise,
-        });
     });
 
     it('does not render when license is professional', async () => {
         // Change license to Professional
-        await TestHelper.basicClient4.saveLicense({
-            SkuShortName: License.SKU_SHORT_NAME.Professional,
-        });
-        
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Professional}}], prepareRecordsOnly: false});
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
+            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
             {database},
         );
 
         expect(queryByText('Test Banner Text')).toBeNull();
-        
-        // Restore license for other tests
-        await TestHelper.basicClient4.saveLicense({
-            SkuShortName: License.SKU_SHORT_NAME.Enterprise,
-        });
     });
 
     // it('does not render when license is Enterprise', () => {
@@ -116,232 +105,127 @@ describe('ChannelBanner', () => {
     // });
 
     it('does not render when banner info is missing', async () => {
-        // Update channel to remove banner info
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: undefined,
+        const channel = await getChannelById(database, TestHelper.basicChannel!.id);
+        await database.write(async () => {
+            await channel?.update(() => {
+                channel.bannerInfo = undefined;
+            });
         });
-        
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
+            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
             {database},
         );
 
         expect(queryByText('Test Banner Text')).toBeNull();
-        
-        // Restore banner info for other tests
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
     });
 
     it('does not render when banner is not enabled', async () => {
-        // Update channel to disable banner
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: false,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
+        const channel = await getChannelById(database, TestHelper.basicChannel!.id);
+        await database.write(async () => {
+            await channel?.update(() => {
+                channel.bannerInfo = {
+                    enabled: false,
+                    text: 'Test Banner Text',
+                    background_color: '#FF0000',
+                };
+            });
         });
-        
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
+            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
             {database},
         );
 
         expect(queryByText('Test Banner Text')).toBeNull();
-        
-        // Restore banner for other tests
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
     });
 
     it('does not render when banner text is missing', async () => {
-        // Update channel to remove banner text
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: '',
-                background_color: '#FF0000',
-            },
+        const channel = await getChannelById(database, TestHelper.basicChannel!.id);
+        await database.write(async () => {
+            await channel?.update(() => {
+                channel.bannerInfo = {
+                    enabled: false,
+                    text: undefined,
+                    background_color: '#FF0000',
+                };
+            });
         });
-        
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
+            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
             {database},
         );
 
         expect(queryByText('Test Banner Text')).toBeNull();
-        
-        // Restore banner text for other tests
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
     });
 
     it('does not render when banner background color is missing', async () => {
-        // Update channel to remove background color
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '',
-            },
+        const channel = await getChannelById(database, TestHelper.basicChannel!.id);
+        await database.write(async () => {
+            await channel?.update(() => {
+                channel.bannerInfo = {
+                    enabled: false,
+                    text: 'Banner text',
+                    background_color: undefined,
+                };
+            });
         });
-        
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
+            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
             {database},
         );
 
         expect(queryByText('Test Banner Text')).toBeNull();
-        
-        // Restore background color for other tests
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
     });
 
     it('does not render for DM channel type', async () => {
-        // Update channel to DM type
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.DM_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
-        
+        const dmChannel = TestHelper.fakeDmChannel(TestHelper.basicUser!.id, TestHelper.basicUser!.id) as Channel;
+        await operator.handleChannel({channels: [dmChannel], prepareRecordsOnly: false});
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
+            <ChannelBanner channelId={dmChannel!.id}/>,
             {database},
         );
 
         expect(queryByText('Test Banner Text')).toBeNull();
-        
-        // Restore channel type for other tests
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
     });
 
     it('does not render for GM channel type', async () => {
-        // Update channel to GM type
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.GM_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
-        
+        const gmChannel = TestHelper.fakeChannelWithId('');
+        gmChannel.type = General.GM_CHANNEL;
+        await operator.handleChannel({channels: [gmChannel], prepareRecordsOnly: false});
+
         const {queryByText} = renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
+            <ChannelBanner channelId={gmChannel.id}/>,
             {database},
         );
 
         expect(queryByText('Test Banner Text')).toBeNull();
-        
-        // Restore channel type for other tests
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
     });
 
     it('renders for private channel type', async () => {
-        // Update channel to private type
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.PRIVATE_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
-        
+        const privateChannel = TestHelper.fakeChannelWithId(TestHelper.basicTeam!.id);
+        privateChannel.type = General.PRIVATE_CHANNEL;
+        privateChannel.banner_info = {
+            enabled: true,
+            text: 'Test Banner Text',
+            background_color: '#FF0000',
+        };
+        await operator.handleChannel({channels: [privateChannel], prepareRecordsOnly: false});
+
         renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
+            <ChannelBanner channelId={privateChannel.id}/>,
             {database},
         );
 
         expect(screen.getByText('Test Banner Text')).toBeVisible();
-        
-        // Restore channel type for other tests
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
     });
 
     it('opens bottom sheet when banner is pressed', async () => {
-        // Ensure we have the right channel setup
-        await TestHelper.basicClient4.updateChannel({
-            id: 'channel-id',
-            type: General.OPEN_CHANNEL,
-            banner_info: {
-                enabled: true,
-                text: 'Test Banner Text',
-                background_color: '#FF0000',
-            },
-        });
-        
         renderWithEverything(
-            <ChannelBanner {...defaultProps}/>,
+            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
             {database},
         );
 
