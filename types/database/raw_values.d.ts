@@ -136,4 +136,5 @@ type RawValue =
   | ThreadParticipant
   | TeamThreadsSync
   | UserProfile
+  | SlashCommand
   | Pick<ChannelMembership, 'channel_id' | 'user_id'>

@@ -38,7 +38,7 @@ const TeamThreadsSyncHandler = <TBase extends Constructor<ServerDataOperatorBase
         }, {});
 
         const create: TeamThreadsSync[] = [];
-        const update: RecordPair[] = [];
+        const update: Array<RecordPair<TeamThreadsSyncModel, TeamThreadsSync>> = [];
 
         for await (const item of uniqueRaws) {
             const {id} = item;
@@ -54,12 +54,12 @@ const TeamThreadsSyncHandler = <TBase extends Constructor<ServerDataOperatorBase
             }
         }
 
-        const models = (await this.prepareRecords({
+        const models = await this.prepareRecords<TeamThreadsSyncModel, TeamThreadsSync>({
             createRaws: getRawRecordPairs(create),
             updateRaws: update,
             transformer: transformTeamThreadsSyncRecord,
             tableName: TEAM_THREADS_SYNC,
-        })) as TeamThreadsSyncModel[];
+        });
 
         if (models?.length && !prepareRecordsOnly) {
             await this.batchRecords(models, 'handleTeamThreadsSync');
