@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 import {renderHook} from '@testing-library/react-hooks';
 
+import TestHelper from '@test/test_helper';
 import {getUsersByUsername} from '@utils/user';
 
 import {useMemoMentionedUser, useMemoMentionedGroup} from './markdown';
-
-import type {GroupModel, UserModel} from '@database/models/server';
 
 jest.mock('@utils/user', () => ({
     getUsersByUsername: jest.fn(),
@@ -16,7 +15,7 @@ const mockGetUsersByUsername = jest.mocked(getUsersByUsername);
 
 describe('useMemoMentionedUser', () => {
     it('should return the mentioned user if found', () => {
-        const users = [{username: 'john_doe'} as UserModel];
+        const users = [TestHelper.fakeUserModel({username: 'john_doe'})];
         const mentionName = 'john_doe';
         const usersByUsername = {john_doe: users[0]};
         mockGetUsersByUsername.mockReturnValue(usersByUsername);
@@ -27,7 +26,7 @@ describe('useMemoMentionedUser', () => {
     });
 
     it('should return undefined if the mentioned user is not found', () => {
-        const users = [{username: 'john_doe'} as UserModel];
+        const users = [TestHelper.fakeUserModel({username: 'john_doe'})];
         const mentionName = 'jane_doe';
         const usersByUsername = {john_doe: users[0]};
         mockGetUsersByUsername.mockReturnValue(usersByUsername);
@@ -38,7 +37,7 @@ describe('useMemoMentionedUser', () => {
     });
 
     it('should trim trailing punctuation from the mention name', () => {
-        const users = [{username: 'john_doe'} as UserModel];
+        const users = [TestHelper.fakeUserModel({username: 'john_doe'})];
         const mentionName = 'john_doe.';
         const usersByUsername = {john_doe: users[0]};
         mockGetUsersByUsername.mockReturnValue(usersByUsername);
@@ -51,7 +50,7 @@ describe('useMemoMentionedUser', () => {
 
 describe('useMemoMentionedGroup', () => {
     it('should return the mentioned group if found', () => {
-        const groups = [{name: 'developers'} as GroupModel];
+        const groups = [TestHelper.fakeGroupModel({name: 'developers'})];
         const user = undefined;
         const mentionName = 'developers';
 
@@ -61,7 +60,7 @@ describe('useMemoMentionedGroup', () => {
     });
 
     it('should return undefined if the mentioned group is not found', () => {
-        const groups = [{name: 'developers'} as GroupModel];
+        const groups = [TestHelper.fakeGroupModel({name: 'developers'})];
         const user = undefined;
         const mentionName = 'designers';
 
@@ -71,8 +70,8 @@ describe('useMemoMentionedGroup', () => {
     });
 
     it('should return undefined if the user is defined', () => {
-        const groups = [{name: 'developers'} as GroupModel];
-        const user = {username: 'john_doe'} as UserModel;
+        const groups = [TestHelper.fakeGroupModel({name: 'developers'})];
+        const user = TestHelper.fakeUserModel({username: 'john_doe'});
         const mentionName = 'developers';
 
         const {result} = renderHook(() => useMemoMentionedGroup(groups, user, mentionName));
@@ -81,7 +80,7 @@ describe('useMemoMentionedGroup', () => {
     });
 
     it('should trim trailing punctuation from the mention name', () => {
-        const groups = [{name: 'developers'} as GroupModel];
+        const groups = [TestHelper.fakeGroupModel({name: 'developers'})];
         const user = undefined;
         const mentionName = 'developers.';
 

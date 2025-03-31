@@ -40,3 +40,7 @@ export function ensureNumber(v: unknown): number {
 export function secureGetFromRecord<T>(v: Record<string, T> | undefined, key: string) {
     return typeof v === 'object' && v && Object.prototype.hasOwnProperty.call(v, key) ? v[key] : undefined;
 }
+
+export function includes<T extends U, U>(array: T[], value: U) {
+    return array.includes(value as T);
+}

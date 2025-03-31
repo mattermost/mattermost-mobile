@@ -44,7 +44,7 @@ export interface ChannelHandlerMix {
   handleChannelMembership: ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembershipModel[]>;
   handleMyChannelSettings: ({settings, prepareRecordsOnly}: HandleMyChannelSettingsArgs) => Promise<MyChannelSettingsModel[]>;
   handleChannelInfo: ({channelInfos, prepareRecordsOnly}: HandleChannelInfoArgs) => Promise<ChannelInfoModel[]>;
-  handleMyChannel: ({channels, myChannels, isCRTEnabled, prepareRecordsOnly}: HandleMyChannelArgs) => Promise<Model[]>;
+  handleMyChannel: ({channels, myChannels, isCRTEnabled, prepareRecordsOnly}: HandleMyChannelArgs) => Promise<MyChannelModel[]>;
 }
 
 const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
@@ -63,7 +63,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
             return [];
         }
 
-        const uniqueRaws = getUniqueRawsBy({raws: channels, key: 'id'}) as Channel[];
+        const uniqueRaws = getUniqueRawsBy({raws: channels, key: 'id'});
         const keys = uniqueRaws.map((c) => c.id);
         const db: Database = this.database;
         const existing = await db.get<ChannelModel>(CHANNEL).query(
@@ -113,7 +113,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
             return [];
         }
 
-        const uniqueRaws = getUniqueRawsBy({raws: settings, key: 'id'}) as ChannelMembership[];
+        const uniqueRaws = getUniqueRawsBy({raws: settings, key: 'id'});
         const keys = uniqueRaws.map((c) => c.channel_id);
         const db: Database = this.database;
         const existing = await db.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).query(
@@ -173,7 +173,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
         const uniqueRaws = getUniqueRawsBy({
             raws: channelInfos as ChannelInfo[],
             key: 'id',
-        }) as ChannelInfo[];
+        });
         const keys = uniqueRaws.map((ci) => ci.id);
         const db: Database = this.database;
         const existing = await db.get<ChannelInfoModel>(CHANNEL_INFO).query(
@@ -221,7 +221,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
      * @param {boolean} myChannelsArgs.prepareRecordsOnly
      * @returns {Promise<MyChannelModel[]>}
      */
-    handleMyChannel = async ({channels, myChannels, isCRTEnabled, prepareRecordsOnly = true}: HandleMyChannelArgs): Promise<Model[]> => {
+    handleMyChannel = async ({channels, myChannels, isCRTEnabled, prepareRecordsOnly = true}: HandleMyChannelArgs): Promise<MyChannelModel[]> => {
         if (!myChannels?.length) {
             logWarning(
                 'An empty or undefined "myChannels" array has been passed to the handleMyChannel method',
@@ -261,7 +261,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
         const uniqueRaws = getUniqueRawsBy({
             raws: myChannels,
             key: 'id',
-        }) as ChannelMembership[];
+        });
         const ids = uniqueRaws.map((cm: ChannelMembership) => cm.channel_id);
         const db: Database = this.database;
         const existing = await db.get<MyChannelModel>(MY_CHANNEL).query(
@@ -322,7 +322,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
             id: `${m.channel_id}-${m.user_id}`,
         }));
 
-        const uniqueRaws = getUniqueRawsBy({raws: memberships, key: 'id'}) as ChannelMember[];
+        const uniqueRaws = getUniqueRawsBy({raws: memberships, key: 'id'});
         const ids = uniqueRaws.map((cm: ChannelMember) => `${cm.channel_id}-${cm.user_id}`);
         const db: Database = this.database;
         const existing = await db.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(
@@ -372,7 +372,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
             return [];
         }
 
-        const uniqueRaws = getUniqueRawsBy({raws: bookmarks, key: 'id'}) as ChannelBookmarkWithFileInfo[];
+        const uniqueRaws = getUniqueRawsBy({raws: bookmarks, key: 'id'});
         const keys = uniqueRaws.map((c) => c.id);
         const db: Database = this.database;
         const existing = await db.get<ChannelBookmarkModel>(CHANNEL_BOOKMARK).query(
