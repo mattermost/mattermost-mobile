@@ -728,15 +728,15 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             return [];
         }
 
-        const update: RecordPair[] = [];
+        const update: Array<RecordPair<PostsInThreadModel, PostsInThread>> = [];
         const create: PostsInThread[] = [];
         const ids = Object.keys(postsMap);
         for await (const rootId of ids) {
             const {firstPost, lastPost} = getPostListEdges(postsMap[rootId]);
-            const chunks = (await this.database.get(POSTS_IN_THREAD).query(
+            const chunks = (await this.database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(
                 Q.where('root_id', rootId),
                 Q.sortBy('latest', Q.desc),
-            ).fetch()) as PostsInThreadModel[];
+            ).fetch());
 
             if (chunks.length) {
                 const chunk = chunks[0];
@@ -760,12 +760,12 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             }
         }
 
-        const postInThreadRecords = (await this.prepareRecords({
+        const postInThreadRecords = await this.prepareRecords<PostsInThreadModel, PostsInThread>({
             createRaws: getRawRecordPairs(create),
             updateRaws: update,
             transformer: transformPostInThreadRecord,
             tableName: POSTS_IN_THREAD,
-        })) as PostsInThreadModel[];
+        });
 
         if (postInThreadRecords?.length && !prepareRecordsOnly) {
             await this.batchRecords(postInThreadRecords, 'handleReceivedPostsInThread');

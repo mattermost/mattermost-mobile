@@ -6,12 +6,11 @@ import DatabaseManager from '@database/manager';
 import {getRoleById} from '@queries/servers/role';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import TestHelper from '@test/test_helper';
 
 import {handleRoleUpdatedEvent, handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent} from './roles';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type RoleModel from '@typings/database/models/servers/role';
-import type UserModel from '@typings/database/models/servers/user';
 
 jest.mock('@actions/remote/role');
 jest.mock('@database/manager');
@@ -38,7 +37,7 @@ describe('WebSocket Roles Actions', () => {
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
 
         batchRecords = jest.spyOn(operator, 'batchRecords').mockResolvedValue();
-        handleRole = jest.spyOn(operator, 'handleRole').mockResolvedValue([{id: 'role1'} as RoleModel]);
+        handleRole = jest.spyOn(operator, 'handleRole').mockResolvedValue([TestHelper.fakeRoleModel({id: 'role1'})]);
         handleMyTeam = jest.spyOn(operator, 'handleMyTeam').mockResolvedValue([]);
         handleTeamMemberships = jest.spyOn(operator, 'handleTeamMemberships').mockResolvedValue([]);
     });
@@ -77,7 +76,7 @@ describe('WebSocket Roles Actions', () => {
                 name: 'test_role',
                 permissions: ['permission1'],
             };
-            jest.mocked(getRoleById).mockResolvedValue({id: roleId} as RoleModel);
+            jest.mocked(getRoleById).mockResolvedValue(TestHelper.fakeRoleModel({id: roleId}));
             const msg = {
                 data: {
                     role: JSON.stringify(mockRole),
@@ -93,7 +92,7 @@ describe('WebSocket Roles Actions', () => {
         });
 
         it('should handle invalid JSON in role data', async () => {
-            jest.mocked(getRoleById).mockResolvedValue({id: roleId} as RoleModel);
+            jest.mocked(getRoleById).mockResolvedValue(TestHelper.fakeRoleModel({id: roleId}));
             const msg = {
                 data: {
                     role: 'invalid json',
@@ -132,11 +131,11 @@ describe('WebSocket Roles Actions', () => {
 
         it('should update roles and user', async () => {
             jest.mocked(getCurrentUserId).mockResolvedValue(currentUserId);
-            jest.mocked(getCurrentUser).mockResolvedValue({
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({
                 prepareUpdate: jest.fn(),
-            } as unknown as UserModel);
+            }));
             jest.mocked(fetchRolesIfNeeded).mockResolvedValue({
-                roles: [{id: 'role1'} as Role],
+                roles: [TestHelper.fakeRole({id: 'role1'})],
             });
 
             const msg = {
@@ -156,7 +155,7 @@ describe('WebSocket Roles Actions', () => {
             jest.mocked(getCurrentUserId).mockResolvedValue(currentUserId);
             jest.mocked(getCurrentUser).mockResolvedValue(undefined);
             jest.mocked(fetchRolesIfNeeded).mockResolvedValue({
-                roles: [{id: 'role1'} as Role],
+                roles: [TestHelper.fakeRole({id: 'role1'})],
             });
 
             const msg = {
@@ -174,9 +173,9 @@ describe('WebSocket Roles Actions', () => {
 
         it('should handle no new roles from fetchRolesIfNeeded', async () => {
             jest.mocked(getCurrentUserId).mockResolvedValue(currentUserId);
-            jest.mocked(getCurrentUser).mockResolvedValue({
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({
                 prepareUpdate: jest.fn(),
-            } as unknown as UserModel);
+            }));
             jest.mocked(fetchRolesIfNeeded).mockResolvedValue({
                 roles: [],
             });
@@ -246,7 +245,7 @@ describe('WebSocket Roles Actions', () => {
         it('should update roles, myTeam and teamMembership', async () => {
             jest.mocked(getCurrentUserId).mockResolvedValue(currentUserId);
             jest.mocked(fetchRolesIfNeeded).mockResolvedValue({
-                roles: [{id: 'role1'} as Role],
+                roles: [TestHelper.fakeRole({id: 'role1'})],
             });
 
             const msg = {

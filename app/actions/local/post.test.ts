@@ -21,7 +21,6 @@ import {
 } from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type UserModel from '@typings/database/models/servers/user';
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -47,11 +46,11 @@ jest.mock('@queries/servers/thread', () => {
 });
 
 const channelId = 'channelid1';
-const user: UserProfile = {
+const user: UserProfile = TestHelper.fakeUser({
     id: 'userid',
     username: 'username',
     roles: '',
-} as UserProfile;
+});
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
@@ -64,7 +63,7 @@ afterEach(async () => {
 
 describe('sendAddToChannelEphemeralPost', () => {
     it('handle not found database', async () => {
-        const {posts, error} = await sendAddToChannelEphemeralPost('foo', {} as UserModel, ['username2'], ['added username2'], channelId, '');
+        const {posts, error} = await sendAddToChannelEphemeralPost('foo', TestHelper.fakeUserModel(), ['username2'], ['added username2'], channelId, '');
         expect(posts).toBeUndefined();
         expect(error).toBeTruthy();
     });
@@ -139,7 +138,7 @@ describe('removePost', () => {
     });
 
     it('base case - system message', async () => {
-        const systemPost = TestHelper.fakePost({channel_id: channelId, id: `${COMBINED_USER_ACTIVITY}id1_id2`, type: Post.POST_TYPES.COMBINED_USER_ACTIVITY as PostType, props: {system_post_ids: ['id1']}});
+        const systemPost = TestHelper.fakePost({channel_id: channelId, id: `${COMBINED_USER_ACTIVITY}id1_id2`, type: Post.POST_TYPES.COMBINED_USER_ACTIVITY, props: {system_post_ids: ['id1']}});
 
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
@@ -187,16 +186,16 @@ describe('markPostAsDeleted', () => {
 describe('storePostsForChannel', () => {
     const post = TestHelper.fakePost({channel_id: channelId, user_id: user.id});
     const teamId = 'tId1';
-    const channel: Channel = {
+    const channel: Channel = TestHelper.fakeChannel({
         id: channelId,
         team_id: teamId,
         total_msg_count: 0,
-    } as Channel;
-    const channelMember: ChannelMembership = {
+    });
+    const channelMember: ChannelMembership = TestHelper.fakeChannelMember({
         id: 'id',
         channel_id: channelId,
         msg_count: 0,
-    } as ChannelMembership;
+    });
 
     it('handle not found database', async () => {
         const {models, error} = await storePostsForChannel('foo', channelId, [post], [post.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, [user], false);

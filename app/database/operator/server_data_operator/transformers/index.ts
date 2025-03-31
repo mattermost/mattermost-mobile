@@ -17,17 +17,17 @@ import type {PrepareBaseRecordArgs} from '@typings/database/database';
  * @param {((PrepareBaseRecordArgs) => void)} operatorBase.generator
  * @returns {Promise<Model>}
  */
-export const prepareBaseRecord = async ({
+export const prepareBaseRecord = async <T extends Model, R extends RawValue>({
     action,
     database,
     tableName,
     value,
     fieldsMapper,
-}: PrepareBaseRecordArgs): Promise<Model> => {
+}: PrepareBaseRecordArgs<T, R>) => {
     if (action === OperationType.UPDATE) {
-        const record = value.record as Model;
+        const record = value.record!;
         return record.prepareUpdate(() => fieldsMapper(record));
     }
 
-    return database.collections.get(tableName!).prepareCreate(fieldsMapper);
+    return database.collections.get<T>(tableName!).prepareCreate(fieldsMapper);
 };

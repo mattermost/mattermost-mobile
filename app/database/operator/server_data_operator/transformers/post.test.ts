@@ -87,7 +87,6 @@ describe('***  POST Prepare Records Test ***', () => {
             value: {
                 record: undefined,
                 raw: {
-                    id: 'ps81i4yypoo',
                     root_id: 'ps81iqbddesfby8jayz7owg4yypoo',
                     message: 'draft message',
                     channel_id: 'channel_idp23232e',

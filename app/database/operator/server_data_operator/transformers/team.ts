@@ -26,14 +26,17 @@ const {
  * @param {RecordPair} operator.value
  * @returns {Promise<TeamMembershipModel>}
  */
-export const transformTeamMembershipRecord = ({action, database, value}: TransformerArgs): Promise<TeamMembershipModel> => {
-    const raw = value.raw as TeamMembership;
-    const record = value.record as TeamMembershipModel;
+export const transformTeamMembershipRecord = ({action, database, value}: TransformerArgs<TeamMembershipModel, TeamMembership>): Promise<TeamMembershipModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (teamMembership: TeamMembershipModel) => {
-        teamMembership._raw.id = isCreateAction ? (raw?.id ?? teamMembership.id) : record.id;
+        teamMembership._raw.id = isCreateAction ? (raw?.id ?? teamMembership.id) : record!.id;
         teamMembership.teamId = raw.team_id;
         teamMembership.userId = raw.user_id;
         teamMembership.schemeAdmin = raw.scheme_admin;
@@ -45,7 +48,7 @@ export const transformTeamMembershipRecord = ({action, database, value}: Transfo
         tableName: TEAM_MEMBERSHIP,
         value,
         fieldsMapper,
-    }) as Promise<TeamMembershipModel>;
+    });
 };
 
 /**
@@ -55,14 +58,17 @@ export const transformTeamMembershipRecord = ({action, database, value}: Transfo
  * @param {RecordPair} operator.value
  * @returns {Promise<TeamModel>}
  */
-export const transformTeamRecord = ({action, database, value}: TransformerArgs): Promise<TeamModel> => {
-    const raw = value.raw as Team;
-    const record = value.record as TeamModel;
+export const transformTeamRecord = ({action, database, value}: TransformerArgs<TeamModel, Team>): Promise<TeamModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (team: TeamModel) => {
-        team._raw.id = isCreateAction ? (raw?.id ?? team.id) : record.id;
+        team._raw.id = isCreateAction ? (raw?.id ?? team.id) : record!.id;
         team.isAllowOpenInvite = raw.allow_open_invite;
         team.description = raw.description;
         team.displayName = raw.display_name;
@@ -81,7 +87,7 @@ export const transformTeamRecord = ({action, database, value}: TransformerArgs):
         tableName: TEAM,
         value,
         fieldsMapper,
-    }) as Promise<TeamModel>;
+    });
 };
 
 /**
@@ -91,13 +97,16 @@ export const transformTeamRecord = ({action, database, value}: TransformerArgs):
  * @param {RecordPair} operator.value
  * @returns {Promise<TeamChannelHistoryModel>}
  */
-export const transformTeamChannelHistoryRecord = ({action, database, value}: TransformerArgs): Promise<TeamChannelHistoryModel> => {
-    const raw = value.raw as TeamChannelHistory;
-    const record = value.record as TeamChannelHistoryModel;
+export const transformTeamChannelHistoryRecord = ({action, database, value}: TransformerArgs<TeamChannelHistoryModel, TeamChannelHistory>): Promise<TeamChannelHistoryModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (teamChannelHistory: TeamChannelHistoryModel) => {
-        teamChannelHistory._raw.id = isCreateAction ? (raw.id || teamChannelHistory.id) : record.id;
+        teamChannelHistory._raw.id = isCreateAction ? (raw.id || teamChannelHistory.id) : record!.id;
         teamChannelHistory.channelIds = raw.channel_ids;
     };
 
@@ -107,7 +116,7 @@ export const transformTeamChannelHistoryRecord = ({action, database, value}: Tra
         tableName: TEAM_CHANNEL_HISTORY,
         value,
         fieldsMapper,
-    }) as Promise<TeamChannelHistoryModel>;
+    });
 };
 
 /**
@@ -117,13 +126,16 @@ export const transformTeamChannelHistoryRecord = ({action, database, value}: Tra
  * @param {RecordPair} operator.value
  * @returns {Promise<TeamSearchHistoryModel>}
  */
-export const transformTeamSearchHistoryRecord = ({action, database, value}: TransformerArgs): Promise<TeamSearchHistoryModel> => {
-    const raw = value.raw as TeamSearchHistory;
-    const record = value.record as TeamSearchHistoryModel;
+export const transformTeamSearchHistoryRecord = ({action, database, value}: TransformerArgs<TeamSearchHistoryModel, TeamSearchHistory>): Promise<TeamSearchHistoryModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (teamSearchHistory: TeamSearchHistoryModel) => {
-        teamSearchHistory._raw.id = isCreateAction ? (teamSearchHistory.id) : record.id;
+        teamSearchHistory._raw.id = isCreateAction ? (teamSearchHistory.id) : record!.id;
         teamSearchHistory.createdAt = raw.created_at;
         teamSearchHistory.displayTerm = raw.display_term;
         teamSearchHistory.term = raw.term;
@@ -136,7 +148,7 @@ export const transformTeamSearchHistoryRecord = ({action, database, value}: Tran
         tableName: TEAM_SEARCH_HISTORY,
         value,
         fieldsMapper,
-    }) as Promise<TeamSearchHistoryModel>;
+    });
 };
 
 /**
@@ -146,13 +158,16 @@ export const transformTeamSearchHistoryRecord = ({action, database, value}: Tran
  * @param {RecordPair} operator.value
  * @returns {Promise<MyTeamModel>}
  */
-export const transformMyTeamRecord = ({action, database, value}: TransformerArgs): Promise<MyTeamModel> => {
-    const raw = value.raw as MyTeam;
-    const record = value.record as MyTeamModel;
+export const transformMyTeamRecord = ({action, database, value}: TransformerArgs<MyTeamModel, MyTeam>): Promise<MyTeamModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (myTeam: MyTeamModel) => {
-        myTeam._raw.id = isCreateAction ? (raw.id || myTeam.id) : record.id;
+        myTeam._raw.id = isCreateAction ? (raw.id || myTeam.id) : record!.id;
         myTeam.roles = raw.roles;
     };
 
@@ -162,5 +177,5 @@ export const transformMyTeamRecord = ({action, database, value}: TransformerArgs
         tableName: MY_TEAM,
         value,
         fieldsMapper,
-    }) as Promise<MyTeamModel>;
+    });
 };

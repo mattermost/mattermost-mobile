@@ -31,9 +31,6 @@ import {
     scheduledPostFromPost,
 } from '.';
 
-import type PostModel from '@typings/database/models/servers/post';
-import type UserModel from '@typings/database/models/servers/user';
-
 jest.mock('@actions/local/post', () => ({
     getUsersCountFromMentions: jest.fn(),
 }));
@@ -51,32 +48,32 @@ jest.mock('@database/manager', () => ({
 describe('post utils', () => {
     describe('areConsecutivePosts', () => {
         it('should return true for consecutive posts from the same user within the collapse timeout', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 userId: 'user1',
                 createAt: 1000,
                 props: {},
-            } as PostModel;
-            const previousPost = {
+            });
+            const previousPost = TestHelper.fakePostModel({
                 userId: 'user1',
                 createAt: 500,
                 props: {},
-            } as PostModel;
+            });
 
             const result = areConsecutivePosts(post, previousPost);
             expect(result).toBe(true);
         });
 
         it('should return false for posts from different users', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 userId: 'user1',
                 createAt: 1000,
                 props: {},
-            } as PostModel;
-            const previousPost = {
+            });
+            const previousPost = TestHelper.fakePostModel({
                 userId: 'user2',
                 createAt: 500,
                 props: {},
-            } as PostModel;
+            });
 
             const result = areConsecutivePosts(post, previousPost);
             expect(result).toBe(false);
@@ -85,22 +82,22 @@ describe('post utils', () => {
 
     describe('isFromWebhook', () => {
         it('should return true for posts from a webhook', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 props: {
                     from_webhook: 'true',
-                } as Record<string, unknown>,
-            } as PostModel;
+                },
+            });
 
             const result = isFromWebhook(post);
             expect(result).toBe(true);
         });
 
         it('should return false for posts not from a webhook', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 props: {
                     from_webhook: 'false',
-                } as Record<string, unknown>,
-            } as PostModel;
+                },
+            });
 
             const result = isFromWebhook(post);
             expect(result).toBe(false);
@@ -109,18 +106,18 @@ describe('post utils', () => {
 
     describe('isEdited', () => {
         it('should return true if the post is edited', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 editAt: 1000,
-            } as PostModel;
+            });
 
             const result = isEdited(post);
             expect(result).toBe(true);
         });
 
         it('should return false if the post is not edited', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 editAt: 0,
-            } as PostModel;
+            });
 
             const result = isEdited(post);
             expect(result).toBe(false);
@@ -129,18 +126,18 @@ describe('post utils', () => {
 
     describe('isPostEphemeral', () => {
         it('should return true for an ephemeral post', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 type: Post.POST_TYPES.EPHEMERAL,
-            } as PostModel;
+            });
 
             const result = isPostEphemeral(post);
             expect(result).toBe(true);
         });
 
         it('should return false for a non-ephemeral post', () => {
-            const post = {
-                type: 'normal',
-            } as PostModel;
+            const post = TestHelper.fakePostModel({
+                type: '',
+            });
 
             const result = isPostEphemeral(post);
             expect(result).toBe(false);
@@ -149,38 +146,38 @@ describe('post utils', () => {
 
     describe('isPostFailed', () => {
         it('should return true if the post has failed prop', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 props: {
                     failed: true,
-                } as Record<string, unknown>,
+                },
                 pendingPostId: 'id',
                 id: 'id',
                 updateAt: Date.now() - Post.POST_TIME_TO_FAIL - 1000,
-            } as PostModel;
+            });
 
             const result = isPostFailed(post);
             expect(result).toBe(true);
         });
 
         it('should return true if the post is pending and the update time has exceeded the failure time', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 props: {},
                 pendingPostId: 'id',
                 id: 'id',
                 updateAt: Date.now() - Post.POST_TIME_TO_FAIL - 1000,
-            } as PostModel;
+            });
 
             const result = isPostFailed(post);
             expect(result).toBe(true);
         });
 
         it('should return false if the post is not failed', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 props: {},
                 pendingPostId: 'id',
                 id: 'id',
                 updateAt: Date.now(),
-            } as PostModel;
+            });
 
             const result = isPostFailed(post);
             expect(result).toBe(false);
@@ -189,34 +186,34 @@ describe('post utils', () => {
 
     describe('isPostPendingOrFailed', () => {
         it('should return true if the post is pending', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 pendingPostId: 'id',
                 id: 'id',
                 props: {},
-            } as PostModel;
+            });
 
             const result = isPostPendingOrFailed(post);
             expect(result).toBe(true);
         });
 
         it('should return true if the post has failed', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 pendingPostId: 'id',
                 id: 'id',
                 updateAt: Date.now() - Post.POST_TIME_TO_FAIL - 1000,
                 props: {},
-            } as PostModel;
+            });
 
             const result = isPostPendingOrFailed(post);
             expect(result).toBe(true);
         });
 
         it('should return false if the post is neither pending nor failed', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 pendingPostId: 'differentId',
                 id: 'id',
                 props: {},
-            } as PostModel;
+            });
 
             const result = isPostPendingOrFailed(post);
             expect(result).toBe(false);
@@ -225,18 +222,18 @@ describe('post utils', () => {
 
     describe('isSystemMessage', () => {
         it('should return true if the post is a system message', () => {
-            const post = {
-                type: `${Post.POST_TYPES.SYSTEM_MESSAGE_PREFIX}any_type`,
-            } as PostModel;
+            const post = TestHelper.fakePostModel({
+                type: `${Post.POST_TYPES.SYSTEM_MESSAGE_PREFIX}any_type` as PostType,
+            });
 
             const result = isSystemMessage(post);
             expect(result).toBe(true);
         });
 
         it('should return false if the post is not a system message', () => {
-            const post = {
-                type: 'normal_type',
-            } as PostModel;
+            const post = TestHelper.fakePostModel({
+                type: 'add_bot_teams_channels',
+            });
 
             const result = isSystemMessage(post);
             expect(result).toBe(false);
@@ -293,18 +290,18 @@ describe('post utils', () => {
 
     describe('fromAutoResponder', () => {
         it('should return true if the post is from an auto responder', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 type: Post.POST_TYPES.SYSTEM_AUTO_RESPONDER,
-            } as PostModel;
+            });
 
             const result = fromAutoResponder(post);
             expect(result).toBe(true);
         });
 
         it('should return false if the post is not from an auto responder', () => {
-            const post = {
-                type: 'normal_type',
-            } as PostModel;
+            const post = TestHelper.fakePostModel({
+                type: 'add_bot_teams_channels',
+            });
 
             const result = fromAutoResponder(post);
             expect(result).toBe(false);
@@ -323,8 +320,8 @@ describe('post utils', () => {
         const intl = createIntl({locale: DEFAULT_LOCALE, messages: getTranslations(DEFAULT_LOCALE)});
 
         it('should show alert with DM channel description when channelType is DM_CHANNEL', async () => {
-            const mockUser = {username: 'teammate'};
-            (getUserById as jest.Mock).mockResolvedValue(mockUser);
+            const mockUser = TestHelper.fakeUserModel({username: 'teammate'});
+            jest.mocked(getUserById).mockResolvedValue(mockUser);
 
             await persistentNotificationsConfirmation(
                 serverUrl,
@@ -379,7 +376,7 @@ describe('post utils', () => {
         });
 
         it('should show alert when no mentions found', async () => {
-            (getUsersCountFromMentions as jest.Mock).mockResolvedValue(0);
+            jest.mocked(getUsersCountFromMentions).mockResolvedValue(0);
 
             await persistentNotificationsConfirmation(
                 serverUrl,
@@ -407,7 +404,7 @@ describe('post utils', () => {
         });
 
         it('should show alert when mentions exceed max recipients', async () => {
-            (getUsersCountFromMentions as jest.Mock).mockResolvedValue(15);
+            jest.mocked(getUsersCountFromMentions).mockResolvedValue(15);
 
             await persistentNotificationsConfirmation(
                 serverUrl,
@@ -438,7 +435,7 @@ describe('post utils', () => {
         });
 
         it('should show confirmation alert for valid mentions within limit', async () => {
-            (getUsersCountFromMentions as jest.Mock).mockResolvedValue(5);
+            jest.mocked(getUsersCountFromMentions).mockResolvedValue(5);
 
             await persistentNotificationsConfirmation(
                 serverUrl,
@@ -470,42 +467,42 @@ describe('post utils', () => {
 
     describe('postUserDisplayName', () => {
         it('should return the override username if from webhook and override is enabled', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 props: {
                     from_webhook: 'true',
                     override_username: 'webhook_user',
-                } as Record<string, unknown>,
-            } as PostModel;
+                },
+            });
 
             const result = postUserDisplayName(post, undefined, undefined, true);
             expect(result).toBe('webhook_user');
         });
 
         it('should return the author’s display name if not from webhook or override is disabled', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 props: {
                     from_webhook: 'false',
-                } as Record<string, unknown>,
-            } as PostModel;
-            const author = {
+                },
+            });
+            const author = TestHelper.fakeUserModel({
                 username: 'user1',
                 locale: 'en',
-            } as UserModel;
+            });
 
             const result = postUserDisplayName(post, author, undefined, false);
             expect(result).toBe('user1');
         });
 
         it('should return the author’s display name using the teammate name display', () => {
-            const post = {
+            const post = TestHelper.fakePostModel({
                 props: {
                     from_webhook: 'false',
-                } as Record<string, unknown>,
-            } as PostModel;
-            const author = {
+                },
+            });
+            const author = TestHelper.fakeUserModel({
                 username: 'user1',
                 locale: 'en',
-            } as UserModel;
+            });
 
             const result = postUserDisplayName(post, author, 'nickname', false);
             expect(result).toBe('user1');
@@ -514,18 +511,18 @@ describe('post utils', () => {
 
     describe('shouldIgnorePost', () => {
         it('should return true if the post type is in the ignore list', () => {
-            const post = {
+            const post = TestHelper.fakePost({
                 type: Post.POST_TYPES.CHANNEL_DELETED,
-            } as Post;
+            });
 
             const result = shouldIgnorePost(post);
             expect(result).toBe(true);
         });
 
         it('should return false if the post type is not in the ignore list', () => {
-            const post = {
+            const post = TestHelper.fakePost({
                 type: Post.POST_TYPES.EPHEMERAL,
-            } as Post;
+            });
 
             const result = shouldIgnorePost(post);
             expect(result).toBe(false);
@@ -537,17 +534,17 @@ describe('post utils', () => {
             const data = {
                 order: ['post1', 'post2'],
                 posts: {
-                    post1: {id: 'post1', message: 'First post'},
-                    post2: {id: 'post2', message: 'Second post'},
+                    post1: TestHelper.fakePost({id: 'post1', message: 'First post'}),
+                    post2: TestHelper.fakePost({id: 'post2', message: 'Second post'}),
                 },
                 prev_post_id: 'post0',
-            } as unknown as PostResponse;
+            };
 
             const result = processPostsFetched(data);
             expect(result).toEqual({
                 posts: [
-                    {id: 'post1', message: 'First post'},
-                    {id: 'post2', message: 'Second post'},
+                    expect.objectContaining({id: 'post1', message: 'First post'}),
+                    expect.objectContaining({id: 'post2', message: 'Second post'}),
                 ],
                 order: ['post1', 'post2'],
                 previousPostId: 'post0',
@@ -558,9 +555,9 @@ describe('post utils', () => {
     describe('getLastFetchedAtFromPosts', () => {
         it('should return the maximum timestamp from the posts', () => {
             const posts = [
-                {create_at: 1000, update_at: 2000, delete_at: 0},
-                {create_at: 1500, update_at: 2500, delete_at: 3000},
-            ] as Post[];
+                TestHelper.fakePost({create_at: 1000, update_at: 2000, delete_at: 0}),
+                TestHelper.fakePost({create_at: 1500, update_at: 2500, delete_at: 3000}),
+            ];
 
             const result = getLastFetchedAtFromPosts(posts);
             expect(result).toBe(3000);
