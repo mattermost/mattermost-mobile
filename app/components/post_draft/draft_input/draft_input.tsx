@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
@@ -12,7 +11,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
-import {observeConfigBooleanValue} from '@queries/servers/system';
 import {openAsBottomSheet} from '@screens/navigation';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -26,7 +24,6 @@ import Uploads from '../uploads';
 import Header from './header';
 
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
-import type {WithDatabaseArgs} from '@typings/database/database';
 
 export type Props = {
     testID?: string;
@@ -271,11 +268,4 @@ function DraftInput({
     );
 }
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const scheduledPostsEnabled = observeConfigBooleanValue(database, 'ScheduledPosts');
-    return {
-        scheduledPostsEnabled,
-    };
-});
-
-export default withDatabase(enhanced(DraftInput));
+export default DraftInput;

@@ -4,7 +4,7 @@
 import React, {useCallback} from 'react';
 
 import {updateDraftPriority} from '@actions/local/draft';
-import DraftInput from '@components/post_draft/draft_input/draft_input';
+import DraftInput from '@components/post_draft/draft_input/';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
