@@ -108,5 +108,6 @@ const WebsocketEvents = {
     CHANNEL_BOOKMARK_DELETED: 'channel_bookmark_deleted',
 
     CUSTOM_PROFILE_ATTRIBUTES_VALUES_UPDATED: 'custom_profile_attributes_values_updated',
+    CUSTOM_PROFILE_ATTRIBUTES_FIELD_UPDATED: 'custom_profile_attributes_field_updated',
 };
 export default WebsocketEvents;

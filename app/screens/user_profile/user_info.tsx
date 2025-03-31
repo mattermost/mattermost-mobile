@@ -10,6 +10,7 @@ import {
     convertProfileAttributesToCustomAttributes,
     observeCustomProfileAttributesByUserId,
     queryCustomProfileAttributesByUserId,
+    observeCustomProfileFields,
 } from '@queries/servers/custom_profile';
 import {logError} from '@utils/log';
 import {getUserCustomStatus, sortCustomProfileAttributes} from '@utils/user';
@@ -41,6 +42,11 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
     const database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     const dbAttributes = useState(() =>
         (enableCustomAttributes ? observeCustomProfileAttributesByUserId(database, user.id) : null),
+    )[0];
+
+    // Observe custom profile fields from the database, currently observing all, once we have more properties we'll need to observe by group id
+    const dbFields = useState(() =>
+        (enableCustomAttributes ? observeCustomProfileFields(database) : null),
     )[0];
 
     const lastRequest = useRef(0);
@@ -86,24 +92,47 @@ const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, sho
         }
     }, [enableCustomAttributes, serverUrl, user.id, database]);
 
-    // Update when database changes using the observable
+    // Update when database changes using the observables
     useEffect(() => {
-        if (dbAttributes) {
-            const subscription = dbAttributes.subscribe(async (attributes) => {
-                if (attributes?.length) {
-                    const converted = await convertProfileAttributesToCustomAttributes(
-                        database,
-                        attributes,
-                        sortCustomProfileAttributes,
-                    );
-                    setCustomAttributes(converted);
-                }
-            });
+        if (dbAttributes || dbFields) {
+            const subscriptions: Array<{unsubscribe: () => void}> = [];
 
-            return () => subscription.unsubscribe();
+            if (dbAttributes) {
+                const attributesSubscription = dbAttributes.subscribe(async (attributes) => {
+                    if (attributes?.length) {
+                        const converted = await convertProfileAttributesToCustomAttributes(
+                            database,
+                            attributes,
+                            sortCustomProfileAttributes,
+                        );
+                        setCustomAttributes(converted);
+                    }
+                });
+                subscriptions.push(attributesSubscription);
+            }
+
+            if (dbFields) {
+                const fieldsSubscription = dbFields.subscribe(async () => {
+                    // When fields change, we need to reconvert the attributes to get the updated order
+                    const attrs = await queryCustomProfileAttributesByUserId(database, user.id).fetch();
+                    if (attrs.length) {
+                        const converted = await convertProfileAttributesToCustomAttributes(
+                            database,
+                            attrs,
+                            sortCustomProfileAttributes,
+                        );
+                        setCustomAttributes(converted);
+                    }
+                });
+                subscriptions.push(fieldsSubscription);
+            }
+
+            return () => {
+                subscriptions.forEach((subscription) => subscription.unsubscribe());
+            };
         }
         return undefined;
-    }, [dbAttributes, database]);
+    }, [dbAttributes, dbFields, database, user.id]);
 
     return (
         <>

@@ -44,6 +44,19 @@ export const observeCustomProfileField = (database: Database, fieldId: string) =
 };
 
 /**
+ * Observe a custom profile field
+ * @param database - The database instance
+ * @returns Observable of the custom profile field
+ */
+export const observeCustomProfileFields = (database: Database) => {
+    return database.get<CustomProfileFieldModel>(CUSTOM_PROFILE_FIELD).query(
+        Q.where('delete_at', 0),
+    ).observeWithColumns(['update_at', 'delete_at']).pipe(
+        distinctUntilChanged(),
+    );
+};
+
+/**
  * Get a custom profile attribute by field ID and user ID
  * @param database - The database instance
  * @param fieldId - The field ID

@@ -146,3 +146,34 @@ export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl:
         logError('Error handling custom profile attributes values updated event', error);
     }
 }
+
+export async function handleCustomProfileAttributesFieldUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        logError('No operator found');
+        return;
+    }
+
+    const {field} = msg.data;
+    const fieldForDatabase = {
+        id: field.id,
+        group_id: field.group_id,
+        name: field.name,
+        type: field.type,
+        target_id: field.target_id,
+        target_type: field.target_type,
+        create_at: field.create_at,
+        update_at: field.update_at,
+        delete_at: field.delete_at,
+        attrs: field.attrs,
+    };
+
+    try {
+        await operator.handleCustomProfileFields({
+            fields: [fieldForDatabase],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('Error handling custom profile attributes field updated event', error);
+    }
+}
