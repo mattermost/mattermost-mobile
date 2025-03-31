@@ -13,11 +13,11 @@ import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/c
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import TestHelper from '@test/test_helper';
 
 import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent, userTyping} from './users';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type UserModel from '@typings/database/models/servers/user';
 
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/user');
@@ -46,13 +46,11 @@ describe('WebSocket Users Actions', () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
 
-        jest.mocked(queryChannelsByTypes).mockReturnValue({
-            fetch: jest.fn().mockResolvedValue([]),
-        } as any);
+        jest.mocked(queryChannelsByTypes).mockReturnValue(TestHelper.fakeQuery([]));
 
         DatabaseManager.getActiveServerUrl = jest.fn().mockResolvedValue(serverUrl);
         batchRecords = jest.spyOn(operator, 'batchRecords').mockResolvedValue();
-        handleUsers = jest.spyOn(operator, 'handleUsers').mockResolvedValue([{id: 'user1'} as UserModel]);
+        handleUsers = jest.spyOn(operator, 'handleUsers').mockResolvedValue([TestHelper.fakeUserModel({id: 'user1'})]);
     });
 
     afterEach(async () => {
@@ -84,17 +82,17 @@ describe('WebSocket Users Actions', () => {
         });
 
         it('should handle current user update', async () => {
-            const mockUser = {
+            const mockUser = TestHelper.fakeUser({
                 id: currentUserId,
                 update_at: 1234,
-                notify_props: {email: 'true'},
-            } as UserProfile;
+                notify_props: TestHelper.fakeUserNotifyProps({email: 'true'}),
+            });
 
-            const mockCurrentUser = {
+            const mockCurrentUser = TestHelper.fakeUserModel({
                 id: currentUserId,
                 updateAt: 1000,
                 locale: 'en',
-            } as UserModel;
+            });
 
             jest.mocked(getCurrentUser).mockResolvedValue(mockCurrentUser);
             jest.mocked(fetchMe).mockResolvedValue({user: mockUser});
@@ -112,22 +110,21 @@ describe('WebSocket Users Actions', () => {
         });
 
         it('should handle other user update', async () => {
-            const mockUser = {
+            const mockUser = TestHelper.fakeUser({
                 id: otherUserId,
                 update_at: 1234,
-            };
+            });
 
-            const mockCurrentUser = {
+            const mockCurrentUser = TestHelper.fakeUserModel({
                 id: currentUserId,
                 updateAt: 1000,
-            } as UserModel;
+            });
 
             jest.mocked(getCurrentUser).mockResolvedValue(mockCurrentUser);
-            jest.mocked(queryUserChannelsByTypes).mockReturnValue({
-                fetch: jest.fn().mockResolvedValue([{id: 'channel-1'}]),
-            } as any);
+            jest.mocked(queryUserChannelsByTypes).mockReturnValue(
+                TestHelper.fakeQuery([TestHelper.fakeChannelModel({id: 'channel-1'})]));
             jest.mocked(updateChannelsDisplayName).mockResolvedValue({models: []});
-            handleUsers.mockResolvedValue([{id: 'model-1'}]);
+            handleUsers.mockResolvedValue([TestHelper.fakeUserModel({id: 'model-1'})]);
 
             const msg = {
                 data: {
@@ -209,15 +206,13 @@ describe('WebSocket Users Actions', () => {
 
             jest.mocked(getConfig).mockResolvedValue(mockConfig as any);
             jest.mocked(fetchUsersByIds).mockResolvedValue({
-                users: [{id: otherUserId, username: 'other-user'} as UserProfile],
+                users: [TestHelper.fakeUser({id: otherUserId, username: 'other-user'})],
                 existingUsers: [],
             });
 
-            jest.mocked(queryDisplayNamePreferences).mockReturnValue({
-                fetch: jest.fn().mockResolvedValue([{
-                    value: 'full_name',
-                }]),
-            } as any);
+            jest.mocked(queryDisplayNamePreferences).mockReturnValue(TestHelper.fakeQuery([TestHelper.fakePreferenceModel({
+                value: 'full_name',
+            })]));
 
             jest.mocked(getLicense).mockResolvedValue({} as ClientLicense);
 

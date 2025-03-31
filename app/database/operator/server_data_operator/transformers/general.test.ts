@@ -47,7 +47,7 @@ describe('*** System Prepare Records Test ***', () => {
             database: database!,
             value: {
                 record: undefined,
-                raw: {id: 'system-1', name: 'system-name-1', value: 'system'},
+                raw: {id: 'system-1', value: 'system'},
             },
         });
 

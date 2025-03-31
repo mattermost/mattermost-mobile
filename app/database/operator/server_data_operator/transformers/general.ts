@@ -26,14 +26,17 @@ const {
  * @param {RecordPair} operator.value
  * @returns {Promise<CustomEmojiModel>}
  */
-export const transformCustomEmojiRecord = ({action, database, value}: TransformerArgs): Promise<CustomEmojiModel> => {
-    const raw = value.raw as CustomEmoji;
-    const record = value.record as CustomEmojiModel;
+export const transformCustomEmojiRecord = ({action, database, value}: TransformerArgs<CustomEmojiModel, CustomEmoji>): Promise<CustomEmojiModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (emoji: CustomEmojiModel) => {
-        emoji._raw.id = isCreateAction ? (raw?.id ?? emoji.id) : record.id;
+        emoji._raw.id = isCreateAction ? (raw?.id ?? emoji.id) : record!.id;
         emoji.name = raw.name;
     };
 
@@ -43,7 +46,7 @@ export const transformCustomEmojiRecord = ({action, database, value}: Transforme
         tableName: CUSTOM_EMOJI,
         value,
         fieldsMapper,
-    }) as Promise<CustomEmojiModel>;
+    });
 };
 
 /**
@@ -53,14 +56,17 @@ export const transformCustomEmojiRecord = ({action, database, value}: Transforme
  * @param {RecordPair} operator.value
  * @returns {Promise<RoleModel>}
  */
-export const transformRoleRecord = ({action, database, value}: TransformerArgs): Promise<RoleModel> => {
-    const raw = value.raw as Role;
-    const record = value.record as RoleModel;
+export const transformRoleRecord = ({action, database, value}: TransformerArgs<RoleModel, Role>): Promise<RoleModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (role: RoleModel) => {
-        role._raw.id = isCreateAction ? (raw?.id ?? role.id) : record.id;
+        role._raw.id = isCreateAction ? (raw?.id ?? role.id) : record!.id;
         role.name = raw?.name;
         role.permissions = raw?.permissions;
     };
@@ -71,7 +77,7 @@ export const transformRoleRecord = ({action, database, value}: TransformerArgs):
         tableName: ROLE,
         value,
         fieldsMapper,
-    }) as Promise<RoleModel>;
+    });
 };
 
 /**
@@ -81,8 +87,8 @@ export const transformRoleRecord = ({action, database, value}: TransformerArgs):
  * @param {RecordPair} operator.value
  * @returns {Promise<SystemModel>}
  */
-export const transformSystemRecord = ({action, database, value}: TransformerArgs): Promise<SystemModel> => {
-    const raw = value.raw as IdValue;
+export const transformSystemRecord = ({action, database, value}: TransformerArgs<SystemModel, IdValue>): Promise<SystemModel> => {
+    const raw = value.raw;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (system: SystemModel) => {
@@ -96,7 +102,7 @@ export const transformSystemRecord = ({action, database, value}: TransformerArgs
         tableName: SYSTEM,
         value,
         fieldsMapper,
-    }) as Promise<SystemModel>;
+    });
 };
 
 /**
@@ -106,8 +112,8 @@ export const transformSystemRecord = ({action, database, value}: TransformerArgs
  * @param {RecordPair} operator.value
  * @returns {Promise<ConfigModel>}
  */
-export const transformConfigRecord = ({action, database, value}: TransformerArgs): Promise<ConfigModel> => {
-    const raw = value.raw as IdValue;
+export const transformConfigRecord = ({action, database, value}: TransformerArgs<ConfigModel, IdValue>): Promise<ConfigModel> => {
+    const raw = value.raw;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (config: ConfigModel) => {
@@ -121,7 +127,7 @@ export const transformConfigRecord = ({action, database, value}: TransformerArgs
         tableName: CONFIG,
         value,
         fieldsMapper,
-    }) as Promise<ConfigModel>;
+    });
 };
 
 /**
@@ -131,14 +137,17 @@ export const transformConfigRecord = ({action, database, value}: TransformerArgs
  * @param {RecordPair} operator.value
  * @returns {Promise<FileModel>}
  */
-export const transformFileRecord = ({action, database, value}: TransformerArgs): Promise<FileModel> => {
-    const raw = value.raw as FileInfo;
-    const record = value.record as FileModel;
+export const transformFileRecord = ({action, database, value}: TransformerArgs<FileModel, FileInfo>): Promise<FileModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (file: FileModel) => {
-        file._raw.id = isCreateAction ? (raw.id || file.id) : record.id;
+        file._raw.id = isCreateAction ? (raw.id || file.id) : record!.id;
         file.postId = raw.post_id || '';
         file.name = raw.name;
         file.extension = raw.extension;
@@ -156,5 +165,5 @@ export const transformFileRecord = ({action, database, value}: TransformerArgs):
         tableName: FILE,
         value,
         fieldsMapper,
-    }) as Promise<FileModel>;
+    });
 };

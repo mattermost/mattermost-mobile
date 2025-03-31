@@ -98,7 +98,6 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
                 record: undefined,
                 raw: {
                     id: 'c',
-                    channel_id: 'c',
                     guest_count: 10,
                     header: 'channel info header',
                     member_count: 10,

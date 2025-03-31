@@ -5,10 +5,6 @@ import {MM_TABLES} from '@constants/database';
 
 import type {Model} from '@nozbe/watermelondb';
 import type {IdenticalRecordArgs, RangeOfValueArgs, RecordPair, RetrieveRecordsArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
-import type PostModel from '@typings/database/models/servers/post';
-import type TeamModel from '@typings/database/models/servers/team';
-import type UserModel from '@typings/database/models/servers/user';
 
 const {CHANNEL, POST, TEAM, USER} = MM_TABLES.SERVER;
 
@@ -21,13 +17,12 @@ const {CHANNEL, POST, TEAM, USER} = MM_TABLES.SERVER;
  * @param {Model} identicalRecord.existingRecord
  * @returns {boolean}
  */
-export const getValidRecordsForUpdate = ({tableName, newValue, existingRecord}: IdenticalRecordArgs) => {
+export const getValidRecordsForUpdate = <T extends Model, R extends RawValue>({tableName, newValue, existingRecord}: IdenticalRecordArgs<T, R>) => {
     const guardTables = [CHANNEL, POST, TEAM, USER];
     if (guardTables.includes(tableName)) {
-        type Raw = Post | UserProfile | Team | SlashCommand | Channel;
-        type ExistingRecord = PostModel | UserModel | TeamModel | ChannelModel;
-
-        const shouldUpdate = (newValue as Raw).update_at === (existingRecord as ExistingRecord).updateAt;
+        const newValueUpdateAt = ('update_at' in newValue) ? newValue.update_at : 0;
+        const existingRecordUpdateAt = ('updateAt' in existingRecord) ? existingRecord.updateAt : 0;
+        const shouldUpdate = newValueUpdateAt === existingRecordUpdateAt;
 
         if (shouldUpdate) {
             return {
@@ -66,7 +61,7 @@ export const getRangeOfValues = ({fieldName, raws}: RangeOfValueArgs) => {
  * @param {any[]} raws
  * @returns {{record: undefined, raw: any}[]}
  */
-export const getRawRecordPairs = (raws: any[]): RecordPair[] => {
+export const getRawRecordPairs = <T extends Model, R extends RawValue>(raws: R[]): Array<RecordPair<T, R>> => {
     return raws.map((raw) => {
         return {raw, record: undefined};
     });
@@ -78,7 +73,7 @@ export const getRawRecordPairs = (raws: any[]): RecordPair[] => {
  * @param {RawValue[]} raws
  * @param {string} key
  */
-export const getUniqueRawsBy = ({raws, key}: { raws: RawValue[]; key: string}) => {
+export const getUniqueRawsBy = <T extends RawValue>({raws, key}: { raws: T[]; key: string}) => {
     return [...new Map(raws.map((item) => {
         const curItemKey = item[key as keyof typeof item];
         return [curItemKey, item];

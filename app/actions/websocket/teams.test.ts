@@ -13,11 +13,10 @@ import {getCurrentTeam, queryMyTeamsByIds} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
+import TestHelper from '@test/test_helper';
 import {logDebug} from '@utils/log';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type TeamModel from '@typings/database/models/servers/team';
-import type UserModel from '@typings/database/models/servers/user';
 
 jest.mock('@actions/local/team', () => ({
     removeUserFromTeam: jest.fn(),
@@ -102,10 +101,10 @@ describe('WebSocket Team Actions', () => {
             const mockedUpdateUsersNoLongerVisible = jest.mocked(updateUsersNoLongerVisible);
             const mockedUpdateCanJoinTeams = jest.mocked(updateCanJoinTeams);
 
-            mockedQueryMyTeamsByIds.mockReturnValue({fetch: jest.fn().mockResolvedValue([{id: 'team1'}])} as any);
-            mockedGetCurrentTeam.mockResolvedValue({id: 'team1'} as TeamModel);
+            mockedQueryMyTeamsByIds.mockReturnValue(TestHelper.fakeQuery([TestHelper.fakeMyTeamModel({id: 'team1'})]));
+            mockedGetCurrentTeam.mockResolvedValue(TestHelper.fakeTeamModel({id: 'team1'}));
             mockedRemoveUserFromTeam.mockResolvedValue({error: undefined});
-            mockedGetCurrentUser.mockResolvedValue({id: 'user1', isGuest: true} as UserModel);
+            mockedGetCurrentUser.mockResolvedValue(TestHelper.fakeUserModel({id: 'user1', isGuest: true}));
             mockedUpdateUsersNoLongerVisible.mockResolvedValue({error: undefined});
             mockedUpdateCanJoinTeams.mockResolvedValue({error: undefined});
 
@@ -121,7 +120,7 @@ describe('WebSocket Team Actions', () => {
             const mockedUpdateCanJoinTeams = jest.mocked(updateCanJoinTeams);
             const mockedRemoveUserFromTeam = jest.mocked(removeUserFromTeam);
 
-            mockedQueryMyTeamsByIds.mockReturnValue({fetch: jest.fn().mockResolvedValue([undefined])} as any);
+            mockedQueryMyTeamsByIds.mockReturnValue(TestHelper.fakeQuery([]));
             mockedUpdateCanJoinTeams.mockResolvedValue({error: undefined});
 
             await handleTeamArchived(serverUrl, msg);
@@ -138,10 +137,10 @@ describe('WebSocket Team Actions', () => {
             const mockedUpdateUsersNoLongerVisible = jest.mocked(updateUsersNoLongerVisible);
             const mockedUpdateCanJoinTeams = jest.mocked(updateCanJoinTeams);
 
-            mockedQueryMyTeamsByIds.mockReturnValue({fetch: jest.fn().mockResolvedValue([{id: 'team1'}])} as any);
-            mockedGetCurrentTeam.mockResolvedValue({id: 'team2'} as TeamModel);
+            mockedQueryMyTeamsByIds.mockReturnValue(TestHelper.fakeQuery([TestHelper.fakeMyTeamModel({id: 'team1'})]));
+            mockedGetCurrentTeam.mockResolvedValue(TestHelper.fakeTeamModel({id: 'team2'}));
             mockedRemoveUserFromTeam.mockResolvedValue({error: undefined});
-            mockedGetCurrentUser.mockResolvedValue({id: 'user1', isGuest: false} as UserModel);
+            mockedGetCurrentUser.mockResolvedValue(TestHelper.fakeUserModel({id: 'user1', isGuest: false}));
             mockedUpdateCanJoinTeams.mockResolvedValue({error: undefined});
 
             await handleTeamArchived(serverUrl, msg);
@@ -214,8 +213,8 @@ describe('WebSocket Team Actions', () => {
             const mockedGetCurrentTeam = jest.mocked(getCurrentTeam);
             const mockedRemoveUserFromTeam = jest.mocked(removeUserFromTeam);
 
-            mockedGetCurrentUser.mockResolvedValue({id: 'user1', isGuest: true} as UserModel);
-            mockedGetCurrentTeam.mockResolvedValue({id: 'team1'} as TeamModel);
+            mockedGetCurrentUser.mockResolvedValue(TestHelper.fakeUserModel({id: 'user1', isGuest: true}));
+            mockedGetCurrentTeam.mockResolvedValue(TestHelper.fakeTeamModel({id: 'team1'}));
 
             await handleLeaveTeamEvent(serverUrl, msg);
 
@@ -226,7 +225,7 @@ describe('WebSocket Team Actions', () => {
             const mockedGetCurrentUser = jest.mocked(getCurrentUser);
             const mockedRemoveUserFromTeam = jest.mocked(removeUserFromTeam);
 
-            mockedGetCurrentUser.mockResolvedValue({id: 'user2', isGuest: true} as UserModel);
+            mockedGetCurrentUser.mockResolvedValue(TestHelper.fakeUserModel({id: 'user2', isGuest: true}));
 
             await handleLeaveTeamEvent(serverUrl, msg);
 
@@ -249,8 +248,8 @@ describe('WebSocket Team Actions', () => {
             const mockedGetCurrentTeam = jest.mocked(getCurrentTeam);
             const mockedRemoveUserFromTeam = jest.mocked(removeUserFromTeam);
 
-            mockedGetCurrentUser.mockResolvedValue({id: 'user1', isGuest: false} as UserModel);
-            mockedGetCurrentTeam.mockResolvedValue({id: 'team2'} as TeamModel);
+            mockedGetCurrentUser.mockResolvedValue(TestHelper.fakeUserModel({id: 'user1', isGuest: false}));
+            mockedGetCurrentTeam.mockResolvedValue(TestHelper.fakeTeamModel({id: 'team2'}));
 
             await handleLeaveTeamEvent(serverUrl, msg);
 
