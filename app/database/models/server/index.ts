@@ -9,6 +9,8 @@ export {default as ChannelInfoModel} from './channel_info';
 export {default as ChannelMembershipModel} from './channel_membership';
 export {default as ConfigModel} from './config';
 export {default as CustomEmojiModel} from './custom_emoji';
+export {default as CustomProfileFieldModel} from './custom_profile_field';
+export {default as CustomProfileAttributeModel} from './custom_profile_attribute';
 export {default as DraftModel} from './draft';
 export {default as FileModel} from './file';
 export {default as GroupModel} from './group';

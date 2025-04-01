@@ -8,6 +8,7 @@ import type PreferenceModel from './preference';
 import type ReactionModel from './reaction';
 import type TeamMembershipModel from './team_membership';
 import type ThreadParticipantsModel from './thread_participant';
+import type CustomProfileAttributeModel from '@database/models/server/custom_profile_attribute';
 import type {Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
 import type Query from '@nozbe/watermelondb/Query';
@@ -121,6 +122,9 @@ declare class UserModel extends Model {
 
     /** termsOfServiceCreateAt : The last time the user accepted the terms of service */
     termsOfServiceCreateAt: number;
+
+    /** customProfileAttributes : All the custom profile attributes for this user */
+    customProfileAttributes: Query<CustomProfileAttributeModel> | undefined;
 }
 
 export default UserModel;
