@@ -3,7 +3,7 @@
 
 import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter, View, TouchableOpacity} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {ReduceMotion, useAnimatedStyle, useReducedMotion, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Shadow} from 'react-native-shadow-2';
 
@@ -73,6 +73,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
     const tabWidth = width / state.routes.length;
     const style = getStyleSheet(theme);
     const safeareaInsets = useSafeAreaInsets();
+    const reducedMotion = useReducedMotion();
 
     useEffect(() => {
         const event = DeviceEventEmitter.addListener(Events.TAB_BAR_VISIBLE, (show) => {
@@ -117,7 +118,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
     }, [state]);
 
     const transform = useAnimatedStyle(() => {
-        const translateX = withTiming(state.index * tabWidth, {duration: 150});
+        const translateX = withTiming(state.index * tabWidth, {duration: 150, reduceMotion: reducedMotion ? ReduceMotion.Always : ReduceMotion.System});
         return {
             transform: [{translateX}],
         };
