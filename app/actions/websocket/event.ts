@@ -16,7 +16,7 @@ import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRole
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 import * as teams from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
-import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent, handleCustomProfileAttributesValuesUpdatedEvent, handleCustomProfileAttributesFieldUpdatedEvent} from './users';
+import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent, handleCustomProfileAttributesValuesUpdatedEvent, handleCustomProfileAttributesFieldUpdatedEvent, handleCustomProfileAttributesFieldCreatedEvent, handleCustomProfileAttributesFieldDeletedEvent} from './users';
 
 export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMessage) {
     switch (msg.event) {
@@ -301,6 +301,14 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_UPDATED:
             handleCustomProfileAttributesFieldUpdatedEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_CREATED:
+            handleCustomProfileAttributesFieldCreatedEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_DELETED:
+            handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
             break;
     }
 }

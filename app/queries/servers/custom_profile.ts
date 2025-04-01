@@ -262,6 +262,20 @@ export const queryCustomProfileAttributesByFieldId = (database: Database, fieldI
 };
 
 /**
+ * Query to delete custom profile attributes by field ID
+ * @param database - The database instance
+ * @param fieldId - The field ID
+ * @returns Promise that resolves when the deletion is complete
+ */
+export const deleteCustomProfileAttributesByFieldId = async (database: Database, fieldId: string) => {
+    const attributes = await queryCustomProfileAttributesByFieldId(database, fieldId);
+
+    return database.write(async () => {
+        await Promise.all(attributes.map((attribute) => attribute.destroyPermanently()));
+    });
+};
+
+/**
  * Query to fetch custom profile attributes by field IDs
  * @param database - The database instance
  * @param fieldIds - Array of field IDs
