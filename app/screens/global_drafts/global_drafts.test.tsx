@@ -8,7 +8,7 @@ import React from 'react';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import {GlobalDraftsAndScheduledPosts} from './index';
+import GlobalDraftsAndScheduledPosts from './global_drafts';
 
 jest.mock('@hooks/device', () => ({
     useWindowDimensions: jest.fn(() => ({width: 800, height: 600})),

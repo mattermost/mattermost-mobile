@@ -8,7 +8,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {Navigation, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
+import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts/global_drafts';
 import {goToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 

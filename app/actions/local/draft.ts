@@ -14,7 +14,7 @@ import {logError} from '@utils/log';
 import {isParsableUrl} from '@utils/url';
 
 import type {Model} from '@nozbe/watermelondb';
-import type {DraftScreenTab} from '@screens/global_drafts';
+import type {DraftScreenTab} from '@screens/global_drafts/global_drafts';
 
 type goToScreenParams = {
     initialTab?: DraftScreenTab;

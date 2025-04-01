@@ -1,12 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
-import {switchMap} from 'rxjs/operators';
 
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
@@ -16,9 +14,6 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import SecurityManager from '@managers/security_manager';
-import {observeDraftCount} from '@queries/servers/drafts';
-import {observeScheduledPostCount} from '@queries/servers/scheduled_post';
-import {observeConfigBooleanValue, observeCurrentTeamId} from '@queries/servers/system';
 import TabbedContents from '@screens/global_drafts/components/tabbed_contents/tabbed_contents';
 
 import {popTopScreen} from '../navigation';
@@ -26,7 +21,6 @@ import {popTopScreen} from '../navigation';
 import GlobalDraftsList from './components/global_drafts_list';
 import GlobalScheduledPostList from './components/global_scheduled_post_list';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const edges: Edge[] = ['left', 'right'];
@@ -49,7 +43,7 @@ const styles = StyleSheet.create({
     },
 });
 
-export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab, draftsCount, scheduledPostCount}: Props) => {
+const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab, draftsCount, scheduledPostCount}: Props) => {
     const intl = useIntl();
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
@@ -134,16 +128,4 @@ export const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnable
     );
 };
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentTeamId = observeCurrentTeamId(database);
-    const scheduledPostsEnabled = observeConfigBooleanValue(database, 'ScheduledPosts');
-    const draftsCount = currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))); // Observe draft count
-    const scheduledPostCount = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostCount(database, teamId, true)));
-    return {
-        scheduledPostsEnabled,
-        draftsCount,
-        scheduledPostCount,
-    };
-});
-
-export default withDatabase(enhanced(GlobalDraftsAndScheduledPosts));
+export default GlobalDraftsAndScheduledPosts;
