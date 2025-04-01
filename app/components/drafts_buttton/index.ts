@@ -13,7 +13,7 @@ import DraftsButton from './drafts_button';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables([], ({database, shouldHighlightActive}: {shouldHighlightActive: boolean} & WithDatabaseArgs) => {
+const enhanced = withObservables(['shouldHighlightActive'], ({database, shouldHighlightActive}: {shouldHighlightActive: boolean} & WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
     const isActiveTab = currentTeamId.pipe(
         switchMap(
