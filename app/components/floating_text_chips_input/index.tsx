@@ -31,8 +31,8 @@ import Animated, {
     Easing,
 } from 'react-native-reanimated';
 
+import SelectedChip, {USER_CHIP_HEIGHT} from '@components/chips/selected_chip';
 import CompassIcon from '@components/compass_icon';
-import SelectedChip, {USER_CHIP_HEIGHT} from '@components/selected_chip';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -282,7 +282,6 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>(({
                                 text={chipValue}
                                 testID={`${testID}.${chipValue}`}
                                 onRemove={onChipRemove}
-                                containerStyle={styles.chipContainer}
                             />
                         ))}
                         <TextInput

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {Text, TouchableOpacity, useWindowDimensions, type StyleProp, type ViewStyle} from 'react-native';
+import React from 'react';
+import {Text, TouchableOpacity, useWindowDimensions} from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -11,17 +11,17 @@ import {nonBreakingString} from '@utils/strings';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import {CHIP_BOTTOM_MARGIN, CHIP_HEIGHT} from './constants';
+
 type SelectedChipProps = {
-    id: string;
-    text: string;
-    extra?: React.ReactNode;
-    onRemove: (id: string) => void;
+    onPress: () => void;
     testID?: string;
-    containerStyle?: StyleProp<ViewStyle>;
+    showXButton?: boolean;
+    showAnimation?: boolean;
+    label: string;
+    prefix?: JSX.Element;
 }
 
-export const USER_CHIP_HEIGHT = 32;
-export const USER_CHIP_BOTTOM_MARGIN = 8;
 const FADE_DURATION = 100;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -31,9 +31,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             flexDirection: 'row',
             borderRadius: 16,
-            height: USER_CHIP_HEIGHT,
+            height: CHIP_HEIGHT,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            marginBottom: USER_CHIP_BOTTOM_MARGIN,
+            marginBottom: CHIP_BOTTOM_MARGIN,
             marginRight: 8,
             paddingHorizontal: 7,
         },
@@ -49,50 +49,68 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default function SelectedChip({
-    id,
-    text,
-    extra,
-    onRemove,
+export default function BaseChip({
     testID,
-    containerStyle,
+    onPress,
+    showXButton,
+    showAnimation,
+    label,
+    prefix,
 }: SelectedChipProps) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const dimensions = useWindowDimensions();
 
-    const containerStyles = [style.container, containerStyle];
-
-    const onPress = useCallback(() => {
-        onRemove(id);
-    }, [onRemove, id]);
-
-    return (
-        <Animated.View
-            entering={FadeIn.duration(FADE_DURATION)}
-            exiting={FadeOut.duration(FADE_DURATION)}
-            style={containerStyles}
-            testID={testID}
-        >
-            {extra}
+    const chipContent = (
+        <>
+            {prefix}
             <Text
                 style={[style.text, {maxWidth: dimensions.width * 0.70}]}
                 numberOfLines={1}
                 testID={`${testID}.display_name`}
             >
-                {nonBreakingString(text)}
+                {nonBreakingString(label)}
             </Text>
+        </>
+    );
+
+    let content;
+    if (showXButton) {
+        content = (
+            <>
+                {chipContent}
+                <TouchableOpacity
+                    style={style.remove}
+                    onPress={onPress}
+                    testID={`${testID}.remove.button`}
+                >
+                    <CompassIcon
+                        name='close-circle'
+                        size={18}
+                        color={changeOpacity(theme.centerChannelColor, 0.32)}
+                    />
+                </TouchableOpacity>
+            </>
+        );
+    } else {
+        content = (
             <TouchableOpacity
                 style={style.remove}
                 onPress={onPress}
-                testID={`${testID}.remove.button`}
+                testID={`${testID}.chip_button`}
             >
-                <CompassIcon
-                    name='close-circle'
-                    size={18}
-                    color={changeOpacity(theme.centerChannelColor, 0.32)}
-                />
+                {chipContent}
             </TouchableOpacity>
+        );
+    }
+    return (
+        <Animated.View
+            entering={showAnimation ? FadeIn.duration(FADE_DURATION) : undefined}
+            exiting={showAnimation ? FadeOut.duration(FADE_DURATION) : undefined}
+            style={style.container}
+            testID={testID}
+        >
+            {content}
         </Animated.View>
     );
 }
