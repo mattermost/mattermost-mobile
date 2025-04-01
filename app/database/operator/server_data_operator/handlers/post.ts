@@ -180,7 +180,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
         const updatedScheduledPost = scheduledPost.prepareUpdate((record) => {
             record.errorCode = errorCode;
-            record.updateAt = scheduledPost.updateAt; // We don't want to update the updateAt field as prepareUpdate will do it is not set
+            record.updateAt = scheduledPost.updateAt; // We don't want to update the updateAt field as prepareUpdate will do it if it is not set
         });
 
         if (!prepareRecordsOnly) {
