@@ -146,7 +146,7 @@ export const useHandleSendMessage = ({
         };
 
         // Creating a wrapper function to pass the schedulingInfo to the doSubmitMessage function as the accepted
-        // function signature causes conflict.\
+        // function signature causes conflict.
         // TODO for later - change alert message if this is a scheduled post
         const doSubmitMessageScheduledPostWrapper = () => doSubmitMessage(schedulingInfo);
         DraftUtils.alertChannelWideMention(intl, notifyAllMessage, doSubmitMessageScheduledPostWrapper, cancel);
