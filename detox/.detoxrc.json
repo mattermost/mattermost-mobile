@@ -64,8 +64,8 @@
   },
   "behavior": {
     "init": {
-      "reinstallApp": false,
-      "launchApp": false
+      "reinstallApp": true,
+      "launchApp": true
     }
   }
 }

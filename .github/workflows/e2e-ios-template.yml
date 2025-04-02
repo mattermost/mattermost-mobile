@@ -169,6 +169,7 @@ jobs:
               fi
 
               echo "✅ iOS Simulator Build Downloaded*******************"
+              rm -rf mobile-artifacts/*.zip
               ls mobile-artifacts
 
       # - name: Download iOS Simulator Build from Previous Run
@@ -206,13 +207,13 @@ jobs:
           upload_speed: "3300"
           latency: "500"
 
-      - name: Start React Native Metro Server
-        run: |
-          # Start the server
-          npm run start &
+      # - name: Start React Native Metro Server
+      #   run: |
+      #     # Start the server
+      #     npm run start &
 
-      - name: Wait for 90 sec for watchman to query the files
-        run: sleep 90
+      # - name: Wait for 90 sec for watchman to query the files
+      #   run: sleep 90
 
       - name: Install Detox Dependencies
         run: cd detox && npm i
@@ -227,6 +228,9 @@ jobs:
       - name: Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
         run: |
+          # Start the server
+          npm run start &
+          sleep 90
           cd detox
           npm run detox:config-gen
           # npm run e2e:ios-test -- ${{ matrix.specs }}
