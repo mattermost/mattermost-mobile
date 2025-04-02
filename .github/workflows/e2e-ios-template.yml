@@ -204,11 +204,21 @@ jobs:
       - name: Install FFmpeg
         run: brew install ffmpeg
 
+      - name: Detect macOS Screen Recording Device
+        run: |
+          ffmpeg -f avfoundation -list_devices true -i "" 2>&1 | tee devices.txt
+          echo "====================="
+          cat devices.txt
+          DEVICE_INDEX=$(grep -i "Capture screen" devices.txt | awk -F'[][]' '{print $2}')
+
+          echo " DEVICE_INDEX ================ ", $DEVICE_INDEX
+          echo "DEVICE_INDEX=$DEVICE_INDEX" >> $GITHUB_ENV
+
       - name: Start macOS Screen Recording
         if: always()
         run: |
           mkdir -p detox/mobile-artifacts/recordings
-          ffmpeg -f avfoundation -video_size 1280x720 -framerate 30 -i "1" -y detox/mobile-artifacts/recordings/macos-screen.mp4 &
+          ffmpeg -f avfoundation -video_size 1280x720 -framerate 30 -i "$DEVICE_INDEX" -y detox/mobile-artifacts/recordings/macos-screen.mp4 &
           echo $! > record_pid.txt
 
       - name: Run Detox E2E Tests
@@ -229,12 +239,13 @@ jobs:
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
 
+
       - name: Stop macOS Screen Recording
         if: always()
         run: |
           if [ -f record_pid.txt ]; then
             kill $(cat record_pid.txt) || true
-            sleep 5  # Ensure the video file is properly saved
+            sleep 5
           fi
 
       - name: Upload Screen Recording
