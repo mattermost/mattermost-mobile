@@ -91,6 +91,18 @@ describe('ScheduledPostIndicator', () => {
         expect(screen.getByText(/2 scheduled messages in thread/i)).toBeTruthy();
     });
 
+    test('should render correct message when there is only one scheduled post', () => {
+        const props = {
+            ...baseProps,
+            scheduledPostCount: 1,
+            isThread: true,
+            channelId: 'channel_id',
+        };
+
+        renderWithEverything(<ScheduledPostIndicator {...props}/>, {database});
+        expect(screen.getByText(/1 scheduled message in thread/i)).toBeTruthy();
+    });
+
     test('should handle see all scheduled posts click', () => {
         const props = {
             ...baseProps,

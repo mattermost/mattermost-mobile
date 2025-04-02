@@ -97,6 +97,11 @@ const GlobalScheduledPostList: React.FC<Props> = ({
         return allScheduledPosts.some((post) => post.errorCode !== '');
     }, [allScheduledPosts]);
 
+    const scheduledPostsInSequence = allScheduledPosts.filter((post) => post.errorCode === '');
+    if (isErrorInScheduledPosts) {
+        scheduledPostsInSequence.unshift(...allScheduledPosts.filter((post) => post.errorCode !== ''));
+    }
+
     const collapse = useCallback(() => {
         popTopScreen(Screens.GLOBAL_DRAFTS);
     }, []);
@@ -165,9 +170,9 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                 </View>
             }
             <FlatList
-                data={allScheduledPosts}
+                data={scheduledPostsInSequence}
                 keyExtractor={keyExtractor}
-                contentContainerStyle={!allScheduledPosts.length && styles.empty}
+                contentContainerStyle={!scheduledPostsInSequence.length && styles.empty}
                 maxToRenderPerBatch={10}
                 nativeID={location}
                 renderItem={renderItem}
