@@ -6,9 +6,10 @@ import {Alert} from 'react-native';
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 import {showSnackBar} from '@utils/snack_bar';
 
-import {deleteScheduledPostConfirmation, hasScheduledPostError, isScheduledPostModel, getErrorStringFromCode, type ScheduledPostErrorCode} from './index';
+import {deleteScheduledPostConfirmation, hasScheduledPostError, isScheduledPostModel, getErrorStringFromCode} from './index';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
+import type {ScheduledPostErrorCode} from '@typings/utils/scheduled_post';
 import type {IntlShape} from 'react-intl';
 import type {SwipeableMethods} from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
 
