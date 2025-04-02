@@ -204,22 +204,12 @@ jobs:
       - name: Install FFmpeg
         run: brew install ffmpeg
 
-      - name: Detect macOS Screen Recording Device
-        run: |
-          ffmpeg -f avfoundation -list_devices true -i "" 2>&1 | tee devices.txt
-          echo "====================="
-          cat devices.txt
-          DEVICE_INDEX=$(grep -i "Capture screen" devices.txt | awk -F'[][]' '{print $2}')
-
-          echo " DEVICE_INDEX ================ ", $DEVICE_INDEX
-          echo "DEVICE_INDEX=$DEVICE_INDEX" >> $GITHUB_ENV
-
-      - name: Start macOS Screen Recording
-        if: always()
+      - name: Start Screen Recording in Background
         run: |
           mkdir -p detox/mobile-artifacts/recordings
-          ffmpeg -f avfoundation -video_size 1280x720 -framerate 30 -i "$DEVICE_INDEX" -y detox/mobile-artifacts/recordings/macos-screen.mp4 &
-          echo $! > record_pid.txt
+          ffmpeg -f avfoundation -i "0:none" -r 30 -video_size 1920x1080 -pix_fmt yuv420p -y detox/mobile-artifacts/recordings/screen_recording.mp4 > /dev/null 2>&1 &
+          echo $! > ffmpeg_pid.txt
+        shell: bash
 
       - name: Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
@@ -240,21 +230,19 @@ jobs:
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
 
 
-      - name: Stop macOS Screen Recording
+      - name: Stop Screen Recording
         if: always()
         run: |
-          if [ -f record_pid.txt ]; then
-            kill $(cat record_pid.txt) || true
-            sleep 5
-          fi
+          kill $(cat ffmpeg_pid.txt) || true  # Stop FFmpeg recording
+          sleep 5  # Allow file to finalize
 
       - name: Upload Screen Recording
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: detox-screen-recording-${{ github.run_id }}
-          path: detox/mobile-artifacts/recordings/macos-screen.mp4
-  
+          name: screen_recording
+          path: detox/mobile-artifacts/recordings/screen_recording.mp4
+
       - name: reset network settings
         if: ${{ inputs.low_bandwidth_mode || failure() }}
         run: |
