@@ -102,6 +102,7 @@ describe('Send Draft', () => {
         jest.mocked(createPost).mockResolvedValueOnce({
             data: true,
         });
+        jest.mocked(canPostDraftInChannelOrThread).mockResolvedValueOnce(true);
         const wrapper = renderWithIntlAndTheme(
             <SendDraft
                 {...baseProps}
@@ -135,6 +136,7 @@ describe('Send Draft', () => {
         jest.mocked(createPost).mockResolvedValueOnce({
             data: true,
         });
+        jest.mocked(canPostDraftInChannelOrThread).mockResolvedValueOnce(true);
         const wrapper = renderWithIntlAndTheme(
             <SendDraft
                 {...props}
