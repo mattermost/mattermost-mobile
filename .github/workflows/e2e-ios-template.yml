@@ -201,6 +201,16 @@ jobs:
         with:
           test_server_url: ${{ env.SITE_1_URL }}
 
+      - name: Install FFmpeg
+        run: brew install ffmpeg
+
+      - name: Start macOS Screen Recording
+        if: always()
+        run: |
+          mkdir -p detox/mobile-artifacts/recordings
+          ffmpeg -f avfoundation -video_size 1280x720 -framerate 30 -i "1" -y detox/mobile-artifacts/recordings/macos-screen.mp4 &
+          echo $! > record_pid.txt
+
       - name: Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
         run: |
@@ -211,25 +221,28 @@ jobs:
           npm run clean-detox
           npm run detox:config-gen
           # npm run e2e:ios-test -- ${{ matrix.specs }}
+
           npm run e2e:ios-test -- detox/e2e/test/account/mention_notification_settings.e2e.ts detox/e2e/test/account/notification_settings.e2e.ts detox/e2e/test/account/push_notification_settings.e2e.ts detox/e2e/test/account/settings.e2e.ts
+
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
 
-      - name: Capture Screenshot on Failure
+      - name: Stop macOS Screen Recording
         if: always()
         run: |
-          mkdir -p mobile-artifacts/screenshots
-          xcrun simctl io booted screenshot mobile-artifacts/screenshots/detox-failure.png
-          echo "✅ Screenshot captured: mobile-artifacts/screenshots/detox-failure.png"
+          if [ -f record_pid.txt ]; then
+            kill $(cat record_pid.txt) || true
+            sleep 5  # Ensure the video file is properly saved
+          fi
 
-      - name: Upload Screenshots as Artifact
+      - name: Upload Screen Recording
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: detox-screenshots-${{ github.run_id }}
-          path: mobile-artifacts/screenshots
+          name: detox-screen-recording-${{ github.run_id }}
+          path: detox/mobile-artifacts/recordings/macos-screen.mp4
   
       - name: reset network settings
         if: ${{ inputs.low_bandwidth_mode || failure() }}
