@@ -207,7 +207,7 @@ jobs:
       - name: Start Screen Recording in Background
         run: |
           mkdir -p detox/mobile-artifacts/recordings
-          ffmpeg -f avfoundation -i "0:none" -r 30 -video_size 1920x1080 -pix_fmt yuv420p -y detox/mobile-artifacts/recordings/screen_recording.mp4 > /dev/null 2>&1 &
+          ffmpeg -f avfoundation -i "0:none" -r 30 -video_size 1920x1080 -pix_fmt yuv420p -y detox/mobile-artifacts/recordings/screen_recording.mov > /dev/null 2>&1 &
           echo $! > ffmpeg_pid.txt
         shell: bash
 
@@ -241,7 +241,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: screen_recording
-          path: detox/mobile-artifacts/recordings/screen_recording.mp4
+          path: detox/mobile-artifacts/recordings/screen_recording.mov
 
       - name: reset network settings
         if: ${{ inputs.low_bandwidth_mode || failure() }}
