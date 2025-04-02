@@ -38,12 +38,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 16 Pro"
+        default: "iPhone 14 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 18.1"
+        default: "iOS 16.1"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -122,7 +122,7 @@ jobs:
 
   e2e-ios:
     # name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
-    runs-on: macos-14
+    runs-on: macos-13
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 140 || 70 }}
     env:
