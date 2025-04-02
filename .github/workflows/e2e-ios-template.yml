@@ -84,54 +84,54 @@ env:
   RUNNING_E2E: true
 
 jobs:
-  generate-specs:
-    runs-on: ubuntu-22.04
-    outputs:
-      specs: ${{ steps.generate-specs.outputs.specs }}
-      build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
-      mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
-      mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
-      workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+  # generate-specs:
+  #   runs-on: ubuntu-22.04
+  #   outputs:
+  #     specs: ${{ steps.generate-specs.outputs.specs }}
+  #     build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
+  #     mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
+  #     mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
+  #     workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  #       with:
+  #         ref: ${{ inputs.MOBILE_VERSION }}
 
-      - name: Set Build ID
-        id: resolve-device
-        run: |
-          BUILD_ID="${{ github.run_id }}-${{ env.DEVICE_NAME }}-${{ env.DEVICE_OS_VERSION}}"
-          WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
+  #     - name: Set Build ID
+  #       id: resolve-device
+  #       run: |
+  #         BUILD_ID="${{ github.run_id }}-${{ env.DEVICE_NAME }}-${{ env.DEVICE_OS_VERSION}}"
+  #         WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
 
-          ## We need that hash to separate the artifacts
-          echo "WORKFLOW_HASH=${WORKFLOW_HASH}" >> ${GITHUB_OUTPUT}
+  #         ## We need that hash to separate the artifacts
+  #         echo "WORKFLOW_HASH=${WORKFLOW_HASH}" >> ${GITHUB_OUTPUT}
 
-          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
-          echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
-          echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
+  #         echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
+  #         echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
+  #         echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
 
-      - name: Generate Test Specs
-        id: generate-specs
-        uses: ./.github/actions/generate-specs
-        with:
-          parallelism: 10
-          search_path: detox/e2e/test/account
-          device_name: ${{ env.DEVICE_NAME }}
-          device_os_version: ${{ env.DEVICE_OS_VERSION }}
+  #     - name: Generate Test Specs
+  #       id: generate-specs
+  #       uses: ./.github/actions/generate-specs
+  #       with:
+  #         parallelism: 10
+  #         search_path: detox/e2e/test/account
+  #         device_name: ${{ env.DEVICE_NAME }}
+  #         device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
   e2e-ios:
-    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    # name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     runs-on: macos-14
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 140 || 70 }}
     env:
       IOS: true
-    needs:
-      - generate-specs
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+    # needs:
+    #   - generate-specs
+    # strategy:
+    #   fail-fast: false
+    #   matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -206,11 +206,12 @@ jobs:
         run: |
           # Start the server
           npm run start &
-          sleep 180 # Wait for watchman to finish querying the files
+          sleep 60 # Wait for watchman to finish querying the files
           cd detox
           npm run clean-detox
           npm run detox:config-gen
-          npm run e2e:ios-test -- ${{ matrix.specs }}
+          # npm run e2e:ios-test -- ${{ matrix.specs }}
+          npm run e2e:ios-test -- detox/e2e/test/account/mention_notification_settings.e2e.ts detox/e2e/test/account/notification_settings.e2e.ts detox/e2e/test/account/push_notification_settings.e2e.ts detox/e2e/test/account/settings.e2e.ts detox/e2e/test/account/theme_display_settings.e2e.ts detox/e2e/test/account/timezone_display_settings.e2e.ts detox/e2e/test/autocomplete/at_mention.e2e.ts detox/e2e/test/autocomplete/channel_mention.e2e.ts detox/e2e/test/autocomplete/channel_post_draft.e2e.ts
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
