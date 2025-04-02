@@ -62,23 +62,38 @@ export function ScheduledPostIndicator({
     if (scheduledPostCount === 0) {
         return null;
     }
-    const scheduledPostText = isThread ? (
-        <FormattedMessage
-            id='scheduled_post.channel_indicator.thread.multiple'
-            defaultMessage='{count} scheduled messages in thread.'
-            values={{
-                count: scheduledPostCount,
-            }}
-        />
-    ) : (
-        <FormattedMessage
-            id='scheduled_post.channel_indicator.multiple'
-            defaultMessage='{count} scheduled messages in channel.'
-            values={{
-                count: scheduledPostCount,
-            }}
-        />
-    );
+    let scheduledPostText;
+    if (scheduledPostCount === 1) {
+        scheduledPostText = isThread ? (
+            <FormattedMessage
+                id='scheduled_post.channel_indicator.thread.single'
+                defaultMessage='1 scheduled message in thread.'
+            />
+        ) : (
+            <FormattedMessage
+                id='scheduled_post.channel_indicator.single'
+                defaultMessage='1 scheduled message in channel.'
+            />
+        );
+    } else {
+        scheduledPostText = isThread ? (
+            <FormattedMessage
+                id='scheduled_post.channel_indicator.thread.multiple'
+                defaultMessage='{count} scheduled messages in thread.'
+                values={{
+                    count: scheduledPostCount,
+                }}
+            />
+        ) : (
+            <FormattedMessage
+                id='scheduled_post.channel_indicator.multiple'
+                defaultMessage='{count} scheduled messages in channel.'
+                values={{
+                    count: scheduledPostCount,
+                }}
+            />
+        );
+    }
 
     return (
         <View
@@ -91,7 +106,7 @@ export function ScheduledPostIndicator({
                     size={18}
                 />
                 <Text style={styles.text}>
-                    {scheduledPostText}
+                    {scheduledPostText} {'Rajat'}
                     {' '}
                     <Text
                         style={styles.link}
