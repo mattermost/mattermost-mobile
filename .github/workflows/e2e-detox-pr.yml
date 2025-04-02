@@ -120,8 +120,8 @@ jobs:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
     name: iOS Mobile Tests on PR
     uses: ./.github/workflows/e2e-ios-template.yml
-    # needs:
-    #   - build-ios-simulator
+    needs:
+      - build-ios-simulator
     with:
       run-type: "PR"
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}

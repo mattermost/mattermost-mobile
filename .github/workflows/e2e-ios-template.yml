@@ -43,7 +43,7 @@ on:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 18.2"
+        default: "iOS 18.1"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -153,12 +153,14 @@ jobs:
           brew tap wix/brew
           brew install applesimutils
 
-      - name: Download iOS Simulator Build from Previous Run
+      - name: Download iOS Simulator Build
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
-          name: ios-build-simulator-14058976025
+          name: ios-build-simulator-${{ github.run_id }}
           path: mobile-artifacts
-          run-id: 14058976025
+
+      - name: Unzip iOS Simulator Build
+        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
 
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth
@@ -190,8 +192,7 @@ jobs:
           sleep 90
           cd detox
           npm run detox:config-gen
-          # npm run e2e:ios-test -- ${{ matrix.specs }}
-          DETOX_LOGLEVEL=debug npm run e2e:ios-test -- detox/e2e/test/account/about.e2e.ts detox/e2e/test/account/account_menu.e2e.ts detox/e2e/test/account/advanced_settings.e2e.ts detox/e2e/test/account/auto_responder_notification_settings.e2e.ts detox/e2e/test/account/clock_display_settings.e2e.ts detox/e2e/test/account/custom_status.e2e.ts detox/e2e/test/account/display_settings.e2e.ts detox/e2e/test/account/edit_profile.e2e.ts detox/e2e/test/account/email_notification_settings.e2e.ts
+          npm run e2e:ios-test -- ${{ matrix.specs }}
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
