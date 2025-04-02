@@ -14,7 +14,7 @@ import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
 import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {getReadableTimestamp} from '@utils/datetime';
-import {getErrorStringFromCode, type ScheduledPostErrorCode} from '@utils/scheduled_post';
+import {getErrorStringFromCode} from '@utils/scheduled_post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
@@ -22,6 +22,7 @@ import {getUserTimezone} from '@utils/user';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {ScheduledPostErrorCode} from '@typings/utils/scheduled_post';
 
 type Props = {
     channel: ChannelModel;

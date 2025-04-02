@@ -686,9 +686,9 @@ describe('*** Operator: Post Handlers tests ***', () => {
         expect(spyOnBatchRecords).toHaveBeenCalledWith([updatedPost], 'handleScheduledPostErrorCode');
 
         // Verify the post was updated in the database
-        const scheduledPost = await operator.database.get('ScheduledPost').query(
+        const scheduledPost = await operator.database.get<ScheduledPostModel>('ScheduledPost').query(
             Q.where('id', scheduledPosts[0].id),
-        ).fetch() as ScheduledPostModel[];
+        ).fetch();
 
         expect(scheduledPost.length).toBe(1);
         expect(scheduledPost[0].errorCode).toBe(errorCode);

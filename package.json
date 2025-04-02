@@ -1,13 +1,13 @@
 {
   "name": "mattermost-mobile",
-  "version": "2.26.0",
+  "version": "2.27.0",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
   "license": "Apache 2.0",
   "private": true,
   "engines": {
-    "node": "^18.18.0 || ^20.0.0",
+    "node": "^18.18.0 || ^20.0.0 || ^22.11.0",
     "npm": "^9 || ^10"
   },
   "dependencies": {

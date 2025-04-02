@@ -12,7 +12,7 @@ import {Events} from '@constants';
 import {DRAFT} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts';
+import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts/global_drafts';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

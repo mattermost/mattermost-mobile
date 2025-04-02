@@ -179,7 +179,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             return res;
         }, {createOrUpdateFiles: [], deleteFiles: []});
 
-        const processedFiles = (await this.processRecords<FileModel>({
+        const processedFiles = (await this.processRecords<FileModel, FileInfo>({
             createOrUpdateRawValues: raws.createOrUpdateFiles,
             tableName: FILE,
             fieldName: 'id',
@@ -187,7 +187,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             shouldUpdate: shouldUpdateFileRecord,
         }));
 
-        const preparedFiles = await this.prepareRecords<FileModel>({
+        const preparedFiles = await this.prepareRecords<FileModel, FileInfo>({
             createRaws: processedFiles.createRaws,
             updateRaws: processedFiles.updateRaws,
             deleteRaws: processedFiles.deleteRaws,
@@ -215,7 +215,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
      * @param {(TransformerArgs) => Promise<Model>} execute.recordOperator
      * @returns {Promise<void>}
      */
-    async execute<T extends Model>({createRaws, transformer, tableName, updateRaws}: OperationArgs<T>, description: string): Promise<T[]> {
+    async execute<T extends Model, R extends RawValue>({createRaws, transformer, tableName, updateRaws}: OperationArgs<T, R>, description: string): Promise<T[]> {
         const models = await this.prepareRecords({
             tableName,
             createRaws,

@@ -6,11 +6,11 @@ import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
-import {getFormattedTime} from '@components/formatted_time';
 import {useTheme} from '@context/theme';
 import DateTimeSelector from '@screens/custom_status_clear_after/components/date_time_selector';
 import PickerOption from '@screens/post_priority_picker/components/picker_option';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getFormattedTime} from '@utils/time';
 
 import type {Moment} from 'moment-timezone';
 

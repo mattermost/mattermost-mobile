@@ -292,7 +292,6 @@
   "mobile.managed.jailbreak": "{vendor} nepasitiki nulaužtais įrenginiais.\n\nPriežastis: {reason}\n\n\n\nDerinimo informacija: {debug}\n\nUždarykite programą.",
   "mobile.managed.not_secured.android": "Kad galėtumėte naudoti Mattermost, šis įrenginys turi būti apsaugotas ekrano užraktu.",
   "mobile.managed.not_secured.ios": "Šis įrenginys turi būti apsaugotas slaptažodžiu, kad galėtumėte naudoti Mattermost.\n\nEikite į Nustatymai > Veido ID ir slaptažodis.",
-  "mobile.managed.not_secured.ios.touchId": "Šis įrenginys turi būti apsaugotas slaptažodžiu, kad galėtumėte naudoti Mattermost.\n\nEikite į Nustatymai > Lietimo ID ir slaptažodis.",
   "mobile.managed.secured_by": "Apsaugotas {vendor}",
   "mobile.managed.settings": "Eiti į nustatymus",
   "mobile.markdown.code.copy_code": "Kopijuoti kodą",

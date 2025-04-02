@@ -3,6 +3,7 @@
 
 import {General, Permissions} from '@constants';
 import DatabaseManager from '@database/manager';
+import TestHelper from '@test/test_helper';
 
 import {
     queryRoles,
@@ -17,10 +18,6 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
-import type ChannelModel from '@typings/database/models/servers/channel';
-import type PostModel from '@typings/database/models/servers/post';
-import type TeamModel from '@typings/database/models/servers/team';
-import type UserModel from '@typings/database/models/servers/user';
 
 describe('Role Queries', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -108,16 +105,16 @@ describe('Role Queries', () => {
 
     describe('observePermissionForChannel', () => {
         it('should observe channel permissions', (done) => {
-            const mockUser = {
+            const mockUser = TestHelper.fakeUserModel({
                 id: 'user1',
                 roles: 'system_user',
-            } as UserModel;
+            });
 
-            const mockChannel = {
+            const mockChannel = TestHelper.fakeChannelModel({
                 id: 'channel1',
                 type: General.OPEN_CHANNEL,
                 teamId: 'team1',
-            } as ChannelModel;
+            });
 
             operator.handleRole({
                 roles: [{
@@ -146,7 +143,7 @@ describe('Role Queries', () => {
         it('should return default value when no user', (done) => {
             observePermissionForChannel(
                 database,
-                {} as any,
+                TestHelper.fakeChannelModel(),
                 undefined,
                 Permissions.CREATE_POST,
                 true,
@@ -162,14 +159,14 @@ describe('Role Queries', () => {
 
     describe('observePermissionForTeam', () => {
         it('should observe team permissions', (done) => {
-            const mockUser = {
+            const mockUser = TestHelper.fakeUserModel({
                 id: 'user1',
                 roles: 'system_user',
-            } as UserModel;
+            });
 
-            const mockTeam = {
+            const mockTeam = TestHelper.fakeTeamModel({
                 id: 'team1',
-            } as TeamModel;
+            });
 
             const myTeams: MyTeam[] = [{
                 id: mockTeam.id,
@@ -214,7 +211,7 @@ describe('Role Queries', () => {
             observePermissionForTeam(
                 database,
                 undefined,
-                {} as any,
+                TestHelper.fakeUserModel(),
                 Permissions.MANAGE_TEAM,
                 true,
             ).subscribe({
@@ -229,18 +226,18 @@ describe('Role Queries', () => {
 
     describe('observeCanManageChannelMembers', () => {
         it('should observe manage members permission for public channel', (done) => {
-            const mockUser = {
+            const mockUser = TestHelper.fakeUserModel({
                 id: 'user1',
                 roles: 'system_admin',
-            } as UserModel;
+            });
 
             Promise.all([
                 operator.handleChannel({
-                    channels: [{
+                    channels: [TestHelper.fakeChannel({
                         id: 'channel1',
                         type: General.OPEN_CHANNEL,
                         delete_at: 0,
-                    }] as Channel[],
+                    })],
                     prepareRecordsOnly: false,
                 }),
                 operator.handleRole({
@@ -266,18 +263,18 @@ describe('Role Queries', () => {
         });
 
         it('should not allow managing default channel members', (done) => {
-            const mockUser = {
+            const mockUser = TestHelper.fakeUserModel({
                 id: 'user1',
                 roles: 'system_admin',
-            } as UserModel;
+            });
 
             operator.handleChannel({
-                channels: [{
+                channels: [TestHelper.fakeChannel({
                     id: 'channel1',
                     name: General.DEFAULT_CHANNEL,
                     type: General.OPEN_CHANNEL,
                     delete_at: 0,
-                }] as Channel[],
+                })],
                 prepareRecordsOnly: false,
             }).then(() => {
                 observeCanManageChannelMembers(
@@ -297,23 +294,23 @@ describe('Role Queries', () => {
 
     describe('observePermissionForPost', () => {
         it('should observe post permissions', (done) => {
-            const mockUser = {
+            const mockUser = TestHelper.fakeUserModel({
                 id: 'user1',
                 roles: 'system_user',
-            } as UserModel;
+            });
 
-            const mockPost = {
+            const mockPost = TestHelper.fakePostModel({
                 id: 'post1',
                 channelId: 'channel1',
-            } as PostModel;
+            });
 
             Promise.all([
                 operator.handleChannel({
-                    channels: [{
+                    channels: [TestHelper.fakeChannel({
                         id: 'channel1',
                         type: General.OPEN_CHANNEL,
                         team_id: 'team1',
-                    }] as Channel[],
+                    })],
                     prepareRecordsOnly: false,
                 }),
                 operator.handleRole({
@@ -342,10 +339,10 @@ describe('Role Queries', () => {
         });
 
         it('should return default value when no channel exists', (done) => {
-            const mockPost = {
+            const mockPost = TestHelper.fakePostModel({
                 id: 'post1',
                 channelId: 'nonexistent',
-            } as PostModel;
+            });
 
             observePermissionForPost(
                 database,
@@ -365,18 +362,18 @@ describe('Role Queries', () => {
 
     describe('observeCanManageChannelSettings', () => {
         it('should observe manage settings permission', (done) => {
-            const mockUser = {
+            const mockUser = TestHelper.fakeUserModel({
                 id: 'user1',
                 roles: 'system_admin',
-            } as UserModel;
+            });
 
             Promise.all([
                 operator.handleChannel({
-                    channels: [{
+                    channels: [TestHelper.fakeChannel({
                         id: 'channel1',
                         type: General.OPEN_CHANNEL,
                         delete_at: 0,
-                    }] as Channel[],
+                    })],
                     prepareRecordsOnly: false,
                 }),
                 operator.handleRole({
@@ -403,17 +400,17 @@ describe('Role Queries', () => {
         });
 
         it('should not allow managing deleted channel settings', (done) => {
-            const mockUser = {
+            const mockUser = TestHelper.fakeUserModel({
                 id: 'user1',
                 roles: 'system_admin',
-            } as UserModel;
+            });
 
             operator.handleChannel({
-                channels: [{
+                channels: [TestHelper.fakeChannel({
                     id: 'channel1',
                     type: General.OPEN_CHANNEL,
                     delete_at: 123,
-                }] as Channel[],
+                })],
                 prepareRecordsOnly: false,
             }).then(() => {
                 observeCanManageChannelSettings(

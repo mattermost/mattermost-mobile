@@ -8,7 +8,7 @@ import React from 'react';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import {GlobalDraftsAndScheduledPosts} from './index';
+import GlobalDraftsAndScheduledPosts from './global_drafts';
 
 jest.mock('@hooks/device', () => ({
     useWindowDimensions: jest.fn(() => ({width: 800, height: 600})),
@@ -25,10 +25,7 @@ describe('screens/global_drafts', () => {
 
     it('should render drafts list when scheduled posts is disabled', async () => {
         const {getByTestId, queryByTestId} = renderWithEverything(
-            <GlobalDraftsAndScheduledPosts
-                draftsCount={0}
-                scheduledPostCount={0}
-            />,
+            <GlobalDraftsAndScheduledPosts/>,
             {database},
         );
 
@@ -39,8 +36,6 @@ describe('screens/global_drafts', () => {
     it('should render tabs when scheduled posts is enabled', async () => {
         const {getByTestId} = renderWithEverything(
             <GlobalDraftsAndScheduledPosts
-                draftsCount={1}
-                scheduledPostCount={1}
                 scheduledPostsEnabled={true}
             />,
             {database},
@@ -58,12 +53,14 @@ describe('screens/global_drafts', () => {
     it('should switch between tabs', async () => {
         const {getByTestId} = renderWithEverything(
             <GlobalDraftsAndScheduledPosts
-                draftsCount={1}
-                scheduledPostCount={1}
                 scheduledPostsEnabled={true}
             />,
             {database},
         );
+
+        await act(async () => {
+            await TestHelper.wait(200); // Wait until the badge renders
+        });
 
         const draftTab = getByTestId('draft_tab');
         const scheduledTab = getByTestId('scheduled_post_tab');

@@ -126,4 +126,36 @@ describe('components/categories_list', () => {
         });
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
+
+    it('should render channel list with Draft menu if scheduledPostCount is greater than 0 and scheduledPost feature is enabled', () => {
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                isCRTEnabled={true}
+                moreThanOneTeam={false}
+                hasChannels={true}
+                draftsCount={0}
+                scheduledPostCount={1}
+                scheduledPostHasError={false}
+                scheduledPostsEnabled={true}
+            />,
+            {database},
+        );
+        expect(wrapper.getByText('Drafts')).toBeTruthy();
+    });
+
+    it('should not render channel list with Draft menu if scheduledPostCount is greater than 0 and scheduledPost feature is disabled', () => {
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                isCRTEnabled={true}
+                moreThanOneTeam={false}
+                hasChannels={true}
+                draftsCount={0}
+                scheduledPostCount={1}
+                scheduledPostHasError={false}
+                scheduledPostsEnabled={false}
+            />,
+            {database},
+        );
+        expect(wrapper.queryByText('Drafts')).not.toBeTruthy();
+    });
 });

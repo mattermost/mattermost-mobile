@@ -10,6 +10,7 @@ import {getErrorMessage} from '@utils/errors';
 import {showSnackBar} from '@utils/snack_bar';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
+import type {ScheduledPostErrorCode} from '@typings/utils/scheduled_post';
 import type {SwipeableMethods} from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
 
 export function deleteScheduledPostConfirmation({
@@ -69,8 +70,6 @@ export function deleteScheduledPostConfirmation({
 
 export const hasScheduledPostError = (scheduledPosts: ScheduledPostModel[]) =>
     scheduledPosts.some((post) => post.errorCode !== '');
-
-export type ScheduledPostErrorCode = 'unknown' | 'channel_archived' | 'channel_not_found' | 'user_missing' | 'user_deleted' | 'no_channel_permission' | 'no_channel_member' | 'thread_deleted' | 'unable_to_send' | 'invalid_post' | 'post_send_success_delete_failed';
 
 const errorCodeToErrorMessage = defineMessages<ScheduledPostErrorCode>({
     unknown: {

@@ -14,7 +14,7 @@ import {logError} from '@utils/log';
 import {isParsableUrl} from '@utils/url';
 
 import type {Model} from '@nozbe/watermelondb';
-import type {DraftScreenTab} from '@screens/global_drafts';
+import type {DraftScreenTab} from '@screens/global_drafts/global_drafts';
 
 type goToScreenParams = {
     initialTab?: DraftScreenTab;
@@ -43,11 +43,7 @@ export const switchToGlobalDrafts = async (serverUrl: string, teamId?: string, i
         }
         const params: goToScreenParams = {};
 
-        // explicitly checking for undefined because 0 is a valid value
-        // that shouldn't be missed in this case.
-        if (initialTab !== undefined) {
-            params.initialTab = initialTab;
-        }
+        params.initialTab = initialTab;
 
         const isTabletDevice = isTablet();
         if (isTabletDevice) {

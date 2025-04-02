@@ -32,7 +32,7 @@ const ComponentsList: Record<string, React.ComponentType<any>> = {
 
 const channelScreen: SelectedView = {id: Screens.CHANNEL, Component: Channel};
 const globalThreadsScreen: SelectedView = {id: Screens.GLOBAL_THREADS, Component: GlobalThreads};
-const globalDraftsScreen: SelectedView = {id: Screens.GLOBAL_THREADS, Component: GlobalDraftsAndScheduledPosts};
+const globalDraftsScreen: SelectedView = {id: Screens.GLOBAL_DRAFTS, Component: GlobalDraftsAndScheduledPosts};
 
 const views = new Map([
     [Screens.CHANNEL, channelScreen],

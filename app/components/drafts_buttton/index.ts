@@ -2,25 +2,29 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {switchMap} from 'rxjs/operators';
+import {of as of$} from 'rxjs';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {observeCurrentChannelId, observeCurrentTeamId} from '@queries/servers/system';
+import {Screens} from '@constants';
+import {observeCurrentTeamId} from '@queries/servers/system';
 import {observeTeamLastChannelId} from '@queries/servers/team';
 
 import DraftsButton from './drafts_button';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+const enhanced = withObservables(['shouldHighlightActive'], ({database, shouldHighlightActive}: {shouldHighlightActive: boolean} & WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
+    const isActiveTab = currentTeamId.pipe(
+        switchMap(
+            (teamId) => observeTeamLastChannelId(database, teamId),
+        ),
+        switchMap((lastChannelId) => of$(lastChannelId === Screens.GLOBAL_DRAFTS || (shouldHighlightActive && !lastChannelId))),
+        distinctUntilChanged(),
+    );
 
     return {
-        currentChannelId: observeCurrentChannelId(database),
-        lastChannelId: currentTeamId.pipe(
-            switchMap(
-                (teamId) => observeTeamLastChannelId(database, teamId),
-            ),
-        ),
+        isActiveTab,
     };
 });
 

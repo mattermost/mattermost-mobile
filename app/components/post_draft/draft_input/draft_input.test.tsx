@@ -143,6 +143,19 @@ describe('DraftInput', () => {
             expect(baseProps.sendMessage).toHaveBeenCalledWith({scheduled_at: 100});
         });
 
+        it('should not open scheduled post options if scheduled post are disabled', async () => {
+            jest.mocked(openAsBottomSheet).mockImplementation(({props}) => props!.onSchedule({scheduled_at: 100} as SchedulingInfo));
+            const props = {
+                ...baseProps,
+                scheduledPostsEnabled: false,
+            };
+
+            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
+            expect(openAsBottomSheet).not.toHaveBeenCalled();
+            expect(baseProps.sendMessage).not.toHaveBeenCalled();
+        });
+
         it('handles persistent notifications', async () => {
             jest.mocked(persistentNotificationsConfirmation).mockResolvedValueOnce();
             const props = {

@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {View, type LayoutChangeEvent, InteractionManager, type ListRenderItemInfo, Text, FlatList} from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
-import {storeScheduledPostsTutorial} from '@actions/app/global';
+import {storeScheduledPostsListTutorial} from '@actions/app/global';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {tooltipContentStyle} from '@constants/tooltip';
@@ -105,7 +105,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
 
     const close = useCallback(() => {
         setTooltipVisible(false);
-        storeScheduledPostsTutorial();
+        storeScheduledPostsListTutorial();
     }, []);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<ScheduledPostModel>) => {

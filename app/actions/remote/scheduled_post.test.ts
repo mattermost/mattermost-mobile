@@ -116,15 +116,15 @@ afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
-describe('scheduled_post', () => {
-    it('createScheduledPost - handle not found database', async () => {
+describe('createScheduledPost', () => {
+    it('handle not found database', async () => {
         const result = await createScheduledPost('foo', scheduledPost);
-        expect(result.error).toBe('foo database not found');
-        expect(logError).not.toHaveBeenCalled();
-        expect(forceLogoutIfNecessary).not.toHaveBeenCalled();
+        expect((result.error)).toBe('foo database not found');
+        expect(logError).toHaveBeenCalled();
+        expect(forceLogoutIfNecessary).toHaveBeenCalled();
     });
 
-    it('createScheduledPost - base case', async () => {
+    it('base case', async () => {
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
         const result = await createScheduledPost(serverUrl, scheduledPost);
         expect(result.error).toBeUndefined();
@@ -133,7 +133,7 @@ describe('scheduled_post', () => {
         expect(mockClient.createScheduledPost).toHaveBeenCalledWith(scheduledPost, mockConnectionId);
     });
 
-    it('createScheduledPost - request error', async () => {
+    it('request error', async () => {
         const error = new Error('custom error');
         mockClient.createScheduledPost.mockImplementationOnce(jest.fn(() => {
             throw error;
@@ -144,7 +144,7 @@ describe('scheduled_post', () => {
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
     });
 
-    it('createScheduledPost - operator handling error', async () => {
+    it('operator handling error', async () => {
         const error = new Error('operator error');
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
         jest.spyOn(operator, 'handleScheduledPosts').mockRejectedValueOnce(error);
@@ -156,24 +156,27 @@ describe('scheduled_post', () => {
 });
 
 describe('fetchScheduledPosts', () => {
-    it('fetch Schedule post - handle database not found', async () => {
-        const result = await fetchScheduledPosts('foo', 'bar');
-        expect(result.error).toBe('foo database not found');
+    it('handle database not found', async () => {
+        const {error} = await fetchScheduledPosts('foo', 'bar');
+        expect((error as Error).message).toEqual('foo database not found');
+        expect(logError).toHaveBeenCalled();
+        expect(forceLogoutIfNecessary).toHaveBeenCalled();
     });
 
-    it('fetch Schedule post - handle client error', async () => {
+    it('handle client error', async () => {
         jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 
         const result = await fetchScheduledPosts(serverUrl, 'bar');
         expect(result.error).toBeTruthy();
     });
 
-    it('fetch Schedule post - handle scheduled post disabled', async () => {
+    it('handle scheduled post disabled', async () => {
         const result = await fetchScheduledPosts(serverUrl, 'bar');
         expect(result.scheduledPosts).toEqual([]);
+        expect(mockClient.getScheduledPostsForTeam).not.toHaveBeenCalled();
     });
 
-    it('fetch Schedule post - handle scheduled post enabled', async () => {
+    it('handle scheduled post enabled', async () => {
         jest.mocked(getCurrentTeamId).mockResolvedValue('bar');
         mockedGetConfigValue.mockResolvedValueOnce('true');
         const spyHandleScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
@@ -189,21 +192,21 @@ describe('fetchScheduledPosts', () => {
 });
 
 describe('updateScheduledPost', () => {
-    it('update Schedule post - handle not found database', async () => {
+    it('handle not found database', async () => {
         const result = await updateScheduledPost('foo', scheduledPost, 123) as unknown as {error: Error};
         expect(result).toEqual({error: 'foo database not found'});
         expect(logError).toHaveBeenCalled();
         expect(forceLogoutIfNecessary).toHaveBeenCalled();
     });
 
-    it('update Schedule post - base case', async () => {
+    it('base case', async () => {
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
         const result = await updateScheduledPost(serverUrl, scheduledPost, 123);
         expect(result.error).toBeUndefined();
         expect(result.scheduledPost).toEqual(scheduledPost);
     });
 
-    it('update Schedule post - request error', async () => {
+    it('request error', async () => {
         const error = new Error('custom error');
         mockClient.updateScheduledPost = jest.fn().mockRejectedValueOnce(error);
         const result = await updateScheduledPost(serverUrl, scheduledPost, 123);
@@ -212,7 +215,7 @@ describe('updateScheduledPost', () => {
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
     });
 
-    it('update Schedule post - fetch only', async () => {
+    it('fetch only', async () => {
         const spyHandleScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
         const mockResponse = {...scheduledPost, update_at: Date.now()};
@@ -225,19 +228,21 @@ describe('updateScheduledPost', () => {
 });
 
 describe('deleteScheduledPost', () => {
-    it('delete Schedule post - handle database not found', async () => {
-        const result = await deleteScheduledPost('foo', 'scheduled_post_id');
-        expect(result.error).toBe('foo database not found');
+    it('handle database not found', async () => {
+        const {error} = await deleteScheduledPost('foo', 'scheduled_post_id');
+        expect((error as Error).message).toBe('foo database not found');
+        expect(logError).toHaveBeenCalled();
+        expect(forceLogoutIfNecessary).toHaveBeenCalled();
     });
 
-    it('delete Schedule post - handle client error', async () => {
+    it('handle client error', async () => {
         jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 
         const result = await deleteScheduledPost(serverUrl, 'scheduled_post_id');
         expect(result.error).toBeTruthy();
     });
 
-    it('delete Schedule post - handle scheduled post enabled', async () => {
+    it('handle scheduled post enabled', async () => {
         const spyHandleScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
         const result = await deleteScheduledPost(serverUrl, 'scheduled_post_id');
         expect(result.scheduledPost).toEqual({...scheduledPostsResponse.bar[0], connectionId: mockConnectionId});

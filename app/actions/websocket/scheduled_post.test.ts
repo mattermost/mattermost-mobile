@@ -13,7 +13,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
 
-const scheduledPost = {
+const scheduledPost: ScheduledPost = {
     channel_id: 'channel_id',
     error_code: '',
     files: [],
@@ -38,23 +38,23 @@ afterEach(async () => {
 });
 
 describe('handleCreateOrUpdateSchedulePost', () => {
-    it('handleCreateOrUpdateScheduledPost - handle empty payload', async () => {
+    it('handle database not found', async () => {
         const {error} = await handleCreateOrUpdateScheduledPost('foo', {data: {scheduledPost: JSON.stringify(scheduledPost)}} as WebSocketMessage);
-        expect(error.message).toBe('foo database not found');
+        expect((error as Error).message).toBe('foo database not found');
     });
 
-    it('handleCreateOrUpdateScheduledPost - wrong websocket scheduled post message', async () => {
+    it('wrong websocket scheduled post message', async () => {
         const {models, error} = await handleCreateOrUpdateScheduledPost('foo', {data: {}} as WebSocketMessage);
         expect(error).toBeUndefined();
         expect(models).toBeUndefined();
     });
 
-    it('handleCreateOrUpdateScheduledPost - no scheduled post', async () => {
+    it('no scheduled post', async () => {
         const {models} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduledPost: ''}} as WebSocketMessage);
         expect(models).toBeUndefined();
     });
 
-    it('handleCreateOrUpdateScheduledPost - success', async () => {
+    it('success', async () => {
         const {models} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduledPost: JSON.stringify(scheduledPost)}} as WebSocketMessage);
         expect(models).toBeDefined();
         expect(models![0].id).toEqual(scheduledPost.id);
@@ -66,7 +66,7 @@ describe('handleCreateOrUpdateSchedulePost', () => {
         expect(scheduledPosts[0].message).toBe(scheduledPost.message);
     });
 
-    it('handleCreateOrUpdateScheduledPost - should return error for invalid JSON payload', async () => {
+    it('should return error for invalid JSON payload', async () => {
         const {models, error} = await handleCreateOrUpdateScheduledPost(serverUrl, {data: {scheduledPost: 'invalid_json'}} as WebSocketMessage);
         expect(models).toBeUndefined();
         expect(error).toBeDefined();
@@ -74,18 +74,18 @@ describe('handleCreateOrUpdateSchedulePost', () => {
 });
 
 describe('handleDeleteScheduledPost', () => {
-    it('handleDeleteScheduledPost - handle empty payload', async () => {
+    it('handle empty payload', async () => {
         const {error, models} = await handleDeleteScheduledPost('foo', {data: {}} as WebSocketMessage);
         expect(error).toBeUndefined();
         expect(models).toBeUndefined();
     });
 
-    it('handleDeleteScheduledPost - no scheduled post', async () => {
+    it('no scheduled post', async () => {
         const {models} = await handleDeleteScheduledPost(serverUrl, {data: {scheduledPost: ''}} as WebSocketMessage);
         expect(models).toBeUndefined();
     });
 
-    it('handleDeleteScheduledPost - success', async () => {
+    it('success', async () => {
         await operator.handleScheduledPosts({
             actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
             scheduledPosts: [scheduledPost],
@@ -102,7 +102,7 @@ describe('handleDeleteScheduledPost', () => {
         expect(scheduledPosts.length).toBe(0);
     });
 
-    it('handleDeleteScheduledPost - should return error for invalid JSON payload', async () => {
+    it('should return error for invalid JSON payload', async () => {
         const {models, error} = await handleDeleteScheduledPost(serverUrl, {data: {scheduledPost: 'invalid_json'}} as WebSocketMessage);
         expect(models).toBeUndefined();
         expect(error).toBeDefined();

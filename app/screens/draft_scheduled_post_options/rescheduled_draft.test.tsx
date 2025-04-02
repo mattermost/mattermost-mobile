@@ -4,7 +4,7 @@
 import {fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -73,6 +73,41 @@ describe('RescheduledDraft', () => {
         // Wait for dismissBottomSheet to be called
         await waitFor(() => {
             expect(dismissBottomSheet).toHaveBeenCalledWith(baseProps.bottomSheetId);
+        });
+    });
+
+    it('calls showModal when pressed', async () => {
+        // Reset all mocks before the test
+        jest.clearAllMocks();
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <RescheduledDraft {...baseProps}/>,
+        );
+
+        // Trigger the button press
+        fireEvent.press(getByTestId('rescheduled_draft'));
+
+        await TestHelper.wait(0);
+
+        // Wait for showModal to be called
+        await waitFor(() => {
+            expect(showModal).toHaveBeenCalledWith(
+                'RescheduleDraft',
+                'Change Schedule',
+                {
+                    closeButtonId: 'close-rescheduled-draft',
+                    draft: baseProps.draft,
+                },
+                {
+                    topBar: {
+                        leftButtons: [{
+                            id: 'close-rescheduled-draft',
+                            testID: 'close.reschedule_draft.button',
+                            icon: 'mockedImageSource',
+                        }],
+                    },
+                },
+            );
         });
     });
 });
