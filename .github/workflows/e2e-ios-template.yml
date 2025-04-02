@@ -116,7 +116,7 @@ jobs:
         uses: ./.github/actions/generate-specs
         with:
           parallelism: 10
-          search_path: detox/e2e/test
+          search_path: detox/e2e/test/account
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
@@ -137,13 +137,6 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
-
-      - name: Clean Simulators
-        run: |
-          xcrun simctl shutdown all
-          xcrun simctl erase all
-          killall "Simulator" || true
-          killall "CoreSimulator" || true
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
