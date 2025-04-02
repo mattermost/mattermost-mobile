@@ -38,12 +38,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 16 Pro"
+        default: "iPhone 15 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 18.1"
+        default: "iOS 17.2"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -179,21 +179,21 @@ jobs:
       #     path: mobile-artifacts
       #     run-id: 14058976025
 
-      - name: Boot Simulator
-        run: |
-          # Get the UDID of your iPhone 16 Pro (iOS 18.1)
-            UDID=$(xcrun simctl list devices | grep "${{ env.DEVICE_NAME }}" | grep -Eo "[0-9A-F-]{36}" | head -n 1)
+      # - name: Boot Simulator
+      #   run: |
+      #     # Get the UDID of your iPhone 16 Pro (iOS 18.1)
+      #       UDID=$(xcrun simctl list devices | grep "${{ env.DEVICE_NAME }}" | grep -Eo "[0-9A-F-]{36}" | head -n 1)
 
-          # Boot it
-          xcrun simctl boot "$UDID"
+      #     # Boot it
+      #     xcrun simctl boot "$UDID"
 
-      - name: Ensure App is Installed
-        run: |
-          xcrun simctl install booted mobile-artifacts/Mattermost.app
+      # - name: Ensure App is Installed
+      #   run: |
+      #     xcrun simctl install booted mobile-artifacts/Mattermost.app
 
-      - name: Check if App is Installed
-        run: |
-          xcrun simctl listapps booted | grep "com.mattermost.rnbeta"
+      # - name: Check if App is Installed
+      #   run: |
+      #     xcrun simctl listapps booted | grep "com.mattermost.rnbeta"
 
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth
