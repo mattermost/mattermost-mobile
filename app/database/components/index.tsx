@@ -3,6 +3,7 @@
 
 import {DatabaseProvider} from '@nozbe/watermelondb/react';
 import React, {type ComponentType, useEffect, useState} from 'react';
+import {ReducedMotionConfig, ReduceMotion, useReducedMotion} from 'react-native-reanimated';
 
 import DeviceInfoProvider from '@context/device';
 import ServerProvider from '@context/server';
@@ -24,6 +25,7 @@ type State = {
 export function withServerDatabase<T extends JSX.IntrinsicAttributes>(Component: ComponentType<T>): ComponentType<T> {
     return function ServerDatabaseComponent(props: T) {
         const [state, setState] = useState<State | undefined>();
+        const reducedMotion = useReducedMotion();
 
         const observer = (servers: ServersModel[]) => {
             const server = servers?.length ? servers.reduce((a, b) =>
@@ -67,6 +69,7 @@ export function withServerDatabase<T extends JSX.IntrinsicAttributes>(Component:
                     <UserLocaleProvider database={state.database}>
                         <ServerProvider server={{displayName: state.serverDisplayName, url: state.serverUrl}}>
                             <ThemeProvider database={state.database}>
+                                <ReducedMotionConfig mode={reducedMotion ? ReduceMotion.Always : ReduceMotion.Never}/>
                                 <Component {...props}/>
                             </ThemeProvider>
                         </ServerProvider>

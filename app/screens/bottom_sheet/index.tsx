@@ -4,7 +4,7 @@
 import BottomSheetM, {BottomSheetBackdrop, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
-import {ReduceMotion, useReducedMotion, type WithSpringConfig} from 'react-native-reanimated';
+import {type WithSpringConfig} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
@@ -104,7 +104,6 @@ const BottomSheet = ({
     const styles = getStyleSheet(theme);
     const interaction = useRef<Handle>();
     const timeoutRef = useRef<NodeJS.Timeout>();
-    const reducedMotion = useReducedMotion();
 
     useEffect(() => {
         interaction.current = InteractionManager.createInteractionHandle();
@@ -219,7 +218,7 @@ const BottomSheet = ({
             backdropComponent={renderBackdrop}
             onAnimate={handleAnimationStart}
             onChange={handleChange}
-            animationConfigs={{...animatedConfig, reduceMotion: reducedMotion ? ReduceMotion.Always : ReduceMotion.System}}
+            animationConfigs={animatedConfig}
             handleComponent={Indicator}
             style={styles.bottomSheet}
             backgroundStyle={bottomSheetBackgroundStyle}
