@@ -104,7 +104,7 @@ describe('ScheduledPostFooter', () => {
     });
 
     it('renders correctly for tablet', () => {
-        (useIsTablet as jest.Mock).mockReturnValueOnce(true);
+        jest.mocked(useIsTablet).mockReturnValueOnce(true);
 
         renderWithEverything(
 
