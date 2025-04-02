@@ -36,6 +36,7 @@ type ChannelListProps = {
     scheduledPostCount: number;
     scheduledPostHasError: boolean;
     lastChannelId?: string;
+    scheduledPostsEnabled?: boolean;
 };
 
 const getTabletWidth = (moreThanOneTeam: boolean) => {
@@ -53,6 +54,7 @@ const CategoriesList = ({
     scheduledPostCount,
     scheduledPostHasError,
     lastChannelId,
+    scheduledPostsEnabled,
 }: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -108,7 +110,7 @@ const CategoriesList = ({
     }, [activeScreen, isCRTEnabled]);
 
     const draftsButtonComponent = useMemo(() => {
-        if (draftsCount > 0 || scheduledPostCount > 0 || (isTablet && activeScreen === DRAFT)) {
+        if (draftsCount > 0 || (scheduledPostCount > 0 && scheduledPostsEnabled) || (isTablet && activeScreen === DRAFT)) {
             return (
                 <DraftsButton
                     draftsCount={draftsCount}
@@ -120,7 +122,7 @@ const CategoriesList = ({
         }
 
         return null;
-    }, [activeScreen, draftsCount, isTablet, scheduledPostCount, scheduledPostHasError]);
+    }, [activeScreen, draftsCount, isTablet, scheduledPostCount, scheduledPostHasError, scheduledPostsEnabled]);
 
     const content = useMemo(() => {
         if (!hasChannels) {
