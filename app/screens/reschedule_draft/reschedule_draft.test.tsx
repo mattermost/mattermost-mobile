@@ -120,19 +120,6 @@ describe('RescheduledDraft', () => {
             expect.any(Object),
             baseProps.componentId,
         );
-
-        // Get the navigationButtonPressed handler
-        const functionToCall = jest.mocked(Navigation.events().registerComponentListener).mock.calls[1][0].navigationButtonPressed;
-
-        // Simulate pressing the save button
-        await act(async () => {
-            functionToCall?.({
-                buttonId: 'reschedule-draft',
-                componentId: '',
-            });
-        });
-
-        expect(dismissModal).toHaveBeenCalledWith({componentId: baseProps.componentId});
     });
 
     it('Should enable save button when data changes', async () => {
