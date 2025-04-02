@@ -222,7 +222,7 @@ jobs:
           npm run detox:config-gen
           # npm run e2e:ios-test -- ${{ matrix.specs }}
 
-          npm run e2e:ios-test -- detox/e2e/test/account/mention_notification_settings.e2e.ts detox/e2e/test/account/notification_settings.e2e.ts detox/e2e/test/account/push_notification_settings.e2e.ts detox/e2e/test/account/settings.e2e.ts
+          npm run e2e:ios-test -- detox/e2e/test/account/settings.e2e.ts
 
         env:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
