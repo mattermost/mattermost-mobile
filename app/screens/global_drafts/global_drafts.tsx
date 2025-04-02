@@ -14,7 +14,7 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import SecurityManager from '@managers/security_manager';
-import TabbedContents from '@screens/global_drafts/components/tabbed_contents/tabbed_contents';
+import TabbedContents from '@screens/global_drafts/components/tabbed_contents';
 
 import {popTopScreen} from '../navigation';
 
@@ -33,8 +33,6 @@ type Props = {
     componentId?: AvailableScreens;
     scheduledPostsEnabled?: boolean;
     initialTab?: DraftScreenTab;
-    draftsCount: number;
-    scheduledPostCount: number;
 };
 
 const styles = StyleSheet.create({
@@ -43,7 +41,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab, draftsCount, scheduledPostCount}: Props) => {
+const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab}: Props) => {
     const intl = useIntl();
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
@@ -115,8 +113,6 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
                     scheduledPostsEnabled ? (
                         <TabbedContents
                             initialTab={initialTab || DRAFT_SCREEN_TAB_DRAFTS}
-                            draftsCount={draftsCount}
-                            scheduledPostCount={scheduledPostCount}
                             drafts={draftList}
                             scheduledPosts={scheduledPostList}
                         />
