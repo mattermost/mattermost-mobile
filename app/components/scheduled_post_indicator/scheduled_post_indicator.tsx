@@ -106,7 +106,7 @@ export function ScheduledPostIndicator({
                     size={18}
                 />
                 <Text style={styles.text}>
-                    {scheduledPostText} {'Rajat'}
+                    {scheduledPostText}
                     {' '}
                     <Text
                         style={styles.link}
