@@ -38,12 +38,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 16 Pro"
+        default: "iPhone 15 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 18.1"
+        default: "iOS 17.2"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -81,7 +81,7 @@ env:
   WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
   FAILURE_MESSAGE: "Something has failed"
   IOS: "true"
-  RUNNING_E2E: true
+  RUNNING_E2E: "true"
 
 jobs:
   # generate-specs:
@@ -145,6 +145,7 @@ jobs:
         run: |
           brew tap wix/brew
           brew install applesimutils
+          brew upgrade applesimutils
 
       - name: Download iOS Simulator Build from Previous Run
         run: |
@@ -219,6 +220,7 @@ jobs:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
+
       - name: reset network settings
         if: ${{ inputs.low_bandwidth_mode || failure() }}
         run: |
