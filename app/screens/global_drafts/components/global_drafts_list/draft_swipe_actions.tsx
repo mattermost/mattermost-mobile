@@ -19,10 +19,11 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type DraftModel from '@typings/database/models/servers/draft';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     item: DraftModel;
-    location: string;
+    location: AvailableScreens;
     layoutWidth: number;
 }
 

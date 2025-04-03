@@ -25,6 +25,7 @@ import ScrollToEndView from './scroll_to_end_view';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged, ViewableItemsChangedListenerEvent} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     appsEnabled: boolean;
@@ -40,7 +41,7 @@ type Props = {
     isCRTEnabled?: boolean;
     isPostAcknowledgementEnabled?: boolean;
     lastViewedAt: number;
-    location: string;
+    location: AvailableScreens;
     nativeID: string;
     onEndReached?: () => void;
     posts: PostModel[];

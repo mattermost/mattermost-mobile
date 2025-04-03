@@ -9,6 +9,7 @@ import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} f
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
+import {Screens} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
@@ -141,6 +142,7 @@ const Channel = ({
                         containerHeight={containerHeight}
                         isChannelScreen={true}
                         canShowPostPriority={true}
+                        location={Screens.CHANNEL}
                     />
                 </ExtraKeyboardProvider>
                 }
