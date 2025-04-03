@@ -217,7 +217,7 @@ jobs:
         run: |
           # Start the server
           npm run start &
-          sleep 60 # Wait for watchman to finish querying the files
+          sleep 120 # Wait for watchman to finish querying the files
           cd detox
           npm run clean-detox
           npm run detox:config-gen
