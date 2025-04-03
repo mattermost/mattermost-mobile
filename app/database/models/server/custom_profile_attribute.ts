@@ -1,10 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+
+import type CustomProfileFieldModel from './custom_profile_field';
+import type UserModel from './user';
+import type {Relation} from '@nozbe/watermelondb';
+import type CustomProfileAttributeModelInterface from '@typings/database/models/servers/custom_profile_attribute';
 
 const {CUSTOM_PROFILE_ATTRIBUTE, CUSTOM_PROFILE_FIELD, USER} = MM_TABLES.SERVER;
 
@@ -12,7 +17,7 @@ const {CUSTOM_PROFILE_ATTRIBUTE, CUSTOM_PROFILE_FIELD, USER} = MM_TABLES.SERVER;
  * The CustomProfileAttribute model represents the 'CUSTOM_PROFILE_ATTRIBUTE' table and stores
  * the custom profile attribute values for users.
  */
-export default class CustomProfileAttributeModel extends Model {
+export default class CustomProfileAttributeModel extends Model implements CustomProfileAttributeModelInterface {
     /** table (name) : CustomProfileAttribute */
     static table = CUSTOM_PROFILE_ATTRIBUTE;
 
@@ -32,8 +37,8 @@ export default class CustomProfileAttributeModel extends Model {
     @field('value') value!: string;
 
     /** Relation to the custom profile field */
-    @relation(CUSTOM_PROFILE_FIELD, 'field_id') field!: Model;
+    @immutableRelation(CUSTOM_PROFILE_FIELD, 'field_id') field!: Relation<CustomProfileFieldModel>;
 
     /** Relation to the user */
-    @relation(USER, 'user_id') user!: Model;
+    @immutableRelation(USER, 'user_id') user!: Relation<UserModel>;
 }
