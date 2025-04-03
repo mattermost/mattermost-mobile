@@ -213,9 +213,10 @@ jobs:
           npm run detox:config-gen
           # npm run e2e:ios-test -- ${{ matrix.specs }}
 
-          npm run e2e:ios-test -- detox/e2e/test/account/about.e2e.ts detox/e2e/test/account/*.e2e.ts
+          npm run e2e:ios-test -- detox/e2e/test/account/about.e2e.ts detox/e2e/test/account/settings.e2e.ts detox/e2e/test/account/account_menu.e2e.ts
 
         env:
+          DETOX_LOGLEVEL: "debug"
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}

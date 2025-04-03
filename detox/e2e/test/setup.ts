@@ -21,12 +21,12 @@ beforeAll(async () => {
         },
         permissions: {
             notifications: 'YES',
-            camera: 'YES',
-            medialibrary: 'YES',
-            photos: 'YES',
+            camera: 'NO',
+            medialibrary: 'NO',
+            photos: 'NO',
         },
     });
-    
+
     // await device.launchApp({
     //     newInstance: false,
     //     delete: false,
