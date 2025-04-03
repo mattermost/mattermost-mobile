@@ -50,8 +50,7 @@ describe('ChannelBanner', () => {
             });
         });
 
-        // TODO: use premium license here
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Enterprise}}], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Premium}}], prepareRecordsOnly: false});
     });
 
     it('renders correctly with valid props', () => {
@@ -72,7 +71,7 @@ describe('ChannelBanner', () => {
             {database},
         );
 
-        expect(queryByText('Test Banner Text')).toBeNull();
+        expect(queryByText('Test Banner Text')).not.toBeVisible();
     });
 
     it('does not render when license is professional', async () => {
@@ -84,25 +83,19 @@ describe('ChannelBanner', () => {
             {database},
         );
 
-        expect(queryByText('Test Banner Text')).toBeNull();
+        expect(queryByText('Test Banner Text')).not.toBeVisible();
     });
 
-    // it('does not render when license is Enterprise', () => {
-    //     // TODO: update this test when Premium SKU is added
-    //     const props = {
-    //         ...defaultProps,
-    //         license: {
-    //             SkuShortName: License.SKU_SHORT_NAME.Enterprise,
-    //         } as ClientLicense,
-    //     };
-    //
-    //     const {queryByText} = renderWithEverything(
-    //         <ChannelBanner {...props}/>,
-    //         {database},
-    //     );
-    //
-    //     expect(queryByText('Test Banner Text')).toBeNull();
-    // });
+    it('does not render when license is Enterprise', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Enterprise}}], prepareRecordsOnly: false});
+
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
+            {database},
+        );
+
+        expect(queryByText('Test Banner Text')).not.toBeVisible();
+    });
 
     it('does not render when banner info is missing', async () => {
         const channel = await getChannelById(database, TestHelper.basicChannel!.id);
@@ -117,7 +110,7 @@ describe('ChannelBanner', () => {
             {database},
         );
 
-        expect(queryByText('Test Banner Text')).toBeNull();
+        expect(queryByText('Test Banner Text')).not.toBeVisible();
     });
 
     it('does not render when banner is not enabled', async () => {
@@ -137,7 +130,7 @@ describe('ChannelBanner', () => {
             {database},
         );
 
-        expect(queryByText('Test Banner Text')).toBeNull();
+        expect(queryByText('Test Banner Text')).not.toBeVisible();
     });
 
     it('does not render when banner text is missing', async () => {
@@ -157,7 +150,7 @@ describe('ChannelBanner', () => {
             {database},
         );
 
-        expect(queryByText('Test Banner Text')).toBeNull();
+        expect(queryByText('Test Banner Text')).not.toBeVisible();
     });
 
     it('does not render when banner background color is missing', async () => {
@@ -177,7 +170,7 @@ describe('ChannelBanner', () => {
             {database},
         );
 
-        expect(queryByText('Test Banner Text')).toBeNull();
+        expect(queryByText('Test Banner Text')).not.toBeVisible();
     });
 
     it('does not render for DM channel type', async () => {
@@ -189,7 +182,7 @@ describe('ChannelBanner', () => {
             {database},
         );
 
-        expect(queryByText('Test Banner Text')).toBeNull();
+        expect(queryByText('Test Banner Text')).not.toBeVisible();
     });
 
     it('does not render for GM channel type', async () => {
@@ -202,7 +195,7 @@ describe('ChannelBanner', () => {
             {database},
         );
 
-        expect(queryByText('Test Banner Text')).toBeNull();
+        expect(queryByText('Test Banner Text')).not.toBeVisible();
     });
 
     it('renders for private channel type', async () => {

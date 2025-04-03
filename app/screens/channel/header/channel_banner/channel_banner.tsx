@@ -48,6 +48,9 @@ const getStyleSheet = (bannerTextColor: string) => ({
         flex: 1,
         flexGrow: 1,
     },
+    bannerText: {
+        textAlign: 'center' as const,
+    },
 });
 
 type Props = {
@@ -132,6 +135,7 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
                 <Text
                     ellipsizeMode='tail'
                     numberOfLines={1}
+                    style={style.bannerText}
                 >
                     <RemoveMarkdown
                         value={bannerInfo.text}
@@ -149,8 +153,7 @@ function showChannelBanner(channelType: ChannelType, license?: ClientLicense, ba
         return false;
     }
 
-    // TODO: use premium license check here once SKU is added to server
-    const isPremiumLicense = license.SkuShortName === License.SKU_SHORT_NAME.Enterprise;
+    const isPremiumLicense = license.SkuShortName === License.SKU_SHORT_NAME.Premium;
     const bannerInfoComplete = Boolean(bannerInfo.enabled && bannerInfo.text && bannerInfo.background_color);
     const isValidChannelType = channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL;
 
