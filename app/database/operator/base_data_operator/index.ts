@@ -86,7 +86,6 @@ export default class BaseDataOperator {
 
         if (createOrUpdateRawValues.length > 0) {
             for (const newElement of createOrUpdateRawValues) {
-                // @ts-expect-error object with string key
                 const key = buildKeyRecordBy?.(newElement) || newElement[fieldName];
                 const existingRecord = recordsByKeys[key];
 

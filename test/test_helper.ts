@@ -549,6 +549,7 @@ class TestHelperSingleton {
 
             channelsCreated: this.fakeQuery([]),
             channels: this.fakeQuery([]),
+            customProfileAttributes: this.fakeQuery([]),
             posts: this.fakeQuery([]),
             preferences: this.fakeQuery([]),
             reactions: this.fakeQuery([]),

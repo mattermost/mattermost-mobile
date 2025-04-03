@@ -3,6 +3,7 @@
 
 import type ChannelModel from './channel';
 import type ChannelMembershipModel from './channel_membership';
+import type CustomProfileAttributeModel from './custom_profile_attribute';
 import type PostModel from './post';
 import type PreferenceModel from './preference';
 import type ReactionModel from './reaction';
@@ -121,6 +122,9 @@ declare class UserModel extends Model {
 
     /** termsOfServiceCreateAt : The last time the user accepted the terms of service */
     termsOfServiceCreateAt: number;
+
+    /** customProfileAttributes : All the custom profile attributes for this user */
+    customProfileAttributes: Query<CustomProfileAttributeModel> | undefined;
 }
 
 export default UserModel;

@@ -25,7 +25,7 @@ import {fetchGroupsByNames} from './groups';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Model} from '@nozbe/watermelondb';
-import type {CustomAttribute, CustomProfileAttributeSimple, CustomProfileField, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
+import type {CustomAttribute, CustomProfileField, CustomAttributeSet, UserCustomProfileAttributeSimple} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type MyUserRequest = {
@@ -914,7 +914,7 @@ export const fetchCustomAttributes = async (serverUrl: string, userId: string, f
 export const updateCustomAttributes = async (serverUrl: string, attributes: CustomAttributeSet): Promise<{success: boolean; error: unknown}> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const values: CustomProfileAttributeSimple = {};
+        const values: UserCustomProfileAttributeSimple = {};
         Object.keys(attributes).forEach((field) => {
             values[field] = attributes[field].value;
         });
