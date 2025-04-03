@@ -30,8 +30,8 @@
     "ios.simulator": {
       "type": "ios.simulator",
       "device": {
-        "type": "__DEVICE_NAME__",
-        "os": "__DEVICE_OS_VERSION__"
+        "type": "iPhone 16 Pro",
+        "os": "iOS 18.1"
       }
     },
     "android.emulator": {
@@ -66,6 +66,14 @@
     "init": {
       "reinstallApp": true,
       "launchApp": true
+    },
+    "cleanup": {
+      "shutdownDevice": false
     }
+  },
+  "session": {
+    "sessionId": "ios-test-session",
+    "debugSynchronization": 10000,
+    "autoStart": true
   }
 }

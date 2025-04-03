@@ -10,11 +10,14 @@ beforeAll(async () => {
     await User.apiAdminLogin(siteOneUrl);
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
 
+    // Faster app launch
     await device.launchApp({
-        newInstance: true,
+        newInstance: false,
+        delete: false,
         launchArgs: {
             detoxPrintBusyIdleResources: 'YES',
             detoxDebugVisibility: 'YES',
+            detoxDisableSynchronization: 'YES',
         },
         permissions: {
             notifications: 'YES',
@@ -23,4 +26,33 @@ beforeAll(async () => {
             photos: 'YES',
         },
     });
+    
+    // await device.launchApp({
+    //     newInstance: false,
+    //     delete: false,
+    //     launchArgs: {
+    //         detoxPrintBusyIdleResources: 'YES',
+    //         detoxDebugVisibility: 'YES',
+    //     },
+    //     permissions: {
+    //         notifications: 'YES',
+    //         camera: 'YES',
+    //         medialibrary: 'YES',
+    //         photos: 'YES',
+    //     },
+    // });
+
+    // await device.launchApp({
+    //     newInstance: true,
+    //     launchArgs: {
+    //         detoxPrintBusyIdleResources: 'YES',
+    //         detoxDebugVisibility: 'YES',
+    //     },
+    //     permissions: {
+    //         notifications: 'YES',
+    //         camera: 'YES',
+    //         medialibrary: 'YES',
+    //         photos: 'YES',
+    //     },
+    // });
 });
