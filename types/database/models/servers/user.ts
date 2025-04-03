@@ -3,12 +3,12 @@
 
 import type ChannelModel from './channel';
 import type ChannelMembershipModel from './channel_membership';
+import type CustomProfileAttributeModel from './custom_profile_attribute';
 import type PostModel from './post';
 import type PreferenceModel from './preference';
 import type ReactionModel from './reaction';
 import type TeamMembershipModel from './team_membership';
 import type ThreadParticipantsModel from './thread_participant';
-import type CustomProfileAttributeModel from '@database/models/server/custom_profile_attribute';
 import type {Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
 import type Query from '@nozbe/watermelondb/Query';

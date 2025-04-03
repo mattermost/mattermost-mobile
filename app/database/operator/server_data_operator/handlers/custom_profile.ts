@@ -11,7 +11,6 @@ import {logWarning} from '@utils/log';
 
 import type ServerDataOperatorBase from '.';
 import type Model from '@nozbe/watermelondb/Model';
-import type {CustomProfileAttribute} from '@typings/api/custom_profile_attributes';
 import type {
     HandleCustomProfileFieldsArgs,
     HandleCustomProfileAttributesArgs,
@@ -40,8 +39,7 @@ const CustomProfileHandler = <TBase extends Constructor<ServerDataOperatorBase>>
             return [];
         }
 
-        // Cast fields to RawValue[] to satisfy TypeScript
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: fields as any, key: 'id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: fields, key: 'id'});
 
         return this.handleRecords({
             fieldName: 'id',
@@ -67,7 +65,7 @@ const CustomProfileHandler = <TBase extends Constructor<ServerDataOperatorBase>>
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: attributes, key: 'id'}) as CustomProfileAttribute[];
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: attributes, key: 'id'});
 
         return this.handleRecords({
             fieldName: 'id',
