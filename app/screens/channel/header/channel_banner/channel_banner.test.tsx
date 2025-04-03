@@ -230,4 +230,22 @@ describe('ChannelBanner', () => {
             closeButtonId: 'channel-banner-close',
         }));
     });
+
+    it('does not render when channel ID is empty', async () => {
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner channelId=''/>,
+            {database},
+        );
+
+        expect(queryByText('Test Banner Text')).not.toBeVisible();
+    });
+
+    it('does not render when channel ID is of non existent channel', async () => {
+        const {queryByText} = renderWithEverything(
+            <ChannelBanner channelId='non_existent_channel_id'/>,
+            {database},
+        );
+
+        expect(queryByText('Test Banner Text')).not.toBeVisible();
+    });
 });

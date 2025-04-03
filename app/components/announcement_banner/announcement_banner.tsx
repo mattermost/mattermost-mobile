@@ -151,7 +151,6 @@ const AnnouncementBanner = ({
                         <TouchableOpacity
                             onPress={handlePress}
                             style={style.wrapper}
-                            testID='announcement-banner-touchable'
                         >
                             <Text
                                 style={bannerTextContainerStyle}
@@ -174,7 +173,6 @@ const AnnouncementBanner = ({
                         {allowDismissal && (
                             <TouchableOpacity
                                 onPress={handleDismiss}
-                                testID='announcement-dismiss-button'
                             >
                                 <CompassIcon
                                     color={changeOpacity(bannerTextColor, 0.56)}
