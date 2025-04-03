@@ -11,7 +11,7 @@ import {getConfigValue} from '@queries/servers/system';
 import {logError, logDebug} from '@utils/log';
 
 const wsMinReconnectRetryTimeMs = 1000; // 1 second
-const wsReconnectionTimeout = 30000; // 30 seconds
+export const wsReconnectionTimeout = 30000; // 30 seconds
 const wsReconnectTimeIncrement = 500; // 0.5 seconds
 export const wsReconnectionTimeoutErr = new Error('max disconnected time reached');
 

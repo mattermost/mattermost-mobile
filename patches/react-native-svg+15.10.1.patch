@@ -1,0 +1,19 @@
+diff --git a/node_modules/react-native-svg/src/xml.tsx b/node_modules/react-native-svg/src/xml.tsx
+index edfaa9b..41246bb 100644
+--- a/node_modules/react-native-svg/src/xml.tsx
++++ b/node_modules/react-native-svg/src/xml.tsx
+@@ -87,9 +87,11 @@ export function SvgUri(props: UriProps) {
+     uri
+       ? fetchText(uri)
+           .then((data) => {
+-            setXml(data);
+-            isError && setIsError(false);
+-            onLoad?.();
++            if (xml && /xmlns="http:\/\/www.w3.org\/[0-9]*\/svg"/.test(xml)) {
++              setXml(data);
++              isError && setIsError(false);
++              onLoad?.();
++            }
+           })
+           .catch((e) => {
+             onError(e);

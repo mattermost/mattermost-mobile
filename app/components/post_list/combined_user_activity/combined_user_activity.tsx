@@ -114,7 +114,7 @@ const CombinedUserActivity = ({
         } else {
             showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
         }
-    }, [post, canDelete, isTablet, intl, location]);
+    }, [canDelete, post, location, isTablet, intl, theme]);
 
     const renderMessage = (postType: string, userIds: string[], actorId?: string) => {
         if (!post) {
@@ -156,10 +156,10 @@ const CombinedUserActivity = ({
                 (userIds[0] === currentUserId || userIds[0] === currentUsername) &&
                 secureGetFromRecord(postTypeMessages, postType)?.one_you
             ) {
-                localeHolder = postTypeMessages[postType].one_you;
+                localeHolder = postTypeMessages[postType as keyof typeof postTypeMessages].one_you;
             }
         } else {
-            localeHolder = postTypeMessages[postType].two;
+            localeHolder = postTypeMessages[postType as keyof typeof postTypeMessages].two;
         }
 
         // We default to empty string, but this should never happen

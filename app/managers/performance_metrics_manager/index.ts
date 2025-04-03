@@ -5,24 +5,28 @@ import RNUtils from '@mattermost/rnutils';
 import {AppState, type AppStateStatus} from 'react-native';
 import performance from 'react-native-performance';
 
-import {logWarning} from '@utils/log';
+import {logDebug, logWarning} from '@utils/log';
 
 import Batcher from './performance_metrics_batcher';
 
+import type {NetworkRequestMetrics} from './constant';
+import type {MarkOptions} from 'react-native-performance/lib/typescript/performance';
+
 type Target = 'HOME' | 'CHANNEL' | 'THREAD' | undefined;
+
 type MetricName = 'mobile_channel_switch' |
     'mobile_team_switch';
 
 const RETRY_TIME = 100;
 const MAX_RETRIES = 3;
 
-class PerformanceMetricsManager {
+class PerformanceMetricsManagerSingleton {
     private target: Target;
     private batchers: {[serverUrl: string]: Batcher} = {};
     private lastAppStateIsActive = AppState.currentState === 'active';
 
     constructor() {
-        AppState.addEventListener('change', (appState) => this.onAppStateChange(appState));
+        AppState.addEventListener('change', (appState: AppStateStatus) => this.onAppStateChange(appState));
     }
 
     private onAppStateChange(appState: AppStateStatus) {
@@ -104,12 +108,38 @@ class PerformanceMetricsManager {
         performance.clearMarks(metricName);
         performance.clearMeasures(measureName);
     }
+
+    public startTimeToInteraction(options?: MarkOptions) {
+        performance.mark('tti', options);
+    }
+
+    public measureTimeToInteraction() {
+        try {
+            const result = performance.measure('TTI', 'tti');
+            performance.clearMarks('tti');
+            performance.clearMeasures('TTI');
+            logDebug('Time to Interaction', result.duration);
+            return result;
+        } catch {
+            return undefined;
+        }
+    }
+
+    public collectNetworkRequestData = (name: NetworkRequestMetrics, value: number, {serverUrl, groupLabel}: NetworkRequestDataOtherInfo) => {
+        this.ensureBatcher(serverUrl).addToBatch({
+            metric: name,
+            value,
+            timestamp: Date.now(),
+            label: {network_request_group: groupLabel},
+        });
+    };
 }
 
 export const testExports = {
-    PerformanceMetricsManager,
+    PerformanceMetricsManagerSingleton,
     RETRY_TIME,
     MAX_RETRIES,
 };
 
-export default new PerformanceMetricsManager();
+const PerformanceMetricsManager = new PerformanceMetricsManagerSingleton();
+export default PerformanceMetricsManager;

@@ -37,7 +37,7 @@ if (__DEV__) {
     logger.silence();
 }
 
-class DatabaseManager {
+class DatabaseManagerSingleton {
     public appDatabase?: AppDatabase;
     public serverDatabases: ServerDatabases = {};
     private readonly appModels: Models;
@@ -399,4 +399,5 @@ class DatabaseManager {
     };
 }
 
-export default new DatabaseManager();
+const DatabaseManager = new DatabaseManagerSingleton();
+export default DatabaseManager;

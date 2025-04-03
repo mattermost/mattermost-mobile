@@ -25,7 +25,7 @@ import {
     handleKickFromTeam,
     getTeamMembersByIds,
     buildTeamIconUrl,
-    fetchTeamsChannelsThreadsAndUnreadPosts,
+    fetchTeamsThreads,
 } from './team';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -271,20 +271,20 @@ describe('teams', () => {
         expect(result).toBeDefined();
     });
 
-    it('fetchTeamsChannelsThreadsAndUnreadPosts - handle not found database', async () => {
-        const result = await fetchTeamsChannelsThreadsAndUnreadPosts('foo', 0, []) as {error: unknown};
+    it('fetchTeamsThreads - handle not found database', async () => {
+        const result = await fetchTeamsThreads('foo', 0, []) as {error: unknown};
         expect(result?.error).toBeDefined();
     });
 
-    it('fetchTeamsChannelsThreadsAndUnreadPosts - base case', async () => {
-        const result = await fetchTeamsChannelsThreadsAndUnreadPosts(
+    it('fetchTeamsThreads - base case', async () => {
+        const result = await fetchTeamsThreads(
             serverUrl, 0,
             [team], true, false);
         expect(result).toBeDefined();
     });
 
-    it('fetchTeamsChannelsThreadsAndUnreadPosts - fetch only case', async () => {
-        const result = await fetchTeamsChannelsThreadsAndUnreadPosts(
+    it('fetchTeamsThreads - fetch only case', async () => {
+        const result = await fetchTeamsThreads(
             serverUrl, 0,
             [team], true, true);
         expect(result.models).toBeDefined();

@@ -4,6 +4,11 @@ description: Action to prepare environment for ios build
 runs:
   using: composite
   steps:
+    - name: ci/setup-xcode
+      uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
+      with:
+        xcode-version: latest-stable
+
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
 
@@ -16,7 +21,7 @@ runs:
         echo "::endgroup::"
 
     - name: Cache Pods
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4.2.1
       with:
         path: Pods
         key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}

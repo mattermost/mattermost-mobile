@@ -31,7 +31,7 @@ export async function handleBindingClick<Res=unknown>(serverUrl: string, binding
                 id: 'apps.error.malformed_binding',
                 defaultMessage: 'This binding is not properly formed. Contact the App developer.',
             });
-            return {error: makeCallErrorResponse(errMsg)};
+            return {error: makeCallErrorResponse<Res>(errMsg)};
         }
 
         const res: AppCallResponse<Res> = {
@@ -48,7 +48,7 @@ export async function handleBindingClick<Res=unknown>(serverUrl: string, binding
             id: 'apps.error.malformed_binding',
             defaultMessage: 'This binding is not properly formed. Contact the App developer.',
         });
-        return {error: makeCallErrorResponse(errMsg)};
+        return {error: makeCallErrorResponse<Res>(errMsg)};
     }
 
     const callRequest = createCallRequest(
@@ -83,7 +83,7 @@ export async function doAppSubmit<Res=unknown>(serverUrl: string, inCall: AppCal
                         id: 'apps.error.responses.form.no_form',
                         defaultMessage: 'Response type is `form`, but no valid form was included in response.',
                     });
-                    return {error: makeCallErrorResponse(errMsg)};
+                    return {error: makeCallErrorResponse<Res>(errMsg)};
                 }
 
                 cleanForm(res.form);
@@ -96,7 +96,7 @@ export async function doAppSubmit<Res=unknown>(serverUrl: string, inCall: AppCal
                         id: 'apps.error.responses.navigate.no_url',
                         defaultMessage: 'Response type is `navigate`, but no url was included in response.',
                     });
-                    return {error: makeCallErrorResponse(errMsg)};
+                    return {error: makeCallErrorResponse<Res>(errMsg)};
                 }
 
                 return {data: res};
@@ -107,7 +107,7 @@ export async function doAppSubmit<Res=unknown>(serverUrl: string, inCall: AppCal
                 }, {
                     type: responseType,
                 });
-                return {error: makeCallErrorResponse(errMsg)};
+                return {error: makeCallErrorResponse<Res>(errMsg)};
             }
         }
     } catch (error) {
@@ -116,7 +116,7 @@ export async function doAppSubmit<Res=unknown>(serverUrl: string, inCall: AppCal
             defaultMessage: 'Received an unexpected error.',
         });
         logDebug('error on doAppSubmit', getFullErrorMessage(error));
-        return {error: makeCallErrorResponse(errMsg)};
+        return {error: makeCallErrorResponse<Res>(errMsg)};
     }
 }
 
@@ -135,7 +135,7 @@ export async function doAppFetchForm<Res=unknown>(serverUrl: string, call: AppCa
                         id: 'apps.error.responses.form.no_form',
                         defaultMessage: 'Response type is `form`, but no valid form was included in response.',
                     });
-                    return {error: makeCallErrorResponse(errMsg)};
+                    return {error: makeCallErrorResponse<Res>(errMsg)};
                 }
                 cleanForm(res.form);
                 return {data: res};
@@ -144,7 +144,7 @@ export async function doAppFetchForm<Res=unknown>(serverUrl: string, call: AppCa
                     id: 'apps.error.responses.unknown_type',
                     defaultMessage: 'App response type not supported. Response type: {type}.',
                 }, {type: responseType});
-                return {error: makeCallErrorResponse(errMsg)};
+                return {error: makeCallErrorResponse<Res>(errMsg)};
             }
         }
     } catch (error) {
@@ -153,7 +153,7 @@ export async function doAppFetchForm<Res=unknown>(serverUrl: string, call: AppCa
             defaultMessage: 'Received an unexpected error.',
         });
         logDebug('error on doAppFetchForm', getFullErrorMessage(error));
-        return {error: makeCallErrorResponse(errMsg)};
+        return {error: makeCallErrorResponse<Res>(errMsg)};
     }
 }
 
@@ -175,7 +175,7 @@ export async function doAppLookup<Res=unknown>(serverUrl: string, call: AppCallR
                     id: 'apps.error.responses.unknown_type',
                     defaultMessage: 'App response type not supported. Response type: {type}.',
                 }, {type: responseType});
-                return {error: makeCallErrorResponse(errMsg)};
+                return {error: makeCallErrorResponse<Res>(errMsg)};
             }
         }
     } catch (error: any) {
@@ -184,7 +184,7 @@ export async function doAppLookup<Res=unknown>(serverUrl: string, call: AppCallR
             defaultMessage: 'Received an unexpected error.',
         });
         logDebug('error on doAppLookup', getFullErrorMessage(error));
-        return {error: makeCallErrorResponse(errMsg)};
+        return {error: makeCallErrorResponse<Res>(errMsg)};
     }
 }
 

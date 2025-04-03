@@ -114,7 +114,7 @@ const AnnouncementBanner = ({
             snapPoints: [1, snapPoint],
             theme,
         });
-    }, [theme.sidebarHeaderTextColor, intl.locale, renderContent, allowDismissal]);
+    }, [intl, allowDismissal, renderContent, theme]);
 
     const handleDismiss = useCallback(() => {
         dismissAnnouncement(serverUrl, bannerText);
@@ -129,7 +129,7 @@ const AnnouncementBanner = ({
         height.value = withTiming(visible ? ANNOUNCEMENT_BAR_HEIGHT : 0, {
             duration: 200,
         });
-    }, [visible]);
+    }, [height, visible]);
 
     const bannerStyle = useAnimatedStyle(() => ({
         height: height.value,

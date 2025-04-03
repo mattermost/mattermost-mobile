@@ -3,17 +3,19 @@
 
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {createBottomTabNavigator, type BottomTabBarProps} from '@react-navigation/bottom-tabs';
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Platform} from 'react-native';
+import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
+import {initializeSecurityManager} from '@actions/app/server';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import ServerVersion from '@components/server_version';
 import {Events, Launch, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
+import SecurityManager from '@managers/security_manager';
 import {getAllServers} from '@queries/app/servers';
 import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
@@ -57,10 +59,18 @@ const updateTimezoneIfNeeded = async () => {
     }
 };
 
+const styles = StyleSheet.create({
+    flex: {flex: 1},
+});
+
 export function HomeScreen(props: HomeProps) {
     const theme = useTheme();
     const intl = useIntl();
     const appState = useAppState();
+
+    useEffect(() => {
+        initializeSecurityManager();
+    }, []);
 
     const handleFindChannels = useCallback(() => {
         if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS)) {
@@ -136,11 +146,16 @@ export function HomeScreen(props: HomeProps) {
     }, []);
 
     return (
-        <>
+        <View
+            style={styles.flex}
+            nativeID={SecurityManager.getShieldScreenId(Screens.HOME, true)}
+        >
             <NavigationContainer
                 theme={{
+                    ...DefaultTheme,
                     dark: false,
                     colors: {
+                        ...DefaultTheme.colors,
                         primary: theme.centerChannelColor,
                         background: 'transparent',
                         card: theme.centerChannelBg,
@@ -151,7 +166,7 @@ export function HomeScreen(props: HomeProps) {
                 }}
             >
                 <Tab.Navigator
-                    screenOptions={{headerShown: false, unmountOnBlur: false, lazy: true}}
+                    screenOptions={{headerShown: false, freezeOnBlur: false, lazy: true}}
                     backBehavior='none'
                     tabBar={(tabProps: BottomTabBarProps) => (
                         <TabBar
@@ -161,34 +176,34 @@ export function HomeScreen(props: HomeProps) {
                 >
                     <Tab.Screen
                         name={Screens.HOME}
-                        options={{tabBarTestID: 'tab_bar.home.tab', unmountOnBlur: false, freezeOnBlur: true}}
+                        options={{tabBarButtonTestID: 'tab_bar.home.tab', freezeOnBlur: true}}
                     >
                         {() => <ChannelList {...props}/>}
                     </Tab.Screen>
                     <Tab.Screen
                         name={Screens.SEARCH}
                         component={Search}
-                        options={{tabBarTestID: 'tab_bar.search.tab', unmountOnBlur: false, freezeOnBlur: true, lazy: true}}
+                        options={{tabBarButtonTestID: 'tab_bar.search.tab', freezeOnBlur: true, lazy: true}}
                     />
                     <Tab.Screen
                         name={Screens.MENTIONS}
                         component={RecentMentions}
-                        options={{tabBarTestID: 'tab_bar.mentions.tab', freezeOnBlur: true, lazy: true}}
+                        options={{tabBarButtonTestID: 'tab_bar.mentions.tab', freezeOnBlur: true, lazy: true}}
                     />
                     <Tab.Screen
                         name={Screens.SAVED_MESSAGES}
                         component={SavedMessages}
-                        options={{tabBarTestID: 'tab_bar.saved_messages.tab', freezeOnBlur: true, lazy: true}}
+                        options={{tabBarButtonTestID: 'tab_bar.saved_messages.tab', freezeOnBlur: true, lazy: true}}
                     />
                     <Tab.Screen
                         name={Screens.ACCOUNT}
                         component={Account}
-                        options={{tabBarTestID: 'tab_bar.account.tab', freezeOnBlur: true, lazy: true}}
+                        options={{tabBarButtonTestID: 'tab_bar.account.tab', freezeOnBlur: true, lazy: true}}
                     />
                 </Tab.Navigator>
             </NavigationContainer>
             <ServerVersion/>
-        </>
+        </View>
     );
 }
 

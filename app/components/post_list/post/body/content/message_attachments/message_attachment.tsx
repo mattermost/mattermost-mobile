@@ -98,7 +98,7 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
                     value={attachment.title}
                 />
                 }
-                {isValidUrl(attachment.thumb_url) &&
+                {attachment.thumb_url && isValidUrl(attachment.thumb_url) &&
                 <AttachmentThumbnail uri={attachment.thumb_url}/>
                 }
                 {Boolean(attachment.text) &&
@@ -114,7 +114,7 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
                     theme={theme}
                 />
                 }
-                {Boolean(attachment.fields?.length) &&
+                {attachment.fields && attachment.fields?.length &&
                 <AttachmentFields
                     baseTextStyle={style.message}
                     blockStyles={blockStyles}
@@ -126,21 +126,21 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
                     theme={theme}
                 />
                 }
-                {Boolean(attachment.footer) &&
+                {attachment.footer &&
                 <AttachmentFooter
                     icon={attachment.footer_icon}
                     text={attachment.footer}
                     theme={theme}
                 />
                 }
-                {Boolean(attachment.actions?.length) &&
+                {attachment.actions && attachment.actions.length &&
                 <AttachmentActions
                     actions={attachment.actions!}
                     postId={postId}
                     theme={theme}
                 />
                 }
-                {Boolean(metadata?.images?.[attachment.image_url]) &&
+                {attachment.image_url && Boolean(metadata?.images?.[attachment.image_url]) &&
                     <AttachmentImage
                         imageUrl={attachment.image_url}
                         imageMetadata={metadata!.images![attachment.image_url]!}

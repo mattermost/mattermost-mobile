@@ -44,9 +44,9 @@ const teamId = 'teamid1';
 const user1 = {id: 'userid1', username: 'user1', email: 'user1@mattermost.com', roles: ''} as UserProfile;
 const user2 = {id: 'userid2', username: 'user2', email: 'user2@mattermost.com', roles: ''} as UserProfile;
 
-const post1 = {...TestHelper.fakePost(channelId), id: 'postid1', user_id: user1.id};
-const post2 = {...TestHelper.fakePost(channelId), id: 'postid2', user_id: user2.id};
-const reply1 = {...TestHelper.fakePost(channelId), id: 'replyid1', root_id: post1.id, user_id: user2.id};
+const post1 = TestHelper.fakePost({channel_id: channelId, id: 'postid1', user_id: user1.id});
+const post2 = TestHelper.fakePost({channel_id: channelId, id: 'postid2', user_id: user2.id});
+const reply1 = TestHelper.fakePost({channel_id: channelId, id: 'replyid1', root_id: post1.id, user_id: user2.id});
 
 const channel1 = {
     id: channelId,
@@ -581,7 +581,7 @@ describe('get posts', () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
 
-        const result = await fetchPostsForUnreadChannels(serverUrl, [channel1, {...channel1, id: 'channelid2', total_msg_count: 10}], [{...channelMember1, msg_count: 5}, {...channelMember1, channel_id: 'channelid2', msg_count: 10}], 'testid');
+        const result = await fetchPostsForUnreadChannels(serverUrl, [{id: teamId}] as Team[], [channel1, {...channel1, id: 'channelid2', total_msg_count: 10}], [{...channelMember1, msg_count: 5}, {...channelMember1, channel_id: 'channelid2', msg_count: 10}], 'testid');
         expect(result).toBeDefined();
         expect(result?.length).toBe(1); // Only returns the response for the channel with unread messages
         expect(result?.[0].posts?.[0].channel_id).toBe(channel1.id);

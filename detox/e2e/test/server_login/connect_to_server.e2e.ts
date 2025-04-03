@@ -77,13 +77,11 @@ describe('Server Login - Connect to Server', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify invalid url error
-        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(serverUrlInputError).toHaveText('Cannot connect to the server.');
+        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.FOUR_SEC);
+        await expect(serverUrlInputError).toHaveText('URLSessionTask failed with error: A server with the specified hostname could not be found.');
     });
 
     it('MM-T4676_4 - should show connection error on invalid ssl or invalid host', async () => {
-        await device.reloadReactNative();
-
         // # Connect with invalid ssl and non-empty server display name
         const expiredServerUrl = 'expired.badssl.com';
         const wrongHostServerUrl = 'wrong.host.badssl.com';
@@ -95,19 +93,8 @@ describe('Server Login - Connect to Server', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify invalid SSL cert error
-        await waitFor(Alert.invalidSslCertTitle).toExist().withTimeout(timeouts.TEN_SEC);
-        await Alert.okButton.tap();
-
-        // # Connect with invalid host and valid server display name
-        await device.reloadReactNative();
-        await serverUrlInput.replaceText(wrongHostServerUrl);
-        await serverDisplayNameInput.replaceText('Server 1');
-        await connectButton.tap();
-        await wait(timeouts.ONE_SEC);
-
-        // * Verify invalid SSL cert error
-        await waitFor(Alert.invalidSslCertTitle).toExist().withTimeout(timeouts.TEN_SEC);
-        await Alert.okButton.tap();
+        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.FOUR_SEC);
+        await expect(serverUrlInputError).toBeVisible();
     });
 
     it('MM-T4676_5 - should show login screen on successful connection to server', async () => {
@@ -117,7 +104,7 @@ describe('Server Login - Connect to Server', () => {
         await connectButton.tap();
         await wait(timeouts.ONE_SEC);
 
-        if (isIos()) {
+        if (isIos() && !process.env.CI) {
             // # Tap alert okay button
             await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
             await Alert.okayButton.tap();

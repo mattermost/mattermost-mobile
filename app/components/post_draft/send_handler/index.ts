@@ -71,6 +71,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     const channelInfo = channel.pipe(switchMap((c) => (c ? observeChannelInfo(database, c.id) : of$(undefined))));
     const channelType = channel.pipe(switchMap((c) => of$(c?.type)));
     const channelName = channel.pipe(switchMap((c) => of$(c?.name)));
+    const channelDisplayName = channel.pipe(switchMap((c) => of$(c?.displayName)));
     const membersCount = channelInfo.pipe(
         switchMap((i) => (i ? of$(i.memberCount) : of$(0))),
     );
@@ -81,6 +82,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         channelType,
         channelName,
         currentUserId,
+        channelDisplayName,
         enableConfirmNotificationsToChannel,
         maxMessageLength,
         membersCount,

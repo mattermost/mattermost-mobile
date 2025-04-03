@@ -9,8 +9,8 @@ import type ClientBase from './base';
 
 export interface ClientGroupsMix {
     getGroups: (params: {query?: string; filterAllowReference?: boolean; page?: number; perPage?: number; since?: number; includeMemberCount?: boolean}) => Promise<Group[]>;
-    getAllGroupsAssociatedToChannel: (channelId: string, filterAllowReference?: boolean, groupLabel?: string) => Promise<{groups: Group[]; total_group_count: number}>;
-    getAllGroupsAssociatedToMembership: (userId: string, filterAllowReference?: boolean, groupLabel?: string) => Promise<Group[]>;
+    getAllGroupsAssociatedToChannel: (channelId: string, filterAllowReference?: boolean, groupLabel?: RequestGroupLabel) => Promise<{groups: Group[]; total_group_count: number}>;
+    getAllGroupsAssociatedToMembership: (userId: string, filterAllowReference?: boolean, groupLabel?: RequestGroupLabel) => Promise<Group[]>;
     getAllGroupsAssociatedToTeam: (teamId: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
 }
 
@@ -29,7 +29,7 @@ const ClientGroups = <TBase extends Constructor<ClientBase>>(superclass: TBase) 
         );
     };
 
-    getAllGroupsAssociatedToChannel = async (channelId: string, filterAllowReference = false, groupLabel?: string) => {
+    getAllGroupsAssociatedToChannel = async (channelId: string, filterAllowReference = false, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.urlVersion}/channels/${channelId}/groups${buildQueryString({
                 paginate: false,
@@ -47,7 +47,7 @@ const ClientGroups = <TBase extends Constructor<ClientBase>>(superclass: TBase) 
         );
     };
 
-    getAllGroupsAssociatedToMembership = async (userId: string, filterAllowReference = false, groupLabel?: string) => {
+    getAllGroupsAssociatedToMembership = async (userId: string, filterAllowReference = false, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.urlVersion}/users/${userId}/groups${buildQueryString({paginate: false, filter_allow_reference: filterAllowReference})}`,
             {method: 'get', groupLabel},

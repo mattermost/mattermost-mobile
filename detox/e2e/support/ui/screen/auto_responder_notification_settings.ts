@@ -10,8 +10,8 @@ class AutoResponderNotificationSettingsScreen {
         autoResponderNotificationSettingsScreen: 'auto_responder_notification_settings.screen',
         backButton: 'screen.back.button',
         scrollView: 'auto_responder_notification_settings.scroll_view',
-        enableAutomaticRepliesOptionToggledOff: 'auto_responder_notification_settings.enable_automatic_replies.option.toggled.false',
-        enableAutomaticRepliesOptionToggledOn: 'auto_responder_notification_settings.enable_automatic_replies.option.toggled.true',
+        enableAutomaticRepliesOptionToggledOff: 'auto_responder_notification_settings.enable_automatic_replies.option.toggled.false.button',
+        enableAutomaticRepliesOptionToggledOn: 'auto_responder_notification_settings.enable_automatic_replies.option.toggled.true.button',
         messageInput: 'auto_responder_notification_settings.message.input',
         messageInputDescription: 'auto_responder_notification_settings.message.input.description',
     };

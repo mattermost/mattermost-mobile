@@ -199,6 +199,14 @@ export default class ClientBase extends ClientTracking {
         return `${this.urlVersion}/client_perf`;
     }
 
+    getCustomProfileAttributesRoute() {
+        return `${this.urlVersion}/custom_profile_attributes`;
+    }
+
+    getUserCustomProfileAttributesRoute(userId: string) {
+        return `${this.getUsersRoute()}/${userId}/custom_profile_attributes`;
+    }
+
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
         return this.doFetchWithTracking(url, options, returnDataOnly);
     };

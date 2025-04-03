@@ -197,6 +197,7 @@ describe('Search - Saved Messages', () => {
 
         // * Verify saved message is not displayed anymore
         const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, message);
+        await waitFor(postListPostItem).not.toExist().withTimeout(3000);
         await expect(postListPostItem).not.toExist();
 
         // # Go back to channel list screen

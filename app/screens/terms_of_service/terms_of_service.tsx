@@ -20,6 +20,7 @@ import {Screens} from '@constants/index';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import SecurityManager from '@managers/security_manager';
 import {dismissOverlay} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
@@ -125,8 +126,8 @@ const TermsOfService = ({
 
     const closeTermsAndLogout = useCallback(() => {
         dismissOverlay(componentId);
-        logout(serverUrl);
-    }, [serverUrl, componentId]);
+        logout(serverUrl, intl, {logoutOnAlert: true});
+    }, [serverUrl, componentId, intl]);
 
     const alertError = useCallback((retry: () => void) => {
         Alert.alert(
@@ -291,7 +292,10 @@ const TermsOfService = ({
     }, [styles, insets]);
 
     return (
-        <View style={styles.root}>
+        <View
+            style={styles.root}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+        >
             <View style={containerStyle}>
                 <View style={styles.wrapper}>
                     <Text style={styles.title}>{intl.formatMessage({id: 'terms_of_service.title', defaultMessage: 'Terms of Service'})}</Text>

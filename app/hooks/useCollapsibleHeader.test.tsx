@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {renderHook} from '@testing-library/react-hooks';
 import {act} from '@testing-library/react-native';
 
@@ -12,10 +13,6 @@ const LARGE_HEADER_TITLE_HEIGHT = 128;
 const HEADER_OFFSET = LARGE_HEADER_TITLE_HEIGHT - ViewConstants.DEFAULT_HEADER_HEIGHT;
 
 describe('useCollapsibleHeader', () => {
-    afterEach(() => {
-        jest.resetAllMocks();
-    });
-
     const commonHookResponse = {
         largeHeight: LARGE_HEADER_TITLE_HEIGHT,
         scrollRef: {current: null},

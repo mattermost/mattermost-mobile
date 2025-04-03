@@ -58,7 +58,7 @@ describe('ClientGroups', () => {
 
     test('getAllGroupsAssociatedToChannel', async () => {
         const channelId = 'channel1';
-        const groupLabel = 'testGroup';
+        const groupLabel = 'WebSocket Reconnect';
 
         await client.getAllGroupsAssociatedToChannel(channelId, undefined, groupLabel);
 
@@ -88,7 +88,7 @@ describe('ClientGroups', () => {
 
     test('getAllGroupsAssociatedToMembership', async () => {
         const userId = 'user1';
-        const groupLabel = 'testGroup';
+        const groupLabel = 'WebSocket Reconnect';
 
         await client.getAllGroupsAssociatedToMembership(userId, undefined, groupLabel);
 

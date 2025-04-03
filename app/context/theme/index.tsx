@@ -6,6 +6,7 @@ import React, {type ComponentType, createContext, useEffect, useState} from 'rea
 import {Appearance} from 'react-native';
 
 import {Preferences} from '@constants';
+import useDidUpdate from '@hooks/did_update';
 import {queryThemePreferences} from '@queries/servers/preference';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
@@ -33,22 +34,43 @@ export function getDefaultThemeByAppearance(): Theme {
 export const ThemeContext = createContext(getDefaultThemeByAppearance());
 const {Consumer, Provider} = ThemeContext;
 
+const themeCache = new Map<string, Theme>();
+let clearingThemeCache = false;
+const clearThemeCache = () => {
+    if (clearingThemeCache) {
+        return;
+    }
+    clearingThemeCache = true;
+    themeCache.clear();
+    setTimeout(() => {
+        // We set this timeout to avoid clearing the cache multiple times
+        // this would happen as we have a Provider for each screen in the stack
+        // and when the themes changes we only want to invalidate the cache once
+        clearingThemeCache = false;
+    }, 300);
+};
+
 const getTheme = (teamId: string | undefined, themes: PreferenceModel[]): Theme => {
-    if (teamId) {
-        const teamTheme = themes.find((t) => t.name === teamId) || themes[0];
-        if (teamTheme?.value) {
-            try {
-                const theme = setThemeDefaults(JSON.parse(teamTheme.value));
-                return theme;
-            } catch {
-                // no theme change
-            }
-        }
+    if (teamId && themeCache.has(teamId)) {
+        return themeCache.get(teamId)!;
     }
 
-    const defaultTheme = getDefaultThemeByAppearance();
+    const newTheme = (() => {
+        if (teamId) {
+            const teamTheme = themes.find((t) => t.name === teamId) || themes[0];
+            if (teamTheme?.value) {
+                try {
+                    return setThemeDefaults(JSON.parse(teamTheme.value));
+                } catch {
+                    // no theme change
+                }
+            }
+        }
+        return getDefaultThemeByAppearance();
+    })();
 
-    return defaultTheme;
+    themeCache.set(teamId || 'default', newTheme);
+    return newTheme;
 };
 
 const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
@@ -69,10 +91,18 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
         updateThemeIfNeeded(theme);
     }, [theme]);
 
-    useEffect(() => {
+    useDidUpdate(() => {
+        clearThemeCache();
+    }, [themes]);
+
+    useDidUpdate(() => {
         setTheme(getTheme(currentTeamId, themes));
     }, [currentTeamId, themes]);
 
+    return (<Provider value={theme}>{children}</Provider>);
+};
+
+export const CustomThemeProvider = ({theme, children}: {theme: Theme; children: React.ReactNode}) => {
     return (<Provider value={theme}>{children}</Provider>);
 };
 

@@ -38,7 +38,7 @@ export const sanitizeThreadParticipants = async ({database, skipSync, thread_id,
     // similarObjects: Contains objects that are in both the RawParticipant array and in the ThreadParticipant table
     const similarObjects = new Set<ThreadParticipantModel>();
 
-    const createParticipants: RecordPair[] = [];
+    const createParticipants: Array<RecordPair<ThreadParticipantModel, ThreadParticipant>> = [];
     const participantsMap = participants.reduce((result: Record<string, ThreadParticipantModel>, participant) => {
         result[participant.userId] = participant;
         return result;

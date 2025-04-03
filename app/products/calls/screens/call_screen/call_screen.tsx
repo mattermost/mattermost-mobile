@@ -57,6 +57,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {
     allOrientations,
@@ -466,7 +467,7 @@ const CallScreen = ({
             await popTopScreen(Screens.THREAD);
         }
         await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
-        WebsocketManager.initializeClient(currentCall.serverUrl, 'calls');
+        WebsocketManager.initializeClient(currentCall.serverUrl, 'Server Switch');
         await goToScreen(Screens.THREAD, callThreadOptionTitle, {rootId: currentCall.threadId});
     }, [currentCall?.serverUrl, currentCall?.threadId, fromThreadScreen, componentId, callThreadOptionTitle]);
 
@@ -736,7 +737,10 @@ const CallScreen = ({
     );
 
     return (
-        <SafeAreaView style={style.wrapper}>
+        <SafeAreaView
+            style={style.wrapper}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+        >
             <StatusBar barStyle={'light-content'}/>
             <View style={style.container}>
                 {!isLandscape && header}

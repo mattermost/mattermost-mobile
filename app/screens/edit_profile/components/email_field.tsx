@@ -1,16 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type RefObject} from 'react';
+import React, {type ComponentProps} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
+import FloatingTextInput from '@components/floating_text_input_label';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import Field from './field';
-
-import type {FloatingTextInputRef} from '@components/floating_text_input_label';
 
 const services: Record<string, string> = {
     gitlab: 'GitLab',
@@ -35,7 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type EmailSettingsProps = {
     authService: string;
     email: string;
-    fieldRef: RefObject<FloatingTextInputRef>;
+    fieldRef: ComponentProps<typeof FloatingTextInput>['ref'];
     onChange: (fieldKey: string, value: string) => void;
     onFocusNextField: (fieldKey: string) => void;
     isDisabled: boolean;

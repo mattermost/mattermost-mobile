@@ -47,7 +47,10 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         height: 48,
     },
-    button: {backgroundColor: 'transparent'},
+    button: {
+        backgroundColor: 'transparent',
+        paddingHorizontal: 0,
+    },
 });
 
 const openLink = async (href: string, serverUrl: string, siteURL: string, intl: IntlShape) => {

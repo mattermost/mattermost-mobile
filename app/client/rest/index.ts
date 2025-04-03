@@ -11,6 +11,7 @@ import ClientCategories, {type ClientCategoriesMix} from './categories';
 import ClientChannelBookmarks, {type ClientChannelBookmarksMix} from './channel_bookmark';
 import ClientChannels, {type ClientChannelsMix} from './channels';
 import {DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE, HEADER_X_VERSION_ID} from './constants';
+import ClientCustomAttributes, {type ClientCustomAttributesMix} from './custom_profile_attributes';
 import ClientEmojis, {type ClientEmojisMix} from './emojis';
 import ClientFiles, {type ClientFilesMix} from './files';
 import ClientGeneral, {type ClientGeneralMix} from './general';
@@ -44,7 +45,8 @@ interface Client extends ClientBase,
     ClientUsersMix,
     ClientCallsMix,
     ClientPluginsMix,
-    ClientNPSMix
+    ClientNPSMix,
+    ClientCustomAttributesMix
 {}
 
 class Client extends mix(ClientBase).with(
@@ -66,6 +68,7 @@ class Client extends mix(ClientBase).with(
     ClientCalls,
     ClientPlugins,
     ClientNPS,
+    ClientCustomAttributes,
 ) {
     // eslint-disable-next-line no-useless-constructor
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {

@@ -17,7 +17,7 @@ describe('ClientPreferences', () => {
     test('savePreferences', async () => {
         const userId = 'user_id';
         const preferences = [{category: 'category1', name: 'name1', value: 'value1'}] as PreferenceType[];
-        const groupLabel = 'group_label';
+        const groupLabel = 'Server Switch';
         const expectedUrl = client.getPreferencesRoute(userId);
         const expectedOptions = {
             method: 'put',
@@ -31,7 +31,7 @@ describe('ClientPreferences', () => {
     });
 
     test('getMyPreferences', async () => {
-        const groupLabel = 'group_label';
+        const groupLabel = 'Server Switch';
         const expectedUrl = client.getPreferencesRoute('me');
         const expectedOptions = {
             method: 'get',

@@ -56,7 +56,7 @@ export const setServerCredentials = (serverUrl: string, token: string) => {
             accessGroup = appGroup.appGroupIdentifier;
         }
 
-        const options: KeyChain.Options = {
+        const options: KeyChain.SetOptions = {
             accessGroup,
             securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
         };
@@ -67,16 +67,7 @@ export const setServerCredentials = (serverUrl: string, token: string) => {
 };
 
 export const removeServerCredentials = async (serverUrl: string) => {
-    const options: KeyChain.Options = {
-        securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
-    };
-
-    if (Platform.OS === 'ios') {
-        const appGroup = getIOSAppGroupDetails();
-        options.accessGroup = appGroup.appGroupIdentifier;
-    }
-
-    await KeyChain.resetInternetCredentials(serverUrl, options);
+    return KeyChain.resetInternetCredentials({server: serverUrl});
 };
 
 export const removeActiveServerCredentials = async () => {

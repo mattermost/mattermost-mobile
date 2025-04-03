@@ -1,35 +1,49 @@
 # How to Run Detox Tests
 
-## Android
+This guide will help you set up and run Detox tests for your project.
 
-### Install Dependencies
+## Install Dependencies
 
-From the root directory, run the following command to install the necessary dependencies:
+First, navigate to the root directory of your project and install the necessary dependencies by running:
 
 ```sh
 npm install
 ```
 
-### Inject Detox Settings
+navigate to the `detox` folder and run `npm install`
 
-To inject the Detox settings into your project, navigate to the `detox` directory and run the following command:
+## Android
 
-```sh
-npm run inject-detox-settings
-```
+### Build Detox Android App
 
-### Update `minSdkVersion` for `react-native-image-picker`
-
-On macOS machines, update the `minSdkVersion` of `react-native-image-picker` to 23 by running the following command from the root directory:
+To build the Detox Android app, navigate to the `detox` folder and run:
 
 ```sh
-sed -i '' 's/minSdkVersion 21/minSdkVersion 23/' ./node_modules/react-native-image-picker/android/build.gradle
-```
-
-### Build detox android app
-
-From the `detox` folder run:
-
-```
 npm run e2e:android-build
+```
+
+### Run Detox Android Tests
+
+To execute the Detox tests on Android, navigate to the `detox` folder and run:
+
+```sh
+npm run e2e:android-test
+```
+
+## iOS
+
+### Build iOS Simulator
+
+To build the iOS simulator for Detox, navigate to the `detox` folder and run:
+
+```sh
+npm run e2e:ios-build
+```
+
+### Run iOS Tests
+
+To execute the Detox tests on iOS, navigate to the `detox` folder and run:
+
+```sh
+npm run e2e:ios-test
 ```

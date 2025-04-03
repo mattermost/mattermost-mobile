@@ -81,7 +81,7 @@ describe('ClientChannelBookmarks', () => {
     test('getChannelBookmarksForChannel', async () => {
         const channelId = 'channel_id';
         const since = 123456;
-        const groupLabel = 'group_label';
+        const groupLabel = 'Login';
         const expectedUrl = `${client.getChannelBookmarksRoute(channelId)}${buildQueryString({bookmarks_since: since})}`;
         const expectedOptions = {method: 'get', groupLabel};
 

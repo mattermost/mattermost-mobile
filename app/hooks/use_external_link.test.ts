@@ -25,6 +25,13 @@ describe('useExternalLink', () => {
         expect(queryParams).toEqual({});
     });
 
+    it('mailto links are untouched even if to mattermost emails', () => {
+        const mailtoURL = 'mailto:example@mattermost.com?subject=123&body=456';
+        const {result: {current: [mailtoHref, mailtoQueryParams]}} = renderHook(() => useExternalLink(getBaseProps(), mailtoURL));
+        expect(mailtoHref).toEqual(mailtoURL);
+        expect(mailtoQueryParams).toEqual({});
+    });
+
     it('all base queries are set correctly', () => {
         const url = 'https://www.mattermost.com/some/url';
         const {result: {current: [href, queryParams]}} = renderHook(() => useExternalLink(getBaseProps(), url));
@@ -115,5 +122,11 @@ describe('useExternalLink', () => {
         const [secondHref, secondParams] = result.current;
         expect(firstHref).toBe(secondHref);
         expect(firstParams).toBe(secondParams);
+    });
+
+    it('do not substitute %20 on query params', () => {
+        const url = 'https://www.mattermost.com/some/url?subject=hello%20world';
+        const {result: {current: [href]}} = renderHook(() => useExternalLink(getBaseProps(), url));
+        expect(href).toContain('subject=hello%20world');
     });
 });

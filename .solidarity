@@ -39,7 +39,7 @@
       {
         "rule": "cli",
         "binary": "pod",
-        "semver": "1.15.2",
+        "semver": "1.16.1",
         "platform": "darwin"
       }
     ],

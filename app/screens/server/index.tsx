@@ -20,6 +20,7 @@ import {t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import SecurityManager from '@managers/security_manager';
 import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
@@ -340,6 +341,22 @@ const Server = ({
             return;
         }
 
+        if (data.config.MobileJailbreakProtection === 'true') {
+            const isJailbroken = await SecurityManager.isDeviceJailbroken(ping.url, data.config.SiteName);
+            if (isJailbroken) {
+                setConnecting(false);
+                return;
+            }
+        }
+
+        if (data.config.MobileEnableBiometrics === 'true') {
+            const biometricsResult = await SecurityManager.authenticateWithBiometrics(ping.url, data.config.SiteName);
+            if (!biometricsResult) {
+                setConnecting(false);
+                return;
+            }
+        }
+
         const server = await getServerByIdentifier(data.config.DiagnosticId);
         const credentials = await getServerCredentials(ping.url);
         setConnecting(false);
@@ -367,6 +384,7 @@ const Server = ({
         <View
             style={styles.flex}
             testID='server.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
             <Background theme={theme}/>
             <AnimatedSafeArea

@@ -10,12 +10,12 @@ class MentionNotificationSettingsScreen {
         mentionNotificationSettingsScreen: 'mention_notification_settings.screen',
         backButton: 'screen.back.button',
         scrollView: 'mention_notification_settings.scroll_view',
-        caseSensitiveFirstNameOptionToggledOff: 'mention_notification_settings.case_sensitive_first_name.option.toggled.false',
-        caseSensitiveFirstNameOptionToggledOn: 'mention_notification_settings.case_sensitive_first_name.option.toggled.true',
-        nonCaseSensitiveUsernameOptionToggledOff: 'mention_notification_settings.non_case_sensitive_username.option.toggled.false',
-        nonCaseSensitiveUsernameOptionToggledOn: 'mention_notification_settings.non_case_sensitive_username.option.toggled.true',
-        channelWideMentionsOptionToggledOff: 'mention_notification_settings.channel_wide_mentions.option.toggled.false',
-        channelWideMentionsOptionToggledOn: 'mention_notification_settings.channel_wide_mentions.option.toggled.true',
+        caseSensitiveFirstNameOptionToggledOff: 'mention_notification_settings.case_sensitive_first_name.option.toggled.false.button',
+        caseSensitiveFirstNameOptionToggledOn: 'mention_notification_settings.case_sensitive_first_name.option.toggled.true.button',
+        nonCaseSensitiveUsernameOptionToggledOff: 'mention_notification_settings.non_case_sensitive_username.option.toggled.false.button',
+        nonCaseSensitiveUsernameOptionToggledOn: 'mention_notification_settings.non_case_sensitive_username.option.toggled.true.button',
+        channelWideMentionsOptionToggledOff: 'mention_notification_settings.channel_wide_mentions.option.toggled.false.button',
+        channelWideMentionsOptionToggledOn: 'mention_notification_settings.channel_wide_mentions.option.toggled.true.button',
         keywordsInput: 'mention_notification_settings.keywords.input',
         keywordsInputDescription: 'mention_notification_settings.keywords.input.description',
         threadsStartParticipateOption: 'mention_notification_settings.threads_start_participate.option',
@@ -60,6 +60,10 @@ class MentionNotificationSettingsScreen {
     back = async () => {
         await this.backButton.tap();
         await expect(this.mentionNotificationSettingsScreen).not.toBeVisible();
+    };
+
+    getKeywordTriggerElement = async (keyword: string) => {
+        return element(by.text(`${keyword.replace(/ /g, '').toLowerCase()}`));
     };
 
     toggleCaseSensitiveFirstNameOptionOn = async () => {

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
+import BottomSheetM, {BottomSheetBackdrop, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
 import {ReduceMotion, type WithSpringConfig} from 'react-native-reanimated';
@@ -12,6 +12,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal} from '@screens/navigation';
 import {hapticFeedback} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -70,6 +71,9 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 1,
             borderTopWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+        },
+        view: {
+            flex: 1,
         },
     };
 });
@@ -195,11 +199,14 @@ const BottomSheet = ({
     if (isTablet) {
         const FooterComponent = footerComponent;
         return (
-            <>
+            <View
+                style={styles.view}
+                nativeID={SecurityManager.getShieldScreenId(componentId)}
+            >
                 <View style={styles.separator}/>
                 {renderContainerContent()}
                 {FooterComponent && (<FooterComponent/>)}
-            </>
+            </View>
         );
     }
 
@@ -221,8 +228,11 @@ const BottomSheet = ({
             keyboardBlurBehavior='restore'
             onClose={close}
             bottomInset={insets.bottom}
+            enableDynamicSizing={false}
         >
-            {renderContainerContent()}
+            <BottomSheetView style={styles.view}>
+                {renderContainerContent()}
+            </BottomSheetView>
         </BottomSheetM>
     );
 };

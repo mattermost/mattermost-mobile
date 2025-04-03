@@ -15,5 +15,6 @@ ignoreDependencies:
 - "@mattermost/rnshare"
 - "@mattermost/rnutils"
 - "@mattermost/keyboard-tracker"
+- "APNG4Android"
 
 ...

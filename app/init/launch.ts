@@ -76,7 +76,7 @@ const launchAppFromNotification = async (notification: NotificationWithData, col
 
  * @returns a redirection to a screen, either onboarding, add_server, login or home depending on the scenario
  */
-const launchApp = async (props: LaunchProps) => {
+export const launchApp = async (props: LaunchProps) => {
     let serverUrl: string | undefined;
     switch (props?.launchType) {
         case Launch.DeepLink:
@@ -169,7 +169,7 @@ const launchApp = async (props: LaunchProps) => {
     return resetToSelectServer(props);
 };
 
-const launchToHome = async (props: LaunchProps) => {
+export const launchToHome = async (props: LaunchProps) => {
     let openPushNotification = false;
 
     switch (props.launchType) {
@@ -182,7 +182,7 @@ const launchToHome = async (props: LaunchProps) => {
             openPushNotification = Boolean(props.serverUrl && !props.launchError && extra.userInteraction && extra.payload?.channel_id && !extra.payload?.userInfo?.local);
             if (openPushNotification) {
                 await resetToHome(props);
-                return pushNotificationEntry(props.serverUrl!, extra.payload!, 'notification');
+                return pushNotificationEntry(props.serverUrl!, extra.payload!, 'Notification');
             }
 
             appEntry(props.serverUrl!);
@@ -259,7 +259,7 @@ export const getLaunchPropsFromNotification = async (notification: NotificationW
     return launchProps;
 };
 
-async function cleanupEphemeralPosts() {
+export async function cleanupEphemeralPosts() {
     const servers = await getAllServers();
 
     for (const server of servers) {

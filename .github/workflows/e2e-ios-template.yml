@@ -1,0 +1,297 @@
+name: Detox iOS E2E Tests Template
+
+on:
+  workflow_call:
+    inputs:
+      MM_TEST_SERVER_URL:
+        description: "The test server URL"
+        required: false
+        type: string
+      MM_TEST_USER_NAME:
+        description: "The admin username of the test instance"
+        required: false
+        type: string
+      MM_TEST_PASSWORD:
+        description: "The admin password of the test instance"
+        required: false
+        type: string
+      MOBILE_VERSION:
+        description: "The mobile version to test"
+        required: false
+        default: ${{ github.head_ref || github.ref }}
+        type: string
+      run-type:
+        type: string
+        required: false
+        default: "PR"
+      testcase_failure_fatal:
+        description: "Should failures be considered fatal"
+        required: false
+        type: boolean
+        default: false
+      record_tests_in_zephyr:
+        description: "Record test results in Zephyr, typically for nightly and release runs"
+        required: false
+        type: string
+        default: 'false'
+      ios_device_name:
+        description: "iPhone simulator name"
+        required: false
+        type: string
+        default: "iPhone 16 Pro"
+      ios_device_os_name:
+        description: "iPhone simulator OS version"
+        required: false
+        type: string
+        default: "iOS 18.1"
+      low_bandwidth_mode:
+        description: "Enable low bandwidth mode"
+        required: false
+        type: boolean
+        default: false
+    outputs:
+      STATUS:
+        value: ${{ jobs.generate-report.outputs.STATUS }}
+      TARGET_URL:
+        value: ${{ jobs.generate-report.outputs.TARGET_URL }}
+      FAILURES:
+        value: ${{ jobs.generate-report.outputs.FAILURES }}
+
+env:
+  AWS_REGION: "us-east-1"
+  ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+  COMMIT_HASH: ${{ github.sha }}
+  DEVICE_NAME: ${{ inputs.ios_device_name }}
+  DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
+  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+  HEADLESS: "true"
+  TYPE: ${{ inputs.run-type }}
+  PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
+  SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
+  SITE_2_URL: "https://mobile-e2e-site-2.test.mattermost.cloud"
+  SITE_3_URL: "https://mobile-e2e-site-3.test.mattermost.cloud"
+  ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
+  JIRA_PROJECT_KEY: "MM"
+  ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+  ZEPHYR_FOLDER_ID: "3233873"
+  TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+  WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+  FAILURE_MESSAGE: "Something has failed"
+  IOS: "true"
+  RUNNING_E2E: true
+
+jobs:
+  generate-specs:
+    runs-on: ubuntu-22.04
+    outputs:
+      specs: ${{ steps.generate-specs.outputs.specs }}
+      build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
+      mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
+      mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
+      workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Set Build ID
+        id: resolve-device
+        run: |
+          BUILD_ID="${{ github.run_id }}-${{ env.DEVICE_NAME }}-${{ env.DEVICE_OS_VERSION}}"
+          WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
+
+          ## We need that hash to separate the artifacts
+          echo "WORKFLOW_HASH=${WORKFLOW_HASH}" >> ${GITHUB_OUTPUT}
+
+          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
+          echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
+          echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
+
+      - name: Generate Test Specs
+        id: generate-specs
+        uses: ./.github/actions/generate-specs
+        with:
+          parallelism: 10
+          search_path: detox/e2e/test
+          device_name: ${{ env.DEVICE_NAME }}
+          device_os_version: ${{ env.DEVICE_OS_VERSION }}
+
+  e2e-ios:
+    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    runs-on: macos-14
+    continue-on-error: true
+    timeout-minutes: ${{ inputs.low_bandwidth_mode && 140 || 70 }}
+    env:
+      IOS: true
+    needs:
+      - generate-specs
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Install Homebrew Dependencies
+        run: |
+          brew tap wix/brew
+          brew install applesimutils
+
+      - name: Download iOS Simulator Build
+        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: mobile-artifacts
+
+      - name: Unzip iOS Simulator Build
+        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+
+      - name: Prepare Low Bandwidth Environment
+        id: prepare-low-bandwidth
+        uses: ./.github/actions/prepare-low-bandwidth
+        if: ${{ inputs.low_bandwidth_mode }}
+        with:
+          test_server_url: ${{ env.SITE_1_URL }}
+          device_name: ${{ env.DEVICE_NAME }}
+          # all these value should be configurable
+          download_speed: "3300"
+          upload_speed: "3300"
+          latency: "500"
+
+      - name: Start React Native Metro Server
+        run: npm run start &
+
+      - name: Install Detox Dependencies
+        run: cd detox && npm i
+
+      - name: Start Proxy
+        if: ${{ inputs.low_bandwidth_mode }}
+        id: start-proxy
+        uses: ./.github/actions/start-proxy
+        with:
+          test_server_url: ${{ env.SITE_1_URL }}
+
+      - name: Run Detox E2E Tests
+        continue-on-error: true # We want to run all the tests
+        run: |
+          cd detox
+          npm run detox:config-gen
+          npm run e2e:ios-test -- ${{ matrix.specs }}
+        env:
+          DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
+          DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
+          LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
+
+      - name: reset network settings
+        if: ${{ inputs.low_bandwidth_mode || failure() }}
+        run: |
+          networksetup -setwebproxystate Ethernet "off"
+          networksetup -setsecurewebproxystate Ethernet "off"
+
+          if (sudo pfctl -q -sa | grep 'Status: Enabled') then sudo pfctl -d; fi 
+          if (command  -v pm2 &> /dev/null) then pm2 stop mitmdump; fi 
+
+          sleep 5;
+
+      - name: Upload mitmdump Flow Output
+        if: ${{ inputs.low_bandwidth_mode }}
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: ios-mitmdump-flow-output-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: |
+            /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
+            /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log
+
+      - name: Upload iOS Test Report
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/
+
+  generate-report:
+    runs-on: ubuntu-22.04
+    needs:
+      - generate-specs
+      - e2e-ios
+    outputs:
+      TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
+      STATUS: ${{ steps.determine-status.outputs.STATUS }}
+      FAILURES: ${{ steps.summary.outputs.FAILURES }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Download iOS Artifacts
+        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        with:
+          path: detox/artifacts/
+          pattern: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
+
+      - name: Generate Report Path
+        id: s3
+        run: |
+          path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
+          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
+
+      - name: Save report Detox Dependencies
+        id: report-link
+        run: |
+          cd detox
+          npm ci
+          npm run e2e:save-report
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          REPORT_PATH: ${{ steps.s3.outputs.path }}
+          ## These are needed for the MM Webhook report
+          COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
+          BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
+
+      - name: Calculate failures
+        id: summary
+        run: |
+          echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
+          echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
+          echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
+          echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
+          echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
+          echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
+
+      - name: Set Target URL
+        id: set-url
+        run: |
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/ios-report.html" >> ${GITHUB_OUTPUT}
+
+      - name: Determine Status
+        id: determine-status
+        run: |
+          if [[ ${{ steps.summary.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
+            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
+          else
+            echo "STATUS=success" >> ${GITHUB_OUTPUT}
+          fi
+
+      - name: Generate Summary
+        run: |
+          echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: | Errors :warning: | " >> ${GITHUB_STEP_SUMMARY}
+          echo "|:---:|:---:|:---:|:---:|:---:|" >> ${GITHUB_STEP_SUMMARY}
+          echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} | ${{ steps.summary.outputs.ERRORS }} |" >> ${GITHUB_STEP_SUMMARY}
+          echo "" >> ${GITHUB_STEP_SUMMARY}
+          echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
+          echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}

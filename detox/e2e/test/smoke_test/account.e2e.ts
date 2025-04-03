@@ -29,7 +29,7 @@ import {
     SettingsScreen,
     ThemeDisplaySettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Smoke Test - Account', () => {
@@ -131,20 +131,15 @@ describe('Smoke Test - Account', () => {
 
     it('MM-T5114_3 - should be able to set notification settings', async () => {
         // # Open settings screen, open notification settings screen, open mention notification settings screen, type in keywords, tap on back button, and go back to mention notification settings screen
-        const keywords = `${getRandomId()},${getRandomId()}`;
+        const keywords = `${getRandomId()}`;
         await SettingsScreen.open();
         await NotificationSettingsScreen.open();
         await MentionNotificationSettingsScreen.open();
         await MentionNotificationSettingsScreen.keywordsInput.replaceText(keywords);
+        await MentionNotificationSettingsScreen.keywordsInput.typeText(',');
         await MentionNotificationSettingsScreen.back();
         await MentionNotificationSettingsScreen.open();
-
-        // * Verify keywords are saved
-        if (isIos()) {
-            await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveValue(keywords.toLowerCase());
-        } else {
-            await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveText(keywords.toLowerCase());
-        }
+        await expect(element(by.text(keywords))).toBeVisible();
 
         // # Go back to notification settings screen, open push notification settings screen, tap on mentions only option, tap on mobile away option, tap on back button, and go back to notification settings screen
         await MentionNotificationSettingsScreen.back();

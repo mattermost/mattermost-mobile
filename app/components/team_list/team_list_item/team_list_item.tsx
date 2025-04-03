@@ -20,6 +20,7 @@ type Props = {
     iconBackgroundColor?: string;
     selectedTeamId?: string;
     onPress: (teamId: string) => void;
+    hideIcon?: boolean;
 }
 
 export const ITEM_HEIGHT = 56;
@@ -50,13 +51,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function TeamListItem({team, textColor, iconTextColor, iconBackgroundColor, selectedTeamId, onPress}: Props) {
+export default function TeamListItem({team, textColor, iconTextColor, iconBackgroundColor, selectedTeamId, onPress, hideIcon}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const displayName = 'displayName' in team ? team.displayName : team.display_name;
     const lastTeamIconUpdateAt = 'lastTeamIconUpdatedAt' in team ? team.lastTeamIconUpdatedAt : team.last_team_icon_update;
     const teamListItemTestId = `team_sidebar.team_list.team_list_item.${team.id}`;
+
+    const showIcon = !hideIcon;
 
     const handlePress = useCallback(() => {
         onPress(team.id);
@@ -68,17 +71,19 @@ export default function TeamListItem({team, textColor, iconTextColor, iconBackgr
             type='opacity'
             style={styles.touchable}
         >
-            <View style={styles.icon_container}>
-                <TeamIcon
-                    id={team.id}
-                    displayName={displayName}
-                    lastIconUpdate={lastTeamIconUpdateAt}
-                    selected={false}
-                    textColor={iconTextColor || theme.centerChannelColor}
-                    backgroundColor={iconBackgroundColor || changeOpacity(theme.centerChannelColor, 0.16)}
-                    testID={`${teamListItemTestId}.team_icon`}
-                />
-            </View>
+            {showIcon &&
+                <View style={styles.icon_container}>
+                    <TeamIcon
+                        id={team.id}
+                        displayName={displayName}
+                        lastIconUpdate={lastTeamIconUpdateAt}
+                        selected={false}
+                        textColor={iconTextColor || theme.centerChannelColor}
+                        backgroundColor={iconBackgroundColor || changeOpacity(theme.centerChannelColor, 0.16)}
+                        testID={`${teamListItemTestId}.team_icon`}
+                    />
+                </View>
+            }
             <Text
                 style={[styles.text, Boolean(textColor) && {color: textColor}]}
                 numberOfLines={1}

@@ -39,6 +39,15 @@ export function registerNavigationListeners() {
         Navigation.events().registerScreenPoppedListener(onPoppedListener),
         Navigation.events().registerCommandListener(onCommandListener),
         Navigation.events().registerComponentWillAppearListener(onScreenWillAppear),
+
+        /**
+         * For the time being and until we add the emoji picker in the keyboard area
+         * will keep Android as adjustResize cause useAnimatedKeyboard from reanimated
+         * is reporting the wrong values when the keyboard was opened but we switch
+         * to a different channel or thread.
+         */
+        // Navigation.events().registerComponentDidAppearListener(onScreenDidAppear),
+        // Navigation.events().registerComponentDidDisappearListener(onScreenDidDisappear),
     ];
 }
 
@@ -167,7 +176,7 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string): O
             default: OptionsModalPresentationStyle.overCurrentContext,
         }),
         statusBar: {
-            backgroundColor: null,
+            backgroundColor: theme.sidebarBg,
             drawBehind: true,
             translucent: true,
         },
@@ -468,6 +477,7 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
         },
         statusBar: {
             style: isDark ? 'light' : 'dark',
+            backgroundColor: theme.sidebarBg,
         },
         topBar: {
             animate: true,
@@ -579,6 +589,7 @@ export function showModal(name: AvailableScreens, title: string, passProps = {},
         },
         statusBar: {
             visible: true,
+            backgroundColor: theme.sidebarBg,
         },
         topBar: {
             animate: true,

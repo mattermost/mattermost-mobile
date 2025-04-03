@@ -7,7 +7,7 @@ import DatabaseManager from '@database/manager';
 import {queryCategoriesById} from '@queries/servers/categories';
 import {logError} from '@utils/log';
 
-type WebsocketCategoriesMessage = {
+export type WebsocketCategoriesMessage = {
     broadcast: {
         team_id: string;
     };

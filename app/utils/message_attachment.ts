@@ -39,19 +39,11 @@ function isPostAction(v: unknown): v is PostAction {
         return false;
     }
 
-    if (!('id' in v)) {
+    if ('id' in v && typeof v.id !== 'string') {
         return false;
     }
 
-    if (typeof v.id !== 'string') {
-        return false;
-    }
-
-    if (!('name' in v)) {
-        return false;
-    }
-
-    if (typeof v.name !== 'string') {
+    if ('name' in v && typeof v.name !== 'string') {
         return false;
     }
 
@@ -86,7 +78,7 @@ function isPostAction(v: unknown): v is PostAction {
     return true;
 }
 
-function isMessageAttachmentField(v: unknown) {
+function isMessageAttachmentField(v: unknown): v is MessageAttachmentField {
     if (typeof v !== 'object') {
         return false;
     }
@@ -95,19 +87,11 @@ function isMessageAttachmentField(v: unknown) {
         return false;
     }
 
-    if (!('title' in v)) {
+    if ('title' in v && typeof v.title !== 'string') {
         return false;
     }
 
-    if (typeof v.title !== 'string') {
-        return false;
-    }
-
-    if (!('value' in v)) {
-        return false;
-    }
-
-    if (typeof v.value === 'object' && v.value && 'toString' in v.value && typeof v.value.toString !== 'function') {
+    if ('value' in v && typeof v.value === 'object' && v.value && 'toString' in v.value && typeof v.value.toString !== 'function') {
         return false;
     }
 
@@ -192,6 +176,24 @@ function isMessageAttachment(v: unknown): v is MessageAttachment {
     }
 
     return true;
+}
+
+export function filterOptions(options: PostActionOption[] | undefined) {
+    return options?.reduce((acc: DialogOption[], option) => {
+        let optionText = option.text;
+        let optionValue = option.value;
+
+        if (optionText && !optionValue) {
+            optionValue = optionText;
+        } else if (optionValue && !optionText) {
+            optionText = optionValue;
+        }
+
+        if (optionText && optionValue) {
+            acc.push({text: optionText, value: optionValue});
+        }
+        return acc;
+    }, []);
 }
 
 export const testExports = {

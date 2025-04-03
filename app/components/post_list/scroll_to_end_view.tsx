@@ -62,6 +62,7 @@ type Props = {
     isNewMessage: boolean;
     showScrollToEndBtn: boolean;
     location: string;
+    testID?: string;
 };
 
 const ScrollToEndView = ({
@@ -69,6 +70,7 @@ const ScrollToEndView = ({
     isNewMessage,
     showScrollToEndBtn,
     location,
+    testID = 'scroll-to-end-view',
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -89,9 +91,7 @@ const ScrollToEndView = ({
     const shouldAdjustBottom = (Platform.OS === 'ios') && isTablet && (location === Screens.THREAD) && !keyboardHeight;
     const bottomAdjustment = shouldAdjustBottom ? insets.bottom : 0;
 
-    const message = location === Screens.THREAD ?
-        intl.formatMessage({id: 'postList.scrollToBottom.newReplies', defaultMessage: 'New replies'}) :
-        intl.formatMessage({id: 'postList.scrollToBottom.newMessages', defaultMessage: 'New messages'});
+    const message = location === Screens.THREAD ? intl.formatMessage({id: 'postList.scrollToBottom.newReplies', defaultMessage: 'New replies'}) : intl.formatMessage({id: 'postList.scrollToBottom.newMessages', defaultMessage: 'New messages'});
 
     const animatedStyle = useAnimatedStyle(
         () => ({
@@ -108,7 +108,10 @@ const ScrollToEndView = ({
     const scrollButtonStyles = isNewMessage ? styles.scrollToEndBadge : styles.scrollToEndButton;
 
     return (
-        <View ref={guidingViewRef}>
+        <View
+            ref={guidingViewRef}
+            testID={testID}
+        >
             <Animated.View style={[animatedStyle, styles.buttonStyle]}>
                 <Pressable
                     onPress={onPress}

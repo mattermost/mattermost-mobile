@@ -6,13 +6,13 @@ import React from 'react';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 
 import type {EmojiCommonStyle} from '@typings/components/emoji';
-import type {StyleProp} from 'react-native';
+import type {StyleProp, TextStyle} from 'react-native';
 
 type Props = {
     customStatus?: UserCustomStatus;
     customStatusExpired: boolean;
     isCustomStatusEnabled: boolean;
-    style: StyleProp<EmojiCommonStyle>;
+    style: StyleProp<Intersection<EmojiCommonStyle, TextStyle>>;
 }
 
 const CustomStatus = ({customStatus, customStatusExpired, isCustomStatusEnabled, style}: Props) => {

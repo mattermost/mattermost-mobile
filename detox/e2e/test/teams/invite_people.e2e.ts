@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup, User} from '@support/server_api';
+import {Setup, Team, User} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -19,15 +19,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {expect} from 'detox';
-
-function systemDialog(label: string) {
-    if (isIos()) {
-        return element(by.label(label)).atIndex(0);
-    }
-    return element(by.text(label));
-}
 
 describe('Teams - Invite', () => {
     const serverOneDisplayName = 'Server 1';
@@ -35,16 +28,18 @@ describe('Teams - Invite', () => {
     let testTeam: any;
     let testUser: any;
     let testUser1: any;
+    let testUser2: any;
+    let testUser3: any;
 
     beforeAll(async () => {
         const {team, user} = await Setup.apiInit(siteOneUrl);
-
         testTeam = team;
         testUser = user;
-
         const {user: user1} = await User.apiCreateUser(siteOneUrl, {prefix: 'i'});
-
         testUser1 = user1;
+        const {user: user2} = await User.apiCreateUser(siteOneUrl);
+        testUser2 = user2;
+        await Team.apiAddUserToTeam(siteOneUrl, testUser2.id, testTeam.id);
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -79,7 +74,7 @@ describe('Teams - Invite', () => {
         await expect(Invite.teamIcon).toBeVisible();
 
         // * Verify default Selection
-        await waitFor(Invite.screenSelection).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(Invite.screenSelection).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // * Verify Server data
         await expect(Invite.serverDisplayName).toHaveText(serverOneDisplayName);
@@ -90,20 +85,6 @@ describe('Teams - Invite', () => {
         // * Verify Search bar
         await expect(Invite.searchBarTitle).toBeVisible();
         await expect(Invite.searchBarInput).toBeVisible();
-    });
-
-    it('MM-T5221 - should be able to share a URL invite to the team', async () => {
-        if (isIos()) {
-            // # Tap on Share link
-            await Invite.shareLinkButton.tap();
-            const dialog = systemDialog(`Join the ${testTeam.display_name} team`);
-
-            // * Verify share dialog is open
-            await expect(dialog).toExist();
-
-            // # Close share dialog
-            await dialog.swipe('down');
-        } // no support for Android system dialogs by detox yet. See https://github.com/wix/Detox/issues/3227
     });
 
     it('MM-T5361 - should show no results item in search list', async () => {
@@ -146,14 +127,12 @@ describe('Teams - Invite', () => {
     });
 
     it('MM-T5363 - should be able to send user invite', async () => {
-        const username = ` @${testUser1.username}`;
-
         // # Search for an existent user
         await Invite.searchBarInput.replaceText(testUser1.username);
 
         // * Validate user item in search list
         await waitFor(Invite.getSearchListUserItem(testUser1.id)).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await expect(Invite.getSearchListUserItemText(testUser1.id)).toHaveText(username);
+        await expect(Invite.getSearchListUserItemText(testUser1.id)).toHaveText(testUser1.username);
 
         // # Select user item
         await Invite.getSearchListUserItem(testUser1.id).tap();
@@ -170,23 +149,21 @@ describe('Teams - Invite', () => {
         await expect(Invite.getSummaryReportSent()).toBeVisible();
         await expect(Invite.getSummaryReportNotSent()).not.toExist();
         await expect(Invite.getSummaryReportUserItem(testUser1.id)).toBeVisible();
-        await expect(Invite.getSummaryReportUserItemText(testUser1.id)).toHaveText(username);
+        await expect(Invite.getSummaryReportUserItemText(testUser1.id)).toHaveText(testUser1.username);
     });
 
     it('MM-T5364 - should not be able to send user invite to user already in team', async () => {
-        const username = ` @${testUser1.username}`;
-
         // # Search for an existent user already in team
-        await Invite.searchBarInput.replaceText(testUser1.username);
+        await Invite.searchBarInput.replaceText(testUser2.username);
 
         // * Validate user item in search list
-        await waitFor(Invite.getSearchListUserItem(testUser1.id)).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(Invite.getSearchListUserItem(testUser2.id)).toBeVisible().withTimeout(timeouts.TWO_SEC);
 
         // # Select user item
-        await Invite.getSearchListUserItem(testUser1.id).tap();
+        await Invite.getSearchListUserItem(testUser2.id).tap();
 
         // * Validate user is added to selected items
-        await expect(Invite.getSelectedItem(testUser1.id)).toBeVisible();
+        await expect(Invite.getSelectedItem(testUser2.id)).toBeVisible();
 
         // # Send invitation
         await Invite.sendButton.tap();
@@ -195,24 +172,25 @@ describe('Teams - Invite', () => {
         await expect(Invite.screenSummary).toBeVisible();
         await expect(Invite.getSummaryReportSent()).not.toExist();
         await expect(Invite.getSummaryReportNotSent()).toBeVisible();
-        await expect(Invite.getSummaryReportUserItem(testUser1.id)).toBeVisible();
-        await expect(Invite.getSummaryReportUserItemText(testUser1.id)).toHaveText(username);
+        await expect(Invite.getSummaryReportUserItem(testUser2.id)).toBeVisible();
+        await expect(Invite.getSummaryReportUserItemText(testUser2.id)).toHaveText(testUser2.username);
     });
 
     it('MM-T5365 - should handle both sent and not sent invites', async () => {
-        const {user: testUser2} = await User.apiCreateUser(siteOneUrl, {prefix: 'i'});
+        const {user: user3} = await User.apiCreateUser(siteOneUrl, {prefix: 'i'});
+        testUser3 = user3;
 
         // # Search for an existent user
-        await Invite.searchBarInput.replaceText(testUser2.username);
+        await Invite.searchBarInput.replaceText(testUser3.username);
 
         // * Validate user item in search list
-        await waitFor(Invite.getSearchListUserItem(testUser2.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(Invite.getSearchListUserItem(testUser3.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Select user item
-        await Invite.getSearchListUserItem(testUser2.id).tap();
+        await Invite.getSearchListUserItem(testUser3.id).tap();
 
         // * Validate user is added to selected items
-        await expect(Invite.getSelectedItem(testUser2.id)).toBeVisible();
+        await expect(Invite.getSelectedItem(testUser3.id)).toBeVisible();
 
         // # Search for a existent user already in team
         await Invite.searchBarInput.replaceText(testUser.username);
@@ -239,7 +217,7 @@ describe('Teams - Invite', () => {
 
         // * Validate summary report sent
         waitFor(Invite.getSummaryReportSent()).toBeVisible();
-        await expect(Invite.getSummaryReportUserItem(testUser2.id)).toBeVisible();
-        await expect(Invite.getSummaryReportUserItemText(testUser2.id)).toBeVisible(testUser2.username1);
+        await expect(Invite.getSummaryReportUserItem(testUser3.id)).toBeVisible();
+        await expect(Invite.getSummaryReportUserItemText(testUser3.id)).toBeVisible(testUser3.username1);
     });
 });

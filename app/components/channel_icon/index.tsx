@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {type StyleProp, Text, View, type ViewStyle} from 'react-native';
+import {type StyleProp, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import General from '@constants/general';
@@ -23,7 +23,7 @@ type ChannelIconProps = {
     name: string;
     shared: boolean;
     size?: number;
-    style?: StyleProp<ViewStyle>;
+    style?: StyleProp<Intersection<TextStyle, ViewStyle>>;
     testID?: string;
     type: string;
 };
@@ -125,12 +125,12 @@ const ChannelIcon = ({
         mutedStyle = styles.muted;
     }
 
-    const commonStyles = [
+    const commonStyles: StyleProp<Intersection<TextStyle, ViewStyle>> = [
         style,
         mutedStyle,
     ];
 
-    const commonIconStyles = [
+    const commonIconStyles: StyleProp<TextStyle> = [
         styles.icon,
         unreadIcon,
         activeIcon,

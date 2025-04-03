@@ -18,9 +18,9 @@ const {INFO, GLOBAL} = MM_TABLES.APP;
  * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
-export const transformInfoRecord = ({action, database, value}: TransformerArgs): Promise<Model> => {
-    const raw = value.raw as AppInfo;
-    const record = value.record as InfoModel | undefined;
+export const transformInfoRecord = ({action, database, value}: TransformerArgs<InfoModel, AppInfo>): Promise<Model> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (app: InfoModel) => {
@@ -46,8 +46,8 @@ export const transformInfoRecord = ({action, database, value}: TransformerArgs):
  * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
-export const transformGlobalRecord = ({action, database, value}: TransformerArgs): Promise<Model> => {
-    const raw = value.raw as IdValue;
+export const transformGlobalRecord = ({action, database, value}: TransformerArgs<GlobalModel, IdValue>): Promise<Model> => {
+    const raw = value.raw;
 
     const fieldsMapper = (global: GlobalModel) => {
         global._raw.id = raw?.id;
