@@ -33,6 +33,7 @@ export const MM_TABLES = {
         PREFERENCE: 'Preference',
         REACTION: 'Reaction',
         ROLE: 'Role',
+        SCHEDULED_POST: 'ScheduledPost',
         SYSTEM: 'System',
         TEAM: 'Team',
         TEAM_CHANNEL_HISTORY: 'TeamChannelHistory',

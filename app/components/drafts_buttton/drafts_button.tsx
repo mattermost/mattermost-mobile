@@ -14,15 +14,18 @@ import FormattedText from '@components/formatted_text';
 import {Events} from '@constants';
 import {DRAFT} from '@constants/screens';
 import {HOME_PADDING} from '@constants/view';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type DraftListProps = {
-    shouldHighlightActive?: boolean;
+    isActiveTab: boolean;
     draftsCount: number;
+    scheduledPostCount: number;
+    scheduledPostHasError: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -46,31 +49,50 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         gap: 4,
     },
+    errorCountContainer: {
+        backgroundColor: theme.dndIndicator,
+        borderRadius: 6,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+    },
     count: {
         color: theme.sidebarText,
         ...typography('Body', 75, 'SemiBold'),
         opacity: 0.64,
     },
+    badgeOpacityWithError: {
+        opacity: 1,
+    },
     opacity: {
         opacity: 0.56,
+    },
+    countBadgeContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 8,
     },
 }));
 
 const DraftsButton: React.FC<DraftListProps> = ({
-    shouldHighlightActive = false,
+    isActiveTab,
     draftsCount,
+    scheduledPostCount,
+    scheduledPostHasError,
 }) => {
+    const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getChannelItemStyleSheet(theme);
     const customStyles = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
-    const handlePress = useCallback(preventDoubleTap(() => {
-        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
-        switchToGlobalDrafts();
-    }), []);
+    const handlePress = usePreventDoubleTap(useCallback(async () => {
+        const {error} = await switchToGlobalDrafts(serverUrl);
+        if (!error) {
+            DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
+        }
+    }, [serverUrl]));
 
-    const isActive = isTablet && shouldHighlightActive;
+    const isActive = isTablet && isActiveTab;
 
     const [containerStyle, iconStyle, textStyle] = useMemo(() => {
         const container = [
@@ -112,19 +134,47 @@ const DraftsButton: React.FC<DraftListProps> = ({
                     defaultMessage='Drafts'
                     style={textStyle}
                 />
-                <View style={customStyles.countContainer}>
-                    <CompassIcon
-                        name='pencil-outline'
-                        size={14}
-                        color={theme.sidebarText}
-                        style={customStyles.opacity}
-                    />
-                    <Text
-                        testID='channel_list.drafts.count'
-                        style={customStyles.count}
-                    >
-                        {draftsCount}
-                    </Text>
+                <View style={customStyles.countBadgeContainer}>
+                    {
+                        draftsCount > 0 &&
+                        <View
+                            testID='channel_list.drafts.count.container'
+                            style={customStyles.countContainer}
+                        >
+                            <CompassIcon
+                                name='pencil-outline'
+                                size={14}
+                                color={theme.sidebarText}
+                                style={customStyles.opacity}
+                            />
+                            <Text
+                                testID='channel_list.drafts.count'
+                                style={customStyles.count}
+                            >
+                                {draftsCount}
+                            </Text>
+                        </View>
+                    }
+                    {
+                        scheduledPostCount > 0 &&
+                        <View
+                            testID='channel_list.scheduled_post.count.container'
+                            style={[customStyles.countContainer, scheduledPostHasError && customStyles.errorCountContainer]}
+                        >
+                            <CompassIcon
+                                name='clock-send-outline'
+                                size={14}
+                                color={theme.sidebarText}
+                                style={scheduledPostHasError ? customStyles.badgeOpacityWithError : customStyles.opacity}
+                            />
+                            <Text
+                                testID='channel_list.scheduled_post.count'
+                                style={[customStyles.count, scheduledPostHasError && customStyles.badgeOpacityWithError]}
+                            >
+                                {scheduledPostCount}
+                            </Text>
+                        </View>
+                    }
                 </View>
             </View>
         </TouchableOpacity>
