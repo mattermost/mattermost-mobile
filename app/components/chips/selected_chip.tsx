@@ -26,7 +26,7 @@ export default function SelectedChip({
         <BaseChip
             testID={testID}
             onPress={onPress}
-            showXButton={true}
+            showRemoveOption={true}
             showAnimation={true}
             label={text}
         />

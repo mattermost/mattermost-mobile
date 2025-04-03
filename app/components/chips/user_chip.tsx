@@ -16,7 +16,7 @@ type SelectedChipProps = {
     onPress: (id: string) => void;
     testID?: string;
     teammateNameDisplay: string;
-    showXButton?: boolean;
+    showRemoveOption?: boolean;
     showAnimation?: boolean;
 }
 
@@ -25,7 +25,7 @@ export default function UserChip({
     user,
     teammateNameDisplay,
     onPress: receivedOnPress,
-    showXButton,
+    showRemoveOption,
     showAnimation,
 }: SelectedChipProps) {
     const intl = useIntl();
@@ -48,7 +48,7 @@ export default function UserChip({
         <BaseChip
             testID={testID}
             onPress={onPress}
-            showXButton={showXButton}
+            showRemoveOption={showRemoveOption}
             showAnimation={showAnimation}
             label={name}
             prefix={picture}

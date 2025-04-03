@@ -27,26 +27,26 @@ describe('BaseChip', () => {
         expect(getByText('Test Label')).toBeTruthy();
     });
 
-    it('should render with the X button when showXButton is true', () => {
+    it('should render with the X button when showRemoveOption is true', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <BaseChip
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showXButton={true}
+                showRemoveOption={true}
             />,
         );
 
         expect(getByTestId('base_chip.remove.button')).toBeTruthy();
     });
 
-    it('should not render the X button when showXButton is false', () => {
+    it('should not render the X button when showRemoveOption is false', () => {
         const {queryByTestId} = renderWithIntlAndTheme(
             <BaseChip
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showXButton={false}
+                showRemoveOption={false}
             />,
         );
 
@@ -59,7 +59,7 @@ describe('BaseChip', () => {
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showXButton={true}
+                showRemoveOption={true}
             />,
         );
 
@@ -73,7 +73,7 @@ describe('BaseChip', () => {
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showXButton={false}
+                showRemoveOption={false}
             />,
         );
 

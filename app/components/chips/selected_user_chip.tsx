@@ -24,7 +24,7 @@ export default function SelectedUserChip({
         <UserChip
             testID={testID}
             onPress={onPress}
-            showXButton={true}
+            showRemoveOption={true}
             showAnimation={true}
             teammateNameDisplay={teammateNameDisplay}
             user={user}

@@ -16,7 +16,7 @@ import {CHIP_BOTTOM_MARGIN, CHIP_HEIGHT} from './constants';
 type SelectedChipProps = {
     onPress: () => void;
     testID?: string;
-    showXButton?: boolean;
+    showRemoveOption?: boolean;
     showAnimation?: boolean;
     label: string;
     prefix?: JSX.Element;
@@ -52,7 +52,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 export default function BaseChip({
     testID,
     onPress,
-    showXButton,
+    showRemoveOption,
     showAnimation,
     label,
     prefix,
@@ -75,7 +75,7 @@ export default function BaseChip({
     );
 
     let content;
-    if (showXButton) {
+    if (showRemoveOption) {
         content = (
             <>
                 {chipContent}
