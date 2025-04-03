@@ -4,55 +4,51 @@
 import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 
+let isFirstLaunch = true;
+
 beforeAll(async () => {
     // Login as sysadmin and reset server configuration
     await System.apiCheckSystemHealth(siteOneUrl);
     await User.apiAdminLogin(siteOneUrl);
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
 
-    // Faster app launch
-    await device.launchApp({
-        newInstance: false,
-        delete: false,
-        launchArgs: {
-            detoxPrintBusyIdleResources: 'YES',
-            detoxDebugVisibility: 'YES',
-            detoxDisableSynchronization: 'YES',
-        },
-        permissions: {
-            notifications: 'YES',
-            camera: 'NO',
-            medialibrary: 'NO',
-            photos: 'NO',
-        },
-    });
+    // Optimize app launch strategy
+    if (isFirstLaunch) {
+        // For first launch, clean install
+        await device.launchApp({
+            newInstance: true,
+            delete: true,
+            permissions: {
 
-    // await device.launchApp({
-    //     newInstance: false,
-    //     delete: false,
-    //     launchArgs: {
-    //         detoxPrintBusyIdleResources: 'YES',
-    //         detoxDebugVisibility: 'YES',
-    //     },
-    //     permissions: {
-    //         notifications: 'YES',
-    //         camera: 'YES',
-    //         medialibrary: 'YES',
-    //         photos: 'YES',
-    //     },
-    // });
+                // Set all permissions at once
+                notifications: 'YES',
+                camera: 'NO',
+                medialibrary: 'NO',
+                photos: 'NO',
+            },
+            launchArgs: {
+                detoxPrintBusyIdleResources: 'YES',
+                detoxDebugVisibility: 'YES',
+                detoxDisableSynchronization: 'YES',
+                detoxURLBlacklistRegex: '.*localhost.*', // Reduce network syncs
+            },
+        });
+        isFirstLaunch = false;
+    } else {
+        // For subsequent launches, reuse instance
+        await device.launchApp({
+            newInstance: false,
+            launchArgs: {
+                detoxPrintBusyIdleResources: 'YES',
+                detoxDebugVisibility: 'YES',
+                detoxDisableSynchronization: 'YES',
+                detoxURLBlacklistRegex: '.*localhost.*',
+            },
+        });
+    }
+});
 
-    // await device.launchApp({
-    //     newInstance: true,
-    //     launchArgs: {
-    //         detoxPrintBusyIdleResources: 'YES',
-    //         detoxDebugVisibility: 'YES',
-    //     },
-    //     permissions: {
-    //         notifications: 'YES',
-    //         camera: 'YES',
-    //         medialibrary: 'YES',
-    //         photos: 'YES',
-    //     },
-    // });
+// Add this to speed up test cleanup
+afterAll(async () => {
+    await device.sendToHome();
 });
