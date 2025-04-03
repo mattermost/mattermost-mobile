@@ -213,9 +213,8 @@ export const useHostMenus = () => {
     const openUserProfile = useCallback(async (session: CallSession) => {
         openUserProfileModal(intl, theme, {
             userId: session.userId,
-            channelId: currentCall?.id || '',
         });
-    }, [currentCall?.id, intl, theme]);
+    }, [intl, theme]);
 
     const onPress = useCallback((session: CallSession) => () => {
         // Show host controls when allowed and I'm host or admin,

@@ -113,6 +113,7 @@ jest.mock('react-native-navigation', () => ({
         pop: jest.fn(() => Promise.resolve({
             catch: jest.fn(),
         })),
+        setDefaultOptions: jest.fn(),
     },
 }));
 
