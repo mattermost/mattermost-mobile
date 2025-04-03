@@ -201,17 +201,6 @@ jobs:
         with:
           test_server_url: ${{ env.SITE_1_URL }}
 
-      - name: Install FFmpeg
-        run: brew install ffmpeg
-
-      - name: Start Screen Recording
-        run: |
-          mkdir -p detox/mobile-artifacts/recordings
-          ffmpeg -f avfoundation -framerate 30 -video_size 1920x1080 \
-            -i "Capture screen 0" -c:v libx264 -preset ultrafast \
-            detox/mobile-artifacts/recordings/test_recording.mov > /dev/null 2>&1 & 
-          echo $! > screen_recording_pid.txt
-
       - name: Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
         run: |
@@ -226,22 +215,10 @@ jobs:
           npm run e2e:ios-test -- detox/e2e/test/account/about.e2e.ts
 
         env:
+          DETOX_LOGLEVEL: "debug"
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
-
-      - name: Stop Screen Recording
-        if: always()
-        run: |
-          kill $(cat screen_recording_pid.txt) || true
-          sleep 5 # Ensure the recording stops before proceeding
-
-      - name: Upload Screen Recording
-        uses: actions/upload-artifact@v4
-        with:
-          name: screen-recording
-          path: detox/mobile-artifacts/recordings/test_recording.mov
-  
       - name: reset network settings
         if: ${{ inputs.low_bandwidth_mode || failure() }}
         run: |
