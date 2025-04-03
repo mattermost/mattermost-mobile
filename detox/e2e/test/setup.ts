@@ -12,7 +12,10 @@ beforeAll(async () => {
 
     await device.launchApp({
         newInstance: true,
-        launchArgs: {detoxPrintBusyIdleResources: 'YES'},
+        launchArgs: {
+            detoxPrintBusyIdleResources: 'YES',
+            detoxDebugVisibility: 'YES',
+        },
         permissions: {
             notifications: 'YES',
             camera: 'YES',
