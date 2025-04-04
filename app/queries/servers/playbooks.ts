@@ -9,6 +9,7 @@ import type PlaybookRunModel from '@typings/database/models/servers/playbook_run
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function queryActivePlaybookRunsPerChannel(database: Database, channelId: string) {
     const model = {
+        id: 'playbook_run_id',
         playbook_id: 'playbook_id',
     } as PlaybookRunModel;
     return {
@@ -21,9 +22,11 @@ export function queryActivePlaybookRunsPerChannel(database: Database, channelId:
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function queryPlaybookRunsPerChannel(database: Database, channelId: string) {
     const model1 = {
+        id: 'playbook_run_id1',
         playbook_id: 'playbook_id',
     } as PlaybookRunModel;
     const model2 = {
+        id: 'playbook_run_id2',
         playbook_id: 'playbook_id2',
     } as PlaybookRunModel;
     return {

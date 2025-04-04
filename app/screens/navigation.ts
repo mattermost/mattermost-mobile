@@ -884,14 +884,14 @@ export function goToPlaybookRuns(intl: IntlShape, channelId: string) {
     goToScreen(Screens.PLAYBOOKS_RUNS, title, {channelId}, {});
 }
 
-export async function goToPlaybookRun(intl: IntlShape, playbookId?: string, channelId?: string) {
+export async function goToPlaybookRun(intl: IntlShape, playbookRunId?: string, channelId?: string) {
     const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
-    let idToUse = playbookId;
+    let idToUse = playbookRunId;
     if (!idToUse && channelId) {
         const database = await DatabaseManager.getActiveServerDatabase();
         if (database) {
             const models = await queryActivePlaybookRunsPerChannel(database, channelId).fetch();
-            idToUse = models[0]?.playbook_id;
+            idToUse = models[0]?.id;
         }
     }
 
@@ -899,5 +899,5 @@ export async function goToPlaybookRun(intl: IntlShape, playbookId?: string, chan
         return;
     }
 
-    goToScreen(Screens.PLAYBOOK_RUN, title, {playbookId: idToUse}, {});
+    goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId: idToUse}, {});
 }
