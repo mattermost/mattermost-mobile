@@ -16,6 +16,7 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import SecurityManager from '@managers/security_manager';
+import {shouldShowChannelBanner} from '@screens/channel/channel_feature_checks';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -25,7 +26,6 @@ import useGMasDMNotice from './use_gm_as_dm_notice';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import {shouldShowChannelBanner} from '@screens/channel/channel_feature_checks';
 
 type ChannelProps = {
     channelId: string;
