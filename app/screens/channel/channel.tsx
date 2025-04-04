@@ -25,6 +25,7 @@ import useGMasDMNotice from './use_gm_as_dm_notice';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type {AvailableScreens} from '@typings/screens/navigation';
+import {General, License} from '@constants';
 
 type ChannelProps = {
     channelId: string;
@@ -40,6 +41,8 @@ type ChannelProps = {
     channelType: ChannelType;
     hasGMasDMFeature: boolean;
     includeBookmarkBar?: boolean;
+    license?: ClientLicense;
+    bannerInfo?: ChannelBannerInfo;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -64,6 +67,8 @@ const Channel = ({
     currentUserId,
     hasGMasDMFeature,
     includeBookmarkBar,
+    license,
+    bannerInfo,
 }: ChannelProps) => {
     useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
@@ -109,6 +114,8 @@ const Channel = ({
 
     const showFloatingCallContainer = showJoinCallBanner || isInACall || showIncomingCalls;
 
+    const showChannelBanner = shouldShowChannelBanner(channelType, license, bannerInfo);
+
     return (
         <FreezeScreen>
             <SafeAreaView
@@ -126,6 +133,7 @@ const Channel = ({
                     groupCallsAllowed={groupCallsAllowed}
                     isTabletView={isTabletView}
                     shouldRenderBookmarks={shouldRender}
+                    shouldRenderChannelBanner={showChannelBanner}
                 />
                 {shouldRender &&
                 <ExtraKeyboardProvider>
@@ -151,11 +159,24 @@ const Channel = ({
                         showIncomingCalls={showIncomingCalls}
                         isInACall={isInACall}
                         includeBookmarkBar={includeBookmarkBar}
+                        includeChannelBanner={showChannelBanner}
                     />
                 }
             </SafeAreaView>
         </FreezeScreen>
     );
 };
+
+function shouldShowChannelBanner(channelType: ChannelType, license?: ClientLicense, bannerInfo?: ChannelBannerInfo): boolean {
+    if (!license || !bannerInfo) {
+        return false;
+    }
+
+    const isPremiumLicense = license.SkuShortName === License.SKU_SHORT_NAME.Premium;
+    const bannerInfoComplete = Boolean(bannerInfo.enabled && bannerInfo.text && bannerInfo.background_color);
+    const isValidChannelType = channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL;
+
+    return isPremiumLicense && bannerInfoComplete && isValidChannelType;
+}
 
 export default Channel;

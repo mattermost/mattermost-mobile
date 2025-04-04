@@ -7,7 +7,6 @@ import {Text, TouchableOpacity, View} from 'react-native';
 
 import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
 import RemoveMarkdown from '@components/remove_markdown';
-import {General, License} from '@constants';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet} from '@screens/navigation';
@@ -54,17 +53,14 @@ const getStyleSheet = (bannerTextColor: string) => ({
 });
 
 type Props = {
-    channelType: ChannelType;
-    bannerInfo?: ChannelBannerInfo;
-    license?: ClientLicense;
-    isTopItem?: Boolean;
+    bannerInfo: ChannelBannerInfo;
+    isTopItem: Boolean;
 }
 
-export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Props) {
+export function ChannelBanner({bannerInfo, isTopItem}: Props) {
     const intl = useIntl();
-    const shouldDisplayChannelBanner = showChannelBanner(channelType, license, bannerInfo);
     const theme = useTheme();
-    const bannerTextColor = getContrastingSimpleColor(bannerInfo?.background_color || '');
+    const bannerTextColor = getContrastingSimpleColor(bannerInfo.background_color || '');
 
     const style = useMemo(() => {
         return getStyleSheet(bannerTextColor);
@@ -73,10 +69,10 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
     const defaultHeight = useDefaultHeaderHeight();
     const containerStyle = useMemo(() => ({
         ...style.container,
-        backgroundColor: bannerInfo?.background_color,
+        backgroundColor: bannerInfo.background_color,
         top: defaultHeight,
         zIndex: 1,
-    }), [bannerInfo?.background_color, defaultHeight, style.container]);
+    }), [bannerInfo.background_color, defaultHeight, style.container]);
 
     const markdownTextStyle = useMemo(() => {
         const textStyle = getMarkdownTextStyles(theme);
@@ -95,7 +91,7 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
     const handlePress = useCallback(() => {
         // set snap point based on text length, with a defined
         // minimum and maximum height for the text container
-        const length = bannerInfo!.text!.length / 100;
+        const length = bannerInfo.text!.length / 100;
         const snapPoint = SNAP_POINT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
 
         const expandedChannelBannerTitle = intl.formatMessage({
@@ -106,7 +102,7 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
         const renderContent = () => (
             <ExpandedAnnouncementBanner
                 allowDismissal={false}
-                bannerText={bannerInfo?.text || ''}
+                bannerText={bannerInfo.text || ''}
                 headingText={expandedChannelBannerTitle}
             />
         );
@@ -120,9 +116,9 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
         });
     }, [bannerInfo, intl, theme]);
 
-    // we only really need shouldDisplayChannelBanner check here, rest is for satisfying TS in following code
-    // and avoid having to use non-null assertion everywhere.
-    if (!shouldDisplayChannelBanner || !bannerInfo || !bannerInfo.text || !bannerInfo.background_color) {
+    // banner info will be complete when this component renders,
+    // but this check is still here to avoid having to use non-null assertion everywhere.
+    if (!bannerInfo.text || !bannerInfo.background_color) {
         return null;
     }
 
@@ -146,16 +142,4 @@ export function ChannelBanner({bannerInfo, license, channelType, isTopItem}: Pro
             </TouchableOpacity>
         </View>
     );
-}
-
-function showChannelBanner(channelType: ChannelType, license?: ClientLicense, bannerInfo?: ChannelBannerInfo): boolean {
-    if (!license || !bannerInfo) {
-        return false;
-    }
-
-    const isPremiumLicense = license.SkuShortName === License.SKU_SHORT_NAME.Premium;
-    const bannerInfoComplete = Boolean(bannerInfo.enabled && bannerInfo.text && bannerInfo.background_color);
-    const isValidChannelType = channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL;
-
-    return isPremiumLicense && bannerInfoComplete && isValidChannelType;
 }
