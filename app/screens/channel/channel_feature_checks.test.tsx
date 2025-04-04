@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {General, License} from '@constants';
-
-import {shouldShowChannelBanner} from './channel';
+import {shouldShowChannelBanner} from '@screens/channel/channel_feature_checks';
 
 describe('shouldShowChannelBanner', () => {
     const validLicense = {
         SkuShortName: License.SKU_SHORT_NAME.Premium,
-    };
+    } as ClientLicense;
 
     const validBannerInfo = {
         enabled: true,
@@ -24,10 +23,17 @@ describe('shouldShowChannelBanner', () => {
         expect(shouldShowChannelBanner(General.OPEN_CHANNEL, validLicense, undefined)).toBe(false);
     });
 
-    it('should return false when license is not premium', () => {
+    it('should return false when license is not professional', () => {
         const nonPremiumLicense = {
             SkuShortName: License.SKU_SHORT_NAME.Professional,
-        };
+        } as ClientLicense;
+        expect(shouldShowChannelBanner(General.OPEN_CHANNEL, nonPremiumLicense, validBannerInfo)).toBe(false);
+    });
+
+    it('should return false when license is not enterprise', () => {
+        const nonPremiumLicense = {
+            SkuShortName: License.SKU_SHORT_NAME.Enterprise,
+        } as ClientLicense;
         expect(shouldShowChannelBanner(General.OPEN_CHANNEL, nonPremiumLicense, validBannerInfo)).toBe(false);
     });
 
@@ -49,7 +55,7 @@ describe('shouldShowChannelBanner', () => {
         expect(shouldShowChannelBanner(General.OPEN_CHANNEL, validLicense, disabledBannerInfo)).toBe(false);
     });
 
-    it('should return false for invalid channel types', () => {
+    it('should return false for DM and GM channels', () => {
         expect(shouldShowChannelBanner(General.DM_CHANNEL, validLicense, validBannerInfo)).toBe(false);
         expect(shouldShowChannelBanner(General.GM_CHANNEL, validLicense, validBannerInfo)).toBe(false);
     });

@@ -25,7 +25,7 @@ import useGMasDMNotice from './use_gm_as_dm_notice';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import {General, License} from '@constants';
+import {shouldShowChannelBanner} from '@screens/channel/channel_feature_checks';
 
 type ChannelProps = {
     channelId: string;
@@ -166,17 +166,5 @@ const Channel = ({
         </FreezeScreen>
     );
 };
-
-export function shouldShowChannelBanner(channelType: ChannelType, license?: ClientLicense, bannerInfo?: ChannelBannerInfo): boolean {
-    if (!license || !bannerInfo) {
-        return false;
-    }
-
-    const isPremiumLicense = license.SkuShortName === License.SKU_SHORT_NAME.Premium;
-    const bannerInfoComplete = Boolean(bannerInfo.enabled && bannerInfo.text && bannerInfo.background_color);
-    const isValidChannelType = channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL;
-
-    return isPremiumLicense && bannerInfoComplete && isValidChannelType;
-}
 
 export default Channel;
