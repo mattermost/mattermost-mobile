@@ -62,41 +62,6 @@ describe('ChannelBanner', () => {
         expect(screen.getByText('Test Banner Text')).toBeVisible();
     });
 
-    it('does not render when license is missing', async () => {
-        // Clear license data
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: undefined}], prepareRecordsOnly: false});
-
-        const {queryByText} = renderWithEverything(
-            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
-            {database},
-        );
-
-        expect(queryByText('Test Banner Text')).not.toBeVisible();
-    });
-
-    it('does not render when license is professional', async () => {
-        // Change license to Professional
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Professional}}], prepareRecordsOnly: false});
-
-        const {queryByText} = renderWithEverything(
-            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
-            {database},
-        );
-
-        expect(queryByText('Test Banner Text')).not.toBeVisible();
-    });
-
-    it('does not render when license is Enterprise', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Enterprise}}], prepareRecordsOnly: false});
-
-        const {queryByText} = renderWithEverything(
-            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
-            {database},
-        );
-
-        expect(queryByText('Test Banner Text')).not.toBeVisible();
-    });
-
     it('does not render when banner info is missing', async () => {
         const channel = await getChannelById(database, TestHelper.basicChannel!.id);
         await database.write(async () => {

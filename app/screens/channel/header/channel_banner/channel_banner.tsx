@@ -53,14 +53,14 @@ const getStyleSheet = (bannerTextColor: string) => ({
 });
 
 type Props = {
-    bannerInfo: ChannelBannerInfo;
-    isTopItem: Boolean;
+    bannerInfo?: ChannelBannerInfo;
+    isTopItem?: Boolean;
 }
 
 export function ChannelBanner({bannerInfo, isTopItem}: Props) {
     const intl = useIntl();
     const theme = useTheme();
-    const bannerTextColor = getContrastingSimpleColor(bannerInfo.background_color || '');
+    const bannerTextColor = getContrastingSimpleColor(bannerInfo?.background_color || '');
 
     const style = useMemo(() => {
         return getStyleSheet(bannerTextColor);
@@ -69,10 +69,10 @@ export function ChannelBanner({bannerInfo, isTopItem}: Props) {
     const defaultHeight = useDefaultHeaderHeight();
     const containerStyle = useMemo(() => ({
         ...style.container,
-        backgroundColor: bannerInfo.background_color,
+        backgroundColor: bannerInfo?.background_color,
         top: defaultHeight,
         zIndex: 1,
-    }), [bannerInfo.background_color, defaultHeight, style.container]);
+    }), [bannerInfo?.background_color, defaultHeight, style.container]);
 
     const markdownTextStyle = useMemo(() => {
         const textStyle = getMarkdownTextStyles(theme);
@@ -91,7 +91,7 @@ export function ChannelBanner({bannerInfo, isTopItem}: Props) {
     const handlePress = useCallback(() => {
         // set snap point based on text length, with a defined
         // minimum and maximum height for the text container
-        const length = bannerInfo.text!.length / 100;
+        const length = bannerInfo!.text!.length / 100;
         const snapPoint = SNAP_POINT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
 
         const expandedChannelBannerTitle = intl.formatMessage({
@@ -102,7 +102,7 @@ export function ChannelBanner({bannerInfo, isTopItem}: Props) {
         const renderContent = () => (
             <ExpandedAnnouncementBanner
                 allowDismissal={false}
-                bannerText={bannerInfo.text || ''}
+                bannerText={bannerInfo!.text || ''}
                 headingText={expandedChannelBannerTitle}
             />
         );
@@ -118,7 +118,7 @@ export function ChannelBanner({bannerInfo, isTopItem}: Props) {
 
     // banner info will be complete when this component renders,
     // but this check is still here to avoid having to use non-null assertion everywhere.
-    if (!bannerInfo.text || !bannerInfo.background_color) {
+    if (!bannerInfo || !bannerInfo.enabled || !bannerInfo.text || !bannerInfo.background_color) {
         return null;
     }
 
