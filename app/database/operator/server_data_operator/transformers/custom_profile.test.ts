@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {OperationType} from '@constants/database';
+import {OperationType, MM_TABLES} from '@constants/database';
 import {transformCustomProfileFieldRecord, transformCustomProfileAttributeRecord} from '@database/operator/server_data_operator/transformers/custom_profile';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 
@@ -36,7 +36,7 @@ describe('*** CUSTOM PROFILE Prepare Records Test ***', () => {
         });
 
         expect(preparedRecord).toBeTruthy();
-        expect(preparedRecord!.collection.table).toBe('CustomProfileField');
+        expect(preparedRecord!.collection.table).toBe(MM_TABLES.SERVER.CUSTOM_PROFILE_FIELD);
     });
 
     it('=> transformCustomProfileFieldRecord: should handle update action', async () => {
@@ -65,6 +65,10 @@ describe('*** CUSTOM PROFILE Prepare Records Test ***', () => {
             update: jest.fn(),
             destroyPermanently: jest.fn(),
             markAsDeleted: jest.fn(),
+            prepareUpdate: jest.fn().mockImplementation((callback) => {
+                callback();
+                return mockRecord;
+            }),
             collection: {table: 'CustomProfileField'},
         } as unknown as CustomProfileFieldModel;
 
@@ -93,7 +97,7 @@ describe('*** CUSTOM PROFILE Prepare Records Test ***', () => {
     });
 
     it('=> transformCustomProfileAttributeRecord: should return a record of type CustomProfileAttribute', async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         const database = await createTestConnection({databaseName: 'custom_profile_attribute_prepare_records', setActive: true});
         expect(database).toBeTruthy();
@@ -118,29 +122,36 @@ describe('*** CUSTOM PROFILE Prepare Records Test ***', () => {
     });
 
     it('should throw error for non-create action without record', async () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const database = await createTestConnection({databaseName: 'custom_profile_field_error_records', setActive: true});
         expect(database).toBeTruthy();
 
-        await expect(transformCustomProfileFieldRecord({
-            action: OperationType.UPDATE,
-            database: database!,
-            value: {
-                record: undefined,
-                raw: {
-                    id: 'field1',
-                    group_id: 'group1',
-                    name: 'Test Field',
-                    type: 'text',
-                    target_id: 'target1',
-                    target_type: 'user',
-                    create_at: 1596032651748,
-                    update_at: 1596032651748,
-                    delete_at: 0,
-                    attrs: {required: true},
+        try {
+            await transformCustomProfileFieldRecord({
+                action: OperationType.UPDATE,
+                database: database!,
+                value: {
+                    record: undefined,
+                    raw: {
+                        id: 'field1',
+                        group_id: 'group1',
+                        name: 'Test Field',
+                        type: 'text',
+                        target_id: 'target1',
+                        target_type: 'user',
+                        create_at: 1596032651748,
+                        update_at: 1596032651748,
+                        delete_at: 0,
+                        attrs: {required: true},
+                    },
                 },
-            },
-        })).rejects.toThrow('Record not found for non create action');
+            });
+
+            // Should not reach here
+            expect(true).toBe(false);
+        } catch (error: any) {
+            expect(error.message).toBe('Record not found for non create action');
+        }
     });
 });

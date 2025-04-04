@@ -137,6 +137,6 @@ type RawValue =
   | TeamThreadsSync
   | UserProfile
   | SlashCommand
-  | CustomProfileAttributeSimple
+  | CustomProfileAttribute
   | CustomProfileField
   | Pick<ChannelMembership, 'channel_id' | 'user_id'>
