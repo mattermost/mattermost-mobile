@@ -9,7 +9,8 @@ import {Navigation, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts/global_drafts';
-import {goToScreen} from '@screens/navigation';
+import {goToScreen, popTo} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 
 import {
@@ -63,6 +64,10 @@ jest.mock('@utils/helpers', () => ({
 
 jest.mock('@screens/navigation', () => ({
     goToScreen: jest.fn(),
+}));
+
+jest.mock('@screens/navigation', () => ({
+    popTo: jest.fn(),
 }));
 
 describe('updateDraftFile', () => {
@@ -339,6 +344,16 @@ describe('switchToGlobalDrafts', () => {
         await switchToGlobalDrafts(serverUrl, teamId, DRAFT_SCREEN_TAB_DRAFTS);
         expect(goToScreen).toHaveBeenCalledWith(Screens.GLOBAL_DRAFTS, '', {initialTab: DRAFT_SCREEN_TAB_DRAFTS}, {topBar: {visible: false}});
         expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should call popto from navigation store if Global draft is alreay present', async () => {
+        NavigationStore.addScreenToStack(Screens.GLOBAL_DRAFTS);
+        NavigationStore.addScreenToStack(Screens.CHANNEL);
+        NavigationStore.addScreenToStack(Screens.THREAD);
+
+        await switchToGlobalDrafts(serverUrl, teamId, DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
+
+        expect(popTo).toHaveBeenCalledWith(Screens.GLOBAL_DRAFTS);
     });
 
     it('if prepareRecordsOnly is true, should emit navigation event on tablet for Scheduled post tab and also call batchRecord', async () => {

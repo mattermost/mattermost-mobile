@@ -5,7 +5,7 @@ import {act, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 import {Text} from 'react-native';
 
-import {DRAFT_SCREEN_TAB_DRAFTS} from '@screens/global_drafts/global_drafts';
+import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts/global_drafts';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -59,11 +59,41 @@ describe('TabbedContents', () => {
             await TestHelper.wait(300); // Wait until the badge renders
         });
 
+        const scheduledTab = screen.getByTestId('scheduled_post_tab');
+        const draftTab = screen.getByTestId('draft_tab');
+
         // Check that the drafts tab is selected
-        expect(screen.getByTestId('draft_tab')).toBeTruthy();
-        expect(screen.getByTestId('drafts-content')).toBeTruthy();
+        expect(scheduledTab.props.accessibilityState).toEqual({selected: false});
+        expect(draftTab.props.accessibilityState).toEqual({selected: true});
 
         // Check that the counts are displayed correctly
+        expect(screen.getByText('5')).toBeTruthy();
+        expect(screen.getByText('3')).toBeTruthy();
+    });
+
+    it('renders correctly with initial tab set to scheduled post', async () => {
+        const props: Parameters<typeof TabbedContents>[0] = {
+            ...defaultProps,
+            initialTab: DRAFT_SCREEN_TAB_SCHEDULED_POSTS,
+        };
+        renderWithIntlAndTheme(<TabbedContents {...props}/>);
+
+        await act(async () => {
+            await TestHelper.wait(300); // Wait until the badge renders
+        });
+
+        await act(async () => {
+            await TestHelper.wait(300);
+        });
+
+        const scheduledTab = screen.getByTestId('scheduled_post_tab');
+        const draftTab = screen.getByTestId('draft_tab');
+
+        // ✅ Check accessibilityState
+        expect(scheduledTab.props.accessibilityState).toEqual({selected: true});
+        expect(draftTab.props.accessibilityState).toEqual({selected: false});
+
+        // Badge counts
         expect(screen.getByText('5')).toBeTruthy();
         expect(screen.getByText('3')).toBeTruthy();
     });

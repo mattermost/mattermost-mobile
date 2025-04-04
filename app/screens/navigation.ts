@@ -523,6 +523,15 @@ export async function popTopScreen(screenId?: AvailableScreens) {
     }
 }
 
+export async function popTo(screenId: AvailableScreens) {
+    try {
+        await Navigation.popTo(screenId);
+    } catch (error) {
+        // RNN returns a promise rejection if there are no screens
+        // atop the root screen to pop. We'll do nothing in this case.
+    }
+}
+
 export async function popToRoot() {
     const componentId = NavigationStore.getVisibleScreen();
 

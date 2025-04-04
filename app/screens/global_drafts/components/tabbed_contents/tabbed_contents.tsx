@@ -39,8 +39,8 @@ const getStyleSheet = (width: number) => {
 
 export default function TabbedContents({draftsCount, scheduledPostCount, initialTab, drafts, scheduledPosts}: Props) {
     const [selectedTab, setSelectedTab] = useState(initialTab);
-    const [freezeDraft, setFreezeDraft] = useState(false);
-    const [freezeScheduledPosts, setFreezeScheduledPosts] = useState(true);
+    const [freezeDraft, setFreezeDraft] = useState(initialTab !== DRAFT_SCREEN_TAB_DRAFTS);
+    const [freezeScheduledPosts, setFreezeScheduledPosts] = useState(initialTab !== DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
     const [width, setWidth] = useState(0);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
