@@ -54,6 +54,7 @@ describe('Account - Edit Profile', () => {
         await expect(EditProfileScreen.closeButton).toBeVisible();
         await expect(EditProfileScreen.saveButton).toBeVisible();
         await expect(EditProfileScreen.getEditProfilePicture(testUser.id)).toBeVisible();
+        await waitFor(EditProfileScreen.firstNameInput).toExist().withTimeout(2000);
         if (isIos()) {
             await expect(EditProfileScreen.firstNameInput).toHaveValue(testUser.first_name);
             await expect(EditProfileScreen.lastNameInput).toHaveValue(testUser.last_name);
