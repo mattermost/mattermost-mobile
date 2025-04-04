@@ -167,7 +167,7 @@ const Channel = ({
     );
 };
 
-function shouldShowChannelBanner(channelType: ChannelType, license?: ClientLicense, bannerInfo?: ChannelBannerInfo): boolean {
+export function shouldShowChannelBanner(channelType: ChannelType, license?: ClientLicense, bannerInfo?: ChannelBannerInfo): boolean {
     if (!license || !bannerInfo) {
         return false;
     }
