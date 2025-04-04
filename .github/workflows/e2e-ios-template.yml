@@ -146,25 +146,6 @@ jobs:
           brew tap wix/brew
           brew install applesimutils
 
-      # - name: Download iOS Simulator Build from Previous Run
-      #   run: |
-      #        curl -L -o artifact.zip \
-      #           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-      #         -H "Accept: application/vnd.github.v3+json" \
-      #         "https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/2865025812/zip"
-
-      #         unzip -o artifact.zip -d mobile-artifacts/
-      #         inner_zip=$(find mobile-artifacts/ -name "*.zip" | head -n 1)
-      #         if [ -n "$inner_zip" ]; then
-      #           unzip -o "$inner_zip" -d mobile-artifacts/
-      #         else
-      #           echo "❌ No inner zip file found!"
-      #         fi
-
-      #         echo "✅ iOS Simulator Build Downloaded*******************"
-      #         rm -rf mobile-artifacts/*.zip
-      #         ls -la mobile-artifacts
-
       - name: Download iOS Simulator Build
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
@@ -176,8 +157,6 @@ jobs:
           unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
           # delete zip file
           rm -f mobile-artifacts/*.zip
-          # List the contents of the directory
-          ls -la mobile-artifacts
 
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth
@@ -201,6 +180,11 @@ jobs:
         with:
           test_server_url: ${{ env.SITE_1_URL }}
 
+      - name: Set .env with RUNNING_E2E=true
+        run: |
+          cat > .env <<EOF
+          echo "RUNNING_E2E=true" >> .env
+
       - name: Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
         run: |
@@ -211,7 +195,6 @@ jobs:
           npm run clean-detox
           npm run detox:config-gen
           npm run e2e:ios-test -- ${{ matrix.specs }}
-          # npm run e2e:ios-test -- detox/e2e/test/account/about.e2e.ts detox/e2e/test/account/settings.e2e.ts detox/e2e/test/account/account_menu.e2e.ts
         env:
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
           DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"      

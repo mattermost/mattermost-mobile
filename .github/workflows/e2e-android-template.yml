@@ -170,6 +170,11 @@ jobs:
           cd detox
           npm install
 
+      - name: Set .env with RUNNING_E2E=true
+        run: |
+          cat > .env <<EOF
+          echo "RUNNING_E2E=true" >> .env
+  
       - name: Create destination path
         run: mkdir -p android/app/build
 

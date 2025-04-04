@@ -82,6 +82,7 @@ start_server() {
     cd ..
     RUNNING_E2E=true npm run start &
     local timeout=120 interval=5 elapsed=0
+    sleep $timeout
 
     until nc -z localhost 8081; do
         if [[ $elapsed -ge $timeout ]]; then

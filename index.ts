@@ -4,7 +4,7 @@
 import TurboLogger from '@mattermost/react-native-turbo-log';
 import {LogBox, Platform, UIManager} from 'react-native';
 import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
-import {RUNNING_E2E} from 'react-native-dotenv';
+import {RUNNING_E2E} from '@env';
 import 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 
