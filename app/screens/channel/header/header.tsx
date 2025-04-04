@@ -18,11 +18,11 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
-import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
+import {bottomSheet, goToPlaybookRun, goToPlaybookRuns, popTopScreen, showModal} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -45,12 +45,15 @@ type ChannelProps = {
     displayName: string;
     isOwnDirectMessage: boolean;
     memberCount?: number;
-    searchTerm: string;
     teamId: string;
     callsEnabledInChannel: boolean;
     groupCallsAllowed: boolean;
     isTabletView?: boolean;
     shouldRenderBookmarks: boolean;
+    hasPlaybookRuns: boolean;
+    playbooksActiveRuns: number;
+
+    // searchTerm: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -79,9 +82,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const ChannelHeader = ({
-    canAddBookmarks, channelId, channelType, componentId, customStatus, displayName, hasBookmarks,
-    isBookmarksEnabled, isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
-    searchTerm, teamId, callsEnabledInChannel, groupCallsAllowed, isTabletView, shouldRenderBookmarks,
+    canAddBookmarks,
+    channelId,
+    channelType,
+    componentId,
+    customStatus,
+    displayName,
+    hasBookmarks,
+    isBookmarksEnabled,
+    isCustomStatusEnabled,
+    isCustomStatusExpired,
+    isOwnDirectMessage,
+    memberCount,
+    teamId,
+    callsEnabledInChannel,
+    groupCallsAllowed,
+    isTabletView,
+    shouldRenderBookmarks,
+    playbooksActiveRuns,
+    hasPlaybookRuns,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -91,6 +110,8 @@ const ChannelHeader = ({
     const serverUrl = useServerUrl();
 
     const callsConfig = getCallsConfig(serverUrl);
+
+    const hasOneActivePlaybookRun = playbooksActiveRuns === 1;
 
     // NOTE: callsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
     //   which ultimately comes from channel/index.tsx, and observeIsCallsEnabledInChannel
@@ -117,7 +138,7 @@ const ChannelHeader = ({
         popTopScreen(componentId);
     }, [componentId]);
 
-    const onTitlePress = useCallback(preventDoubleTap(() => {
+    const onTitlePress = usePreventDoubleTap(useCallback((() => {
         let title;
         switch (channelType) {
             case General.DM_CHANNEL:
@@ -144,7 +165,7 @@ const ChannelHeader = ({
             },
         };
         showModal(Screens.CHANNEL_INFO, title, {channelId, closeButtonId}, options);
-    }), [channelId, channelType, intl, theme]);
+    }), [channelId, channelType, intl, theme]));
 
     const onChannelQuickAction = useCallback(() => {
         if (isTablet) {
@@ -153,7 +174,13 @@ const ChannelHeader = ({
         }
 
         // When calls is enabled, we need space to move the "Copy Link" from a button to an option
-        const items = callsAvailable && !isDMorGM ? 3 : 2;
+        let items = 2;
+        if (callsAvailable && !isDMorGM) {
+            items += 1;
+        }
+        if (hasPlaybookRuns) {
+            items += 1;
+        }
         let height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
         if (Platform.OS === 'android') {
             height += BOTTOM_SHEET_ANDROID_OFFSET;
@@ -165,6 +192,7 @@ const ChannelHeader = ({
                     channelId={channelId}
                     callsEnabled={callsAvailable}
                     isDMorGM={isDMorGM}
+                    hasPlaybookRuns={hasPlaybookRuns}
                 />
             );
         };
@@ -176,9 +204,26 @@ const ChannelHeader = ({
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [channelId, isDMorGM, isTablet, onTitlePress, theme, callsAvailable]);
+    }, [isTablet, callsAvailable, isDMorGM, hasPlaybookRuns, theme, onTitlePress, channelId]);
 
-    const rightButtons: HeaderRightButton[] = useMemo(() => ([
+    const openPlaybooksRuns = useCallback(() => {
+        if (hasOneActivePlaybookRun) {
+            goToPlaybookRun(intl, undefined, channelId);
+            return;
+        }
+        goToPlaybookRuns(intl, channelId);
+    }, [channelId, hasOneActivePlaybookRun, intl]);
+
+    const rightButtons = useMemo(() => {
+        const buttons: HeaderRightButton[] = [];
+        if (playbooksActiveRuns) {
+            buttons.push({
+                iconName: 'product-playbooks',
+                onPress: openPlaybooksRuns,
+                buttonType: 'opacity',
+                count: playbooksActiveRuns,
+            });
+        }
 
         // {
         //     iconName: 'magnify',
@@ -189,12 +234,15 @@ const ChannelHeader = ({
         //         }
         //     },
         // },
-        {
+        buttons.push({
             iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
             onPress: onChannelQuickAction,
             buttonType: 'opacity',
             testID: 'channel_header.channel_quick_actions.button',
-        }]), [isTablet, searchTerm, onChannelQuickAction]);
+        });
+
+        return buttons;
+    }, [playbooksActiveRuns, onChannelQuickAction, openPlaybooksRuns]);
 
     let title = displayName;
     if (isOwnDirectMessage) {
@@ -242,7 +290,7 @@ const ChannelHeader = ({
         }
 
         return undefined;
-    }, [memberCount, customStatus, isCustomStatusExpired]);
+    }, [memberCount, customStatus, isCustomStatusExpired, theme.sidebarHeaderTextColor, styles.customStatusContainer, styles.customStatusEmoji, styles.customStatusText, styles.subtitle, isCustomStatusEnabled]);
 
     return (
         <>

@@ -9,6 +9,7 @@ import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators
 import {General} from '@constants';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {observeCanAddBookmarks, queryBookmarks} from '@queries/servers/channel_bookmark';
+import {queryActivePlaybookRunsPerChannel, queryPlaybookRunsPerChannel} from '@queries/servers/playbooks';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {
@@ -61,18 +62,18 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
 
     const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
 
-    const searchTerm = channel.pipe(
-        combineLatestWith(dmUser),
-        switchMap(([c, dm]) => {
-            if (c?.type === General.DM_CHANNEL) {
-                return of$(dm ? `@${dm.username}` : '');
-            } else if (c?.type === General.GM_CHANNEL) {
-                return of$(`@${c.name}`);
-            }
+    // const searchTerm = channel.pipe(
+    //     combineLatestWith(dmUser),
+    //     switchMap(([c, dm]) => {
+    //         if (c?.type === General.DM_CHANNEL) {
+    //             return of$(dm ? `@${dm.username}` : '');
+    //         } else if (c?.type === General.GM_CHANNEL) {
+    //             return of$(`@${c.name}`);
+    //         }
 
-            return of$(c?.name);
-        }),
-    );
+    //         return of$(c?.name);
+    //     }),
+    // );
 
     const displayName = channel.pipe(switchMap((c) => of$(c?.displayName)));
     const memberCount = channelInfo.pipe(
@@ -97,8 +98,14 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         isCustomStatusExpired,
         isOwnDirectMessage,
         memberCount,
-        searchTerm,
         teamId,
+        playbooksActiveRuns: queryActivePlaybookRunsPerChannel(database, channelId).observeCount(),
+        playbooksRuns: queryPlaybookRunsPerChannel(database, channelId).observeCount().pipe(
+            switchMap((v) => of$(v > 0)),
+            distinctUntilChanged(),
+        ),
+
+        // searchTerm,
     };
 });
 

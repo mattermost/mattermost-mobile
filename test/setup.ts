@@ -69,6 +69,8 @@ jest.mock('expo-web-browser', () => ({
 
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 
+jest.mock('@react-native-camera-roll/camera-roll', () => ({}));
+
 /* eslint-disable no-console */
 jest.mock('@database/manager');
 jest.doMock('react-native', () => {
