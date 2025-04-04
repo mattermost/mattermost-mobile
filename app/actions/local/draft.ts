@@ -6,9 +6,10 @@ import {DeviceEventEmitter, Image} from 'react-native';
 import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
-import {getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory} from '@queries/servers/team';
-import {goToScreen} from '@screens/navigation';
+import {goToScreen, popTo} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {isParsableUrl} from '@utils/url';
@@ -34,14 +35,21 @@ export const switchToGlobalDrafts = async (serverUrl: string, teamId?: string, i
             throw new Error('no team to switch to');
         }
 
-        await setCurrentTeamAndChannelId(operator, teamIdToUse, '');
+        const currentChannelId = await getCurrentChannelId(database);
+        await setCurrentTeamAndChannelId(operator, teamIdToUse, currentChannelId);
         const history = await addChannelToTeamHistory(operator, teamIdToUse, Screens.GLOBAL_DRAFTS, true);
         models.push(...history);
 
         if (!prepareRecordsOnly) {
-            await operator.batchRecords(models, 'switchToGlobalThreads');
+            await operator.batchRecords(models, 'switchToGlobalDrafts');
         }
         const params: goToScreenParams = {};
+
+        const isDraftAlreadyInNavigationStack = NavigationStore.getScreensInStack().includes(Screens.GLOBAL_DRAFTS);
+        if (isDraftAlreadyInNavigationStack) {
+            popTo(Screens.GLOBAL_DRAFTS);
+            return {models};
+        }
 
         params.initialTab = initialTab;
 

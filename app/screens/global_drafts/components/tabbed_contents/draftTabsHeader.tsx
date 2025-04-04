@@ -143,6 +143,7 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, o
                 <TouchableOpacity
                     onPress={onDraftTabPress}
                     testID='draft_tab'
+                    accessibilityState={{selected: selectedTab === DRAFT_TAB_INDEX}}
                 >
                     <View style={draftsContanerStyle}>
                         <FormattedText
@@ -156,6 +157,7 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, o
                 <TouchableOpacity
                     onPress={onScheduledPostTabPress}
                     testID='scheduled_post_tab'
+                    accessibilityState={{selected: selectedTab === DRAFT_SCREEN_TAB_SCHEDULED_POSTS}}
                 >
                     <View style={scheduledContainerStyle}>
                         <FormattedText
