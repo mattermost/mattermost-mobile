@@ -12,6 +12,7 @@ import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/con
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {sendMessageWithAlert} from '@utils/post';
+import {canPostDraftInChannelOrThread} from '@utils/scheduled_post';
 import {showSnackBar} from '@utils/snack_bar';
 
 import SendHandler from './send_handler';
@@ -36,8 +37,16 @@ jest.mock('@actions/local/draft', () => ({
     removeDraft: jest.fn(),
 }));
 
+jest.mock('@actions/remote/post', () => ({
+    createPost: jest.fn(),
+}));
+
 jest.mock('@utils/snack_bar', () => ({
     showSnackBar: jest.fn(),
+}));
+
+jest.mock('@utils/scheduled_post', () => ({
+    canPostDraftInChannelOrThread: jest.fn(),
 }));
 
 describe('components/post_draft/send_handler/SendHandler', () => {
@@ -218,6 +227,7 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         jest.mocked(createPost).mockResolvedValueOnce({
             data: true,
         });
+        jest.mocked(canPostDraftInChannelOrThread).mockResolvedValueOnce(true);
 
         const props = {
             ...baseProps,

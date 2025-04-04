@@ -71,7 +71,8 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
 
         // 9 items to display inline date-time picker, 4 items otherwise
         const iosNumberOfItems = customTimeSelected ? 9 : 4;
-        const numberOfItems = Platform.select({ios: iosNumberOfItems, default: 3});
+        const andriodNumberOfItems = customTimeSelected ? 4 : 3;
+        const numberOfItems = Platform.select({ios: iosNumberOfItems, default: andriodNumberOfItems});
         const COMPONENT_HEIGHT = TITLE_HEIGHT + (numberOfItems * ITEM_HEIGHT) + FOOTER_HEIGHT + bottomSheetAdjust;
         return [1, COMPONENT_HEIGHT];
     }, [customTimeSelected]);

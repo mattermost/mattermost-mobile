@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
 import {renderHook, act} from '@testing-library/react-hooks';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
-import {DeviceEventEmitter} from 'react-native';
+import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {getChannelTimezones} from '@actions/remote/channel';
 import {executeCommand, handleGotoLocation} from '@actions/remote/command';
@@ -14,11 +15,15 @@ import {handleCallsSlashCommand} from '@calls/actions';
 import {Events, Screens} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
+import DatabaseManager from '@database/manager';
 import DraftUploadManager from '@managers/draft_upload_manager';
+import {getPostById} from '@queries/servers/post';
 import * as DraftUtils from '@utils/draft';
 import {showSnackBar} from '@utils/snack_bar';
 
 import {useHandleSendMessage} from './handle_send_message';
+
+import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 
@@ -37,6 +42,13 @@ jest.mock('@context/server', () => ({
 jest.mock('@utils/snack_bar', () => ({
     showSnackBar: jest.fn(),
 }));
+jest.mock('@database/manager');
+jest.mock('@queries/servers/post');
+
+let operator: ServerDataOperator;
+const database = {
+    write: jest.fn(async (callback) => callback()),
+};
 
 describe('useHandleSendMessage', () => {
     const defaultProps = {
@@ -638,6 +650,18 @@ describe('useHandleSendMessage', () => {
     });
 
     describe('handle error while failing creating post from scheduled post and draft', () => {
+        const serverUrl = 'baseHandler.test.com';
+        beforeEach(async () => {
+            jest.clearAllMocks();
+            await DatabaseManager.init([serverUrl]);
+            operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+            DatabaseManager.getServerDatabaseAndOperator = jest.fn();
+            (DatabaseManager.getServerDatabaseAndOperator as jest.Mock).mockReturnValue({
+                database,
+                operator,
+            });
+        });
+
         it('should handle failed post creation', async () => {
             jest.mocked(createPost).mockResolvedValueOnce({
                 error: new Error('Failed to create post'),
@@ -663,6 +687,32 @@ describe('useHandleSendMessage', () => {
             });
             expect(defaultProps.clearDraft).not.toHaveBeenCalled();
             expect(DeviceEventEmitter.emit).not.toHaveBeenCalled();
+        });
+
+        it('should show alert when root post is not found', async () => {
+            jest.mocked(getPostById).mockResolvedValueOnce(undefined);
+
+            const props = {
+                ...defaultProps,
+                isFromDraftView: true,
+                rootId: 'root-post-id',
+                value: 'test message',
+            };
+
+            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+            await act(async () => {
+                await result.current.handleSendMessage();
+            });
+
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Sending post failed',
+                'Someone delete the message on which you tried to post a comment.',
+                [{text: 'Cancel', style: 'cancel'}],
+                {cancelable: false},
+            );
+
+            expect(defaultProps.clearDraft).not.toHaveBeenCalled();
         });
     });
 });

@@ -49,6 +49,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
+            flexShrink: 1,
+            maxWidth: '80%',
         },
         channelInfo: {
             display: 'flex',
@@ -73,6 +75,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         displayName: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'SemiBold'),
+            flexShrink: 1,
+            flexGrow: 1,
         },
         time: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -196,7 +200,11 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
             >
                 <View style={style.infoContainer}>
                     {headerComponent}
-                    <Text style={style.displayName}>
+                    <Text
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        style={style.displayName}
+                    >
                         {channel.displayName}
                     </Text>
                 </View>
