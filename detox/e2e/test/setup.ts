@@ -50,5 +50,5 @@ beforeAll(async () => {
 
 // Add this to speed up test cleanup
 afterAll(async () => {
-    await device.sendToHome();
+    await device.terminateApp();
 });
