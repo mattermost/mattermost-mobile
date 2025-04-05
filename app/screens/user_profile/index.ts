@@ -12,6 +12,7 @@ import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeCurrentUser, observeUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
+import {isDefaultChannel} from '@utils/channel';
 import {isSystemAdmin} from '@utils/user';
 
 import UserProfile from './user_profile';
@@ -30,8 +31,8 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
     const user = observeUser(database, userId);
     const teammateDisplayName = observeTeammateNameDisplay(database);
     const isChannelAdmin = channelId ? observeUserIsChannelAdmin(database, userId, channelId) : of$(false);
-    const isDefaultChannel = channel ? channel.pipe(
-        switchMap((c) => of$(c?.name === General.DEFAULT_CHANNEL)),
+    const isDC = channel ? channel.pipe(
+        switchMap((c) => of$(isDefaultChannel(c))),
     ) : of$(false);
     const isDirectMessage = channelId ? channel.pipe(
         switchMap((c) => of$(c?.type === General.DM_CHANNEL)),
@@ -60,7 +61,7 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
         enablePostUsernameOverride,
         isChannelAdmin,
         isCustomStatusEnabled,
-        isDefaultChannel,
+        isDefaultChannel: isDC,
         isDirectMessage,
         isMilitaryTime,
         isSystemAdmin: systemAdmin,
