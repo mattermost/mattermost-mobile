@@ -32,7 +32,7 @@ describe('useCollapsibleHeader', () => {
         expect(result.current).toEqual({
             defaultHeight: ViewConstants.DEFAULT_HEADER_HEIGHT,
             scrollPaddingTop: LARGE_HEADER_TITLE_HEIGHT,
-            headerHeight: {value: LARGE_HEADER_TITLE_HEIGHT},
+            headerHeight: {value: LARGE_HEADER_TITLE_HEIGHT, get: expect.any(Function)},
             ...commonHookResponse,
         });
     });
@@ -43,7 +43,7 @@ describe('useCollapsibleHeader', () => {
         expect(result.current).toEqual({
             defaultHeight: ViewConstants.DEFAULT_HEADER_HEIGHT,
             scrollPaddingTop: ViewConstants.DEFAULT_HEADER_HEIGHT,
-            headerHeight: {value: ViewConstants.DEFAULT_HEADER_HEIGHT},
+            headerHeight: {value: ViewConstants.DEFAULT_HEADER_HEIGHT, get: expect.any(Function)},
             ...commonHookResponse,
         });
     });
@@ -56,7 +56,7 @@ describe('useCollapsibleHeader', () => {
         expect(result.current).toEqual({
             defaultHeight: ViewConstants.TABLET_HEADER_HEIGHT,
             scrollPaddingTop: LARGE_HEADER_TITLE_HEIGHT,
-            headerHeight: {value: LARGE_HEADER_TITLE_HEIGHT},
+            headerHeight: {value: LARGE_HEADER_TITLE_HEIGHT, get: expect.any(Function)},
             ...commonHookResponse,
         });
     });
