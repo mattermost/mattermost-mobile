@@ -88,6 +88,9 @@ jest.mock('@calls/connection/connection', () => ({
         unmute: jest.fn(),
         waitForPeerConnection: jest.fn(() => Promise.resolve()),
         initializeVoiceTrack: jest.fn(),
+        initializeVideoTrack: jest.fn(),
+        startVideo: jest.fn(),
+        stopVideo: jest.fn(),
         sendReaction: jest.fn(),
     })),
 }));
@@ -260,7 +263,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -282,7 +285,7 @@ describe('Actions.Calls', () => {
         // Test error case
         newConnection.mockRejectedValueOnce(forceLogoutError);
         await act(async () => {
-            await expect(CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            await expect(CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, createIntl({
                 locale: 'en',
                 messages: {},
             }))).resolves.toStrictEqual({error: forceLogoutError});
@@ -297,7 +300,7 @@ describe('Actions.Calls', () => {
         newConnection.mockResolvedValueOnce(connection);
 
         await act(async () => {
-            const res = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            const res = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -316,7 +319,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -353,7 +356,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -386,7 +389,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'mysUserId', true, createIntl({
+            response = await CallsActions.joinCall('server1', 'channel-id', 'mysUserId', true, true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -1215,7 +1218,7 @@ describe('Actions.Calls', () => {
         addFakeCall('server1', 'channel-id');
 
         await act(async () => {
-            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -1226,12 +1229,60 @@ describe('Actions.Calls', () => {
         expect(getConnectionForTesting()?.initializeVoiceTrack).toHaveBeenCalled();
     });
 
+    it('startMyVideo', async () => {
+        renderHook(() => useCurrentCall());
+        addFakeCall('server1', 'channel-id');
+
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, createIntl({
+                locale: 'en',
+                messages: {},
+            }));
+            newCurrentCall('server1', 'channel-id', 'myUserId');
+        });
+
+        CallsActions.startMyVideo();
+        expect(getConnectionForTesting()?.startVideo).toHaveBeenCalled();
+    });
+
+    it('stopMyVideo', async () => {
+        renderHook(() => useCurrentCall());
+        addFakeCall('server1', 'channel-id');
+
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, createIntl({
+                locale: 'en',
+                messages: {},
+            }));
+            newCurrentCall('server1', 'channel-id', 'myUserId');
+        });
+
+        CallsActions.stopMyVideo();
+        expect(getConnectionForTesting()?.stopVideo).toHaveBeenCalled();
+    });
+
+    it('initializeVideoTrack', async () => {
+        renderHook(() => useCurrentCall());
+        addFakeCall('server1', 'channel-id');
+
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, createIntl({
+                locale: 'en',
+                messages: {},
+            }));
+            newCurrentCall('server1', 'channel-id', 'myUserId');
+        });
+
+        CallsActions.initializeVideoTrack();
+        expect(getConnectionForTesting()?.initializeVideoTrack).toHaveBeenCalledWith(false);
+    });
+
     it('sendReaction', async () => {
         renderHook(() => useCurrentCall());
         addFakeCall('server1', 'channel-id');
 
         await act(async () => {
-            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, createIntl({
                 locale: 'en',
                 messages: {},
             }));
@@ -1259,7 +1310,7 @@ describe('Actions.Calls', () => {
         intl.formatMessage = jest.fn();
 
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, intl);
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, intl);
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
@@ -1302,7 +1353,7 @@ describe('Actions.Calls', () => {
         intl.formatMessage = jest.fn();
 
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, intl);
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, intl);
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
@@ -1345,7 +1396,7 @@ describe('Actions.Calls', () => {
         intl.formatMessage = jest.fn();
 
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, intl);
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, true, intl);
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');

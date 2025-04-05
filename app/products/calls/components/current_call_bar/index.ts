@@ -39,6 +39,10 @@ const enhanced = withObservables([], () => {
         switchMap((gs) => of$(gs.micPermissionsGranted)),
         distinctUntilChanged(),
     );
+    const cameraPermissionsGranted = observeGlobalCallsState().pipe(
+        switchMap((gs) => of$(gs.cameraPermissionsGranted)),
+        distinctUntilChanged(),
+    );
 
     return {
         displayName,
@@ -46,6 +50,7 @@ const enhanced = withObservables([], () => {
         sessionsDict: observeCurrentSessionsDict(),
         teammateNameDisplay,
         micPermissionsGranted,
+        cameraPermissionsGranted,
         ...observeEndCallDetails(),
     };
 });

@@ -24,6 +24,7 @@ export {
     hostRemove,
     setPreferredAudioRoute,
     initializeVoiceTrack,
+    initializeVideoTrack,
     sendReaction,
     endCall,
     loadCallForChannel,
@@ -31,6 +32,8 @@ export {
     checkIsCallsPluginEnabled,
     canEndCall,
     getEndCallMessage,
+    startMyVideo,
+    stopMyVideo,
 } from './calls';
 
-export {hasMicrophonePermission} from './permissions';
+export {hasMicrophonePermission, hasCameraPermission} from './permissions';
