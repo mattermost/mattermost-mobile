@@ -31,8 +31,9 @@ import Animated, {
     Easing,
 } from 'react-native-reanimated';
 
+import {CHIP_HEIGHT} from '@components/chips/constants';
+import SelectedChip from '@components/chips/selected_chip';
 import CompassIcon from '@components/compass_icon';
-import SelectedChip, {USER_CHIP_HEIGHT} from '@components/selected_chip';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -67,7 +68,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingHorizontal: 0,
         paddingTop: 0,
         paddingBottom: 0,
-        height: USER_CHIP_HEIGHT,
+        height: CHIP_HEIGHT,
         flexGrow: 1,
         flexShrink: 0,
         flexBasis: 'auto',
@@ -222,7 +223,7 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>(({
         }
         res.push({
             borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
-            minHeight: (USER_CHIP_HEIGHT * 2.5) + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
+            minHeight: (CHIP_HEIGHT * 2.5) + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
         });
 
         if (focused) {
@@ -282,7 +283,6 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>(({
                                 text={chipValue}
                                 testID={`${testID}.${chipValue}`}
                                 onRemove={onChipRemove}
-                                containerStyle={styles.chipContainer}
                             />
                         ))}
                         <TextInput

@@ -16,14 +16,14 @@ import {dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    channelId: string;
+    channelId?: string;
     location: string;
     type?: BottomSheetList;
     users: UserModel[];
 };
 
 type ItemProps = {
-    channelId: string;
+    channelId?: string;
     location: string;
     user: UserModel;
 }
