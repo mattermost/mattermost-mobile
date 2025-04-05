@@ -16,6 +16,7 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import SecurityManager from '@managers/security_manager';
+import {shouldShowChannelBanner} from '@screens/channel/channel_feature_checks';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -40,6 +41,8 @@ type ChannelProps = {
     channelType: ChannelType;
     hasGMasDMFeature: boolean;
     includeBookmarkBar?: boolean;
+    license?: ClientLicense;
+    bannerInfo?: ChannelBannerInfo;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -64,6 +67,8 @@ const Channel = ({
     currentUserId,
     hasGMasDMFeature,
     includeBookmarkBar,
+    license,
+    bannerInfo,
 }: ChannelProps) => {
     useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
@@ -109,6 +114,8 @@ const Channel = ({
 
     const showFloatingCallContainer = showJoinCallBanner || isInACall || showIncomingCalls;
 
+    const showChannelBanner = shouldShowChannelBanner(channelType, license, bannerInfo);
+
     return (
         <FreezeScreen>
             <SafeAreaView
@@ -126,6 +133,7 @@ const Channel = ({
                     groupCallsAllowed={groupCallsAllowed}
                     isTabletView={isTabletView}
                     shouldRenderBookmarks={shouldRender}
+                    shouldRenderChannelBanner={showChannelBanner}
                 />
                 {shouldRender &&
                 <ExtraKeyboardProvider>
@@ -151,6 +159,7 @@ const Channel = ({
                         showIncomingCalls={showIncomingCalls}
                         isInACall={isInACall}
                         includeBookmarkBar={includeBookmarkBar}
+                        includeChannelBanner={showChannelBanner}
                     />
                 }
             </SafeAreaView>

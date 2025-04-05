@@ -19,6 +19,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
+import ChannelBanner from '@screens/channel/header/channel_banner';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -51,6 +52,7 @@ type ChannelProps = {
     groupCallsAllowed: boolean;
     isTabletView?: boolean;
     shouldRenderBookmarks: boolean;
+    shouldRenderChannelBanner: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -81,7 +83,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelHeader = ({
     canAddBookmarks, channelId, channelType, componentId, customStatus, displayName, hasBookmarks,
     isBookmarksEnabled, isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
-    searchTerm, teamId, callsEnabledInChannel, groupCallsAllowed, isTabletView, shouldRenderBookmarks,
+    searchTerm, teamId, callsEnabledInChannel, groupCallsAllowed, isTabletView, shouldRenderBookmarks, shouldRenderChannelBanner,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -244,6 +246,8 @@ const ChannelHeader = ({
         return undefined;
     }, [memberCount, customStatus, isCustomStatusExpired]);
 
+    const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;
+
     return (
         <>
             <NavigationHeader
@@ -260,11 +264,18 @@ const ChannelHeader = ({
             <View style={contextStyle}>
                 <RoundedHeaderContext/>
             </View>
-            {isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks &&
+            {showBookmarkBar &&
             <ChannelHeaderBookmarks
                 canAddBookmarks={canAddBookmarks}
                 channelId={channelId}
             />
+            }
+            {
+                shouldRenderChannelBanner &&
+                <ChannelBanner
+                    channelId={channelId}
+                    isTopItem={!showBookmarkBar}
+                />
             }
         </>
     );
