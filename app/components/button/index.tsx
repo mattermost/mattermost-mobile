@@ -26,11 +26,14 @@ type Props = ConditionalProps & {
     iconComponent?: ReactNode;
     disabled?: boolean;
     hitSlop?: Insets;
+    isIconOnTheRight?: boolean;
 };
 
 const styles = StyleSheet.create({
-    container: {flexDirection: 'row'},
-    icon: {marginRight: 7},
+    container: {
+        flexDirection: 'row',
+        gap: 7,
+    },
 });
 
 const Button = ({
@@ -47,6 +50,7 @@ const Button = ({
     testID,
     iconName,
     iconSize,
+    isIconOnTheRight = false,
     iconComponent,
     disabled,
     hitSlop,
@@ -88,7 +92,7 @@ const Button = ({
                 name={iconName!}
                 size={iconSize}
                 color={StyleSheet.flatten(txtStyle).color}
-                style={styles.icon}
+                testID={`${testID}-icon`}
             />
         );
     }
@@ -102,14 +106,18 @@ const Button = ({
             disabled={disabled}
             hitSlop={hitSlop}
         >
-            <View style={textContainerStyle}>
-                {icon}
+            <View
+                style={textContainerStyle}
+                testID={`${testID}-text-container`}
+            >
+                {!isIconOnTheRight && icon}
                 <Text
                     style={txtStyle}
                     numberOfLines={1}
                 >
                     {text}
                 </Text>
+                {isIconOnTheRight && icon}
             </View>
         </ElementButton>
     );

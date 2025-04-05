@@ -1,58 +1,51 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import TurboLogger from '@mattermost/react-native-turbo-log';
-import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
-import {deviceName} from 'expo-device';
-import React from 'react';
-import {Alert, Platform} from 'react-native';
-import Share from 'react-native-share';
+import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 
 import SettingItem from '@components/settings/item';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {pathWithPrefix} from '@utils/files';
-import {preventDoubleTap} from '@utils/tap';
+import {goToScreen} from '@screens/navigation';
+import {shareLogs} from '@utils/share_logs';
+
+import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
 
 type ReportProblemProps = {
-    buildNumber: string;
-    currentTeamId: string;
-    currentUserId: string;
-    supportEmail: string;
-    version: string;
-    siteName: string;
-};
+    allowDownloadLogs?: boolean;
+    reportAProblemMail?: string;
+    reportAProblemType?: string;
+    siteName?: string;
+    metadata: ReportAProblemMetadata;
+}
 
-const ReportProblem = ({buildNumber, currentTeamId, currentUserId, siteName, supportEmail, version}: ReportProblemProps) => {
+const ReportProblem = ({
+    allowDownloadLogs,
+    reportAProblemMail,
+    reportAProblemType,
+    siteName,
+    metadata,
+}: ReportProblemProps) => {
     const theme = useTheme();
+    const intl = useIntl();
 
-    const openEmailClient = preventDoubleTap(async () => {
-        try {
-            const logPaths = await TurboLogger.getLogPaths();
-            const attachments = logPaths.map((path) => pathWithPrefix('file://', path));
-            await Share.open({
-                subject: `Problem with ${siteName} React Native app`,
-                email: supportEmail,
-                failOnCancel: false,
-                urls: attachments,
-                message: [
-                    'Please share a description of the problem:\n\n',
-                    `Current User Id: ${currentUserId}`,
-                    `Current Team Id: ${currentTeamId}`,
-                    `Server Version: ${version} (Build ${buildNumber})`,
-                    `App Version: ${nativeApplicationVersion} (Build ${nativeBuildVersion})`,
-                    `App Platform: ${Platform.OS}`,
-                    `Device Model: ${deviceName}`,
-                ].join('\n'),
-            });
-        } catch (e: any) {
-            Alert.alert('Error', e.message);
+    const onPress = useCallback(() => {
+        if (allowDownloadLogs || reportAProblemType !== 'email') {
+            const title = intl.formatMessage({id: 'report_problem.title', defaultMessage: 'Report a problem'});
+            goToScreen(Screens.REPORT_PROBLEM, title);
+        } else {
+            shareLogs(metadata, siteName, reportAProblemMail, true);
         }
-    });
+    }, [allowDownloadLogs, intl, metadata, reportAProblemMail, reportAProblemType, siteName]);
 
+    if (reportAProblemType === 'hidden') {
+        return null;
+    }
     return (
         <SettingItem
             optionLabelTextStyle={{color: theme.linkColor}}
-            onPress={openEmailClient}
+            onPress={onPress}
             optionName='report_problem'
             separator={false}
             testID='settings.report_problem.option'
