@@ -103,6 +103,7 @@ const Files = ({
                     style={[container, styles.marginTop]}
                     testID={`${file.id}-file-container`}
                     key={file.id}
+                    testID='file_attachment'
                 >
                     <File
                         galleryIdentifier={galleryIdentifier}
