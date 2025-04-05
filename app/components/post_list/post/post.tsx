@@ -36,6 +36,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 import type {SearchPattern} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type PostProps = {
     appsEnabled: boolean;
@@ -57,7 +58,7 @@ type PostProps = {
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
     isPostPriorityEnabled: boolean;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
     rootId?: string;
     previousPost?: PostModel;

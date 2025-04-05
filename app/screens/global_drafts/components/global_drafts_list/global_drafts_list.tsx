@@ -18,10 +18,11 @@ import DraftSwipeActions from './draft_swipe_actions';
 import DraftTooltip from './draft_tooltip';
 
 import type DraftModel from '@typings/database/models/servers/draft';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     allDrafts: DraftModel[];
-    location: string;
+    location: AvailableScreens;
     tutorialWatched: boolean;
 }
 

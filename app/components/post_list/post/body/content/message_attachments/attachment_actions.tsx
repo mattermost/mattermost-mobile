@@ -6,12 +6,20 @@ import React from 'react';
 import ActionButton from './action_button';
 import ActionMenu from './action_menu';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     actions: PostAction[];
     postId: string;
     theme: Theme;
+    location: AvailableScreens;
 }
-const AttachmentActions = ({actions, postId, theme}: Props) => {
+const AttachmentActions = ({
+    actions,
+    postId,
+    theme,
+    location,
+}: Props) => {
     const content: React.ReactNode[] = [];
 
     actions.forEach((action) => {
@@ -31,6 +39,7 @@ const AttachmentActions = ({actions, postId, theme}: Props) => {
                         options={action.options}
                         postId={postId}
                         disabled={action.disabled}
+                        location={location}
                     />,
                 );
                 break;

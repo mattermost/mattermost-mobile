@@ -10,11 +10,12 @@ import {useIsTablet} from '@hooks/device';
 import UserListItem from './user_list_item';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 import type {ListRenderItemInfo} from 'react-native';
 
 type Props = {
     channelId: string;
-    location: string;
+    location: AvailableScreens;
     users: UserModel[];
     userAcknowledgements: Record<string, number>;
     timezone?: UserTimezone;

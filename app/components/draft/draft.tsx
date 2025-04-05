@@ -21,10 +21,11 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     channel: ChannelModel;
-    location: string;
+    location: AvailableScreens;
     draftReceiverUser?: UserModel;
     draft: DraftModel;
     layoutWidth: number;

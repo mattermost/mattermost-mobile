@@ -6,6 +6,7 @@ import React, {useCallback, useMemo, useState} from 'react';
 import AutocompleteSelector from '@components/autocomplete_selector';
 import BoolSetting from '@components/settings/bool_setting';
 import TextSetting from '@components/settings/text_setting';
+import {Screens} from '@constants';
 
 type HookResult<T> = [
     {[x: string]: T},
@@ -28,6 +29,7 @@ export const useStringProp = (
             secureTextEntry={false}
             testID={`${propName}.input`}
             value={value}
+            location={Screens.COMPONENT_LIBRARY}
         />
     ), [value, propName, isTextarea]);
     const preparedProp = useMemo(() => ({[propName]: value}), [propName, value]);
@@ -46,6 +48,7 @@ export const useBooleanProp = (
             testID={`${propName}.input`}
             value={value}
             label={propName}
+            location={Screens.COMPONENT_LIBRARY}
         />
     ), [propName, value]);
     const preparedProp = useMemo(() => ({[propName]: value}), [propName, value]);
@@ -99,6 +102,7 @@ export const useDropdownProp = (
             onSelected={onChange}
             options={renderedOptions}
             selected={value}
+            location={Screens.COMPONENT_LIBRARY}
         />
     ), [onChange, propName, renderedOptions, value]);
     const preparedProp = useMemo(() => (value === ALL_OPTION ? undefined : ({[propName]: value})), [propName, value]);

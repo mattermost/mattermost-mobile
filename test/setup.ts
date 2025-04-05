@@ -81,6 +81,7 @@ jest.doMock('react-native', () => {
         InteractionManager: RNInteractionManager,
         NativeModules: RNNativeModules,
         Linking: RNLinking,
+        Keyboard: RNKeyboard,
     } = ReactNative;
 
     const Alert = {
@@ -211,6 +212,12 @@ jest.doMock('react-native', () => {
         }),
     };
 
+    const Keyboard = {
+        ...RNKeyboard,
+        dismiss: jest.fn(),
+        addListener: jest.fn(),
+    };
+
     return Object.setPrototypeOf({
         Platform: {
             ...Platform,
@@ -231,6 +238,7 @@ jest.doMock('react-native', () => {
         InteractionManager,
         NativeModules,
         Linking,
+        Keyboard,
     }, ReactNative);
 });
 
@@ -348,6 +356,7 @@ jest.mock('react-native-share', () => ({
 }));
 
 jest.mock('@screens/navigation', () => ({
+    ...jest.requireActual('@screens/navigation'),
     resetToChannel: jest.fn(),
     resetToSelectServer: jest.fn(),
     resetToTeams: jest.fn(),

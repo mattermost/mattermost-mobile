@@ -11,7 +11,7 @@ import {fetchProfiles, searchProfiles} from '@actions/remote/user';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
 import ServerUserList from '@components/server_user_list';
-import {General, View as ViewConstants} from '@constants';
+import {General, Screens, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
@@ -571,6 +571,7 @@ function IntegrationSelector(
                         searchFunction={userSearchFunction}
                         createFilter={createUserFilter}
                         testID={'integration_selector.user_list'}
+                        location={Screens.INTEGRATION_SELECTOR}
                     />
                 );
             default:

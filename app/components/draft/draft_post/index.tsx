@@ -11,10 +11,11 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import DraftFiles from './draft_files';
 
 import type DraftModel from '@typings/database/models/servers/draft';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     draft: DraftModel;
-    location: string;
+    location: AvailableScreens;
     layoutWidth: number;
 }
 

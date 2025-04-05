@@ -10,13 +10,14 @@ import ShowMoreButton from '@components/post_list/post/body/message/show_more_bu
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 
 import type {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
     blockStyles?: MarkdownBlockStyles;
     channelId: string;
     hasThumbnail?: boolean;
-    location: string;
+    location: AvailableScreens;
     metadata?: PostMetadata | null;
     textStyles?: MarkdownTextStyles;
     theme: Theme;

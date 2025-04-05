@@ -25,7 +25,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
-import {openAsBottomSheet} from '@screens/navigation';
+import {openUserProfileModal, openAsBottomSheet} from '@screens/navigation';
 
 import {useTryCallsFunction, usePermissionsChecker, useCallsAdjustment, useHostControlsAvailable, useHostMenus} from './hooks';
 
@@ -74,6 +74,7 @@ jest.mock('@queries/servers/user', () => ({
 
 jest.mock('@screens/navigation', () => ({
     openAsBottomSheet: jest.fn(),
+    openUserProfileModal: jest.fn(),
 }));
 
 describe('Calls Hooks', () => {
@@ -267,9 +268,13 @@ describe('Calls Hooks', () => {
                 await result.current.onPress(mockSession)();
             });
 
-            expect(openAsBottomSheet).toHaveBeenCalledWith(expect.objectContaining({
-                screen: Screens.USER_PROFILE,
-            }));
+            expect(openUserProfileModal).toHaveBeenCalledWith(
+                expect.any(Object),
+                expect.any(Object),
+                expect.objectContaining({
+                    userId: mockSession.userId,
+                }),
+            );
         });
     });
 });

@@ -7,6 +7,7 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import BoolSetting from '@components/settings/bool_setting';
 import RadioSetting from '@components/settings/radio_setting';
 import TextSetting from '@components/settings/text_setting';
+import {Screens} from '@constants';
 import {selectKeyboardType as selectKB} from '@utils/integrations';
 import {filterOptions} from '@utils/message_attachment';
 
@@ -109,6 +110,7 @@ function DialogElement({
                     secureTextEntry={subtype === 'password'}
                     disabled={false}
                     testID={testID}
+                    location={Screens.INTERACTIVE_DIALOG}
                 />
             );
         case 'select':
@@ -126,6 +128,7 @@ function DialogElement({
                     selected={getStringValue(value)}
                     roundedBorders={false}
                     testID={testID}
+                    location={Screens.INTERACTIVE_DIALOG}
                 />
             );
         case 'radio':
@@ -138,6 +141,7 @@ function DialogElement({
                     onChange={handleChange}
                     testID={testID}
                     value={getStringValue(value)}
+                    location={Screens.INTERACTIVE_DIALOG}
                 />
             );
         case 'bool':
@@ -151,6 +155,7 @@ function DialogElement({
                     optional={optional}
                     onChange={handleChange}
                     testID={testID}
+                    location={Screens.INTERACTIVE_DIALOG}
                 />
             );
         default:

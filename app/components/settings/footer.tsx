@@ -9,6 +9,8 @@ import {useTheme} from '@context/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         helpTextContainer: {
@@ -35,12 +37,14 @@ type Props = {
     disabledText?: string;
     helpText?: string;
     errorText?: string;
+    location: AvailableScreens;
 }
 function Footer({
     disabled,
     disabledText,
     helpText,
     errorText,
+    location,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -55,7 +59,7 @@ function Footer({
                         baseTextStyle={style.helpText}
                         textStyles={textStyles}
                         disableAtMentions={true}
-                        location=''
+                        location={location}
                         blockStyles={blockStyles}
                         value={disabledText}
                         theme={theme}
@@ -69,7 +73,7 @@ function Footer({
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         disableAtMentions={true}
-                        location=''
+                        location={location}
                         value={helpText}
                         theme={theme}
                     />
@@ -82,7 +86,7 @@ function Footer({
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         disableAtMentions={true}
-                        location=''
+                        location={location}
                         value={errorText}
                         theme={theme}
                     />

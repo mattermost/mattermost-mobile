@@ -11,9 +11,11 @@ import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     channelId: string;
-    location: string;
+    location: AvailableScreens;
     theme: Theme;
     value: string;
 }

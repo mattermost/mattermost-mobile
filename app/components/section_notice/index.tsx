@@ -13,6 +13,8 @@ import Markdown from '../markdown';
 
 import SectionNoticeButton from './section_notice_button';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     title: string;
     text?: string;
@@ -22,6 +24,7 @@ type Props = {
     type?: 'info' | 'success' | 'danger' | 'welcome' | 'warning' | 'hint';
     isDismissable?: boolean;
     onDismissClick?: () => void;
+    location: AvailableScreens;
 }
 
 const iconByType = {
@@ -150,6 +153,7 @@ const SectionNotice = ({
     secondaryButton,
     text,
     type = 'info',
+    location,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
@@ -179,7 +183,7 @@ const SectionNotice = ({
                     {text && (
                         <Markdown
                             theme={theme}
-                            location=''
+                            location={location}
                             baseTextStyle={styles.baseText}
                             value={text}
                         />

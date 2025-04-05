@@ -13,11 +13,12 @@ import Opengraph from './opengraph';
 import YouTube from './youtube';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type ContentProps = {
     isReplyPost: boolean;
     layoutWidth?: number;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
     theme: Theme;
 }
