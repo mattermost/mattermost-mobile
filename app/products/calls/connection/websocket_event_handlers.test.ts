@@ -43,8 +43,6 @@ import {
     handleCallScreenOn,
     handleCallStarted,
     handleCallState,
-    handleCallUserConnected,
-    handleCallUserDisconnected,
     handleCallUserJoined,
     handleCallUserLeft,
     handleCallUserMuted,
@@ -67,8 +65,6 @@ import type {
     CallStateData,
     EmptyData,
     LiveCaptionData,
-    UserConnectedData,
-    UserDisconnectedData,
     UserDismissedNotification,
     UserJoinedData,
     UserLeftData,
@@ -111,58 +107,6 @@ describe('websocket event handlers', () => {
             ownerId: 'owner-id',
             hostId: 'host-id',
             threadId: 'thread-id',
-        });
-    });
-
-    describe('handleCallUserConnected/Disconnected (deprecated)', () => {
-        it('should handle user connected for old version', () => {
-            jest.mocked(getCallsConfig).mockReturnValue({
-                ...DefaultCallsConfig,
-                version: {version: '0.20.0'},
-            });
-            handleCallUserConnected(serverUrl, {
-                broadcast: {channel_id: channelId},
-                data: {userID: userId},
-            } as WebSocketMessage<UserConnectedData>);
-            expect(fetchUsersByIds).toHaveBeenCalledWith(serverUrl, [userId]);
-            expect(userJoinedCall).toHaveBeenCalledWith(serverUrl, channelId, userId, userId);
-        });
-
-        it('should not handle user connected for new version', () => {
-            jest.mocked(getCallsConfig).mockReturnValue({
-                ...DefaultCallsConfig,
-                version: {version: '0.21.0'},
-            });
-            handleCallUserConnected(serverUrl, {
-                broadcast: {channel_id: channelId},
-                data: {userID: userId},
-            } as WebSocketMessage<UserConnectedData>);
-            expect(fetchUsersByIds).not.toHaveBeenCalled();
-            expect(userJoinedCall).not.toHaveBeenCalled();
-        });
-
-        it('should handle user disconnected for old version', () => {
-            jest.mocked(getCallsConfig).mockReturnValue({
-                ...DefaultCallsConfig,
-                version: {version: '0.20.0'},
-            });
-            handleCallUserDisconnected(serverUrl, {
-                broadcast: {channel_id: channelId},
-                data: {userID: userId},
-            } as WebSocketMessage<UserDisconnectedData>);
-            expect(userLeftCall).toHaveBeenCalledWith(serverUrl, channelId, userId);
-        });
-
-        it('should not handle user disconnected for new version', () => {
-            jest.mocked(getCallsConfig).mockReturnValue({
-                ...DefaultCallsConfig,
-                version: {version: '0.21.0'},
-            });
-            handleCallUserDisconnected(serverUrl, {
-                broadcast: {channel_id: channelId},
-                data: {userID: userId},
-            } as WebSocketMessage<UserDisconnectedData>);
-            expect(userLeftCall).not.toHaveBeenCalled();
         });
     });
 
@@ -314,35 +258,6 @@ describe('websocket event handlers', () => {
     });
 
     describe('handleCallUserReacted', () => {
-        it('should handle user reaction for old version', () => {
-            jest.mocked(getCallsConfig).mockReturnValue({
-                ...DefaultCallsConfig,
-                version: {version: '0.20.0'},
-            });
-            const reactionData = {
-                user_id: userId,
-                session_id: sessionId,
-                reaction: '👍',
-                timestamp: 12345,
-                emoji: {name: 'thumbsup', unified: '1F44D'},
-            };
-            handleCallUserReacted(serverUrl, {
-                event: 'custom_com.mattermost.calls_reaction',
-                seq: 1,
-                broadcast: {
-                    omit_users: {} as Dictionary<boolean>,
-                    user_id: '',
-                    team_id: '',
-                    channel_id: channelId,
-                },
-                data: reactionData,
-            } as WebSocketMessage<UserReactionData>);
-            expect(userReacted).toHaveBeenCalledWith(serverUrl, channelId, {
-                ...reactionData,
-                session_id: userId,
-            });
-        });
-
         it('should handle user reaction for new version', () => {
             jest.mocked(getCallsConfig).mockReturnValue({
                 ...DefaultCallsConfig,
