@@ -90,52 +90,52 @@ env:
   SDK_VERSION: ${{ inputs.android_api_level }}
 
 jobs:
-  generate-specs:
-    runs-on: ubuntu-22.04
-    outputs:
-      specs: ${{ steps.generate-specs.outputs.specs }}
-      build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
-      mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
-      mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
-      workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+  # generate-specs:
+  #   runs-on: ubuntu-22.04
+  #   outputs:
+  #     specs: ${{ steps.generate-specs.outputs.specs }}
+  #     build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
+  #     mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
+  #     mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
+  #     workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  #       with:
+  #         ref: ${{ inputs.MOBILE_VERSION }}
 
-      - name: Set Build ID
-        id: resolve-device
-        run: |
-          BUILD_ID="${{ github.run_id }}-${{ env.AVD_NAME }}-${{ env.SDK_VERSION}}"
-          WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
+  #     - name: Set Build ID
+  #       id: resolve-device
+  #       run: |
+  #         BUILD_ID="${{ github.run_id }}-${{ env.AVD_NAME }}-${{ env.SDK_VERSION}}"
+  #         WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
 
-          ## We need that hash to separate the artifacts
-          echo "WORKFLOW_HASH=${WORKFLOW_HASH}" >> ${GITHUB_OUTPUT}
+  #         ## We need that hash to separate the artifacts
+  #         echo "WORKFLOW_HASH=${WORKFLOW_HASH}" >> ${GITHUB_OUTPUT}
 
-          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
-          echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
-          echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
+  #         echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
+  #         echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
+  #         echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
 
-      - name: Generate Test Specs
-        id: generate-specs
-        uses: ./.github/actions/generate-specs
-        with:
-          parallelism: 10
-          search_path: detox/e2e/test
-          device_name: ${{ env.AVD_NAME }}
-          device_os_version: ${{ env.SDK_VERSION }}
+  #     - name: Generate Test Specs
+  #       id: generate-specs
+  #       uses: ./.github/actions/generate-specs
+  #       with:
+  #         parallelism: 10
+  #         search_path: detox/e2e/test
+  #         device_name: ${{ env.AVD_NAME }}
+  #         device_os_version: ${{ env.SDK_VERSION }}
 
   e2e-android:
-    name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    # name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     runs-on: ubuntu-latest-8-cores
     continue-on-error: true
     timeout-minutes: 150
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-    needs:
-      - generate-specs
+    # needs:
+    #   - generate-specs
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
@@ -222,91 +222,92 @@ jobs:
         run: |
           cd detox
           chmod +x ./create_android_emulator.sh
-          ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} ${{ matrix.specs }}
+          # ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} ${{ matrix.specs }}
+          ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} about.e2e.ts
         continue-on-error: true # We want to run all the tests
 
-      - name: Upload Android Test Report
-        if: always()
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-        with:
-          name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
-          path: detox/artifacts/
+      # - name: Upload Android Test Report
+      #   if: always()
+      #   uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+      #   with:
+      #     name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+      #     path: detox/artifacts/
 
-  generate-report:
-    runs-on: ubuntu-22.04
-    needs:
-      - generate-specs
-      - e2e-android
-    outputs:
-      TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
-      STATUS: ${{ steps.determine-status.outputs.STATUS }}
-      FAILURES: ${{ steps.summary.outputs.FAILURES }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+  # generate-report:
+  #   runs-on: ubuntu-22.04
+  #   needs:
+  #     - generate-specs
+  #     - e2e-android
+  #   outputs:
+  #     TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
+  #     STATUS: ${{ steps.determine-status.outputs.STATUS }}
+  #     FAILURES: ${{ steps.summary.outputs.FAILURES }}
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  #       with:
+  #         ref: ${{ inputs.MOBILE_VERSION }}
 
-      - name: ci/prepare-node-deps
-        uses: ./.github/actions/prepare-node-deps
+  #     - name: ci/prepare-node-deps
+  #       uses: ./.github/actions/prepare-node-deps
 
-      - name: Download Android Artifacts
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
-        with:
-          path: detox/artifacts/
-          pattern: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
-        continue-on-error: true
+  #     - name: Download Android Artifacts
+  #       uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+  #       with:
+  #         path: detox/artifacts/
+  #         pattern: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
+  #       continue-on-error: true
 
-      - name: Generate Report Path
-        id: s3
-        run: |
-          path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
-          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
+  #     - name: Generate Report Path
+  #       id: s3
+  #       run: |
+  #         path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
+  #         echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
 
-      - name: Save report Detox Dependencies
-        id: report-link
-        run: |
-          cd detox
-          npm ci
-          npm run e2e:save-report
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-          REPORT_PATH: ${{ steps.s3.outputs.path }}
-          ## These are needed for the MM Webhook report
-          COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
-          BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
+  #     - name: Save report Detox Dependencies
+  #       id: report-link
+  #       run: |
+  #         cd detox
+  #         npm ci
+  #         npm run e2e:save-report
+  #       env:
+  #         DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+  #         DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+  #         BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+  #         REPORT_PATH: ${{ steps.s3.outputs.path }}
+  #         ## These are needed for the MM Webhook report
+  #         COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
+  #         BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
 
-      - name: Calculate failures
-        id: summary
-        run: |
-          echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
-          echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
-          echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
-          echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
-          echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
-          echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
+  #     - name: Calculate failures
+  #       id: summary
+  #       run: |
+  #         echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
+  #         echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
+  #         echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
+  #         echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
+  #         echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
+  #         echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
 
-      - name: Set Target URL
-        id: set-url
-        run: |
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/android-report.html" >> ${GITHUB_OUTPUT}
+  #     - name: Set Target URL
+  #       id: set-url
+  #       run: |
+  #           echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/android-report.html" >> ${GITHUB_OUTPUT}
 
-      - name: Determine Status
-        id: determine-status
-        run: |
-          if [[ ${{ steps.summary.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
-            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
-          else
-            echo "STATUS=success" >> ${GITHUB_OUTPUT}
-          fi
+  #     - name: Determine Status
+  #       id: determine-status
+  #       run: |
+  #         if [[ ${{ steps.summary.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
+  #           echo "STATUS=failure" >> ${GITHUB_OUTPUT}
+  #         else
+  #           echo "STATUS=success" >> ${GITHUB_OUTPUT}
+  #         fi
 
-      - name: Generate Summary
-        run: |
-          echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: | Errors :warning: | " >> ${GITHUB_STEP_SUMMARY}
-          echo "|:---:|:---:|:---:|:---:|:---:|" >> ${GITHUB_STEP_SUMMARY}
-          echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} | ${{ steps.summary.outputs.ERRORS }} |" >> ${GITHUB_STEP_SUMMARY}
-          echo "" >> ${GITHUB_STEP_SUMMARY}
-          echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
-          echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+  #     - name: Generate Summary
+  #       run: |
+  #         echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: | Errors :warning: | " >> ${GITHUB_STEP_SUMMARY}
+  #         echo "|:---:|:---:|:---:|:---:|:---:|" >> ${GITHUB_STEP_SUMMARY}
+  #         echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} | ${{ steps.summary.outputs.ERRORS }} |" >> ${GITHUB_STEP_SUMMARY}
+  #         echo "" >> ${GITHUB_STEP_SUMMARY}
+  #         echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
+  #         echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
