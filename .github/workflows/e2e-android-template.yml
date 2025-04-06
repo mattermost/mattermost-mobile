@@ -136,9 +136,9 @@ jobs:
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     # needs:
     #   - generate-specs
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+    # strategy:
+    #   fail-fast: false
+    #   matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
