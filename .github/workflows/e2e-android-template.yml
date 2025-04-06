@@ -173,7 +173,8 @@ jobs:
       - name: Set .env with RUNNING_E2E=true
         run: |
           cat > .env <<EOF
-          echo "RUNNING_E2E=true" >> .env
+          RUNNING_E2E=true
+          EOF
   
       - name: Create destination path
         run: mkdir -p android/app/build
@@ -199,13 +200,24 @@ jobs:
 
       - name: Accept Android licenses
         run: |
-          yes | sdkmanager --licenses || true
+          mkdir -p ~/.android
+          yes | sdkmanager --licenses > sdk_licenses_output.txt || true
+      
+          # Check if "All SDK package licenses accepted" appears in output
+          if grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
+            echo "✅ All licenses accepted successfully."
+          else
+            echo "❌ Licenses not fully accepted."
+            cat sdk_licenses_output.txt
+            exit 1
+          fi
 
-      - name: Install Android system image
+      - name: Install Android SDK components
         run: |
-          sdkmanager "system-images;android-34;default;x86_64"
-          sdkmanager "platform-tools" "emulator"
-
+          yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-34" "system-images;android-34;default;x86_64"
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        
       - name: Create and run Android Emulator
         run: |
           cd detox
