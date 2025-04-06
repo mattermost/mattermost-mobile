@@ -609,7 +609,7 @@
   "mobile.channel_add_members.error": "Det har oppstått en feil og vi kunne ikke legge til disse brukerne på kanalen.",
   "mobile.channel_info.alertNo": "Nei",
   "mobile.channel_info.alertYes": "Ja",
-  "mobile.channel_list.recent": "Nylig",
+  "mobile.channel_list.recent": "Siste",
   "mobile.channel_list.unreads": "Uleste",
   "mobile.commands.error_title": "Feil ved utføring av kommando",
   "mobile.components.select_server_view.connect": "Koble til",
