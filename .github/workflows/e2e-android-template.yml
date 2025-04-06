@@ -179,11 +179,11 @@ jobs:
       - name: Create destination path
         run: mkdir -p android/app/build
 
-      - name: Download APK artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: android-build-files-${{ github.run_id }}
-          path: android/app/build
+      # - name: Download APK artifact
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: android-build-files-${{ github.run_id }}
+      #     path: android/app/build
 
       - name: Set up Android SDK
         run: |
