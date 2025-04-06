@@ -52,7 +52,7 @@ on:
         description: "Android API level"
         required: false
         type: string
-        default: "33"
+        default: "34"
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
