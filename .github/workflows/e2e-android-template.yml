@@ -222,8 +222,7 @@ jobs:
         run: |
           cd detox
           chmod +x ./create_android_emulator.sh
-          # ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} ${{ matrix.specs }}
-          ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} about.e2e.ts
+          ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} ${{ matrix.specs }}
         continue-on-error: true # We want to run all the tests
 
       - name: Upload Android Test Report
