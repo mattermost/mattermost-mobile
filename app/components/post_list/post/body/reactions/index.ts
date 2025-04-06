@@ -3,15 +3,14 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
-import {General, Permissions} from '@constants';
-import {observeChannel} from '@queries/servers/channel';
+import {Permissions} from '@constants';
+import {observeChannel, observeIsReadOnlyChannel} from '@queries/servers/channel';
 import {observeReactionsForPost} from '@queries/servers/reaction';
 import {observePermissionForPost} from '@queries/servers/role';
-import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
+import {observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
-import {isSystemAdmin} from '@utils/user';
 
 import Reactions from './reactions';
 
@@ -28,9 +27,13 @@ const withReactions = withObservables(['post'], ({database, post}: WithReactions
         switchMap((id) => observeUser(database, id)),
     );
     const channel = observeChannel(database, post.channelId);
-    const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');
-    const disabled = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(
-        map(([u, c, readOnly]) => ((c && c.deleteAt > 0) || (c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u?.roles || '') && readOnly))),
+    const disabled = combineLatest([channel]).pipe(
+        switchMap(([c]) => {
+            if (c && c.deleteAt > 0) {
+                return of$(true);
+            }
+            return observeIsReadOnlyChannel(database, post.channelId);
+        }),
     );
 
     const canAddReaction = currentUser.pipe(switchMap((u) => observePermissionForPost(database, post, u, Permissions.ADD_REACTION, true)));
